@@ -1,0 +1,39 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: alexfalkowski/go:1.16
+      - image: circleci/postgres
+        environment:
+          POSTGRES_DB: test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+      - image: circleci/redis
+    steps:
+      - checkout
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -timeout 1m
+      - run: make dep
+      - run: make lint
+      - run: make specs
+      - run: make goveralls
+      - store_artifacts:
+          path: test/reports
+  release:
+    docker:
+      - image: alexfalkowski/release:2.0
+    steps:
+      - checkout
+      - run: release.sh
+
+workflows:
+  go-service:
+    jobs:
+      - build
+      - release:
+          context: gh
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
