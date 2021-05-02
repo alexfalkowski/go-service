@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+go get -u google.golang.org/grpc
+go install -mod=mod github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
+go install -mod=mod github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+go install -mod=mod google.golang.org/protobuf/cmd/protoc-gen-go
+go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc
