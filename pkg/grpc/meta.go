@@ -39,7 +39,7 @@ func metaUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		var requestID string
 
-		if mdRequestID := md.Get(meta.RequestID); len(mdRequestID) > 0 {
+		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
 			requestID = mdRequestID[0]
 		}
 
@@ -48,7 +48,7 @@ func metaUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
-		header := metadata.Pairs(meta.RequestID, requestID)
+		header := metadata.Pairs("request-id", requestID)
 
 		if err := grpc.SendHeader(ctx, header); err != nil {
 			return nil, err
@@ -65,7 +65,7 @@ func metaStreamServerInterceptor() grpc.StreamServerInterceptor {
 
 		var requestID string
 
-		if mdRequestID := md.Get(meta.RequestID); len(mdRequestID) > 0 {
+		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
 			requestID = mdRequestID[0]
 		}
 
@@ -74,7 +74,7 @@ func metaStreamServerInterceptor() grpc.StreamServerInterceptor {
 		}
 
 		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
-		header := metadata.Pairs(meta.RequestID, requestID)
+		header := metadata.Pairs("request-id", requestID)
 
 		if err := grpc.SendHeader(ctx, header); err != nil {
 			return err
@@ -95,7 +95,7 @@ func metaUnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		}
 
 		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, meta.RequestID, requestID)
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
 	}
@@ -109,7 +109,7 @@ func metaStreamClientInterceptor() grpc.StreamClientInterceptor {
 		}
 
 		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, meta.RequestID, requestID)
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
 	}

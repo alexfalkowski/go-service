@@ -6,5 +6,14 @@ import (
 
 // NewMux for HTTP.
 func NewMux() *runtime.ServeMux {
-	return runtime.NewServeMux()
+	return runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+}
+
+func customMatcher(key string) (string, bool) {
+	switch key {
+	case "Request-Id":
+		return key, true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
 }
