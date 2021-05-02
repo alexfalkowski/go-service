@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/go-redis/cache/v8"
@@ -24,8 +23,7 @@ func NewCache(lc fx.Lifecycle, cfg *config.Config) *cache.Cache {
 	})
 
 	cache := cache.New(&cache.Options{
-		Redis:      ring,
-		LocalCache: cache.NewTinyLFU(1000, time.Minute), // nolint:gomnd
+		Redis: ring,
 		Marshal: func(v interface{}) ([]byte, error) {
 			return proto.Marshal(v.(proto.Message))
 		},
