@@ -15,16 +15,9 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/logger"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 )
-
-type shutdowner struct{}
-
-func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
-	return nil
-}
 
 func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
@@ -34,10 +27,9 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
-		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
 
-		server := test.NewServer()
-		test.RegisterGreeterServer(gs, server)
+		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
@@ -73,10 +65,9 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
-		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
 
-		server := test.NewServer()
-		test.RegisterGreeterServer(gs, server)
+		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
@@ -111,7 +102,7 @@ func TestStream(t *testing.T) {
 
 func TestUnaryGateway(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		sh := &shutdowner{}
+		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := logger.NewLogger(lc)
@@ -124,8 +115,7 @@ func TestUnaryGateway(t *testing.T) {
 
 		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, pkgGRPC.NewServerOptions())
 
-		server := test.NewServer()
-		test.RegisterGreeterServer(gs, server)
+		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
