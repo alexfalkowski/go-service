@@ -26,6 +26,7 @@ func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
 	return nil
 }
 
+// nolint:dupl
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
@@ -79,6 +80,7 @@ func TestHTTP(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
