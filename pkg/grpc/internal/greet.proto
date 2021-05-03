@@ -2,11 +2,24 @@ syntax = "proto3";
 
 option go_package = "github.com/alexfalkowski/go-service/pkg/grpc/internal";
 
+import "google/api/annotations.proto";
+
 package greet;
 
 service Greeter {
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
-  rpc SayStreamHello (stream HelloRequest) returns (stream HelloReply) {}
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greet/hello"
+      body: "*"
+    };
+  }
+
+  rpc SayStreamHello (stream HelloRequest) returns (stream HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greet/hello/stream"
+      body: "*"
+    };
+  }
 }
 
 message HelloRequest {
