@@ -52,6 +52,8 @@ func TestHTTP(t *testing.T) {
 
 		lc.RequireStart()
 
+		time.Sleep(2 * time.Second)
+
 		Convey("When I query health", func() {
 			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
 
@@ -103,7 +105,7 @@ func TestInvalidHTTP(t *testing.T) {
 
 		lc.RequireStart()
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
 			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
