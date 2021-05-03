@@ -2,11 +2,11 @@
 // source: greet.proto
 
 /*
-Package internal is a reverse proxy.
+Package test is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package internal
+package test
 
 import (
 	"context"

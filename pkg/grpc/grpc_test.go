@@ -11,9 +11,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/grpc"
-	"github.com/alexfalkowski/go-service/pkg/grpc/internal"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -26,22 +26,6 @@ func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
 	return nil
 }
 
-type server struct {
-	internal.UnimplementedGreeterServer
-}
-
-func (s *server) SayHello(ctx context.Context, req *internal.HelloRequest) (*internal.HelloReply, error) {
-	return &internal.HelloReply{Message: fmt.Sprintf("Hello %s", req.GetName())}, nil
-}
-func (s *server) SayStreamHello(stream internal.Greeter_SayStreamHelloServer) error {
-	req, err := stream.Recv()
-	if err != nil {
-		return err
-	}
-
-	return stream.Send(&internal.HelloReply{Message: fmt.Sprintf("Hello %s", req.GetName())})
-}
-
 func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -52,7 +36,8 @@ func TestUnary(t *testing.T) {
 		cfg := &config.Config{GRPCPort: "10007"}
 		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
 
-		internal.RegisterGreeterServer(gs, &server{})
+		server := test.NewServer()
+		test.RegisterGreeterServer(gs, server)
 
 		lc.RequireStart()
 
@@ -65,8 +50,8 @@ func TestUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := internal.NewGreeterClient(conn)
-			req := &internal.HelloRequest{Name: "test"}
+			client := test.NewGreeterClient(conn)
+			req := &test.HelloRequest{Name: "test"}
 
 			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
@@ -90,7 +75,8 @@ func TestStream(t *testing.T) {
 		cfg := &config.Config{GRPCPort: "10008"}
 		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
 
-		internal.RegisterGreeterServer(gs, &server{})
+		server := test.NewServer()
+		test.RegisterGreeterServer(gs, server)
 
 		lc.RequireStart()
 
@@ -103,12 +89,12 @@ func TestStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := internal.NewGreeterClient(conn)
+			client := test.NewGreeterClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&internal.HelloRequest{Name: "test"})
+			err = stream.Send(&test.HelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			resp, err := stream.Recv()
@@ -137,7 +123,9 @@ func TestUnaryGateway(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, pkgGRPC.NewServerOptions())
-		internal.RegisterGreeterServer(gs, &server{})
+
+		server := test.NewServer()
+		test.RegisterGreeterServer(gs, server)
 
 		lc.RequireStart()
 
@@ -149,7 +137,7 @@ func TestUnaryGateway(t *testing.T) {
 
 		defer conn.Close()
 
-		err = internal.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
