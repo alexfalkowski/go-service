@@ -13,18 +13,12 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/grpc"
 	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
-
-type shutdowner struct{}
-
-func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
-	return nil
-}
 
 func TestGRPC(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
@@ -43,7 +37,7 @@ func TestGRPC(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10005"}
-		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -90,7 +84,7 @@ func TestInvalidGRPC(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10004"}
-		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -139,7 +133,7 @@ func TestStreamGRPC(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10003"}
-		gs := pkgGRPC.NewServer(lc, &shutdowner{}, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 

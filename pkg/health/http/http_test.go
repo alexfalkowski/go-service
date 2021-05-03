@@ -15,16 +15,10 @@ import (
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/http"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
-
-type shutdowner struct{}
-
-func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
-	return nil
-}
 
 // nolint:dupl
 func TestHTTP(t *testing.T) {
@@ -46,7 +40,7 @@ func TestHTTP(t *testing.T) {
 
 		cfg := &config.Config{HTTPPort: "10000"}
 
-		pkgHTTP.Register(lc, &shutdowner{}, mux, cfg, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
@@ -100,7 +94,7 @@ func TestInvalidHTTP(t *testing.T) {
 
 		cfg := &config.Config{HTTPPort: "10001"}
 
-		pkgHTTP.Register(lc, &shutdowner{}, mux, cfg, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)

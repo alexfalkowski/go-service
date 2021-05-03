@@ -10,16 +10,10 @@ import (
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
 	metricsHTTP "github.com/alexfalkowski/go-service/pkg/metrics/http"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
-
-type shutdowner struct{}
-
-func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
-	return nil
-}
 
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
@@ -30,7 +24,7 @@ func TestHTTP(t *testing.T) {
 
 		cfg := &config.Config{HTTPPort: "10002"}
 
-		pkgHTTP.Register(lc, &shutdowner{}, mux, cfg, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
 
 		err = metricsHTTP.Register(mux)
 		So(err, ShouldBeNil)
