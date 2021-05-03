@@ -35,7 +35,7 @@ specs: ## Run all the specs
 	go test -race -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
 
 remove-generated-coverage:
-	cat test/profile.cov | grep -v ".pb" > test/final.cov
+	cat test/profile.cov | grep -v "test" > test/final.cov
 
 html-coverage: remove-generated-coverage ## Get the HTML coverage for go
 	go tool cover -html test/final.cov
