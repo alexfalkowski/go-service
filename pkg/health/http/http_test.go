@@ -26,6 +26,7 @@ func (*shutdowner) Shutdown(...fx.ShutdownOption) error {
 	return nil
 }
 
+// nolint:dupl
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
@@ -52,6 +53,8 @@ func TestHTTP(t *testing.T) {
 
 		lc.RequireStart()
 
+		time.Sleep(2 * time.Second)
+
 		Convey("When I query health", func() {
 			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
 
@@ -77,6 +80,7 @@ func TestHTTP(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
@@ -103,7 +107,7 @@ func TestInvalidHTTP(t *testing.T) {
 
 		lc.RequireStart()
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
 			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
