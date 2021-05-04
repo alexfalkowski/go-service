@@ -1,15 +1,15 @@
-package trace_test
+package opentracing_test
 
 import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	"github.com/alexfalkowski/go-service/pkg/trace"
+	"github.com/alexfalkowski/go-service/pkg/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
-func TestTrace(t *testing.T) {
+func TestJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &config.Config{
 			AppName: "test",
@@ -17,7 +17,7 @@ func TestTrace(t *testing.T) {
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
-			err := trace.Register(lc, cfg)
+			err := opentracing.RegisterJaeger(lc, cfg)
 
 			lc.RequireStart().RequireStop()
 
