@@ -1,11 +1,12 @@
-package opentracing
+package encoder
 
 import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
-func encode(message interface{}) string {
+// Message to be encoded.
+func Message(message interface{}) string {
 	p, ok := message.(proto.Message)
 	if !ok {
 		return ""

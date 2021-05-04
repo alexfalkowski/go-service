@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/pkg/http/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"go.uber.org/zap"
@@ -45,7 +46,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, req.URL.String()),
 		zap.String(httpMethod, req.Method),
-		zap.String(httpRequest, encodeRequest(req)),
+		zap.String(httpRequest, encoder.Request(req)),
 		zap.String("span.kind", client),
 		zap.String(component, httpComponent),
 	}
@@ -65,7 +66,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode), zap.String(httpResponse, encodeResponse(resp)))
+	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode), zap.String(httpResponse, encoder.Response(resp)))
 
 	r.logger.Info(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
 

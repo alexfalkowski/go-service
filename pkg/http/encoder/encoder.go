@@ -1,4 +1,4 @@
-package opentracing
+package encoder
 
 import (
 	"bytes"
@@ -7,7 +7,8 @@ import (
 	"net/http"
 )
 
-func encodeRequest(req *http.Request) string {
+// Request to be encoded.
+func Request(req *http.Request) string {
 	if req.Body == nil {
 		return ""
 	}
@@ -26,7 +27,8 @@ func encodeRequest(req *http.Request) string {
 	return string(body)
 }
 
-func encodeResponse(resp *http.Response) string {
+// Response to be encoded.
+func Response(resp *http.Response) string {
 	if resp.Body == nil {
 		return ""
 	}

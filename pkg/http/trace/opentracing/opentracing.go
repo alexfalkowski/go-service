@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/pkg/http/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/opentracing/opentracing-go"
@@ -43,7 +44,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: httpURL, Value: req.URL.String()},
 		opentracing.Tag{Key: httpMethod, Value: req.Method},
-		opentracing.Tag{Key: httpRequest, Value: encodeRequest(req)},
+		opentracing.Tag{Key: httpRequest, Value: encoder.Request(req)},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,
 	}
@@ -77,7 +78,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	clientSpan.SetTag(httpStatusCode, resp.StatusCode)
-	clientSpan.SetTag(httpResponse, encodeResponse(resp))
+	clientSpan.SetTag(httpResponse, encoder.Response(resp))
 
 	return resp, nil
 }
