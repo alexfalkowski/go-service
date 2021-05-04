@@ -4,5 +4,13 @@ import (
 	"go.uber.org/fx"
 )
 
-// Module for fx.
-var Module = fx.Options(fx.Invoke(Register), fx.Provide(NewMux), fx.Provide(NewRoundTripper))
+var (
+	// ServerModule for fx.
+	ServerModule = fx.Options(fx.Invoke(Register), fx.Provide(NewMux))
+
+	// ClientModule for fx.
+	ClientModule = fx.Options(fx.Provide(NewRoundTripper))
+
+	// Module for fx.
+	Module = fx.Options(ServerModule, ClientModule)
+)
