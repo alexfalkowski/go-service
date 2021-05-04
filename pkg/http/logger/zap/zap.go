@@ -1,4 +1,4 @@
-package http
+package zap
 
 import (
 	"fmt"
@@ -10,13 +10,32 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type loggerRoundTripper struct {
+const (
+	httpRequest         = "http.request"
+	httpResponse        = "http.response"
+	httpURL             = "http.url"
+	httpMethod          = "http.method"
+	httpDuration        = "http.duration_ms"
+	httpStartTime       = "http.start_time"
+	httpRequestDeadline = "http.request.deadline"
+	httpStatusCode      = "http.status_code"
+	component           = "component"
+	httpComponent       = "http"
+	client              = "client"
+)
+
+// NewRoundTripper for zap.
+func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{logger: logger, RoundTripper: hrt}
+}
+
+type RoundTripper struct {
 	logger *zap.Logger
 
 	http.RoundTripper
 }
 
-func (r *loggerRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
