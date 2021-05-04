@@ -6,5 +6,16 @@ import (
 	"go.uber.org/fx"
 )
 
-// Module for fx.
-var Module = fx.Options(fx.Invoke(http.Register), fx.Invoke(grpc.Register), fx.Provide(NewServer))
+var (
+	// HTTPModule for fx.
+	HTTPModule = fx.Invoke(http.Register)
+
+	// GRPCModule for fx.
+	GRPCModule = fx.Invoke(grpc.Register)
+
+	// ServerModule for fx.
+	ServerModule = fx.Provide(NewServer)
+
+	// Module for fx.
+	Module = fx.Options(HTTPModule, GRPCModule, ServerModule)
+)
