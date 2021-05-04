@@ -12,7 +12,7 @@ import (
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/grpc"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/grpc"
-	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -33,7 +33,7 @@ func TestGRPC(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10005"}
@@ -80,7 +80,7 @@ func TestInvalidGRPC(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10004"}
@@ -129,7 +129,7 @@ func TestStreamGRPC(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10003"}

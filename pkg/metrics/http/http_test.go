@@ -8,7 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
-	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	metricsHTTP "github.com/alexfalkowski/go-service/pkg/metrics/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,7 +19,7 @@ func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		mux := pkgHTTP.NewMux()
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10002"}

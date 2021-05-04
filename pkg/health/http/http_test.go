@@ -14,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/http"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
-	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -35,7 +35,7 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		mux := pkgHTTP.NewMux()
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10000"}
@@ -89,7 +89,7 @@ func TestInvalidHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		mux := pkgHTTP.NewMux()
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10001"}

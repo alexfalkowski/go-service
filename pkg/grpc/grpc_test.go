@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/grpc"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
-	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -23,7 +23,7 @@ func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -61,7 +61,7 @@ func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -105,7 +105,7 @@ func TestUnaryGateway(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := logger.NewLogger(lc)
+		logger, err := zap.NewLogger(lc)
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10009", HTTPPort: "10010"}
