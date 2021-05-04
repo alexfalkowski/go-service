@@ -1,4 +1,4 @@
-package grpc
+package meta
 
 import (
 	"context"
@@ -6,7 +6,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func extractIncoming(ctx context.Context) metadata.MD {
+// ExtractIncoming for meta.
+func ExtractIncoming(ctx context.Context) metadata.MD {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return metadata.MD{}
@@ -15,7 +16,8 @@ func extractIncoming(ctx context.Context) metadata.MD {
 	return md.Copy()
 }
 
-func extractOutgoing(ctx context.Context) metadata.MD {
+// ExtractOutgoing for meta.
+func ExtractOutgoing(ctx context.Context) metadata.MD {
 	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
 		return metadata.MD{}

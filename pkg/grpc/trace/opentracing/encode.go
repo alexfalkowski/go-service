@@ -1,4 +1,4 @@
-package grpc
+package opentracing
 
 import (
 	"google.golang.org/protobuf/encoding/protojson"

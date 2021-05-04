@@ -1,8 +1,7 @@
-package grpc
+package meta
 
 import (
 	"context"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/google/uuid"
@@ -11,31 +10,10 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-type metadataTextMap metadata.MD
-
-// Set is a opentracing.TextMapReader interface that extracts values.
-func (m metadataTextMap) Set(key, val string) {
-	key = strings.ToLower(key)
-
-	m[key] = append(m[key], val)
-}
-
-// ForeachKey is a opentracing.TextMapReader interface that extracts values.
-func (m metadataTextMap) ForeachKey(callback func(key, val string) error) error {
-	for k, vv := range m {
-		for _, v := range vv {
-			if err := callback(k, v); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func metaUnaryServerInterceptor() grpc.UnaryServerInterceptor {
+// UnaryServerInterceptor for meta.
+func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		md := extractIncoming(ctx)
+		md := ExtractIncoming(ctx)
 
 		var requestID string
 
@@ -58,10 +36,11 @@ func metaUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
-func metaStreamServerInterceptor() grpc.StreamServerInterceptor {
+// StreamServerInterceptor for meta.
+func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
-		md := extractIncoming(ctx)
+		md := ExtractIncoming(ctx)
 
 		var requestID string
 
@@ -87,7 +66,8 @@ func metaStreamServerInterceptor() grpc.StreamServerInterceptor {
 	}
 }
 
-func metaUnaryClientInterceptor() grpc.UnaryClientInterceptor {
+// UnaryClientInterceptor for meta.
+func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		requestID := meta.Attribute(ctx, meta.RequestID)
 		if requestID == "" {
@@ -101,7 +81,8 @@ func metaUnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	}
 }
 
-func metaStreamClientInterceptor() grpc.StreamClientInterceptor {
+// StreamClientInterceptor for meta.
+func StreamClientInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		requestID := meta.Attribute(ctx, meta.RequestID)
 		if requestID == "" {
