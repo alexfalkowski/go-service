@@ -29,6 +29,7 @@ func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: hrt}
 }
 
+// RoundTripper for zap.
 type RoundTripper struct {
 	logger *zap.Logger
 

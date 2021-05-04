@@ -1,4 +1,4 @@
-package http
+package opentracing
 
 import (
 	"fmt"
@@ -11,11 +11,30 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type traceRoundTripper struct {
+const (
+	httpRequest         = "http.request"
+	httpResponse        = "http.response"
+	httpURL             = "http.url"
+	httpMethod          = "http.method"
+	httpDuration        = "http.duration_ms"
+	httpStartTime       = "http.start_time"
+	httpRequestDeadline = "http.request.deadline"
+	httpStatusCode      = "http.status_code"
+	component           = "component"
+	httpComponent       = "http"
+)
+
+// NewRoundTripper for opentracing.
+func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{RoundTripper: hrt}
+}
+
+// RoundTripper for opentracing.
+type RoundTripper struct {
 	http.RoundTripper
 }
 
-func (r *traceRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	tracer := opentracing.GlobalTracer()

@@ -1,4 +1,4 @@
-package http
+package opentracing
 
 import (
 	"bytes"

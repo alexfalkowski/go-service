@@ -1,4 +1,4 @@
-package http
+package meta
 
 import (
 	"net/http"
@@ -7,11 +7,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type metaRoundTripper struct {
+// NewRoundTripper for meta.
+func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{RoundTripper: hrt}
+}
+
+// RoundTripper for meta.
+type RoundTripper struct {
 	http.RoundTripper
 }
 
-func (r *metaRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	requestID := meta.Attribute(ctx, meta.RequestID)
