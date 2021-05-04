@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -9,9 +9,6 @@ import (
 	"go.uber.org/fx"
 	"google.golang.org/protobuf/proto"
 )
-
-// Item that is used for caching.
-type Item = cache.Item
 
 // NewCache from config.
 // The cache is based on https://github.com/go-redis/cache

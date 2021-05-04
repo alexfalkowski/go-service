@@ -1,10 +1,11 @@
-package grpc
+package zap
 
 import (
 	"context"
 	"fmt"
 	"path"
 
+	"github.com/alexfalkowski/go-service/pkg/grpc/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -15,10 +16,27 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func loggerUnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
+const (
+	grpcRequest         = "grpc.request"
+	grpcResponse        = "grpc.response"
+	grpcService         = "grpc.service"
+	grpcMethod          = "grpc.method"
+	grpcCode            = "grpc.code"
+	grpcDuration        = "grpc.duration"
+	grpcStartTime       = "grpc.start_time"
+	grpcRequestDeadline = "grpc.request.deadline"
+	component           = "component"
+	grpcComponent       = "grpc"
+	healthService       = "grpc.health.v1.Health"
+	client              = "client"
+	server              = "server"
+)
+
+// UnaryServerInterceptor for zap.
+func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthCheckService {
+		if service == healthService {
 			return handler(ctx, req)
 		}
 
@@ -30,7 +48,7 @@ func loggerUnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerIntercepto
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encode(req)),
+			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", server),
 			zap.String(component, grpcComponent),
 		}
@@ -59,7 +77,7 @@ func loggerUnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerIntercepto
 		}
 
 		if resp != nil {
-			fields = append(fields, zap.String(grpcResponse, encode(resp)))
+			fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
 		}
 
 		loggerLevel(message, fields...)
@@ -68,10 +86,11 @@ func loggerUnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerIntercepto
 	}
 }
 
-func loggerStreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
+// StreamServerInterceptor for zap.
+func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthCheckService {
+		if service == healthService {
 			return handler(srv, stream)
 		}
 
@@ -117,10 +136,11 @@ func loggerStreamServerInterceptor(logger *zap.Logger) grpc.StreamServerIntercep
 	}
 }
 
-func loggerUnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
+// UnaryClientInterceptor for zap.
+func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
-		if service == healthCheckService {
+		if service == healthService {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -132,7 +152,7 @@ func loggerUnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientIntercepto
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encode(req)),
+			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", client),
 			zap.String(component, grpcComponent),
 		}
@@ -160,7 +180,7 @@ func loggerUnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientIntercepto
 			fields = append(fields, zap.Error(err))
 		}
 
-		fields = append(fields, zap.String(grpcResponse, encode(resp)))
+		fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
 
 		loggerLevel(message, fields...)
 
@@ -168,10 +188,11 @@ func loggerUnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientIntercepto
 	}
 }
 
-func loggerStreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
+// StreamClientInterceptor for zap.
+func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
-		if service == healthCheckService {
+		if service == healthService {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 

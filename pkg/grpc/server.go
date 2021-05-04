@@ -6,6 +6,9 @@ import (
 	"net"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
+	pkgZap "github.com/alexfalkowski/go-service/pkg/grpc/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/grpc/meta"
+	"github.com/alexfalkowski/go-service/pkg/grpc/trace/opentracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -14,10 +17,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
-)
-
-const (
-	server = "server"
 )
 
 // NewServerOptions is blank to satisfy the dep of []grpc.ServerOption
@@ -57,32 +56,6 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap
 	return server
 }
 
-func unaryServerOption(logger *zap.Logger) grpc.ServerOption {
-	opt := grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
-		metaUnaryServerInterceptor(),
-		grpcRecovery.UnaryServerInterceptor(),
-		grpcTags.UnaryServerInterceptor(),
-		loggerUnaryServerInterceptor(logger),
-		grpcPrometheus.UnaryServerInterceptor,
-		traceUnaryServerInterceptor(),
-	))
-
-	return opt
-}
-
-func streamServerOption(logger *zap.Logger) grpc.ServerOption {
-	opt := grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(
-		metaStreamServerInterceptor(),
-		grpcRecovery.StreamServerInterceptor(),
-		grpcTags.StreamServerInterceptor(),
-		loggerStreamServerInterceptor(logger),
-		grpcPrometheus.StreamServerInterceptor,
-		traceStreamServerInterceptor(),
-	))
-
-	return opt
-}
-
 func startServer(s fx.Shutdowner, server *grpc.Server, listener net.Listener, cfg *config.Config, logger *zap.Logger) {
 	logger.Info("starting grpc server", zap.String("port", cfg.GRPCPort))
 
@@ -101,4 +74,30 @@ func stopServer(server *grpc.Server, cfg *config.Config, logger *zap.Logger) {
 	logger.Info("stopping grpc server", zap.String("port", cfg.GRPCPort))
 
 	server.GracefulStop()
+}
+
+func unaryServerOption(logger *zap.Logger) grpc.ServerOption {
+	opt := grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
+		meta.UnaryServerInterceptor(),
+		grpcRecovery.UnaryServerInterceptor(),
+		grpcTags.UnaryServerInterceptor(),
+		pkgZap.UnaryServerInterceptor(logger),
+		grpcPrometheus.UnaryServerInterceptor,
+		opentracing.UnaryServerInterceptor(),
+	))
+
+	return opt
+}
+
+func streamServerOption(logger *zap.Logger) grpc.ServerOption {
+	opt := grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(
+		meta.StreamServerInterceptor(),
+		grpcRecovery.StreamServerInterceptor(),
+		grpcTags.StreamServerInterceptor(),
+		pkgZap.StreamServerInterceptor(logger),
+		grpcPrometheus.StreamServerInterceptor,
+		opentracing.StreamServerInterceptor(),
+	))
+
+	return opt
 }

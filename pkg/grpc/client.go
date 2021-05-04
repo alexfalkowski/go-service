@@ -4,14 +4,13 @@ import (
 	"context"
 	"time"
 
+	pkgZap "github.com/alexfalkowski/go-service/pkg/grpc/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/grpc/meta"
+	"github.com/alexfalkowski/go-service/pkg/grpc/trace/opentracing"
 	grpcRetry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-)
-
-const (
-	client = "client"
 )
 
 // NewClient to host for gRPC.
@@ -32,9 +31,9 @@ func unaryDialOption(logger *zap.Logger) grpc.DialOption {
 			grpcRetry.WithMax(5), // nolint:gomnd
 			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(50*time.Millisecond)), // nolint:gomnd
 		),
-		metaUnaryClientInterceptor(),
-		loggerUnaryClientInterceptor(logger),
-		traceUnaryClientInterceptor(),
+		meta.UnaryClientInterceptor(),
+		pkgZap.UnaryClientInterceptor(logger),
+		opentracing.UnaryClientInterceptor(),
 	)
 
 	return opt
@@ -42,9 +41,9 @@ func unaryDialOption(logger *zap.Logger) grpc.DialOption {
 
 func streamDialOption(logger *zap.Logger) grpc.DialOption {
 	opt := grpc.WithChainStreamInterceptor(
-		metaStreamClientInterceptor(),
-		loggerStreamClientInterceptor(logger),
-		traceStreamClientInterceptor(),
+		meta.StreamClientInterceptor(),
+		pkgZap.StreamClientInterceptor(logger),
+		opentracing.StreamClientInterceptor(),
 	)
 
 	return opt

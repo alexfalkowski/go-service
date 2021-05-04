@@ -1,9 +1,10 @@
-package http
+package opentracing
 
 import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/pkg/http/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/opentracing/opentracing-go"
@@ -11,11 +12,30 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type traceRoundTripper struct {
+const (
+	httpRequest         = "http.request"
+	httpResponse        = "http.response"
+	httpURL             = "http.url"
+	httpMethod          = "http.method"
+	httpDuration        = "http.duration_ms"
+	httpStartTime       = "http.start_time"
+	httpRequestDeadline = "http.request.deadline"
+	httpStatusCode      = "http.status_code"
+	component           = "component"
+	httpComponent       = "http"
+)
+
+// NewRoundTripper for opentracing.
+func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{RoundTripper: hrt}
+}
+
+// RoundTripper for opentracing.
+type RoundTripper struct {
 	http.RoundTripper
 }
 
-func (r *traceRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	tracer := opentracing.GlobalTracer()
@@ -24,7 +44,7 @@ func (r *traceRoundTripper) RoundTrip(req *http.Request) (*http.Response, error)
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: httpURL, Value: req.URL.String()},
 		opentracing.Tag{Key: httpMethod, Value: req.Method},
-		opentracing.Tag{Key: httpRequest, Value: encodeRequest(req)},
+		opentracing.Tag{Key: httpRequest, Value: encoder.Request(req)},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,
 	}
@@ -58,7 +78,7 @@ func (r *traceRoundTripper) RoundTrip(req *http.Request) (*http.Response, error)
 	}
 
 	clientSpan.SetTag(httpStatusCode, resp.StatusCode)
-	clientSpan.SetTag(httpResponse, encodeResponse(resp))
+	clientSpan.SetTag(httpResponse, encoder.Response(resp))
 
 	return resp, nil
 }

@@ -5,6 +5,15 @@
 
 A framework to build services in go
 
+## Dependencies
+
+This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/Standing_on_the_shoulders_of_giants), therefore we have added them here. These are as following:
+- [Uber FX](https://github.com/uber-go/fx)
+- [Uber Zap](https://github.com/uber-go/zap)
+- [OpenTracing](https://github.com/opentracing/opentracing-go)
+- [Redis Cache](https://github.com/go-redis/cache)
+
 ## Usage
 
-Until we get these docs and examples up to date, please check out the following repository [go-nonnative-example](https://github.com/alexfalkowski/go-nonnative-example)
+The best way to learn is to check out some projects built with this framework. These are the following:
+- [go-nonnative-example](https://github.com/alexfalkowski/go-nonnative-example)

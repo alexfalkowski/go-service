@@ -1,12 +1,13 @@
-package cache_test
+package redis_test
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/cache"
+	"github.com/alexfalkowski/go-service/pkg/cache/redis"
 	"github.com/alexfalkowski/go-service/pkg/config"
+	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -16,7 +17,7 @@ func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		cfg := &config.Config{CacheHost: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
-		c := cache.NewCache(lc, cfg)
+		c := redis.NewCache(lc, cfg)
 		ctx := context.TODO()
 
 		lc.RequireStart()
