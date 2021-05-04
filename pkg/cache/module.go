@@ -1,8 +1,14 @@
 package cache
 
 import (
+	"github.com/alexfalkowski/go-service/pkg/cache/redis"
 	"go.uber.org/fx"
 )
 
-// Module for fx.
-var Module = fx.Provide(NewCache)
+var (
+	// RedisModule for fx.
+	RedisModule = fx.Provide(redis.NewCache)
+
+	// Module for fx.
+	Module = fx.Options(RedisModule)
+)
