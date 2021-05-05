@@ -47,7 +47,7 @@ func StreamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInter
 // NewClient to host for gRPC.
 func NewClient(context context.Context, host string, logger *zap.Logger, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if len(opts) == 0 {
-		opts = append(opts, UnaryDialOption(logger), StreamDialOption(logger))
+		opts = append(opts, grpc.WithInsecure(), UnaryDialOption(logger), StreamDialOption(logger))
 	}
 
 	return grpc.DialContext(context, host, opts...)
