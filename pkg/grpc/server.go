@@ -19,15 +19,45 @@ import (
 	"google.golang.org/grpc"
 )
 
+// UnaryServerOption provides sensible defaults and additional interceptors.
+func UnaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+	defaultInterceptors := []grpc.UnaryServerInterceptor{
+		meta.UnaryServerInterceptor(),
+		grpcRecovery.UnaryServerInterceptor(),
+		grpcTags.UnaryServerInterceptor(),
+		pkgZap.UnaryServerInterceptor(logger),
+		grpcPrometheus.UnaryServerInterceptor,
+		opentracing.UnaryServerInterceptor(),
+	}
+
+	defaultInterceptors = append(defaultInterceptors, interceptors...)
+
+	return grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(defaultInterceptors...))
+}
+
+// StreamServerOption provides sensible defaults and additional interceptors.
+func StreamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+	defaultInterceptors := []grpc.StreamServerInterceptor{
+		meta.StreamServerInterceptor(),
+		grpcRecovery.StreamServerInterceptor(),
+		grpcTags.StreamServerInterceptor(),
+		pkgZap.StreamServerInterceptor(logger),
+		grpcPrometheus.StreamServerInterceptor,
+		opentracing.StreamServerInterceptor(),
+	}
+
+	defaultInterceptors = append(defaultInterceptors, interceptors...)
+
+	return grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(defaultInterceptors...))
+}
+
 // NewServer for gRPC.
 func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap.Logger, opts ...grpc.ServerOption) *grpc.Server {
-	allOpts := []grpc.ServerOption{
-		unaryServerOption(logger),
-		streamServerOption(logger),
+	if len(opts) == 0 {
+		opts = append(opts, UnaryServerOption(logger), StreamServerOption(logger))
 	}
-	allOpts = append(allOpts, opts...)
 
-	server := grpc.NewServer(allOpts...)
+	server := grpc.NewServer(opts...)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -68,30 +98,4 @@ func stopServer(server *grpc.Server, cfg *config.Config, logger *zap.Logger) {
 	logger.Info("stopping grpc server", zap.String("port", cfg.GRPCPort))
 
 	server.GracefulStop()
-}
-
-func unaryServerOption(logger *zap.Logger) grpc.ServerOption {
-	opt := grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
-		meta.UnaryServerInterceptor(),
-		grpcRecovery.UnaryServerInterceptor(),
-		grpcTags.UnaryServerInterceptor(),
-		pkgZap.UnaryServerInterceptor(logger),
-		grpcPrometheus.UnaryServerInterceptor,
-		opentracing.UnaryServerInterceptor(),
-	))
-
-	return opt
-}
-
-func streamServerOption(logger *zap.Logger) grpc.ServerOption {
-	opt := grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(
-		meta.StreamServerInterceptor(),
-		grpcRecovery.StreamServerInterceptor(),
-		grpcTags.StreamServerInterceptor(),
-		pkgZap.StreamServerInterceptor(logger),
-		grpcPrometheus.StreamServerInterceptor,
-		opentracing.StreamServerInterceptor(),
-	))
-
-	return opt
 }
