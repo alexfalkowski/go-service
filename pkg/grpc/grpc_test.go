@@ -530,7 +530,6 @@ func TestMissingClientAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
