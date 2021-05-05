@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/alexfalkowski/go-service/compare/v1.3.0...v1.4.0) (2021-05-05)
+
+
+### Features
+
+* **security:** allow the generation and verification of tokens ([#8](https://github.com/alexfalkowski/go-service/issues/8)) ([0da0143](https://github.com/alexfalkowski/go-service/commit/0da01438437b0a6a8e773c356c6e7030c33d8f28))
+
 ## [1.3.0](https://github.com/alexfalkowski/go-service/compare/v1.2.0...v1.3.0) (2021-05-05)
 
 
