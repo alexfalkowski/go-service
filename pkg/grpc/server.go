@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// UnaryServerOption provides sensible defaults and additional interceptors.
+// UnaryServerOption for gRPC.
 func UnaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
@@ -35,7 +35,7 @@ func UnaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInter
 	return grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-// StreamServerOption provides sensible defaults and additional interceptors.
+// StreamServerOption for gRPC.
 func StreamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
