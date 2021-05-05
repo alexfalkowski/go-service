@@ -7,16 +7,17 @@ import (
 )
 
 // NewGenerator for test.
-func NewGenerator(token string) token.Generator {
-	return &generator{token: token}
+func NewGenerator(token string, err error) token.Generator {
+	return &generator{token: token, err: err}
 }
 
 type generator struct {
 	token string
+	err   error
 }
 
 func (g *generator) Generate() ([]byte, error) {
-	return []byte(g.token), nil
+	return []byte(g.token), g.err
 }
 
 // NewVerifier for test.
