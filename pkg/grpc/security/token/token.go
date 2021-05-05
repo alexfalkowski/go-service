@@ -65,13 +65,13 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 	}
 }
 
-type tokenPerRPCCredentials struct {
-	generator token.Generator
-}
-
 // NewPerRPCCredentials for token.
 func NewPerRPCCredentials(generator token.Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
+}
+
+type tokenPerRPCCredentials struct {
+	generator token.Generator
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
