@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/alexfalkowski/go-service/compare/v1.4.2...v1.5.0) (2021-05-05)
+
+
+### Features
+
+* **grpc:** pass insecure to client with no options ([#11](https://github.com/alexfalkowski/go-service/issues/11)) ([7cf4f77](https://github.com/alexfalkowski/go-service/commit/7cf4f77cf89ee8e683e367184e1c503e1bfbbb9f))
+
 ### [1.4.2](https://github.com/alexfalkowski/go-service/compare/v1.4.1...v1.4.2) (2021-05-05)
 
 ### [1.4.1](https://github.com/alexfalkowski/go-service/compare/v1.4.0...v1.4.1) (2021-05-05)
