@@ -13,19 +13,9 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// NewClient to host for gRPC.
-func NewClient(context context.Context, host string, logger *zap.Logger, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	allOpts := []grpc.DialOption{
-		unaryDialOption(logger),
-		streamDialOption(logger),
-	}
-	allOpts = append(allOpts, opts...)
-
-	return grpc.DialContext(context, host, allOpts...)
-}
-
-func unaryDialOption(logger *zap.Logger) grpc.DialOption {
-	opt := grpc.WithChainUnaryInterceptor(
+// UnaryDialOption for gRPC.
+func UnaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterceptor) grpc.DialOption {
+	defaultInterceptors := []grpc.UnaryClientInterceptor{
 		grpcRetry.UnaryClientInterceptor(
 			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
 			grpcRetry.WithMax(5), // nolint:gomnd
@@ -34,17 +24,31 @@ func unaryDialOption(logger *zap.Logger) grpc.DialOption {
 		meta.UnaryClientInterceptor(),
 		pkgZap.UnaryClientInterceptor(logger),
 		opentracing.UnaryClientInterceptor(),
-	)
+	}
 
-	return opt
+	defaultInterceptors = append(defaultInterceptors, interceptors...)
+
+	return grpc.WithChainUnaryInterceptor(defaultInterceptors...)
 }
 
-func streamDialOption(logger *zap.Logger) grpc.DialOption {
-	opt := grpc.WithChainStreamInterceptor(
+// StreamDialOption for gRPC.
+func StreamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInterceptor) grpc.DialOption {
+	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(),
 		pkgZap.StreamClientInterceptor(logger),
 		opentracing.StreamClientInterceptor(),
-	)
+	}
 
-	return opt
+	defaultInterceptors = append(defaultInterceptors, interceptors...)
+
+	return grpc.WithChainStreamInterceptor(defaultInterceptors...)
+}
+
+// NewClient to host for gRPC.
+func NewClient(context context.Context, host string, logger *zap.Logger, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	if len(opts) == 0 {
+		opts = append(opts, UnaryDialOption(logger), StreamDialOption(logger))
+	}
+
+	return grpc.DialContext(context, host, opts...)
 }

@@ -25,7 +25,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	if token == nil {
+	if len(token) == 0 {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

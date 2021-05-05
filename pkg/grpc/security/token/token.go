@@ -2,6 +2,7 @@ package token
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/security/token"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -61,6 +63,32 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		return handler(srv, stream)
 	}
+}
+
+type tokenPerRPCCredentials struct {
+	generator token.Generator
+}
+
+// NewPerRPCCredentials for token.
+func NewPerRPCCredentials(generator token.Generator) credentials.PerRPCCredentials {
+	return &tokenPerRPCCredentials{generator: generator}
+}
+
+func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	token, err := p.generator.Generate()
+	if err != nil {
+		return nil, err
+	}
+
+	if len(token) == 0 {
+		return map[string]string{}, nil
+	}
+
+	return map[string]string{"authorization": fmt.Sprintf("Bearer %s", token)}, nil
+}
+
+func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {
+	return false
 }
 
 func tkn(header string) []byte {

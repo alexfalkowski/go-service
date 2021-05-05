@@ -99,7 +99,6 @@ func TestValidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
 		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-
 		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
@@ -166,7 +165,6 @@ func TestInvalidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
 		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-
 		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
