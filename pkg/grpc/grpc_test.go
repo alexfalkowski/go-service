@@ -27,7 +27,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -65,7 +65,7 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -113,7 +113,7 @@ func TestUnaryGateway(t *testing.T) {
 		mux := pkgHTTP.NewMux()
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, pkgGRPC.NewServerOptions())
+		gs := pkgGRPC.NewServer(lc, sh, cfg, logger)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 

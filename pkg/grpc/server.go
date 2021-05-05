@@ -19,14 +19,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// NewServerOptions is blank to satisfy the dep of []grpc.ServerOption
-// This can be changed by implementers to provide options.
-func NewServerOptions() []grpc.ServerOption {
-	return []grpc.ServerOption{}
-}
-
 // NewServer for gRPC.
-func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap.Logger, opts []grpc.ServerOption) *grpc.Server {
+func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap.Logger, opts ...grpc.ServerOption) *grpc.Server {
 	allOpts := []grpc.ServerOption{
 		unaryServerOption(logger),
 		streamServerOption(logger),
