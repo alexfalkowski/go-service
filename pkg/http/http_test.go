@@ -205,8 +205,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 			lc.RequireStop()
 
-			Convey("Then I should have a valid reply", func() {
-				So(actual, ShouldEqual, `{"code":16,"message":"could not verify token: invalid token","details":[]}`)
+			Convey("Then I should have a unauthenticated reply", func() {
+				So(actual, ShouldContainSubstring, `could not verify token: invalid token`)
 			})
 
 			lc.RequireStop()
