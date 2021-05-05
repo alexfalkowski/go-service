@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-health/pkg/server"
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/grpc"
+	tokenGRPC "github.com/alexfalkowski/go-service/pkg/grpc/security/token"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/grpc"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
@@ -20,7 +21,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-func TestGRPC(t *testing.T) {
+func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -67,7 +68,7 @@ func TestGRPC(t *testing.T) {
 	})
 }
 
-func TestInvalidGRPC(t *testing.T) {
+func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -116,7 +117,63 @@ func TestInvalidGRPC(t *testing.T) {
 	})
 }
 
-func TestStreamGRPC(t *testing.T) {
+func TestIgnoreAuthUnary(t *testing.T) {
+	Convey("Given I register the health handler", t, func() {
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+		regs := health.Registrations{hr}
+		lc := fxtest.NewLifecycle(t)
+
+		hs, err := health.NewServer(lc, regs)
+		So(err, ShouldBeNil)
+
+		o, err := hs.Observe("http")
+		So(err, ShouldBeNil)
+
+		logger, err := zap.NewLogger(lc)
+		So(err, ShouldBeNil)
+
+		cfg := &config.Config{GRPCPort: "10005"}
+		verifier := test.NewVerifier("test")
+		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
+		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+
+		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+
+		lc.RequireStart()
+
+		Convey("When I query health", func() {
+			ctx := context.Background()
+			clientOpts := []grpc.DialOption{
+				grpc.WithBlock(),
+				grpc.WithInsecure(),
+				pkgGRPC.UnaryDialOption(logger),
+				pkgGRPC.StreamDialOption(logger),
+				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+			}
+
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := grpc_health_v1.NewHealthClient(conn)
+			req := &grpc_health_v1.HealthCheckRequest{}
+
+			resp, err := client.Check(ctx, req)
+			So(err, ShouldBeNil)
+
+			lc.RequireStop()
+
+			Convey("Then I should have a healthy response", func() {
+				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+			})
+		})
+	})
+}
+
+func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -144,6 +201,65 @@ func TestStreamGRPC(t *testing.T) {
 			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
 			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := grpc_health_v1.NewHealthClient(conn)
+			req := &grpc_health_v1.HealthCheckRequest{}
+
+			wc, err := client.Watch(ctx, req)
+			So(err, ShouldBeNil)
+
+			resp, err := wc.Recv()
+			So(err, ShouldBeNil)
+
+			lc.RequireStop()
+
+			Convey("Then I should have a healthy response", func() {
+				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+			})
+		})
+	})
+}
+
+func TestIgnoreAuthStream(t *testing.T) {
+	Convey("Given I register the health handler", t, func() {
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+		regs := health.Registrations{hr}
+		lc := fxtest.NewLifecycle(t)
+
+		hs, err := health.NewServer(lc, regs)
+		So(err, ShouldBeNil)
+
+		o, err := hs.Observe("http")
+		So(err, ShouldBeNil)
+
+		logger, err := zap.NewLogger(lc)
+		So(err, ShouldBeNil)
+
+		cfg := &config.Config{GRPCPort: "10003"}
+		verifier := test.NewVerifier("test")
+		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
+		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+
+		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+
+		lc.RequireStart()
+
+		Convey("When I query health", func() {
+			ctx := context.Background()
+			clientOpts := []grpc.DialOption{
+				grpc.WithBlock(),
+				grpc.WithInsecure(),
+				pkgGRPC.UnaryDialOption(logger),
+				pkgGRPC.StreamDialOption(logger),
+				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+			}
+
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
