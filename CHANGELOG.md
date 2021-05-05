@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/alexfalkowski/go-service/compare/v1.2.0...v1.3.0) (2021-05-05)
+
+
+### Features
+
+* **cache:** use snappy to compress ([#7](https://github.com/alexfalkowski/go-service/issues/7)) ([3ec8c3d](https://github.com/alexfalkowski/go-service/commit/3ec8c3d7e8dd8513068eee6d8e05336f8bd36d57))
+
 ## [1.2.0](https://github.com/alexfalkowski/go-service/compare/v1.1.4...v1.2.0) (2021-05-04)
 
 
