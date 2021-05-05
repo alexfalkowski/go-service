@@ -102,6 +102,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -147,6 +148,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -331,6 +333,7 @@ func TestValidAuthStream(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -381,6 +384,7 @@ func TestInvalidAuthStream(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
