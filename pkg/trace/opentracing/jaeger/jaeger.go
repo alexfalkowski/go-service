@@ -16,7 +16,7 @@ const (
 	eventsPerSecond = 100
 )
 
-// Register for opentracing.
+// Register for jaeger.
 func Register(lc fx.Lifecycle, cfg *config.Config) error {
 	c := jaegerConfig.Configuration{
 		ServiceName: cfg.AppName,

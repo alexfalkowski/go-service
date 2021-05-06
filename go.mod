@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
+	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/alexfalkowski/go-health v1.5.4
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/go-redis/cache/v8 v8.4.0
@@ -17,6 +18,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/prometheus/client_golang v1.10.0
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4
@@ -31,5 +33,6 @@ require (
 	google.golang.org/genproto v0.0.0-20210429181445-86c259c2b4ab
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
+	gopkg.in/DataDog/dd-trace-go.v1 v1.31.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
