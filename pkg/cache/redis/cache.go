@@ -16,7 +16,7 @@ import (
 func NewCache(lc fx.Lifecycle, cfg *config.Config) *cache.Cache {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server": cfg.CacheHost,
+			"server": cfg.RedisCacheHost,
 		},
 	})
 

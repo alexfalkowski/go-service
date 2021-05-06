@@ -22,5 +22,5 @@ type Config struct {
 	GRPCPort        string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
 	DatabaseURL     string `envconfig:"DATABASE_URL" required:"true"`
 	JaegerTraceHost string `envconfig:"JAEGER_TRACE_HOST" required:"true" default:"localhost:6831"`
-	CacheHost       string `envconfig:"CACHE_HOST" required:"true" default:"localhost:6379"`
+	RedisCacheHost  string `envconfig:"REDIS_CACHE_HOST" required:"true" default:"localhost:6379"`
 }
