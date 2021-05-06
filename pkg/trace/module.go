@@ -1,14 +1,15 @@
 package trace
 
 import (
-	"github.com/alexfalkowski/go-service/pkg/trace/opentracing"
+	"github.com/alexfalkowski/go-service/pkg/trace/opentracing/datadog"
+	"github.com/alexfalkowski/go-service/pkg/trace/opentracing/jaeger"
 	"go.uber.org/fx"
 )
 
 var (
 	// JaegerOpenTracing for fx.
-	JaegerOpenTracing = fx.Invoke(opentracing.RegisterJaeger)
+	JaegerOpenTracing = fx.Invoke(jaeger.Register)
 
-	// Module for fx.
-	Module = fx.Options(JaegerOpenTracing)
+	// DataDogOpenTracing for fx.
+	DataDogOpenTracing = fx.Invoke(datadog.Register)
 )

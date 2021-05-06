@@ -1,4 +1,4 @@
-package opentracing
+package jaeger
 
 import (
 	"context"
@@ -16,8 +16,8 @@ const (
 	eventsPerSecond = 100
 )
 
-// RegisterJaeger for opentracing.
-func RegisterJaeger(lc fx.Lifecycle, cfg *config.Config) error {
+// Register for jaeger.
+func Register(lc fx.Lifecycle, cfg *config.Config) error {
 	c := jaegerConfig.Configuration{
 		ServiceName: cfg.AppName,
 		Sampler: &jaegerConfig.SamplerConfig{
