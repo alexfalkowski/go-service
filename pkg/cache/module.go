@@ -2,6 +2,7 @@ package cache
 
 import (
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
+	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"go.uber.org/fx"
 )
 
@@ -18,6 +19,15 @@ var (
 	// RedisModule for fx.
 	RedisModule = fx.Options(RedisRingModule, RedisOptionsModule, RedisCacheModule)
 
+	// RistrettoConfigModule for fx.
+	RistrettoConfigModule = fx.Provide(ristretto.NewConfig)
+
+	// RistrettoCacheModule for fx.
+	RistrettoCacheModule = fx.Provide(ristretto.NewCache)
+
+	// RistrettoModule for fx.
+	RistrettoModule = fx.Options(RistrettoConfigModule, RistrettoCacheModule)
+
 	// Module for fx.
-	Module = fx.Options(RedisModule)
+	Module = fx.Options(RedisModule, RistrettoModule)
 )

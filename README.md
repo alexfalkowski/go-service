@@ -13,6 +13,7 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [OpenTracing](https://github.com/opentracing/opentracing-go)
 - [Redis Cache](https://github.com/go-redis/cache)
 - [Snappy](https://github.com/golang/snappy)
+- [Ristretto](https://github.com/dgraph-io/ristretto)
 
 ## Usage
 
