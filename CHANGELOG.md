@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.8.0](https://github.com/alexfalkowski/go-service/compare/v1.7.0...v1.8.0) (2021-05-06)
+
+
+### Features
+
+* **datadog:** add tracer ([#14](https://github.com/alexfalkowski/go-service/issues/14)) ([f8932ed](https://github.com/alexfalkowski/go-service/commit/f8932ed1bddee41a7a4eef730593735822622cc2))
+
 ## [1.7.0](https://github.com/alexfalkowski/go-service/compare/v1.6.0...v1.7.0) (2021-05-06)
 
 
