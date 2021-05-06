@@ -19,7 +19,7 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 
 ## Testing
 
-To get all the dependencies locally please close [docker](https://github.com/alexfalkowski/docker) repository.
+To get all the dependencies locally please clone the [docker](https://github.com/alexfalkowski/docker) repository.
 
 In the repository you can do the following:
 
