@@ -25,6 +25,8 @@ func TestCache(t *testing.T) {
 			ok := c.SetWithTTL("test", value, 0, time.Minute)
 			So(ok, ShouldBeTrue)
 
+			time.Sleep(1 * time.Second)
+
 			Convey("Then I should have a cached item", func() {
 				v, ok := c.Get("test")
 				So(ok, ShouldBeTrue)
