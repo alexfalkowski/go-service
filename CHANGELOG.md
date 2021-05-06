@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](https://github.com/alexfalkowski/go-service/compare/v1.8.0...v1.9.0) (2021-05-06)
+
+
+### Features
+
+* move the deps ([#15](https://github.com/alexfalkowski/go-service/issues/15)) ([71c7d63](https://github.com/alexfalkowski/go-service/commit/71c7d6314a94ce0e475ed288d58edd6c60d67095))
+
 ## [1.8.0](https://github.com/alexfalkowski/go-service/compare/v1.7.0...v1.8.0) (2021-05-06)
 
 
