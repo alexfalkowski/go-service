@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/alexfalkowski/go-service/compare/v1.6.0...v1.7.0) (2021-05-06)
+
+
+### Features
+
+* **ristretto:** add in memory cache ([#13](https://github.com/alexfalkowski/go-service/issues/13)) ([06bd01f](https://github.com/alexfalkowski/go-service/commit/06bd01fa5251ce6d95bb4baea2d4f63f848d19fa))
+
 ## [1.6.0](https://github.com/alexfalkowski/go-service/compare/v1.5.0...v1.6.0) (2021-05-06)
 
 
