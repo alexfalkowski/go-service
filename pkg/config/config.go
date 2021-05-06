@@ -17,10 +17,10 @@ func NewConfig() (*Config, error) {
 
 // Config for the services.
 type Config struct {
-	AppName     string `envconfig:"APP_NAME" required:"true"`
-	HTTPPort    string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
-	GRPCPort    string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
-	DatabaseURL string `envconfig:"DATABASE_URL" required:"true"`
-	TraceHost   string `envconfig:"TRACE_HOST" required:"true" default:"localhost:6831"`
-	CacheHost   string `envconfig:"CACHE_HOST" required:"true" default:"localhost:6379"`
+	AppName         string `envconfig:"APP_NAME" required:"true"`
+	HTTPPort        string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
+	GRPCPort        string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
+	DatabaseURL     string `envconfig:"DATABASE_URL" required:"true"`
+	JaegerTraceHost string `envconfig:"JAEGER_TRACE_HOST" required:"true" default:"localhost:6831"`
+	CacheHost       string `envconfig:"CACHE_HOST" required:"true" default:"localhost:6379"`
 }

@@ -25,7 +25,7 @@ func RegisterJaeger(lc fx.Lifecycle, cfg *config.Config) error {
 			Param: eventsPerSecond,
 		},
 		Reporter: &jaegerConfig.ReporterConfig{
-			LocalAgentHostPort: cfg.TraceHost,
+			LocalAgentHostPort: cfg.JaegerTraceHost,
 			LogSpans:           false,
 		},
 	}
