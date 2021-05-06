@@ -17,6 +17,28 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [Snappy](https://github.com/golang/snappy)
 - [Ristretto](https://github.com/dgraph-io/ristretto)
 
+## Testing
+
+To get all the dependencies locally please close [docker](https://github.com/alexfalkowski/docker) repository.
+
+In the repository you can do the following:
+
+### Starting
+
+Please run:
+
+```sh
+make start
+```
+
+### Stopping
+
+Please run:
+
+```sh
+make stop
+```
+
 ## Usage
 
 The best way to learn is to check out some projects built with this framework. These are the following:

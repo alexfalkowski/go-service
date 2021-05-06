@@ -53,9 +53,3 @@ outdated: ## Check outdated go deps
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
 
 update-dep: get tidy vendor ## Update go dep
-
-start: ## Start env dependencies
-	docker compose -f configs/docker-compose.yml up -d
-
-stop: ## Stop env dependencies
-	docker compose -f configs/docker-compose.yml down
