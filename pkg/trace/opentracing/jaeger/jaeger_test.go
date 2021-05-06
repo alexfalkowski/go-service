@@ -1,10 +1,10 @@
-package opentracing_test
+package jaeger_test
 
 import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	"github.com/alexfalkowski/go-service/pkg/trace/opentracing"
+	opentracing "github.com/alexfalkowski/go-service/pkg/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -17,7 +17,7 @@ func TestJaeger(t *testing.T) {
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
-			err := opentracing.RegisterJaeger(lc, cfg)
+			err := opentracing.Register(lc, cfg)
 
 			lc.RequireStart().RequireStop()
 

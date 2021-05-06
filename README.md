@@ -11,6 +11,7 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [Uber FX](https://github.com/uber-go/fx)
 - [Uber Zap](https://github.com/uber-go/zap)
 - [OpenTracing](https://github.com/opentracing/opentracing-go)
+- [Jaeger](https://github.com/jaegertracing/jaeger)
 - [DataDog](https://github.com/DataDog/dd-trace-go)
 - [Redis Cache](https://github.com/go-redis/cache)
 - [Snappy](https://github.com/golang/snappy)
