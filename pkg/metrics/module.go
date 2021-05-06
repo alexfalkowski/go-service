@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/pkg/metrics/http"
+	"github.com/alexfalkowski/go-service/pkg/metrics/transport/http"
 	"go.uber.org/fx"
 )
 

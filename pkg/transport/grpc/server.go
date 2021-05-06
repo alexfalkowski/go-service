@@ -6,9 +6,9 @@ import (
 	"net"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	pkgZap "github.com/alexfalkowski/go-service/pkg/grpc/logger/zap"
-	"github.com/alexfalkowski/go-service/pkg/grpc/meta"
-	"github.com/alexfalkowski/go-service/pkg/grpc/trace/opentracing"
+	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/grpc/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/trace/opentracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"

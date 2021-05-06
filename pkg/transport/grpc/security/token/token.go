@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
-	grpcMeta "github.com/alexfalkowski/go-service/pkg/grpc/meta"
 	"github.com/alexfalkowski/go-service/pkg/security/token"
+	grpcMeta "github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
