@@ -3,9 +3,9 @@ package http
 import (
 	"net/http"
 
-	pkgZap "github.com/alexfalkowski/go-service/pkg/http/logger/zap"
-	"github.com/alexfalkowski/go-service/pkg/http/meta"
-	"github.com/alexfalkowski/go-service/pkg/http/trace/opentracing"
+	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/http/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/transport/http/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/http/trace/opentracing"
 	"go.uber.org/zap"
 )
 

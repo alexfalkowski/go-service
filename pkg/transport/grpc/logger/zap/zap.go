@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/alexfalkowski/go-service/pkg/grpc/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/encoder"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

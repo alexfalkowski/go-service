@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	pkgHTTP "github.com/alexfalkowski/go-service/pkg/http"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
-	metricsHTTP "github.com/alexfalkowski/go-service/pkg/metrics/http"
+	metricsHTTP "github.com/alexfalkowski/go-service/pkg/metrics/transport/http"
+	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	pkgZap "github.com/alexfalkowski/go-service/pkg/grpc/logger/zap"
-	"github.com/alexfalkowski/go-service/pkg/grpc/meta"
-	"github.com/alexfalkowski/go-service/pkg/grpc/trace/opentracing"
+	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/grpc/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/trace/opentracing"
 	grpcRetry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

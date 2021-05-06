@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	pkgGRPC "github.com/alexfalkowski/go-service/pkg/grpc"
-	tokenGRPC "github.com/alexfalkowski/go-service/pkg/grpc/security/token"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
+	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
+	tokenGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc/security/token"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"

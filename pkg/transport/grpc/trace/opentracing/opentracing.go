@@ -4,10 +4,10 @@ import (
 	"context"
 	"path"
 
-	"github.com/alexfalkowski/go-service/pkg/grpc/encoder"
-	grpcMeta "github.com/alexfalkowski/go-service/pkg/grpc/meta"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/encoder"
+	grpcMeta "github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/opentracing/opentracing-go"

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/pkg/http/encoder"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
+	"github.com/alexfalkowski/go-service/pkg/transport/http/encoder"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
