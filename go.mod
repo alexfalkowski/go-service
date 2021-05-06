@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/alexfalkowski/go-health v1.5.4
+	github.com/dgraph-io/ristretto v0.0.3
 	github.com/go-redis/cache/v8 v8.4.0
 	github.com/go-redis/redis/v8 v8.8.2
 	github.com/golang/snappy v0.0.3

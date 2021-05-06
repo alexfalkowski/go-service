@@ -17,7 +17,9 @@ func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		cfg := &config.Config{RedisCacheHost: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
-		c := redis.NewCache(lc, cfg)
+		r := redis.NewRing(lc, cfg)
+		opts := redis.NewOptions(r)
+		c := redis.NewCache(opts)
 		ctx := context.TODO()
 
 		lc.RequireStart()
