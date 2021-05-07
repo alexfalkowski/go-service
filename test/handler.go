@@ -9,13 +9,14 @@ import (
 )
 
 // NewHandler for test.
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(err error) *Handler {
+	return &Handler{err: err}
 }
 
 // Handler for test.
 type Handler struct {
 	m   *nsq.Message
+	err error
 	mux sync.Mutex
 }
 
@@ -34,5 +35,5 @@ func (h *Handler) Handle(ctx context.Context, m *nsq.Message) (context.Context, 
 
 	ctx = meta.WithAttribute(ctx, "test", "test")
 
-	return ctx, nil
+	return ctx, h.err
 }

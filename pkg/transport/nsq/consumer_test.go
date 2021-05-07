@@ -1,6 +1,7 @@
 package nsq_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -32,7 +33,7 @@ func TestConsumer(t *testing.T) {
 				Logger:       logger,
 				Topic:        "topic",
 				Channel:      "channel",
-				Handler:      test.NewHandler(),
+				Handler:      test.NewHandler(nil),
 			}
 			err := pkgNSQ.RegisterConsumer(lc, params)
 
@@ -59,7 +60,52 @@ func TestReceiveMessage(t *testing.T) {
 			NSQHost:       "localhost:4150",
 		}
 		nsqConfig := pkgNSQ.NewConfig()
-		handler := test.NewHandler()
+		handler := test.NewHandler(nil)
+		params := &pkgNSQ.ConsumerParams{
+			SystemConfig: systemConfig,
+			NSQConfig:    nsqConfig,
+			Logger:       logger,
+			Topic:        "topic",
+			Channel:      "channel",
+			Handler:      handler,
+		}
+
+		producer, err := pkgNSQ.NewProducer(lc, systemConfig, nsqConfig)
+		So(err, ShouldBeNil)
+
+		err = pkgNSQ.RegisterConsumer(lc, params)
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
+
+		Convey("When I send a message", func() {
+			err = producer.Publish("topic", []byte("test"))
+			So(err, ShouldBeNil)
+
+			time.Sleep(1 * time.Second)
+
+			Convey("Then I should receive a message", func() {
+				So(handler.Message(), ShouldNotBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestReceiveError(t *testing.T) {
+	Convey("Given I have a consumer and a producer", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		systemConfig := &config.Config{
+			NSQLookupHost: "localhost:4161",
+			NSQHost:       "localhost:4150",
+		}
+		nsqConfig := pkgNSQ.NewConfig()
+		handler := test.NewHandler(errors.New("something went wrong"))
 		params := &pkgNSQ.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
