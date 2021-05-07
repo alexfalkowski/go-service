@@ -16,6 +16,7 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [Redis Cache](https://github.com/go-redis/cache)
 - [Snappy](https://github.com/golang/snappy)
 - [Ristretto](https://github.com/dgraph-io/ristretto)
+- [NSQ](https://github.com/nsqio/go-nsq)
 
 ## Testing
 
