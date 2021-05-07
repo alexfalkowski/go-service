@@ -1,38 +1,16 @@
 package nsq_test
 
 import (
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgNSQ "github.com/alexfalkowski/go-service/pkg/transport/nsq"
-	"github.com/nsqio/go-nsq"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
-
-type handler struct {
-	m   *nsq.Message
-	mux sync.Mutex
-}
-
-func (h *handler) Message() *nsq.Message {
-	h.mux.Lock()
-	defer h.mux.Unlock()
-
-	return h.m
-}
-
-func (h *handler) HandleMessage(m *nsq.Message) error {
-	h.mux.Lock()
-	defer h.mux.Unlock()
-
-	h.m = m
-
-	return nil
-}
 
 func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
@@ -54,7 +32,7 @@ func TestConsumer(t *testing.T) {
 				Logger:       logger,
 				Topic:        "topic",
 				Channel:      "channel",
-				Handler:      &handler{},
+				Handler:      test.NewHandler(),
 			}
 			err := pkgNSQ.RegisterConsumer(lc, params)
 
@@ -81,7 +59,7 @@ func TestReceiveMessage(t *testing.T) {
 			NSQHost:       "localhost:4150",
 		}
 		nsqConfig := pkgNSQ.NewConfig()
-		handler := &handler{}
+		handler := test.NewHandler()
 		params := &pkgNSQ.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
