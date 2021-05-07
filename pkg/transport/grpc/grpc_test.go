@@ -22,7 +22,7 @@ func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -60,7 +60,7 @@ func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -108,7 +108,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -154,7 +154,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -199,7 +199,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -243,7 +243,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
@@ -288,7 +288,7 @@ func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -331,7 +331,7 @@ func TestValidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -384,7 +384,7 @@ func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -435,7 +435,7 @@ func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -485,7 +485,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
@@ -534,7 +534,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}

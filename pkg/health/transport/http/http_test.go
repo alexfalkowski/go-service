@@ -35,7 +35,8 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		mux := pkgHTTP.NewMux()
-		logger, err := zap.NewLogger(lc)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10000"}
@@ -89,7 +90,8 @@ func TestInvalidHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		mux := pkgHTTP.NewMux()
-		logger, err := zap.NewLogger(lc)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10001"}

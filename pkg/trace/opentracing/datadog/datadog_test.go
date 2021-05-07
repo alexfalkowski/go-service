@@ -15,7 +15,7 @@ func TestDatadog(t *testing.T) {
 		cfg := &config.Config{AppName: "test"}
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		Convey("When I register the trace system", func() {

@@ -19,7 +19,8 @@ func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		mux := pkgHTTP.NewMux()
-		logger, err := zap.NewLogger(lc)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{HTTPPort: "10002"}
