@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/alexfalkowski/go-service/compare/v1.12.0...v1.13.0) (2021-05-07)
+
+
+### Features
+
+* error on client with empty token ([#22](https://github.com/alexfalkowski/go-service/issues/22)) ([cc8f08e](https://github.com/alexfalkowski/go-service/commit/cc8f08ee90cb24be55097e94c3e902eaa1465b40))
+
 ## [1.12.0](https://github.com/alexfalkowski/go-service/compare/v1.11.0...v1.12.0) (2021-05-07)
 
 
