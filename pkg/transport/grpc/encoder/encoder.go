@@ -7,12 +7,7 @@ import (
 
 // Message to be encoded.
 func Message(message interface{}) string {
-	p, ok := message.(proto.Message)
-	if !ok {
-		return ""
-	}
-
-	m, err := protojson.Marshal(p)
+	m, err := protojson.Marshal(message.(proto.Message))
 	if err != nil {
 		return ""
 	}
