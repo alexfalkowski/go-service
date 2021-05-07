@@ -29,10 +29,6 @@ func Request(req *http.Request) string {
 
 // Response to be encoded.
 func Response(resp *http.Response) string {
-	if resp.Body == nil {
-		return ""
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ""
