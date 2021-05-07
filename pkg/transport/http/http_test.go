@@ -56,7 +56,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
+			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10010/v1/greet/hello", bytes.NewBuffer(message))
@@ -119,8 +119,8 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("test", nil), pkgHTTP.NewRoundTripper(logger))
-			client := &http.Client{Transport: transport}
+			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport))
+			client := pkgHTTP.NewClient(transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10012/v1/greet/hello", bytes.NewBuffer(message))
@@ -183,8 +183,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("bob", nil), pkgHTTP.NewRoundTripper(logger))
-			client := &http.Client{Transport: transport}
+			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport))
+			client := pkgHTTP.NewClient(transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -247,7 +247,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
+			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -309,8 +309,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", nil), pkgHTTP.NewRoundTripper(logger))
-			client := &http.Client{Transport: transport}
+			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport))
+			client := pkgHTTP.NewClient(transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -365,7 +365,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
+			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -427,8 +427,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), pkgHTTP.NewRoundTripper(logger))
-			client := &http.Client{Transport: transport}
+			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport))
+			client := pkgHTTP.NewClient(transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
