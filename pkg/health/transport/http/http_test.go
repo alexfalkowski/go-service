@@ -51,7 +51,7 @@ func TestHTTP(t *testing.T) {
 		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
-			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
+			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10000/health", nil)
 			So(err, ShouldBeNil)
@@ -106,7 +106,7 @@ func TestInvalidHTTP(t *testing.T) {
 		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
-			client := &http.Client{Transport: pkgHTTP.NewRoundTripper(logger)}
+			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10001/health", nil)
 			So(err, ShouldBeNil)

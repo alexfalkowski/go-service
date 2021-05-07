@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
@@ -34,9 +35,14 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{
+				grpc.WithBlock(),
+				grpc.WithInsecure(),
+				pkgGRPC.UnaryDialOption(logger),
+				pkgGRPC.StreamDialOption(logger),
+			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -44,14 +50,17 @@ func TestUnary(t *testing.T) {
 			client := test.NewGreeterClient(conn)
 			req := &test.HelloRequest{Name: "test"}
 
+			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+			defer cancel()
+
 			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
-
-			lc.RequireStop()
 
 			Convey("Then I should have a valid reply", func() {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
+
+			lc.RequireStop()
 		})
 	})
 }
@@ -94,11 +103,11 @@ func TestValidAuthUnary(t *testing.T) {
 			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a valid reply", func() {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
+
+			lc.RequireStop()
 		})
 	})
 }
@@ -300,14 +309,22 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{
+				grpc.WithBlock(),
+				grpc.WithInsecure(),
+				pkgGRPC.UnaryDialOption(logger),
+				pkgGRPC.StreamDialOption(logger),
+			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
 
 			client := test.NewGreeterClient(conn)
+
+			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+			defer cancel()
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
@@ -379,7 +396,6 @@ func TestValidAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -430,7 +446,6 @@ func TestInvalidAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -465,14 +480,8 @@ func TestEmptyAuthStream(t *testing.T) {
 
 			client := test.NewGreeterClient(conn)
 
-			stream, err := client.SayStreamHello(ctx)
-			So(err, ShouldBeNil)
-
-			err = stream.Send(&test.HelloRequest{Name: "test"})
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := stream.Recv()
+			Convey("Then I should have an auth error", func() {
+				_, err := client.SayStreamHello(ctx)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 

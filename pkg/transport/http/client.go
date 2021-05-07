@@ -9,9 +9,13 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewClient for HTTP.
+func NewClient(hrt http.RoundTripper) *http.Client {
+	return &http.Client{Transport: hrt}
+}
+
 // NewRoundTripper for HTTP.
-func NewRoundTripper(logger *zap.Logger) http.RoundTripper {
-	hrt := http.DefaultTransport
+func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
 	hrt = pkgZap.NewRoundTripper(logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
 	hrt = meta.NewRoundTripper(hrt)
