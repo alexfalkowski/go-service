@@ -94,11 +94,11 @@ func TestValidAuthUnary(t *testing.T) {
 			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a valid reply", func() {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
+
+			lc.RequireStop()
 		})
 	})
 }
@@ -379,7 +379,6 @@ func TestValidAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -430,7 +429,6 @@ func TestInvalidAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -465,14 +463,8 @@ func TestEmptyAuthStream(t *testing.T) {
 
 			client := test.NewGreeterClient(conn)
 
-			stream, err := client.SayStreamHello(ctx)
-			So(err, ShouldBeNil)
-
-			err = stream.Send(&test.HelloRequest{Name: "test"})
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := stream.Recv()
+			Convey("Then I should have an auth error", func() {
+				_, err := client.SayStreamHello(ctx)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 

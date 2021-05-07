@@ -20,16 +20,16 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	token, err := r.gen.Generate()
+	t, err := r.gen.Generate()
 	if err != nil {
 		return nil, err
 	}
 
-	if len(token) == 0 {
-		return r.RoundTripper.RoundTrip(req)
+	if len(t) == 0 {
+		return nil, token.ErrMissingToken
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(token)))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(t)))
 
 	return r.RoundTripper.RoundTrip(req)
 }

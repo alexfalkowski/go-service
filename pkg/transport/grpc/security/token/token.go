@@ -30,7 +30,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+			return nil, status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
 		}
 
 		if err := verifier.Verify(tkn(values[0])); err != nil {
@@ -54,7 +54,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+			return status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
 		}
 
 		if err := verifier.Verify(tkn(values[0])); err != nil {
@@ -75,16 +75,16 @@ type tokenPerRPCCredentials struct {
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	token, err := p.generator.Generate()
+	t, err := p.generator.Generate()
 	if err != nil {
 		return nil, err
 	}
 
-	if len(token) == 0 {
-		return map[string]string{}, nil
+	if len(t) == 0 {
+		return nil, token.ErrMissingToken
 	}
 
-	return map[string]string{"authorization": fmt.Sprintf("Bearer %s", token)}, nil
+	return map[string]string{"authorization": fmt.Sprintf("Bearer %s", t)}, nil
 }
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {
