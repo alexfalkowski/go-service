@@ -6,9 +6,12 @@ import (
 )
 
 var (
+	// ZapConfig for fx.
+	ZapConfig = fx.Provide(zap.NewConfig)
+
 	// ZapLogger for fx.
 	ZapLogger = fx.Provide(zap.NewLogger)
 
 	// Module for fx.
-	Module = fx.Options(ZapLogger)
+	Module = fx.Options(ZapConfig, ZapLogger)
 )

@@ -34,7 +34,7 @@ func TestUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10005"}
@@ -81,7 +81,7 @@ func TestInvalidUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10004"}
@@ -130,7 +130,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10005"}
@@ -186,7 +186,7 @@ func TestStream(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10003"}
@@ -236,7 +236,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10003"}

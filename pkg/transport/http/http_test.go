@@ -27,7 +27,7 @@ func TestUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10009", HTTPPort: "10010"}
@@ -89,7 +89,7 @@ func TestValidAuthUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10011", HTTPPort: "10012"}
@@ -155,7 +155,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
@@ -221,7 +221,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
@@ -287,7 +287,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
@@ -351,7 +351,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		sh := test.NewShutdowner()
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc)
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
