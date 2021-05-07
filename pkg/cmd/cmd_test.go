@@ -18,6 +18,7 @@ import (
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 func TestInvalidHTTP(t *testing.T) {
@@ -56,7 +57,8 @@ func TestInvalidGRPC(t *testing.T) {
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
 				logger.Module, pkgHTTP.Module, grpc.Module, config.Module,
-				health.Module, fx.Provide(registrations), fx.Provide(httpObserver), fx.Provide(grpcObserver),
+				health.Module, fx.Provide(roundTripper), fx.Provide(registrations),
+				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
 			err := cmd.RunServer([]string{}, 10*time.Second, opts)
@@ -96,4 +98,8 @@ func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
 	}
 
 	return &healthGRPC.Observer{Observer: ob}, nil
+}
+
+func roundTripper(logger *zap.Logger) http.RoundTripper {
+	return pkgHTTP.NewRoundTripper(logger, http.DefaultTransport)
 }
