@@ -1,8 +1,10 @@
 package test
 
 import (
-	sync "sync"
+	"context"
+	"sync"
 
+	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/nsqio/go-nsq"
 )
 
@@ -24,11 +26,13 @@ func (h *Handler) Message() *nsq.Message {
 	return h.m
 }
 
-func (h *Handler) HandleMessage(m *nsq.Message) error {
+func (h *Handler) Handle(ctx context.Context, m *nsq.Message) (context.Context, error) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
 	h.m = m
 
-	return nil
+	ctx = meta.WithAttribute(ctx, "test", "test")
+
+	return ctx, nil
 }

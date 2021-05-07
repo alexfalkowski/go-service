@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	nsq "github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
@@ -17,7 +18,7 @@ type ConsumerParams struct {
 	Logger       *zap.Logger
 	Topic        string
 	Channel      string
-	Handler      nsq.Handler
+	Handler      handler.Handler
 }
 
 // RegisterConsumer for NSQ.
@@ -27,9 +28,9 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 		return err
 	}
 
-	handler := pkgZap.NewHandler(params.Logger, params.Handler)
+	h := pkgZap.NewHandler(params.Logger, params.Handler)
 
-	consumer.AddHandler(handler)
+	consumer.AddHandler(handler.NewHandler(h))
 
 	err = consumer.ConnectToNSQLookupd(params.SystemConfig.NSQLookupHost)
 	if err != nil {
