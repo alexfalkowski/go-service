@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
@@ -41,7 +42,9 @@ func TestUnary(t *testing.T) {
 
 		lc.RequireStart()
 
-		ctx := context.Background()
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+		defer cancel()
+
 		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
 		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
