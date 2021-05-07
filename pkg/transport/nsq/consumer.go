@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/trace/opentracing"
 	nsq "github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -29,8 +30,9 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 	}
 
 	h := pkgZap.NewHandler(params.Logger, params.Handler)
+	h = opentracing.NewHandler(h)
 
-	consumer.AddHandler(handler.NewHandler(h))
+	consumer.AddHandler(handler.NewHandler(params.Topic, params.Channel, h))
 
 	err = consumer.ConnectToNSQLookupd(params.SystemConfig.NSQLookupHost)
 	if err != nil {
