@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
+	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgNSQ "github.com/alexfalkowski/go-service/pkg/transport/nsq"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
@@ -35,6 +36,11 @@ func (h *handler) HandleMessage(m *nsq.Message) error {
 
 func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
 		systemConfig := &config.Config{
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
@@ -42,10 +48,10 @@ func TestConsumer(t *testing.T) {
 		nsqConfig := pkgNSQ.NewConfig()
 
 		Convey("When I register a consumer", func() {
-			lc := fxtest.NewLifecycle(t)
 			params := &pkgNSQ.ConsumerParams{
 				SystemConfig: systemConfig,
 				NSQConfig:    nsqConfig,
+				Logger:       logger,
 				Topic:        "topic",
 				Channel:      "channel",
 				Handler:      &handler{},
@@ -66,6 +72,10 @@ func TestConsumer(t *testing.T) {
 func TestReceiveMessage(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
 		systemConfig := &config.Config{
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
@@ -75,6 +85,7 @@ func TestReceiveMessage(t *testing.T) {
 		params := &pkgNSQ.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
+			Logger:       logger,
 			Topic:        "topic",
 			Channel:      "channel",
 			Handler:      handler,
