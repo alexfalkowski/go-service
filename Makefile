@@ -53,3 +53,9 @@ outdated: ## Check outdated go deps
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
 
 update-dep: get tidy vendor ## Update go dep
+
+start: ## Start the environment.
+	tools/env start
+
+stop: ## Stop the environment.
+	tools/env stop
