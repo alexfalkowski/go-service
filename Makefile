@@ -54,6 +54,16 @@ outdated: ## Check outdated go deps
 
 update-dep: get tidy vendor ## Update go dep
 
+setup-nqs: delete-nqs create-nqs ## Setup NQS.
+
+create-nqs: ## Create NQS.
+	curl -X POST http://127.0.0.1:4151/topic/create\?topic\=topic
+	curl -X POST http://127.0.0.1:4151/channel/create\?topic\=topic\&channel\=channel
+
+delete-nqs:
+	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
+	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
+
 start: ## Start the environment.
 	tools/env start
 
