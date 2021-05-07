@@ -32,7 +32,7 @@ fix-lint: ## Fix the lint issues in the go code (if possible)
 	golangci-lint run --timeout 5m --fix
 
 specs: ## Run all the specs
-	go test -race -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
+	go test -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
 
 remove-generated-coverage:
 	cat test/profile.cov | grep -v "test" > test/final.cov
