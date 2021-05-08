@@ -7,8 +7,8 @@ import (
 	pkgMeta "github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
-	"github.com/nsqio/go-nsq"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -35,11 +35,13 @@ type traceHandler struct {
 	handler.Handler
 }
 
-func (h *traceHandler) Handle(ctx context.Context, message *nsq.Message) (context.Context, error) {
+func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
+	traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, headersTextMap(message.Headers))
 	operationName := fmt.Sprintf("Consume msg %s(%s)", pkgMeta.Attribute(ctx, meta.Topic), pkgMeta.Attribute(ctx, meta.Channel))
 	opts := []opentracing.StartSpanOption{
+		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: nsqID, Value: message.ID[:]},
 		opentracing.Tag{Key: nsqBody, Value: message.Body},
@@ -47,30 +49,24 @@ func (h *traceHandler) Handle(ctx context.Context, message *nsq.Message) (contex
 		opentracing.Tag{Key: nsqAttempts, Value: message.Attempts},
 		opentracing.Tag{Key: nsqAddress, Value: message.NSQDAddress},
 		opentracing.Tag{Key: component, Value: nsqComponent},
-		ext.SpanKindRPCClient,
+		ext.SpanKindConsumer,
 	}
 
-	clientSpan, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
+	span := tracer.StartSpan(operationName, opts...)
+	defer span.Finish()
 
-	defer clientSpan.Finish()
-
-	// TODO: inject from headers.
-	// carrier := opentracing.HTTPHeadersCarrier(req.Header)
-	// if err := tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, carrier); err != nil {
-	// 	return nil, err
-	// }
-
+	ctx = opentracing.ContextWithSpan(ctx, span)
 	ctx, err := h.Handler.Handle(ctx, message)
 
 	for k, v := range pkgMeta.Attributes(ctx) {
-		clientSpan.SetTag(k, v)
+		span.SetTag(k, v)
 	}
 
-	clientSpan.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
-		ext.Error.Set(clientSpan, true)
-		clientSpan.LogFields(log.String("event", "error"), log.String("message", err.Error()))
+		ext.Error.Set(span, true)
+		span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 	}
 
 	return ctx, err

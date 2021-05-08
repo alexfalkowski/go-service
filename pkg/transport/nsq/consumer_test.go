@@ -7,7 +7,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
-	pkgNSQ "github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -24,10 +25,10 @@ func TestConsumer(t *testing.T) {
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
 		}
-		nsqConfig := pkgNSQ.NewConfig()
+		nsqConfig := nsq.NewConfig()
 
 		Convey("When I register a consumer", func() {
-			params := &pkgNSQ.ConsumerParams{
+			params := &nsq.ConsumerParams{
 				SystemConfig: systemConfig,
 				NSQConfig:    nsqConfig,
 				Logger:       logger,
@@ -35,7 +36,7 @@ func TestConsumer(t *testing.T) {
 				Channel:      "channel",
 				Handler:      test.NewHandler(nil),
 			}
-			err := pkgNSQ.RegisterConsumer(lc, params)
+			err := nsq.RegisterConsumer(lc, params)
 
 			lc.RequireStart()
 
@@ -59,9 +60,9 @@ func TestReceiveMessage(t *testing.T) {
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
 		}
-		nsqConfig := pkgNSQ.NewConfig()
+		nsqConfig := nsq.NewConfig()
 		handler := test.NewHandler(nil)
-		params := &pkgNSQ.ConsumerParams{
+		params := &nsq.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
 			Logger:       logger,
@@ -70,16 +71,17 @@ func TestReceiveMessage(t *testing.T) {
 			Handler:      handler,
 		}
 
-		producer, err := pkgNSQ.NewProducer(lc, systemConfig, nsqConfig)
+		producer, err := nsq.NewProducer(lc, systemConfig, nsqConfig)
 		So(err, ShouldBeNil)
 
-		err = pkgNSQ.RegisterConsumer(lc, params)
+		err = nsq.RegisterConsumer(lc, params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			err = producer.Publish("topic", []byte("test"))
+			message := &message.Message{Body: []byte("test")}
+			err = producer.Publish("topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
@@ -104,9 +106,9 @@ func TestReceiveError(t *testing.T) {
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
 		}
-		nsqConfig := pkgNSQ.NewConfig()
+		nsqConfig := nsq.NewConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		params := &pkgNSQ.ConsumerParams{
+		params := &nsq.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
 			Logger:       logger,
@@ -115,16 +117,17 @@ func TestReceiveError(t *testing.T) {
 			Handler:      handler,
 		}
 
-		producer, err := pkgNSQ.NewProducer(lc, systemConfig, nsqConfig)
+		producer, err := nsq.NewProducer(lc, systemConfig, nsqConfig)
 		So(err, ShouldBeNil)
 
-		err = pkgNSQ.RegisterConsumer(lc, params)
+		err = nsq.RegisterConsumer(lc, params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			err = producer.Publish("topic", []byte("test"))
+			message := &message.Message{Body: []byte("test")}
+			err = producer.Publish("topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)

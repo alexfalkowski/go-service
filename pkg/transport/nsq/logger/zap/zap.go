@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
-	"github.com/nsqio/go-nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -35,7 +35,7 @@ type loggerHandler struct {
 	handler.Handler
 }
 
-func (h *loggerHandler) Handle(ctx context.Context, message *nsq.Message) (context.Context, error) {
+func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	ctx, err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{

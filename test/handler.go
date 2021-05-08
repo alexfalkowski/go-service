@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/alexfalkowski/go-service/pkg/meta"
-	"github.com/nsqio/go-nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 )
 
 // NewHandler for test.
@@ -15,19 +15,19 @@ func NewHandler(err error) *Handler {
 
 // Handler for test.
 type Handler struct {
-	m   *nsq.Message
+	m   *message.Message
 	err error
 	mux sync.Mutex
 }
 
-func (h *Handler) Message() *nsq.Message {
+func (h *Handler) Message() *message.Message {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
 	return h.m
 }
 
-func (h *Handler) Handle(ctx context.Context, m *nsq.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, m *message.Message) (context.Context, error) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
