@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	pkgMeta "github.com/alexfalkowski/go-service/pkg/meta"
+	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
@@ -65,7 +65,7 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 	ctx = opentracing.ContextWithSpan(ctx, span)
 	ctx, err := h.Handler.Handle(ctx, message)
 
-	for k, v := range pkgMeta.Attributes(ctx) {
+	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
 	}
 
