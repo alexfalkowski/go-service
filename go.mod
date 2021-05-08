@@ -25,6 +25,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
+	github.com/vmihailenco/msgpack/v5 v5.3.1
 	go.uber.org/fx v1.13.1
 	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.4.1 // indirect

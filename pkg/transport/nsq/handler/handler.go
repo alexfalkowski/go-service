@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 
 	pkgMeta "github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
@@ -33,7 +32,7 @@ func (h *handler) HandleMessage(m *nsq.Message) error {
 	}
 
 	var msg message.Message
-	if err := json.Unmarshal(m.Body, &msg); err != nil {
+	if err := message.Unmarshal(m.Body, &msg); err != nil {
 		return nil
 	}
 

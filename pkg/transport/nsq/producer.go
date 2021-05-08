@@ -2,7 +2,6 @@ package nsq
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
@@ -48,8 +47,8 @@ type nsqProducer struct {
 }
 
 // Publish a message to a topic.
-func (p *nsqProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
-	bytes, err := json.Marshal(message)
+func (p *nsqProducer) Publish(ctx context.Context, topic string, msg *message.Message) (context.Context, error) {
+	bytes, err := message.Marshal(msg)
 	if err != nil {
 		return ctx, err
 	}
