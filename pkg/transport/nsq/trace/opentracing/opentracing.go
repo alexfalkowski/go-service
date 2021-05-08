@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -26,7 +27,7 @@ const (
 	nsqComponent = "nsq"
 )
 
-// NewHandler for zap.
+// NewHandler for opentracing.
 func NewHandler(h handler.Handler) handler.Handler {
 	return &traceHandler{Handler: h}
 }
@@ -65,9 +66,52 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
-		ext.Error.Set(span, true)
-		span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
+		setError(span, err)
 	}
 
 	return ctx, err
+}
+
+// NewProducer for opentracing.
+func NewProducer(p producer.Producer) producer.Producer {
+	return &traceProducer{Producer: p}
+}
+
+type traceProducer struct {
+	producer.Producer
+}
+
+func (p *traceProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+	start := time.Now().UTC()
+	tracer := opentracing.GlobalTracer()
+	operationName := fmt.Sprintf("Consume msg %s", topic)
+	opts := []opentracing.StartSpanOption{
+		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
+		opentracing.Tag{Key: nsqBody, Value: message.Body},
+		opentracing.Tag{Key: meta.Topic, Value: topic},
+		opentracing.Tag{Key: component, Value: nsqComponent},
+		ext.SpanKindProducer,
+	}
+
+	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
+	defer span.Finish()
+
+	if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, headersTextMap(message.Headers)); err != nil {
+		return ctx, err
+	}
+
+	ctx, err := p.Producer.Publish(ctx, topic, message)
+
+	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
+
+	if err != nil {
+		setError(span, err)
+	}
+
+	return ctx, err
+}
+
+func setError(span opentracing.Span, err error) {
+	ext.Error.Set(span, true)
+	span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 }

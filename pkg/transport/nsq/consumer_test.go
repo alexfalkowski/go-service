@@ -1,6 +1,7 @@
 package nsq_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -85,8 +86,8 @@ func TestReceiveMessage(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			message := &message.Message{Body: []byte("test")}
-			err = producer.Publish("topic", message)
+			message := message.New([]byte("test"))
+			_, err = producer.Publish(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
@@ -136,8 +137,8 @@ func TestReceiveError(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			message := &message.Message{Body: []byte("test")}
-			err = producer.Publish("topic", message)
+			message := message.New([]byte("test"))
+			_, err = producer.Publish(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)

@@ -80,9 +80,9 @@ type loggerProducer struct {
 	producer.Producer
 }
 
-func (p *loggerProducer) Publish(topic string, message *message.Message) error {
+func (p *loggerProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
-	err := p.Producer.Publish(topic, message)
+	ctx, err := p.Producer.Publish(ctx, topic, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
@@ -92,14 +92,18 @@ func (p *loggerProducer) Publish(topic string, message *message.Message) error {
 		zap.String(component, nsqComponent),
 	}
 
+	for k, v := range meta.Attributes(ctx) {
+		fields = append(fields, zap.String(k, v))
+	}
+
 	if err != nil {
 		fields = append(fields, zap.Error(err))
 		p.logger.Error("finished call with error", fields...)
 
-		return err
+		return ctx, err
 	}
 
 	p.logger.Info("finished call with success", fields...)
 
-	return nil
+	return ctx, nil
 }

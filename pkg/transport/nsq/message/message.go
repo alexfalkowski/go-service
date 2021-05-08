@@ -16,7 +16,7 @@ type Message struct {
 // New message.
 func New(body []byte) *Message {
 	message := &Message{
-		Headers: make(Headers),
+		Headers: Headers{},
 		Body:    body,
 	}
 

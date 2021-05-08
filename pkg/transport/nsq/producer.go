@@ -8,6 +8,7 @@ import (
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -37,6 +38,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 
 	var pr producer.Producer = &nsqProducer{Producer: p}
 	pr = pkgZap.NewProducer(params.Logger, pr)
+	pr = opentracing.NewProducer(pr)
 
 	return pr, nil
 }
@@ -46,11 +48,11 @@ type nsqProducer struct {
 }
 
 // Publish a message to a topic.
-func (p *nsqProducer) Publish(topic string, message *message.Message) error {
+func (p *nsqProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	bytes, err := json.Marshal(message)
 	if err != nil {
-		return err
+		return ctx, err
 	}
 
-	return p.Producer.Publish(topic, bytes)
+	return ctx, p.Producer.Publish(topic, bytes)
 }
