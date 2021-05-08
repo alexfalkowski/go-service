@@ -1,7 +1,7 @@
 package nsq
 
 import (
-	nsq "github.com/nsqio/go-nsq"
+	"github.com/nsqio/go-nsq"
 )
 
 // NewConfig for NSQ.

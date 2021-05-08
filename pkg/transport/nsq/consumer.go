@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/trace/opentracing"
-	nsq "github.com/nsqio/go-nsq"
+	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

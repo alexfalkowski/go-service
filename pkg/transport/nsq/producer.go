@@ -6,39 +6,41 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
-	nsq "github.com/nsqio/go-nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
+	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 )
 
 // NewProducer for NSQ.
-func NewProducer(lc fx.Lifecycle, systemConfig *config.Config, nsqConfig *nsq.Config) (*Producer, error) {
-	producer, err := nsq.NewProducer(systemConfig.NSQHost, nsqConfig)
+func NewProducer(lc fx.Lifecycle, systemConfig *config.Config, nsqConfig *nsq.Config) (producer.Producer, error) {
+	p, err := nsq.NewProducer(systemConfig.NSQHost, nsqConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
-			producer.Stop()
+			p.Stop()
 
 			return nil
 		},
 	})
 
-	return &Producer{producer: producer}, nil
+	producer := &nsqProducer{Producer: p}
+
+	return producer, nil
 }
 
-// Producer for NSQ.
-type Producer struct {
-	producer *nsq.Producer
+type nsqProducer struct {
+	*nsq.Producer
 }
 
 // Publish a message to a topic.
-func (p *Producer) Publish(topic string, message *message.Message) error {
+func (p *nsqProducer) Publish(topic string, message *message.Message) error {
 	bytes, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 
-	return p.producer.Publish(topic, bytes)
+	return p.Producer.Publish(topic, bytes)
 }

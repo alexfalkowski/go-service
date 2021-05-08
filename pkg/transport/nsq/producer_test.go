@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	pkgNSQ "github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -15,11 +15,11 @@ func TestProducer(t *testing.T) {
 			NSQLookupHost: "localhost:4161",
 			NSQHost:       "localhost:4150",
 		}
-		nsqConfig := pkgNSQ.NewConfig()
+		nsqConfig := nsq.NewConfig()
 
 		Convey("When I register a producer", func() {
 			lc := fxtest.NewLifecycle(t)
-			_, err := pkgNSQ.NewProducer(lc, systemConfig, nsqConfig)
+			_, err := nsq.NewProducer(lc, systemConfig, nsqConfig)
 
 			lc.RequireStart()
 
