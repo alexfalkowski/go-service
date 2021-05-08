@@ -43,7 +43,7 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
-	operationName := fmt.Sprintf("Consume msg %s(%s)", h.topic, h.channel)
+	operationName := fmt.Sprintf("consume %s:%s", h.topic, h.channel)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
@@ -90,7 +90,7 @@ type traceProducer struct {
 func (p *traceProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
-	operationName := fmt.Sprintf("Produce msg %s", topic)
+	operationName := fmt.Sprintf("publish %s", topic)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: nsqBody, Value: message.Body},

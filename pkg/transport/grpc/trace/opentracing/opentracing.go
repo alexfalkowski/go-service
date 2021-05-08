@@ -2,6 +2,7 @@ package opentracing
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/alexfalkowski/go-service/pkg/meta"
@@ -59,7 +60,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			opts = append(opts, opentracing.Tag{Key: k, Value: v})
 		}
 
-		span := tracer.StartSpan(info.FullMethod, opts...)
+		span := tracer.StartSpan(operationName(info.FullMethod), opts...)
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
@@ -112,7 +113,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			opts = append(opts, opentracing.Tag{Key: k, Value: v})
 		}
 
-		span := tracer.StartSpan(info.FullMethod, opts...)
+		span := tracer.StartSpan(operationName(info.FullMethod), opts...)
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
@@ -162,7 +163,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			spanOpts = append(spanOpts, opentracing.Tag{Key: k, Value: v})
 		}
 
-		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, fullMethod, spanOpts...)
+		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName(fullMethod), spanOpts...)
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
@@ -215,7 +216,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			spanOpts = append(spanOpts, opentracing.Tag{Key: k, Value: v})
 		}
 
-		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, fullMethod, spanOpts...)
+		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName(fullMethod), spanOpts...)
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
@@ -255,4 +256,8 @@ func addTags(ctx context.Context, span opentracing.Span) {
 			span.SetTag(k, v)
 		}
 	}
+}
+
+func operationName(fullMethod string) string {
+	return fmt.Sprintf("get %s", fullMethod)
 }
