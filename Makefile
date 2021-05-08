@@ -9,7 +9,7 @@ help: ## Display this help
 tools: ## Setup all the tools
 	tools/deps
 
-setup: tools dep ## Setup everything.
+setup: tools dep ## Setup everything
 
 download:
 	go mod download
@@ -54,18 +54,18 @@ outdated: ## Check outdated go deps
 
 update-dep: get tidy vendor ## Update go dep
 
-setup-nqs: delete-nqs create-nqs ## Setup NQS.
+setup-nsq: delete-nsq create-nsq ## Setup NSQ
 
-create-nqs: ## Create NQS.
+create-nsq: ## Create NSQ
 	curl -X POST http://127.0.0.1:4151/topic/create\?topic\=topic
 	curl -X POST http://127.0.0.1:4151/channel/create\?topic\=topic\&channel\=channel
 
-delete-nqs:
+delete-nsq: ## Delete NSQ
 	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
 	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
 
-start: ## Start the environment.
+start: ## Start the environment
 	tools/env start
 
-stop: ## Stop the environment.
+stop: ## Stop the environment
 	tools/env stop
