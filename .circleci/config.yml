@@ -10,9 +10,14 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
       - image: circleci/redis
+      - image: nsqio/nsq
+        command: /nsqlookupd
+      - image: nsqio/nsq
+        command: /nsqd --lookupd-tcp-address=localhost:4160
     steps:
       - checkout
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -timeout 1m
+      - run: make setup-nsq
       - run: make dep
       - run: make lint
       - run: make specs

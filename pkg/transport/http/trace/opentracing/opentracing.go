@@ -3,6 +3,7 @@ package opentracing
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
@@ -39,11 +40,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	tracer := opentracing.GlobalTracer()
-	operationName := fmt.Sprintf("%s %s", req.Method, req.URL.Hostname())
+	method := strings.ToLower(req.Method)
+	operationName := fmt.Sprintf("%s %s", method, req.URL.Hostname())
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: httpURL, Value: req.URL.String()},
-		opentracing.Tag{Key: httpMethod, Value: req.Method},
+		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: httpRequest, Value: encoder.Request(req)},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,
@@ -53,32 +55,32 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		opts = append(opts, opentracing.Tag{Key: k, Value: v})
 	}
 
-	clientSpan, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
+	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
 
-	defer clientSpan.Finish()
+	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		clientSpan.SetTag(httpRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(httpRequestDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
-	if err := tracer.Inject(clientSpan.Context(), opentracing.HTTPHeaders, carrier); err != nil {
+	if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
 		return nil, err
 	}
 
 	resp, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
 
-	clientSpan.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
-		ext.Error.Set(clientSpan, true)
-		clientSpan.LogFields(log.String("event", "error"), log.String("message", err.Error()))
+		ext.Error.Set(span, true)
+		span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 
 		return nil, err
 	}
 
-	clientSpan.SetTag(httpStatusCode, resp.StatusCode)
-	clientSpan.SetTag(httpResponse, encoder.Response(resp))
+	span.SetTag(httpStatusCode, resp.StatusCode)
+	span.SetTag(httpResponse, encoder.Response(resp))
 
 	return resp, nil
 }

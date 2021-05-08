@@ -16,12 +16,11 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [Redis Cache](https://github.com/go-redis/cache)
 - [Snappy](https://github.com/golang/snappy)
 - [Ristretto](https://github.com/dgraph-io/ristretto)
+- [NSQ](https://github.com/nsqio/go-nsq)
 
 ## Testing
 
-To get all the dependencies locally please clone the [docker](https://github.com/alexfalkowski/docker) repository.
-
-In the repository you can do the following:
+To be able to test things locally you have to setup the environment.
 
 ### Starting
 

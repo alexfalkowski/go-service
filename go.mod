@@ -17,6 +17,7 @@ require (
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.1 // indirect
+	github.com/nsqio/go-nsq v1.0.8
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/prometheus/client_golang v1.10.0
@@ -24,6 +25,7 @@ require (
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
+	github.com/vmihailenco/msgpack/v5 v5.3.1
 	go.uber.org/fx v1.13.1
 	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.4.1 // indirect

@@ -9,7 +9,7 @@ help: ## Display this help
 tools: ## Setup all the tools
 	tools/deps
 
-setup: tools dep ## Setup everything.
+setup: tools dep ## Setup everything
 
 download:
 	go mod download
@@ -32,7 +32,7 @@ fix-lint: ## Fix the lint issues in the go code (if possible)
 	golangci-lint run --timeout 5m --fix
 
 specs: ## Run all the specs
-	go test -race -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
+	go test -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
 
 remove-generated-coverage:
 	cat test/profile.cov | grep -v "test" > test/final.cov
@@ -53,3 +53,19 @@ outdated: ## Check outdated go deps
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
 
 update-dep: get tidy vendor ## Update go dep
+
+setup-nsq: delete-nsq create-nsq ## Setup NSQ
+
+create-nsq: ## Create NSQ
+	curl -X POST http://127.0.0.1:4151/topic/create\?topic\=topic
+	curl -X POST http://127.0.0.1:4151/channel/create\?topic\=topic\&channel\=channel
+
+delete-nsq: ## Delete NSQ
+	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
+	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
+
+start: ## Start the environment
+	tools/env start
+
+stop: ## Stop the environment
+	tools/env stop

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
-	dataDogLogger "github.com/alexfalkowski/go-service/pkg/trace/opentracing/datadog/logger/zap"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -17,7 +16,6 @@ func Register(lc fx.Lifecycle, cfg *config.Config, logger *zap.Logger) error {
 	opts := []tracer.StartOption{
 		tracer.WithService(cfg.AppName),
 		tracer.WithAgentAddr(cfg.DataDogTraceHost),
-		tracer.WithLogger(dataDogLogger.NewLogger(logger)),
 	}
 	t := opentracer.New(opts...)
 
