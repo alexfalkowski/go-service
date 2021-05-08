@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
@@ -38,6 +39,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 	var pr producer.Producer = &nsqProducer{Producer: p}
 	pr = pkgZap.NewProducer(params.Logger, pr)
 	pr = opentracing.NewProducer(pr)
+	pr = meta.NewProducer(pr)
 
 	return pr, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -23,16 +22,20 @@ const (
 	nsqAddress   = "nsq.address"
 	nsqDuration  = "nsq.duration_ms"
 	nsqStartTime = "nsq.start_time"
+	nsqTopic     = "nsq.topic"
+	nsqChannel   = "nsq.channel"
 	component    = "component"
 	nsqComponent = "nsq"
 )
 
 // NewHandler for opentracing.
-func NewHandler(h handler.Handler) handler.Handler {
-	return &traceHandler{Handler: h}
+func NewHandler(topic, channel string, h handler.Handler) handler.Handler {
+	return &traceHandler{topic: topic, channel: channel, Handler: h}
 }
 
 type traceHandler struct {
+	topic, channel string
+
 	handler.Handler
 }
 
@@ -40,10 +43,13 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
-	operationName := fmt.Sprintf("Consume msg %s(%s)", pkgMeta.Attribute(ctx, meta.Topic), pkgMeta.Attribute(ctx, meta.Channel))
+	operationName := fmt.Sprintf("Consume msg %s(%s)", h.topic, h.channel)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
+		opentracing.Tag{Key: nsqTopic, Value: h.topic},
+		opentracing.Tag{Key: nsqChannel, Value: h.channel},
+		opentracing.Tag{Key: nsqID, Value: message.ID[:]},
 		opentracing.Tag{Key: nsqID, Value: message.ID[:]},
 		opentracing.Tag{Key: nsqBody, Value: message.Body},
 		opentracing.Tag{Key: nsqTimestamp, Value: message.Timestamp},
@@ -88,7 +94,7 @@ func (p *traceProducer) Publish(ctx context.Context, topic string, message *mess
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: nsqBody, Value: message.Body},
-		opentracing.Tag{Key: meta.Topic, Value: topic},
+		opentracing.Tag{Key: nsqTopic, Value: topic},
 		opentracing.Tag{Key: component, Value: nsqComponent},
 		ext.SpanKindProducer,
 	}

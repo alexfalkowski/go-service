@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
-	pkgMeta "github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -21,6 +20,8 @@ const (
 	nsqAddress   = "nsq.address"
 	nsqDuration  = "nsq.duration_ms"
 	nsqStartTime = "nsq.start_time"
+	nsqTopic     = "nsq.topic"
+	nsqChannel   = "nsq.channel"
 	component    = "component"
 	nsqComponent = "nsq"
 	consumerKind = "consumer"
@@ -28,12 +29,13 @@ const (
 )
 
 // NewHandler for zap.
-func NewHandler(logger *zap.Logger, h handler.Handler) handler.Handler {
-	return &loggerHandler{logger: logger, Handler: h}
+func NewHandler(topic, channel string, logger *zap.Logger, h handler.Handler) handler.Handler {
+	return &loggerHandler{topic: topic, channel: channel, logger: logger, Handler: h}
 }
 
 type loggerHandler struct {
-	logger *zap.Logger
+	topic, channel string
+	logger         *zap.Logger
 
 	handler.Handler
 }
@@ -43,6 +45,9 @@ func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (c
 	ctx, err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
+		zap.String(nsqStartTime, start.Format(time.RFC3339)),
+		zap.String(nsqTopic, h.topic),
+		zap.String(nsqChannel, h.channel),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.ByteString(nsqID, message.ID[:]),
 		zap.ByteString(nsqBody, message.Body),
@@ -86,7 +91,7 @@ func (p *loggerProducer) Publish(ctx context.Context, topic string, message *mes
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
-		zap.String(pkgMeta.Topic, topic),
+		zap.String(nsqTopic, topic),
 		zap.ByteString(nsqBody, message.Body),
 		zap.String("span.kind", producerKind),
 		zap.String(component, nsqComponent),
