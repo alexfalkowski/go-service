@@ -39,7 +39,7 @@ type traceHandler struct {
 func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
-	traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, headersTextMap(message.Headers))
+	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
 	operationName := fmt.Sprintf("Consume msg %s(%s)", pkgMeta.Attribute(ctx, meta.Topic), pkgMeta.Attribute(ctx, meta.Channel))
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
@@ -84,7 +84,7 @@ type traceProducer struct {
 func (p *traceProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
-	operationName := fmt.Sprintf("Consume msg %s", topic)
+	operationName := fmt.Sprintf("Produce msg %s", topic)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: nsqBody, Value: message.Body},
@@ -96,7 +96,7 @@ func (p *traceProducer) Publish(ctx context.Context, topic string, message *mess
 	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
 	defer span.Finish()
 
-	if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, headersTextMap(message.Headers)); err != nil {
+	if err := tracer.Inject(span.Context(), opentracing.TextMap, headersTextMap(message.Headers)); err != nil {
 		return ctx, err
 	}
 
