@@ -62,7 +62,7 @@ func TestReceiveMessage(t *testing.T) {
 		}
 		nsqConfig := nsq.NewConfig()
 		handler := test.NewHandler(nil)
-		params := &nsq.ConsumerParams{
+		consumerParams := &nsq.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
 			Logger:       logger,
@@ -70,11 +70,16 @@ func TestReceiveMessage(t *testing.T) {
 			Channel:      "channel",
 			Handler:      handler,
 		}
+		producerParams := &nsq.ProducerParams{
+			SystemConfig: systemConfig,
+			NSQConfig:    nsqConfig,
+			Logger:       logger,
+		}
 
-		producer, err := nsq.NewProducer(lc, systemConfig, nsqConfig)
+		producer, err := nsq.NewProducer(lc, producerParams)
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, params)
+		err = nsq.RegisterConsumer(lc, consumerParams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -108,7 +113,7 @@ func TestReceiveError(t *testing.T) {
 		}
 		nsqConfig := nsq.NewConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		params := &nsq.ConsumerParams{
+		consumerParams := &nsq.ConsumerParams{
 			SystemConfig: systemConfig,
 			NSQConfig:    nsqConfig,
 			Logger:       logger,
@@ -116,11 +121,16 @@ func TestReceiveError(t *testing.T) {
 			Channel:      "channel",
 			Handler:      handler,
 		}
+		producerParams := &nsq.ProducerParams{
+			SystemConfig: systemConfig,
+			NSQConfig:    nsqConfig,
+			Logger:       logger,
+		}
 
-		producer, err := nsq.NewProducer(lc, systemConfig, nsqConfig)
+		producer, err := nsq.NewProducer(lc, producerParams)
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, params)
+		err = nsq.RegisterConsumer(lc, consumerParams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

@@ -5,15 +5,24 @@ import (
 	"encoding/json"
 
 	"github.com/alexfalkowski/go-service/pkg/config"
+	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
+// ProducerParams for NSQ.
+type ProducerParams struct {
+	SystemConfig *config.Config
+	NSQConfig    *nsq.Config
+	Logger       *zap.Logger
+}
+
 // NewProducer for NSQ.
-func NewProducer(lc fx.Lifecycle, systemConfig *config.Config, nsqConfig *nsq.Config) (producer.Producer, error) {
-	p, err := nsq.NewProducer(systemConfig.NSQHost, nsqConfig)
+func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
+	p, err := nsq.NewProducer(params.SystemConfig.NSQHost, params.NSQConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -26,9 +35,10 @@ func NewProducer(lc fx.Lifecycle, systemConfig *config.Config, nsqConfig *nsq.Co
 		},
 	})
 
-	producer := &nsqProducer{Producer: p}
+	var pr producer.Producer = &nsqProducer{Producer: p}
+	pr = pkgZap.NewProducer(params.Logger, pr)
 
-	return producer, nil
+	return pr, nil
 }
 
 type nsqProducer struct {

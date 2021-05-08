@@ -7,6 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
+	pkgMeta "github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -21,7 +23,8 @@ const (
 	nsqStartTime = "nsq.start_time"
 	component    = "component"
 	nsqComponent = "nsq"
-	consumer     = "consumer"
+	consumerKind = "consumer"
+	producerKind = "producer"
 )
 
 // NewHandler for zap.
@@ -46,7 +49,7 @@ func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (c
 		zap.Int64(nsqTimestamp, message.Timestamp),
 		zap.Uint16(nsqAttempts, message.Attempts),
 		zap.String(nsqAddress, message.NSQDAddress),
-		zap.String("span.kind", consumer),
+		zap.String("span.kind", consumerKind),
 		zap.String(component, nsqComponent),
 	}
 
@@ -64,4 +67,39 @@ func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (c
 	h.logger.Info("finished call with success", fields...)
 
 	return ctx, nil
+}
+
+// NewProducer for zap.
+func NewProducer(logger *zap.Logger, p producer.Producer) producer.Producer {
+	return &loggerProducer{logger: logger, Producer: p}
+}
+
+type loggerProducer struct {
+	logger *zap.Logger
+
+	producer.Producer
+}
+
+func (p *loggerProducer) Publish(topic string, message *message.Message) error {
+	start := time.Now().UTC()
+	err := p.Producer.Publish(topic, message)
+	fields := []zapcore.Field{
+		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
+		zap.String(nsqStartTime, start.Format(time.RFC3339)),
+		zap.String(pkgMeta.Topic, topic),
+		zap.ByteString(nsqBody, message.Body),
+		zap.String("span.kind", producerKind),
+		zap.String(component, nsqComponent),
+	}
+
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		p.logger.Error("finished call with error", fields...)
+
+		return err
+	}
+
+	p.logger.Info("finished call with success", fields...)
+
+	return nil
 }
