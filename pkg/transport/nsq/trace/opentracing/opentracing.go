@@ -108,6 +108,10 @@ func (p *traceProducer) Publish(ctx context.Context, topic string, message *mess
 
 	ctx, err := p.Producer.Publish(ctx, topic, message)
 
+	for k, v := range meta.Attributes(ctx) {
+		span.SetTag(k, v)
+	}
+
 	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
