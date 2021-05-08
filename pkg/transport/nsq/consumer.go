@@ -34,7 +34,7 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 	h = opentracing.NewHandler(params.Topic, params.Channel, h)
 	h = meta.NewHandler(h)
 
-	consumer.AddHandler(handler.NewHandler(h))
+	consumer.AddHandler(handler.New(h))
 
 	err = consumer.ConnectToNSQLookupd(params.SystemConfig.NSQLookupHost)
 	if err != nil {

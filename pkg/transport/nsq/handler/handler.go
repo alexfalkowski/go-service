@@ -12,8 +12,8 @@ type Handler interface {
 	Handle(ctx context.Context, message *message.Message) (context.Context, error)
 }
 
-// NewHandler for NSQ.
-func NewHandler(h Handler) nsq.Handler {
+// New handler for NSQ.
+func New(h Handler) nsq.Handler {
 	return &handler{Handler: h}
 }
 
