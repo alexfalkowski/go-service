@@ -49,9 +49,8 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
 		opentracing.Tag{Key: nsqTopic, Value: h.topic},
 		opentracing.Tag{Key: nsqChannel, Value: h.channel},
-		opentracing.Tag{Key: nsqID, Value: message.ID[:]},
-		opentracing.Tag{Key: nsqID, Value: message.ID[:]},
-		opentracing.Tag{Key: nsqBody, Value: message.Body},
+		opentracing.Tag{Key: nsqID, Value: string(message.ID[:])},
+		opentracing.Tag{Key: nsqBody, Value: string(message.Body)},
 		opentracing.Tag{Key: nsqTimestamp, Value: message.Timestamp},
 		opentracing.Tag{Key: nsqAttempts, Value: message.Attempts},
 		opentracing.Tag{Key: nsqAddress, Value: message.NSQDAddress},
@@ -93,7 +92,7 @@ func (p *traceProducer) Publish(ctx context.Context, topic string, message *mess
 	operationName := fmt.Sprintf("publish %s", topic)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: nsqBody, Value: message.Body},
+		opentracing.Tag{Key: nsqBody, Value: string(message.Body)},
 		opentracing.Tag{Key: nsqTopic, Value: topic},
 		opentracing.Tag{Key: component, Value: nsqComponent},
 		ext.SpanKindProducer,
