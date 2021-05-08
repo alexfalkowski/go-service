@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.14.0](https://github.com/alexfalkowski/go-service/compare/v1.13.0...v1.14.0) (2021-05-08)
+
+
+### Features
+
+* **nsq:** add producer and consumer ([#23](https://github.com/alexfalkowski/go-service/issues/23)) ([aeb2811](https://github.com/alexfalkowski/go-service/commit/aeb2811ea8b8cc355fc886161020f8c3ebb3a0ff))
+
 ## [1.13.0](https://github.com/alexfalkowski/go-service/compare/v1.12.0...v1.13.0) (2021-05-07)
 
 
