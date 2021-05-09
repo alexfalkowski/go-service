@@ -59,9 +59,13 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap
 
 	server := grpc.NewServer(opts...)
 
+	var listener net.Listener
+
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
+			var err error
+
+			listener, err = net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
 			if err != nil {
 				return err
 			}
@@ -72,6 +76,10 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *config.Config, logger *zap
 		},
 		OnStop: func(ctx context.Context) error {
 			stopServer(server, cfg, logger)
+
+			if listener != nil {
+				return listener.Close()
+			}
 
 			return nil
 		},

@@ -19,9 +19,13 @@ func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *conf
 		Handler: mux,
 	}
 
+	var listener net.Listener
+
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.HTTPPort))
+			var err error
+
+			listener, err = net.Listen("tcp", fmt.Sprintf(":%s", cfg.HTTPPort))
 			if err != nil {
 				return err
 			}
@@ -31,7 +35,15 @@ func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *conf
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return stopServer(ctx, server, cfg, logger)
+			if err := stopServer(ctx, server, cfg, logger); err != nil {
+				return err
+			}
+
+			if listener != nil {
+				return listener.Close()
+			}
+
+			return nil
 		},
 	})
 }
