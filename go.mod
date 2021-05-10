@@ -7,6 +7,7 @@ require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/alexfalkowski/go-health v1.5.4
 	github.com/dgraph-io/ristretto v0.0.3
+	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/go-redis/cache/v8 v8.4.0
 	github.com/go-redis/redis/v8 v8.8.2
 	github.com/golang/snappy v0.0.3
