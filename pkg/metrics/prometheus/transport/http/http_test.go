@@ -8,7 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
-	metricsHTTP "github.com/alexfalkowski/go-service/pkg/metrics/transport/http"
+	prometheusHTTP "github.com/alexfalkowski/go-service/pkg/metrics/prometheus/transport/http"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -27,7 +27,7 @@ func TestHTTP(t *testing.T) {
 
 		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
 
-		err = metricsHTTP.Register(mux)
+		err = prometheusHTTP.Register(mux)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
