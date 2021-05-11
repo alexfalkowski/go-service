@@ -45,9 +45,10 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -84,7 +85,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -108,9 +109,10 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -148,7 +150,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -172,9 +174,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -236,9 +239,10 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -298,9 +302,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -354,9 +359,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -416,9 +422,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()

@@ -13,8 +13,21 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// UnaryDialOption for gRPC.
-func UnaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterceptor) grpc.DialOption {
+// ClientParams for gRPC.
+type ClientParams struct {
+	Logger *zap.Logger
+	Unary  []grpc.UnaryClientInterceptor
+	Stream []grpc.StreamClientInterceptor
+}
+
+// NewClient to host for gRPC.
+func NewClient(context context.Context, host string, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+	opts = append(opts, unaryDialOption(params.Logger, params.Unary...), streamDialOption(params.Logger, params.Stream...))
+
+	return grpc.DialContext(context, host, opts...)
+}
+
+func unaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterceptor) grpc.DialOption {
 	defaultInterceptors := []grpc.UnaryClientInterceptor{
 		grpcRetry.UnaryClientInterceptor(
 			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
@@ -31,8 +44,7 @@ func UnaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterce
 	return grpc.WithChainUnaryInterceptor(defaultInterceptors...)
 }
 
-// StreamDialOption for gRPC.
-func StreamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInterceptor) grpc.DialOption {
+func streamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInterceptor) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(),
 		pkgZap.StreamClientInterceptor(logger),
@@ -42,13 +54,4 @@ func StreamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInter
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
 	return grpc.WithChainStreamInterceptor(defaultInterceptors...)
-}
-
-// NewClient to host for gRPC.
-func NewClient(context context.Context, host string, logger *zap.Logger, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	if len(opts) == 0 {
-		opts = append(opts, grpc.WithInsecure(), UnaryDialOption(logger), StreamDialOption(logger))
-	}
-
-	return grpc.DialContext(context, host, opts...)
 }
