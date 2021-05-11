@@ -9,5 +9,5 @@ var (
 	ServerModule = fx.Provide(NewServer)
 
 	// Module for fx.
-	Module = fx.Options(ServerModule)
+	Module = fx.Options(ServerModule, fx.Provide(UnaryServerInterceptor), fx.Provide(StreamServerInterceptor))
 )

@@ -27,7 +27,8 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10007"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -35,14 +36,10 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
-			}
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -74,9 +71,13 @@ func TestValidAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -84,15 +85,14 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -122,9 +122,13 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -132,15 +136,14 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -168,9 +171,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -178,15 +185,14 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -213,9 +219,13 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -223,14 +233,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
-			}
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -257,9 +263,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -267,15 +277,14 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error")))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -301,7 +310,8 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10008"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -309,14 +319,13 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -353,9 +362,13 @@ func TestValidAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -363,15 +376,14 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -405,9 +417,13 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -415,15 +431,14 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -455,9 +470,13 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -465,15 +484,14 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -499,9 +517,13 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -509,14 +531,10 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
-			}
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -548,9 +566,13 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -558,15 +580,14 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			opts := []grpc.DialOption{
+			clientParams := &pkgGRPC.ClientParams{Logger: logger}
+			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				pkgGRPC.UnaryDialOption(logger),
-				pkgGRPC.StreamDialOption(logger),
 				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error")))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()

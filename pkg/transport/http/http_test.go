@@ -36,7 +36,8 @@ func TestUnary(t *testing.T) {
 		mux := pkgHTTP.NewMux()
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
@@ -45,9 +46,10 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		opts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, opts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -56,7 +58,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
+			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10010/v1/greet/hello", bytes.NewBuffer(message))
@@ -84,7 +86,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -99,18 +101,23 @@ func TestValidAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -119,8 +126,8 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
-			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport))
-			client := pkgHTTP.NewClient(transport)
+			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
+			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10012/v1/greet/hello", bytes.NewBuffer(message))
@@ -148,7 +155,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -163,18 +170,23 @@ func TestInvalidAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -183,8 +195,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport))
-			client := pkgHTTP.NewClient(transport)
+			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
+			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -212,7 +224,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -227,18 +239,23 @@ func TestMissingAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -247,7 +264,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
+			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -289,18 +306,23 @@ func TestEmptyAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -309,8 +331,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport))
-			client := pkgHTTP.NewClient(transport)
+			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
+			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -330,7 +352,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -345,18 +367,23 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -365,7 +392,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
+			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
@@ -407,18 +434,23 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		pkgHTTP.Register(lc, sh, mux, cfg, logger)
 
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, sh, cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer())
 
 		lc.RequireStart()
 
 		ctx := context.Background()
+		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), logger, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.GRPCPort), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -427,8 +459,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
-			transport := pkgHTTP.NewRoundTripper(logger, tokenHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport))
-			client := pkgHTTP.NewClient(transport)
+			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
+			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
