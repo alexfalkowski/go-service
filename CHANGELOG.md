@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.17.0](https://github.com/alexfalkowski/go-service/compare/v1.16.2...v1.17.0) (2021-05-11)
+
+
+### Features
+
+* **grpc:** allow params to be passed in ([#29](https://github.com/alexfalkowski/go-service/issues/29)) ([d1db573](https://github.com/alexfalkowski/go-service/commit/d1db57329380fdc44c5e17eb63be6f499e743dfa))
+
 ### [1.16.2](https://github.com/alexfalkowski/go-service/compare/v1.16.1...v1.16.2) (2021-05-11)
 
 ### [1.16.1](https://github.com/alexfalkowski/go-service/compare/v1.16.0...v1.16.1) (2021-05-11)
