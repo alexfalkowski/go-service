@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Microsoft/go-winio v0.5.0 // indirect
-	github.com/alexfalkowski/go-health v1.5.4
+	github.com/alexfalkowski/go-health v1.6.0
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/go-redis/cache/v8 v8.4.0

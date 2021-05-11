@@ -53,7 +53,7 @@ func TestHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := pkgHTTP.NewClient(pkgHTTP.NewRoundTripper(logger, http.DefaultTransport))
+			client := pkgHTTP.NewClient(logger)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10002/metrics", nil)
 			So(err, ShouldBeNil)

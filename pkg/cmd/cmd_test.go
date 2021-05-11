@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -57,7 +56,7 @@ func TestInvalidGRPC(t *testing.T) {
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
 				logger.Module, pkgHTTP.Module, grpc.Module, config.Module,
-				health.Module, fx.Provide(roundTripper), fx.Provide(registrations),
+				health.Module, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
@@ -75,8 +74,8 @@ func TestInvalidGRPC(t *testing.T) {
 	})
 }
 
-func registrations(cfg *config.Config, rtp http.RoundTripper) health.Registrations {
-	hc := checker.NewHTTPCheckerWithRoundTripper("https://google.com", 1*time.Second, rtp)
+func registrations(cfg *config.Config, logger *zap.Logger) health.Registrations {
+	hc := checker.NewHTTPCheckerWithClient("https://google.com", 1*time.Second, pkgHTTP.NewClient(logger))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
 	return health.Registrations{hr}
@@ -98,8 +97,4 @@ func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
 	}
 
 	return &healthGRPC.Observer{Observer: ob}, nil
-}
-
-func roundTripper(logger *zap.Logger) http.RoundTripper {
-	return pkgHTTP.NewRoundTripper(logger, http.DefaultTransport)
 }

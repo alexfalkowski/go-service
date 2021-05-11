@@ -10,12 +10,16 @@ import (
 )
 
 // NewClient for HTTP.
-func NewClient(hrt http.RoundTripper) *http.Client {
-	return &http.Client{Transport: hrt}
+func NewClient(logger *zap.Logger) *http.Client {
+	return NewClientWithRoundTripper(logger, http.DefaultTransport)
 }
 
-// NewRoundTripper for HTTP.
-func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
+// NewClientWithRoundTripper for HTTP.
+func NewClientWithRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *http.Client {
+	return &http.Client{Transport: newRoundTripper(logger, hrt)}
+}
+
+func newRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
 	hrt = pkgZap.NewRoundTripper(logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
 	hrt = meta.NewRoundTripper(hrt)
