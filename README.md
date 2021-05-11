@@ -18,6 +18,7 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 - [Snappy](https://github.com/golang/snappy)
 - [Ristretto](https://github.com/dgraph-io/ristretto)
 - [NSQ](https://github.com/nsqio/go-nsq)
+- [Auth0](https://auth0.com/)
 
 ## Testing
 
