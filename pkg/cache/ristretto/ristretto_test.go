@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
+	"github.com/alexfalkowski/go-service/pkg/config"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -12,9 +13,10 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
+		cfg := &config.Config{AppName: "test"}
 		lc := fxtest.NewLifecycle(t)
 
-		c, err := ristretto.NewCache(lc, ristretto.NewConfig())
+		c, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

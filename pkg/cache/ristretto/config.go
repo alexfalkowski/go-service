@@ -10,6 +10,7 @@ func NewConfig() *ristretto.Config {
 		NumCounters: 1e7,     // nolint:gomnd
 		MaxCost:     1 << 30, // nolint:gomnd
 		BufferItems: 64,      // nolint:gomnd
+		Metrics:     true,
 	}
 
 	return cfg
