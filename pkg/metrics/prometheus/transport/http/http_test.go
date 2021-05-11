@@ -6,9 +6,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/pkg/cache/redis"
+	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	prometheusHTTP "github.com/alexfalkowski/go-service/pkg/metrics/prometheus/transport/http"
+	"github.com/alexfalkowski/go-service/pkg/sql"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -23,7 +26,24 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{HTTPPort: "10002"}
+		cfg := &config.Config{
+			AppName:        "test",
+			HTTPPort:       "10002",
+			DatabaseURL:    "postgres://test:test@localhost:5432/test?sslmode=disable",
+			RedisCacheHost: "localhost:6379",
+		}
+
+		_, err = sql.NewDB(lc, cfg)
+		So(err, ShouldBeNil)
+
+		r := redis.NewRing(lc, cfg)
+		opts := redis.NewOptions(r)
+
+		_, err = redis.NewCache(cfg, opts)
+		So(err, ShouldBeNil)
+
+		_, err = ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		So(err, ShouldBeNil)
 
 		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
 
@@ -49,7 +69,12 @@ func TestHTTP(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have valid metrics", func() {
-				So(string(body), ShouldContainSubstring, "go_info")
+				response := string(body)
+
+				So(response, ShouldContainSubstring, "go_info")
+				So(response, ShouldContainSubstring, "go_sql_stats")
+				So(response, ShouldContainSubstring, "go_redis_stats")
+				So(response, ShouldContainSubstring, "go_ristretto_stats")
 			})
 		})
 	})
