@@ -19,7 +19,10 @@ func TestCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
-		c := redis.NewCache(opts)
+
+		c, err := redis.NewCache(cfg, opts)
+		So(err, ShouldBeNil)
+
 		ctx := context.TODO()
 
 		lc.RequireStart()

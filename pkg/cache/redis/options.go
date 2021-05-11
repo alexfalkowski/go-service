@@ -10,7 +10,8 @@ import (
 // NewOptions for redis.
 func NewOptions(ring *redis.Ring) *cache.Options {
 	opts := &cache.Options{
-		Redis: ring,
+		Redis:        ring,
+		StatsEnabled: true,
 		Marshal: func(v interface{}) ([]byte, error) {
 			m, err := proto.Marshal(v.(proto.Message))
 			if err != nil {
