@@ -38,7 +38,8 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10005"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -86,7 +87,8 @@ func TestInvalidUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10004"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -137,9 +139,13 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10005"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -191,7 +197,8 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &config.Config{GRPCPort: "10003"}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
@@ -243,9 +250,13 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		cfg := &config.Config{GRPCPort: "10003"}
 		verifier := test.NewVerifier("test")
-		serverUnaryOpt := pkgGRPC.UnaryServerOption(logger, tokenGRPC.UnaryServerInterceptor(verifier))
-		serverStreamOpt := pkgGRPC.StreamServerOption(logger, tokenGRPC.StreamServerInterceptor(verifier))
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), cfg, logger, serverUnaryOpt, serverStreamOpt)
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
