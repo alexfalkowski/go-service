@@ -19,11 +19,8 @@ func TestCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
-
-		c, err := redis.NewCache(cfg, opts)
-		So(err, ShouldBeNil)
-
-		ctx := context.TODO()
+		c := redis.NewCache(lc, cfg, opts)
+		ctx := context.Background()
 
 		lc.RequireStart()
 
@@ -39,9 +36,9 @@ func TestCache(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				So(v.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
-
-				lc.RequireStop()
 			})
 		})
+
+		lc.RequireStop()
 	})
 }

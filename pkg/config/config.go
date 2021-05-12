@@ -7,12 +7,9 @@ import (
 // NewConfig for the services.
 func NewConfig() (*Config, error) {
 	var config Config
+	err := envconfig.Process("", &config)
 
-	if err := envconfig.Process("", &config); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
+	return &config, err
 }
 
 // Config for the services.
