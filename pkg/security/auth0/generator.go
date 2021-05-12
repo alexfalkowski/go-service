@@ -18,14 +18,14 @@ var (
 	ErrInvalidResponse = errors.New("invalid auth0 response")
 )
 
-type request struct {
+type generatorRequest struct {
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 	Audience     string `json:"audience"`
 	GrantType    string `json:"grant_type"`
 }
 
-type response struct {
+type generatorResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 }
@@ -36,7 +36,7 @@ type generator struct {
 }
 
 func (g *generator) Generate() ([]byte, error) {
-	req := &request{
+	req := &generatorRequest{
 		ClientID:     g.cfg.ClientID,
 		ClientSecret: g.cfg.ClientSecret,
 		Audience:     g.cfg.Audience,
@@ -69,7 +69,7 @@ func (g *generator) Generate() ([]byte, error) {
 		return nil, ErrInvalidResponse
 	}
 
-	var resp response
+	var resp generatorResponse
 	if err := json.NewDecoder(httpResp.Body).Decode(&resp); err != nil {
 		return nil, err
 	}
