@@ -21,6 +21,4 @@ type Config struct {
 	JaegerTraceHost  string `envconfig:"JAEGER_TRACE_HOST" required:"true" default:"localhost:6831"`
 	DataDogTraceHost string `envconfig:"DATADOG_TRACE_HOST" required:"true" default:"localhost:8126"`
 	RedisCacheHost   string `envconfig:"REDIS_CACHE_HOST" required:"true" default:"localhost:6379"`
-	NSQLookupHost    string `envconfig:"NSQ_LOOKUP_HOST" required:"true" default:"localhost:4161"`
-	NSQHost          string `envconfig:"NSQ_HOST" required:"true" default:"localhost:4150"`
 }
