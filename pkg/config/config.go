@@ -14,8 +14,7 @@ func NewConfig() (*Config, error) {
 
 // Config for the services.
 type Config struct {
-	AppName        string `envconfig:"APP_NAME" required:"true"`
-	HTTPPort       string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
-	GRPCPort       string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
-	RedisCacheHost string `envconfig:"REDIS_CACHE_HOST" required:"true" default:"localhost:6379"`
+	AppName  string `envconfig:"APP_NAME" required:"true"`
+	HTTPPort string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
+	GRPCPort string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
 }

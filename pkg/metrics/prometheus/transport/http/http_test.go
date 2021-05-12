@@ -26,18 +26,15 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{
-			AppName:        "test",
-			HTTPPort:       "10002",
-			RedisCacheHost: "localhost:6379",
-		}
+		cfg := &config.Config{AppName: "test", HTTPPort: "10002"}
+		rcfg := &redis.Config{Host: "localhost:6379"}
 
 		_, err = sql.NewDB(lc, &sql.Config{PostgresURL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, cfg)
+		r := redis.NewRing(lc, rcfg)
 		opts := redis.NewOptions(r)
-		_ = redis.NewCache(lc, cfg, opts)
+		_ = redis.NewCache(lc, rcfg, opts)
 
 		_, err = ristretto.NewCache(lc, cfg, ristretto.NewConfig())
 		So(err, ShouldBeNil)

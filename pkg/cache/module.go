@@ -7,26 +7,11 @@ import (
 )
 
 var (
-	// RedisRingModule for fx.
-	RedisRingModule = fx.Provide(redis.NewRing)
-
-	// RedisOptionsModule for fx.
-	RedisOptionsModule = fx.Provide(redis.NewOptions)
-
-	// RedisCacheModule for fx.
-	RedisCacheModule = fx.Provide(redis.NewCache)
-
 	// RedisModule for fx.
-	RedisModule = fx.Options(RedisRingModule, RedisOptionsModule, RedisCacheModule)
-
-	// RistrettoConfigModule for fx.
-	RistrettoConfigModule = fx.Provide(ristretto.NewConfig)
-
-	// RistrettoCacheModule for fx.
-	RistrettoCacheModule = fx.Provide(ristretto.NewCache)
+	RedisModule = fx.Options(fx.Provide(redis.NewRing), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache), fx.Provide(redis.NewConfig))
 
 	// RistrettoModule for fx.
-	RistrettoModule = fx.Options(RistrettoConfigModule, RistrettoCacheModule)
+	RistrettoModule = fx.Options(fx.Provide(ristretto.NewConfig), fx.Provide(ristretto.NewCache))
 
 	// Module for fx.
 	Module = fx.Options(RedisModule, RistrettoModule)
