@@ -2,11 +2,11 @@ package redis_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -15,7 +15,11 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &config.Config{RedisCacheHost: "localhost:6379"}
+		os.Setenv("SERVICE_NAME", "test")
+
+		cfg, err := redis.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
@@ -40,5 +44,6 @@ func TestCache(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

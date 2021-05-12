@@ -10,7 +10,6 @@ import (
 
 	"github.com/alexfalkowski/go-health/pkg/checker"
 	"github.com/alexfalkowski/go-health/pkg/server"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
@@ -39,9 +38,7 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{HTTPPort: "10000"}
-
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10000"}, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
@@ -94,9 +91,7 @@ func TestInvalidHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{HTTPPort: "10001"}
-
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10001"}, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)

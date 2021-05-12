@@ -3,7 +3,6 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
@@ -15,17 +14,16 @@ import (
 
 // ConsumerParams for NSQ.
 type ConsumerParams struct {
-	SystemConfig *config.Config
-	NSQConfig    *nsq.Config
-	Logger       *zap.Logger
-	Topic        string
-	Channel      string
-	Handler      handler.Handler
+	Config  *Config
+	Logger  *zap.Logger
+	Topic   string
+	Channel string
+	Handler handler.Handler
 }
 
 // RegisterConsumer for NSQ.
 func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
-	consumer, err := nsq.NewConsumer(params.Topic, params.Channel, params.NSQConfig)
+	consumer, err := nsq.NewConsumer(params.Topic, params.Channel, params.Config.Config)
 	if err != nil {
 		return err
 	}
@@ -36,7 +34,7 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 
 	consumer.AddHandler(handler.New(h))
 
-	err = consumer.ConnectToNSQLookupd(params.SystemConfig.NSQLookupHost)
+	err = consumer.ConnectToNSQLookupd(params.Config.LookupHost)
 	if err != nil {
 		return err
 	}

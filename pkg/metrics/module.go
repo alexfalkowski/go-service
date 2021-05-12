@@ -5,5 +5,7 @@ import (
 	"go.uber.org/fx"
 )
 
-// Module for fx.
-var Module = fx.Invoke(http.Register)
+var (
+	// PrometheusModule for fx.
+	PrometheusModule = fx.Invoke(http.Register)
+)

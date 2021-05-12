@@ -3,7 +3,6 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/meta"
@@ -16,14 +15,13 @@ import (
 
 // ProducerParams for NSQ.
 type ProducerParams struct {
-	SystemConfig *config.Config
-	NSQConfig    *nsq.Config
-	Logger       *zap.Logger
+	Config *Config
+	Logger *zap.Logger
 }
 
 // NewProducer for NSQ.
 func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
-	p, err := nsq.NewProducer(params.SystemConfig.NSQHost, params.NSQConfig)
+	p, err := nsq.NewProducer(params.Config.Host, params.Config.Config)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,6 @@ package jaeger
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegerConfig "github.com/uber/jaeger-client-go/config"
@@ -17,15 +16,15 @@ const (
 )
 
 // Register for jaeger.
-func Register(lc fx.Lifecycle, cfg *config.Config) error {
+func Register(lc fx.Lifecycle, cfg *Config) error {
 	c := jaegerConfig.Configuration{
-		ServiceName: cfg.AppName,
+		ServiceName: cfg.Name,
 		Sampler: &jaegerConfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
 		},
 		Reporter: &jaegerConfig.ReporterConfig{
-			LocalAgentHostPort: cfg.JaegerTraceHost,
+			LocalAgentHostPort: cfg.Host,
 			LogSpans:           false,
 		},
 	}

@@ -1,8 +1,11 @@
 package sql
 
 import (
+	"github.com/alexfalkowski/go-service/pkg/sql/pg"
 	"go.uber.org/fx"
 )
 
-// Module for fx.
-var Module = fx.Options(fx.Provide(NewDB))
+var (
+	// PostgreSQLModule for fx.
+	PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB), fx.Provide(pg.NewConfig))
+)

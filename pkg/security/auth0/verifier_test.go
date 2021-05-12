@@ -2,11 +2,11 @@ package auth0_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
@@ -17,7 +17,11 @@ import (
 
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		os.Setenv("SERVICE_NAME", "test")
+
+		cfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 
 		acfg, err := auth0.NewConfig()
@@ -26,7 +30,7 @@ func TestVerify(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
 		client := http.NewClient(logger)
@@ -50,12 +54,17 @@ func TestVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		os.Setenv("SERVICE_NAME", "test")
+
+		cfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 
 		acfg, err := auth0.NewConfig()
@@ -64,7 +73,7 @@ func TestCachedVerify(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
 		client := http.NewClient(logger)
@@ -93,5 +102,6 @@ func TestCachedVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

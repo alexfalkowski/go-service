@@ -8,12 +8,11 @@ import (
 	"github.com/alexfalkowski/go-health/pkg/checker"
 	"github.com/alexfalkowski/go-health/pkg/server"
 	"github.com/alexfalkowski/go-service/pkg/cmd"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
-	"github.com/alexfalkowski/go-service/pkg/transport/grpc"
+	"github.com/alexfalkowski/go-service/pkg/transport"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -22,14 +21,15 @@ import (
 
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 		os.Setenv("HTTP_PORT", "-1")
 		os.Setenv("GRPC_PORT", "9000")
-		os.Setenv("DATABASE_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
-				logger.Module, pkgHTTP.Module, grpc.Module, config.Module,
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
+				transport.GRPCServerModule,
 			}
 
 			err := cmd.RunServer([]string{}, 10*time.Second, opts)
@@ -38,25 +38,25 @@ func TestInvalidHTTP(t *testing.T) {
 				So(err, ShouldBeError)
 			})
 
-			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("DATABASE_URL"), ShouldBeNil)
+			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 		})
 	})
 }
 
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 		os.Setenv("HTTP_PORT", "9000")
 		os.Setenv("GRPC_PORT", "-1")
-		os.Setenv("DATABASE_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
-				logger.Module, pkgHTTP.Module, grpc.Module, config.Module,
-				health.Module, fx.Provide(registrations),
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
+				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
@@ -66,15 +66,15 @@ func TestInvalidGRPC(t *testing.T) {
 				So(err, ShouldBeError)
 			})
 
-			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("DATABASE_URL"), ShouldBeNil)
+			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 		})
 	})
 }
 
-func registrations(cfg *config.Config, logger *zap.Logger) health.Registrations {
+func registrations(logger *zap.Logger) health.Registrations {
 	hc := checker.NewHTTPCheckerWithClient("https://google.com", 1*time.Second, pkgHTTP.NewClient(logger))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 

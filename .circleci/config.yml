@@ -23,7 +23,7 @@ jobs:
       - run: make specs
       - run: make goveralls
       - store_artifacts:
-          path: test/reports
+          path: test
   release:
     docker:
       - image: alexfalkowski/release:2.0

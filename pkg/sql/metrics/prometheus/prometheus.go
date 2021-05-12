@@ -1,16 +1,26 @@
 package prometheus
 
 import (
+	"context"
 	"database/sql"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/fx"
 )
 
 // Register for prometheus.
-func Register(cfg *config.Config, db *sql.DB) error {
-	collector := sqlstats.NewStatsCollector(cfg.AppName, db)
+func Register(lc fx.Lifecycle, name string, db *sql.DB) {
+	collector := sqlstats.NewStatsCollector(name, db)
 
-	return prometheus.Register(collector)
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return prometheus.Register(collector)
+		},
+		OnStop: func(ctx context.Context) error {
+			prometheus.Unregister(collector)
+
+			return nil
+		},
+	})
 }

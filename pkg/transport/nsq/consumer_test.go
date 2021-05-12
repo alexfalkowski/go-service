@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
@@ -22,20 +21,16 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		systemConfig := &config.Config{
-			NSQLookupHost: "localhost:4161",
-			NSQHost:       "localhost:4150",
-		}
-		nsqConfig := nsq.NewConfig()
+		cfg, err := nsq.NewConfig()
+		So(err, ShouldBeNil)
 
 		Convey("When I register a consumer", func() {
 			params := &nsq.ConsumerParams{
-				SystemConfig: systemConfig,
-				NSQConfig:    nsqConfig,
-				Logger:       logger,
-				Topic:        "topic",
-				Channel:      "channel",
-				Handler:      test.NewHandler(nil),
+				Config:  cfg,
+				Logger:  logger,
+				Topic:   "topic",
+				Channel: "channel",
+				Handler: test.NewHandler(nil),
 			}
 			err := nsq.RegisterConsumer(lc, params)
 
@@ -57,24 +52,20 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		systemConfig := &config.Config{
-			NSQLookupHost: "localhost:4161",
-			NSQHost:       "localhost:4150",
-		}
-		nsqConfig := nsq.NewConfig()
+		cfg, err := nsq.NewConfig()
+		So(err, ShouldBeNil)
+
 		handler := test.NewHandler(nil)
 		consumerParams := &nsq.ConsumerParams{
-			SystemConfig: systemConfig,
-			NSQConfig:    nsqConfig,
-			Logger:       logger,
-			Topic:        "topic",
-			Channel:      "channel",
-			Handler:      handler,
+			Config:  cfg,
+			Logger:  logger,
+			Topic:   "topic",
+			Channel: "channel",
+			Handler: handler,
 		}
 		producerParams := &nsq.ProducerParams{
-			SystemConfig: systemConfig,
-			NSQConfig:    nsqConfig,
-			Logger:       logger,
+			Config: cfg,
+			Logger: logger,
 		}
 
 		producer, err := nsq.NewProducer(lc, producerParams)
@@ -108,24 +99,20 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		systemConfig := &config.Config{
-			NSQLookupHost: "localhost:4161",
-			NSQHost:       "localhost:4150",
-		}
-		nsqConfig := nsq.NewConfig()
+		cfg, err := nsq.NewConfig()
+		So(err, ShouldBeNil)
+
 		handler := test.NewHandler(errors.New("something went wrong"))
 		consumerParams := &nsq.ConsumerParams{
-			SystemConfig: systemConfig,
-			NSQConfig:    nsqConfig,
-			Logger:       logger,
-			Topic:        "topic",
-			Channel:      "channel",
-			Handler:      handler,
+			Config:  cfg,
+			Logger:  logger,
+			Topic:   "topic",
+			Channel: "channel",
+			Handler: handler,
 		}
 		producerParams := &nsq.ProducerParams{
-			SystemConfig: systemConfig,
-			NSQConfig:    nsqConfig,
-			Logger:       logger,
+			Config: cfg,
+			Logger: logger,
 		}
 
 		producer, err := nsq.NewProducer(lc, producerParams)

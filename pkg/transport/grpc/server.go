@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/trace/opentracing"
@@ -23,7 +22,7 @@ import (
 type ServerParams struct {
 	fx.In
 
-	Config *config.Config
+	Config *Config
 	Logger *zap.Logger
 	Unary  []grpc.UnaryServerInterceptor
 	Stream []grpc.StreamServerInterceptor
@@ -47,7 +46,7 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams, opts ...gr
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", params.Config.GRPCPort))
+			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", params.Config.Port))
 			if err != nil {
 				return err
 			}
@@ -67,10 +66,10 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams, opts ...gr
 }
 
 func startServer(s fx.Shutdowner, server *grpc.Server, listener net.Listener, params ServerParams) {
-	params.Logger.Info("starting grpc server", zap.String("port", params.Config.GRPCPort))
+	params.Logger.Info("starting grpc server", zap.String("port", params.Config.Port))
 
 	if err := server.Serve(listener); err != nil {
-		fields := []zapcore.Field{zap.String("port", params.Config.GRPCPort), zap.Error(err)}
+		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
 
 		if err := s.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
@@ -81,7 +80,7 @@ func startServer(s fx.Shutdowner, server *grpc.Server, listener net.Listener, pa
 }
 
 func stopServer(server *grpc.Server, params ServerParams) {
-	params.Logger.Info("stopping grpc server", zap.String("port", params.Config.GRPCPort))
+	params.Logger.Info("stopping grpc server", zap.String("port", params.Config.Port))
 
 	server.GracefulStop()
 }
