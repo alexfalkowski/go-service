@@ -17,8 +17,8 @@ type Config struct {
 }
 
 // CacheKey for config.
-func (c *Config) CacheKey(suffix string) string {
-	key := fmt.Sprintf("%s:%s:%s:%s:%s:%s", c.URL, c.ClientID, c.ClientSecret, c.Audience, c.JSONWebKeySet, suffix)
+func (c *Config) CacheKey(prefix string) string {
+	key := fmt.Sprintf("%s:%s:%s:%s:%s:%s", prefix, c.URL, c.ClientID, c.ClientSecret, c.Audience, c.JSONWebKeySet)
 	h := sha256.New()
 
 	h.Write([]byte(key))
