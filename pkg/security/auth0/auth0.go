@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/pkg/security/token"
+	"github.com/dgraph-io/ristretto"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -16,6 +17,10 @@ func NewConfig() (*Config, error) {
 }
 
 // NewGenerator for Auth0.
-func NewGenerator(cfg *Config, client *http.Client) token.Generator {
-	return &generator{cfg: cfg, client: client}
+func NewGenerator(cfg *Config, client *http.Client, cache *ristretto.Cache) token.Generator {
+	var generator token.Generator = &generator{cfg: cfg, client: client}
+
+	generator = &cachedGenerator{cfg: cfg, cache: cache, Generator: generator}
+
+	return generator
 }

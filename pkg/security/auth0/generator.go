@@ -7,6 +7,10 @@ import (
 	"errors"
 	"net/http"
 	"time"
+
+	"github.com/alexfalkowski/go-service/pkg/security/token"
+	"github.com/dgraph-io/ristretto"
+	"github.com/form3tech-oss/jwt-go"
 )
 
 var (
@@ -71,4 +75,40 @@ func (g *generator) Generate() ([]byte, error) {
 	}
 
 	return []byte(resp.AccessToken), nil
+}
+
+type cachedGenerator struct {
+	cfg   *Config
+	cache *ristretto.Cache
+
+	token.Generator
+}
+
+func (g *cachedGenerator) Generate() ([]byte, error) {
+	cacheKey := g.cfg.CacheKey()
+
+	v, ok := g.cache.Get(cacheKey)
+	if ok {
+		return v.([]byte), nil
+	}
+
+	key, err := g.Generator.Generate()
+	if err != nil {
+		return nil, err
+	}
+
+	parser := &jwt.Parser{}
+
+	token, _, err := parser.ParseUnverified(string(key), jwt.MapClaims{})
+	if err != nil {
+		return nil, err
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+	exp := claims["exp"].(float64)
+	ttl := time.Unix(int64(exp), 0).Add(-30 * time.Second)
+
+	g.cache.SetWithTTL(cacheKey, key, 0, time.Until(ttl))
+
+	return key, nil
 }
