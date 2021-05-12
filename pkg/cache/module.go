@@ -12,7 +12,4 @@ var (
 
 	// RistrettoModule for fx.
 	RistrettoModule = fx.Options(fx.Provide(ristretto.NewConfig), fx.Provide(ristretto.NewCache))
-
-	// Module for fx.
-	Module = fx.Options(RedisModule, RistrettoModule)
 )

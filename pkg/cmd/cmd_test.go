@@ -12,7 +12,7 @@ import (
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
-	"github.com/alexfalkowski/go-service/pkg/transport/grpc"
+	"github.com/alexfalkowski/go-service/pkg/transport"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -27,7 +27,10 @@ func TestInvalidHTTP(t *testing.T) {
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I try to create a server", func() {
-			opts := []fx.Option{logger.Module, pkgHTTP.Module, grpc.Module}
+			opts := []fx.Option{
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
+				transport.GRPCServerModule,
+			}
 
 			err := cmd.RunServer([]string{}, 10*time.Second, opts)
 
@@ -52,8 +55,8 @@ func TestInvalidGRPC(t *testing.T) {
 
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
-				logger.Module, pkgHTTP.Module, grpc.Module,
-				health.Module, fx.Provide(registrations),
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
+				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
