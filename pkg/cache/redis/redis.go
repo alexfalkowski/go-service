@@ -11,7 +11,7 @@ import (
 func NewCache(lc fx.Lifecycle, cfg *Config, opts *cache.Options) *cache.Cache {
 	cache := cache.New(opts)
 
-	prometheus.Register(lc, cfg.AppName, cache)
+	prometheus.Register(lc, cfg.Name, cache)
 
 	return cache
 }

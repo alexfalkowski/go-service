@@ -18,13 +18,13 @@ const (
 // Register for jaeger.
 func Register(lc fx.Lifecycle, cfg *Config) error {
 	c := jaegerConfig.Configuration{
-		ServiceName: cfg.AppName,
+		ServiceName: cfg.Name,
 		Sampler: &jaegerConfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
 		},
 		Reporter: &jaegerConfig.ReporterConfig{
-			LocalAgentHostPort: cfg.TraceHost,
+			LocalAgentHostPort: cfg.Host,
 			LogSpans:           false,
 		},
 	}

@@ -10,8 +10,8 @@ import (
 )
 
 // Register for prometheus.
-func Register(lc fx.Lifecycle, appName string, db *sql.DB) {
-	collector := sqlstats.NewStatsCollector(appName, db)
+func Register(lc fx.Lifecycle, name string, db *sql.DB) {
+	collector := sqlstats.NewStatsCollector(name, db)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

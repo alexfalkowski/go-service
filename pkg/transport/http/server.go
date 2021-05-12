@@ -15,13 +15,13 @@ import (
 // Register for HTTP.
 func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *Config, logger *zap.Logger) {
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", cfg.HTTPPort),
+		Addr:    fmt.Sprintf(":%s", cfg.Port),
 		Handler: mux,
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.HTTPPort))
+			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Port))
 			if err != nil {
 				return err
 			}
@@ -37,10 +37,10 @@ func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *Conf
 }
 
 func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *Config, logger *zap.Logger) {
-	logger.Info("starting http server", zap.String("port", cfg.HTTPPort))
+	logger.Info("starting http server", zap.String("port", cfg.Port))
 
 	if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
-		fields := []zapcore.Field{zap.String("port", cfg.HTTPPort), zap.Error(err)}
+		fields := []zapcore.Field{zap.String("port", cfg.Port), zap.Error(err)}
 
 		if err := s.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
@@ -51,10 +51,10 @@ func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cf
 }
 
 func stopServer(ctx context.Context, server *http.Server, cfg *Config, logger *zap.Logger) error {
-	logger.Info("stopping http server", zap.String("port", cfg.HTTPPort))
+	logger.Info("stopping http server", zap.String("port", cfg.Port))
 
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Error("could not stop http server", zap.String("port", cfg.HTTPPort), zap.Error(err))
+		logger.Error("could not stop http server", zap.String("port", cfg.Port), zap.Error(err))
 
 		return err
 	}

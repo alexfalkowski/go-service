@@ -14,6 +14,6 @@ func NewConfig() (*Config, error) {
 
 // Config for datadog.
 type Config struct {
-	AppName   string `envconfig:"APP_NAME" required:"true"`
-	TraceHost string `envconfig:"DATADOG_TRACE_HOST" required:"true" default:"localhost:8126"`
+	Name string `envconfig:"APP_NAME" required:"true"`
+	Host string `envconfig:"DATADOG_TRACE_HOST" required:"true" default:"localhost:8126"`
 }

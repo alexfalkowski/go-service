@@ -9,8 +9,8 @@ import (
 )
 
 // Register for prometheus.
-func Register(lc fx.Lifecycle, appName string, cache *cache.Cache) {
-	collector := NewStatsCollector(appName, cache)
+func Register(lc fx.Lifecycle, name string, cache *cache.Cache) {
+	collector := NewStatsCollector(name, cache)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

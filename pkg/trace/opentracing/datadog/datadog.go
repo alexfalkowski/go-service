@@ -12,8 +12,8 @@ import (
 // Register for datadog.
 func Register(lc fx.Lifecycle, cfg *Config) error {
 	opts := []tracer.StartOption{
-		tracer.WithService(cfg.AppName),
-		tracer.WithAgentAddr(cfg.TraceHost),
+		tracer.WithService(cfg.Name),
+		tracer.WithAgentAddr(cfg.Host),
 	}
 	t := opentracer.New(opts...)
 

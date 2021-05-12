@@ -14,5 +14,5 @@ func NewConfig() (*Config, error) {
 
 // Config for HTTP.
 type Config struct {
-	HTTPPort string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
+	Port string `envconfig:"HTTP_PORT" required:"true" default:"8080"`
 }

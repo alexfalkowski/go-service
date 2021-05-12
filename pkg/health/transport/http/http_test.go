@@ -38,7 +38,7 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{HTTPPort: "10000"}, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10000"}, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
@@ -91,7 +91,7 @@ func TestInvalidHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{HTTPPort: "10001"}, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10001"}, logger)
 
 		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)

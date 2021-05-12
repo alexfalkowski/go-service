@@ -14,5 +14,5 @@ func NewConfig() (*Config, error) {
 
 // Config for gRPC.
 type Config struct {
-	GRPCPort string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
+	Port string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
 }

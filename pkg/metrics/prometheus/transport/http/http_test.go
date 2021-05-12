@@ -43,7 +43,7 @@ func TestHTTP(t *testing.T) {
 		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{HTTPPort: "10002"}, logger)
+		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10002"}, logger)
 
 		err = prometheusHTTP.Register(mux)
 		So(err, ShouldBeNil)
