@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
@@ -43,6 +44,8 @@ func TestUnary(t *testing.T) {
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
 		lc.RequireStart()
+
+		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
@@ -69,6 +72,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
@@ -150,6 +154,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		lc.RequireStart()
 
+		time.Sleep(1 * time.Second)
+
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{Logger: logger}
@@ -203,6 +209,8 @@ func TestStream(t *testing.T) {
 
 		lc.RequireStart()
 
+		time.Sleep(1 * time.Second)
+
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{Logger: logger}
@@ -231,6 +239,7 @@ func TestStream(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
@@ -260,6 +269,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
 
 		lc.RequireStart()
+
+		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
