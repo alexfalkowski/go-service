@@ -11,7 +11,6 @@ import (
 func TestConfig(t *testing.T) {
 	Convey("Given I have environment variable set", t, func() {
 		os.Setenv("APP_NAME", "test")
-		os.Setenv("HTTP_PORT", "8000")
 		os.Setenv("GRPC_PORT", "9000")
 
 		Convey("When I get the config", func() {
@@ -20,12 +19,10 @@ func TestConfig(t *testing.T) {
 
 			Convey("Then I should have valid config", func() {
 				So(cfg.AppName, ShouldEqual, "test")
-				So(cfg.HTTPPort, ShouldEqual, "8000")
 				So(cfg.GRPCPort, ShouldEqual, "9000")
 			})
 
 			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
-			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
 		})
 	})
@@ -33,7 +30,6 @@ func TestConfig(t *testing.T) {
 
 func TestMissingConfig(t *testing.T) {
 	Convey("Given I have some environment variable set", t, func() {
-		os.Setenv("HTTP_PORT", "8000")
 		os.Setenv("GRPC_PORT", "9000")
 
 		Convey("When I get the config", func() {
@@ -44,7 +40,6 @@ func TestMissingConfig(t *testing.T) {
 			})
 		})
 
-		So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 		So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
 	})
 }

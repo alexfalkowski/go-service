@@ -6,14 +6,14 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *config.Config, logger *zap.Logger) {
+// Register for HTTP.
+func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *Config, logger *zap.Logger) {
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.HTTPPort),
 		Handler: mux,
@@ -36,7 +36,7 @@ func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *conf
 	})
 }
 
-func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *config.Config, logger *zap.Logger) {
+func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *Config, logger *zap.Logger) {
 	logger.Info("starting http server", zap.String("port", cfg.HTTPPort))
 
 	if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
@@ -50,7 +50,7 @@ func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cf
 	}
 }
 
-func stopServer(ctx context.Context, server *http.Server, cfg *config.Config, logger *zap.Logger) error {
+func stopServer(ctx context.Context, server *http.Server, cfg *Config, logger *zap.Logger) error {
 	logger.Info("stopping http server", zap.String("port", cfg.HTTPPort))
 
 	if err := server.Shutdown(ctx); err != nil {

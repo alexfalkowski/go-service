@@ -6,7 +6,7 @@ import (
 
 var (
 	// ServerModule for fx.
-	ServerModule = fx.Options(fx.Invoke(Register), fx.Provide(NewMux))
+	ServerModule = fx.Options(fx.Invoke(Register), fx.Provide(NewMux), fx.Provide(NewConfig))
 
 	// ClientModule for fx.
 	ClientModule = fx.Options(fx.Provide(NewClient))

@@ -31,10 +31,10 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10009", HTTPPort: "10010"}
+		cfg := &config.Config{GRPCPort: "10009"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10010"}, logger)
 
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
@@ -95,10 +95,10 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10011", HTTPPort: "10012"}
+		cfg := &config.Config{GRPCPort: "10011"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10012"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
@@ -164,10 +164,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
+		cfg := &config.Config{GRPCPort: "10013"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10014"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
@@ -233,10 +233,10 @@ func TestMissingAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
+		cfg := &config.Config{GRPCPort: "10013"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10014"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
@@ -300,10 +300,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
+		cfg := &config.Config{GRPCPort: "10013"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10014"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
@@ -361,10 +361,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
+		cfg := &config.Config{GRPCPort: "10013"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10014"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
@@ -428,10 +428,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10013", HTTPPort: "10014"}
+		cfg := &config.Config{GRPCPort: "10013"}
 
 		mux := pkgHTTP.NewMux()
-		pkgHTTP.Register(lc, sh, mux, cfg, logger)
+		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{HTTPPort: "10014"}, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
