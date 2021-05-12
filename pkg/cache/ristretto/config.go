@@ -22,7 +22,7 @@ func NewConfig() (*Config, error) {
 
 // Config for ristretto.
 type Config struct {
-	Name string `envconfig:"APP_NAME" required:"true"`
+	Name string `envconfig:"SERVICE_NAME" required:"true"`
 
 	Config *ristretto.Config
 }

@@ -16,7 +16,7 @@ import (
 
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -49,13 +49,13 @@ func TestGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestInvalidGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -88,13 +88,13 @@ func TestInvalidGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestCachedGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -132,6 +132,6 @@ func TestCachedGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

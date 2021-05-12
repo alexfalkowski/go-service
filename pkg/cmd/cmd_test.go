@@ -21,7 +21,7 @@ import (
 
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 		os.Setenv("HTTP_PORT", "-1")
 		os.Setenv("GRPC_PORT", "9000")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
@@ -35,7 +35,7 @@ func TestInvalidHTTP(t *testing.T) {
 				So(err, ShouldBeError)
 			})
 
-			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
 			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
@@ -45,7 +45,7 @@ func TestInvalidHTTP(t *testing.T) {
 
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 		os.Setenv("HTTP_PORT", "9000")
 		os.Setenv("GRPC_PORT", "-1")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
@@ -63,7 +63,7 @@ func TestInvalidGRPC(t *testing.T) {
 				So(err, ShouldBeError)
 			})
 
-			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
 			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)

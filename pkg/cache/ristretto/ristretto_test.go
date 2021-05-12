@@ -13,7 +13,7 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -44,6 +44,6 @@ func TestCache(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

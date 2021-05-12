@@ -14,6 +14,6 @@ func NewConfig() (*Config, error) {
 
 // Config for redis.
 type Config struct {
-	Name string `envconfig:"APP_NAME" required:"true"`
+	Name string `envconfig:"SERVICE_NAME" required:"true"`
 	Host string `envconfig:"REDIS_CACHE_HOST" required:"true" default:"localhost:6379"`
 }

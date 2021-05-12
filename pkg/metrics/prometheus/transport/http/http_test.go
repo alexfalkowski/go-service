@@ -20,7 +20,7 @@ import (
 
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		lc := fxtest.NewLifecycle(t)
 		mux := pkgHTTP.NewMux()
@@ -75,6 +75,6 @@ func TestHTTP(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

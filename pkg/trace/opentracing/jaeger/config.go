@@ -14,6 +14,6 @@ func NewConfig() (*Config, error) {
 
 // Config for jaeger.
 type Config struct {
-	Name string `envconfig:"APP_NAME" required:"true"`
+	Name string `envconfig:"SERVICE_NAME" required:"true"`
 	Host string `envconfig:"JAEGER_TRACE_HOST" required:"true" default:"localhost:6831"`
 }

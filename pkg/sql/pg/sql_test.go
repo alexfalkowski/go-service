@@ -11,7 +11,7 @@ import (
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		cfg, err := pg.NewConfig()
@@ -32,7 +32,7 @@ func TestSQL(t *testing.T) {
 			lc.RequireStop()
 		})
 
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 		So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 	})
 }

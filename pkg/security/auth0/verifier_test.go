@@ -17,7 +17,7 @@ import (
 
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -54,13 +54,13 @@ func TestVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		os.Setenv("APP_NAME", "test")
+		os.Setenv("SERVICE_NAME", "test")
 
 		cfg, err := ristretto.NewConfig()
 		So(err, ShouldBeNil)
@@ -102,6 +102,6 @@ func TestCachedVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
+		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
