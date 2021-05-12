@@ -36,9 +36,9 @@ func TestCache(t *testing.T) {
 				r := v.(*grpc_health_v1.HealthCheckResponse)
 
 				So(r.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
-
-				lc.RequireStop()
 			})
 		})
+
+		lc.RequireStop()
 	})
 }

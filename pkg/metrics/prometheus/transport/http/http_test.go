@@ -38,9 +38,7 @@ func TestHTTP(t *testing.T) {
 
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
-
-		_, err = redis.NewCache(cfg, opts)
-		So(err, ShouldBeNil)
+		_ = redis.NewCache(lc, cfg, opts)
 
 		_, err = ristretto.NewCache(lc, cfg, ristretto.NewConfig())
 		So(err, ShouldBeNil)
@@ -66,8 +64,6 @@ func TestHTTP(t *testing.T) {
 			body, err := io.ReadAll(resp.Body)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have valid metrics", func() {
 				response := string(body)
 
@@ -77,5 +73,7 @@ func TestHTTP(t *testing.T) {
 				So(response, ShouldContainSubstring, "go_ristretto_stats")
 			})
 		})
+
+		lc.RequireStop()
 	})
 }

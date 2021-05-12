@@ -4,16 +4,15 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/redis/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/go-redis/cache/v8"
+	"go.uber.org/fx"
 )
 
 // NewCache from config.
 // The cache is based on https://github.com/go-redis/cache
-func NewCache(cfg *config.Config, opts *cache.Options) (*cache.Cache, error) {
+func NewCache(lc fx.Lifecycle, cfg *config.Config, opts *cache.Options) *cache.Cache {
 	cache := cache.New(opts)
 
-	if err := prometheus.Register(cfg, cache); err != nil {
-		return nil, err
-	}
+	prometheus.Register(lc, cfg, cache)
 
-	return cache, nil
+	return cache
 }
