@@ -1,10 +1,10 @@
-package sql_test
+package pg_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/pkg/sql"
+	"github.com/alexfalkowski/go-service/pkg/sql/pg"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -14,13 +14,13 @@ func TestSQL(t *testing.T) {
 		os.Setenv("APP_NAME", "test")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
-		cfg, err := sql.NewConfig()
+		cfg, err := pg.NewConfig()
 		So(err, ShouldBeNil)
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 
-			db, err := sql.NewDB(lc, cfg)
+			db, err := pg.NewDB(lc, cfg)
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -39,13 +39,11 @@ func TestSQL(t *testing.T) {
 
 func TestInvalidSQL(t *testing.T) {
 	Convey("Given I have an invalid configuration", t, func() {
-		cfg := &sql.Config{
-			PostgreSQLURL: "invalid url",
-		}
+		cfg := &pg.Config{URL: "invalid url"}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
-			_, err := sql.NewDB(lc, cfg)
+			_, err := pg.NewDB(lc, cfg)
 
 			lc.RequireStart()
 

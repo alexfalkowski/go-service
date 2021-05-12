@@ -1,4 +1,4 @@
-package sql
+package pg
 
 import (
 	"go.uber.org/fx"

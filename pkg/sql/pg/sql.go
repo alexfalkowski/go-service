@@ -1,4 +1,4 @@
-package sql
+package pg
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 // NewDB for SQL.
 func NewDB(lc fx.Lifecycle, cfg *Config) (*sql.DB, error) {
-	config, err := pgx.ParseConfig(cfg.PostgreSQLURL)
+	config, err := pgx.ParseConfig(cfg.URL)
 	if err != nil {
 		return nil, err
 	}

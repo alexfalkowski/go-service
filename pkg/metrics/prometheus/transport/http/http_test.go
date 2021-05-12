@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	prometheusHTTP "github.com/alexfalkowski/go-service/pkg/metrics/prometheus/transport/http"
-	"github.com/alexfalkowski/go-service/pkg/sql"
+	"github.com/alexfalkowski/go-service/pkg/sql/pg"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -30,7 +30,7 @@ func TestHTTP(t *testing.T) {
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
 
-		_, err = sql.NewDB(lc, &sql.Config{PostgreSQLURL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
+		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
 		r := redis.NewRing(lc, rcfg)
