@@ -33,7 +33,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 			return nil, status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
 		}
 
-		if err := verifier.Verify(tkn(values[0])); err != nil {
+		if err := verifier.Verify(ctx, tkn(values[0])); err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
@@ -57,7 +57,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 			return status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
 		}
 
-		if err := verifier.Verify(tkn(values[0])); err != nil {
+		if err := verifier.Verify(ctx, tkn(values[0])); err != nil {
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
@@ -75,7 +75,7 @@ type tokenPerRPCCredentials struct {
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	t, err := p.generator.Generate()
+	t, err := p.generator.Generate(ctx)
 	if err != nil {
 		return nil, err
 	}

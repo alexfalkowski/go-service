@@ -1,6 +1,7 @@
 package auth0_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -33,7 +34,9 @@ func TestGenerate(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I generate a token", func() {
-			token, err := gen.Generate()
+			ctx := context.Background()
+
+			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid token", func() {
@@ -67,7 +70,8 @@ func TestInvalidGenerate(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I generate a token", func() {
-			_, err := gen.Generate()
+			ctx := context.Background()
+			_, err := gen.Generate(ctx)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldEqual, auth0.ErrInvalidResponse)
@@ -98,12 +102,14 @@ func TestCachedGenerate(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I generate a token twice", func() {
-			_, err = gen.Generate()
+			ctx := context.Background()
+
+			_, err = gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			token, err := gen.Generate()
+			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid cached token", func() {

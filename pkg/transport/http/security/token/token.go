@@ -20,7 +20,7 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	t, err := r.gen.Generate()
+	t, err := r.gen.Generate(req.Context())
 	if err != nil {
 		return nil, err
 	}

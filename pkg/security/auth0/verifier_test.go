@@ -1,12 +1,14 @@
 package auth0_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
+	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
 	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
@@ -35,10 +37,12 @@ func TestVerify(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I verify the token", func() {
-			token, err := gen.Generate()
+			ctx := meta.WithAttribute(context.Background(), meta.RequestID, "test-request-id")
+
+			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(token)
+			err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -71,15 +75,17 @@ func TestCachedVerify(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I verify the token twice", func() {
-			token, err := gen.Generate()
+			ctx := context.Background()
+
+			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(token)
+			err = ver.Verify(ctx, token)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			err = ver.Verify(token)
+			err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
