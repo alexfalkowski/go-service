@@ -2,6 +2,7 @@ package auth0_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/config"
@@ -99,6 +100,8 @@ func TestCachedGenerate(t *testing.T) {
 		Convey("When I generate a token twice", func() {
 			_, err = gen.Generate()
 			So(err, ShouldBeNil)
+
+			time.Sleep(1 * time.Second)
 
 			token, err := gen.Generate()
 			So(err, ShouldBeNil)

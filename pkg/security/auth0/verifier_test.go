@@ -2,6 +2,7 @@ package auth0_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/config"
@@ -75,6 +76,8 @@ func TestCachedVerify(t *testing.T) {
 
 			err = ver.Verify(token)
 			So(err, ShouldBeNil)
+
+			time.Sleep(1 * time.Second)
 
 			err = ver.Verify(token)
 
