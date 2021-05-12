@@ -5,9 +5,6 @@ import (
 )
 
 var (
-	// ConfigModule for fx.
-	ConfigModule = fx.Options(fx.Provide(NewConfig))
-
 	// Module for fx.
-	Module = fx.Options(ConfigModule)
+	Module = fx.Options(fx.Provide(NewConfig))
 )
