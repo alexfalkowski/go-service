@@ -85,7 +85,7 @@ type cachedGenerator struct {
 }
 
 func (g *cachedGenerator) Generate() ([]byte, error) {
-	cacheKey := g.cfg.CacheKey()
+	cacheKey := g.cfg.CacheKey("generate")
 
 	v, ok := g.cache.Get(cacheKey)
 	if ok {

@@ -24,3 +24,19 @@ func NewGenerator(cfg *Config, client *http.Client, cache *ristretto.Cache) toke
 
 	return generator
 }
+
+// NewCertificator for Auth0.
+func NewCertificator(cfg *Config, client *http.Client, cache *ristretto.Cache) Certificator {
+	var certificator Certificator = &pem{cfg: cfg, client: client}
+
+	certificator = &cachedPEM{cfg: cfg, cache: cache, Certificator: certificator}
+
+	return certificator
+}
+
+// NewVerifier for Auth0.
+func NewVerifier(cfg *Config, cert Certificator) token.Verifier {
+	var verifier token.Verifier = &verifier{cfg: cfg, cert: cert}
+
+	return verifier
+}

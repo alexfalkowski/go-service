@@ -12,12 +12,13 @@ type Config struct {
 	ClientID      string `envconfig:"AUTH0_CLIENT_ID" required:"true"`
 	ClientSecret  string `envconfig:"AUTH0_CLIENT_SECRET" required:"true"`
 	Audience      string `envconfig:"AUTH0_AUDIENCE" required:"true"`
+	Issuer        string `envconfig:"AUTH0_ISSUER" required:"true"`
 	JSONWebKeySet string `envconfig:"AUTH0_JSON_WEB_KEY_SET" required:"true"`
 }
 
 // CacheKey for config.
-func (c *Config) CacheKey() string {
-	key := fmt.Sprintf("%s:%s:%s:%s:%s", c.URL, c.ClientID, c.ClientSecret, c.Audience, c.JSONWebKeySet)
+func (c *Config) CacheKey(suffix string) string {
+	key := fmt.Sprintf("%s:%s:%s:%s:%s:%s", c.URL, c.ClientID, c.ClientSecret, c.Audience, c.JSONWebKeySet, suffix)
 	h := sha256.New()
 
 	h.Write([]byte(key))
