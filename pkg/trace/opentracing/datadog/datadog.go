@@ -5,13 +5,12 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Register for datadog.
-func Register(lc fx.Lifecycle, cfg *Config, logger *zap.Logger) error {
+func Register(lc fx.Lifecycle, cfg *Config) error {
 	opts := []tracer.StartOption{
 		tracer.WithService(cfg.AppName),
 		tracer.WithAgentAddr(cfg.TraceHost),
