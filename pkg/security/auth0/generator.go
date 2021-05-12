@@ -15,7 +15,7 @@ import (
 
 var (
 	// ErrInvalidResponse from Auth0.
-	ErrInvalidResponse = errors.New("invalid auth0 response")
+	ErrInvalidResponse = errors.New("invalid response")
 )
 
 type generatorRequest struct {
