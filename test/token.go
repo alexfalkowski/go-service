@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"errors"
 
 	"github.com/alexfalkowski/go-service/pkg/security/token"
@@ -16,7 +17,7 @@ type generator struct {
 	err   error
 }
 
-func (g *generator) Generate() ([]byte, error) {
+func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 	return []byte(g.token), g.err
 }
 
@@ -29,7 +30,7 @@ type verifier struct {
 	token string
 }
 
-func (v *verifier) Verify(token []byte) error {
+func (v *verifier) Verify(ctx context.Context, token []byte) error {
 	if string(token) != v.token {
 		return errors.New("invalid token")
 	}

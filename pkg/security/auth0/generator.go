@@ -35,7 +35,7 @@ type generator struct {
 	client *http.Client
 }
 
-func (g *generator) Generate() ([]byte, error) {
+func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 	req := &generatorRequest{
 		ClientID:     g.cfg.ClientID,
 		ClientSecret: g.cfg.ClientSecret,
@@ -48,7 +48,7 @@ func (g *generator) Generate() ([]byte, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // nolint:gomnd
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) // nolint:gomnd
 	defer cancel()
 
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
@@ -84,7 +84,7 @@ type cachedGenerator struct {
 	token.Generator
 }
 
-func (g *cachedGenerator) Generate() ([]byte, error) {
+func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {
 	cacheKey := g.cfg.CacheKey("generate")
 
 	v, ok := g.cache.Get(cacheKey)
@@ -92,7 +92,7 @@ func (g *cachedGenerator) Generate() ([]byte, error) {
 		return v.([]byte), nil
 	}
 
-	key, err := g.Generator.Generate()
+	key, err := g.Generator.Generate(ctx)
 	if err != nil {
 		return nil, err
 	}

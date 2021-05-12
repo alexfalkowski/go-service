@@ -3,6 +3,7 @@ package zap
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
@@ -25,6 +26,10 @@ const (
 	client              = "client"
 )
 
+var (
+	sensitiveURLs = regexp.MustCompile(`oauth|token|jwks`)
+)
+
 // NewRoundTripper for zap.
 func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: hrt}
@@ -41,14 +46,18 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
+	isSensitive := sensitiveURLs.Match([]byte(req.URL.String()))
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, req.URL.String()),
 		zap.String(httpMethod, req.Method),
-		zap.String(httpRequest, encoder.Request(req)),
 		zap.String("span.kind", client),
 		zap.String(component, httpComponent),
+	}
+
+	if !isSensitive {
+		fields = append(fields, zap.String(httpRequest, encoder.Request(req)))
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -66,7 +75,11 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode), zap.String(httpResponse, encoder.Response(resp)))
+	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode))
+
+	if !isSensitive {
+		fields = append(fields, zap.String(httpResponse, encoder.Response(resp)))
+	}
 
 	r.logger.Info(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
 

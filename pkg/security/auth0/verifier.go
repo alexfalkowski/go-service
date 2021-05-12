@@ -1,7 +1,9 @@
 package auth0
 
 import (
+	"context"
 	"errors"
+	"sync"
 
 	"github.com/form3tech-oss/jwt-go"
 )
@@ -23,9 +25,16 @@ var (
 type verifier struct {
 	cfg  *Config
 	cert Certificator
+	ctx  context.Context
+	mux  sync.Mutex
 }
 
-func (v *verifier) Verify(token []byte) error {
+func (v *verifier) Verify(ctx context.Context, token []byte) error {
+	v.mux.Lock()
+	defer v.mux.Unlock()
+
+	v.ctx = ctx
+
 	parsedToken, err := jwt.Parse(string(token), v.validate)
 	if err != nil {
 		return err
@@ -55,7 +64,7 @@ func (v *verifier) validate(token *jwt.Token) (interface{}, error) {
 		return token, ErrInvalidIssuer
 	}
 
-	cert, err := v.cert.Certificate(token)
+	cert, err := v.cert.Certificate(v.ctx, token)
 	if err != nil {
 		return token, err
 	}

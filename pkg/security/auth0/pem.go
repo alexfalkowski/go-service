@@ -34,10 +34,10 @@ type pem struct {
 	client *http.Client
 }
 
-func (p *pem) Certificate(token *jwt.Token) (string, error) {
+func (p *pem) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cert := ""
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // nolint:gomnd
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) // nolint:gomnd
 	defer cancel()
 
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", p.cfg.JSONWebKeySet, nil)
@@ -81,7 +81,7 @@ type cachedPEM struct {
 	Certificator
 }
 
-func (p *cachedPEM) Certificate(token *jwt.Token) (string, error) {
+func (p *cachedPEM) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cacheKey := p.cfg.CacheKey("certificate")
 
 	v, ok := p.cache.Get(cacheKey)
@@ -89,7 +89,7 @@ func (p *cachedPEM) Certificate(token *jwt.Token) (string, error) {
 		return v.(string), nil
 	}
 
-	cert, err := p.Certificator.Certificate(token)
+	cert, err := p.Certificator.Certificate(ctx, token)
 	if err != nil {
 		return cert, err
 	}
