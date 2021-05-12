@@ -13,7 +13,6 @@ func TestConfig(t *testing.T) {
 		os.Setenv("APP_NAME", "test")
 		os.Setenv("HTTP_PORT", "8000")
 		os.Setenv("GRPC_PORT", "9000")
-		os.Setenv("DATABASE_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I get the config", func() {
 			cfg, err := config.NewConfig()
@@ -23,13 +22,11 @@ func TestConfig(t *testing.T) {
 				So(cfg.AppName, ShouldEqual, "test")
 				So(cfg.HTTPPort, ShouldEqual, "8000")
 				So(cfg.GRPCPort, ShouldEqual, "9000")
-				So(cfg.DatabaseURL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
 			})
 
 			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("DATABASE_URL"), ShouldBeNil)
 		})
 	})
 }

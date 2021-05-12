@@ -29,11 +29,10 @@ func TestHTTP(t *testing.T) {
 		cfg := &config.Config{
 			AppName:        "test",
 			HTTPPort:       "10002",
-			DatabaseURL:    "postgres://test:test@localhost:5432/test?sslmode=disable",
 			RedisCacheHost: "localhost:6379",
 		}
 
-		_, err = sql.NewDB(lc, cfg)
+		_, err = sql.NewDB(lc, &sql.Config{PostgresURL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
 		r := redis.NewRing(lc, cfg)

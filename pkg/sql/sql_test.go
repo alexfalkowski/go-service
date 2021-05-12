@@ -3,7 +3,6 @@ package sql_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/sql"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -12,8 +11,8 @@ import (
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		cfg := &config.Config{
-			DatabaseURL: "postgres://test:test@localhost:5432/test?sslmode=disable",
+		cfg := &sql.Config{
+			PostgresURL: "postgres://test:test@localhost:5432/test?sslmode=disable",
 		}
 
 		Convey("When I try to get a database", func() {
@@ -34,8 +33,8 @@ func TestSQL(t *testing.T) {
 func TestInvalidSQL(t *testing.T) {
 	Convey("Given I have an invalid configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		cfg := &config.Config{
-			DatabaseURL: "invalid url",
+		cfg := &sql.Config{
+			PostgresURL: "invalid url",
 		}
 
 		lc.RequireStart()
