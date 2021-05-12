@@ -12,7 +12,7 @@ import (
 
 // NewDB for SQL.
 func NewDB(lc fx.Lifecycle, cfg *Config) (*sql.DB, error) {
-	config, err := pgx.ParseConfig(cfg.PostgresURL)
+	config, err := pgx.ParseConfig(cfg.PostgreSQLURL)
 	if err != nil {
 		return nil, err
 	}

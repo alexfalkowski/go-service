@@ -14,6 +14,6 @@ func NewConfig() (*Config, error) {
 
 // Config for SQL.
 type Config struct {
-	AppName     string `envconfig:"APP_NAME" required:"true"`
-	PostgresURL string `envconfig:"POSTGRES_URL" required:"true"`
+	AppName       string `envconfig:"APP_NAME" required:"true"`
+	PostgreSQLURL string `envconfig:"POSTGRESQL_URL" required:"true"`
 }

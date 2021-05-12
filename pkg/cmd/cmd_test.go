@@ -24,7 +24,7 @@ func TestInvalidHTTP(t *testing.T) {
 		os.Setenv("APP_NAME", "test")
 		os.Setenv("HTTP_PORT", "-1")
 		os.Setenv("GRPC_PORT", "9000")
-		os.Setenv("POSTGRES_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{logger.Module, pkgHTTP.Module, grpc.Module}
@@ -38,7 +38,7 @@ func TestInvalidHTTP(t *testing.T) {
 			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("POSTGRES_URL"), ShouldBeNil)
+			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 		})
 	})
 }
@@ -48,7 +48,7 @@ func TestInvalidGRPC(t *testing.T) {
 		os.Setenv("APP_NAME", "test")
 		os.Setenv("HTTP_PORT", "9000")
 		os.Setenv("GRPC_PORT", "-1")
-		os.Setenv("POSTGRES_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
@@ -66,7 +66,7 @@ func TestInvalidGRPC(t *testing.T) {
 			So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
 			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("POSTGRES_URL"), ShouldBeNil)
+			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 		})
 	})
 }

@@ -30,7 +30,7 @@ func TestHTTP(t *testing.T) {
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
 
-		_, err = sql.NewDB(lc, &sql.Config{PostgresURL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
+		_, err = sql.NewDB(lc, &sql.Config{PostgreSQLURL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
 		r := redis.NewRing(lc, rcfg)

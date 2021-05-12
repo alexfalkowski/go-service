@@ -12,7 +12,7 @@ import (
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		os.Setenv("APP_NAME", "test")
-		os.Setenv("POSTGRES_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
 		cfg, err := sql.NewConfig()
 		So(err, ShouldBeNil)
@@ -33,14 +33,14 @@ func TestSQL(t *testing.T) {
 		})
 
 		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
-		So(os.Unsetenv("POSTGRES_URL"), ShouldBeNil)
+		So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 	})
 }
 
 func TestInvalidSQL(t *testing.T) {
 	Convey("Given I have an invalid configuration", t, func() {
 		cfg := &sql.Config{
-			PostgresURL: "invalid url",
+			PostgreSQLURL: "invalid url",
 		}
 
 		Convey("When I try to get a database", func() {
