@@ -3,7 +3,6 @@ package datadog_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/trace/opentracing/datadog"
 	. "github.com/smartystreets/goconvey/convey"
@@ -12,7 +11,7 @@ import (
 
 func TestDatadog(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		cfg := &datadog.Config{AppName: "test"}
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
