@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
 	tokenGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc/security/token"
@@ -26,7 +25,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -69,7 +68,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -120,7 +119,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -169,7 +168,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -217,7 +216,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -261,7 +260,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10007"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10007"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -309,7 +308,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -360,7 +359,7 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -415,7 +414,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -468,7 +467,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -515,7 +514,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -564,7 +563,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10008"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10008"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,

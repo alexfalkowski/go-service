@@ -1,10 +1,10 @@
-package config
+package grpc
 
 import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// NewConfig for the services.
+// NewConfig for gRPC.
 func NewConfig() (*Config, error) {
 	var config Config
 	err := envconfig.Process("", &config)
@@ -12,8 +12,7 @@ func NewConfig() (*Config, error) {
 	return &config, err
 }
 
-// Config for the services.
+// Config for gRPC.
 type Config struct {
-	AppName  string `envconfig:"APP_NAME" required:"true"`
 	GRPCPort string `envconfig:"GRPC_PORT" required:"true" default:"8081"`
 }

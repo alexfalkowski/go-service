@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/trace/opentracing"
@@ -23,7 +22,7 @@ import (
 type ServerParams struct {
 	fx.In
 
-	Config *config.Config
+	Config *Config
 	Logger *zap.Logger
 	Unary  []grpc.UnaryServerInterceptor
 	Stream []grpc.StreamServerInterceptor

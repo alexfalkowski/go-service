@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexfalkowski/go-health/pkg/checker"
 	"github.com/alexfalkowski/go-health/pkg/server"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
@@ -37,7 +36,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10005"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10005"}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -86,7 +85,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10004"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10004"}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -137,7 +136,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10005"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10005"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -196,7 +195,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10003"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10003"}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -248,7 +247,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &config.Config{GRPCPort: "10003"}
+		cfg := &pkgGRPC.Config{GRPCPort: "10003"}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,

@@ -6,8 +6,8 @@ import (
 
 var (
 	// ServerModule for fx.
-	ServerModule = fx.Provide(NewServer)
+	ServerModule = fx.Options(fx.Provide(NewServer), fx.Provide(NewConfig), fx.Provide(UnaryServerInterceptor), fx.Provide(StreamServerInterceptor))
 
 	// Module for fx.
-	Module = fx.Options(ServerModule, fx.Provide(UnaryServerInterceptor), fx.Provide(StreamServerInterceptor))
+	Module = fx.Options(ServerModule)
 )
