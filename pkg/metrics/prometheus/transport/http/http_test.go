@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
@@ -20,6 +21,8 @@ import (
 
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
+		os.Setenv("APP_NAME", "test")
+
 		lc := fxtest.NewLifecycle(t)
 		mux := pkgHTTP.NewMux()
 
@@ -36,7 +39,10 @@ func TestHTTP(t *testing.T) {
 		opts := redis.NewOptions(r)
 		_ = redis.NewCache(lc, rcfg, opts)
 
-		_, err = ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		ricfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
+		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
 
 		pkgHTTP.Register(lc, test.NewShutdowner(), mux, cfg, logger)
@@ -71,5 +77,6 @@ func TestHTTP(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 	})
 }

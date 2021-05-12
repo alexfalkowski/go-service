@@ -2,11 +2,11 @@ package auth0_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
 	"github.com/alexfalkowski/go-service/pkg/transport/http"
@@ -16,7 +16,11 @@ import (
 
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		os.Setenv("APP_NAME", "test")
+
+		cfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 
 		acfg, err := auth0.NewConfig()
@@ -25,7 +29,7 @@ func TestGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
 		client := http.NewClient(logger)
@@ -45,12 +49,17 @@ func TestGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 	})
 }
 
 func TestInvalidGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		os.Setenv("APP_NAME", "test")
+
+		cfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 
 		acfg, err := auth0.NewConfig()
@@ -61,7 +70,7 @@ func TestInvalidGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
 		client := http.NewClient(logger)
@@ -79,12 +88,17 @@ func TestInvalidGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 	})
 }
 
 func TestCachedGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		cfg := &config.Config{AppName: "test"}
+		os.Setenv("APP_NAME", "test")
+
+		cfg, err := ristretto.NewConfig()
+		So(err, ShouldBeNil)
+
 		lc := fxtest.NewLifecycle(t)
 
 		acfg, err := auth0.NewConfig()
@@ -93,7 +107,7 @@ func TestCachedGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg, ristretto.NewConfig())
+		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
 		client := http.NewClient(logger)
@@ -118,5 +132,6 @@ func TestCachedGenerate(t *testing.T) {
 		})
 
 		lc.RequireStop()
+		So(os.Unsetenv("APP_NAME"), ShouldBeNil)
 	})
 }
