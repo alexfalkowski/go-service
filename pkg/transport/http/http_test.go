@@ -17,6 +17,7 @@ import (
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	tokenHTTP "github.com/alexfalkowski/go-service/pkg/transport/http/security/token"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -31,10 +32,8 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10009"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10010"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10010"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
@@ -95,10 +94,8 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10011"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10012"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10012"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -164,10 +161,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10013"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10014"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -233,10 +228,8 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10013"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10014"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -300,10 +293,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10013"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10014"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -361,10 +352,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10013"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10014"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -428,10 +417,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: "10013"}
-		mux := pkgHTTP.NewMux()
-
-		pkgHTTP.Register(lc, sh, mux, &pkgHTTP.Config{Port: "10014"}, logger)
-
+		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,

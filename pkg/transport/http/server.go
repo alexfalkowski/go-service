@@ -12,16 +12,15 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Register for HTTP.
-func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *Config, logger *zap.Logger) {
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", cfg.Port),
-		Handler: mux,
-	}
+// NewServer for HTTP.
+func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *http.Server {
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+	addr := fmt.Sprintf(":%s", cfg.Port)
+	server := &http.Server{Addr: addr, Handler: mux}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.Port))
+			listener, err := net.Listen("tcp", addr)
 			if err != nil {
 				return err
 			}
@@ -34,6 +33,8 @@ func Register(lc fx.Lifecycle, s fx.Shutdowner, mux *runtime.ServeMux, cfg *Conf
 			return stopServer(ctx, server, cfg, logger)
 		},
 	})
+
+	return server
 }
 
 func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *Config, logger *zap.Logger) {
@@ -60,4 +61,13 @@ func stopServer(ctx context.Context, server *http.Server, cfg *Config, logger *z
 	}
 
 	return nil
+}
+
+func customMatcher(key string) (string, bool) {
+	switch key {
+	case "Request-Id":
+		return key, true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
 }

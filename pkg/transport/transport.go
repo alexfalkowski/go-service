@@ -12,7 +12,7 @@ var (
 	GRPCServerModule = fx.Options(fx.Provide(grpc.NewServer), fx.Provide(grpc.NewConfig), fx.Provide(grpc.UnaryServerInterceptor), fx.Provide(grpc.StreamServerInterceptor))
 
 	// HTTPServerModule for fx.
-	HTTPServerModule = fx.Options(fx.Invoke(http.Register), fx.Provide(http.NewMux), fx.Provide(http.NewConfig))
+	HTTPServerModule = fx.Options(fx.Provide(http.NewServer), fx.Provide(http.NewConfig))
 
 	// HTTPClientModule for fx.
 	HTTPClientModule = fx.Options(fx.Provide(http.NewClient))
