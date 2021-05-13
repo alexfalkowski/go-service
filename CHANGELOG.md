@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.20.0](https://github.com/alexfalkowski/go-service/compare/v1.19.1...v1.20.0) (2021-05-13)
+
+
+### Features
+
+* **http:** create server ([#34](https://github.com/alexfalkowski/go-service/issues/34)) ([e86b49b](https://github.com/alexfalkowski/go-service/commit/e86b49b4033a8989825e2cc901cdce9a5534bf69))
+
 ### [1.19.1](https://github.com/alexfalkowski/go-service/compare/v1.19.0...v1.19.1) (2021-05-12)
 
 
