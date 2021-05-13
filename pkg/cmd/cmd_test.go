@@ -28,8 +28,8 @@ func TestShutdown(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
-				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
+				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 			}
 
@@ -57,8 +57,8 @@ func TestInvalidHTTP(t *testing.T) {
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
-				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
+				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
@@ -86,8 +86,8 @@ func TestInvalidGRPC(t *testing.T) {
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
-				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
+				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
