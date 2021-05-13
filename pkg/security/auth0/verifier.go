@@ -54,12 +54,12 @@ func (v *verifier) Verify(ctx context.Context, token []byte) error {
 func (v *verifier) validate(token *jwt.Token) (interface{}, error) {
 	claims := token.Claims.(jwt.MapClaims)
 
-	checkAud := claims.VerifyAudience(v.cfg.Audience, false)
+	checkAud := claims.VerifyAudience(v.cfg.Audience, true)
 	if !checkAud {
 		return token, ErrInvalidAudience
 	}
 
-	checkIss := claims.VerifyIssuer(v.cfg.Issuer, false)
+	checkIss := claims.VerifyIssuer(v.cfg.Issuer, true)
 	if !checkIss {
 		return token, ErrInvalidIssuer
 	}
@@ -69,10 +69,10 @@ func (v *verifier) validate(token *jwt.Token) (interface{}, error) {
 		return token, err
 	}
 
-	result, err := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
 	if err != nil {
 		return token, err
 	}
 
-	return result, nil
+	return key, nil
 }
