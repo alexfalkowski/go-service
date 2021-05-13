@@ -13,6 +13,7 @@ type Config struct {
 	ClientSecret  string `envconfig:"AUTH0_CLIENT_SECRET" required:"true"`
 	Audience      string `envconfig:"AUTH0_AUDIENCE" required:"true"`
 	Issuer        string `envconfig:"AUTH0_ISSUER" required:"true"`
+	Algorithm     string `envconfig:"AUTH0_ALGORITHM" required:"true"`
 	JSONWebKeySet string `envconfig:"AUTH0_JSON_WEB_KEY_SET" required:"true"`
 }
 
