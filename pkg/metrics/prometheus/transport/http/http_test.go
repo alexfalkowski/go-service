@@ -23,7 +23,6 @@ func TestHTTP(t *testing.T) {
 		os.Setenv("SERVICE_NAME", "test")
 
 		lc := fxtest.NewLifecycle(t)
-		mux := pkgHTTP.NewMux()
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -43,9 +42,9 @@ func TestHTTP(t *testing.T) {
 		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10002"}, logger)
+		server := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10002"}, logger)
 
-		err = prometheusHTTP.Register(mux)
+		err = prometheusHTTP.Register(server)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

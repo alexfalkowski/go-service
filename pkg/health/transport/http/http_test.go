@@ -33,14 +33,12 @@ func TestHTTP(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		mux := pkgHTTP.NewMux()
-
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10000"}, logger)
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10000"}, logger)
 
-		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -86,14 +84,12 @@ func TestInvalidHTTP(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		mux := pkgHTTP.NewMux()
-
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		pkgHTTP.Register(lc, test.NewShutdowner(), mux, &pkgHTTP.Config{Port: "10001"}, logger)
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10001"}, logger)
 
-		err = healthHTTP.Register(mux, &healthHTTP.Observer{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

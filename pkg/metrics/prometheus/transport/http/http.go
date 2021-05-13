@@ -8,7 +8,8 @@ import (
 )
 
 // Register metrics for HTTP
-func Register(mux *runtime.ServeMux) error {
+func Register(server *http.Server) error {
+	mux := server.Handler.(*runtime.ServeMux)
 	handler := promhttp.Handler()
 
 	return mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {

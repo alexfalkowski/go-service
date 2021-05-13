@@ -19,6 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("SERVICE_NAME", "test")
@@ -29,7 +30,8 @@ func TestInvalidHTTP(t *testing.T) {
 		Convey("When I try to create a server", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
-				transport.GRPCServerModule,
+				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
+				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
 			err := cmd.RunServer([]string{}, 10*time.Second, opts)
@@ -46,6 +48,7 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("SERVICE_NAME", "test")

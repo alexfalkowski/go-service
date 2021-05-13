@@ -13,7 +13,9 @@ const (
 )
 
 // Register health for HTTP.
-func Register(mux *runtime.ServeMux, ob *Observer) error {
+func Register(server *http.Server, ob *Observer) error {
+	mux := server.Handler.(*runtime.ServeMux)
+
 	return mux.HandlePath("GET", "/health", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		var (
 			status   int
