@@ -19,6 +19,34 @@ import (
 	"go.uber.org/zap"
 )
 
+func TestShutdown(t *testing.T) {
+	Convey("Given I have valid configuration", t, func() {
+		os.Setenv("SERVICE_NAME", "test")
+		os.Setenv("HTTP_PORT", "8000")
+		os.Setenv("GRPC_PORT", "9000")
+		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+
+		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
+			opts := []fx.Option{
+				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
+				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
+				fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
+			}
+
+			err := cmd.RunServer([]string{}, 10*time.Second, opts)
+
+			Convey("Then I should not see an error", func() {
+				So(err, ShouldBeNil)
+			})
+
+			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
+			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
+			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
+			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
+		})
+	})
+}
+
 // nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
@@ -27,7 +55,7 @@ func TestInvalidHTTP(t *testing.T) {
 		os.Setenv("GRPC_PORT", "9000")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
-		Convey("When I try to create a server", func() {
+		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
 				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
@@ -56,7 +84,7 @@ func TestInvalidGRPC(t *testing.T) {
 		os.Setenv("GRPC_PORT", "-1")
 		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
 
-		Convey("When I try to create a server", func() {
+		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule,
 				transport.GRPCServerModule, health.Module, fx.Provide(registrations),
@@ -100,4 +128,12 @@ func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
 	}
 
 	return &healthGRPC.Observer{Observer: ob}, nil
+}
+
+func shutdown(s fx.Shutdowner) {
+	go func(s fx.Shutdowner) {
+		time.Sleep(5 * time.Second)
+
+		s.Shutdown() // nolint:errcheck
+	}(s)
 }
