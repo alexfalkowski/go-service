@@ -40,7 +40,7 @@ func (v *verifier) Verify(ctx context.Context, token []byte) error {
 		return err
 	}
 
-	if parsedToken.Header["alg"] != "RS256" {
+	if parsedToken.Header["alg"] != v.cfg.Algorithm {
 		return ErrInvalidAlgorithm
 	}
 
