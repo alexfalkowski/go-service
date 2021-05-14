@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"context"
 	"os"
 	"testing"
 	"time"
@@ -35,7 +34,7 @@ func TestShutdown(t *testing.T) {
 				fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 			}
 
-			c, err := cmd.New(context.Background(), 10*time.Second, opts, opts)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"worker"})
@@ -69,7 +68,7 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(context.Background(), 10*time.Second, opts, opts)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})
@@ -103,7 +102,7 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(context.Background(), 10*time.Second, opts, opts)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})
