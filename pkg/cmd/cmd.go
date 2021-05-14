@@ -10,7 +10,7 @@ import (
 )
 
 // New command with serve and worker.
-func New(ctx context.Context, timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
+func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
 	cfg, err := NewConfig()
 	if err != nil {
 		return nil, err
