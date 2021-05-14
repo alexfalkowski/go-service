@@ -25,6 +25,7 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4
+	github.com/spf13/cobra v1.1.3
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.3.1
@@ -38,5 +39,4 @@ require (
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.31.0
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
