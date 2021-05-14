@@ -9,7 +9,7 @@ require (
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
-	github.com/go-redis/cache/v8 v8.4.0
+	github.com/go-redis/cache/v8 v8.4.1
 	github.com/go-redis/redis/v8 v8.8.2
 	github.com/golang/snappy v0.0.3
 	github.com/google/uuid v1.2.0
@@ -25,18 +25,18 @@ require (
 	github.com/prometheus/client_golang v1.10.0
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4
+	github.com/spf13/cobra v1.1.3
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible
-	github.com/vmihailenco/msgpack/v5 v5.3.1
+	github.com/vmihailenco/msgpack/v5 v5.3.2
 	go.uber.org/fx v1.13.1
 	go.uber.org/zap v1.16.0
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
-	google.golang.org/genproto v0.0.0-20210510173355-fb37daa5cd7a
-	google.golang.org/grpc v1.37.0
+	golang.org/x/sys v0.0.0-20210514084401-e8d321eab015 // indirect
+	google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384
+	google.golang.org/grpc v1.37.1
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.31.0
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
