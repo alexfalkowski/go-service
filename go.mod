@@ -9,7 +9,7 @@ require (
 	github.com/dgraph-io/ristretto v0.0.3
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
-	github.com/go-redis/cache/v8 v8.4.0
+	github.com/go-redis/cache/v8 v8.4.1
 	github.com/go-redis/redis/v8 v8.8.2
 	github.com/golang/snappy v0.0.3
 	github.com/google/uuid v1.2.0
