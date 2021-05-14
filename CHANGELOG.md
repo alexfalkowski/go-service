@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.21.2](https://github.com/alexfalkowski/go-service/compare/v1.21.1...v1.21.2) (2021-05-14)
+
+
+### Bug Fixes
+
+* **grpc:** default port to 9090 ([#40](https://github.com/alexfalkowski/go-service/issues/40)) ([e252d18](https://github.com/alexfalkowski/go-service/commit/e252d18b21b957fa4dc14ae3c30ad9fdfbf54d0f))
+
 ### [1.21.1](https://github.com/alexfalkowski/go-service/compare/v1.21.0...v1.21.1) (2021-05-14)
 
 
