@@ -67,9 +67,5 @@ func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
 	stopCtx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	if err := app.Stop(stopCtx); err != nil {
-		return err
-	}
-
-	return nil
+	return app.Stop(stopCtx)
 }

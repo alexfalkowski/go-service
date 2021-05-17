@@ -5,6 +5,7 @@ import (
 )
 
 const (
+	// RFC3339 format.
 	RFC3339 = time.RFC3339
 )
 

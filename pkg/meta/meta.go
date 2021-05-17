@@ -13,8 +13,8 @@ const (
 type contextKey string
 
 var (
-	meta            = contextKey("meta")
-	mux  sync.Mutex = sync.Mutex{}
+	meta = contextKey("meta")
+	mux  = sync.Mutex{}
 )
 
 // WithAttribute to meta.
