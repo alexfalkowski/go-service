@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.22.0](https://github.com/alexfalkowski/go-service/compare/v1.21.2...v1.22.0) (2021-05-17)
+
+
+### Features
+
+* **deps:** update ([#42](https://github.com/alexfalkowski/go-service/issues/42)) ([a3e5311](https://github.com/alexfalkowski/go-service/commit/a3e531125ef0078232540643e634d3a31ab0eab5))
+* update linter to use revive ([#41](https://github.com/alexfalkowski/go-service/issues/41)) ([40f31d7](https://github.com/alexfalkowski/go-service/commit/40f31d7278b7462f1ec46234d1a9ce3cfb68c9fa))
+
 ### [1.21.2](https://github.com/alexfalkowski/go-service/compare/v1.21.1...v1.21.2) (2021-05-14)
 
 
