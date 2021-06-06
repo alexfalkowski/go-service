@@ -6,7 +6,7 @@ require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/alexfalkowski/go-health v1.6.1
-	github.com/dgraph-io/ristretto v0.0.3
+	github.com/dgraph-io/ristretto v0.1.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/go-redis/cache/v8 v8.4.1
