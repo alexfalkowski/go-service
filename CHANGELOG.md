@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.24.0](https://github.com/alexfalkowski/go-service/compare/v1.23.0...v1.24.0) (2021-06-26)
+
+
+### Features
+
+* add ability to store jwt token ([#44](https://github.com/alexfalkowski/go-service/issues/44)) ([8e253a9](https://github.com/alexfalkowski/go-service/commit/8e253a9b81e72acff19027cb08d2c4885a7c3b29))
+
 ## [1.23.0](https://github.com/alexfalkowski/go-service/compare/v1.22.0...v1.23.0) (2021-06-06)
 
 
