@@ -5,11 +5,6 @@ import (
 	"sync"
 )
 
-const (
-	// RequestID for meta.
-	RequestID = "app.request_id"
-)
-
 type contextKey string
 
 var (

@@ -3,7 +3,7 @@ package meta
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/pkg/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/meta"
 	"github.com/google/uuid"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -25,7 +25,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			requestID = uuid.New().String()
 		}
 
-		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+		ctx = meta.WithRequestID(ctx, requestID)
 		header := metadata.Pairs("request-id", requestID)
 
 		if err := grpc.SendHeader(ctx, header); err != nil {
@@ -52,7 +52,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			requestID = uuid.New().String()
 		}
 
-		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+		ctx = meta.WithRequestID(ctx, requestID)
 		header := metadata.Pairs("request-id", requestID)
 
 		if err := grpc.SendHeader(ctx, header); err != nil {
@@ -69,12 +69,12 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for meta.
 func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		requestID := meta.Attribute(ctx, meta.RequestID)
+		requestID := meta.RequestID(ctx)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+		ctx = meta.WithRequestID(ctx, requestID)
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -84,12 +84,12 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for meta.
 func StreamClientInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		requestID := meta.Attribute(ctx, meta.RequestID)
+		requestID := meta.RequestID(ctx)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+		ctx = meta.WithRequestID(ctx, requestID)
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
