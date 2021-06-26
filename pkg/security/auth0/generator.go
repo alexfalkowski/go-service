@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/security/token"
+	sjwt "github.com/alexfalkowski/go-service/pkg/security/jwt"
 	"github.com/dgraph-io/ristretto"
 	"github.com/form3tech-oss/jwt-go"
 )
@@ -81,7 +81,7 @@ type cachedGenerator struct {
 	cfg   *Config
 	cache *ristretto.Cache
 
-	token.Generator
+	sjwt.Generator
 }
 
 func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {

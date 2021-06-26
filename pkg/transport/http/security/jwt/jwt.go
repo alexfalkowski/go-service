@@ -1,20 +1,20 @@
-package token
+package jwt
 
 import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/pkg/security/token"
+	"github.com/alexfalkowski/go-service/pkg/security/jwt"
 )
 
 // NewRoundTripper for token.
-func NewRoundTripper(gen token.Generator, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(gen jwt.Generator, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{gen: gen, RoundTripper: hrt}
 }
 
 // RoundTripper for zap.
 type RoundTripper struct {
-	gen token.Generator
+	gen jwt.Generator
 
 	http.RoundTripper
 }
@@ -26,7 +26,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if len(t) == 0 {
-		return nil, token.ErrMissingToken
+		return nil, jwt.ErrMissingToken
 	}
 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(t)))

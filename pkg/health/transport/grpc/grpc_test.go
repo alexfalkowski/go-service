@@ -12,7 +12,7 @@ import (
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
-	tokenGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc/security/token"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -145,8 +145,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -162,7 +162,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
 			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
@@ -261,8 +261,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -278,7 +278,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
 				grpc.WithInsecure(),
-				grpc.WithPerRPCCredentials(tokenGRPC.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
 			conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)

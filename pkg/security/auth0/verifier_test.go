@@ -45,7 +45,7 @@ func TestVerify(t *testing.T) {
 			token, err := gen.Generate(context.Background())
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -88,12 +88,12 @@ func TestCachedVerify(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
