@@ -23,7 +23,7 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/philhofer/fwd v1.1.1 // indirect
-	github.com/prometheus/client_golang v1.10.0
+	github.com/prometheus/client_golang v1.11.0
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cobra v1.1.3
