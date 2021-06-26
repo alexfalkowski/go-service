@@ -3,7 +3,7 @@ package meta
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/pkg/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq/producer"
@@ -25,7 +25,7 @@ func (h *metaHandler) Handle(ctx context.Context, message *message.Message) (con
 		requestID = uuid.New().String()
 	}
 
-	ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 	message.Headers["request-id"] = requestID
 
 	return h.Handler.Handle(ctx, message)
@@ -41,12 +41,12 @@ type metaProducer struct {
 }
 
 func (p *metaProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
-	requestID := meta.Attribute(ctx, meta.RequestID)
+	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
-	ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 	message.Headers["request-id"] = requestID
 
 	return p.Producer.Publish(ctx, topic, message)

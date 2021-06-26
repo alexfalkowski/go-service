@@ -29,7 +29,7 @@ type verifier struct {
 	mux  sync.Mutex
 }
 
-func (v *verifier) Verify(ctx context.Context, token []byte) error {
+func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error) {
 	v.mux.Lock()
 	defer v.mux.Unlock()
 
@@ -37,18 +37,18 @@ func (v *verifier) Verify(ctx context.Context, token []byte) error {
 
 	parsedToken, err := jwt.Parse(string(token), v.validate)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if parsedToken.Header["alg"] != v.cfg.Algorithm {
-		return ErrInvalidAlgorithm
+		return nil, ErrInvalidAlgorithm
 	}
 
 	if !parsedToken.Valid {
-		return ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
-	return nil
+	return parsedToken, nil
 }
 
 func (v *verifier) validate(token *jwt.Token) (interface{}, error) {

@@ -1,4 +1,4 @@
-package token
+package jwt
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/pkg/security/token"
+	"github.com/alexfalkowski/go-service/pkg/security/jwt"
+	"github.com/alexfalkowski/go-service/pkg/security/meta"
 	grpcMeta "github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -19,7 +21,7 @@ const (
 )
 
 // UnaryServerInterceptor for token.
-func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(verifier jwt.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == healthService {
@@ -30,19 +32,22 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return nil, status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
+			return nil, status.Errorf(codes.Unauthenticated, jwt.ErrMissingToken.Error())
 		}
 
-		if err := verifier.Verify(ctx, tkn(values[0])); err != nil {
+		token, err := verifier.Verify(ctx, tkn(values[0]))
+		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
+
+		ctx = meta.WithToken(ctx, token)
 
 		return handler(ctx, req)
 	}
 }
 
 // StreamServerInterceptor for token.
-func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(verifier jwt.Verifier) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == healthService {
@@ -54,24 +59,28 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return status.Errorf(codes.Unauthenticated, token.ErrMissingToken.Error())
+			return status.Errorf(codes.Unauthenticated, jwt.ErrMissingToken.Error())
 		}
 
-		if err := verifier.Verify(ctx, tkn(values[0])); err != nil {
+		token, err := verifier.Verify(ctx, tkn(values[0]))
+		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
-		return handler(srv, stream)
+		wrapped := grpcMiddleware.WrapServerStream(stream)
+		wrapped.WrappedContext = meta.WithToken(ctx, token)
+
+		return handler(srv, wrapped)
 	}
 }
 
 // NewPerRPCCredentials for token.
-func NewPerRPCCredentials(generator token.Generator) credentials.PerRPCCredentials {
+func NewPerRPCCredentials(generator jwt.Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
 }
 
 type tokenPerRPCCredentials struct {
-	generator token.Generator
+	generator jwt.Generator
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
@@ -81,7 +90,7 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...
 	}
 
 	if len(t) == 0 {
-		return nil, token.ErrMissingToken
+		return nil, jwt.ErrMissingToken
 	}
 
 	return map[string]string{"authorization": fmt.Sprintf("Bearer %s", t)}, nil

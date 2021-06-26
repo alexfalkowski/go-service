@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
-	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
 	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
@@ -41,12 +40,12 @@ func TestVerify(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I verify the token", func() {
-			ctx := meta.WithAttribute(context.Background(), meta.RequestID, "test-request-id")
+			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			token, err := gen.Generate(context.Background())
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -89,12 +88,12 @@ func TestCachedVerify(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)

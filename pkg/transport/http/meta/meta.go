@@ -3,7 +3,7 @@ package meta
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/pkg/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/meta"
 	"github.com/google/uuid"
 )
 
@@ -20,14 +20,14 @@ type RoundTripper struct {
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
-	requestID := meta.Attribute(ctx, meta.RequestID)
+	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
 	req.Header.Set("Request-ID", requestID)
 
-	ctx = meta.WithAttribute(ctx, meta.RequestID, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }

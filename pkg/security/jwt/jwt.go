@@ -1,8 +1,10 @@
-package token
+package jwt
 
 import (
 	"context"
 	"errors"
+
+	"github.com/form3tech-oss/jwt-go"
 )
 
 var (
@@ -19,5 +21,5 @@ type Generator interface {
 // Verifier allows the implementation of different types of verifiers.
 type Verifier interface {
 	// Verify a token or error.
-	Verify(ctx context.Context, token []byte) error
+	Verify(ctx context.Context, token []byte) (*jwt.Token, error)
 }

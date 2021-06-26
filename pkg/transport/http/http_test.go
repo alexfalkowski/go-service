@@ -13,9 +13,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
-	tokenGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc/security/token"
+	jwtGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
-	tokenHTTP "github.com/alexfalkowski/go-service/pkg/transport/http/security/token"
+	jwtHTTP "github.com/alexfalkowski/go-service/pkg/transport/http/security/jwt"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	. "github.com/smartystreets/goconvey/convey"
@@ -37,7 +37,7 @@ func TestUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -100,12 +100,12 @@ func TestValidAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -122,7 +122,7 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
+			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
@@ -167,12 +167,12 @@ func TestInvalidAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -189,7 +189,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
+			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
@@ -234,12 +234,12 @@ func TestMissingAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -299,12 +299,12 @@ func TestEmptyAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -321,7 +321,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
+			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
@@ -358,12 +358,12 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -423,12 +423,12 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{tokenGRPC.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{tokenGRPC.StreamServerInterceptor(verifier)},
+			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer())
+		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -445,7 +445,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
-			transport := tokenHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
+			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
