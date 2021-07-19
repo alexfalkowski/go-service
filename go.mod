@@ -10,7 +10,7 @@ require (
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/go-redis/cache/v8 v8.4.1
-	github.com/go-redis/redis/v8 v8.10.0
+	github.com/go-redis/redis/v8 v8.11.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang/snappy v0.0.3
 	github.com/google/uuid v1.2.0
