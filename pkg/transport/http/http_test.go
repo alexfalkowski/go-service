@@ -31,10 +31,11 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10009"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10010"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
-		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
+		serverParams := pkgGRPC.ServerParams{Config: grpcCfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(false))
@@ -47,7 +48,7 @@ func TestUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -59,7 +60,7 @@ func TestUnary(t *testing.T) {
 			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10010/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -93,12 +94,13 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10011"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10012"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -113,7 +115,7 @@ func TestValidAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -126,7 +128,7 @@ func TestValidAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10012/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -160,12 +162,13 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10013"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -180,7 +183,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -193,7 +196,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -227,12 +230,13 @@ func TestMissingAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10013"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -247,7 +251,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -259,7 +263,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -292,12 +296,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10013"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -312,7 +317,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -325,7 +330,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -351,12 +356,13 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10013"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -371,7 +377,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -383,7 +389,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClient(logger)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -416,12 +422,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10013"}
-		server := pkgHTTP.NewServer(lc, sh, &pkgHTTP.Config{Port: "10014"}, logger)
+		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
-			Config: cfg,
+			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
@@ -436,7 +443,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		clientParams := &pkgGRPC.ClientParams{Logger: logger}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -449,7 +456,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:10014/v1/greet/hello", bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")

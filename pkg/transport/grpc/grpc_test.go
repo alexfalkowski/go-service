@@ -25,7 +25,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -68,7 +68,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -119,7 +119,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -168,7 +168,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -216,7 +216,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -260,7 +260,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10007"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -308,7 +308,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -359,7 +359,7 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -414,7 +414,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -467,7 +467,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -514,7 +514,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -563,7 +563,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10008"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,

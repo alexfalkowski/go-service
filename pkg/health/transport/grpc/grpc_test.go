@@ -37,7 +37,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10005"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -89,7 +89,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10004"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -140,7 +140,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10005"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -201,7 +201,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10003"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -256,7 +256,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: "10003"}
+		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
