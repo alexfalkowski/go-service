@@ -89,15 +89,6 @@ func request_Greeter_SayStreamHello_0(ctx context.Context, marshaler runtime.Mar
 		}
 		return nil
 	}
-	if err := handleSend(); err != nil {
-		if cerr := stream.CloseSend(); cerr != nil {
-			grpclog.Infof("Failed to terminate client stream: %v", cerr)
-		}
-		if err == io.EOF {
-			return stream, metadata, nil
-		}
-		return nil, metadata, err
-	}
 	go func() {
 		for {
 			if err := handleSend(); err != nil {
@@ -129,7 +120,7 @@ func RegisterGreeterHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greet.Greeter/SayHello")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greet.Greeter/SayHello", runtime.WithHTTPPathPattern("/v1/greet/hello"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -198,7 +189,7 @@ func RegisterGreeterHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greet.Greeter/SayHello")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greet.Greeter/SayHello", runtime.WithHTTPPathPattern("/v1/greet/hello"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -218,7 +209,7 @@ func RegisterGreeterHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greet.Greeter/SayStreamHello")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greet.Greeter/SayStreamHello", runtime.WithHTTPPathPattern("/v1/greet/hello/stream"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
