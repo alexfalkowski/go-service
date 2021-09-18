@@ -58,7 +58,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/dig v1.12.0 // indirect
-	go.uber.org/fx v1.14.0
+	go.uber.org/fx v1.14.2
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.19.0
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
