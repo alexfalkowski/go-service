@@ -13,6 +13,7 @@ linters:
     - dogsled
     - dupl
     - errcheck
+    - errname
     - exportloopref
     - exhaustive
     - funlen

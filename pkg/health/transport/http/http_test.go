@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -36,7 +37,8 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10000"}, logger)
+		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
@@ -48,7 +50,7 @@ func TestHTTP(t *testing.T) {
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10000/health", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -87,7 +89,8 @@ func TestInvalidHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10001"}, logger)
+		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
 		So(err, ShouldBeNil)
@@ -99,7 +102,7 @@ func TestInvalidHTTP(t *testing.T) {
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10001/health", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

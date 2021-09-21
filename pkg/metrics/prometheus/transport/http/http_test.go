@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -42,9 +43,10 @@ func TestHTTP(t *testing.T) {
 		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
 
-		server := pkgHTTP.NewServer(lc, test.NewShutdowner(), &pkgHTTP.Config{Port: "10002"}, logger)
+		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = prometheusHTTP.Register(server)
+		err = prometheusHTTP.Register(httpServer)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -52,7 +54,7 @@ func TestHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := pkgHTTP.NewClient(logger)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", "http://localhost:10002/metrics", nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
