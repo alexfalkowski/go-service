@@ -8,8 +8,8 @@ import (
 
 var (
 	// JaegerOpenTracingModule for fx.
-	JaegerOpenTracingModule = fx.Options(fx.Invoke(jaeger.Register), fx.Provide(jaeger.NewConfig))
+	JaegerOpenTracingModule = fx.Options(fx.Invoke(jaeger.Register))
 
 	// DataDogOpenTracingModule for fx.
-	DataDogOpenTracingModule = fx.Options(fx.Invoke(datadog.Register), fx.Provide(datadog.NewConfig))
+	DataDogOpenTracingModule = fx.Options(fx.Invoke(datadog.Register))
 )

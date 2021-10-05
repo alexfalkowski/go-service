@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
@@ -19,16 +18,18 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		rcfg := &redis.Config{Host: "localhost:6379"}
+		rcfg := &redis.Config{
+			Name: "test",
+			Host: "localhost:6379",
+		}
 
 		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
@@ -37,8 +38,12 @@ func TestHTTP(t *testing.T) {
 		opts := redis.NewOptions(r)
 		_ = redis.NewCache(lc, rcfg, opts)
 
-		ricfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		ricfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
@@ -76,6 +81,5 @@ func TestHTTP(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

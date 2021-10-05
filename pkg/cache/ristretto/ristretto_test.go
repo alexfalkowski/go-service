@@ -1,7 +1,6 @@
 package ristretto_test
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -13,11 +12,12 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
-
+		cfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 		lc := fxtest.NewLifecycle(t)
 
 		c, err := ristretto.NewCache(lc, cfg)
@@ -44,6 +44,5 @@ func TestCache(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

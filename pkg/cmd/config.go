@@ -1,19 +1,16 @@
 package cmd
 
 import (
-	"github.com/kelseyhightower/envconfig"
+	"time"
+
+	"go.uber.org/fx"
 )
-
-// NewConfig for cmd.
-func NewConfig() (*Config, error) {
-	var config Config
-	err := envconfig.Process("", &config)
-
-	return &config, err
-}
 
 // Config for cmd.
 type Config struct {
-	Name        string `envconfig:"SERVICE_NAME" required:"true"`
-	Description string `envconfig:"SERVICE_DESCRIPTION" required:"true"`
+	Name        string
+	Description string
+	Timeout     time.Duration
+	ServerOpts  []fx.Option
+	WorkerOpts  []fx.Option
 }

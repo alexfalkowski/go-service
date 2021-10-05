@@ -7,5 +7,5 @@ import (
 
 var (
 	// Auth0Module for fx.
-	Auth0Module = fx.Options(fx.Provide(auth0.NewConfig), fx.Provide(auth0.NewGenerator), fx.Provide(auth0.NewCertificator), fx.Provide(auth0.NewVerifier))
+	Auth0Module = fx.Options(fx.Provide(auth0.NewGenerator), fx.Provide(auth0.NewCertificator), fx.Provide(auth0.NewVerifier))
 )

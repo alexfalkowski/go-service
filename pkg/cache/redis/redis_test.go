@@ -2,7 +2,6 @@ package redis_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -15,10 +14,10 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := redis.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &redis.Config{
+			Name: "test",
+			Host: "localhost:6379",
+		}
 
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
@@ -44,6 +43,5 @@ func TestCache(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

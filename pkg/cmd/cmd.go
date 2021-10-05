@@ -10,12 +10,7 @@ import (
 )
 
 // New command with serve and worker.
-func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
-	cfg, err := NewConfig()
-	if err != nil {
-		return nil, err
-	}
-
+func New(cfg *Config) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:          strings.ToLower(cfg.Name),
 		Short:        cfg.Description,
@@ -29,7 +24,7 @@ func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) 
 		Long:         "Serve the API.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, timeout, serverOpts)
+			return RunServer(args, cfg.Timeout, cfg.ServerOpts)
 		},
 	}
 
@@ -41,7 +36,7 @@ func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) 
 		Long:         "Start the worker.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, timeout, workerOpts)
+			return RunServer(args, cfg.Timeout, cfg.WorkerOpts)
 		},
 	}
 

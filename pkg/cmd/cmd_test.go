@@ -7,13 +7,23 @@ import (
 
 	"github.com/alexfalkowski/go-health/pkg/checker"
 	"github.com/alexfalkowski/go-health/pkg/server"
+	"github.com/alexfalkowski/go-service/pkg/cache"
+	"github.com/alexfalkowski/go-service/pkg/cache/redis"
+	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/cmd"
+	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
 	"github.com/alexfalkowski/go-service/pkg/logger"
+	"github.com/alexfalkowski/go-service/pkg/security"
+	"github.com/alexfalkowski/go-service/pkg/security/auth0"
+	"github.com/alexfalkowski/go-service/pkg/sql"
+	"github.com/alexfalkowski/go-service/pkg/sql/pg"
+	"github.com/alexfalkowski/go-service/pkg/trace"
 	"github.com/alexfalkowski/go-service/pkg/transport"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
+	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,20 +31,27 @@ import (
 
 func TestShutdown(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-		os.Setenv("SERVICE_DESCRIPTION", "Test service.")
-		os.Setenv("HTTP_PORT", "8000")
-		os.Setenv("GRPC_PORT", "9000")
-		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("CONFIG_FILE", "../../test/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
-				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
-				fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
+				logger.ZapModule, config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule,
+				cache.RedisModule, cache.RistrettoModule, security.Auth0Module, sql.PostgreSQLModule,
+				trace.DataDogOpenTracingModule, trace.JaegerOpenTracingModule,
+				transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule, transport.NSQModule,
+				fx.Provide(registrations), fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
+				fx.Invoke(configs),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			cfg := &cmd.Config{
+				Name:        "test",
+				Description: "Test service.",
+				Timeout:     10 * time.Second,
+				ServerOpts:  opts,
+				WorkerOpts:  opts,
+			}
+
+			c, err := cmd.New(cfg)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"worker"})
@@ -43,11 +60,7 @@ func TestShutdown(t *testing.T) {
 				So(c.Execute(), ShouldBeNil)
 			})
 
-			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
-			So(os.Unsetenv("SERVICE_DESCRIPTION"), ShouldBeNil)
-			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
-			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -55,20 +68,24 @@ func TestShutdown(t *testing.T) {
 // nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-		os.Setenv("SERVICE_DESCRIPTION", "Test service.")
-		os.Setenv("HTTP_PORT", "-1")
-		os.Setenv("GRPC_PORT", "9000")
-		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("CONFIG_FILE", "../../test/invalid_http.config.yml")
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
-				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
+				config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			cfg := &cmd.Config{
+				Name:        "test",
+				Description: "Test service.",
+				Timeout:     10 * time.Second,
+				ServerOpts:  opts,
+				WorkerOpts:  opts,
+			}
+
+			c, err := cmd.New(cfg)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})
@@ -77,11 +94,7 @@ func TestInvalidHTTP(t *testing.T) {
 				So(c.Execute(), ShouldBeError)
 			})
 
-			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
-			So(os.Unsetenv("SERVICE_DESCRIPTION"), ShouldBeNil)
-			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
-			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -89,20 +102,24 @@ func TestInvalidHTTP(t *testing.T) {
 // nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-		os.Setenv("SERVICE_DESCRIPTION", "Test service.")
-		os.Setenv("HTTP_PORT", "9000")
-		os.Setenv("GRPC_PORT", "-1")
-		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
+		os.Setenv("CONFIG_FILE", "../../test/invalid_grpc.config.yml")
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
-				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
+				config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			cfg := &cmd.Config{
+				Name:        "test",
+				Description: "Test service.",
+				Timeout:     10 * time.Second,
+				ServerOpts:  opts,
+				WorkerOpts:  opts,
+			}
+
+			c, err := cmd.New(cfg)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})
@@ -111,11 +128,7 @@ func TestInvalidGRPC(t *testing.T) {
 				So(c.Execute(), ShouldBeError)
 			})
 
-			So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
-			So(os.Unsetenv("SERVICE_DESCRIPTION"), ShouldBeNil)
-			So(os.Unsetenv("HTTP_PORT"), ShouldBeNil)
-			So(os.Unsetenv("GRPC_PORT"), ShouldBeNil)
-			So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -143,6 +156,9 @@ func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
 	}
 
 	return &healthGRPC.Observer{Observer: ob}, nil
+}
+
+func configs(_ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) {
 }
 
 func shutdown(s fx.Shutdowner) {

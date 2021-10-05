@@ -8,13 +8,13 @@ import (
 
 // Config for Auth0.
 type Config struct {
-	URL           string `envconfig:"AUTH0_URL" required:"true"`
-	ClientID      string `envconfig:"AUTH0_CLIENT_ID" required:"true"`
-	ClientSecret  string `envconfig:"AUTH0_CLIENT_SECRET" required:"true"`
-	Audience      string `envconfig:"AUTH0_AUDIENCE" required:"true"`
-	Issuer        string `envconfig:"AUTH0_ISSUER" required:"true"`
-	Algorithm     string `envconfig:"AUTH0_ALGORITHM" required:"true"`
-	JSONWebKeySet string `envconfig:"AUTH0_JSON_WEB_KEY_SET" required:"true"`
+	URL           string `yaml:"url"`
+	ClientID      string `yaml:"client_id"`
+	ClientSecret  string `yaml:"client_secret"`
+	Audience      string `yaml:"audience"`
+	Issuer        string `yaml:"issuer"`
+	Algorithm     string `yaml:"algorithm"`
+	JSONWebKeySet string `yaml:"json_web_key_set"`
 }
 
 // CacheKey for config.

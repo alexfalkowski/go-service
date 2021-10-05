@@ -16,15 +16,24 @@ import (
 
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -53,21 +62,29 @@ func TestVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -101,6 +118,5 @@ func TestCachedVerify(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

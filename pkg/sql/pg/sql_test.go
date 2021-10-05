@@ -1,7 +1,6 @@
 package pg_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/sql/pg"
@@ -11,11 +10,10 @@ import (
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-		os.Setenv("POSTGRESQL_URL", "postgres://test:test@localhost:5432/test?sslmode=disable")
-
-		cfg, err := pg.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &pg.Config{
+			Name: "test",
+			URL:  "postgres://test:test@localhost:5432/test?sslmode=disable",
+		}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
@@ -31,9 +29,6 @@ func TestSQL(t *testing.T) {
 
 			lc.RequireStop()
 		})
-
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
-		So(os.Unsetenv("POSTGRESQL_URL"), ShouldBeNil)
 	})
 }
 

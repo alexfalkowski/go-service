@@ -1,7 +1,6 @@
 package datadog_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/trace/opentracing/datadog"
@@ -11,10 +10,10 @@ import (
 
 func TestDatadog(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := datadog.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &datadog.Config{
+			Name: "test",
+			Host: "localhost:8126",
+		}
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
@@ -28,7 +27,5 @@ func TestDatadog(t *testing.T) {
 
 			lc.RequireStop()
 		})
-
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

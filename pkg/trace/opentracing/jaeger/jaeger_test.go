@@ -1,7 +1,6 @@
 package jaeger_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/trace/opentracing/jaeger"
@@ -11,10 +10,10 @@ import (
 
 func TestJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := jaeger.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &jaeger.Config{
+			Name: "test",
+			Host: "localhost:6831",
+		}
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
@@ -28,7 +27,5 @@ func TestJaeger(t *testing.T) {
 
 			lc.RequireStop()
 		})
-
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
