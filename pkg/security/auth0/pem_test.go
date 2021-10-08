@@ -21,6 +21,65 @@ const (
 	algorithm = "ES256"
 )
 
+func TestInvalidJSONWebKeySet(t *testing.T) {
+	Convey("Given I have a corrupt token", t, func() {
+		cfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
+
+		lc := fxtest.NewLifecycle(t)
+
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: "not a valid URL",
+		}
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cache, err := ristretto.NewCache(lc, cfg)
+		So(err, ShouldBeNil)
+
+		client := http.NewClient(logger)
+		cert := auth0.NewCertificator(acfg, client, cache)
+		ver := auth0.NewVerifier(acfg, cert)
+
+		lc.RequireStart()
+
+		Convey("When I try to verify the token", func() {
+			claims := jwt.MapClaims{
+				"aud": acfg.Audience,
+				"iss": acfg.Issuer,
+				"kid": "none",
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+
+			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			So(err, ShouldBeNil)
+
+			tkn, err := token.SignedString(key)
+			So(err, ShouldBeNil)
+
+			ctx := context.Background()
+			_, err = ver.Verify(ctx, []byte(tkn))
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
 func TestCorruptToken(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
