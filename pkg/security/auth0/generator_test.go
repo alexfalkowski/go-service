@@ -61,7 +61,7 @@ func TestGenerate(t *testing.T) {
 	})
 }
 
-func TestInvalidGenerate(t *testing.T) {
+func TestInvalidResponseGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		cfg := &ristretto.Config{
 			Name:        "test",
@@ -75,14 +75,12 @@ func TestInvalidGenerate(t *testing.T) {
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			ClientSecret:  "invalid-secret",
 			Audience:      os.Getenv("AUTH0_AUDIENCE"),
 			Issuer:        os.Getenv("AUTH0_ISSUER"),
 			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		acfg.ClientSecret = "invalid-secret"
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -101,6 +99,51 @@ func TestInvalidGenerate(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldEqual, auth0.ErrInvalidResponse)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestInvalidURLGenerate(t *testing.T) {
+	Convey("Given I have an invalid generator", t, func() {
+		cfg := &ristretto.Config{
+			Name:        "test",
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
+
+		lc := fxtest.NewLifecycle(t)
+
+		acfg := &auth0.Config{
+			URL:           "not a valid URL",
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  "invalid-secret",
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cache, err := ristretto.NewCache(lc, cfg)
+		So(err, ShouldBeNil)
+
+		client := http.NewClient(logger)
+		gen := auth0.NewGenerator(acfg, client, cache)
+
+		lc.RequireStart()
+
+		Convey("When I generate a token", func() {
+			ctx := context.Background()
+			_, err := gen.Generate(ctx)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 
