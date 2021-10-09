@@ -17,7 +17,6 @@ import (
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -68,7 +67,6 @@ func TestVerify(t *testing.T) {
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,

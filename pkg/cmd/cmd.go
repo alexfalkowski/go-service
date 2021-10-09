@@ -2,19 +2,25 @@ package cmd
 
 import (
 	"context"
-	"strings"
 	"time"
 
+	"github.com/alexfalkowski/go-service/pkg/config"
+	"github.com/alexfalkowski/go-service/pkg/os"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 )
 
 // New command with serve and worker.
-func New(cfg *Config) (*cobra.Command, error) {
+func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
+	name, err := os.ExecutableName()
+	if err != nil {
+		return nil, err
+	}
+
 	rootCmd := &cobra.Command{
-		Use:          strings.ToLower(cfg.Name),
-		Short:        cfg.Description,
-		Long:         cfg.Description,
+		Use:          name,
+		Short:        name,
+		Long:         name,
 		SilenceUsage: true,
 	}
 
@@ -24,7 +30,7 @@ func New(cfg *Config) (*cobra.Command, error) {
 		Long:         "Serve the API.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, cfg.Timeout, cfg.ServerOpts)
+			return RunServer(args, timeout, serverOpts)
 		},
 	}
 
@@ -36,7 +42,7 @@ func New(cfg *Config) (*cobra.Command, error) {
 		Long:         "Start the worker.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, cfg.Timeout, cfg.WorkerOpts)
+			return RunServer(args, timeout, workerOpts)
 		},
 	}
 
@@ -47,6 +53,7 @@ func New(cfg *Config) (*cobra.Command, error) {
 
 // RunServer with args and a timeout.
 func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
+	opts = append(opts, config.Module)
 	app := fx.New(opts...)
 	done := app.Done()
 

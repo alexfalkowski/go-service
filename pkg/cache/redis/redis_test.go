@@ -15,14 +15,16 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		cfg := &redis.Config{
-			Name: "test",
 			Host: "localhost:6379",
 		}
 
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
-		c := redis.NewCache(lc, cfg, opts)
+
+		c, err := redis.NewCache(lc, cfg, opts)
+		So(err, ShouldBeNil)
+
 		ctx := context.Background()
 
 		lc.RequireStart()

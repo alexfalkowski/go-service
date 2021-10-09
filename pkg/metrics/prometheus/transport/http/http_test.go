@@ -18,7 +18,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -27,7 +26,6 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		rcfg := &redis.Config{
-			Name: "test",
 			Host: "localhost:6379",
 		}
 
@@ -36,10 +34,9 @@ func TestHTTP(t *testing.T) {
 
 		r := redis.NewRing(lc, rcfg)
 		opts := redis.NewOptions(r)
-		_ = redis.NewCache(lc, rcfg, opts)
+		_, _ = redis.NewCache(lc, rcfg, opts)
 
 		ricfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,

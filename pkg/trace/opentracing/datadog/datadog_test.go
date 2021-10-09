@@ -11,7 +11,6 @@ import (
 func TestDatadog(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &datadog.Config{
-			Name: "test",
 			Host: "localhost:8126",
 		}
 

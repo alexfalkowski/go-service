@@ -3,6 +3,7 @@ package datadog
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/pkg/os"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
@@ -11,8 +12,13 @@ import (
 
 // Register for datadog.
 func Register(lc fx.Lifecycle, cfg *Config) error {
+	name, err := os.ExecutableName()
+	if err != nil {
+		return err
+	}
+
 	opts := []tracer.StartOption{
-		tracer.WithService(cfg.Name),
+		tracer.WithService(name),
 		tracer.WithAgentAddr(cfg.Host),
 	}
 	t := opentracer.New(opts...)

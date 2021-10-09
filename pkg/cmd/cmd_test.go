@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/cmd"
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
@@ -35,7 +34,7 @@ func TestShutdown(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			opts := []fx.Option{
-				logger.ZapModule, config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule,
+				logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
 				cache.RedisModule, cache.RistrettoModule, security.Auth0Module, sql.PostgreSQLModule,
 				trace.DataDogOpenTracingModule, trace.JaegerOpenTracingModule,
 				transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule, transport.NSQModule,
@@ -43,15 +42,7 @@ func TestShutdown(t *testing.T) {
 				fx.Invoke(configs),
 			}
 
-			cfg := &cmd.Config{
-				Name:        "test",
-				Description: "Test service.",
-				Timeout:     10 * time.Second,
-				ServerOpts:  opts,
-				WorkerOpts:  opts,
-			}
-
-			c, err := cmd.New(cfg)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"worker"})
@@ -65,7 +56,6 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../../test/invalid_http.config.yml")
@@ -73,19 +63,11 @@ func TestInvalidHTTP(t *testing.T) {
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
-				config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
+				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			cfg := &cmd.Config{
-				Name:        "test",
-				Description: "Test service.",
-				Timeout:     10 * time.Second,
-				ServerOpts:  opts,
-				WorkerOpts:  opts,
-			}
-
-			c, err := cmd.New(cfg)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})
@@ -99,7 +81,6 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../../test/invalid_grpc.config.yml")
@@ -107,19 +88,11 @@ func TestInvalidGRPC(t *testing.T) {
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
 				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
-				config.Module, health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
+				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
 
-			cfg := &cmd.Config{
-				Name:        "test",
-				Description: "Test service.",
-				Timeout:     10 * time.Second,
-				ServerOpts:  opts,
-				WorkerOpts:  opts,
-			}
-
-			c, err := cmd.New(cfg)
+			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
 			c.SetArgs([]string{"serve"})

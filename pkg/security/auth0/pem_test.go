@@ -24,7 +24,6 @@ const (
 func TestInvalidJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -84,7 +83,6 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -145,7 +143,6 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -205,7 +202,6 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 func TestCorruptToken(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -251,7 +247,6 @@ func TestCorruptToken(t *testing.T) {
 func TestMissingAudienceToken(t *testing.T) {
 	Convey("Given I have a missing audience in token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -307,7 +302,6 @@ func TestMissingAudienceToken(t *testing.T) {
 func TestMissingIssuerToken(t *testing.T) {
 	Convey("Given I have a missing issuer in token", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -366,7 +360,6 @@ func TestMissingIssuerToken(t *testing.T) {
 func TestInvalidCertificateToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -427,7 +420,6 @@ func TestInvalidCertificateToken(t *testing.T) {
 func TestMissingKidToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,

@@ -17,7 +17,6 @@ import (
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -64,7 +63,6 @@ func TestGenerate(t *testing.T) {
 func TestInvalidResponseGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -109,7 +107,6 @@ func TestInvalidResponseGenerate(t *testing.T) {
 func TestInvalidURLGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,
@@ -154,7 +151,6 @@ func TestInvalidURLGenerate(t *testing.T) {
 func TestCachedGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,

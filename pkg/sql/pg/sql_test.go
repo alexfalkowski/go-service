@@ -11,8 +11,7 @@ import (
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{
-			Name: "test",
-			URL:  "postgres://test:test@localhost:5432/test?sslmode=disable",
+			URL: "postgres://test:test@localhost:5432/test?sslmode=disable",
 		}
 
 		Convey("When I try to get a database", func() {

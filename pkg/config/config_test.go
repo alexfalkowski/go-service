@@ -18,8 +18,6 @@ func TestValidConfig(t *testing.T) {
 
 			Convey("Then I should have a valid configuration", func() {
 				So(cfg.Cache.Redis.Host, ShouldEqual, "localhost:6379")
-				So(cfg.Cache.Redis.Name, ShouldEqual, "test")
-				So(cfg.Cache.Ristretto.Name, ShouldEqual, "test")
 				So(cfg.Cache.Ristretto.BufferItems, ShouldEqual, 64)
 				So(cfg.Cache.Ristretto.MaxCost, ShouldEqual, 100000000)
 				So(cfg.Cache.Ristretto.NumCounters, ShouldEqual, 10000000)
@@ -30,12 +28,9 @@ func TestValidConfig(t *testing.T) {
 				So(cfg.Security.Auth0.Issuer, ShouldEqual, "test_issuer")
 				So(cfg.Security.Auth0.Algorithm, ShouldEqual, "test_algorithm")
 				So(cfg.Security.Auth0.JSONWebKeySet, ShouldEqual, "test_json_web_key_set")
-				So(cfg.SQL.PG.Name, ShouldEqual, "test")
 				So(cfg.SQL.PG.URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
 				So(cfg.Trace.Opentracing.Datadog.Host, ShouldEqual, "localhost:6831")
-				So(cfg.Trace.Opentracing.Datadog.Name, ShouldEqual, "test")
 				So(cfg.Trace.Opentracing.Jaeger.Host, ShouldEqual, "localhost:6379")
-				So(cfg.Trace.Opentracing.Jaeger.Name, ShouldEqual, "test")
 				So(cfg.Transport.GRPC.Port, ShouldEqual, "9000")
 				So(cfg.Transport.HTTP.Port, ShouldEqual, "8000")
 				So(cfg.Transport.NSQ.Host, ShouldEqual, "localhost:4150")

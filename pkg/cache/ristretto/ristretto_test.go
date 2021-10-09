@@ -13,7 +13,6 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		cfg := &ristretto.Config{
-			Name:        "test",
 			NumCounters: 1e7,
 			MaxCost:     1 << 30,
 			BufferItems: 64,

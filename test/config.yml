@@ -1,9 +1,7 @@
 cache:
   redis:
-    name: test
     host: localhost:6379
   ristretto:
-    name: test
     max_counters: 10000000
     max_cost: 100000000
     buffer_items: 64
@@ -18,15 +16,12 @@ security:
     json_web_key_set: test_json_web_key_set
 sql:
   pg:
-    name: test
     url: postgres://test:test@localhost:5432/test?sslmode=disable
 trace:
   opentracing:
     datadog:
-      name: test
       host: localhost:6831
     jaeger:
-      name: test
       host: localhost:6379
 transport:
   http:

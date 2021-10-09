@@ -11,7 +11,6 @@ import (
 func TestJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &jaeger.Config{
-			Name: "test",
 			Host: "localhost:6831",
 		}
 
