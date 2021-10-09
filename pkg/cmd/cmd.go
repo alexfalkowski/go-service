@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/os"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
@@ -53,7 +52,6 @@ func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) 
 
 // RunServer with args and a timeout.
 func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
-	opts = append(opts, config.Module)
 	app := fx.New(opts...)
 	done := app.Done()
 

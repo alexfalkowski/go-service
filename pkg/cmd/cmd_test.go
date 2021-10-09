@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/cmd"
+	"github.com/alexfalkowski/go-service/pkg/config"
 	"github.com/alexfalkowski/go-service/pkg/health"
 	healthGRPC "github.com/alexfalkowski/go-service/pkg/health/transport/grpc"
 	healthHTTP "github.com/alexfalkowski/go-service/pkg/health/transport/http"
@@ -34,7 +35,7 @@ func TestShutdown(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			opts := []fx.Option{
-				logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
+				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
 				cache.RedisModule, cache.RistrettoModule, security.Auth0Module, sql.PostgreSQLModule,
 				trace.DataDogOpenTracingModule, trace.JaegerOpenTracingModule,
 				transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule, transport.NSQModule,
@@ -62,7 +63,7 @@ func TestInvalidHTTP(t *testing.T) {
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
+				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
 				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
@@ -87,7 +88,7 @@ func TestInvalidGRPC(t *testing.T) {
 
 		Convey("When I try to run an application", func() {
 			opts := []fx.Option{
-				logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
+				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
 				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
 				fx.Provide(httpObserver), fx.Provide(grpcObserver),
 			}
