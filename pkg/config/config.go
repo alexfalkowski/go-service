@@ -1,9 +1,6 @@
 package config
 
 import (
-	"errors"
-	"os"
-
 	"github.com/alexfalkowski/go-service/pkg/cache"
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
@@ -21,11 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	// ErrMissingConfigFile for config.
-	ErrMissingConfigFile = errors.New("missing config file")
-)
-
 // Config for the service.
 type Config struct {
 	Cache     cache.Config     `yaml:"cache"`
@@ -35,60 +27,42 @@ type Config struct {
 	Transport transport.Config `yaml:"transport"`
 }
 
-// New config for the service.
-func New() (*Config, error) {
-	configFile := os.Getenv("CONFIG_FILE")
-	if configFile == "" {
-		return nil, ErrMissingConfigFile
-	}
-
-	bytes, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, err
-	}
-
-	cfg := Config{}
-
-	err = yaml.Unmarshal(bytes, &cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+func (cfg *Config) Unmarshal(bytes []byte) error {
+	return yaml.Unmarshal(bytes, cfg)
 }
 
-func redisConfig(cfg *Config) *redis.Config {
+func (cfg *Config) RedisConfig() *redis.Config {
 	return &cfg.Cache.Redis
 }
 
-func ristrettoConfig(cfg *Config) *ristretto.Config {
+func (cfg *Config) RistrettoConfig() *ristretto.Config {
 	return &cfg.Cache.Ristretto
 }
 
-func auth0Config(cfg *Config) *auth0.Config {
+func (cfg *Config) Auth0Config() *auth0.Config {
 	return &cfg.Security.Auth0
 }
 
-func pgConfig(cfg *Config) *pg.Config {
+func (cfg *Config) PGConfig() *pg.Config {
 	return &cfg.SQL.PG
 }
 
-func datadogConfig(cfg *Config) *datadog.Config {
+func (cfg *Config) DatadogConfig() *datadog.Config {
 	return &cfg.Trace.Opentracing.Datadog
 }
 
-func jaegerConfig(cfg *Config) *jaeger.Config {
+func (cfg *Config) JaegerConfig() *jaeger.Config {
 	return &cfg.Trace.Opentracing.Jaeger
 }
 
-func grpcConfig(cfg *Config) *grpc.Config {
+func (cfg *Config) GRPCConfig() *grpc.Config {
 	return &cfg.Transport.GRPC
 }
 
-func httpConfig(cfg *Config) *http.Config {
+func (cfg *Config) HTTPConfig() *http.Config {
 	return &cfg.Transport.HTTP
 }
 
-func nsqConfig(cfg *Config) *nsq.Config {
+func (cfg *Config) NSQConfig() *nsq.Config {
 	return &cfg.Transport.NSQ
 }

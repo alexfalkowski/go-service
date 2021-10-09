@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
@@ -24,6 +25,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/transport"
 	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	rcache "github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -132,7 +134,8 @@ func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
 	return &healthGRPC.Observer{Observer: ob}, nil
 }
 
-func configs(_ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) {
+func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {
+	return c.Delete(context.Background(), "test")
 }
 
 func shutdown(s fx.Shutdowner) {
