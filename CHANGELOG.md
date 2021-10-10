@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.27.0](https://github.com/alexfalkowski/go-service/compare/v1.26.0...v1.27.0) (2021-10-10)
+
+
+### Features
+
+* add ability to read config ([#48](https://github.com/alexfalkowski/go-service/issues/48)) ([1a95d71](https://github.com/alexfalkowski/go-service/commit/1a95d719c05c0dc7b4b2f9f2d39328870fec080d))
+
 ## [1.26.0](https://github.com/alexfalkowski/go-service/compare/v1.25.0...v1.26.0) (2021-09-21)
 
 
