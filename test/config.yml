@@ -20,9 +20,9 @@ sql:
 trace:
   opentracing:
     datadog:
-      host: localhost:6831
+      host: localhost:8126
     jaeger:
-      host: localhost:6379
+      host: localhost:6831
 transport:
   http:
     port: 8000
