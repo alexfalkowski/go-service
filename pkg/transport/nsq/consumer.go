@@ -23,7 +23,9 @@ type ConsumerParams struct {
 
 // RegisterConsumer for NSQ.
 func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
-	consumer, err := nsq.NewConsumer(params.Topic, params.Channel, params.Config.Config)
+	cfg := nsq.NewConfig()
+
+	consumer, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
 	if err != nil {
 		return err
 	}

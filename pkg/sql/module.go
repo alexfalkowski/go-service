@@ -7,5 +7,5 @@ import (
 
 var (
 	// PostgreSQLModule for fx.
-	PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB), fx.Provide(pg.NewConfig))
+	PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB))
 )

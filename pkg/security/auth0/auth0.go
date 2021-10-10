@@ -5,16 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/security/jwt"
 	"github.com/dgraph-io/ristretto"
-	"github.com/kelseyhightower/envconfig"
 )
-
-// NewConfig for Auth0.
-func NewConfig() (*Config, error) {
-	var config Config
-	err := envconfig.Process("", &config)
-
-	return &config, err
-}
 
 // NewGenerator for Auth0.
 func NewGenerator(cfg *Config, client *http.Client, cache *ristretto.Cache) jwt.Generator {

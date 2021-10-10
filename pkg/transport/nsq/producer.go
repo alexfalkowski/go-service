@@ -21,7 +21,9 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
-	p, err := nsq.NewProducer(params.Config.Host, params.Config.Config)
+	cfg := nsq.NewConfig()
+
+	p, err := nsq.NewProducer(params.Config.Host, cfg)
 	if err != nil {
 		return nil, err
 	}

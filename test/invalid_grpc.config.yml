@@ -1,0 +1,8 @@
+sql:
+  pg:
+    url: postgres://test:test@localhost:5432/test?sslmode=disable
+transport:
+  http:
+    port: 8000
+  grpc:
+    port: -1

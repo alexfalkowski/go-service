@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/alexfalkowski/go-service/pkg/os"
 	"github.com/alexfalkowski/go-service/pkg/sql/metrics/prometheus"
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
@@ -19,7 +20,12 @@ func NewDB(lc fx.Lifecycle, cfg *Config) (*sql.DB, error) {
 
 	db := stdlib.OpenDB(*config)
 
-	prometheus.Register(lc, cfg.Name, db)
+	name, err := os.ExecutableName()
+	if err != nil {
+		return nil, err
+	}
+
+	prometheus.Register(lc, name, db)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

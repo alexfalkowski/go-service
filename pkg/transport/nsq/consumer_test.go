@@ -21,8 +21,10 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg, err := nsq.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &nsq.Config{
+			LookupHost: "localhost:4161",
+			Host:       "localhost:4150",
+		}
 
 		Convey("When I register a consumer", func() {
 			params := &nsq.ConsumerParams{
@@ -52,8 +54,10 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg, err := nsq.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &nsq.Config{
+			LookupHost: "localhost:4161",
+			Host:       "localhost:4150",
+		}
 
 		handler := test.NewHandler(nil)
 		consumerParams := &nsq.ConsumerParams{
@@ -99,8 +103,10 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg, err := nsq.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &nsq.Config{
+			LookupHost: "localhost:4161",
+			Host:       "localhost:4150",
+		}
 
 		handler := test.NewHandler(errors.New("something went wrong"))
 		consumerParams := &nsq.ConsumerParams{

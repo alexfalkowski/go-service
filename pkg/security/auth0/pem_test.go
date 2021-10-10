@@ -21,17 +21,203 @@ const (
 	algorithm = "ES256"
 )
 
-func TestCorruptToken(t *testing.T) {
+func TestInvalidJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: "not a valid URL",
+		}
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
+
+		cache, err := ristretto.NewCache(lc, cfg)
+		So(err, ShouldBeNil)
+
+		client := http.NewClient(logger)
+		cert := auth0.NewCertificator(acfg, client, cache)
+		ver := auth0.NewVerifier(acfg, cert)
+
+		lc.RequireStart()
+
+		Convey("When I try to verify the token", func() {
+			claims := jwt.MapClaims{
+				"aud": acfg.Audience,
+				"iss": acfg.Issuer,
+				"kid": "none",
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+
+			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			So(err, ShouldBeNil)
+
+			tkn, err := token.SignedString(key)
+			So(err, ShouldBeNil)
+
+			ctx := context.Background()
+			_, err = ver.Verify(ctx, []byte(tkn))
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+// nolint:dupl
+func TestInvalidResponseJSONWebKeySet(t *testing.T) {
+	Convey("Given I have a corrupt token", t, func() {
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
+
+		lc := fxtest.NewLifecycle(t)
+
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: "https://httpstat.us/400",
+		}
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cache, err := ristretto.NewCache(lc, cfg)
+		So(err, ShouldBeNil)
+
+		client := http.NewClient(logger)
+		cert := auth0.NewCertificator(acfg, client, cache)
+		ver := auth0.NewVerifier(acfg, cert)
+
+		lc.RequireStart()
+
+		Convey("When I try to verify the token", func() {
+			claims := jwt.MapClaims{
+				"aud": acfg.Audience,
+				"iss": acfg.Issuer,
+				"kid": "none",
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+
+			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			So(err, ShouldBeNil)
+
+			tkn, err := token.SignedString(key)
+			So(err, ShouldBeNil)
+
+			ctx := context.Background()
+			_, err = ver.Verify(ctx, []byte(tkn))
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldEqual, "invalid response")
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+// nolint:dupl
+func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
+	Convey("Given I have a corrupt token", t, func() {
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
+
+		lc := fxtest.NewLifecycle(t)
+
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: "https://httpstat.us/200",
+		}
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cache, err := ristretto.NewCache(lc, cfg)
+		So(err, ShouldBeNil)
+
+		client := http.NewClient(logger)
+		cert := auth0.NewCertificator(acfg, client, cache)
+		ver := auth0.NewVerifier(acfg, cert)
+
+		lc.RequireStart()
+
+		Convey("When I try to verify the token", func() {
+			claims := jwt.MapClaims{
+				"aud": acfg.Audience,
+				"iss": acfg.Issuer,
+				"kid": "none",
+			}
+			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+
+			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			So(err, ShouldBeNil)
+
+			tkn, err := token.SignedString(key)
+			So(err, ShouldBeNil)
+
+			ctx := context.Background()
+			_, err = ver.Verify(ctx, []byte(tkn))
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldEqual, "EOF")
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestCorruptToken(t *testing.T) {
+	Convey("Given I have a corrupt token", t, func() {
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
+
+		lc := fxtest.NewLifecycle(t)
+
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -55,21 +241,28 @@ func TestCorruptToken(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestMissingAudienceToken(t *testing.T) {
 	Convey("Given I have a missing audience in token", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		acfg.Algorithm = algorithm
 
@@ -103,21 +296,28 @@ func TestMissingAudienceToken(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestMissingIssuerToken(t *testing.T) {
 	Convey("Given I have a missing issuer in token", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		acfg.Algorithm = algorithm
 
@@ -154,21 +354,28 @@ func TestMissingIssuerToken(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestInvalidCertificateToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		acfg.Algorithm = algorithm
 		acfg.JSONWebKeySet = "https://non-existent.com/.well-known/jwks.json"
@@ -207,21 +414,28 @@ func TestInvalidCertificateToken(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
 func TestMissingKidToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
-		os.Setenv("SERVICE_NAME", "test")
-
-		cfg, err := ristretto.NewConfig()
-		So(err, ShouldBeNil)
+		cfg := &ristretto.Config{
+			NumCounters: 1e7,
+			MaxCost:     1 << 30,
+			BufferItems: 64,
+		}
 
 		lc := fxtest.NewLifecycle(t)
 
-		acfg, err := auth0.NewConfig()
-		So(err, ShouldBeNil)
+		acfg := &auth0.Config{
+			URL:           os.Getenv("AUTH0_URL"),
+			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
+			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
+			Audience:      os.Getenv("AUTH0_AUDIENCE"),
+			Issuer:        os.Getenv("AUTH0_ISSUER"),
+			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+		}
 
 		acfg.Algorithm = algorithm
 
@@ -260,6 +474,5 @@ func TestMissingKidToken(t *testing.T) {
 		})
 
 		lc.RequireStop()
-		So(os.Unsetenv("SERVICE_NAME"), ShouldBeNil)
 	})
 }

@@ -1,0 +1,33 @@
+cache:
+  redis:
+    host: localhost:6379
+  ristretto:
+    max_counters: 10000000
+    max_cost: 100000000
+    buffer_items: 64
+security:
+  auth0:
+    url: test_url
+    client_id: test_client_id
+    client_secret: test_client_secret
+    audience: test_audience
+    issuer: test_issuer
+    algorithm: test_algorithm
+    json_web_key_set: test_json_web_key_set
+sql:
+  pg:
+    url: postgres://test:test@localhost:5432/test?sslmode=disable
+trace:
+  opentracing:
+    datadog:
+      host: localhost:8126
+    jaeger:
+      host: localhost:6831
+transport:
+  http:
+    port: 8000
+  grpc:
+    port: 9000
+  nsq:
+    lookup_host: localhost:4161
+    host: localhost:4150

@@ -8,8 +8,8 @@ import (
 
 var (
 	// RedisModule for fx.
-	RedisModule = fx.Options(fx.Provide(redis.NewRing), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache), fx.Provide(redis.NewConfig))
+	RedisModule = fx.Options(fx.Provide(redis.NewRing), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache))
 
 	// RistrettoModule for fx.
-	RistrettoModule = fx.Options(fx.Provide(ristretto.NewConfig), fx.Provide(ristretto.NewCache))
+	RistrettoModule = fx.Options(fx.Provide(ristretto.NewCache))
 )

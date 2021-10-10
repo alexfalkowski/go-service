@@ -2,24 +2,24 @@ package cmd
 
 import (
 	"context"
-	"strings"
 	"time"
 
+	"github.com/alexfalkowski/go-service/pkg/os"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 )
 
 // New command with serve and worker.
 func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
-	cfg, err := NewConfig()
+	name, err := os.ExecutableName()
 	if err != nil {
 		return nil, err
 	}
 
 	rootCmd := &cobra.Command{
-		Use:          strings.ToLower(cfg.Name),
-		Short:        cfg.Description,
-		Long:         cfg.Description,
+		Use:          name,
+		Short:        name,
+		Long:         name,
 		SilenceUsage: true,
 	}
 
