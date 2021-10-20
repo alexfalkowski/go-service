@@ -21,7 +21,7 @@ import (
 )
 
 // nolint:dupl
-func TestHTTP(t *testing.T) {
+func TestHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -40,7 +40,7 @@ func TestHTTP(t *testing.T) {
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -73,7 +73,111 @@ func TestHTTP(t *testing.T) {
 }
 
 // nolint:dupl
-func TestInvalidHTTP(t *testing.T) {
+func TestLiveness(t *testing.T) {
+	Convey("Given I register the health handler", t, func() {
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+		regs := health.Registrations{hr}
+		lc := fxtest.NewLifecycle(t)
+
+		server, err := health.NewServer(lc, regs)
+		So(err, ShouldBeNil)
+
+		o, err := server.Observe("http")
+		So(err, ShouldBeNil)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
+
+		time.Sleep(2 * time.Second)
+
+		Convey("When I query health", func() {
+			client := pkgHTTP.NewClient(logger)
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/liveness", cfg.Port), nil)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			actual := strings.TrimSpace(string(body))
+
+			lc.RequireStop()
+
+			Convey("Then I should have a healthy response", func() {
+				So(actual, ShouldEqual, `{"status":"SERVING"}`)
+			})
+		})
+	})
+}
+
+// nolint:dupl
+func TestReadiness(t *testing.T) {
+	Convey("Given I register the health handler", t, func() {
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+		regs := health.Registrations{hr}
+		lc := fxtest.NewLifecycle(t)
+
+		server, err := health.NewServer(lc, regs)
+		So(err, ShouldBeNil)
+
+		o, err := server.Observe("http")
+		So(err, ShouldBeNil)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
+		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
+
+		time.Sleep(2 * time.Second)
+
+		Convey("When I query health", func() {
+			client := pkgHTTP.NewClient(logger)
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			actual := strings.TrimSpace(string(body))
+
+			lc.RequireStop()
+
+			Convey("Then I should have a healthy response", func() {
+				So(actual, ShouldEqual, `{"status":"SERVING"}`)
+			})
+		})
+	})
+}
+
+// nolint:dupl
+func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -92,7 +196,7 @@ func TestInvalidHTTP(t *testing.T) {
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
