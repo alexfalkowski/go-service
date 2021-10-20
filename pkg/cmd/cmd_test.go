@@ -119,13 +119,13 @@ func registrations(logger *zap.Logger) health.Registrations {
 	return health.Registrations{hr}
 }
 
-func httpObserver(healthServer *server.Server) (*healthHTTP.Observer, error) {
+func httpObserver(healthServer *server.Server) (*healthHTTP.HealthObserver, error) {
 	ob, err := healthServer.Observe("http")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthHTTP.Observer{Observer: ob}, nil
+	return &healthHTTP.HealthObserver{Observer: ob}, nil
 }
 
 func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {

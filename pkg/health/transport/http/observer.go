@@ -4,7 +4,7 @@ import (
 	"github.com/alexfalkowski/go-health/pkg/subscriber"
 )
 
-// Observer for HTTP.
-type Observer struct {
+// HealthObserver for HTTP.
+type HealthObserver struct {
 	*subscriber.Observer
 }

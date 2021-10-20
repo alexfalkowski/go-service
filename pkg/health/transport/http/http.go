@@ -14,7 +14,7 @@ const (
 )
 
 // Register health for HTTP.
-func Register(server *http.Server, ob *Observer) error {
+func Register(server *http.Server, ob *HealthObserver) error {
 	if err := resister("/health", server, ob.Observer); err != nil {
 		return err
 	}

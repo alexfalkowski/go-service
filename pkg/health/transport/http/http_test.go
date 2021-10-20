@@ -40,7 +40,7 @@ func TestHTTP(t *testing.T) {
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -92,7 +92,7 @@ func TestInvalidHTTP(t *testing.T) {
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.Observer{Observer: o})
+		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
