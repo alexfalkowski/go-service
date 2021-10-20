@@ -45,8 +45,6 @@ func TestHealth(t *testing.T) {
 
 		lc.RequireStart()
 
-		time.Sleep(2 * time.Second)
-
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
 
@@ -96,8 +94,6 @@ func TestLiveness(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
-
-		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
@@ -149,8 +145,6 @@ func TestReadiness(t *testing.T) {
 
 		lc.RequireStart()
 
-		time.Sleep(2 * time.Second)
-
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
 
@@ -200,8 +194,6 @@ func TestInvalidHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
-
-		time.Sleep(2 * time.Second)
 
 		Convey("When I query health", func() {
 			client := pkgHTTP.NewClient(logger)
