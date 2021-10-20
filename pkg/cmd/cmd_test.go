@@ -42,8 +42,8 @@ func TestShutdown(t *testing.T) {
 				cache.RedisModule, cache.RistrettoModule, security.Auth0Module, sql.PostgreSQLModule,
 				trace.DataDogOpenTracingModule, trace.JaegerOpenTracingModule,
 				transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule, transport.NSQModule,
-				fx.Provide(registrations), fx.Provide(httpObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
-				fx.Invoke(configs),
+				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
+				fx.Invoke(shutdown), fx.Invoke(configs),
 			}
 
 			c, err := cmd.New(10*time.Second, opts, opts)
@@ -60,6 +60,7 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../../test/invalid_http.config.yml")
@@ -69,7 +70,7 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.NopLogger,
 				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
 				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
-				fx.Provide(httpObserver), fx.Provide(grpcObserver),
+				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
 			c, err := cmd.New(10*time.Second, opts, opts)
@@ -78,7 +79,10 @@ func TestInvalidHTTP(t *testing.T) {
 			c.SetArgs([]string{"serve"})
 
 			Convey("Then I should see an error", func() {
-				So(c.Execute(), ShouldBeError)
+				err := c.Execute()
+
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -86,6 +90,7 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../../test/invalid_grpc.config.yml")
@@ -95,7 +100,7 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.NopLogger,
 				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.HTTPClientModule, transport.GRPCServerModule,
 				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
-				fx.Provide(httpObserver), fx.Provide(grpcObserver),
+				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
 			c, err := cmd.New(10*time.Second, opts, opts)
@@ -104,7 +109,10 @@ func TestInvalidGRPC(t *testing.T) {
 			c.SetArgs([]string{"serve"})
 
 			Convey("Then I should see an error", func() {
-				So(c.Execute(), ShouldBeError)
+				err := c.Execute()
+
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -113,19 +121,40 @@ func TestInvalidGRPC(t *testing.T) {
 }
 
 func registrations(logger *zap.Logger) health.Registrations {
+	nc := checker.NewNoopChecker()
+	nr := server.NewRegistration("noop", 5*time.Second, nc)
+
 	hc := checker.NewHTTPCheckerWithClient("https://google.com", 1*time.Second, pkgHTTP.NewClient(logger))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
-	return health.Registrations{hr}
+	return health.Registrations{nr, hr}
 }
 
-func httpObserver(healthServer *server.Server) (*healthHTTP.Observer, error) {
+func healthObserver(healthServer *server.Server) (*healthHTTP.HealthObserver, error) {
+	ob, err := healthServer.Observe("noop")
+	if err != nil {
+		return nil, err
+	}
+
+	return &healthHTTP.HealthObserver{Observer: ob}, nil
+}
+
+func livenessObserver(healthServer *server.Server) (*healthHTTP.LivenessObserver, error) {
+	ob, err := healthServer.Observe("noop")
+	if err != nil {
+		return nil, err
+	}
+
+	return &healthHTTP.LivenessObserver{Observer: ob}, nil
+}
+
+func readinessObserver(healthServer *server.Server) (*healthHTTP.ReadinessObserver, error) {
 	ob, err := healthServer.Observe("http")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthHTTP.Observer{Observer: ob}, nil
+	return &healthHTTP.ReadinessObserver{Observer: ob}, nil
 }
 
 func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
