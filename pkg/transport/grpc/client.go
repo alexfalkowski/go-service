@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/breaker"
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/trace/opentracing"
@@ -34,6 +35,7 @@ func unaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterce
 			grpcRetry.WithMax(5), // nolint:gomnd
 			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(50*time.Millisecond)), // nolint:gomnd
 		),
+		breaker.UnaryClientInterceptor(),
 		meta.UnaryClientInterceptor(),
 		pkgZap.UnaryClientInterceptor(logger),
 		opentracing.UnaryClientInterceptor(),
