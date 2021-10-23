@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.29.0](https://github.com/alexfalkowski/go-service/compare/v1.28.0...v1.29.0) (2021-10-23)
+
+
+### Features
+
+* add circuit breaker ([#52](https://github.com/alexfalkowski/go-service/issues/52)) ([e42e3d6](https://github.com/alexfalkowski/go-service/commit/e42e3d6ca1c24041afb06ed90b6f0cca5cf5986e))
+
 ## [1.28.0](https://github.com/alexfalkowski/go-service/compare/v1.27.2...v1.28.0) (2021-10-23)
 
 
