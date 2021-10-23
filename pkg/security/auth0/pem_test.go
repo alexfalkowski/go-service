@@ -260,11 +260,9 @@ func TestMissingAudienceToken(t *testing.T) {
 			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
 			Audience:      os.Getenv("AUTH0_AUDIENCE"),
 			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			Algorithm:     algorithm,
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		acfg.Algorithm = algorithm
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -373,12 +371,9 @@ func TestInvalidCertificateToken(t *testing.T) {
 			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
 			Audience:      os.Getenv("AUTH0_AUDIENCE"),
 			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
+			Algorithm:     algorithm,
+			JSONWebKeySet: "https://non-existent.com/.well-known/jwks.json",
 		}
-
-		acfg.Algorithm = algorithm
-		acfg.JSONWebKeySet = "https://non-existent.com/.well-known/jwks.json"
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
@@ -433,11 +428,9 @@ func TestMissingKidToken(t *testing.T) {
 			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
 			Audience:      os.Getenv("AUTH0_AUDIENCE"),
 			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			Algorithm:     algorithm,
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		acfg.Algorithm = algorithm
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
