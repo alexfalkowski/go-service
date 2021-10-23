@@ -48,9 +48,6 @@ func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) // nolint:gomnd
-	defer cancel()
-
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err

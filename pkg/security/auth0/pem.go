@@ -37,9 +37,6 @@ type pem struct {
 func (p *pem) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cert := ""
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second) // nolint:gomnd
-	defer cancel()
-
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", p.cfg.JSONWebKeySet, nil)
 	if err != nil {
 		return cert, err

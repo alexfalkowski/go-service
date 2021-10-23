@@ -5,6 +5,7 @@ import (
 
 	pkgZap "github.com/alexfalkowski/go-service/pkg/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/http/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/http/retry"
 	"github.com/alexfalkowski/go-service/pkg/transport/http/trace/opentracing"
 	"go.uber.org/zap"
 )
@@ -22,6 +23,7 @@ func NewClientWithRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *http.
 func newRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
 	hrt = pkgZap.NewRoundTripper(logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
+	hrt = retry.NewRoundTripper(hrt)
 	hrt = meta.NewRoundTripper(hrt)
 
 	return hrt
