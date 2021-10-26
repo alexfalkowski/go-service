@@ -15,7 +15,4 @@ var (
 
 	// HTTPClientModule for fx.
 	HTTPClientModule = fx.Options(fx.Provide(http.NewClient))
-
-	// NSQModule for fx.
-	NSQModule = fx.Options()
 )
