@@ -16,16 +16,17 @@ import (
 
 // ClientParams for gRPC.
 type ClientParams struct {
+	Host   string
 	Logger *zap.Logger
 	Unary  []grpc.UnaryClientInterceptor
 	Stream []grpc.StreamClientInterceptor
 }
 
 // NewClient to host for gRPC.
-func NewClient(context context.Context, host string, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	opts = append(opts, unaryDialOption(params.Logger, params.Unary...), streamDialOption(params.Logger, params.Stream...))
 
-	return grpc.DialContext(context, host, opts...)
+	return grpc.DialContext(context, params.Host, opts...)
 }
 
 func unaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterceptor) grpc.DialOption {

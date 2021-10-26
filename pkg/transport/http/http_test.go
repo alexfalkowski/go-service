@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// nolint:funlen
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -45,10 +46,13 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -112,10 +116,13 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -180,10 +187,13 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -248,10 +258,13 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -314,10 +327,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -374,10 +390,13 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -440,10 +459,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
