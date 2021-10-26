@@ -11,17 +11,23 @@ import (
 	"go.uber.org/zap"
 )
 
+// ClientParams for HTTP.
+type ClientParams struct {
+	Logger       *zap.Logger
+	RoundTripper http.RoundTripper
+}
+
 // Transport for http.Client.
 var Transport = http.DefaultTransport
 
 // NewClient for HTTP.
-func NewClient(logger *zap.Logger) *http.Client {
-	return NewClientWithRoundTripper(logger, Transport)
-}
+func NewClient(params *ClientParams) *http.Client {
+	hrt := params.RoundTripper
+	if hrt == nil {
+		hrt = http.DefaultTransport
+	}
 
-// NewClientWithRoundTripper for HTTP.
-func NewClientWithRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *http.Client {
-	return &http.Client{Transport: newRoundTripper(logger, hrt)}
+	return &http.Client{Transport: newRoundTripper(params.Logger, hrt)}
 }
 
 func newRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {

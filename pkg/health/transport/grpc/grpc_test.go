@@ -29,7 +29,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -85,7 +85,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -141,7 +141,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -206,7 +206,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -265,7 +265,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 

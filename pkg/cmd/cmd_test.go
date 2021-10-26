@@ -124,7 +124,7 @@ func registrations(logger *zap.Logger) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	hc := checker.NewHTTPChecker("https://google.com", pkgHTTP.NewClient(logger))
+	hc := checker.NewHTTPChecker("https://google.com", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
 	return health.Registrations{nr, hr}

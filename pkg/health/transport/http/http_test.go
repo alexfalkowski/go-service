@@ -28,7 +28,7 @@ func TestHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -47,7 +47,7 @@ func TestHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -79,7 +79,7 @@ func TestLiveness(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -98,7 +98,7 @@ func TestLiveness(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/liveness", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -130,7 +130,7 @@ func TestReadiness(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -149,7 +149,7 @@ func TestReadiness(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -181,7 +181,7 @@ func TestInvalidHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(logger))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -200,7 +200,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)

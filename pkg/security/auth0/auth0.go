@@ -9,7 +9,7 @@ import (
 
 // NewGenerator for Auth0.
 func NewGenerator(cfg *Config, logger *zap.Logger, cache *ristretto.Cache) jwt.Generator {
-	var generator jwt.Generator = &generator{cfg: cfg, client: http.NewClient(logger)}
+	var generator jwt.Generator = &generator{cfg: cfg, client: http.NewClient(&http.ClientParams{Logger: logger})}
 
 	generator = &cachedGenerator{cfg: cfg, cache: cache, Generator: generator}
 
@@ -18,7 +18,7 @@ func NewGenerator(cfg *Config, logger *zap.Logger, cache *ristretto.Cache) jwt.G
 
 // NewCertificator for Auth0.
 func NewCertificator(cfg *Config, logger *zap.Logger, cache *ristretto.Cache) Certificator {
-	var certificator Certificator = &pem{cfg: cfg, client: http.NewClient(logger)}
+	var certificator Certificator = &pem{cfg: cfg, client: http.NewClient(&http.ClientParams{Logger: logger})}
 
 	certificator = &cachedPEM{cfg: cfg, cache: cache, Certificator: certificator}
 

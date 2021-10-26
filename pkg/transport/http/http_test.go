@@ -61,7 +61,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -132,7 +132,11 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			httpClientParams := &pkgHTTP.ClientParams{
+				Logger:       logger,
+				RoundTripper: transport,
+			}
+			client := pkgHTTP.NewClient(httpClientParams)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -203,7 +207,11 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			httpClientParams := &pkgHTTP.ClientParams{
+				Logger:       logger,
+				RoundTripper: transport,
+			}
+			client := pkgHTTP.NewClient(httpClientParams)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -273,7 +281,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -301,6 +309,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -343,7 +352,11 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			httpClientParams := &pkgHTTP.ClientParams{
+				Logger:       logger,
+				RoundTripper: transport,
+			}
+			client := pkgHTTP.NewClient(httpClientParams)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -405,7 +418,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger})
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -433,6 +446,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -475,7 +489,11 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			httpClientParams := &pkgHTTP.ClientParams{
+				Logger:       logger,
+				RoundTripper: transport,
+			}
+			client := pkgHTTP.NewClient(httpClientParams)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
