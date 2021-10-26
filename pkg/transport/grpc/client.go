@@ -32,7 +32,7 @@ func unaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterce
 	defaultInterceptors := []grpc.UnaryClientInterceptor{
 		grpcRetry.UnaryClientInterceptor(
 			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
-			grpcRetry.WithMax(5), // nolint:gomnd
+			grpcRetry.WithMax(3), // nolint:gomnd
 			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(50*time.Millisecond)), // nolint:gomnd
 		),
 		breaker.UnaryClientInterceptor(),
