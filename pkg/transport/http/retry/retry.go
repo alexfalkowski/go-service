@@ -43,7 +43,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, 5*time.Second) // nolint:gomnd
+		tctx, cancel := context.WithTimeout(ctx, 2*time.Second) // nolint:gomnd
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose
@@ -81,7 +81,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	// We don't need to check the error as it's only used to retry. We save the last error in err.
-	retry.Do(operation, retry.Attempts(5)) // nolint:errcheck,gomnd
+	retry.Do(operation, retry.Attempts(3)) // nolint:errcheck,gomnd
 
 	return res, err
 }

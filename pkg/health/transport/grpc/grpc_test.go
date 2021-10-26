@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
+	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -23,18 +24,19 @@ import (
 // nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		hs, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
@@ -75,18 +77,19 @@ func TestUnary(t *testing.T) {
 // nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		hs, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
@@ -126,18 +129,19 @@ func TestInvalidUnary(t *testing.T) {
 
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		hs, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
@@ -187,18 +191,19 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		hs, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
@@ -242,18 +247,19 @@ func TestStream(t *testing.T) {
 // nolint:funlen
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		hs, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}

@@ -23,18 +23,19 @@ import (
 // nolint:dupl
 func TestHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		server, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
@@ -73,18 +74,19 @@ func TestHealth(t *testing.T) {
 // nolint:dupl
 func TestLiveness(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		server, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
@@ -123,18 +125,19 @@ func TestLiveness(t *testing.T) {
 // nolint:dupl
 func TestReadiness(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		server, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
@@ -173,18 +176,19 @@ func TestReadiness(t *testing.T) {
 // nolint:dupl
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", 1*time.Second)
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-		lc := fxtest.NewLifecycle(t)
 
 		server, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
 
 		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
