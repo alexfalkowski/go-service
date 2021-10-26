@@ -1,15 +1,15 @@
 package auth0
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/pkg/security/jwt"
+	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/dgraph-io/ristretto"
+	"go.uber.org/zap"
 )
 
 // NewGenerator for Auth0.
-func NewGenerator(cfg *Config, client *http.Client, cache *ristretto.Cache) jwt.Generator {
-	var generator jwt.Generator = &generator{cfg: cfg, client: client}
+func NewGenerator(cfg *Config, logger *zap.Logger, cache *ristretto.Cache) jwt.Generator {
+	var generator jwt.Generator = &generator{cfg: cfg, client: http.NewClient(logger)}
 
 	generator = &cachedGenerator{cfg: cfg, cache: cache, Generator: generator}
 
@@ -17,8 +17,8 @@ func NewGenerator(cfg *Config, client *http.Client, cache *ristretto.Cache) jwt.
 }
 
 // NewCertificator for Auth0.
-func NewCertificator(cfg *Config, client *http.Client, cache *ristretto.Cache) Certificator {
-	var certificator Certificator = &pem{cfg: cfg, client: client}
+func NewCertificator(cfg *Config, logger *zap.Logger, cache *ristretto.Cache) Certificator {
+	var certificator Certificator = &pem{cfg: cfg, client: http.NewClient(logger)}
 
 	certificator = &cachedPEM{cfg: cfg, cache: cache, Certificator: certificator}
 

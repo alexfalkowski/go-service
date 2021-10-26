@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
-	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/form3tech-oss/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -47,8 +46,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -106,8 +104,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -166,8 +163,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -225,8 +221,7 @@ func TestCorruptToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -270,8 +265,7 @@ func TestMissingAudienceToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -325,8 +319,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -381,8 +374,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -438,8 +430,7 @@ func TestMissingKidToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
