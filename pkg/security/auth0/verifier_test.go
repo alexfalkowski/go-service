@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
-	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -40,9 +39,8 @@ func TestVerify(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -90,9 +88,8 @@ func TestCachedVerify(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
-		cert := auth0.NewCertificator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
+		cert := auth0.NewCertificator(acfg, logger, cache)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

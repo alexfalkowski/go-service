@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/cache/ristretto"
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/security/auth0"
-	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -40,8 +39,7 @@ func TestGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
 
 		lc.RequireStart()
 
@@ -86,8 +84,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
 
 		lc.RequireStart()
 
@@ -130,8 +127,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
 
 		lc.RequireStart()
 
@@ -174,8 +170,7 @@ func TestCachedGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		client := http.NewClient(logger)
-		gen := auth0.NewGenerator(acfg, client, cache)
+		gen := auth0.NewGenerator(acfg, logger, cache)
 
 		lc.RequireStart()
 
