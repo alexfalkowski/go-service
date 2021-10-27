@@ -29,7 +29,7 @@ type ClientParams struct {
 
 // NewClient to host for gRPC.
 func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, unaryDialOption(params), streamDialOption(params))
+	opts = append(opts, grpc.WithUserAgent(params.Config.UserAgent), unaryDialOption(params), streamDialOption(params))
 
 	return grpc.DialContext(context, params.Host, opts...)
 }
@@ -43,7 +43,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 			grpcRetry.WithPerRetryTimeout(time.Duration(params.Config.Retry.Timeout)*time.Second),
 		),
 		breaker.UnaryClientInterceptor(),
-		meta.UnaryClientInterceptor(),
+		meta.UnaryClientInterceptor(params.Config.UserAgent),
 		pkgZap.UnaryClientInterceptor(params.Logger),
 		opentracing.UnaryClientInterceptor(),
 	}
@@ -55,7 +55,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 
 func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
-		meta.StreamClientInterceptor(),
+		meta.StreamClientInterceptor(params.Config.UserAgent),
 		pkgZap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}

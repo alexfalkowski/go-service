@@ -15,6 +15,14 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md := ExtractIncoming(ctx)
 
+		var userAgent string
+
+		if mdUserAgent := md.Get("user-agent"); len(mdUserAgent) > 0 {
+			userAgent = mdUserAgent[0]
+		}
+
+		ctx = meta.WithUserAgent(ctx, userAgent)
+
 		var requestID string
 
 		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
@@ -42,6 +50,14 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
 
+		var userAgent string
+
+		if mdUserAgent := md.Get("user-agent"); len(mdUserAgent) > 0 {
+			userAgent = mdUserAgent[0]
+		}
+
+		ctx = meta.WithUserAgent(ctx, userAgent)
+
 		var requestID string
 
 		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
@@ -67,8 +83,10 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for meta.
-func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		ctx = meta.WithUserAgent(ctx, userAgent)
+
 		requestID := meta.RequestID(ctx)
 		if requestID == "" {
 			requestID = uuid.New().String()
@@ -82,8 +100,10 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for meta.
-func StreamClientInterceptor() grpc.StreamClientInterceptor {
+func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		ctx = meta.WithUserAgent(ctx, userAgent)
+
 		requestID := meta.RequestID(ctx)
 		if requestID == "" {
 			requestID = uuid.New().String()

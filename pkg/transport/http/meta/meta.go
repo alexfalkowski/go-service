@@ -21,6 +21,9 @@ type RoundTripper struct {
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
+	req.Header.Set("User-Agent", r.userAgent)
+	ctx = meta.WithUserAgent(ctx, r.userAgent)
+
 	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()
@@ -28,9 +31,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Set("Request-ID", requestID)
 	ctx = meta.WithRequestID(ctx, requestID)
-
-	req.Header.Set("User-Agent", r.userAgent)
-	ctx = meta.WithUserAgent(ctx, r.userAgent)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
