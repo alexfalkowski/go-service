@@ -33,7 +33,7 @@ func newRoundTripper(params *ClientParams) http.RoundTripper {
 	hrt = opentracing.NewRoundTripper(hrt)
 	hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
 	hrt = breaker.NewRoundTripper(hrt)
-	hrt = meta.NewRoundTripper(hrt)
+	hrt = meta.NewRoundTripper(params.Config.UserAgent, hrt)
 
 	return hrt
 }
