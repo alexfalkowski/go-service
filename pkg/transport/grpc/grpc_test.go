@@ -25,7 +25,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -37,6 +37,7 @@ func TestUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -71,7 +72,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -89,6 +90,7 @@ func TestValidAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -125,7 +127,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -143,6 +145,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -177,7 +180,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -195,6 +198,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -228,7 +232,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -246,6 +250,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -275,7 +280,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -293,6 +298,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -326,7 +332,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -338,6 +344,7 @@ func TestStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -380,7 +387,7 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -398,6 +405,7 @@ func TestValidAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -438,7 +446,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -456,6 +464,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -494,7 +503,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -512,6 +521,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -544,7 +554,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -562,6 +572,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -596,7 +607,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -614,6 +625,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{

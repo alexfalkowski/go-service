@@ -38,7 +38,7 @@ func TestUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -52,6 +52,7 @@ func TestUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -94,7 +95,7 @@ func TestInvalidUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -108,6 +109,7 @@ func TestInvalidUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -150,7 +152,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -170,6 +172,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{
@@ -215,7 +218,7 @@ func TestStream(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -229,6 +232,7 @@ func TestStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
@@ -274,7 +278,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		o, err := hs.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
@@ -294,6 +298,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			ctx := context.Background()
 			clientParams := &pkgGRPC.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{

@@ -14,9 +14,14 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
+const (
+	backoffLinear = 50 * time.Millisecond
+)
+
 // ClientParams for gRPC.
 type ClientParams struct {
 	Host   string
+	Config *Config
 	Logger *zap.Logger
 	Unary  []grpc.UnaryClientInterceptor
 	Stream []grpc.StreamClientInterceptor
@@ -24,37 +29,38 @@ type ClientParams struct {
 
 // NewClient to host for gRPC.
 func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, unaryDialOption(params.Logger, params.Unary...), streamDialOption(params.Logger, params.Stream...))
+	opts = append(opts, unaryDialOption(params), streamDialOption(params))
 
 	return grpc.DialContext(context, params.Host, opts...)
 }
 
-func unaryDialOption(logger *zap.Logger, interceptors ...grpc.UnaryClientInterceptor) grpc.DialOption {
+func unaryDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.UnaryClientInterceptor{
 		grpcRetry.UnaryClientInterceptor(
 			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
-			grpcRetry.WithMax(3), // nolint:gomnd
-			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(50*time.Millisecond)), // nolint:gomnd
+			grpcRetry.WithMax(params.Config.Retry.Attempts),
+			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(backoffLinear)),
+			grpcRetry.WithPerRetryTimeout(time.Duration(params.Config.Retry.Timeout)*time.Second),
 		),
 		breaker.UnaryClientInterceptor(),
 		meta.UnaryClientInterceptor(),
-		pkgZap.UnaryClientInterceptor(logger),
+		pkgZap.UnaryClientInterceptor(params.Logger),
 		opentracing.UnaryClientInterceptor(),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, interceptors...)
+	defaultInterceptors = append(defaultInterceptors, params.Unary...)
 
 	return grpc.WithChainUnaryInterceptor(defaultInterceptors...)
 }
 
-func streamDialOption(logger *zap.Logger, interceptors ...grpc.StreamClientInterceptor) grpc.DialOption {
+func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(),
-		pkgZap.StreamClientInterceptor(logger),
+		pkgZap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, interceptors...)
+	defaultInterceptors = append(defaultInterceptors, params.Stream...)
 
 	return grpc.WithChainStreamInterceptor(defaultInterceptors...)
 }
