@@ -25,12 +25,13 @@ var (
 )
 
 // NewRoundTripper for retry.
-func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{RoundTripper: hrt}
+func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{cfg: cfg, RoundTripper: hrt}
 }
 
 // RoundTripper for retry.
 type RoundTripper struct {
+	cfg *Config
 	http.RoundTripper
 }
 
@@ -43,7 +44,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, 2*time.Second) // nolint:gomnd
+		tctx, cancel := context.WithTimeout(ctx, time.Duration(r.cfg.Timeout)*time.Second)
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose
@@ -81,7 +82,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	// We don't need to check the error as it's only used to retry. We save the last error in err.
-	retry.Do(operation, retry.Attempts(3)) // nolint:errcheck,gomnd
+	retry.Do(operation, retry.Attempts(r.cfg.Attempts)) // nolint:errcheck
 
 	return res, err
 }

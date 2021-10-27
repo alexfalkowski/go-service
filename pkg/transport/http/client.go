@@ -11,23 +11,27 @@ import (
 	"go.uber.org/zap"
 )
 
-// Transport for http.Client.
-var Transport = http.DefaultTransport
+// ClientParams for HTTP.
+type ClientParams struct {
+	Config       *Config
+	Logger       *zap.Logger
+	RoundTripper http.RoundTripper
+}
 
 // NewClient for HTTP.
-func NewClient(logger *zap.Logger) *http.Client {
-	return NewClientWithRoundTripper(logger, Transport)
+func NewClient(params *ClientParams) *http.Client {
+	return &http.Client{Transport: newRoundTripper(params)}
 }
 
-// NewClientWithRoundTripper for HTTP.
-func NewClientWithRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *http.Client {
-	return &http.Client{Transport: newRoundTripper(logger, hrt)}
-}
+func newRoundTripper(params *ClientParams) http.RoundTripper {
+	hrt := params.RoundTripper
+	if hrt == nil {
+		hrt = http.DefaultTransport
+	}
 
-func newRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
-	hrt = pkgZap.NewRoundTripper(logger, hrt)
+	hrt = pkgZap.NewRoundTripper(params.Logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
-	hrt = retry.NewRoundTripper(hrt)
+	hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
 	hrt = breaker.NewRoundTripper(hrt)
 	hrt = meta.NewRoundTripper(hrt)
 

@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// nolint:funlen
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -31,7 +32,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -45,10 +46,14 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -57,7 +62,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := test.NewHTTPClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -94,7 +99,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -112,10 +117,14 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -125,7 +134,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -162,7 +171,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -180,10 +189,14 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -193,7 +206,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -230,7 +243,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -248,10 +261,14 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -260,7 +277,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := test.NewHTTPClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -296,7 +313,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -314,10 +331,14 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -327,7 +348,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -356,7 +377,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -374,10 +395,14 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -386,7 +411,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := pkgHTTP.NewClient(logger)
+			client := test.NewHTTPClient(logger)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -422,7 +447,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		grpcCfg := &pkgGRPC.Config{Port: test.GenerateRandomPort()}
+		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
 		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
@@ -440,10 +465,14 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{Logger: logger}
+		clientParams := &pkgGRPC.ClientParams{
+			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			Config: grpcCfg,
+			Logger: logger,
+		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
 
-		conn, err := pkgGRPC.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), clientParams, clientOpts...)
+		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -453,7 +482,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			transport := jwtHTTP.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
-			client := pkgHTTP.NewClientWithRoundTripper(logger, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
