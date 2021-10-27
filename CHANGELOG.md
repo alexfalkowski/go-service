@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.30.0](https://github.com/alexfalkowski/go-service/compare/v1.29.2...v1.30.0) (2021-10-27)
+
+
+### Features
+
+* **transport:** add retry config for http and grpc ([#55](https://github.com/alexfalkowski/go-service/issues/55)) ([940bbe0](https://github.com/alexfalkowski/go-service/commit/940bbe04199f7c544ff5061d6a0b55d7165c8e10))
+
 ### [1.29.2](https://github.com/alexfalkowski/go-service/compare/v1.29.1...v1.29.2) (2021-10-26)
 
 ### [1.29.1](https://github.com/alexfalkowski/go-service/compare/v1.29.0...v1.29.1) (2021-10-26)
