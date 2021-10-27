@@ -120,11 +120,15 @@ func TestInvalidGRPC(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger) health.Registrations {
+func registrations(logger *zap.Logger, cfg *pkgHTTP.Config) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	hc := checker.NewHTTPChecker("https://google.com", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+	params := &pkgHTTP.ClientParams{
+		Config: cfg,
+		Logger: logger,
+	}
+	hc := checker.NewHTTPChecker("https://google.com", pkgHTTP.NewClient(params))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
 	return health.Registrations{nr, hr}

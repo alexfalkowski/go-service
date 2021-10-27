@@ -13,27 +13,25 @@ import (
 
 // ClientParams for HTTP.
 type ClientParams struct {
+	Config       *Config
 	Logger       *zap.Logger
 	RoundTripper http.RoundTripper
 }
 
-// Transport for http.Client.
-var Transport = http.DefaultTransport
-
 // NewClient for HTTP.
 func NewClient(params *ClientParams) *http.Client {
+	return &http.Client{Transport: newRoundTripper(params)}
+}
+
+func newRoundTripper(params *ClientParams) http.RoundTripper {
 	hrt := params.RoundTripper
 	if hrt == nil {
 		hrt = http.DefaultTransport
 	}
 
-	return &http.Client{Transport: newRoundTripper(params.Logger, hrt)}
-}
-
-func newRoundTripper(logger *zap.Logger, hrt http.RoundTripper) http.RoundTripper {
-	hrt = pkgZap.NewRoundTripper(logger, hrt)
+	hrt = pkgZap.NewRoundTripper(params.Logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
-	hrt = retry.NewRoundTripper(hrt)
+	hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
 	hrt = breaker.NewRoundTripper(hrt)
 	hrt = meta.NewRoundTripper(hrt)
 

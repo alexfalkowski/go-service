@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
-	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -29,7 +28,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -85,7 +84,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -141,7 +140,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -206,7 +205,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
@@ -265,7 +264,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", pkgHTTP.NewClient(&pkgHTTP.ClientParams{Logger: logger}))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 
