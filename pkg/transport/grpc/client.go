@@ -43,7 +43,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 			grpcRetry.WithPerRetryTimeout(time.Duration(params.Config.Retry.Timeout)*time.Second),
 		),
 		breaker.UnaryClientInterceptor(),
-		meta.UnaryClientInterceptor(),
+		meta.UnaryClientInterceptor(params.Config.UserAgent),
 		pkgZap.UnaryClientInterceptor(params.Logger),
 		opentracing.UnaryClientInterceptor(),
 	}
@@ -55,7 +55,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 
 func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
-		meta.StreamClientInterceptor(),
+		meta.StreamClientInterceptor(params.Config.UserAgent),
 		pkgZap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}

@@ -20,6 +20,8 @@ type metaHandler struct {
 }
 
 func (h *metaHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+	ctx = meta.WithUserAgent(ctx, message.Headers["user-agent"])
+
 	requestID, ok := message.Headers["request-id"]
 	if !ok {
 		requestID = uuid.New().String()
@@ -32,15 +34,24 @@ func (h *metaHandler) Handle(ctx context.Context, message *message.Message) (con
 }
 
 // NewProducer for meta.
-func NewProducer(p producer.Producer) producer.Producer {
-	return &metaProducer{Producer: p}
+func NewProducer(userAgent string, p producer.Producer) producer.Producer {
+	return &metaProducer{userAgent: userAgent, Producer: p}
 }
 
 type metaProducer struct {
+	userAgent string
 	producer.Producer
 }
 
 func (p *metaProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+	userAgent := meta.UserAgent(ctx)
+	if userAgent == "" {
+		userAgent = p.userAgent
+	}
+
+	message.Headers["user-agent"] = userAgent
+	ctx = meta.WithUserAgent(ctx, userAgent)
+
 	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()

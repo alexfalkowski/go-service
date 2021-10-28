@@ -39,7 +39,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 	var pr producer.Producer = &nsqProducer{Producer: p}
 	pr = pkgZap.NewProducer(params.Logger, pr)
 	pr = opentracing.NewProducer(pr)
-	pr = meta.NewProducer(pr)
+	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr, nil
 }

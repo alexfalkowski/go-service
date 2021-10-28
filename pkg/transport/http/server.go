@@ -67,6 +67,8 @@ func customMatcher(key string) (string, bool) {
 	switch key {
 	case "Request-Id":
 		return key, true
+	case "User-Agent":
+		return "ua", true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}

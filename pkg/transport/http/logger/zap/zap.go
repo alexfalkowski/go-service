@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	sensitiveURLs = regexp.MustCompile(`oauth|token|jwks`)
+	sensitiveURLs = regexp.MustCompile(`oauth|token|jwks|health|liveness|readiness`)
 )
 
 // NewRoundTripper for zap.

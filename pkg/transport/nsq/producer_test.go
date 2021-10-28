@@ -5,16 +5,14 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
 func TestProducer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
-		cfg := &nsq.Config{
-			LookupHost: "localhost:4161",
-			Host:       "localhost:4150",
-		}
+		cfg := test.NewNSQConfig()
 
 		Convey("When I register a producer", func() {
 			lc := fxtest.NewLifecycle(t)
