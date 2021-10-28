@@ -29,7 +29,7 @@ type ClientParams struct {
 
 // NewClient to host for gRPC.
 func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
-	opts = append(opts, grpc.WithUserAgent(params.Config.UserAgent), unaryDialOption(params), streamDialOption(params))
+	opts = append(opts, unaryDialOption(params), streamDialOption(params))
 
 	return grpc.DialContext(context, params.Host, opts...)
 }

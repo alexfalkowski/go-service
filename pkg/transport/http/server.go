@@ -65,8 +65,10 @@ func stopServer(ctx context.Context, server *http.Server, cfg *Config, logger *z
 
 func customMatcher(key string) (string, bool) {
 	switch key {
-	case "Request-Id", "User-Agent":
+	case "Request-Id":
 		return key, true
+	case "User-Agent":
+		return "ua", true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}
