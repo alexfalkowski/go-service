@@ -15,28 +15,18 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		md := ExtractIncoming(ctx)
 
-		var userAgent string
-
-		if mdUserAgent := md.Get("user-agent"); len(mdUserAgent) > 0 {
-			userAgent = mdUserAgent[0]
-		}
-
+		userAgent := extractUserAgent(ctx, md)
 		ctx = meta.WithUserAgent(ctx, userAgent)
 
-		var requestID string
-
-		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
-			requestID = mdRequestID[0]
-		}
-
+		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		header := metadata.Pairs("request-id", requestID)
 
-		if err := grpc.SendHeader(ctx, header); err != nil {
+		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
+		if err := grpc.SendHeader(ctx, headers); err != nil {
 			return nil, err
 		}
 
@@ -50,28 +40,18 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
 
-		var userAgent string
-
-		if mdUserAgent := md.Get("user-agent"); len(mdUserAgent) > 0 {
-			userAgent = mdUserAgent[0]
-		}
-
+		userAgent := extractUserAgent(ctx, md)
 		ctx = meta.WithUserAgent(ctx, userAgent)
 
-		var requestID string
-
-		if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
-			requestID = mdRequestID[0]
-		}
-
+		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		header := metadata.Pairs("request-id", requestID)
 
-		if err := grpc.SendHeader(ctx, header); err != nil {
+		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
+		if err := grpc.SendHeader(ctx, headers); err != nil {
 			return err
 		}
 
@@ -85,20 +65,23 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for meta.
 func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		ua := meta.UserAgent(ctx)
+		md := ExtractOutgoing(ctx)
+
+		ua := extractUserAgent(ctx, md)
 		if ua == "" {
 			ua = userAgent
 		}
 
 		ctx = meta.WithUserAgent(ctx, ua)
 
-		requestID := meta.RequestID(ctx)
+		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
+
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
 	}
@@ -107,21 +90,40 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for meta.
 func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		ua := meta.UserAgent(ctx)
+		md := ExtractOutgoing(ctx)
+
+		ua := extractUserAgent(ctx, md)
 		if ua == "" {
 			ua = userAgent
 		}
 
 		ctx = meta.WithUserAgent(ctx, ua)
 
-		requestID := meta.RequestID(ctx)
+		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID)
+
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
 	}
+}
+
+func extractUserAgent(ctx context.Context, md metadata.MD) string {
+	if mdUserAgent := md.Get("user-agent"); len(mdUserAgent) > 0 {
+		return mdUserAgent[0]
+	}
+
+	return meta.UserAgent(ctx)
+}
+
+func extractRequestID(ctx context.Context, md metadata.MD) string {
+	if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
+		return mdRequestID[0]
+	}
+
+	return meta.RequestID(ctx)
 }
