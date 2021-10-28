@@ -85,7 +85,12 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for meta.
 func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		ctx = meta.WithUserAgent(ctx, userAgent)
+		ua := meta.UserAgent(ctx)
+		if ua == "" {
+			ua = userAgent
+		}
+
+		ctx = meta.WithUserAgent(ctx, ua)
 
 		requestID := meta.RequestID(ctx)
 		if requestID == "" {
@@ -102,7 +107,12 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for meta.
 func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		ctx = meta.WithUserAgent(ctx, userAgent)
+		ua := meta.UserAgent(ctx)
+		if ua == "" {
+			ua = userAgent
+		}
+
+		ctx = meta.WithUserAgent(ctx, ua)
 
 		requestID := meta.RequestID(ctx)
 		if requestID == "" {

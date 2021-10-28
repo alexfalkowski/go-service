@@ -44,8 +44,13 @@ type metaProducer struct {
 }
 
 func (p *metaProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
-	message.Headers["user-agent"] = p.userAgent
-	ctx = meta.WithUserAgent(ctx, p.userAgent)
+	userAgent := meta.UserAgent(ctx)
+	if userAgent == "" {
+		userAgent = p.userAgent
+	}
+
+	message.Headers["user-agent"] = userAgent
+	ctx = meta.WithUserAgent(ctx, userAgent)
 
 	requestID := meta.RequestID(ctx)
 	if requestID == "" {
