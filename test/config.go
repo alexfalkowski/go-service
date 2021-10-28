@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/ratelimit"
 	grpcRetry "github.com/alexfalkowski/go-service/pkg/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/pkg/transport/http"
 	httpRetry "github.com/alexfalkowski/go-service/pkg/transport/http/retry"
@@ -16,6 +17,10 @@ func NewGRPCConfig() *grpc.Config {
 		Retry: grpcRetry.Config{
 			Timeout:  2, // nolint:gomnd
 			Attempts: 1,
+		},
+		RateLimit: ratelimit.Config{
+			Every: 1 * time.Minute,
+			Burst: 1,
 		},
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/pkg/logger/zap"
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/ratelimit"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -644,6 +645,162 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			Convey("Then I should have an error", func() {
 				_, err := client.SayStreamHello(ctx)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestRateLimitUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := test.NewGRPCConfig()
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{ratelimit.UserAgentUnaryServerInterceptor(&cfg.RateLimit)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+
+		test.RegisterGreeterServer(gs, test.NewServer(false))
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{
+				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
+				Logger: logger,
+			}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+
+			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := test.NewGreeterClient(conn)
+			req := &test.HelloRequest{Name: "test"}
+
+			client.SayHello(ctx, req) // nolint:errcheck
+			_, err = client.SayHello(ctx, req)
+
+			Convey("Then I should have an invalid reply with rate limit", func() {
+				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestSuccessRateLimitStream(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := test.NewGRPCConfig()
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Stream: []grpc.StreamServerInterceptor{ratelimit.UserAgentStreamServerInterceptor(&cfg.RateLimit)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+
+		test.RegisterGreeterServer(gs, test.NewServer(false))
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{
+				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
+				Logger: logger,
+			}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+
+			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := test.NewGreeterClient(conn)
+
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
+
+			err = stream.Send(&test.HelloRequest{Name: "test"})
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a valid reply", func() {
+				_, err = stream.Recv()
+
+				So(err, ShouldBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestFailedRateLimitStream(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := test.NewGRPCConfig()
+		rcfg := &ratelimit.Config{
+			Every: 1 * time.Microsecond,
+			Burst: 0,
+		}
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Stream: []grpc.StreamServerInterceptor{ratelimit.UserAgentStreamServerInterceptor(rcfg)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+
+		test.RegisterGreeterServer(gs, test.NewServer(false))
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{
+				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
+				Logger: logger,
+			}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+
+			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := test.NewGreeterClient(conn)
+
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
+
+			err = stream.Send(&test.HelloRequest{Name: "test"})
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have an invalid reply with rate limit", func() {
+				_, err = stream.Recv()
+
+				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
 			})
 
 			lc.RequireStop()
