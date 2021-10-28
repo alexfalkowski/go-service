@@ -40,7 +40,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
 			grpcRetry.WithMax(params.Config.Retry.Attempts),
 			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(backoffLinear)),
-			grpcRetry.WithPerRetryTimeout(time.Duration(params.Config.Retry.Timeout)*time.Second),
+			grpcRetry.WithPerRetryTimeout(params.Config.Retry.Timeout),
 		),
 		breaker.UnaryClientInterceptor(),
 		meta.UnaryClientInterceptor(params.Config.UserAgent),
