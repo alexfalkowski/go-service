@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.31.0](https://github.com/alexfalkowski/go-service/compare/v1.30.0...v1.31.0) (2021-10-28)
+
+
+### Features
+
+* **transport:** add user agent ([#56](https://github.com/alexfalkowski/go-service/issues/56)) ([db837a1](https://github.com/alexfalkowski/go-service/commit/db837a1bccd1ee69929086cb2c4c78eb94f5e7f5))
+
 ## [1.30.0](https://github.com/alexfalkowski/go-service/compare/v1.29.2...v1.30.0) (2021-10-27)
 
 
