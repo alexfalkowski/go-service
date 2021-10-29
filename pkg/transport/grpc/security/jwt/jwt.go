@@ -8,6 +8,7 @@ import (
 
 	sjwt "github.com/alexfalkowski/go-service/pkg/security/jwt"
 	"github.com/alexfalkowski/go-service/pkg/security/meta"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/health"
 	grpcMeta "github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	"github.com/form3tech-oss/jwt-go"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -17,15 +18,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	healthService = "grpc.health.v1.Health"
-)
-
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return handler(ctx, req)
 		}
 
@@ -56,7 +53,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return handler(srv, stream)
 		}
 

@@ -165,8 +165,9 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := test.NewGreeterClient(conn)
 			req := &test.HelloRequest{Name: "test"}
 
+			_, err = client.SayHello(ctx, req)
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := client.SayHello(ctx, req)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -218,8 +219,9 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := test.NewGreeterClient(conn)
 			req := &test.HelloRequest{Name: "test"}
 
+			_, err = client.SayHello(ctx, req)
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := client.SayHello(ctx, req)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -266,8 +268,9 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := test.NewGreeterClient(conn)
 			req := &test.HelloRequest{Name: "test"}
 
+			_, err = client.SayHello(ctx, req)
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := client.SayHello(ctx, req)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -318,8 +321,9 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := test.NewGreeterClient(conn)
 			req := &test.HelloRequest{Name: "test"}
 
+			_, err = client.SayHello(ctx, req)
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := client.SayHello(ctx, req)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -489,8 +493,9 @@ func TestInvalidAuthStream(t *testing.T) {
 			err = stream.Send(&test.HelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
+			_, err = stream.Recv()
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := stream.Recv()
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -540,8 +545,9 @@ func TestEmptyAuthStream(t *testing.T) {
 
 			client := test.NewGreeterClient(conn)
 
+			_, err = client.SayStreamHello(ctx)
+
 			Convey("Then I should have an auth error", func() {
-				_, err := client.SayStreamHello(ctx)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -593,8 +599,9 @@ func TestMissingClientAuthStream(t *testing.T) {
 			err = stream.Send(&test.HelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
+			_, err = stream.Recv()
+
 			Convey("Then I should have a unauthenticated reply", func() {
-				_, err := stream.Recv()
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -644,8 +651,9 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 			client := test.NewGreeterClient(conn)
 
+			_, err = client.SayStreamHello(ctx)
+
 			Convey("Then I should have an error", func() {
-				_, err := client.SayStreamHello(ctx)
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
@@ -799,9 +807,9 @@ func TestSuccessRateLimitStream(t *testing.T) {
 			err = stream.Send(&test.HelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
-			Convey("Then I should have a valid reply", func() {
-				_, err = stream.Recv()
+			_, err = stream.Recv()
 
+			Convey("Then I should have a valid reply", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -855,9 +863,9 @@ func TestFailedRateLimitStream(t *testing.T) {
 			err = stream.Send(&test.HelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
-			Convey("Then I should have an invalid reply with rate limit", func() {
-				_, err = stream.Recv()
+			_, err = stream.Recv()
 
+			Convey("Then I should have an invalid reply with rate limit", func() {
 				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
 			})
 
