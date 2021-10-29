@@ -305,6 +305,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -361,6 +362,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
+				So(err.Error(), ShouldContainSubstring, "authorization token is not provided")
 			})
 
 			lc.RequireStop()
@@ -439,6 +441,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -491,9 +494,11 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-ID", "test")
 
+			_, err = client.Do(req) // nolint:bodyclose
+
 			Convey("Then I should have an error", func() {
-				_, err := client.Do(req) // nolint:bodyclose
 				So(err, ShouldBeError)
+				So(err.Error(), ShouldContainSubstring, "token error")
 			})
 
 			lc.RequireStop()
