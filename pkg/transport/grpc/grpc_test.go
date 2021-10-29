@@ -807,3 +807,58 @@ func TestFailedRateLimitStream(t *testing.T) {
 		})
 	})
 }
+
+func TestBreakerUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		cfg := test.NewGRPCConfig()
+		verifier := test.NewVerifier("test")
+		serverParams := pkgGRPC.ServerParams{
+			Config: cfg,
+			Logger: logger,
+			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		}
+		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+
+		test.RegisterGreeterServer(gs, test.NewServer(true))
+
+		lc.RequireStart()
+
+		Convey("When I query for a unauthenticated greet multiple times", func() {
+			ctx := context.Background()
+			clientParams := &pkgGRPC.ClientParams{
+				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
+				Config: cfg,
+				Logger: logger,
+			}
+			clientOpts := []grpc.DialOption{
+				grpc.WithBlock(),
+				grpc.WithInsecure(),
+				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
+			}
+
+			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			So(err, ShouldBeNil)
+
+			defer conn.Close()
+
+			client := test.NewGreeterClient(conn)
+			req := &test.HelloRequest{Name: "test"}
+
+			for i := 0; i < 10; i++ {
+				_, err = client.SayHello(ctx, req)
+			}
+
+			Convey("Then I should have a unauthenticated reply", func() {
+				So(status.Code(err), ShouldEqual, codes.Unavailable)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
