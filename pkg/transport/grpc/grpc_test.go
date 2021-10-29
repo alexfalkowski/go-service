@@ -11,6 +11,7 @@ import (
 	pkgGRPC "github.com/alexfalkowski/go-service/pkg/transport/grpc"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/ratelimit"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/pkg/transport/meta"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -663,7 +664,7 @@ func TestRateLimitUnary(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{ratelimit.UserAgentUnaryServerInterceptor(&cfg.RateLimit)},
+			Unary:  []grpc.UnaryServerInterceptor{ratelimit.UnaryServerInterceptor(&cfg.RateLimit, meta.UserAgent)},
 		}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -711,7 +712,7 @@ func TestSuccessRateLimitStream(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Stream: []grpc.StreamServerInterceptor{ratelimit.UserAgentStreamServerInterceptor(&cfg.RateLimit)},
+			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(&cfg.RateLimit, meta.UserAgent)},
 		}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -767,7 +768,7 @@ func TestFailedRateLimitStream(t *testing.T) {
 		serverParams := pkgGRPC.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Stream: []grpc.StreamServerInterceptor{ratelimit.UserAgentStreamServerInterceptor(rcfg)},
+			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(rcfg, meta.UserAgent)},
 		}
 		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
 
