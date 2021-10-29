@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/meta"
 	"github.com/alexfalkowski/go-service/pkg/time"
 	"github.com/alexfalkowski/go-service/pkg/transport/grpc/encoder"
+	"github.com/alexfalkowski/go-service/pkg/transport/grpc/health"
 	grpcMeta "github.com/alexfalkowski/go-service/pkg/transport/grpc/meta"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -30,14 +31,13 @@ const (
 	grpcRequestDeadline = "grpc.request.deadline"
 	component           = "component"
 	grpcComponent       = "grpc"
-	healthService       = "grpc.health.v1.Health"
 )
 
 // UnaryServerInterceptor for opentracing.
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return handler(ctx, req)
 		}
 
@@ -90,7 +90,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return handler(srv, stream)
 		}
 
@@ -143,7 +143,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -197,7 +197,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 func StreamClientInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
-		if service == healthService {
+		if service == health.Service {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 
