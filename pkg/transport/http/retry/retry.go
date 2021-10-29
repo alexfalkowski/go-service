@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"time"
 
 	retry "github.com/avast/retry-go/v3"
 )
@@ -44,7 +43,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, time.Duration(r.cfg.Timeout)*time.Second)
+		tctx, cancel := context.WithTimeout(ctx, r.cfg.Timeout)
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose

@@ -5,6 +5,8 @@ import (
 
 	breaker "github.com/sony/gobreaker"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // UnaryClientInterceptor for breaker.
@@ -17,7 +19,14 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		}
 
 		_, err := cb.Execute(operation)
+		if err != nil {
+			if err == breaker.ErrOpenState || err == breaker.ErrTooManyRequests {
+				return status.Error(codes.Unavailable, err.Error())
+			}
 
-		return err
+			return err
+		}
+
+		return nil
 	}
 }

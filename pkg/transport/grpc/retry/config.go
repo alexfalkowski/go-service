@@ -1,7 +1,11 @@
 package retry
 
+import (
+	"time"
+)
+
 // Config for retry.
 type Config struct {
-	Timeout  uint `yaml:"timeout"`
-	Attempts uint `yaml:"attempts"`
+	Timeout  time.Duration `yaml:"timeout"`
+	Attempts uint          `yaml:"attempts"`
 }
