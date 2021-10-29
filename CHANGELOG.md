@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.32.0](https://github.com/alexfalkowski/go-service/compare/v1.31.0...v1.32.0) (2021-10-29)
+
+
+### Features
+
+* **grpc:** add rate limiting ([#57](https://github.com/alexfalkowski/go-service/issues/57)) ([7559397](https://github.com/alexfalkowski/go-service/commit/7559397e0d7023bc9429b1943a1c552153c1b9a6))
+
 ## [1.31.0](https://github.com/alexfalkowski/go-service/compare/v1.30.0...v1.31.0) (2021-10-28)
 
 
