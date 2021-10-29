@@ -19,7 +19,7 @@ require (
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/smartystreets/goconvey v1.6.6
+	github.com/smartystreets/goconvey v1.7.2
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.2.1
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
