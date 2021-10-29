@@ -36,5 +36,11 @@ func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error)
 		return nil, errors.New("invalid token")
 	}
 
-	return &jwt.Token{}, nil
+	jwtToken := &jwt.Token{
+		Claims: jwt.MapClaims{
+			"azp": v.token,
+		},
+	}
+
+	return jwtToken, nil
 }

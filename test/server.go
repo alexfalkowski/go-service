@@ -24,7 +24,7 @@ type Server struct {
 
 // SayHello ...
 func (s *Server) SayHello(ctx context.Context, req *HelloRequest) (*HelloReply, error) {
-	if s.verifyAuth && meta.Token(ctx) == nil {
+	if s.verifyAuth && meta.AuthorizedParty(ctx) == "" {
 		return nil, ErrInvalidToken
 	}
 
@@ -33,7 +33,7 @@ func (s *Server) SayHello(ctx context.Context, req *HelloRequest) (*HelloReply, 
 
 // SayStreamHello ...
 func (s *Server) SayStreamHello(stream Greeter_SayStreamHelloServer) error {
-	if s.verifyAuth && meta.Token(stream.Context()) == nil {
+	if s.verifyAuth && meta.AuthorizedParty(stream.Context()) == "" {
 		return ErrInvalidToken
 	}
 
