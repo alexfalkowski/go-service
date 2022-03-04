@@ -188,7 +188,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-				So(err.Error(), ShouldEqual, "EOF")
+				So(err.Error(), ShouldEqual, "json: cannot unmarshal number into Go value of type auth0.jwksResponse")
 			})
 		})
 
