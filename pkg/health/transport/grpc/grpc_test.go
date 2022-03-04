@@ -17,6 +17,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -55,7 +56,7 @@ func TestUnary(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -112,7 +113,7 @@ func TestInvalidUnary(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -177,7 +178,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
@@ -235,7 +236,7 @@ func TestStream(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -303,7 +304,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 

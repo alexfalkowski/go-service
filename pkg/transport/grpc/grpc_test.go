@@ -18,6 +18,7 @@ import (
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
@@ -43,7 +44,7 @@ func TestUnary(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -98,7 +99,7 @@ func TestValidAuthUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
@@ -153,7 +154,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
 			}
 
@@ -207,7 +208,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
 			}
 
@@ -258,7 +259,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -309,7 +310,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error")))),
 			}
 
@@ -356,7 +357,7 @@ func TestStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 			}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
@@ -417,7 +418,7 @@ func TestValidAuthStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
@@ -476,7 +477,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
 			}
 
@@ -534,7 +535,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
 			}
 
@@ -584,7 +585,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -640,7 +641,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error")))),
 			}
 
@@ -688,7 +689,7 @@ func TestRateLimitUnary(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -742,7 +743,7 @@ func TestAuthRateLimitUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
@@ -792,7 +793,7 @@ func TestSuccessRateLimitStream(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -848,7 +849,7 @@ func TestFailedRateLimitStream(t *testing.T) {
 				Config: cfg,
 				Logger: logger,
 			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
@@ -904,7 +905,7 @@ func TestBreakerUnary(t *testing.T) {
 			}
 			clientOpts := []grpc.DialOption{
 				grpc.WithBlock(),
-				grpc.WithInsecure(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
 			}
 

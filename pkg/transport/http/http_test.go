@@ -21,6 +21,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // nolint:funlen
@@ -51,7 +52,7 @@ func TestUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -122,7 +123,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -194,7 +195,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -266,7 +267,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -337,7 +338,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -402,7 +403,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
@@ -473,7 +474,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Config: grpcCfg,
 			Logger: logger,
 		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithInsecure()}
+		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
