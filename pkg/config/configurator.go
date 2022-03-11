@@ -15,10 +15,8 @@ import (
 	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
 )
 
-var (
-	// ErrMissingConfigFile for config.
-	ErrMissingConfigFile = errors.New("missing config file")
-)
+// ErrMissingConfigFile for config.
+var ErrMissingConfigFile = errors.New("missing config file")
 
 // Configurator for config.
 type Configurator interface {

@@ -7,10 +7,8 @@ import (
 	"github.com/form3tech-oss/jwt-go"
 )
 
-var (
-	// ErrMissingToken for http.
-	ErrMissingToken = errors.New("authorization token is not provided")
-)
+// ErrMissingToken for http.
+var ErrMissingToken = errors.New("authorization token is not provided")
 
 // Generator allows the implementation of different types generators.
 type Generator interface {

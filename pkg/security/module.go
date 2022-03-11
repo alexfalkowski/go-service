@@ -5,7 +5,5 @@ import (
 	"go.uber.org/fx"
 )
 
-var (
-	// Auth0Module for fx.
-	Auth0Module = fx.Options(fx.Provide(auth0.NewGenerator), fx.Provide(auth0.NewCertificator), fx.Provide(auth0.NewVerifier))
-)
+// Auth0Module for fx.
+var Auth0Module = fx.Options(fx.Provide(auth0.NewGenerator), fx.Provide(auth0.NewCertificator), fx.Provide(auth0.NewVerifier))

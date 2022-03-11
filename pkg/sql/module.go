@@ -5,7 +5,5 @@ import (
 	"go.uber.org/fx"
 )
 
-var (
-	// PostgreSQLModule for fx.
-	PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB))
-)
+// PostgreSQLModule for fx.
+var PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB))

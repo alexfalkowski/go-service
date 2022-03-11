@@ -13,10 +13,8 @@ import (
 	"github.com/form3tech-oss/jwt-go"
 )
 
-var (
-	// ErrInvalidResponse from Auth0.
-	ErrInvalidResponse = errors.New("invalid response")
-)
+// ErrInvalidResponse from Auth0.
+var ErrInvalidResponse = errors.New("invalid response")
 
 type generatorRequest struct {
 	ClientID     string `json:"client_id"`

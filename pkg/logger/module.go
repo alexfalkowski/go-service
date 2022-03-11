@@ -5,7 +5,5 @@ import (
 	"go.uber.org/fx"
 )
 
-var (
-	// ZapModule for fx.
-	ZapModule = fx.Options(fx.Provide(zap.NewConfig), fx.Provide(zap.NewLogger))
-)
+// ZapModule for fx.
+var ZapModule = fx.Options(fx.Provide(zap.NewConfig), fx.Provide(zap.NewLogger))
