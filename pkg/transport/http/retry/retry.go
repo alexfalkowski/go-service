@@ -3,6 +3,7 @@ package retry
 import (
 	"context"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -48,19 +49,23 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose
 		if err != nil {
-			if v, ok := err.(*url.Error); ok {
+			var uerr *url.Error
+
+			if errors.As(err, &uerr) {
 				// Don't retry if the error was due to too many redirects.
-				if redirectsErrorRe.MatchString(v.Error()) {
+				if redirectsErrorRe.MatchString(uerr.Error()) {
 					return nil
 				}
 
 				// Don't retry if the error was due to an invalid protocol scheme.
-				if schemeErrorRe.MatchString(v.Error()) {
+				if schemeErrorRe.MatchString(uerr.Error()) {
 					return nil
 				}
 
+				var uaerr x509.UnknownAuthorityError
+
 				// Don't retry if the error was due to TLS cert verification failure.
-				if _, ok := v.Err.(x509.UnknownAuthorityError); ok {
+				if errors.As(uerr.Err, &uaerr) {
 					return nil
 				}
 			}

@@ -19,7 +19,7 @@ linters:
     - durationcheck
     - errchkjson
     - errname
-    # - errorlint
+    - errorlint
     - exportloopref
     - exhaustive
     - forbidigo
