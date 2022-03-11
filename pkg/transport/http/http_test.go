@@ -442,7 +442,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen,forcetypeassert
+// nolint:funlen,forcetypeassert,goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()

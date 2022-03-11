@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/x509"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -22,6 +21,9 @@ var (
 	// scheme specified in the URL is invalid. This error isn't typed
 	// specifically so we resort to matching on the error string.
 	schemeErrorRe = regexp.MustCompile(`unsupported protocol scheme`)
+
+	// ErrInvalidStatusCode for http retry.
+	ErrInvalidStatusCode = errors.New("invalid status code")
 )
 
 // NewRoundTripper for retry.
@@ -79,7 +81,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		// errors and may relate to outages on the server side. This will catch
 		// invalid response codes as well, like 0 and 999.
 		if res.StatusCode == 0 || (res.StatusCode >= 500 && res.StatusCode != 501) {
-			return fmt.Errorf("invalid status code %d", res.StatusCode)
+			return ErrInvalidStatusCode
 		}
 
 		return nil

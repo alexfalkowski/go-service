@@ -31,6 +31,7 @@ type verifier struct {
 	token string
 }
 
+// nolint:goerr113
 func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error) {
 	if string(token) != v.token {
 		return nil, errors.New("invalid token")
