@@ -7,7 +7,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// Register metrics for HTTP
+// Register metrics for HTTP.
+// nolint:forcetypeassert
 func Register(server *http.Server) error {
 	mux := server.Handler.(*runtime.ServeMux)
 	handler := promhttp.Handler()

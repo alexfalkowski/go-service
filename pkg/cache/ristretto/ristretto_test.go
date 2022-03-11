@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// nolint:forcetypeassert
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		cfg := &ristretto.Config{

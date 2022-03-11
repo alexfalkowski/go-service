@@ -79,6 +79,7 @@ type cachedGenerator struct {
 	sjwt.Generator
 }
 
+// nolint:forcetypeassert
 func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {
 	cacheKey := g.cfg.CacheKey("generate")
 

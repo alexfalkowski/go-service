@@ -30,6 +30,7 @@ func Register(server *http.Server, hob *HealthObserver, lob *LivenessObserver, r
 	return nil
 }
 
+// nolint:forcetypeassert
 func resister(path string, server *http.Server, ob *subscriber.Observer) error {
 	mux := server.Handler.(*runtime.ServeMux)
 

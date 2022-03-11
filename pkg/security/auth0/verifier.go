@@ -51,6 +51,7 @@ func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error)
 	return parsedToken, nil
 }
 
+// nolint:forcetypeassert
 func (v *verifier) validate(token *jwt.Token) (interface{}, error) {
 	claims := token.Claims.(jwt.MapClaims)
 

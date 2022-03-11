@@ -76,6 +76,7 @@ type cachedPEM struct {
 	Certificator
 }
 
+// nolint:forcetypeassert
 func (p *cachedPEM) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cacheKey := p.cfg.CacheKey("certificate")
 
