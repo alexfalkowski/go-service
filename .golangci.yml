@@ -8,11 +8,9 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode
     - depguard
     - dogsled
     - dupl
-    - errcheck
     - errname
     - exportloopref
     - exhaustive
@@ -28,7 +26,6 @@ linters:
     - gosec
     - gosimple
     - govet
-    - ineffassign
     - lll
     - misspell
     - nakedret
@@ -36,13 +33,8 @@ linters:
     - nolintlint
     - revive
     - rowserrcheck
-    - staticcheck
-    - structcheck
     - stylecheck
-    - typecheck
     - unconvert
     - unparam
-    - unused
-    - varcheck
     - whitespace
     - wsl
