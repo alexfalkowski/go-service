@@ -6,4 +6,5 @@ import (
 )
 
 // PostgreSQLModule for fx.
+// nolint:gochecknoglobals
 var PostgreSQLModule = fx.Options(fx.Provide(pg.NewDB))

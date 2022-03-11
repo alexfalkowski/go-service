@@ -6,4 +6,5 @@ import (
 )
 
 // Auth0Module for fx.
+// nolint:gochecknoglobals
 var Auth0Module = fx.Options(fx.Provide(auth0.NewGenerator), fx.Provide(auth0.NewCertificator), fx.Provide(auth0.NewVerifier))

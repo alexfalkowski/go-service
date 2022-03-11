@@ -7,6 +7,7 @@ import (
 
 type contextKey string
 
+// nolint:gochecknoglobals
 var (
 	meta = contextKey("meta")
 	mux  = sync.Mutex{}

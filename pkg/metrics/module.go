@@ -6,4 +6,5 @@ import (
 )
 
 // PrometheusModule for fx.
+// nolint:gochecknoglobals
 var PrometheusModule = fx.Invoke(http.Register)
