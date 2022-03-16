@@ -29,17 +29,18 @@ const (
 )
 
 // NewHandler for opentracing.
-func NewHandler(topic, channel string, h handler.Handler) handler.Handler {
-	return &traceHandler{topic: topic, channel: channel, Handler: h}
+func NewHandler(topic, channel string, h handler.Handler) *Handler {
+	return &Handler{topic: topic, channel: channel, Handler: h}
 }
 
-type traceHandler struct {
+// Handler for opentracing.
+type Handler struct {
 	topic, channel string
 
 	handler.Handler
 }
 
-func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
@@ -78,15 +79,16 @@ func (h *traceHandler) Handle(ctx context.Context, message *message.Message) (co
 }
 
 // NewProducer for opentracing.
-func NewProducer(p producer.Producer) producer.Producer {
-	return &traceProducer{Producer: p}
+func NewProducer(p producer.Producer) *Producer {
+	return &Producer{Producer: p}
 }
 
-type traceProducer struct {
+// Producer for opentracing.
+type Producer struct {
 	producer.Producer
 }
 
-func (p *traceProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	operationName := fmt.Sprintf("publish %s", topic)

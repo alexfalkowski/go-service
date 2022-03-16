@@ -87,6 +87,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 }
 
 // NewPerRPCCredentials for token.
+// nolint:ireturn
 func NewPerRPCCredentials(generator sjwt.Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
 }

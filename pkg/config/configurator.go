@@ -18,6 +18,12 @@ import (
 // ErrMissingConfigFile for config.
 var ErrMissingConfigFile = errors.New("missing config file")
 
+// NewConfigurator for config.
+// nolint:ireturn
+func NewConfigurator() Configurator {
+	return &Config{}
+}
+
 // Configurator for config.
 type Configurator interface {
 	Unmarshal(in []byte) error
@@ -30,11 +36,6 @@ type Configurator interface {
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
-}
-
-// NewConfigurator for config.
-func NewConfigurator() Configurator {
-	return &Config{}
 }
 
 // Unmarshal the config.

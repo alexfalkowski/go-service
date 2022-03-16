@@ -20,6 +20,7 @@ type ProducerParams struct {
 }
 
 // NewProducer for NSQ.
+// nolint:ireturn
 func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
 	cfg := nsq.NewConfig()
 

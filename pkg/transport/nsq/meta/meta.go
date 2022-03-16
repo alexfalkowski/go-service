@@ -11,15 +11,16 @@ import (
 )
 
 // NewHandler for meta.
-func NewHandler(h handler.Handler) handler.Handler {
-	return &metaHandler{Handler: h}
+func NewHandler(h handler.Handler) *Handler {
+	return &Handler{Handler: h}
 }
 
-type metaHandler struct {
+// Handler for meta.
+type Handler struct {
 	handler.Handler
 }
 
-func (h *metaHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	ctx = meta.WithUserAgent(ctx, message.Headers["user-agent"])
 
 	requestID, ok := message.Headers["request-id"]
@@ -34,16 +35,17 @@ func (h *metaHandler) Handle(ctx context.Context, message *message.Message) (con
 }
 
 // NewProducer for meta.
-func NewProducer(userAgent string, p producer.Producer) producer.Producer {
-	return &metaProducer{userAgent: userAgent, Producer: p}
+func NewProducer(userAgent string, p producer.Producer) *Producer {
+	return &Producer{userAgent: userAgent, Producer: p}
 }
 
-type metaProducer struct {
+// Producer for meta.
+type Producer struct {
 	userAgent string
 	producer.Producer
 }
 
-func (p *metaProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	userAgent := meta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = p.userAgent

@@ -47,7 +47,7 @@ linters:
     - grouper
     - ifshort
     - importas
-    # - ireturn
+    - ireturn
     - lll
     - maintidx
     - makezero

@@ -13,6 +13,7 @@ type Handler interface {
 }
 
 // New handler for NSQ.
+// nolint:ireturn
 func New(h Handler) nsq.Handler {
 	return &handler{Handler: h}
 }

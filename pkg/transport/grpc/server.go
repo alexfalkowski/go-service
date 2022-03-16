@@ -85,6 +85,7 @@ func stopServer(server *grpc.Server, params ServerParams) {
 	server.GracefulStop()
 }
 
+// nolint:ireturn
 func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
@@ -100,6 +101,7 @@ func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInter
 	return grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(defaultInterceptors...))
 }
 
+// nolint:ireturn
 func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
