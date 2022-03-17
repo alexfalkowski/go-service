@@ -53,7 +53,7 @@ linters:
     - makezero
     - misspell
     - nakedret
-    # - nestif
+    - nestif
     # - nilerr
     - nilnil
     - nlreturn

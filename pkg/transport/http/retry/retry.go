@@ -51,29 +51,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose
 		if err != nil {
-			var uerr *url.Error
-
-			if errors.As(err, &uerr) {
-				// Don't retry if the error was due to too many redirects.
-				if redirectsErrorRe.MatchString(uerr.Error()) {
-					return nil
-				}
-
-				// Don't retry if the error was due to an invalid protocol scheme.
-				if schemeErrorRe.MatchString(uerr.Error()) {
-					return nil
-				}
-
-				var uaerr x509.UnknownAuthorityError
-
-				// Don't retry if the error was due to TLS cert verification failure.
-				if errors.As(uerr.Err, &uaerr) {
-					return nil
-				}
-			}
-
-			// The error is likely recoverable so retry.
-			return err
+			return r.recover(err)
 		}
 
 		// Check the response code. We retry on 500-range responses to allow
@@ -91,4 +69,30 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	retry.Do(operation, retry.Attempts(r.cfg.Attempts)) // nolint:errcheck
 
 	return res, err
+}
+
+func (r *RoundTripper) recover(err error) error {
+	var uerr *url.Error
+
+	if errors.As(err, &uerr) {
+		// Don't retry if the error was due to too many redirects.
+		if redirectsErrorRe.MatchString(uerr.Error()) {
+			return nil
+		}
+
+		// Don't retry if the error was due to an invalid protocol scheme.
+		if schemeErrorRe.MatchString(uerr.Error()) {
+			return nil
+		}
+
+		var uaerr x509.UnknownAuthorityError
+
+		// Don't retry if the error was due to TLS cert verification failure.
+		if errors.As(uerr.Err, &uaerr) {
+			return nil
+		}
+	}
+
+	// The error is likely recoverable so retry.
+	return err
 }
