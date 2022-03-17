@@ -29,7 +29,7 @@ func (h *handler) HandleMessage(m *nsq.Message) error {
 
 	var msg message.Message
 	if err := message.Unmarshal(m.Body, &msg); err != nil {
-		return nil
+		return err
 	}
 
 	msg.Message = m
