@@ -8,8 +8,10 @@ import (
 
 var (
 	// RedisModule for fx.
+	// nolint:gochecknoglobals
 	RedisModule = fx.Options(fx.Provide(redis.NewRing), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache))
 
 	// RistrettoModule for fx.
+	// nolint:gochecknoglobals
 	RistrettoModule = fx.Options(fx.Provide(ristretto.NewCache))
 )

@@ -8,8 +8,10 @@ import (
 
 var (
 	// JaegerOpenTracingModule for fx.
+	// nolint:gochecknoglobals
 	JaegerOpenTracingModule = fx.Options(fx.Invoke(jaeger.Register))
 
 	// DataDogOpenTracingModule for fx.
+	// nolint:gochecknoglobals
 	DataDogOpenTracingModule = fx.Options(fx.Invoke(datadog.Register))
 )

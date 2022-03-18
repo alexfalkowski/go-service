@@ -11,10 +11,8 @@ import (
 	"github.com/form3tech-oss/jwt-go"
 )
 
-var (
-	// ErrMissingCertificate from Auth0.
-	ErrMissingCertificate = errors.New("missing certificate")
-)
+// ErrMissingCertificate from Auth0.
+var ErrMissingCertificate = errors.New("missing certificate")
 
 type jwksResponse struct {
 	Keys []jsonWebKeys `json:"keys"`
@@ -78,6 +76,7 @@ type cachedPEM struct {
 	Certificator
 }
 
+// nolint:forcetypeassert
 func (p *cachedPEM) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cacheKey := p.cfg.CacheKey("certificate")
 

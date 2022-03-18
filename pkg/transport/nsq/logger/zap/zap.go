@@ -29,18 +29,19 @@ const (
 )
 
 // NewHandler for zap.
-func NewHandler(topic, channel string, logger *zap.Logger, h handler.Handler) handler.Handler {
-	return &loggerHandler{topic: topic, channel: channel, logger: logger, Handler: h}
+func NewHandler(topic, channel string, logger *zap.Logger, h handler.Handler) *Handler {
+	return &Handler{topic: topic, channel: channel, logger: logger, Handler: h}
 }
 
-type loggerHandler struct {
+// Handler for zap.
+type Handler struct {
 	topic, channel string
 	logger         *zap.Logger
 
 	handler.Handler
 }
 
-func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	ctx, err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{
@@ -75,17 +76,18 @@ func (h *loggerHandler) Handle(ctx context.Context, message *message.Message) (c
 }
 
 // NewProducer for zap.
-func NewProducer(logger *zap.Logger, p producer.Producer) producer.Producer {
-	return &loggerProducer{logger: logger, Producer: p}
+func NewProducer(logger *zap.Logger, p producer.Producer) *Producer {
+	return &Producer{logger: logger, Producer: p}
 }
 
-type loggerProducer struct {
+// Producer for zap.
+type Producer struct {
 	logger *zap.Logger
 
 	producer.Producer
 }
 
-func (p *loggerProducer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
 	start := time.Now().UTC()
 	ctx, err := p.Producer.Publish(ctx, topic, message)
 	fields := []zapcore.Field{

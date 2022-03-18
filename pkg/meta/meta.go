@@ -7,6 +7,7 @@ import (
 
 type contextKey string
 
+// nolint:gochecknoglobals
 var (
 	meta = contextKey("meta")
 	mux  = sync.Mutex{}
@@ -39,6 +40,7 @@ func Attributes(ctx context.Context) map[string]string {
 	return attributes(ctx)
 }
 
+// nolint:forcetypeassert
 func attributes(ctx context.Context) map[string]string {
 	m := ctx.Value(meta)
 	if m == nil {

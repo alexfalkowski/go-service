@@ -8,6 +8,7 @@ import (
 )
 
 // NewGenerator for Auth0.
+// nolint:ireturn
 func NewGenerator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) jwt.Generator {
 	params := &http.ClientParams{
 		Config: httpCfg,
@@ -22,6 +23,7 @@ func NewGenerator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *
 }
 
 // NewCertificator for Auth0.
+// nolint:ireturn
 func NewCertificator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) Certificator {
 	params := &http.ClientParams{
 		Config: httpCfg,
@@ -36,6 +38,7 @@ func NewCertificator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cach
 }
 
 // NewVerifier for Auth0.
+// nolint:ireturn
 func NewVerifier(cfg *Config, cert Certificator) jwt.Verifier {
 	var verifier jwt.Verifier = &verifier{cfg: cfg, cert: cert}
 

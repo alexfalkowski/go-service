@@ -280,6 +280,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -611,6 +612,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 	})
 }
 
+// nolint:goerr113
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)

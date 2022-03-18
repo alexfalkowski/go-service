@@ -19,6 +19,7 @@ type RoundTripper struct {
 	http.RoundTripper
 }
 
+// nolint:forcetypeassert
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	operation := func() (interface{}, error) {
 		return r.RoundTripper.RoundTrip(req) // nolint:bodyclose

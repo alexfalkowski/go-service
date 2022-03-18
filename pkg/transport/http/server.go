@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -40,7 +41,7 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger
 func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *Config, logger *zap.Logger) {
 	logger.Info("starting http server", zap.String("port", cfg.Port))
 
-	if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fields := []zapcore.Field{zap.String("port", cfg.Port), zap.Error(err)}
 
 		if err := s.Shutdown(); err != nil {

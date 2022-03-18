@@ -24,7 +24,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// nolint:funlen
+// nolint:funlen,forcetypeassert
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -91,7 +91,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl,funlen,forcetypeassert
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -163,7 +163,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl,funlen,forcetypeassert
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -235,7 +235,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl,funlen,forcetypeassert
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -306,7 +306,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
+// nolint:funlen,forcetypeassert
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -371,7 +371,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl,funlen,forcetypeassert
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -442,7 +442,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
+// nolint:funlen,forcetypeassert,goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()

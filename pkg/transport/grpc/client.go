@@ -34,6 +34,7 @@ func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialO
 	return grpc.DialContext(context, params.Host, opts...)
 }
 
+// nolint:ireturn
 func unaryDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.UnaryClientInterceptor{
 		grpcRetry.UnaryClientInterceptor(
@@ -53,6 +54,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 	return grpc.WithChainUnaryInterceptor(defaultInterceptors...)
 }
 
+// nolint:ireturn
 func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(params.Config.UserAgent),

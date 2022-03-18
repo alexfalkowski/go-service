@@ -26,9 +26,7 @@ const (
 	client              = "client"
 )
 
-var (
-	sensitiveURLs = regexp.MustCompile(`oauth|token|jwks|health|liveness|readiness`)
-)
+var sensitiveURLs = regexp.MustCompile(`oauth|token|jwks|health|liveness|readiness`)
 
 // NewRoundTripper for zap.
 func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *RoundTripper {

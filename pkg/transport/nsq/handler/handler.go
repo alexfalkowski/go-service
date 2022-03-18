@@ -13,6 +13,7 @@ type Handler interface {
 }
 
 // New handler for NSQ.
+// nolint:ireturn
 func New(h Handler) nsq.Handler {
 	return &handler{Handler: h}
 }
@@ -28,7 +29,7 @@ func (h *handler) HandleMessage(m *nsq.Message) error {
 
 	var msg message.Message
 	if err := message.Unmarshal(m.Body, &msg); err != nil {
-		return nil
+		return err
 	}
 
 	msg.Message = m

@@ -8,6 +8,7 @@ import (
 )
 
 // NewOptions for redis.
+// nolint:forcetypeassert
 func NewOptions(ring *redis.Ring) *cache.Options {
 	opts := &cache.Options{
 		Redis:        ring,

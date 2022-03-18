@@ -88,6 +88,7 @@ func TestReceiveMessage(t *testing.T) {
 	})
 }
 
+// nolint:goerr113
 func TestReceiveError(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)

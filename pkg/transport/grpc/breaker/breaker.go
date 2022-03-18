@@ -2,6 +2,7 @@ package breaker
 
 import (
 	"context"
+	"errors"
 
 	breaker "github.com/sony/gobreaker"
 	"google.golang.org/grpc"
@@ -20,7 +21,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 
 		_, err := cb.Execute(operation)
 		if err != nil {
-			if err == breaker.ErrOpenState || err == breaker.ErrTooManyRequests {
+			if errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests) {
 				return status.Error(codes.Unavailable, err.Error())
 			}
 

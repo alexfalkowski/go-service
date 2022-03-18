@@ -23,6 +23,9 @@ vendor:
 get:
 	go get $(module)
 
+get-all:
+	go get -u all
+
 dep: download tidy vendor ## Setup go deps
 
 lint: ## Lint all the go code
@@ -53,6 +56,8 @@ outdated: ## Check outdated go deps
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
 
 update-dep: get tidy vendor ## Update go dep
+
+update-all-deps: get-all tidy vendor ## Update all go dep
 
 setup-nsq: delete-nsq create-nsq ## Setup NSQ
 

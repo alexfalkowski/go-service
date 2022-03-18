@@ -5,7 +5,6 @@ import (
 	"go.uber.org/fx"
 )
 
-var (
-	// PrometheusModule for fx.
-	PrometheusModule = fx.Invoke(http.Register)
-)
+// PrometheusModule for fx.
+// nolint:gochecknoglobals
+var PrometheusModule = fx.Invoke(http.Register)
