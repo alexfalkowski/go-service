@@ -67,7 +67,6 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - stylecheck
-    # - tagliatelle
     - tenv
     - testpackage
     - thelper
