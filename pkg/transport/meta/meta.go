@@ -7,26 +7,29 @@ import (
 )
 
 const (
-	requestID = "app.request_id"
-	userAgent = "app.user_agent"
+	// RequestIDKey for meta.
+	RequestIDKey = "app.request_id"
+
+	// UserAgentKey for meta.
+	UserAgentKey = "app.user_agent"
 )
 
 // WithRequestID for transport.
 func WithRequestID(ctx context.Context, id string) context.Context {
-	return meta.WithAttribute(ctx, requestID, id)
+	return meta.WithAttribute(ctx, RequestIDKey, id)
 }
 
 // RequestID for transport.
 func RequestID(ctx context.Context) string {
-	return meta.Attribute(ctx, requestID)
+	return meta.Attribute(ctx, RequestIDKey)
 }
 
 // WithUserAgent for transport.
 func WithUserAgent(ctx context.Context, id string) context.Context {
-	return meta.WithAttribute(ctx, userAgent, id)
+	return meta.WithAttribute(ctx, UserAgentKey, id)
 }
 
 // UserAgent for transport.
 func UserAgent(ctx context.Context) string {
-	return meta.Attribute(ctx, userAgent)
+	return meta.Attribute(ctx, UserAgentKey)
 }
