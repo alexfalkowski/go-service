@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.34.0](https://github.com/alexfalkowski/go-service/compare/v1.33.0...v1.34.0) (2022-03-19)
+
+
+### Features
+
+* remove pkg folder ([#62](https://github.com/alexfalkowski/go-service/issues/62)) ([7e18ab8](https://github.com/alexfalkowski/go-service/commit/7e18ab8742313a534247dd739fa76bd842829be8))
+
 ## [1.33.0](https://github.com/alexfalkowski/go-service/compare/v1.32.3...v1.33.0) (2022-03-19)
 
 
