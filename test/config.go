@@ -3,12 +3,12 @@ package test
 import (
 	"time"
 
-	"github.com/alexfalkowski/go-service/pkg/transport/grpc"
-	"github.com/alexfalkowski/go-service/pkg/transport/grpc/ratelimit"
-	grpcRetry "github.com/alexfalkowski/go-service/pkg/transport/grpc/retry"
-	"github.com/alexfalkowski/go-service/pkg/transport/http"
-	httpRetry "github.com/alexfalkowski/go-service/pkg/transport/http/retry"
-	"github.com/alexfalkowski/go-service/pkg/transport/nsq"
+	"github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/transport/grpc/ratelimit"
+	grpcRetry "github.com/alexfalkowski/go-service/transport/grpc/retry"
+	"github.com/alexfalkowski/go-service/transport/http"
+	httpRetry "github.com/alexfalkowski/go-service/transport/http/retry"
+	"github.com/alexfalkowski/go-service/transport/nsq"
 )
 
 // NewGRPCConfig for test.

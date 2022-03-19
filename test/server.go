@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/pkg/security/meta"
+	"github.com/alexfalkowski/go-service/security/meta"
 )
 
 // ErrInvalidToken ...

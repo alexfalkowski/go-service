@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/alexfalkowski/go-service/pkg/meta"
-	"github.com/alexfalkowski/go-service/pkg/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/transport/nsq/message"
 )
 
 // NewHandler for test.

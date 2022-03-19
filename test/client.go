@@ -3,7 +3,7 @@ package test
 import (
 	"net/http"
 
-	pkgHTTP "github.com/alexfalkowski/go-service/pkg/transport/http"
+	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/zap"
 )
 
