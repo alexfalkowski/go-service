@@ -1,9 +1,12 @@
 package pg_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/pkg/sql/pg"
+	sotr "github.com/alexfalkowski/go-service/pkg/sql/trace/opentracing"
+	totr "github.com/alexfalkowski/go-service/pkg/transport/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -17,6 +20,10 @@ func TestSQL(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 
+			ctx := context.Background()
+			ctx, span := sotr.StartSpanFromContext(ctx, "test", "test", totr.StartSpanOptions(ctx)...)
+			defer span.Finish()
+
 			db, err := pg.NewDB(lc, cfg)
 			So(err, ShouldBeNil)
 
@@ -24,6 +31,9 @@ func TestSQL(t *testing.T) {
 
 			Convey("Then I should have a valid database", func() {
 				So(db, ShouldNotBeNil)
+
+				err = db.PingContext(ctx)
+				So(err, ShouldBeNil)
 			})
 
 			lc.RequireStop()
