@@ -13,9 +13,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	pkgGRPC "github.com/alexfalkowski/go-service/transport/grpc"
+	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	jwtGRPC "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
-	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	jwtHTTP "github.com/alexfalkowski/go-service/transport/http/security/jwt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	. "github.com/smartystreets/goconvey/convey"
@@ -34,11 +34,11 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
-		serverParams := pkgGRPC.ServerParams{Config: grpcCfg, Logger: logger}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		serverParams := tgrpc.ServerParams{Config: grpcCfg, Logger: logger}
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(false))
 
@@ -47,14 +47,14 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -101,31 +101,31 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -173,31 +173,31 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -245,31 +245,31 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -316,31 +316,31 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -381,31 +381,31 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -452,31 +452,31 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
-		httpCfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		server := pkgHTTP.NewServer(lc, sh, httpCfg, logger)
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		server := shttp.NewServer(lc, sh, httpCfg, logger)
 		mux := server.Handler.(*runtime.ServeMux)
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwtGRPC.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwtGRPC.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, sh, serverParams)
+		gs := tgrpc.NewServer(lc, sh, serverParams)
 
 		test.RegisterGreeterServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &pkgGRPC.ClientParams{
+		clientParams := &tgrpc.ClientParams{
 			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			Config: grpcCfg,
 			Logger: logger,
 		}
 		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-		conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()

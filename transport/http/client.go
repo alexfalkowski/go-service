@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
-	pkgZap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
+	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -29,7 +29,7 @@ func newRoundTripper(params *ClientParams) http.RoundTripper {
 		hrt = http.DefaultTransport
 	}
 
-	hrt = pkgZap.NewRoundTripper(params.Logger, hrt)
+	hrt = lzap.NewRoundTripper(params.Logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
 	hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
 	hrt = breaker.NewRoundTripper(hrt)

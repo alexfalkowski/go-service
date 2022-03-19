@@ -3,7 +3,7 @@ package test
 import (
 	"net/http"
 
-	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/zap"
 )
 
@@ -14,11 +14,11 @@ func NewHTTPClient(logger *zap.Logger) *http.Client {
 
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(logger *zap.Logger, roundTripper http.RoundTripper) *http.Client {
-	params := &pkgHTTP.ClientParams{
+	params := &shttp.ClientParams{
 		Config:       NewHTTPConfig(),
 		Logger:       logger,
 		RoundTripper: roundTripper,
 	}
 
-	return pkgHTTP.NewClient(params)
+	return shttp.NewClient(params)
 }

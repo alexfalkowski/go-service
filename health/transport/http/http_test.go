@@ -12,10 +12,10 @@ import (
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/health"
-	healthHTTP "github.com/alexfalkowski/go-service/health/transport/http"
+	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -38,10 +38,10 @@ func TestHealth(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -89,10 +89,10 @@ func TestLiveness(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -140,10 +140,10 @@ func TestReadiness(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -191,10 +191,10 @@ func TestInvalidHealth(t *testing.T) {
 		o, err := server.Observe("http")
 		So(err, ShouldBeNil)
 
-		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
-		err = healthHTTP.Register(httpServer, &healthHTTP.HealthObserver{Observer: o}, &healthHTTP.LivenessObserver{Observer: o}, &healthHTTP.ReadinessObserver{Observer: o})
+		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

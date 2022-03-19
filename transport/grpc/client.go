@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
-	pkgZap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
+	lzap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	grpcRetry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -37,15 +37,15 @@ func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialO
 // nolint:ireturn
 func unaryDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.UnaryClientInterceptor{
-		grpcRetry.UnaryClientInterceptor(
-			grpcRetry.WithCodes(codes.Unavailable, codes.DataLoss),
-			grpcRetry.WithMax(params.Config.Retry.Attempts),
-			grpcRetry.WithBackoff(grpcRetry.BackoffLinear(backoffLinear)),
-			grpcRetry.WithPerRetryTimeout(params.Config.Retry.Timeout),
+		retry.UnaryClientInterceptor(
+			retry.WithCodes(codes.Unavailable, codes.DataLoss),
+			retry.WithMax(params.Config.Retry.Attempts),
+			retry.WithBackoff(retry.BackoffLinear(backoffLinear)),
+			retry.WithPerRetryTimeout(params.Config.Retry.Timeout),
 		),
 		breaker.UnaryClientInterceptor(),
 		meta.UnaryClientInterceptor(params.Config.UserAgent),
-		pkgZap.UnaryClientInterceptor(params.Logger),
+		lzap.UnaryClientInterceptor(params.Logger),
 		opentracing.UnaryClientInterceptor(),
 	}
 
@@ -58,7 +58,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(params.Config.UserAgent),
-		pkgZap.StreamClientInterceptor(params.Logger),
+		lzap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}
 

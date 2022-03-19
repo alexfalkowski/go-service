@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	pkgZap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
+	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
@@ -30,7 +30,7 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 		return err
 	}
 
-	lh := pkgZap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
+	lh := lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
 	oh := opentracing.NewHandler(params.Topic, params.Channel, lh)
 	mh := meta.NewHandler(oh)
 

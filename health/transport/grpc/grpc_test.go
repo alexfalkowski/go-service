@@ -9,10 +9,10 @@ import (
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/health"
-	healthGRPC "github.com/alexfalkowski/go-service/health/transport/grpc"
+	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	pkgGRPC "github.com/alexfalkowski/go-service/transport/grpc"
+	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -40,10 +40,10 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
+		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
 		lc.RequireStart()
 
@@ -51,14 +51,14 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &pkgGRPC.ClientParams{
+			clientParams := &tgrpc.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
 				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -97,10 +97,10 @@ func TestInvalidUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
+		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
 		lc.RequireStart()
 
@@ -108,14 +108,14 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &pkgGRPC.ClientParams{
+			clientParams := &tgrpc.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
 				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -155,15 +155,15 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: cfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
 		lc.RequireStart()
 
@@ -171,7 +171,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &pkgGRPC.ClientParams{
+			clientParams := &tgrpc.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
 				Config: cfg,
 				Logger: logger,
@@ -182,7 +182,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -220,10 +220,10 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		serverParams := pkgGRPC.ServerParams{Config: cfg, Logger: logger}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
+		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
 		lc.RequireStart()
 
@@ -231,14 +231,14 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &pkgGRPC.ClientParams{
+			clientParams := &tgrpc.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
 				Config: cfg,
 				Logger: logger,
 			}
 			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -281,15 +281,15 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := pkgGRPC.ServerParams{
+		serverParams := tgrpc.ServerParams{
 			Config: cfg,
 			Logger: logger,
 			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := pkgGRPC.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		healthGRPC.Register(gs, &healthGRPC.Observer{Observer: o})
+		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
 		lc.RequireStart()
 
@@ -297,7 +297,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &pkgGRPC.ClientParams{
+			clientParams := &tgrpc.ClientParams{
 				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
 				Config: cfg,
 				Logger: logger,
@@ -308,7 +308,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
 			}
 
-			conn, err := pkgGRPC.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()

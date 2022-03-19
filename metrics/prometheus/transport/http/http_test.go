@@ -13,7 +13,7 @@ import (
 	prometheusHTTP "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/sql/pg"
 	"github.com/alexfalkowski/go-service/test"
-	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -45,8 +45,8 @@ func TestHTTP(t *testing.T) {
 		_, err = ristretto.NewCache(lc, ricfg)
 		So(err, ShouldBeNil)
 
-		cfg := &pkgHTTP.Config{Port: test.GenerateRandomPort()}
-		httpServer := pkgHTTP.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		err = prometheusHTTP.Register(httpServer)
 		So(err, ShouldBeNil)

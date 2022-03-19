@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	pkgZap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
+	lzap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -91,7 +91,7 @@ func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInter
 		meta.UnaryServerInterceptor(),
 		grpcRecovery.UnaryServerInterceptor(),
 		grpcTags.UnaryServerInterceptor(),
-		pkgZap.UnaryServerInterceptor(logger),
+		lzap.UnaryServerInterceptor(logger),
 		grpcPrometheus.UnaryServerInterceptor,
 		opentracing.UnaryServerInterceptor(),
 	}
@@ -107,7 +107,7 @@ func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInt
 		meta.StreamServerInterceptor(),
 		grpcRecovery.StreamServerInterceptor(),
 		grpcTags.StreamServerInterceptor(),
-		pkgZap.StreamServerInterceptor(logger),
+		lzap.StreamServerInterceptor(logger),
 		grpcPrometheus.StreamServerInterceptor,
 		opentracing.StreamServerInterceptor(),
 	}

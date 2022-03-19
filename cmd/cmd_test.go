@@ -14,8 +14,8 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/health"
-	healthGRPC "github.com/alexfalkowski/go-service/health/transport/grpc"
-	healthHTTP "github.com/alexfalkowski/go-service/health/transport/http"
+	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
+	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
@@ -23,7 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/sql/pg"
 	"github.com/alexfalkowski/go-service/trace"
 	"github.com/alexfalkowski/go-service/transport"
-	pkgHTTP "github.com/alexfalkowski/go-service/transport/http"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	rcache "github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
@@ -120,54 +120,54 @@ func TestInvalidGRPC(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *pkgHTTP.Config) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	params := &pkgHTTP.ClientParams{
+	params := &shttp.ClientParams{
 		Config: cfg,
 		Logger: logger,
 	}
-	hc := checker.NewHTTPChecker("https://google.com", pkgHTTP.NewClient(params))
+	hc := checker.NewHTTPChecker("https://google.com", shttp.NewClient(params))
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
 	return health.Registrations{nr, hr}
 }
 
-func healthObserver(healthServer *server.Server) (*healthHTTP.HealthObserver, error) {
+func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
 	ob, err := healthServer.Observe("noop")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthHTTP.HealthObserver{Observer: ob}, nil
+	return &hhttp.HealthObserver{Observer: ob}, nil
 }
 
-func livenessObserver(healthServer *server.Server) (*healthHTTP.LivenessObserver, error) {
+func livenessObserver(healthServer *server.Server) (*hhttp.LivenessObserver, error) {
 	ob, err := healthServer.Observe("noop")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthHTTP.LivenessObserver{Observer: ob}, nil
+	return &hhttp.LivenessObserver{Observer: ob}, nil
 }
 
-func readinessObserver(healthServer *server.Server) (*healthHTTP.ReadinessObserver, error) {
+func readinessObserver(healthServer *server.Server) (*hhttp.ReadinessObserver, error) {
 	ob, err := healthServer.Observe("http")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthHTTP.ReadinessObserver{Observer: ob}, nil
+	return &hhttp.ReadinessObserver{Observer: ob}, nil
 }
 
-func grpcObserver(healthServer *server.Server) (*healthGRPC.Observer, error) {
+func grpcObserver(healthServer *server.Server) (*hgrpc.Observer, error) {
 	ob, err := healthServer.Observe("http")
 	if err != nil {
 		return nil, err
 	}
 
-	return &healthGRPC.Observer{Observer: ob}, nil
+	return &hgrpc.Observer{Observer: ob}, nil
 }
 
 func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {
