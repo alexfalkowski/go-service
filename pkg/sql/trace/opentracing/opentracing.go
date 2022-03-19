@@ -9,6 +9,6 @@ import (
 
 // StartSpanFromContext for SQL.
 // nolint:ireturn
-func StartSpanFromContext(ctx context.Context, tracer otr.Tracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
-	return potr.StartSpanFromContext(ctx, tracer, "sql", operation, method, opts...)
+func StartSpanFromContext(ctx context.Context, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
+	return potr.StartSpanFromContext(ctx, "sql", operation, method, opts...)
 }

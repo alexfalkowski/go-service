@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/pkg/cache/redis"
+	cotr "github.com/alexfalkowski/go-service/pkg/cache/trace/opentracing"
+	totr "github.com/alexfalkowski/go-service/pkg/transport/trace/opentracing"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -26,6 +28,8 @@ func TestCache(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		ctx := context.Background()
+		ctx, span := cotr.StartSpanFromContext(ctx, "test", "test", totr.StartSpanOptions(ctx)...)
+		defer span.Finish()
 
 		lc.RequireStart()
 
