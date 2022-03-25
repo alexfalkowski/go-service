@@ -9,7 +9,7 @@ import (
 	"go.uber.org/fx"
 )
 
-// New command with serve and worker.
+// New command with server and worker.
 func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
 	name, err := os.ExecutableName()
 	if err != nil {
@@ -23,17 +23,17 @@ func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) 
 		SilenceUsage: true,
 	}
 
-	serveCmd := &cobra.Command{
-		Use:          "serve",
-		Short:        "Serve the API.",
-		Long:         "Serve the API.",
+	serverCmd := &cobra.Command{
+		Use:          "server",
+		Short:        "Start the server.",
+		Long:         "Start the server.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			return RunServer(args, timeout, serverOpts)
 		},
 	}
 
-	rootCmd.AddCommand(serveCmd)
+	rootCmd.AddCommand(serverCmd)
 
 	workerCmd := &cobra.Command{
 		Use:          "worker",
