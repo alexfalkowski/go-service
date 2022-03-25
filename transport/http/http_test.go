@@ -359,7 +359,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-ID", "test")
 
-			_, err = client.Do(req) // nolint:bodyclose
+			_, err = client.Do(req)
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
@@ -495,7 +495,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-ID", "test")
 
-			_, err = client.Do(req) // nolint:bodyclose
+			_, err = client.Do(req)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

@@ -49,7 +49,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		tctx, cancel := context.WithTimeout(ctx, r.cfg.Timeout)
 		defer cancel()
 
-		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx)) // nolint:bodyclose
+		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx))
 		if err != nil {
 			return r.recover(err)
 		}
