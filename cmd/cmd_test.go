@@ -76,7 +76,7 @@ func TestInvalidHTTP(t *testing.T) {
 			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
-			c.SetArgs([]string{"serve"})
+			c.SetArgs([]string{"server"})
 
 			Convey("Then I should see an error", func() {
 				err := c.Execute()
@@ -106,7 +106,7 @@ func TestInvalidGRPC(t *testing.T) {
 			c, err := cmd.New(10*time.Second, opts, opts)
 			So(err, ShouldBeNil)
 
-			c.SetArgs([]string{"serve"})
+			c.SetArgs([]string{"server"})
 
 			Convey("Then I should see an error", func() {
 				err := c.Execute()
