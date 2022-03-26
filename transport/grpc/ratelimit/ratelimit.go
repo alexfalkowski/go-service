@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/time/rate"
+	"github.com/dgraph-io/ristretto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,8 +14,8 @@ import (
 type LimiterID func(ctx context.Context) string
 
 // UnaryServerInterceptor for ratelimit.
-func UnaryServerInterceptor(cfg *Config, limiterID LimiterID) grpc.UnaryServerInterceptor {
-	limiter := rate.New(cfg.Every, cfg.Burst)
+func UnaryServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID LimiterID) grpc.UnaryServerInterceptor {
+	limiter := rate.New(cache, cfg.Every, cfg.Burst)
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		l := limiter.Get(limiterID(ctx))
@@ -28,8 +29,8 @@ func UnaryServerInterceptor(cfg *Config, limiterID LimiterID) grpc.UnaryServerIn
 }
 
 // StreamServerInterceptor for ratelimit.
-func StreamServerInterceptor(cfg *Config, limiterID LimiterID) grpc.StreamServerInterceptor {
-	limiter := rate.New(cfg.Every, cfg.Burst)
+func StreamServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID LimiterID) grpc.StreamServerInterceptor {
+	limiter := rate.New(cache, cfg.Every, cfg.Burst)
 
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
