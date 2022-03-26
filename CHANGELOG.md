@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0](https://github.com/alexfalkowski/go-service/compare/v1.36.0...v1.37.0) (2022-03-26)
+
+
+### Features
+
+* **rate:** use cache to expire limiters ([#66](https://github.com/alexfalkowski/go-service/issues/66)) ([ce18d71](https://github.com/alexfalkowski/go-service/commit/ce18d71926d3d4b43171d8fa99f5c445c9c127c5))
+
 ## [1.36.0](https://github.com/alexfalkowski/go-service/compare/v1.35.1...v1.36.0) (2022-03-25)
 
 
