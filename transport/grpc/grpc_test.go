@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	smeta "github.com/alexfalkowski/go-service/security/meta"
 	"github.com/alexfalkowski/go-service/test"
@@ -672,11 +673,16 @@ func TestRateLimitUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		rcfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+
+		c, err := ristretto.NewCache(lc, rcfg)
+		So(err, ShouldBeNil)
+
 		cfg := test.NewGRPCConfig()
 		serverParams := tgrpc.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Unary:  []grpc.UnaryServerInterceptor{ratelimit.UnaryServerInterceptor(&cfg.RateLimit, tmeta.UserAgent)},
+			Unary:  []grpc.UnaryServerInterceptor{ratelimit.UnaryServerInterceptor(&cfg.RateLimit, c, tmeta.UserAgent)},
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -720,6 +726,11 @@ func TestAuthRateLimitUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		rcfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+
+		c, err := ristretto.NewCache(lc, rcfg)
+		So(err, ShouldBeNil)
+
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -727,7 +738,7 @@ func TestAuthRateLimitUnary(t *testing.T) {
 			Logger: logger,
 			Unary: []grpc.UnaryServerInterceptor{
 				jwt.UnaryServerInterceptor(verifier),
-				ratelimit.UnaryServerInterceptor(&cfg.RateLimit, smeta.AuthorizedParty),
+				ratelimit.UnaryServerInterceptor(&cfg.RateLimit, c, smeta.AuthorizedParty),
 			},
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
@@ -776,11 +787,16 @@ func TestSuccessRateLimitStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		rcfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+
+		c, err := ristretto.NewCache(lc, rcfg)
+		So(err, ShouldBeNil)
+
 		cfg := test.NewGRPCConfig()
 		serverParams := tgrpc.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(&cfg.RateLimit, tmeta.UserAgent)},
+			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(&cfg.RateLimit, c, tmeta.UserAgent)},
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
@@ -828,15 +844,17 @@ func TestFailedRateLimitStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		ccfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+
+		c, err := ristretto.NewCache(lc, ccfg)
+		So(err, ShouldBeNil)
+
 		cfg := test.NewGRPCConfig()
-		rcfg := &ratelimit.Config{
-			Every: 1 * time.Microsecond,
-			Burst: 0,
-		}
+		rcfg := &ratelimit.Config{Every: 1 * time.Microsecond, Burst: 0}
 		serverParams := tgrpc.ServerParams{
 			Config: cfg,
 			Logger: logger,
-			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(rcfg, tmeta.UserAgent)},
+			Stream: []grpc.StreamServerInterceptor{ratelimit.StreamServerInterceptor(rcfg, c, tmeta.UserAgent)},
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
