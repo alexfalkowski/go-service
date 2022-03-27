@@ -15,7 +15,8 @@ type LimiterID func(ctx context.Context) string
 
 // UnaryServerInterceptor for ratelimit.
 func UnaryServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID LimiterID) grpc.UnaryServerInterceptor {
-	limiter := rate.New(cache, cfg.Every, cfg.Burst)
+	params := rate.Params{Every: cfg.Every, Burst: cfg.Burst, TTL: cfg.TTL, Cache: cache}
+	limiter := rate.New(params)
 
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		l := limiter.Get(limiterID(ctx))
@@ -30,7 +31,8 @@ func UnaryServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID Limit
 
 // StreamServerInterceptor for ratelimit.
 func StreamServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID LimiterID) grpc.StreamServerInterceptor {
-	limiter := rate.New(cache, cfg.Every, cfg.Burst)
+	params := rate.Params{Every: cfg.Every, Burst: cfg.Burst, TTL: cfg.TTL, Cache: cache}
+	limiter := rate.New(params)
 
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()

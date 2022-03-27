@@ -23,6 +23,7 @@ func NewGRPCConfig() *grpc.Config {
 		RateLimit: ratelimit.Config{
 			Every: 1 * time.Minute,
 			Burst: 1,
+			TTL:   1 * time.Hour,
 		},
 	}
 }
