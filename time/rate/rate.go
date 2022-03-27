@@ -8,15 +8,24 @@ import (
 	"golang.org/x/time/rate"
 )
 
+// Params for rate.
+type Params struct {
+	Every time.Duration
+	Burst uint
+	TTL   time.Duration
+	Cache *ristretto.Cache
+}
+
 // New limiter for rate.
-func New(cache *ristretto.Cache, every time.Duration, burst uint) *Limiter {
-	return &Limiter{cache: cache, every: every, burst: burst}
+func New(params Params) *Limiter {
+	return &Limiter{every: params.Every, burst: params.Burst, ttl: params.TTL, cache: params.Cache}
 }
 
 // Limiter is a set of rate limiters for specific ids.
 type Limiter struct {
 	every time.Duration
 	burst uint
+	ttl   time.Duration
 	cache *ristretto.Cache
 	lock  sync.RWMutex
 }
@@ -38,7 +47,7 @@ func (u *Limiter) Get(id string) *rate.Limiter {
 
 	limiter := rate.NewLimiter(rate.Every(u.every), int(u.burst))
 
-	u.cache.SetWithTTL(id, limiter, 0, time.Hour)
+	u.cache.SetWithTTL(id, limiter, 0, u.ttl)
 
 	return limiter
 }
