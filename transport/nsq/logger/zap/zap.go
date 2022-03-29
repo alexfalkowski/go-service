@@ -49,7 +49,6 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, h.topic),
 		zap.String(nsqChannel, h.channel),
-		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.ByteString(nsqID, message.ID[:]),
 		zap.ByteString(nsqBody, message.Body),
 		zap.Int64(nsqTimestamp, message.Timestamp),

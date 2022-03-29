@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/os"
+	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
-	jaegerConfig "github.com/uber/jaeger-client-go/config"
-	jaegerLog "github.com/uber/jaeger-client-go/log"
-	jaegerPrometheus "github.com/uber/jaeger-lib/metrics/prometheus"
+	jconfig "github.com/uber/jaeger-client-go/config"
+	jprometheus "github.com/uber/jaeger-lib/metrics/prometheus"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 const (
@@ -17,27 +18,27 @@ const (
 )
 
 // Register for jaeger.
-func Register(lc fx.Lifecycle, cfg *Config) error {
+func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
 	name, err := os.ExecutableName()
 	if err != nil {
 		return err
 	}
 
-	c := jaegerConfig.Configuration{
+	c := jconfig.Configuration{
 		ServiceName: name,
-		Sampler: &jaegerConfig.SamplerConfig{
+		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
 		},
-		Reporter: &jaegerConfig.ReporterConfig{
+		Reporter: &jconfig.ReporterConfig{
 			LocalAgentHostPort: cfg.Host,
 			LogSpans:           false,
 		},
 	}
 
-	options := []jaegerConfig.Option{
-		jaegerConfig.Logger(jaegerLog.NullLogger),
-		jaegerConfig.Metrics(jaegerPrometheus.New()),
+	options := []jconfig.Option{
+		jconfig.Logger(ozap.NewLogger(logger)),
+		jconfig.Metrics(jprometheus.New()),
 	}
 
 	tracer, closer, err := c.NewTracer(options...)

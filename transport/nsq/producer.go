@@ -29,6 +29,8 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 		return nil, err
 	}
 
+	p.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
+
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			p.Stop()
