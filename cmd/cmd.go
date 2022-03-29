@@ -69,3 +69,20 @@ func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
 
 	return app.Stop(stopCtx)
 }
+
+// RunClient with args and a timeout.
+func RunClient(args []string, timeout time.Duration, opts []fx.Option) error {
+	app := fx.New(opts...)
+
+	startCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if err := app.Start(startCtx); err != nil {
+		return err
+	}
+
+	stopCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return app.Stop(stopCtx)
+}
