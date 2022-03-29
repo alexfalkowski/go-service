@@ -9,7 +9,7 @@ import (
 
 // Handler for NSQ.
 type Handler interface {
-	Handle(ctx context.Context, message *message.Message) (context.Context, error)
+	Handle(ctx context.Context, message *message.Message) error
 }
 
 // New handler for NSQ.
@@ -36,7 +36,5 @@ func (h *handler) HandleMessage(m *nsq.Message) error {
 
 	ctx := context.Background()
 
-	_, err := h.Handle(ctx, &msg)
-
-	return err
+	return h.Handle(ctx, &msg)
 }

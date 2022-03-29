@@ -50,11 +50,11 @@ type nsqProducer struct {
 }
 
 // Publish a message to a topic.
-func (p *nsqProducer) Publish(ctx context.Context, topic string, msg *message.Message) (context.Context, error) {
+func (p *nsqProducer) Publish(ctx context.Context, topic string, msg *message.Message) error {
 	bytes, err := message.Marshal(msg)
 	if err != nil {
-		return ctx, err
+		return err
 	}
 
-	return ctx, p.Producer.Publish(topic, bytes)
+	return p.Producer.Publish(topic, bytes)
 }

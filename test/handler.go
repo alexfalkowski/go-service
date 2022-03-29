@@ -27,13 +27,13 @@ func (h *Handler) Message() *message.Message {
 	return h.m
 }
 
-func (h *Handler) Handle(ctx context.Context, m *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, m *message.Message) error {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
 	h.m = m
 
-	ctx = meta.WithAttribute(ctx, "test", "test")
+	meta.WithAttribute(ctx, "test", "test")
 
-	return ctx, h.err
+	return h.err
 }

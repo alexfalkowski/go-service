@@ -20,7 +20,7 @@ type Handler struct {
 	handler.Handler
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	ctx = meta.WithUserAgent(ctx, message.Headers["user-agent"])
 
 	requestID, ok := message.Headers["request-id"]
@@ -45,7 +45,7 @@ type Producer struct {
 	producer.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
 	userAgent := meta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = p.userAgent

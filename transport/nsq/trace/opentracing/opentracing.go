@@ -40,7 +40,7 @@ type Handler struct {
 	handler.Handler
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
@@ -63,7 +63,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) (context
 	defer span.Finish()
 
 	ctx = opentracing.ContextWithSpan(ctx, span)
-	ctx, err := h.Handler.Handle(ctx, message)
+	err := h.Handler.Handle(ctx, message)
 
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
@@ -75,7 +75,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) (context
 		setError(span, err)
 	}
 
-	return ctx, err
+	return err
 }
 
 // NewProducer for opentracing.
@@ -88,7 +88,7 @@ type Producer struct {
 	producer.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
 	start := time.Now().UTC()
 	tracer := opentracing.GlobalTracer()
 	operationName := fmt.Sprintf("publish %s", topic)
@@ -104,10 +104,10 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	defer span.Finish()
 
 	if err := tracer.Inject(span.Context(), opentracing.TextMap, headersTextMap(message.Headers)); err != nil {
-		return ctx, err
+		return err
 	}
 
-	ctx, err := p.Producer.Publish(ctx, topic, message)
+	err := p.Producer.Publish(ctx, topic, message)
 
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
@@ -119,7 +119,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		setError(span, err)
 	}
 
-	return ctx, err
+	return err
 }
 
 func setError(span opentracing.Span, err error) {

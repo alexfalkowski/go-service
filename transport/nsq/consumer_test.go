@@ -74,7 +74,7 @@ func TestReceiveMessage(t *testing.T) {
 
 		Convey("When I send a message", func() {
 			message := message.New([]byte("test"))
-			_, err = producer.Publish(context.Background(), "topic", message)
+			err = producer.Publish(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
@@ -120,7 +120,7 @@ func TestReceiveError(t *testing.T) {
 
 		Convey("When I send a message", func() {
 			message := message.New([]byte("test"))
-			_, err = producer.Publish(context.Background(), "topic", message)
+			err = producer.Publish(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)

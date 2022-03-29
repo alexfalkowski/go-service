@@ -8,5 +8,5 @@ import (
 
 // Producer for NSQ.
 type Producer interface {
-	Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error)
+	Publish(ctx context.Context, topic string, message *message.Message) error
 }
