@@ -20,6 +20,7 @@ func Register(lc fx.Lifecycle, cfg *Config) error {
 	opts := []tracer.StartOption{
 		tracer.WithService(name),
 		tracer.WithAgentAddr(cfg.Host),
+		tracer.WithLogStartup(false),
 	}
 	t := opentracer.New(opts...)
 
