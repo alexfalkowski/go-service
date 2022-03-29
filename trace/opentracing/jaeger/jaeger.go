@@ -6,9 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
-	jaegerConfig "github.com/uber/jaeger-client-go/config"
-	jaegerLog "github.com/uber/jaeger-client-go/log"
-	jaegerPrometheus "github.com/uber/jaeger-lib/metrics/prometheus"
+	jconfig "github.com/uber/jaeger-client-go/config"
+	jlog "github.com/uber/jaeger-client-go/log"
+	jprometheus "github.com/uber/jaeger-lib/metrics/prometheus"
 	"go.uber.org/fx"
 )
 
@@ -23,21 +23,21 @@ func Register(lc fx.Lifecycle, cfg *Config) error {
 		return err
 	}
 
-	c := jaegerConfig.Configuration{
+	c := jconfig.Configuration{
 		ServiceName: name,
-		Sampler: &jaegerConfig.SamplerConfig{
+		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
 		},
-		Reporter: &jaegerConfig.ReporterConfig{
+		Reporter: &jconfig.ReporterConfig{
 			LocalAgentHostPort: cfg.Host,
 			LogSpans:           false,
 		},
 	}
 
-	options := []jaegerConfig.Option{
-		jaegerConfig.Logger(jaegerLog.NullLogger),
-		jaegerConfig.Metrics(jaegerPrometheus.New()),
+	options := []jconfig.Option{
+		jconfig.Logger(jlog.NullLogger),
+		jconfig.Metrics(jprometheus.New()),
 	}
 
 	tracer, closer, err := c.NewTracer(options...)
