@@ -27,3 +27,13 @@ func ReadFile() ([]byte, error) {
 
 	return os.ReadFile(configFile)
 }
+
+// WriteFile to config location.
+func WriteFile(data []byte) error {
+	configFile, err := File()
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(configFile, data, 0)
+}
