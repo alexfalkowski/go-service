@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.39.1](https://github.com/alexfalkowski/go-service/compare/v1.39.0...v1.39.1) (2022-03-29)
+
+
+### Bug Fixes
+
+* **cmd:** add ability to run command ([#69](https://github.com/alexfalkowski/go-service/issues/69)) ([14e1654](https://github.com/alexfalkowski/go-service/commit/14e1654f2109469fe2add553e2fd3e27aa448e47))
+
 ## [1.39.0](https://github.com/alexfalkowski/go-service/compare/v1.38.0...v1.39.0) (2022-03-29)
 
 
