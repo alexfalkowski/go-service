@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/os"
+	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jconfig "github.com/uber/jaeger-client-go/config"
-	jlog "github.com/uber/jaeger-client-go/log"
 	jprometheus "github.com/uber/jaeger-lib/metrics/prometheus"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 )
 
 // Register for jaeger.
-func Register(lc fx.Lifecycle, cfg *Config) error {
+func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
 	name, err := os.ExecutableName()
 	if err != nil {
 		return err
@@ -36,7 +37,7 @@ func Register(lc fx.Lifecycle, cfg *Config) error {
 	}
 
 	options := []jconfig.Option{
-		jconfig.Logger(jlog.NullLogger),
+		jconfig.Logger(ozap.NewLogger(logger)),
 		jconfig.Metrics(jprometheus.New()),
 	}
 
