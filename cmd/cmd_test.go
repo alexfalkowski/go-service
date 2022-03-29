@@ -52,7 +52,7 @@ func TestShutdown(t *testing.T) {
 			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
-				So(c.Run("worker"), ShouldBeNil)
+				So(c.RunWithArg("worker"), ShouldBeNil)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -79,7 +79,7 @@ func TestInvalidHTTP(t *testing.T) {
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
-				err := c.Run("server")
+				err := c.RunWithArg("server")
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
@@ -109,7 +109,7 @@ func TestInvalidGRPC(t *testing.T) {
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
-				err := c.Run("server")
+				err := c.RunWithArg("server")
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
@@ -131,7 +131,7 @@ func TestClient(t *testing.T) {
 			c.AddClient(opts)
 
 			Convey("Then I should not see an error", func() {
-				So(c.Run("client"), ShouldBeNil)
+				So(c.RunWithArg("client"), ShouldBeNil)
 			})
 		})
 	})

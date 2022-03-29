@@ -77,10 +77,15 @@ func (c *Command) AddClient(opts []fx.Option) {
 	c.root.AddCommand(worker)
 }
 
-// Run a specific arg.
-func (c *Command) Run(arg string) error {
+// Run the command with a an arg.
+func (c *Command) RunWithArg(arg string) error {
 	c.root.SetArgs([]string{arg})
 
+	return c.root.Execute()
+}
+
+// Run the command.
+func (c *Command) Run() error {
 	return c.root.Execute()
 }
 
