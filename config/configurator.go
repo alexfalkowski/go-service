@@ -18,6 +18,16 @@ import (
 // ErrMissingConfigFile for config.
 var ErrMissingConfigFile = errors.New("missing config file")
 
+// File config location.
+func File() (string, error) {
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		return "", ErrMissingConfigFile
+	}
+
+	return configFile, nil
+}
+
 // NewConfigurator for config.
 // nolint:ireturn
 func NewConfigurator() Configurator {
@@ -40,9 +50,9 @@ type Configurator interface {
 
 // Unmarshal the config.
 func Unmarshal(cfg Configurator) error {
-	configFile := os.Getenv("CONFIG_FILE")
-	if configFile == "" {
-		return ErrMissingConfigFile
+	configFile, err := File()
+	if err != nil {
+		return err
 	}
 
 	bytes, err := os.ReadFile(configFile)
