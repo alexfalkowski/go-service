@@ -41,9 +41,9 @@ type Handler struct {
 	handler.Handler
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) (context.Context, error) {
+func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	start := time.Now().UTC()
-	ctx, err := h.Handler.Handle(ctx, message)
+	err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
@@ -67,12 +67,12 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) (context
 		fields = append(fields, zap.Error(err))
 		h.logger.Error("finished call with error", fields...)
 
-		return ctx, err
+		return err
 	}
 
 	h.logger.Info("finished call with success", fields...)
 
-	return ctx, nil
+	return nil
 }
 
 // NewProducer for zap.
@@ -87,9 +87,9 @@ type Producer struct {
 	producer.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) (context.Context, error) {
+func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
 	start := time.Now().UTC()
-	ctx, err := p.Producer.Publish(ctx, topic, message)
+	err := p.Producer.Publish(ctx, topic, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
@@ -107,10 +107,10 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		fields = append(fields, zap.Error(err))
 		p.logger.Error("finished call with error", fields...)
 
-		return ctx, err
+		return err
 	}
 
 	p.logger.Info("finished call with success", fields...)
 
-	return ctx, nil
+	return nil
 }
