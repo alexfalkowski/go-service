@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.40.0](https://github.com/alexfalkowski/go-service/compare/v1.39.2...v1.40.0) (2022-03-29)
+
+
+### Features
+
+* **logger:** add nsq and opentracing ([#71](https://github.com/alexfalkowski/go-service/issues/71)) ([21c89a6](https://github.com/alexfalkowski/go-service/commit/21c89a68e562f67dcb1f8fc83976da3ca0b428c2))
+
 ### [1.39.2](https://github.com/alexfalkowski/go-service/compare/v1.39.1...v1.39.2) (2022-03-29)
 
 ### [1.39.1](https://github.com/alexfalkowski/go-service/compare/v1.39.0...v1.39.1) (2022-03-29)
