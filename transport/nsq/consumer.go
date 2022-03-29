@@ -25,25 +25,27 @@ type ConsumerParams struct {
 func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 	cfg := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
+	c, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
 	if err != nil {
 		return err
 	}
+
+	c.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
 	lh := lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
 	oh := opentracing.NewHandler(params.Topic, params.Channel, lh)
 	mh := meta.NewHandler(oh)
 
-	consumer.AddHandler(handler.New(mh))
+	c.AddHandler(handler.New(mh))
 
-	err = consumer.ConnectToNSQLookupd(params.Config.LookupHost)
+	err = c.ConnectToNSQLookupd(params.Config.LookupHost)
 	if err != nil {
 		return err
 	}
 
 	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
-			consumer.Stop()
+			c.Stop()
 
 			return nil
 		},
