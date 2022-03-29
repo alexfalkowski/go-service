@@ -46,13 +46,13 @@ func TestShutdown(t *testing.T) {
 				fx.Invoke(shutdown), fx.Invoke(configs),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			c, err := cmd.New(10 * time.Second)
 			So(err, ShouldBeNil)
 
-			c.SetArgs([]string{"worker"})
+			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
-				So(c.Execute(), ShouldBeNil)
+				So(c.Run("worker"), ShouldBeNil)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -73,13 +73,13 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			c, err := cmd.New(10 * time.Second)
 			So(err, ShouldBeNil)
 
-			c.SetArgs([]string{"server"})
+			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
-				err := c.Execute()
+				err := c.Run("server")
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
@@ -103,19 +103,36 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10*time.Second, opts, opts)
+			c, err := cmd.New(10 * time.Second)
 			So(err, ShouldBeNil)
 
-			c.SetArgs([]string{"server"})
+			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
-				err := c.Execute()
+				err := c.Run("server")
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+		})
+	})
+}
+
+func TestClient(t *testing.T) {
+	Convey("Given I have valid configuration", t, func() {
+		Convey("When I try to run a client", func() {
+			opts := []fx.Option{fx.NopLogger}
+
+			c, err := cmd.New(10 * time.Second)
+			So(err, ShouldBeNil)
+
+			c.AddClient(opts)
+
+			Convey("Then I should not see an error", func() {
+				So(c.Run("client"), ShouldBeNil)
+			})
 		})
 	})
 }

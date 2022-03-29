@@ -9,45 +9,79 @@ import (
 	"go.uber.org/fx"
 )
 
-// New command with server and worker.
-func New(timeout time.Duration, serverOpts []fx.Option, workerOpts []fx.Option) (*cobra.Command, error) {
+// Command for application.
+type Command struct {
+	root    *cobra.Command
+	timeout time.Duration
+}
+
+// New command.
+func New(timeout time.Duration) (*Command, error) {
 	name, err := os.ExecutableName()
 	if err != nil {
 		return nil, err
 	}
 
-	rootCmd := &cobra.Command{
+	root := &cobra.Command{
 		Use:          name,
 		Short:        name,
 		Long:         name,
 		SilenceUsage: true,
 	}
 
-	serverCmd := &cobra.Command{
+	return &Command{root: root, timeout: timeout}, nil
+}
+
+// AddServer to the command.
+func (c *Command) AddServer(opts []fx.Option) {
+	server := &cobra.Command{
 		Use:          "server",
 		Short:        "Start the server.",
 		Long:         "Start the server.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, timeout, serverOpts)
+			return RunServer(args, c.timeout, opts)
 		},
 	}
 
-	rootCmd.AddCommand(serverCmd)
+	c.root.AddCommand(server)
+}
 
-	workerCmd := &cobra.Command{
+// AddWorker to the command.
+func (c *Command) AddWorker(opts []fx.Option) {
+	worker := &cobra.Command{
 		Use:          "worker",
 		Short:        "Start the worker.",
 		Long:         "Start the worker.",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, timeout, workerOpts)
+			return RunServer(args, c.timeout, opts)
 		},
 	}
 
-	rootCmd.AddCommand(workerCmd)
+	c.root.AddCommand(worker)
+}
 
-	return rootCmd, nil
+// AddClient to the command.
+func (c *Command) AddClient(opts []fx.Option) {
+	worker := &cobra.Command{
+		Use:          "client",
+		Short:        "Start the client.",
+		Long:         "Start the client.",
+		SilenceUsage: true,
+		RunE: func(command *cobra.Command, args []string) error {
+			return RunClient(args, c.timeout, opts)
+		},
+	}
+
+	c.root.AddCommand(worker)
+}
+
+// Run a specific arg.
+func (c *Command) Run(arg string) error {
+	c.root.SetArgs([]string{arg})
+
+	return c.root.Execute()
 }
 
 // RunServer with args and a timeout.
