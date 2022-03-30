@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/os"
 	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -13,16 +14,22 @@ import (
 )
 
 // Register for datadog.
-func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
+func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config, httpCfg *http.Config) error {
 	name, err := os.ExecutableName()
 	if err != nil {
 		return err
+	}
+
+	params := &http.ClientParams{
+		Config: httpCfg,
+		Logger: logger,
 	}
 
 	opts := []tracer.StartOption{
 		tracer.WithService(name),
 		tracer.WithAgentAddr(cfg.Host),
 		tracer.WithLogger(ozap.NewLogger(logger)),
+		tracer.WithHTTPClient(http.NewClient(params)),
 	}
 	t := opentracer.New(opts...)
 
