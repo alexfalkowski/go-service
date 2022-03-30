@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/config"
 	. "github.com/smartystreets/goconvey/convey"
+	"gopkg.in/yaml.v3"
 )
 
 func TestValidConfig(t *testing.T) {
@@ -86,6 +87,39 @@ func TestInvalidConfig(t *testing.T) {
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+		})
+	})
+}
+
+func TestWriteConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		file := "../test/new_config.yml"
+		os.Setenv("CONFIG_FILE", "../test/config.yml")
+		os.Setenv("NEW_CONFIG_FILE", file)
+
+		err := os.Remove(file)
+		if !os.IsNotExist(err) {
+			So(err, ShouldBeNil)
+		}
+
+		Convey("When I try to write the new configuration file", func() {
+			cfg := config.NewConfigurator()
+			err := config.Unmarshal(cfg)
+			So(err, ShouldBeNil)
+
+			bytes, err := yaml.Marshal(cfg)
+			So(err, ShouldBeNil)
+
+			err = config.WriteFileToEnv("NEW_CONFIG_FILE", bytes)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a new configuration", func() {
+				_, err := os.Open(file)
+				So(err, ShouldBeNil)
+			})
+
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+			So(os.Unsetenv("NEW_CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
