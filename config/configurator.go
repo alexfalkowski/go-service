@@ -1,9 +1,6 @@
 package config
 
 import (
-	"errors"
-	"os"
-
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/security/auth0"
@@ -14,9 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 )
-
-// ErrMissingConfigFile for config.
-var ErrMissingConfigFile = errors.New("missing config file")
 
 // NewConfigurator for config.
 // nolint:ireturn
@@ -40,12 +34,7 @@ type Configurator interface {
 
 // Unmarshal the config.
 func Unmarshal(cfg Configurator) error {
-	configFile := os.Getenv("CONFIG_FILE")
-	if configFile == "" {
-		return ErrMissingConfigFile
-	}
-
-	bytes, err := os.ReadFile(configFile)
+	bytes, err := ReadFile()
 	if err != nil {
 		return err
 	}
