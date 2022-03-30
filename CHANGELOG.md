@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.42.0](https://github.com/alexfalkowski/go-service/compare/v1.41.0...v1.42.0) (2022-03-30)
+
+
+### Features
+
+* **trace:** add http client for datadog ([#73](https://github.com/alexfalkowski/go-service/issues/73)) ([c18d981](https://github.com/alexfalkowski/go-service/commit/c18d9811928137188491cda309a43bfcf32dee66))
+
 ## [1.41.0](https://github.com/alexfalkowski/go-service/compare/v1.40.0...v1.41.0) (2022-03-30)
 
 
