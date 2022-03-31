@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
+	"gopkg.in/yaml.v3"
 )
 
 // NewConfigurator for config.
@@ -20,7 +21,6 @@ func NewConfigurator() Configurator {
 
 // Configurator for config.
 type Configurator interface {
-	Unmarshal(in []byte) error
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
 	Auth0Config() *auth0.Config
@@ -32,14 +32,14 @@ type Configurator interface {
 	NSQConfig() *nsq.Config
 }
 
-// Unmarshal the config.
-func Unmarshal(cfg Configurator) error {
+// UnmarshalFromFile to config.
+func UnmarshalFromFile(cfg Configurator) error {
 	bytes, err := ReadFile()
 	if err != nil {
 		return err
 	}
 
-	err = cfg.Unmarshal(bytes)
+	err = yaml.Unmarshal(bytes, cfg)
 	if err != nil {
 		return err
 	}

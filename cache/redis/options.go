@@ -13,7 +13,7 @@ func NewOptions(ring *redis.Ring) *cache.Options {
 	opts := &cache.Options{
 		Redis:        ring,
 		StatsEnabled: true,
-		Marshal: func(v interface{}) ([]byte, error) {
+		Marshal: func(v any) ([]byte, error) {
 			m, err := proto.Marshal(v.(proto.Message))
 			if err != nil {
 				return nil, err
@@ -21,7 +21,7 @@ func NewOptions(ring *redis.Ring) *cache.Options {
 
 			return snappy.Encode(nil, m), nil
 		},
-		Unmarshal: func(b []byte, v interface{}) error {
+		Unmarshal: func(b []byte, v any) error {
 			m, err := snappy.Decode(nil, b)
 			if err != nil {
 				return err

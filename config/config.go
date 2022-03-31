@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
-	"gopkg.in/yaml.v3"
 )
 
 // Config for the service.
@@ -25,10 +24,6 @@ type Config struct {
 	SQL       sql.Config       `yaml:"sql"`
 	Trace     trace.Config     `yaml:"trace"`
 	Transport transport.Config `yaml:"transport"`
-}
-
-func (cfg *Config) Unmarshal(bytes []byte) error {
-	return yaml.Unmarshal(bytes, cfg)
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {

@@ -21,11 +21,11 @@ func (l *Logger) Error(msg string) {
 	l.logger.Error(msg)
 }
 
-func (l *Logger) Infof(msg string, args ...interface{}) {
+func (l *Logger) Infof(msg string, args ...any) {
 	l.logger.Info(fmt.Sprintf(msg, args...))
 }
 
-func (l *Logger) Debugf(msg string, args ...interface{}) {
+func (l *Logger) Debugf(msg string, args ...any) {
 	l.logger.Debug(fmt.Sprintf(msg, args...))
 }
 

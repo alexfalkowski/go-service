@@ -15,7 +15,7 @@ func TestValidConfig(t *testing.T) {
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg := config.NewConfigurator()
-			err := config.Unmarshal(cfg)
+			err := config.UnmarshalFromFile(cfg)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -47,7 +47,7 @@ func TestValidConfig(t *testing.T) {
 func TestMissingConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		Convey("When I try to parse the configuration file", func() {
-			err := config.Unmarshal(config.NewConfigurator())
+			err := config.UnmarshalFromFile(config.NewConfigurator())
 
 			Convey("Then I should have an error of missing config file", func() {
 				So(err, ShouldBeError)
@@ -62,7 +62,7 @@ func TestNonExistentConfig(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../../test/bob")
 
 		Convey("When I try to parse the configuration file", func() {
-			err := config.Unmarshal(config.NewConfigurator())
+			err := config.UnmarshalFromFile(config.NewConfigurator())
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)
@@ -79,7 +79,7 @@ func TestInvalidConfig(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../test/greet.proto")
 
 		Convey("When I try to parse the configuration file", func() {
-			err := config.Unmarshal(config.NewConfigurator())
+			err := config.UnmarshalFromFile(config.NewConfigurator())
 
 			Convey("Then I should have an error of invalid configuration file", func() {
 				So(err, ShouldBeError)
@@ -104,7 +104,7 @@ func TestWriteConfig(t *testing.T) {
 
 		Convey("When I try to write the new configuration file", func() {
 			cfg := config.NewConfigurator()
-			err := config.Unmarshal(cfg)
+			err := config.UnmarshalFromFile(cfg)
 			So(err, ShouldBeNil)
 
 			bytes, err := yaml.Marshal(cfg)
@@ -120,6 +120,29 @@ func TestWriteConfig(t *testing.T) {
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 			So(os.Unsetenv("NEW_CONFIG_FILE"), ShouldBeNil)
+		})
+	})
+}
+
+func TestStringMapConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		file := "../test/config.yml"
+		bytes, err := os.ReadFile(file)
+		So(err, ShouldBeNil)
+
+		Convey("When I try unmarshal from bytes", func() {
+			cfg := config.Map{}
+			err = config.UnmarshalFromBytes(bytes, cfg)
+			So(err, ShouldBeNil)
+
+			port := cfg.Map("transport").Map("http")["port"]
+			So(port, ShouldEqual, 8000)
+
+			Convey("Then I should have a valid configuration", func() {
+				bytes, err := config.MarshalToBytes(cfg)
+				So(err, ShouldBeNil)
+				So(bytes, ShouldNotBeEmpty)
+			})
 		})
 	})
 }
