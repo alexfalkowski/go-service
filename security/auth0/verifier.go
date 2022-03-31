@@ -52,7 +52,7 @@ func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error)
 }
 
 // nolint:forcetypeassert
-func (v *verifier) validate(token *jwt.Token) (interface{}, error) {
+func (v *verifier) validate(token *jwt.Token) (any, error) {
 	claims := token.Claims.(jwt.MapClaims)
 
 	checkAud := claims.VerifyAudience(v.cfg.Audience, true)

@@ -34,7 +34,7 @@ const (
 
 // UnaryServerInterceptor for zap.
 func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == health.Service {
 			return handler(ctx, req)
@@ -88,7 +88,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor for zap.
 func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == health.Service {
 			return handler(srv, stream)
@@ -138,7 +138,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor for zap.
 func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if service == health.Service {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)

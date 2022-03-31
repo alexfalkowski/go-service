@@ -6,7 +6,7 @@ import (
 )
 
 // Message to be encoded.
-func Message(message interface{}) string {
+func Message(message any) string {
 	m, err := protojson.Marshal(message.(proto.Message))
 	if err != nil {
 		return ""

@@ -18,7 +18,7 @@ func UnaryServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID Limit
 	params := rate.Params{Every: cfg.Every, Burst: cfg.Burst, TTL: cfg.TTL, Cache: cache}
 	limiter := rate.New(params)
 
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		l := limiter.Get(limiterID(ctx))
 
 		if !l.Allow() {
@@ -34,7 +34,7 @@ func StreamServerInterceptor(cfg *Config, cache *ristretto.Cache, limiterID Limi
 	params := rate.Params{Every: cfg.Every, Burst: cfg.Burst, TTL: cfg.TTL, Cache: cache}
 	limiter := rate.New(params)
 
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		l := limiter.Get(limiterID(ctx))
 

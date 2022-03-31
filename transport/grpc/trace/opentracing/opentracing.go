@@ -35,7 +35,7 @@ const (
 
 // UnaryServerInterceptor for opentracing.
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == health.Service {
 			return handler(ctx, req)
@@ -88,7 +88,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor for opentracing.
 func StreamServerInterceptor() grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if service == health.Service {
 			return handler(srv, stream)
@@ -141,7 +141,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor for opentracing.
 func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if service == health.Service {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
