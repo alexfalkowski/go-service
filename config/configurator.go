@@ -32,8 +32,8 @@ type Configurator interface {
 	NSQConfig() *nsq.Config
 }
 
-// Unmarshal the config.
-func Unmarshal(cfg Configurator) error {
+// UnmarshalFromFile the config.
+func UnmarshalFromFile(cfg Configurator) error {
 	bytes, err := ReadFile()
 	if err != nil {
 		return err

@@ -15,7 +15,7 @@ var (
 
 	// UnmarshalModule for fx.
 	// nolint:gochecknoglobals
-	UnmarshalModule = fx.Invoke(Unmarshal)
+	UnmarshalModule = fx.Invoke(UnmarshalFromFile)
 
 	// ConfigModule for fx.
 	// nolint:gochecknoglobals
