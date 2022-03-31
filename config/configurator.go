@@ -32,7 +32,7 @@ type Configurator interface {
 	NSQConfig() *nsq.Config
 }
 
-// UnmarshalFromFile the config.
+// UnmarshalFromFile to config.
 func UnmarshalFromFile(cfg Configurator) error {
 	bytes, err := ReadFile()
 	if err != nil {

@@ -123,3 +123,26 @@ func TestWriteConfig(t *testing.T) {
 		})
 	})
 }
+
+func TestStringMapConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		file := "../test/config.yml"
+		bytes, err := os.ReadFile(file)
+		So(err, ShouldBeNil)
+
+		Convey("When I try unmarshal from bytes", func() {
+			cfg := config.Map{}
+			err = config.UnmarshalFromBytes(bytes, cfg)
+			So(err, ShouldBeNil)
+
+			port := cfg.Map("transport").Map("http")["port"]
+			So(port, ShouldEqual, 8000)
+
+			Convey("Then I should have a valid configuration", func() {
+				bytes, err := config.MarshalToBytes(cfg)
+				So(err, ShouldBeNil)
+				So(bytes, ShouldNotBeEmpty)
+			})
+		})
+	})
+}
