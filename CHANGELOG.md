@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0](https://github.com/alexfalkowski/go-service/compare/v1.43.0...v1.44.0) (2022-03-31)
+
+
+### Features
+
+* **config:** add ability to marshal to map ([#75](https://github.com/alexfalkowski/go-service/issues/75)) ([ab84c75](https://github.com/alexfalkowski/go-service/commit/ab84c75db81b5ddbdf6fbf5442635d28c3d1f775))
+
 ## [1.43.0](https://github.com/alexfalkowski/go-service/compare/v1.42.0...v1.43.0) (2022-03-30)
 
 
