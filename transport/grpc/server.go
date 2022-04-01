@@ -4,18 +4,22 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"runtime/debug"
 
-	lzap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
+	smeta "github.com/alexfalkowski/go-service/meta"
+	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // ServerParams for gRPC.
@@ -89,30 +93,37 @@ func stopServer(server *grpc.Server, params ServerParams) {
 func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
-		grpcRecovery.UnaryServerInterceptor(),
-		grpcTags.UnaryServerInterceptor(),
-		lzap.UnaryServerInterceptor(logger),
-		grpcPrometheus.UnaryServerInterceptor,
+		recovery.UnaryServerInterceptor(recovery.WithRecoveryHandlerContext(recoveryHandler)),
+		tags.UnaryServerInterceptor(),
+		szap.UnaryServerInterceptor(logger),
+		prometheus.UnaryServerInterceptor,
 		opentracing.UnaryServerInterceptor(),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(defaultInterceptors...))
+	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
 // nolint:ireturn
 func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
-		grpcRecovery.StreamServerInterceptor(),
-		grpcTags.StreamServerInterceptor(),
-		lzap.StreamServerInterceptor(logger),
-		grpcPrometheus.StreamServerInterceptor,
+		recovery.StreamServerInterceptor(recovery.WithRecoveryHandlerContext(recoveryHandler)),
+		tags.StreamServerInterceptor(),
+		szap.StreamServerInterceptor(logger),
+		prometheus.StreamServerInterceptor,
 		opentracing.StreamServerInterceptor(),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.StreamInterceptor(grpcMiddleware.ChainStreamServer(defaultInterceptors...))
+	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
+}
+
+func recoveryHandler(ctx context.Context, p any) error {
+	smeta.WithAttribute(ctx, "grpc.error", fmt.Sprintf("%v", p))
+	smeta.WithAttribute(ctx, "grpc.stack", string(debug.Stack()))
+
+	return status.Error(codes.Internal, "recovered from error")
 }
