@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.45.1](https://github.com/alexfalkowski/go-service/compare/v1.45.0...v1.45.1) (2022-04-01)
+
+
+### Bug Fixes
+
+* **grpc:** remove recovery ([#77](https://github.com/alexfalkowski/go-service/issues/77)) ([a57e1bc](https://github.com/alexfalkowski/go-service/commit/a57e1bc098e22fe05136907b766278ea55ea008b))
+
 ## [1.45.0](https://github.com/alexfalkowski/go-service/compare/v1.44.0...v1.45.0) (2022-04-01)
 
 
