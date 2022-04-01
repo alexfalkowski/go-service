@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
-	lzap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
+	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -45,7 +45,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 		),
 		breaker.UnaryClientInterceptor(),
 		meta.UnaryClientInterceptor(params.Config.UserAgent),
-		lzap.UnaryClientInterceptor(params.Logger),
+		szap.UnaryClientInterceptor(params.Logger),
 		opentracing.UnaryClientInterceptor(),
 	}
 
@@ -58,7 +58,7 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 func streamDialOption(params *ClientParams) grpc.DialOption {
 	defaultInterceptors := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(params.Config.UserAgent),
-		lzap.StreamClientInterceptor(params.Logger),
+		szap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}
 
