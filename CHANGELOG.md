@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.45.0](https://github.com/alexfalkowski/go-service/compare/v1.44.0...v1.45.0) (2022-04-01)
+
+
+### Features
+
+* **grpc:** add recovery handler to server ([#76](https://github.com/alexfalkowski/go-service/issues/76)) ([5887aa4](https://github.com/alexfalkowski/go-service/commit/5887aa4899252734d055ba2a46debf1e1383c5cb))
+
 ## [1.44.0](https://github.com/alexfalkowski/go-service/compare/v1.43.0...v1.44.0) (2022-03-31)
 
 
