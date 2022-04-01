@@ -4,22 +4,17 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"runtime/debug"
 
-	smeta "github.com/alexfalkowski/go-service/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // ServerParams for gRPC.
@@ -93,7 +88,6 @@ func stopServer(server *grpc.Server, params ServerParams) {
 func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
-		recovery.UnaryServerInterceptor(recovery.WithRecoveryHandlerContext(recoveryHandler)),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(logger),
 		prometheus.UnaryServerInterceptor,
@@ -109,7 +103,6 @@ func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInter
 func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
-		recovery.StreamServerInterceptor(recovery.WithRecoveryHandlerContext(recoveryHandler)),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(logger),
 		prometheus.StreamServerInterceptor,
@@ -119,11 +112,4 @@ func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInt
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
 	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
-}
-
-func recoveryHandler(ctx context.Context, p any) error {
-	smeta.WithAttribute(ctx, "grpc.error", fmt.Sprintf("%v", p))
-	smeta.WithAttribute(ctx, "grpc.stack", string(debug.Stack()))
-
-	return status.Error(codes.Internal, "recovered from error")
 }

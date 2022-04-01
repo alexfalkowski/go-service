@@ -9,9 +9,9 @@ import (
 	sjwt "github.com/alexfalkowski/go-service/security/jwt"
 	"github.com/alexfalkowski/go-service/security/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/health"
-	grpcMeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/form3tech-oss/jwt-go"
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -27,7 +27,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 			return handler(ctx, req)
 		}
 
-		md := grpcMeta.ExtractIncoming(ctx)
+		md := sgmeta.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {
@@ -60,7 +60,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 		}
 
 		ctx := stream.Context()
-		md := grpcMeta.ExtractIncoming(ctx)
+		md := sgmeta.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {
@@ -79,7 +79,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 			ctx = meta.WithAuthorizedParty(ctx, azp.(string))
 		}
 
-		wrapped := grpcMiddleware.WrapServerStream(stream)
+		wrapped := middleware.WrapServerStream(stream)
 		wrapped.WrappedContext = ctx
 
 		return handler(srv, wrapped)

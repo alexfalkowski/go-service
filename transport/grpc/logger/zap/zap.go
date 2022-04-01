@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/encoder"
 	"github.com/alexfalkowski/go-service/transport/grpc/health"
-	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
@@ -61,7 +61,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
-		tags := grpcTags.Extract(ctx)
+		tags := tags.Extract(ctx)
 		for k, v := range tags.Values() {
 			fields = append(fields, zap.Any(k, v))
 		}
@@ -115,7 +115,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
-		tags := grpcTags.Extract(ctx)
+		tags := tags.Extract(ctx)
 		for k, v := range tags.Values() {
 			fields = append(fields, zap.Any(k, v))
 		}
@@ -165,7 +165,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
-		tags := grpcTags.Extract(ctx)
+		tags := tags.Extract(ctx)
 		for k, v := range tags.Values() {
 			fields = append(fields, zap.Any(k, v))
 		}
@@ -216,7 +216,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
-		tags := grpcTags.Extract(ctx)
+		tags := tags.Extract(ctx)
 		for k, v := range tags.Values() {
 			fields = append(fields, zap.Any(k, v))
 		}
