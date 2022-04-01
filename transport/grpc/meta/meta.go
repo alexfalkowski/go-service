@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -55,7 +55,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			return err
 		}
 
-		wrappedStream := grpcMiddleware.WrapServerStream(stream)
+		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
 
 		return handler(srv, stream)

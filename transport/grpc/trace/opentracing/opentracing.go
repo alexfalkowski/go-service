@@ -9,9 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/encoder"
 	"github.com/alexfalkowski/go-service/transport/grpc/health"
-	grpcMeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
-	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpcTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -43,7 +43,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		start := time.Now().UTC()
 		tracer := opentracing.GlobalTracer()
-		md := grpcMeta.ExtractIncoming(ctx)
+		md := sgmeta.ExtractIncoming(ctx)
 		method := path.Base(info.FullMethod)
 		traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, metadataTextMap(md))
 		opts := []opentracing.StartSpanOption{
@@ -97,7 +97,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		start := time.Now().UTC()
 		ctx := stream.Context()
 		tracer := opentracing.GlobalTracer()
-		md := grpcMeta.ExtractIncoming(ctx)
+		md := sgmeta.ExtractIncoming(ctx)
 		method := path.Base(info.FullMethod)
 		traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, metadataTextMap(md))
 		opts := []opentracing.StartSpanOption{
@@ -122,7 +122,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 
 		ctx = opentracing.ContextWithSpan(ctx, span)
 
-		wrappedStream := grpcMiddleware.WrapServerStream(stream)
+		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
 
 		err := handler(srv, wrappedStream)
@@ -170,7 +170,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
 		}
 
-		md := grpcMeta.ExtractOutgoing(ctx)
+		md := sgmeta.ExtractOutgoing(ctx)
 		if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, metadataTextMap(md)); err != nil {
 			return err
 		}
@@ -223,7 +223,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
 		}
 
-		md := grpcMeta.ExtractOutgoing(ctx)
+		md := sgmeta.ExtractOutgoing(ctx)
 		if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, metadataTextMap(md)); err != nil {
 			return nil, err
 		}
@@ -248,7 +248,7 @@ func setError(span opentracing.Span, err error) {
 }
 
 func addTags(ctx context.Context, span opentracing.Span) {
-	tags := grpcTags.Extract(ctx)
+	tags := tags.Extract(ctx)
 	for k, v := range tags.Values() {
 		if err, ok := v.(error); ok {
 			span.LogKV(k, err.Error())
