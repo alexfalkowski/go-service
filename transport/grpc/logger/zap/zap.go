@@ -6,9 +6,8 @@ import (
 	"path"
 
 	"github.com/alexfalkowski/go-service/meta"
+	sstrings "github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/grpc/encoder"
-	"github.com/alexfalkowski/go-service/transport/grpc/health"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,8 +17,6 @@ import (
 )
 
 const (
-	grpcRequest         = "grpc.request"
-	grpcResponse        = "grpc.response"
 	grpcService         = "grpc.service"
 	grpcMethod          = "grpc.method"
 	grpcCode            = "grpc.code"
@@ -36,7 +33,7 @@ const (
 func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == health.Service {
+		if sstrings.IsHealth(service) {
 			return handler(ctx, req)
 		}
 
@@ -48,7 +45,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", server),
 			zap.String(component, grpcComponent),
 		}
@@ -76,10 +72,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
-		if resp != nil {
-			fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
-		}
-
 		loggerLevel(message, fields...)
 
 		return resp, err
@@ -90,7 +82,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == health.Service {
+		if sstrings.IsHealth(service) {
 			return handler(srv, stream)
 		}
 
@@ -140,7 +132,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
-		if service == health.Service {
+		if sstrings.IsHealth(service) {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -152,7 +144,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", client),
 			zap.String(component, grpcComponent),
 		}
@@ -180,8 +171,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
-		fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
-
 		loggerLevel(message, fields...)
 
 		return err
@@ -192,7 +181,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
-		if service == health.Service {
+		if sstrings.IsHealth(service) {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 

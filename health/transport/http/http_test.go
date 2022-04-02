@@ -39,6 +39,7 @@ func TestHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+
 		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})

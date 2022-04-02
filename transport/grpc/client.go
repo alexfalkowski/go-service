@@ -37,17 +37,23 @@ func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialO
 }
 
 // NewLocalClient to localhost for gRPC.
-func NewLocalClient(context context.Context, config *Config) (*grpc.ClientConn, error) {
-	target := fmt.Sprintf("127.0.0.1:%s", config.Port)
-	unary := grpc.WithChainUnaryInterceptor(meta.UnaryClientInterceptor(config.UserAgent))
-	stream := grpc.WithChainStreamInterceptor(meta.StreamClientInterceptor(config.UserAgent))
+func NewLocalClient(context context.Context, params *ClientParams) (*grpc.ClientConn, error) {
+	target := fmt.Sprintf("127.0.0.1:%s", params.Config.Port)
+	unary := []grpc.UnaryClientInterceptor{
+		meta.UnaryClientInterceptor(params.Config.UserAgent),
+		szap.UnaryClientInterceptor(params.Logger),
+		opentracing.UnaryClientInterceptor(),
+	}
 
-	return grpc.DialContext(context, target, grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()), unary, stream)
+	unary = append(unary, params.Unary...)
+	nocreds := grpc.WithTransportCredentials(insecure.NewCredentials())
+
+	return grpc.DialContext(context, target, grpc.WithBlock(), nocreds, grpc.WithChainUnaryInterceptor(unary...), streamDialOption(params))
 }
 
 // nolint:ireturn
 func unaryDialOption(params *ClientParams) grpc.DialOption {
-	defaultInterceptors := []grpc.UnaryClientInterceptor{
+	unary := []grpc.UnaryClientInterceptor{
 		retry.UnaryClientInterceptor(
 			retry.WithCodes(codes.Unavailable, codes.DataLoss),
 			retry.WithMax(params.Config.Retry.Attempts),
@@ -60,20 +66,20 @@ func unaryDialOption(params *ClientParams) grpc.DialOption {
 		opentracing.UnaryClientInterceptor(),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, params.Unary...)
+	unary = append(unary, params.Unary...)
 
-	return grpc.WithChainUnaryInterceptor(defaultInterceptors...)
+	return grpc.WithChainUnaryInterceptor(unary...)
 }
 
 // nolint:ireturn
 func streamDialOption(params *ClientParams) grpc.DialOption {
-	defaultInterceptors := []grpc.StreamClientInterceptor{
+	stream := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(params.Config.UserAgent),
 		szap.StreamClientInterceptor(params.Logger),
 		opentracing.StreamClientInterceptor(),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, params.Stream...)
+	stream = append(stream, params.Stream...)
 
-	return grpc.WithChainStreamInterceptor(defaultInterceptors...)
+	return grpc.WithChainStreamInterceptor(stream...)
 }

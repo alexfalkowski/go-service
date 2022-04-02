@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
+	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
 
@@ -14,26 +15,23 @@ const (
 )
 
 // Register health for HTTP.
-func Register(server *http.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
-	if err := resister("/health", server, hob.Observer); err != nil {
+func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
+	if err := resister("/health", server.Mux, hob.Observer); err != nil {
 		return err
 	}
 
-	if err := resister("/liveness", server, lob.Observer); err != nil {
+	if err := resister("/liveness", server.Mux, lob.Observer); err != nil {
 		return err
 	}
 
-	if err := resister("/readiness", server, hob.Observer); err != nil {
+	if err := resister("/readiness", server.Mux, hob.Observer); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// nolint:forcetypeassert
-func resister(path string, server *http.Server, ob *subscriber.Observer) error {
-	mux := server.Handler.(*runtime.ServeMux)
-
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer) error {
 	return mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		var (
 			status   int
