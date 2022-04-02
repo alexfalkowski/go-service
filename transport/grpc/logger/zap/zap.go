@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/grpc/encoder"
 	"github.com/alexfalkowski/go-service/transport/grpc/health"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
@@ -18,8 +17,6 @@ import (
 )
 
 const (
-	grpcRequest         = "grpc.request"
-	grpcResponse        = "grpc.response"
 	grpcService         = "grpc.service"
 	grpcMethod          = "grpc.method"
 	grpcCode            = "grpc.code"
@@ -48,7 +45,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", server),
 			zap.String(component, grpcComponent),
 		}
@@ -74,10 +70,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			fields = append(fields, zap.Error(err))
-		}
-
-		if resp != nil {
-			fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
 		}
 
 		loggerLevel(message, fields...)
@@ -152,7 +144,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String(grpcRequest, encoder.Message(req)),
 			zap.String("span.kind", client),
 			zap.String(component, grpcComponent),
 		}
@@ -179,8 +170,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		if err != nil {
 			fields = append(fields, zap.Error(err))
 		}
-
-		fields = append(fields, zap.String(grpcResponse, encoder.Message(resp)))
 
 		loggerLevel(message, fields...)
 

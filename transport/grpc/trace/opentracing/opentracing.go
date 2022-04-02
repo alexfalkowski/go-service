@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/grpc/encoder"
 	"github.com/alexfalkowski/go-service/transport/grpc/health"
 	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -21,8 +20,6 @@ import (
 )
 
 const (
-	grpcRequest         = "grpc.request"
-	grpcResponse        = "grpc.response"
 	grpcService         = "grpc.service"
 	grpcMethod          = "grpc.method"
 	grpcCode            = "grpc.code"
@@ -51,7 +48,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			opentracing.Tag{Key: grpcStartTime, Value: start.Format(time.RFC3339)},
 			opentracing.Tag{Key: grpcService, Value: service},
 			opentracing.Tag{Key: grpcMethod, Value: method},
-			opentracing.Tag{Key: grpcRequest, Value: encoder.Message(req)},
 			opentracing.Tag{Key: component, Value: grpcComponent},
 			ext.SpanKindRPCServer,
 		}
@@ -76,10 +72,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			setError(span, err)
-		}
-
-		if resp != nil {
-			span.SetTag(grpcResponse, encoder.Message(resp))
 		}
 
 		return resp, err
@@ -154,7 +146,6 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			opentracing.Tag{Key: grpcStartTime, Value: start.Format(time.RFC3339)},
 			opentracing.Tag{Key: grpcService, Value: service},
 			opentracing.Tag{Key: grpcMethod, Value: method},
-			opentracing.Tag{Key: grpcRequest, Value: encoder.Message(req)},
 			opentracing.Tag{Key: component, Value: grpcComponent},
 			ext.SpanKindRPCClient,
 		}
@@ -183,10 +174,6 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 
 		if err != nil {
 			setError(span, err)
-		}
-
-		if resp != nil {
-			span.SetTag(grpcResponse, encoder.Message(resp))
 		}
 
 		return err
