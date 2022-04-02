@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
@@ -12,6 +13,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -32,6 +34,15 @@ func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialO
 	opts = append(opts, unaryDialOption(params), streamDialOption(params))
 
 	return grpc.DialContext(context, params.Host, opts...)
+}
+
+// NewLocalClient to localhost for gRPC.
+func NewLocalClient(context context.Context, config *Config) (*grpc.ClientConn, error) {
+	target := fmt.Sprintf("127.0.0.1:%s", config.Port)
+	unary := grpc.WithChainUnaryInterceptor(meta.UnaryClientInterceptor(config.UserAgent))
+	stream := grpc.WithChainStreamInterceptor(meta.StreamClientInterceptor(config.UserAgent))
+
+	return grpc.DialContext(context, target, grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()), unary, stream)
 }
 
 // nolint:ireturn
