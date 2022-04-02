@@ -17,8 +17,8 @@ import (
 )
 
 // NewServer for HTTP.
-func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *http.Server {
-	var handler http.Handler = runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger, mux *runtime.ServeMux) *http.Server {
+	var handler http.Handler = mux
 
 	handler = opentracing.NewHandler(handler)
 	handler = szap.NewHandler(logger, handler)

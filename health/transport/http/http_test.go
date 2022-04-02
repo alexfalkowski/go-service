@@ -39,9 +39,11 @@ func TestHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		mux := shttp.NewMux()
 
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
+		shttp.NewServer(lc, test.NewShutdowner(), cfg, logger, mux)
+
+		err = hhttp.Register(mux, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -90,9 +92,11 @@ func TestLiveness(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		mux := shttp.NewMux()
 
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
+		shttp.NewServer(lc, test.NewShutdowner(), cfg, logger, mux)
+
+		err = hhttp.Register(mux, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -141,9 +145,11 @@ func TestReadiness(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		mux := shttp.NewMux()
 
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
+		shttp.NewServer(lc, test.NewShutdowner(), cfg, logger, mux)
+
+		err = hhttp.Register(mux, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -192,9 +198,11 @@ func TestInvalidHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		mux := shttp.NewMux()
 
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
+		shttp.NewServer(lc, test.NewShutdowner(), cfg, logger, mux)
+
+		err = hhttp.Register(mux, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

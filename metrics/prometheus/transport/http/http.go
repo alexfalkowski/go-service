@@ -8,9 +8,7 @@ import (
 )
 
 // Register metrics for HTTP.
-// nolint:forcetypeassert
-func Register(server *http.Server) error {
-	mux := server.Handler.(*runtime.ServeMux)
+func Register(mux *runtime.ServeMux) error {
 	handler := promhttp.Handler()
 
 	return mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {

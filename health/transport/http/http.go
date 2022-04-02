@@ -14,26 +14,23 @@ const (
 )
 
 // Register health for HTTP.
-func Register(server *http.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
-	if err := resister("/health", server, hob.Observer); err != nil {
+func Register(mux *runtime.ServeMux, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
+	if err := resister("/health", mux, hob.Observer); err != nil {
 		return err
 	}
 
-	if err := resister("/liveness", server, lob.Observer); err != nil {
+	if err := resister("/liveness", mux, lob.Observer); err != nil {
 		return err
 	}
 
-	if err := resister("/readiness", server, hob.Observer); err != nil {
+	if err := resister("/readiness", mux, hob.Observer); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// nolint:forcetypeassert
-func resister(path string, server *http.Server, ob *subscriber.Observer) error {
-	mux := server.Handler.(*runtime.ServeMux)
-
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer) error {
 	return mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		var (
 			status   int

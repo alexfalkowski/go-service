@@ -17,14 +17,13 @@ import (
 	jwtGRPC "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	jwtHTTP "github.com/alexfalkowski/go-service/transport/http/security/jwt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// nolint:funlen,forcetypeassert
+// nolint:funlen
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -35,8 +34,10 @@ func TestUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		serverParams := tgrpc.ServerParams{Config: grpcCfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, sh, serverParams)
 
@@ -91,7 +92,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen,forcetypeassert
+// nolint:dupl,funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -102,8 +103,9 @@ func TestValidAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
@@ -163,7 +165,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen,forcetypeassert
+// nolint:dupl,funlen
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -174,8 +176,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
@@ -235,7 +239,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen,forcetypeassert
+// nolint:dupl,funlen
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -246,8 +250,10 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
@@ -306,7 +312,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen,forcetypeassert
+// nolint:funlen
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -317,8 +323,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
@@ -371,7 +379,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen,forcetypeassert
+// nolint:dupl,funlen
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -382,8 +390,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,
@@ -442,7 +452,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen,forcetypeassert,goerr113
+// nolint:funlen,goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -453,8 +463,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		server := shttp.NewServer(lc, sh, httpCfg, logger)
-		mux := server.Handler.(*runtime.ServeMux)
+		mux := shttp.NewMux()
+
+		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
 			Config: grpcCfg,

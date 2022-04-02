@@ -13,5 +13,5 @@ var (
 
 	// HTTPServerModule for fx.
 	// nolint:gochecknoglobals
-	HTTPServerModule = fx.Options(fx.Provide(http.NewServer))
+	HTTPServerModule = fx.Options(fx.Provide(http.NewMux), fx.Provide(http.NewServer))
 )

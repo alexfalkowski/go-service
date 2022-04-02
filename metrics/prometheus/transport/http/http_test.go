@@ -18,6 +18,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -46,9 +47,11 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		mux := shttp.NewMux()
 
-		err = prometheusHTTP.Register(httpServer)
+		shttp.NewServer(lc, test.NewShutdowner(), cfg, logger, mux)
+
+		err = prometheusHTTP.Register(mux)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
