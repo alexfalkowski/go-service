@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/alexfalkowski/go-service/health"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/grpc/health"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -33,7 +33,7 @@ const (
 func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == health.Service {
+		if health.Is(service) {
 			return handler(ctx, req)
 		}
 
@@ -82,7 +82,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if service == health.Service {
+		if health.Is(service) {
 			return handler(srv, stream)
 		}
 
@@ -132,7 +132,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
-		if service == health.Service {
+		if health.Is(service) {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -181,7 +181,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
-		if service == health.Service {
+		if health.Is(service) {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 
