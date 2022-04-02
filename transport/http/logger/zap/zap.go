@@ -3,18 +3,15 @@ package zap
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/http/encoder"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 const (
 	httpRequest         = "http.request"
-	httpResponse        = "http.response"
 	httpURL             = "http.url"
 	httpMethod          = "http.method"
 	httpDuration        = "http.duration_ms"
@@ -26,8 +23,6 @@ const (
 	client              = "client"
 	server              = "server"
 )
-
-var sensitiveURLs = regexp.MustCompile(`oauth|token|jwks|health|liveness|readiness`)
 
 // Handler for meta.
 type Handler struct {
@@ -82,7 +77,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
-	isSensitive := sensitiveURLs.Match([]byte(req.URL.String()))
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
@@ -90,10 +84,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String(httpMethod, req.Method),
 		zap.String("span.kind", client),
 		zap.String(component, httpComponent),
-	}
-
-	if !isSensitive {
-		fields = append(fields, zap.String(httpRequest, encoder.Request(req)))
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -112,10 +102,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode))
-
-	if !isSensitive {
-		fields = append(fields, zap.String(httpResponse, encoder.Response(resp)))
-	}
 
 	r.logger.Info(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
 
