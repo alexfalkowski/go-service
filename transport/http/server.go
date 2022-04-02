@@ -9,6 +9,7 @@ import (
 
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
+	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -19,6 +20,7 @@ import (
 func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *http.Server {
 	var handler http.Handler = runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
 
+	handler = opentracing.NewHandler(handler)
 	handler = szap.NewHandler(logger, handler)
 	handler = meta.NewHandler(handler)
 
