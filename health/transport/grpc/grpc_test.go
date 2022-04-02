@@ -50,7 +50,7 @@ func TestUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn, err := tgrpc.NewLocalClient(ctx, cfg)
+			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -101,7 +101,7 @@ func TestInvalidUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn, err := tgrpc.NewLocalClient(ctx, cfg)
+			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -157,7 +157,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn, err := tgrpc.NewLocalClient(ctx, cfg)
+			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -207,7 +207,7 @@ func TestStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn, err := tgrpc.NewLocalClient(ctx, cfg)
+			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -266,7 +266,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn, err := tgrpc.NewLocalClient(ctx, cfg)
+			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
 			So(err, ShouldBeNil)
 
 			defer conn.Close()

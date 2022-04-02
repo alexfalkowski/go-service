@@ -37,10 +37,18 @@ func NewClient(context context.Context, params *ClientParams, opts ...grpc.DialO
 }
 
 // NewLocalClient to localhost for gRPC.
-func NewLocalClient(context context.Context, config *Config) (*grpc.ClientConn, error) {
-	target := fmt.Sprintf("127.0.0.1:%s", config.Port)
-	unary := grpc.WithChainUnaryInterceptor(meta.UnaryClientInterceptor(config.UserAgent))
-	stream := grpc.WithChainStreamInterceptor(meta.StreamClientInterceptor(config.UserAgent))
+func NewLocalClient(context context.Context, params *ClientParams) (*grpc.ClientConn, error) {
+	target := fmt.Sprintf("127.0.0.1:%s", params.Config.Port)
+	unary := grpc.WithChainUnaryInterceptor(
+		meta.UnaryClientInterceptor(params.Config.UserAgent),
+		szap.UnaryClientInterceptor(params.Logger),
+		opentracing.UnaryClientInterceptor(),
+	)
+	stream := grpc.WithChainStreamInterceptor(
+		meta.StreamClientInterceptor(params.Config.UserAgent),
+		szap.StreamClientInterceptor(params.Logger),
+		opentracing.StreamClientInterceptor(),
+	)
 
 	return grpc.DialContext(context, target, grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()), unary, stream)
 }
