@@ -4,9 +4,9 @@ import (
 	"regexp"
 )
 
-var words = regexp.MustCompile(`health|liveness|readiness`)
+var health = regexp.MustCompile(`health|liveness|readiness|metrics`)
 
 // IsHealth in the text.
 func IsHealth(text string) bool {
-	return words.MatchString(text)
+	return health.MatchString(text)
 }
