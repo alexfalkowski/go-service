@@ -1,4 +1,4 @@
-package health
+package strings
 
 import (
 	"regexp"
@@ -6,7 +6,7 @@ import (
 
 var words = regexp.MustCompile(`health|liveness|readiness`)
 
-// Is part of health.
-func Is(text string) bool {
+// IsHealth in the text.
+func IsHealth(text string) bool {
 	return words.MatchString(text)
 }

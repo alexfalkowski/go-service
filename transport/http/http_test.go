@@ -34,9 +34,7 @@ func TestUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		serverParams := tgrpc.ServerParams{Config: grpcCfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, sh, serverParams)
@@ -60,7 +58,7 @@ func TestUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -103,8 +101,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -132,7 +129,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -176,9 +173,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -206,7 +201,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -250,9 +245,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -280,7 +273,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -323,9 +316,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -353,7 +344,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -390,9 +381,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -420,7 +409,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -463,9 +452,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		mux := shttp.NewMux()
-
-		shttp.NewServer(lc, sh, httpCfg, logger, mux)
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), httpCfg, logger)
 
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -493,7 +480,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = test.RegisterGreeterHandler(ctx, mux, conn)
+		err = test.RegisterGreeterHandler(ctx, httpServer.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {

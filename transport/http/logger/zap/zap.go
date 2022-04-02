@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/health"
 	"github.com/alexfalkowski/go-service/meta"
+	sstrings "github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -36,7 +36,7 @@ func NewHandler(logger *zap.Logger, handler http.Handler) *Handler {
 }
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	if health.Is(req.URL.String()) {
+	if sstrings.IsHealth(req.URL.String()) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -80,7 +80,7 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if health.Is(req.URL.String()) {
+	if sstrings.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
