@@ -49,7 +49,7 @@ func TestVerify(t *testing.T) {
 		Convey("When I verify the token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(context.Background())
+			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			_, err = ver.Verify(ctx, token)
