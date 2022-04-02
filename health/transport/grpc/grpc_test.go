@@ -2,7 +2,6 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -51,14 +49,8 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewLocalClient(ctx, cfg)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -108,14 +100,8 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewLocalClient(ctx, cfg)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -135,7 +121,6 @@ func TestInvalidUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -171,18 +156,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-			}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewLocalClient(ctx, cfg)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -231,14 +206,8 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewLocalClient(ctx, cfg)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -261,7 +230,6 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -297,18 +265,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-			}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewLocalClient(ctx, cfg)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
