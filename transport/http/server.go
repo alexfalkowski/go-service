@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 
+	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -15,9 +17,13 @@ import (
 
 // NewServer for HTTP.
 func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *http.Server {
-	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+	var handler http.Handler = runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+
+	handler = szap.NewHandler(logger, handler)
+	handler = meta.NewHandler(handler)
+
 	addr := fmt.Sprintf(":%s", cfg.Port)
-	server := &http.Server{Addr: addr, Handler: mux}
+	server := &http.Server{Addr: addr, Handler: handler}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {

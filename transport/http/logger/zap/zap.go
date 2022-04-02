@@ -24,9 +24,47 @@ const (
 	component           = "component"
 	httpComponent       = "http"
 	client              = "client"
+	server              = "server"
 )
 
 var sensitiveURLs = regexp.MustCompile(`oauth|token|jwks|health|liveness|readiness`)
+
+// Handler for meta.
+type Handler struct {
+	logger *zap.Logger
+	http.Handler
+}
+
+// NewHandler for meta.
+func NewHandler(logger *zap.Logger, handler http.Handler) *Handler {
+	return &Handler{logger: logger, Handler: handler}
+}
+
+func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	start := time.Now().UTC()
+	ctx := req.Context()
+
+	h.Handler.ServeHTTP(resp, req)
+
+	fields := []zapcore.Field{
+		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
+		zap.String(httpStartTime, start.Format(time.RFC3339)),
+		zap.String(httpURL, req.URL.String()),
+		zap.String(httpMethod, req.Method),
+		zap.String("span.kind", server),
+		zap.String(component, httpComponent),
+	}
+
+	for k, v := range meta.Attributes(ctx) {
+		fields = append(fields, zap.String(k, v))
+	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(httpRequestDeadline, d.UTC().Format(time.RFC3339)))
+	}
+
+	h.logger.Info("finished call", fields...)
+}
 
 // NewRoundTripper for zap.
 func NewRoundTripper(logger *zap.Logger, hrt http.RoundTripper) *RoundTripper {
