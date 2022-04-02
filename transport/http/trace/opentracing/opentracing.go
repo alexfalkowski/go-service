@@ -35,7 +35,8 @@ func NewHandler(handler http.Handler) *Handler {
 }
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	if sstrings.IsHealth(req.URL.String()) {
+	url := req.URL.String()
+	if sstrings.IsHealth(url) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -45,13 +46,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	tracer := opentracing.GlobalTracer()
 	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, req.URL.Hostname())
+	operationName := fmt.Sprintf("%s %s", method, url)
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
 	traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, carrier)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: req.URL.String()},
+		opentracing.Tag{Key: httpURL, Value: url},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCServer,
@@ -86,7 +87,8 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if sstrings.IsHealth(req.URL.String()) {
+	url := req.URL.String()
+	if sstrings.IsHealth(url) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
@@ -94,10 +96,10 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	tracer := opentracing.GlobalTracer()
 	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, req.URL.Hostname())
+	operationName := fmt.Sprintf("%s %s", method, url)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: req.URL.String()},
+		opentracing.Tag{Key: httpURL, Value: url},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,

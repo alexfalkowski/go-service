@@ -36,7 +36,8 @@ func NewHandler(logger *zap.Logger, handler http.Handler) *Handler {
 }
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	if sstrings.IsHealth(req.URL.String()) {
+	url := req.URL.String() // nolint:ifshort
+	if sstrings.IsHealth(url) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -50,7 +51,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, req.URL.String()),
+		zap.String(httpURL, url),
 		zap.String(httpMethod, req.Method),
 		zap.String("span.kind", server),
 		zap.String(component, httpComponent),
@@ -80,7 +81,8 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if sstrings.IsHealth(req.URL.String()) {
+	url := req.URL.String() // nolint:ifshort
+	if sstrings.IsHealth(url) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
@@ -90,7 +92,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, req.URL.String()),
+		zap.String(httpURL, url),
 		zap.String(httpMethod, req.Method),
 		zap.String("span.kind", client),
 		zap.String(component, httpComponent),
