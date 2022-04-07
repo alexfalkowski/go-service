@@ -140,12 +140,9 @@ func TestClient(t *testing.T) {
 func registrations(logger *zap.Logger, cfg *shttp.Config) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
+	client := shttp.NewClient(cfg, logger)
 
-	params := &shttp.ClientParams{
-		Config: cfg,
-		Logger: logger,
-	}
-	hc := checker.NewHTTPChecker("https://google.com", shttp.NewClient(params))
+	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
 	return health.Registrations{nr, hr}
