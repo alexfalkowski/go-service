@@ -58,10 +58,6 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		ext.SpanKindRPCServer,
 	}
 
-	for k, v := range meta.Attributes(ctx) {
-		opts = append(opts, opentracing.Tag{Key: k, Value: v})
-	}
-
 	span := tracer.StartSpan(operationName, opts...)
 	defer span.Finish()
 
@@ -72,6 +68,10 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx = opentracing.ContextWithSpan(ctx, span)
 
 	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
+
+	for k, v := range meta.Attributes(ctx) {
+		span.SetTag(k, v)
+	}
 
 	span.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
 }
@@ -105,12 +105,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		ext.SpanKindRPCClient,
 	}
 
-	for k, v := range meta.Attributes(ctx) {
-		opts = append(opts, opentracing.Tag{Key: k, Value: v})
-	}
-
 	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
-
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
@@ -123,6 +118,10 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	resp, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
+
+	for k, v := range meta.Attributes(ctx) {
+		span.SetTag(k, v)
+	}
 
 	span.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
 
