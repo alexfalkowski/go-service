@@ -139,39 +139,19 @@ func registrations(logger *zap.Logger, cfg *shttp.Config) health.Registrations {
 }
 
 func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
-	ob, err := healthServer.Observe("noop")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.HealthObserver{Observer: ob}, nil
+	return &hhttp.HealthObserver{Observer: healthServer.Observe("noop")}, nil
 }
 
-func livenessObserver(healthServer *server.Server) (*hhttp.LivenessObserver, error) {
-	ob, err := healthServer.Observe("noop")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.LivenessObserver{Observer: ob}, nil
+func livenessObserver(healthServer *server.Server) *hhttp.LivenessObserver {
+	return &hhttp.LivenessObserver{Observer: healthServer.Observe("noop")}
 }
 
-func readinessObserver(healthServer *server.Server) (*hhttp.ReadinessObserver, error) {
-	ob, err := healthServer.Observe("http")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.ReadinessObserver{Observer: ob}, nil
+func readinessObserver(healthServer *server.Server) *hhttp.ReadinessObserver {
+	return &hhttp.ReadinessObserver{Observer: healthServer.Observe("http")}
 }
 
-func grpcObserver(healthServer *server.Server) (*hgrpc.Observer, error) {
-	ob, err := healthServer.Observe("http")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hgrpc.Observer{Observer: ob}, nil
+func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
+	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
 }
 
 func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {

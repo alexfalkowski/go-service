@@ -8,21 +8,23 @@ import (
 )
 
 // NewServer for health.
-func NewServer(lc fx.Lifecycle, regs Registrations) (*server.Server, error) {
+func NewServer(lc fx.Lifecycle, regs Registrations) *server.Server {
 	s := server.NewServer()
 
-	if err := s.Register(regs...); err != nil {
-		return nil, err
-	}
+	s.Register(regs...)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			return s.Start()
+			s.Start()
+
+			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return s.Stop()
+			s.Stop()
+
+			return nil
 		},
 	})
 
-	return s, nil
+	return s
 }
