@@ -52,10 +52,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			ext.SpanKindRPCServer,
 		}
 
-		for k, v := range meta.Attributes(ctx) {
-			opts = append(opts, opentracing.Tag{Key: k, Value: v})
-		}
-
 		span := tracer.StartSpan(operationName(info.FullMethod), opts...)
 		defer span.Finish()
 
@@ -65,6 +61,10 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = opentracing.ContextWithSpan(ctx, span)
 		resp, err := handler(ctx, req)
+
+		for k, v := range meta.Attributes(ctx) {
+			span.SetTag(k, v)
+		}
 
 		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
 		addTags(ctx, span)
@@ -101,10 +101,6 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			ext.SpanKindRPCServer,
 		}
 
-		for k, v := range meta.Attributes(ctx) {
-			opts = append(opts, opentracing.Tag{Key: k, Value: v})
-		}
-
 		span := tracer.StartSpan(operationName(info.FullMethod), opts...)
 		defer span.Finish()
 
@@ -118,6 +114,10 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		wrappedStream.WrappedContext = ctx
 
 		err := handler(srv, wrappedStream)
+
+		for k, v := range meta.Attributes(ctx) {
+			span.SetTag(k, v)
+		}
 
 		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
 		addTags(ctx, span)
@@ -150,10 +150,6 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			ext.SpanKindRPCClient,
 		}
 
-		for k, v := range meta.Attributes(ctx) {
-			spanOpts = append(spanOpts, opentracing.Tag{Key: k, Value: v})
-		}
-
 		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName(fullMethod), spanOpts...)
 		defer span.Finish()
 
@@ -168,6 +164,10 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
+
+		for k, v := range meta.Attributes(ctx) {
+			span.SetTag(k, v)
+		}
 
 		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
 		span.SetTag(grpcCode, status.Code(err))
@@ -199,10 +199,6 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 			ext.SpanKindRPCClient,
 		}
 
-		for k, v := range meta.Attributes(ctx) {
-			spanOpts = append(spanOpts, opentracing.Tag{Key: k, Value: v})
-		}
-
 		span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName(fullMethod), spanOpts...)
 		defer span.Finish()
 
@@ -217,6 +213,10 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+
+		for k, v := range meta.Attributes(ctx) {
+			span.SetTag(k, v)
+		}
 
 		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
 		span.SetTag(grpcCode, status.Code(err))
