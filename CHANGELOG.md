@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.48.0](https://github.com/alexfalkowski/go-service/compare/v1.47.0...v1.48.0) (2022-04-07)
+
+
+### Features
+
+* **health:** add all the errors to the response ([#80](https://github.com/alexfalkowski/go-service/issues/80)) ([32bc3e4](https://github.com/alexfalkowski/go-service/commit/32bc3e4f358416351f63b55f61588d22813fca07))
+
 ## [1.47.0](https://github.com/alexfalkowski/go-service/compare/v1.46.0...v1.47.0) (2022-04-02)
 
 
