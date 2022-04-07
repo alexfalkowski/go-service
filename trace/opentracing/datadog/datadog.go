@@ -20,16 +20,11 @@ func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config, httpCfg *http.Co
 		return err
 	}
 
-	params := &http.ClientParams{
-		Config: httpCfg,
-		Logger: logger,
-	}
-
 	opts := []tracer.StartOption{
 		tracer.WithService(name),
 		tracer.WithAgentAddr(cfg.Host),
 		tracer.WithLogger(ozap.NewLogger(logger)),
-		tracer.WithHTTPClient(http.NewClient(params)),
+		tracer.WithHTTPClient(http.NewClient(httpCfg, logger)),
 	}
 	t := opentracer.New(opts...)
 

@@ -14,11 +14,5 @@ func NewHTTPClient(logger *zap.Logger) *http.Client {
 
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(logger *zap.Logger, roundTripper http.RoundTripper) *http.Client {
-	params := &shttp.ClientParams{
-		Config:       NewHTTPConfig(),
-		Logger:       logger,
-		RoundTripper: roundTripper,
-	}
-
-	return shttp.NewClient(params)
+	return shttp.NewClient(NewHTTPConfig(), logger, shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(), shttp.WithClientRetry())
 }

@@ -11,29 +11,74 @@ import (
 	"go.uber.org/zap"
 )
 
-// ClientParams for HTTP.
-type ClientParams struct {
-	Config       *Config
-	Logger       *zap.Logger
-	RoundTripper http.RoundTripper
+// ClientOption for HTTP.
+type ClientOption interface{ apply(*clientOptions) }
+
+type clientOptions struct {
+	config       *Config
+	logger       *zap.Logger
+	retry        bool
+	breaker      bool
+	roundTripper http.RoundTripper
+}
+
+type clientOptionFunc func(*clientOptions)
+
+func (f clientOptionFunc) apply(o *clientOptions) { f(o) }
+
+// WithClientRoundTripper for HTTP.
+// nolint:ireturn
+func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.roundTripper = rt
+	})
+}
+
+// WithClientRetry for HTTP.
+// nolint:ireturn
+func WithClientRetry() ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.retry = true
+	})
+}
+
+// WithClientBreaker for HTTP.
+// nolint:ireturn
+func WithClientBreaker() ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.breaker = true
+	})
 }
 
 // NewClient for HTTP.
-func NewClient(params *ClientParams) *http.Client {
-	return &http.Client{Transport: newRoundTripper(params)}
+func NewClient(config *Config, logger *zap.Logger, opts ...ClientOption) *http.Client {
+	defaultOptions := &clientOptions{config: config, logger: logger}
+
+	for _, o := range opts {
+		o.apply(defaultOptions)
+	}
+
+	return &http.Client{Transport: newRoundTripper(defaultOptions)}
 }
 
-func newRoundTripper(params *ClientParams) http.RoundTripper {
-	hrt := params.RoundTripper
+func newRoundTripper(opts *clientOptions) http.RoundTripper {
+	hrt := opts.roundTripper
 	if hrt == nil {
 		hrt = http.DefaultTransport
 	}
 
-	hrt = lzap.NewRoundTripper(params.Logger, hrt)
+	hrt = lzap.NewRoundTripper(opts.logger, hrt)
 	hrt = opentracing.NewRoundTripper(hrt)
-	hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
-	hrt = breaker.NewRoundTripper(hrt)
-	hrt = meta.NewRoundTripper(params.Config.UserAgent, hrt)
+
+	if opts.retry {
+		hrt = retry.NewRoundTripper(&opts.config.Retry, hrt)
+	}
+
+	if opts.breaker {
+		hrt = breaker.NewRoundTripper(hrt)
+	}
+
+	hrt = meta.NewRoundTripper(opts.config.UserAgent, hrt)
 
 	return hrt
 }

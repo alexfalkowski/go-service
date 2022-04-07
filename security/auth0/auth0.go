@@ -10,13 +10,9 @@ import (
 // NewGenerator for Auth0.
 // nolint:ireturn
 func NewGenerator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) jwt.Generator {
-	params := &http.ClientParams{
-		Config: httpCfg,
-		Logger: logger,
-	}
+	client := http.NewClient(httpCfg, logger, http.WithClientBreaker(), http.WithClientRetry())
 
-	var generator jwt.Generator = &generator{cfg: cfg, client: http.NewClient(params)}
-
+	var generator jwt.Generator = &generator{cfg: cfg, client: client}
 	generator = &cachedGenerator{cfg: cfg, cache: cache, Generator: generator}
 
 	return generator
@@ -25,13 +21,9 @@ func NewGenerator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *
 // NewCertificator for Auth0.
 // nolint:ireturn
 func NewCertificator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) Certificator {
-	params := &http.ClientParams{
-		Config: httpCfg,
-		Logger: logger,
-	}
+	client := http.NewClient(httpCfg, logger, http.WithClientBreaker(), http.WithClientRetry())
 
-	var certificator Certificator = &pem{cfg: cfg, client: http.NewClient(params)}
-
+	var certificator Certificator = &pem{cfg: cfg, client: client}
 	certificator = &cachedPEM{cfg: cfg, cache: cache, Certificator: certificator}
 
 	return certificator
