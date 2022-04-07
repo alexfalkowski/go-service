@@ -20,12 +20,7 @@ func NewDB(lc fx.Lifecycle, cfg *Config) (*sql.DB, error) {
 
 	db := stdlib.OpenDB(*config)
 
-	name, err := os.ExecutableName()
-	if err != nil {
-		return nil, err
-	}
-
-	prometheus.Register(lc, name, db)
+	prometheus.Register(lc, os.ExecutableName(), db)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

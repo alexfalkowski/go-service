@@ -6,11 +6,8 @@ import (
 )
 
 // ExecutableName of the running application.
-func ExecutableName() (string, error) {
-	path, err := os.Executable()
-	if err != nil {
-		return "", err
-	}
+func ExecutableName() string {
+	path, _ := os.Executable()
 
-	return filepath.Base(path), nil
+	return filepath.Base(path)
 }

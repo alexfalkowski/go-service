@@ -34,7 +34,7 @@ func TestHTTP(t *testing.T) {
 
 		r := redis.NewRing(lc, rcfg)
 		opts := redis.NewOptions(r)
-		_, _ = redis.NewCache(lc, rcfg, opts)
+		_ = redis.NewCache(lc, rcfg, opts)
 
 		ricfg := &ristretto.Config{
 			NumCounters: 1e7,

@@ -20,9 +20,7 @@ func TestCache(t *testing.T) {
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
 
-		c, err := redis.NewCache(lc, cfg, opts)
-		So(err, ShouldBeNil)
-
+		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 		ctx, span := cotr.StartSpanFromContext(ctx, "test", "test")
 		defer span.Finish()

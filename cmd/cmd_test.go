@@ -46,9 +46,7 @@ func TestShutdown(t *testing.T) {
 				fx.Invoke(shutdown), fx.Invoke(configs),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -60,7 +58,6 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_http.config.yml")
@@ -73,9 +70,7 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -90,7 +85,6 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
@@ -103,9 +97,7 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -125,9 +117,7 @@ func TestClient(t *testing.T) {
 		Convey("When I try to run a client", func() {
 			opts := []fx.Option{fx.NopLogger}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddClient(opts)
 
 			Convey("Then I should not see an error", func() {
