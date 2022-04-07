@@ -219,7 +219,7 @@ func TestInvalidHealth(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have an unhealthy response", func() {
-				So(actual, ShouldEqual, `{"status":"NOT_SERVING"}`)
+				So(actual, ShouldEqual, `{"errors":{"http":"invalid status code"},"status":"NOT_SERVING"}`)
 			})
 		})
 	})

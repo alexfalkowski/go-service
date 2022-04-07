@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
+	"github.com/alexfalkowski/go-service/config"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
@@ -16,22 +17,22 @@ const (
 
 // Register health for HTTP.
 func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
-	if err := resister("/health", server.Mux, hob.Observer); err != nil {
+	if err := resister("/health", server.Mux, hob.Observer, true); err != nil {
 		return err
 	}
 
-	if err := resister("/liveness", server.Mux, lob.Observer); err != nil {
+	if err := resister("/liveness", server.Mux, lob.Observer, false); err != nil {
 		return err
 	}
 
-	if err := resister("/readiness", server.Mux, hob.Observer); err != nil {
+	if err := resister("/readiness", server.Mux, hob.Observer, false); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer) error {
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withErrors bool) error {
 	return mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		var (
 			status   int
@@ -49,7 +50,21 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer) error
 		w.WriteHeader(status)
 		w.Header().Set("Content-Type", "application/json")
 
-		data := map[string]string{"status": response}
+		data := config.Map{"status": response}
+		if withErrors {
+			errors := config.Map{}
+			for n, e := range ob.Errors() {
+				if e == nil {
+					continue
+				}
+
+				errors[n] = e.Error()
+			}
+
+			if len(errors) > 0 {
+				data["errors"] = errors
+			}
+		}
 
 		json.NewEncoder(w).Encode(data) // nolint:errcheck
 	})
