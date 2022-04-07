@@ -2,6 +2,7 @@ package grpc_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -49,8 +50,10 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -100,8 +103,10 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -156,8 +161,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -206,8 +213,10 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -265,8 +274,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewLocalClient(ctx, &tgrpc.ClientParams{Config: cfg, Logger: logger})
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()

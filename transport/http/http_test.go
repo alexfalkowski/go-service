@@ -20,10 +20,8 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
-// nolint:funlen
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -46,14 +44,10 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -117,14 +111,10 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -189,14 +179,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -261,14 +247,10 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -305,7 +287,6 @@ func TestMissingAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -332,14 +313,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -397,14 +374,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()
@@ -441,7 +414,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen,goerr113
+// nolint:goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -468,14 +441,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		clientParams := &tgrpc.ClientParams{
-			Host:   fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			Config: grpcCfg,
-			Logger: logger,
-		}
-		clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-		conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), grpcCfg, logger,
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
 		So(err, ShouldBeNil)
 
 		defer conn.Close()

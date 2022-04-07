@@ -19,7 +19,6 @@ import (
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 )
 
@@ -40,14 +39,10 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -93,18 +88,13 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -148,18 +138,13 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -202,18 +187,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -255,14 +235,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -305,18 +281,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error")))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error")))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -352,17 +323,10 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -413,18 +377,13 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -472,18 +431,13 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -530,18 +484,13 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -582,14 +531,10 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -637,18 +582,14 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error")))),
-			}
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error")))),
+				),
+			)
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -692,14 +633,10 @@ func TestRateLimitUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -749,18 +686,14 @@ func TestAuthRateLimitUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-			}
 
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -806,14 +739,10 @@ func TestSuccessRateLimitStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -864,14 +793,10 @@ func TestFailedRateLimitStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials())}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(grpc.WithBlock()),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()
@@ -918,18 +843,13 @@ func TestBreakerUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-			clientParams := &tgrpc.ClientParams{
-				Host:   fmt.Sprintf("127.0.0.1:%s", cfg.Port),
-				Config: cfg,
-				Logger: logger,
-			}
-			clientOpts := []grpc.DialOption{
-				grpc.WithBlock(),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-			}
-
-			conn, err := tgrpc.NewClient(ctx, clientParams, clientOpts...)
+			conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", cfg.Port), cfg, logger,
+				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+				tgrpc.WithClientDialOption(
+					grpc.WithBlock(),
+					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
+				),
+			)
 			So(err, ShouldBeNil)
 
 			defer conn.Close()

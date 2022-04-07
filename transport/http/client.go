@@ -53,7 +53,6 @@ func WithClientBreaker() ClientOption {
 // NewClient for HTTP.
 func NewClient(config *Config, logger *zap.Logger, opts ...ClientOption) *http.Client {
 	defaultOptions := &clientOptions{config: config, logger: logger}
-
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
