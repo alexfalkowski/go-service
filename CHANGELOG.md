@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0](https://github.com/alexfalkowski/go-service/compare/v1.48.0...v1.49.0) (2022-04-07)
+
+
+### Features
+
+* **health:** add redis checker ([#81](https://github.com/alexfalkowski/go-service/issues/81)) ([8d03d3c](https://github.com/alexfalkowski/go-service/commit/8d03d3c3911137f7793da2954014c52a4d33b9b7))
+
 ## [1.48.0](https://github.com/alexfalkowski/go-service/compare/v1.47.0...v1.48.0) (2022-04-07)
 
 
