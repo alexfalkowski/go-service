@@ -16,11 +16,8 @@ type Command struct {
 }
 
 // New command.
-func New(timeout time.Duration) (*Command, error) {
-	name, err := os.ExecutableName()
-	if err != nil {
-		return nil, err
-	}
+func New(timeout time.Duration) *Command {
+	name := os.ExecutableName()
 
 	root := &cobra.Command{
 		Use:          name,
@@ -29,7 +26,7 @@ func New(timeout time.Duration) (*Command, error) {
 		SilenceUsage: true,
 	}
 
-	return &Command{root: root, timeout: timeout}, nil
+	return &Command{root: root, timeout: timeout}
 }
 
 // AddServer to the command.

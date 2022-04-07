@@ -46,9 +46,7 @@ func TestShutdown(t *testing.T) {
 				fx.Invoke(shutdown), fx.Invoke(configs),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -60,7 +58,6 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_http.config.yml")
@@ -73,9 +70,7 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -90,7 +85,6 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
@@ -103,9 +97,7 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -125,9 +117,7 @@ func TestClient(t *testing.T) {
 		Convey("When I try to run a client", func() {
 			opts := []fx.Option{fx.NopLogger}
 
-			c, err := cmd.New(10 * time.Second)
-			So(err, ShouldBeNil)
-
+			c := cmd.New(10 * time.Second)
 			c.AddClient(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -149,39 +139,19 @@ func registrations(logger *zap.Logger, cfg *shttp.Config) health.Registrations {
 }
 
 func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
-	ob, err := healthServer.Observe("noop")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.HealthObserver{Observer: ob}, nil
+	return &hhttp.HealthObserver{Observer: healthServer.Observe("noop")}, nil
 }
 
-func livenessObserver(healthServer *server.Server) (*hhttp.LivenessObserver, error) {
-	ob, err := healthServer.Observe("noop")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.LivenessObserver{Observer: ob}, nil
+func livenessObserver(healthServer *server.Server) *hhttp.LivenessObserver {
+	return &hhttp.LivenessObserver{Observer: healthServer.Observe("noop")}
 }
 
-func readinessObserver(healthServer *server.Server) (*hhttp.ReadinessObserver, error) {
-	ob, err := healthServer.Observe("http")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hhttp.ReadinessObserver{Observer: ob}, nil
+func readinessObserver(healthServer *server.Server) *hhttp.ReadinessObserver {
+	return &hhttp.ReadinessObserver{Observer: healthServer.Observe("http")}
 }
 
-func grpcObserver(healthServer *server.Server) (*hgrpc.Observer, error) {
-	ob, err := healthServer.Observe("http")
-	if err != nil {
-		return nil, err
-	}
-
-	return &hgrpc.Observer{Observer: ob}, nil
+func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
+	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
 }
 
 func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {

@@ -19,13 +19,8 @@ const (
 
 // Register for jaeger.
 func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
-	name, err := os.ExecutableName()
-	if err != nil {
-		return err
-	}
-
 	c := jconfig.Configuration{
-		ServiceName: name,
+		ServiceName: os.ExecutableName(),
 		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,

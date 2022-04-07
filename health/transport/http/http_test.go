@@ -37,15 +37,9 @@ func TestHealth(t *testing.T) {
 		rc := hchecker.NewRedisChecker(r, 1*time.Second)
 		rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 		regs := health.Registrations{hr, rr}
-
-		server, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
+		server := health.NewServer(lc, regs)
+		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-
 		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
@@ -89,13 +83,8 @@ func TestLiveness(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		server, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
+		server := health.NewServer(lc, regs)
+		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
@@ -140,13 +129,8 @@ func TestReadiness(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		server, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
+		server := health.NewServer(lc, regs)
+		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 
@@ -191,13 +175,8 @@ func TestInvalidHealth(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		server, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := server.Observe("http")
-		So(err, ShouldBeNil)
-
+		server := health.NewServer(lc, regs)
+		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
 

@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	cotr "github.com/alexfalkowski/go-service/cache/trace/opentracing"
-	totr "github.com/alexfalkowski/go-service/transport/trace/opentracing"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -16,19 +15,14 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &redis.Config{
-			Host: "localhost:6379",
-		}
-
+		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
 		r := redis.NewRing(lc, cfg)
 		opts := redis.NewOptions(r)
 
-		c, err := redis.NewCache(lc, cfg, opts)
-		So(err, ShouldBeNil)
-
+		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
-		ctx, span := cotr.StartSpanFromContext(ctx, "test", "test", totr.StartSpanOptions(ctx)...)
+		ctx, span := cotr.StartSpanFromContext(ctx, "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()

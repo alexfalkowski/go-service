@@ -9,15 +9,10 @@ import (
 
 // NewCache from config.
 // The cache is based on https://github.com/go-redis/cache
-func NewCache(lc fx.Lifecycle, cfg *Config, opts *cache.Options) (*cache.Cache, error) {
+func NewCache(lc fx.Lifecycle, cfg *Config, opts *cache.Options) *cache.Cache {
 	cache := cache.New(opts)
 
-	name, err := os.ExecutableName()
-	if err != nil {
-		return nil, err
-	}
+	prometheus.Register(lc, os.ExecutableName(), cache)
 
-	prometheus.Register(lc, name, cache)
-
-	return cache, nil
+	return cache
 }

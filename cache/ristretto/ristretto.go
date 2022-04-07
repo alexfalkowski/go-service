@@ -23,12 +23,7 @@ func NewCache(lc fx.Lifecycle, cfg *Config) (*ristretto.Cache, error) {
 		return nil, err
 	}
 
-	name, err := os.ExecutableName()
-	if err != nil {
-		return nil, err
-	}
-
-	prometheus.Register(lc, name, cache)
+	prometheus.Register(lc, os.ExecutableName(), cache)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

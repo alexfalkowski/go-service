@@ -17,23 +17,15 @@ const (
 
 // Register health for HTTP.
 func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
-	if err := resister("/health", server.Mux, hob.Observer, true); err != nil {
-		return err
-	}
-
-	if err := resister("/liveness", server.Mux, lob.Observer, false); err != nil {
-		return err
-	}
-
-	if err := resister("/readiness", server.Mux, hob.Observer, false); err != nil {
-		return err
-	}
+	resister("/health", server.Mux, hob.Observer, true)
+	resister("/liveness", server.Mux, lob.Observer, false)
+	resister("/readiness", server.Mux, hob.Observer, false)
 
 	return nil
 }
 
-func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withErrors bool) error {
-	return mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withErrors bool) {
+	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
 		var (
 			status   int
 			response string
@@ -66,6 +58,6 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withE
 			}
 		}
 
-		json.NewEncoder(w).Encode(data) // nolint:errcheck
+		json.NewEncoder(w).Encode(data) // nolint:errcheck,errchkjson
 	})
 }

@@ -14,14 +14,9 @@ import (
 )
 
 // Register for datadog.
-func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config, httpCfg *http.Config) error {
-	name, err := os.ExecutableName()
-	if err != nil {
-		return err
-	}
-
+func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config, httpCfg *http.Config) {
 	opts := []tracer.StartOption{
-		tracer.WithService(name),
+		tracer.WithService(os.ExecutableName()),
 		tracer.WithAgentAddr(cfg.Host),
 		tracer.WithLogger(ozap.NewLogger(logger)),
 		tracer.WithHTTPClient(http.NewClient(httpCfg, logger)),
@@ -37,6 +32,4 @@ func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config, httpCfg *http.Co
 			return nil
 		},
 	})
-
-	return nil
 }

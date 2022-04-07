@@ -31,13 +31,8 @@ func TestUnary(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		hs, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
+		hs := health.NewServer(lc, regs)
+		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
@@ -84,13 +79,8 @@ func TestInvalidUnary(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		hs, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
+		hs := health.NewServer(lc, regs)
+		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
@@ -136,13 +126,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		hs, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
+		hs := health.NewServer(lc, regs)
+		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
@@ -194,13 +179,8 @@ func TestStream(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		hs, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
+		hs := health.NewServer(lc, regs)
+		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
@@ -249,13 +229,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
-
-		hs, err := health.NewServer(lc, regs)
-		So(err, ShouldBeNil)
-
-		o, err := hs.Observe("http")
-		So(err, ShouldBeNil)
-
+		hs := health.NewServer(lc, regs)
+		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		serverParams := tgrpc.ServerParams{
