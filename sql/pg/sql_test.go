@@ -6,22 +6,19 @@ import (
 
 	"github.com/alexfalkowski/go-service/sql/pg"
 	sotr "github.com/alexfalkowski/go-service/sql/trace/opentracing"
-	totr "github.com/alexfalkowski/go-service/transport/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		cfg := &pg.Config{
-			URL: "postgres://test:test@localhost:5432/test?sslmode=disable",
-		}
+		cfg := &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 
 			ctx := context.Background()
-			ctx, span := sotr.StartSpanFromContext(ctx, "test", "test", totr.StartSpanOptions(ctx)...)
+			ctx, span := sotr.StartSpanFromContext(ctx, "test", "test")
 			defer span.Finish()
 
 			db, err := pg.NewDB(lc, cfg)
