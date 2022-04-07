@@ -11,7 +11,9 @@ import (
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
+	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/health"
+	hchecker "github.com/alexfalkowski/go-service/health/checker"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
@@ -20,7 +22,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:dupl
 func TestHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -28,9 +29,14 @@ func TestHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		rcfg := &redis.Config{Host: "localhost:6379"}
+		r := redis.NewRing(lc, rcfg)
+
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
+		rc := hchecker.NewRedisChecker(r, 1*time.Second)
+		rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
+		regs := health.Registrations{hr, rr}
 
 		server, err := health.NewServer(lc, regs)
 		So(err, ShouldBeNil)
