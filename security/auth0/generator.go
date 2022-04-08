@@ -41,10 +41,7 @@ func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 		GrantType:    "client_credentials",
 	}
 
-	body, err := json.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
+	body, _ := json.Marshal(req) // nolint:errchkjson
 
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
 	if err != nil {
