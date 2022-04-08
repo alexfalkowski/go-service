@@ -25,10 +25,6 @@ func (l *Logger) Infof(msg string, args ...any) {
 	l.logger.Info(fmt.Sprintf(msg, args...))
 }
 
-func (l *Logger) Debugf(msg string, args ...any) {
-	l.logger.Debug(fmt.Sprintf(msg, args...))
-}
-
 func (l *Logger) Log(msg string) {
 	if strings.Contains(msg, "INFO") {
 		l.logger.Info(msg)

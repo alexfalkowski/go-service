@@ -27,7 +27,7 @@ func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
 		},
 		Reporter: &jconfig.ReporterConfig{
 			LocalAgentHostPort: cfg.Host,
-			LogSpans:           false,
+			LogSpans:           true,
 		},
 	}
 
