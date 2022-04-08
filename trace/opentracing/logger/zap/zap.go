@@ -43,6 +43,4 @@ func (l *Logger) Log(msg string) {
 
 		return
 	}
-
-	l.logger.Debug(msg)
 }
