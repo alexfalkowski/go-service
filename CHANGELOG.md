@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.51.0](https://github.com/alexfalkowski/go-service/compare/v1.50.1...v1.51.0) (2022-04-08)
+
+
+### Features
+
+* **redis:** use zap logger ([#85](https://github.com/alexfalkowski/go-service/issues/85)) ([a3493f5](https://github.com/alexfalkowski/go-service/commit/a3493f515d3d646087f91438c8d2e6b66e509fa6))
+
 ### [1.50.1](https://github.com/alexfalkowski/go-service/compare/v1.50.0...v1.50.1) (2022-04-07)
 
 ## [1.50.0](https://github.com/alexfalkowski/go-service/compare/v1.49.1...v1.50.0) (2022-04-07)
