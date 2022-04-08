@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.51.1](https://github.com/alexfalkowski/go-service/compare/v1.51.0...v1.51.1) (2022-04-08)
+
+
+### Bug Fixes
+
+* **jaeger:** do not log spans ([#86](https://github.com/alexfalkowski/go-service/issues/86)) ([16e5a4a](https://github.com/alexfalkowski/go-service/commit/16e5a4ad1575ea74f416f4ca839be0ca727980e3))
+
 ## [1.51.0](https://github.com/alexfalkowski/go-service/compare/v1.50.1...v1.51.0) (2022-04-08)
 
 
