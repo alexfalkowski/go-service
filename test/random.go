@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	min = 2000
+	min = 10000
 	max = 65535
 )
 
