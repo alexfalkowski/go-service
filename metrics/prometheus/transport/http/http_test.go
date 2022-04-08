@@ -25,14 +25,12 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		rcfg := &redis.Config{
-			Host: "localhost:6379",
-		}
+		rcfg := &redis.Config{Host: "localhost:6379"}
 
 		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, rcfg)
+		r := redis.NewRing(lc, rcfg, logger)
 		opts := redis.NewOptions(r)
 		_ = redis.NewCache(lc, rcfg, opts)
 
