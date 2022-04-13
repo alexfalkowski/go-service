@@ -76,7 +76,7 @@ func TestNonExistentConfig(t *testing.T) {
 
 func TestInvalidConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/greet.proto")
+		os.Setenv("CONFIG_FILE", "../test/greet/v1/service.proto")
 
 		Convey("When I try to parse the configuration file", func() {
 			err := config.UnmarshalFromFile(config.NewConfigurator())

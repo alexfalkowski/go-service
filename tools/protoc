@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-# Generate for testing.
-protoc -I test --go_out=test --go_opt=paths=source_relative \
-    --go-grpc_out=test --go-grpc_opt=paths=source_relative \
-    --grpc-gateway_out=test --grpc-gateway_opt=paths=source_relative \
-    test/greet.proto
