@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	smeta "github.com/alexfalkowski/go-service/security/meta"
 	"github.com/alexfalkowski/go-service/test"
+	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/grpc/ratelimit"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
@@ -33,7 +34,7 @@ func TestUnary(t *testing.T) {
 		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(false))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -47,8 +48,8 @@ func TestUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 			defer cancel()
@@ -82,7 +83,7 @@ func TestValidAuthUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -99,8 +100,8 @@ func TestValidAuthUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
@@ -132,7 +133,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -149,8 +150,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			_, err = client.SayHello(ctx, req)
 
@@ -181,7 +182,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -198,8 +199,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			_, err = client.SayHello(ctx, req)
 
@@ -229,7 +230,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -243,8 +244,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			_, err = client.SayHello(ctx, req)
 
@@ -275,7 +276,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -292,8 +293,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			_, err = client.SayHello(ctx, req)
 
@@ -317,7 +318,7 @@ func TestStream(t *testing.T) {
 		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(false))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -331,7 +332,7 @@ func TestStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 			defer cancel()
@@ -339,7 +340,7 @@ func TestStream(t *testing.T) {
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			resp, err := stream.Recv()
@@ -371,7 +372,7 @@ func TestValidAuthStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -388,12 +389,12 @@ func TestValidAuthStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			resp, err := stream.Recv()
@@ -425,7 +426,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -442,12 +443,12 @@ func TestInvalidAuthStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			_, err = stream.Recv()
@@ -478,7 +479,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -495,7 +496,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			_, err = client.SayStreamHello(ctx)
 
@@ -525,7 +526,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -539,12 +540,12 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			_, err = stream.Recv()
@@ -576,7 +577,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -594,7 +595,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			_, err = client.SayStreamHello(ctx)
 
@@ -627,7 +628,7 @@ func TestRateLimitUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(false))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -641,8 +642,8 @@ func TestRateLimitUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			client.SayHello(ctx, req) // nolint:errcheck
 			_, err = client.SayHello(ctx, req)
@@ -680,7 +681,7 @@ func TestAuthRateLimitUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -698,8 +699,8 @@ func TestAuthRateLimitUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			client.SayHello(ctx, req) // nolint:errcheck
 			_, err = client.SayHello(ctx, req)
@@ -733,7 +734,7 @@ func TestSuccessRateLimitStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(false))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -747,12 +748,12 @@ func TestSuccessRateLimitStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			_, err = stream.Recv()
@@ -787,7 +788,7 @@ func TestFailedRateLimitStream(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(false))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
 		lc.RequireStart()
 
@@ -801,12 +802,12 @@ func TestFailedRateLimitStream(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
+			client := v1.NewGreeterServiceClient(conn)
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&test.HelloRequest{Name: "test"})
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
 			So(err, ShouldBeNil)
 
 			_, err = stream.Recv()
@@ -837,7 +838,7 @@ func TestBreakerUnary(t *testing.T) {
 		}
 		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
 
-		test.RegisterGreeterServer(gs, test.NewServer(true))
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
 		lc.RequireStart()
 
@@ -854,8 +855,8 @@ func TestBreakerUnary(t *testing.T) {
 
 			defer conn.Close()
 
-			client := test.NewGreeterClient(conn)
-			req := &test.HelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
 			for i := 0; i < 10; i++ {
 				_, err = client.SayHello(ctx, req)

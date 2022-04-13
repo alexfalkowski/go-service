@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/security/meta"
+	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
 
 // ErrInvalidToken ...
@@ -19,20 +20,20 @@ func NewServer(verifyAuth bool) *Server {
 // Server ...
 type Server struct {
 	verifyAuth bool
-	UnimplementedGreeterServer
+	v1.UnimplementedGreeterServiceServer
 }
 
 // SayHello ...
-func (s *Server) SayHello(ctx context.Context, req *HelloRequest) (*HelloReply, error) {
+func (s *Server) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	if s.verifyAuth && meta.AuthorizedParty(ctx) == "" {
 		return nil, ErrInvalidToken
 	}
 
-	return &HelloReply{Message: fmt.Sprintf("Hello %s", req.GetName())}, nil
+	return &v1.SayHelloResponse{Message: fmt.Sprintf("Hello %s", req.GetName())}, nil
 }
 
 // SayStreamHello ...
-func (s *Server) SayStreamHello(stream Greeter_SayStreamHelloServer) error {
+func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
 	if s.verifyAuth && meta.AuthorizedParty(stream.Context()) == "" {
 		return ErrInvalidToken
 	}
@@ -42,5 +43,5 @@ func (s *Server) SayStreamHello(stream Greeter_SayStreamHelloServer) error {
 		return err
 	}
 
-	return stream.Send(&HelloReply{Message: fmt.Sprintf("Hello %s", req.GetName())})
+	return stream.Send(&v1.SayStreamHelloResponse{Message: fmt.Sprintf("Hello %s", req.GetName())})
 }

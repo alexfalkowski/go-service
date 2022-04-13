@@ -6,10 +6,8 @@ help: ## Display this help
 	@ grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[36m%-10s\033[0m - %s\n", $$1, $$2}'
 	@ echo
 
-tools: ## Setup all the tools
-	tools/deps
 
-setup: tools dep ## Setup everything
+setup: dep ## Setup everything
 
 download:
 	go mod download
@@ -50,7 +48,7 @@ goveralls: remove-generated-coverage ## Send coveralls data
 	goveralls -coverprofile=test/final.cov -service=circle-ci -repotoken=IFpI5rZfnsc2EyZNls8sONCiEB6kFKLiB
 
 generate-proto: ## Generate proto for go
-	tools/protoc
+	make -C test generate
 
 outdated: ## Check outdated go deps
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
