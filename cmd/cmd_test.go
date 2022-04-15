@@ -13,15 +13,16 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/database/sql"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/sql"
-	"github.com/alexfalkowski/go-service/sql/pg"
 	"github.com/alexfalkowski/go-service/trace"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -40,10 +41,9 @@ func TestShutdown(t *testing.T) {
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
 				cache.RedisModule, cache.RistrettoModule, security.Auth0Module, sql.PostgreSQLModule,
-				trace.DataDogOpenTracingModule, trace.JaegerOpenTracingModule,
-				transport.HTTPServerModule, transport.GRPCServerModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
-				fx.Invoke(shutdown), fx.Invoke(configs),
+				trace.JaegerOpenTracingModule, transport.HTTPServerModule, transport.GRPCServerModule,
+				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -66,8 +66,9 @@ func TestInvalidHTTP(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.GRPCServerModule,
-				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
-				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
+				health.GRPCModule, health.HTTPModule, health.ServerModule, trace.JaegerOpenTracingModule,
+				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -93,8 +94,9 @@ func TestInvalidGRPC(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.GRPCServerModule,
-				health.GRPCModule, health.HTTPModule, health.ServerModule, fx.Provide(registrations),
-				fx.Provide(healthObserver), fx.Provide(livenessObserver), fx.Provide(readinessObserver), fx.Provide(grpcObserver),
+				health.GRPCModule, health.HTTPModule, health.ServerModule, trace.DataDogOpenTracingModule,
+				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -127,10 +129,10 @@ func TestClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.TransportTracer) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
-	client := shttp.NewClient(cfg, logger)
+	client := shttp.NewClient(shttp.WithClientConfig(cfg), shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer))
 
 	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)

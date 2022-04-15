@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -26,12 +27,13 @@ const (
 
 // Handler for opentracing.
 type Handler struct {
+	tracer sopentracing.TransportTracer
 	http.Handler
 }
 
 // NewHandler for opentracing.
-func NewHandler(handler http.Handler) *Handler {
-	return &Handler{Handler: handler}
+func NewHandler(tracer sopentracing.TransportTracer, handler http.Handler) *Handler {
+	return &Handler{tracer: tracer, Handler: handler}
 }
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
@@ -44,11 +46,10 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 	start := time.Now().UTC()
 	ctx := req.Context()
-	tracer := opentracing.GlobalTracer()
 	method := strings.ToLower(req.Method)
 	operationName := fmt.Sprintf("%s %s", method, url)
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
-	traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, carrier)
+	traceCtx, _ := h.tracer.Extract(opentracing.HTTPHeaders, carrier)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
@@ -58,7 +59,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		ext.SpanKindRPCServer,
 	}
 
-	span := tracer.StartSpan(operationName, opts...)
+	span := h.tracer.StartSpan(operationName, opts...)
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
@@ -77,12 +78,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for opentracing.
-func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{RoundTripper: hrt}
+func NewRoundTripper(tracer sopentracing.TransportTracer, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for opentracing.
 type RoundTripper struct {
+	tracer sopentracing.TransportTracer
 	http.RoundTripper
 }
 
@@ -94,7 +96,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	start := time.Now().UTC()
 	ctx := req.Context()
-	tracer := opentracing.GlobalTracer()
 	method := strings.ToLower(req.Method)
 	operationName := fmt.Sprintf("%s %s", method, url)
 	opts := []opentracing.StartSpanOption{
@@ -105,7 +106,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		ext.SpanKindRPCClient,
 	}
 
-	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
+	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, r.tracer, operationName, opts...)
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
@@ -113,7 +114,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
-	if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
+	if err := r.tracer.Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
 		return nil, err
 	}
 

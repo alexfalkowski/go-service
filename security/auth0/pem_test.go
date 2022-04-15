@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/form3tech-oss/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -44,10 +45,13 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -102,10 +106,13 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -161,10 +168,13 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -219,10 +229,13 @@ func TestCorruptToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -263,10 +276,13 @@ func TestMissingAudienceToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -317,10 +333,13 @@ func TestMissingIssuerToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -372,10 +391,13 @@ func TestInvalidCertificateToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -428,10 +450,13 @@ func TestMissingKidToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache)
+		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

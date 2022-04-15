@@ -4,8 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/sql/pg"
-	sotr "github.com/alexfalkowski/go-service/sql/trace/opentracing"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -17,8 +19,14 @@ func TestSQL(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 
+			logger, err := zap.NewLogger(lc, zap.NewConfig())
+			So(err, ShouldBeNil)
+
+			tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+			So(err, ShouldBeNil)
+
 			ctx := context.Background()
-			ctx, span := sotr.StartSpanFromContext(ctx, "test", "test")
+			ctx, span := opentracing.StartDatabaseSpanFromContext(ctx, tracer, "test", "test")
 			defer span.Finish()
 
 			db, err := pg.NewDB(lc, cfg)

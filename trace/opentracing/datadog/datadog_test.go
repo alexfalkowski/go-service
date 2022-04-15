@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/logger/zap"
-	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -23,7 +22,7 @@ func TestDatadog(t *testing.T) {
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
-			datadog.Register(lc, logger, cfg, test.NewHTTPConfig())
+			_ = datadog.NewTracer(lc, "test", logger, cfg)
 
 			lc.RequireStart()
 

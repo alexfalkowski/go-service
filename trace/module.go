@@ -1,17 +1,26 @@
 package trace
 
 import (
-	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"go.uber.org/fx"
 )
 
 var (
 	// JaegerOpenTracingModule for fx.
 	// nolint:gochecknoglobals
-	JaegerOpenTracingModule = fx.Options(fx.Invoke(jaeger.Register))
+	JaegerOpenTracingModule = fx.Options(
+		fx.Provide(opentracing.NewJaegerServiceTracer),
+		fx.Provide(opentracing.NewJaegerDatabaseTracer),
+		fx.Provide(opentracing.NewJaegerCacheTracer),
+		fx.Provide(opentracing.NewJaegerTransportTracer),
+	)
 
 	// DataDogOpenTracingModule for fx.
 	// nolint:gochecknoglobals
-	DataDogOpenTracingModule = fx.Options(fx.Invoke(datadog.Register))
+	DataDogOpenTracingModule = fx.Options(
+		fx.Provide(opentracing.NewDataDogServiceTracer),
+		fx.Provide(opentracing.NewDataDogDatabaseTracer),
+		fx.Provide(opentracing.NewDataDogCacheTracer),
+		fx.Provide(opentracing.NewDataDogTransportTracer),
+	)
 )

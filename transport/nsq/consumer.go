@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
@@ -18,6 +19,7 @@ type ConsumerParams struct {
 	Logger  *zap.Logger
 	Topic   string
 	Channel string
+	Tracer  sopentracing.TransportTracer
 	Handler handler.Handler
 }
 
@@ -33,7 +35,7 @@ func RegisterConsumer(lc fx.Lifecycle, params *ConsumerParams) error {
 	c.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
 	lh := lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
-	oh := opentracing.NewHandler(params.Topic, params.Channel, lh)
+	oh := opentracing.NewHandler(params.Topic, params.Channel, params.Tracer, lh)
 	mh := meta.NewHandler(oh)
 
 	c.AddHandler(handler.New(mh))

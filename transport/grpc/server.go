@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
@@ -23,6 +24,7 @@ type ServerParams struct {
 
 	Config *Config
 	Logger *zap.Logger
+	Tracer sopentracing.TransportTracer
 	Unary  []grpc.UnaryServerInterceptor
 	Stream []grpc.StreamServerInterceptor
 }
@@ -39,7 +41,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 
 // NewServer for gRPC.
 func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams, opts ...grpc.ServerOption) *grpc.Server {
-	opts = append(opts, unaryServerOption(params.Logger, params.Unary...), streamServerOption(params.Logger, params.Stream...))
+	opts = append(opts, unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...))
 
 	server := grpc.NewServer(opts...)
 
@@ -85,13 +87,13 @@ func stopServer(server *grpc.Server, params ServerParams) {
 }
 
 // nolint:ireturn
-func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(logger),
+		szap.UnaryServerInterceptor(params.Logger),
 		prometheus.UnaryServerInterceptor,
-		opentracing.UnaryServerInterceptor(),
+		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -100,13 +102,13 @@ func unaryServerOption(logger *zap.Logger, interceptors ...grpc.UnaryServerInter
 }
 
 // nolint:ireturn
-func streamServerOption(logger *zap.Logger, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(logger),
+		szap.StreamServerInterceptor(params.Logger),
 		prometheus.StreamServerInterceptor,
-		opentracing.StreamServerInterceptor(),
+		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

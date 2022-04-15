@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -16,6 +17,15 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// ServerParams for HTTP.
+type ServerParams struct {
+	fx.In
+
+	Config *Config
+	Logger *zap.Logger
+	Tracer sopentracing.TransportTracer
+}
+
 // Server for HTTP.
 type Server struct {
 	Mux    *runtime.ServeMux
@@ -23,16 +33,16 @@ type Server struct {
 }
 
 // NewServer for HTTP.
-func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *Server {
+func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams) *Server {
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
 
 	var handler http.Handler = mux
 
-	handler = opentracing.NewHandler(handler)
-	handler = szap.NewHandler(logger, handler)
+	handler = opentracing.NewHandler(params.Tracer, handler)
+	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 
-	addr := fmt.Sprintf(":%s", cfg.Port)
+	addr := fmt.Sprintf(":%s", params.Config.Port)
 	server := &Server{Mux: mux, server: &http.Server{Addr: addr, Handler: handler}}
 
 	lc.Append(fx.Hook{
@@ -42,12 +52,12 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger
 				return err
 			}
 
-			go startServer(s, server.server, listener, cfg, logger)
+			go startServer(s, server.server, listener, params.Config, params.Logger)
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return stopServer(ctx, server.server, cfg, logger)
+			return stopServer(ctx, server.server, params.Config, params.Logger)
 		},
 	})
 

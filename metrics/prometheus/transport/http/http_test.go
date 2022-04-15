@@ -9,20 +9,25 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/logger/zap"
-	prometheusHTTP "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
-	"github.com/alexfalkowski/go-service/sql/pg"
+	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
+// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
@@ -44,15 +49,16 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), cfg, logger)
+		params := shttp.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(lc, test.NewShutdowner(), params)
 
-		err = prometheusHTTP.Register(httpServer)
+		err = phttp.Register(httpServer)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(logger)
+			client := test.NewHTTPClient(logger, tracer)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)

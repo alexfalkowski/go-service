@@ -3,9 +3,9 @@ package jaeger
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/os"
 	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/uber/jaeger-client-go"
 	jconfig "github.com/uber/jaeger-client-go/config"
 	jprometheus "github.com/uber/jaeger-lib/metrics/prometheus"
@@ -34,7 +34,7 @@ func NewTracer(lc fx.Lifecycle, name string, logger *zap.Logger, cfg *Config) (o
 
 	options := []jconfig.Option{
 		jconfig.Logger(ozap.NewLogger(logger)),
-		jconfig.Metrics(jprometheus.New()),
+		jconfig.Metrics(jprometheus.New(jprometheus.WithRegisterer(prometheus.NewRegistry()))),
 	}
 
 	tracer, closer, err := c.NewTracer(options...)
@@ -49,16 +49,4 @@ func NewTracer(lc fx.Lifecycle, name string, logger *zap.Logger, cfg *Config) (o
 	})
 
 	return tracer, nil
-}
-
-// Register for jaeger.
-func Register(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) error {
-	tracer, err := NewTracer(lc, os.ExecutableName(), logger, cfg)
-	if err != nil {
-		return err
-	}
-
-	opentracing.SetGlobalTracer(tracer)
-
-	return nil
 }

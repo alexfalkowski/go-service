@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -26,6 +27,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	config   *Config
 	logger   *zap.Logger
+	tracer   sopentracing.TransportTracer
 	retry    bool
 	breaker  bool
 	opts     []grpc.DialOption
@@ -86,9 +88,33 @@ func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) Client
 	})
 }
 
+// WithClientLogger for gRPC.
+// nolint:ireturn
+func WithClientLogger(logger *zap.Logger) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.logger = logger
+	})
+}
+
+// WithClientConfig for gRPC.
+// nolint:ireturn
+func WithClientConfig(config *Config) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.config = config
+	})
+}
+
+// WithClientConfig for gRPC.
+// nolint:ireturn
+func WithClientTracer(tracer sopentracing.TransportTracer) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.tracer = tracer
+	})
+}
+
 // NewClient to host for gRPC.
-func NewClient(context context.Context, host string, config *Config, logger *zap.Logger, opts ...ClientOption) (*grpc.ClientConn, error) {
-	defaultOptions := &clientOptions{config: config, logger: logger, security: grpc.WithTransportCredentials(insecure.NewCredentials())}
+func NewClient(context context.Context, host string, opts ...ClientOption) (*grpc.ClientConn, error) {
+	defaultOptions := &clientOptions{security: grpc.WithTransportCredentials(insecure.NewCredentials())}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -122,7 +148,7 @@ func unaryDialOption(opts *clientOptions) grpc.DialOption {
 	unary = append(unary,
 		meta.UnaryClientInterceptor(opts.config.UserAgent),
 		szap.UnaryClientInterceptor(opts.logger),
-		opentracing.UnaryClientInterceptor(),
+		opentracing.UnaryClientInterceptor(opts.tracer),
 	)
 
 	unary = append(unary, opts.unary...)
@@ -135,7 +161,7 @@ func streamDialOption(opts *clientOptions) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{
 		meta.StreamClientInterceptor(opts.config.UserAgent),
 		szap.StreamClientInterceptor(opts.logger),
-		opentracing.StreamClientInterceptor(),
+		opentracing.StreamClientInterceptor(opts.tracer),
 	}
 
 	stream = append(stream, opts.stream...)

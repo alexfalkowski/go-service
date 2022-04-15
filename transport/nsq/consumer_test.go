@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	. "github.com/smartystreets/goconvey/convey"
@@ -21,6 +22,9 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cfg := test.NewNSQConfig()
 		Convey("When I register a consumer", func() {
 			params := &nsq.ConsumerParams{
@@ -28,6 +32,7 @@ func TestConsumer(t *testing.T) {
 				Logger:  logger,
 				Topic:   "topic",
 				Channel: "channel",
+				Tracer:  tracer,
 				Handler: test.NewHandler(nil),
 			}
 			err := nsq.RegisterConsumer(lc, params)
@@ -50,6 +55,9 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
 		consumerParams := &nsq.ConsumerParams{
@@ -57,11 +65,13 @@ func TestReceiveMessage(t *testing.T) {
 			Logger:  logger,
 			Topic:   "topic",
 			Channel: "channel",
+			Tracer:  tracer,
 			Handler: handler,
 		}
 		producerParams := &nsq.ProducerParams{
 			Config: cfg,
 			Logger: logger,
+			Tracer: tracer,
 		}
 
 		producer, err := nsq.NewProducer(lc, producerParams)
@@ -96,6 +106,9 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
 		consumerParams := &nsq.ConsumerParams{
@@ -103,11 +116,13 @@ func TestReceiveError(t *testing.T) {
 			Logger:  logger,
 			Topic:   "topic",
 			Channel: "channel",
+			Tracer:  tracer,
 			Handler: handler,
 		}
 		producerParams := &nsq.ProducerParams{
 			Config: cfg,
 			Logger: logger,
+			Tracer: tracer,
 		}
 
 		producer, err := nsq.NewProducer(lc, producerParams)

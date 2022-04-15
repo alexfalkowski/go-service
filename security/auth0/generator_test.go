@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -37,10 +38,13 @@ func TestGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache)
+		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 
 		lc.RequireStart()
 
@@ -82,10 +86,13 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache)
+		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 
 		lc.RequireStart()
 
@@ -125,10 +132,13 @@ func TestInvalidURLGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache)
+		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 
 		lc.RequireStart()
 
@@ -168,10 +178,13 @@ func TestMalformedURLGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache)
+		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 
 		lc.RequireStart()
 
@@ -211,10 +224,13 @@ func TestCachedGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache)
+		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
 
 		lc.RequireStart()
 

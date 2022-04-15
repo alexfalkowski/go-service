@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -20,9 +21,13 @@ func TestProducer(t *testing.T) {
 			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
+			tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+			So(err, ShouldBeNil)
+
 			params := &nsq.ProducerParams{
 				Config: cfg,
 				Logger: logger,
+				Tracer: tracer,
 			}
 			_, err = nsq.NewProducer(lc, params)
 
