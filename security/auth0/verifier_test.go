@@ -44,8 +44,10 @@ func TestVerify(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(gp)
+		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(cp)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -96,8 +98,10 @@ func TestCachedVerify(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(gp)
+		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(cp)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

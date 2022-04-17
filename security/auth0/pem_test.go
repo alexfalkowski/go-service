@@ -51,7 +51,8 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -112,7 +113,8 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -174,7 +176,8 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -235,7 +238,8 @@ func TestCorruptToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -282,7 +286,8 @@ func TestMissingAudienceToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -339,7 +344,8 @@ func TestMissingIssuerToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -397,7 +403,8 @@ func TestInvalidCertificateToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -456,7 +463,8 @@ func TestMissingKidToken(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		cert := auth0.NewCertificator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

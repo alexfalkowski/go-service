@@ -44,7 +44,8 @@ func TestGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
 
@@ -92,7 +93,8 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
 
@@ -138,7 +140,8 @@ func TestInvalidURLGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
 
@@ -184,7 +187,8 @@ func TestMalformedURLGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
 
@@ -230,7 +234,8 @@ func TestCachedGenerate(t *testing.T) {
 		cache, err := ristretto.NewCache(lc, cfg)
 		So(err, ShouldBeNil)
 
-		gen := auth0.NewGenerator(acfg, test.NewHTTPConfig(), logger, cache, tracer)
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
 
