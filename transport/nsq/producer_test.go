@@ -25,11 +25,12 @@ func TestProducer(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			params := &nsq.ProducerParams{
-				Config: cfg,
-				Logger: logger,
-				Tracer: tracer,
+				Lifecycle: lc,
+				Config:    cfg,
+				Logger:    logger,
+				Tracer:    tracer,
 			}
-			_, err = nsq.NewProducer(lc, params)
+			_, err = nsq.NewProducer(params)
 
 			lc.RequireStart()
 

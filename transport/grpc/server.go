@@ -22,11 +22,13 @@ import (
 type ServerParams struct {
 	fx.In
 
-	Config *Config
-	Logger *zap.Logger
-	Tracer sopentracing.TransportTracer
-	Unary  []grpc.UnaryServerInterceptor
-	Stream []grpc.StreamServerInterceptor
+	Lifecycle  fx.Lifecycle
+	Shutdowner fx.Shutdowner
+	Config     *Config
+	Logger     *zap.Logger
+	Tracer     sopentracing.TransportTracer
+	Unary      []grpc.UnaryServerInterceptor
+	Stream     []grpc.StreamServerInterceptor
 }
 
 // UnaryServerInterceptor for gRPC.
@@ -40,19 +42,19 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 }
 
 // NewServer for gRPC.
-func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams, opts ...grpc.ServerOption) *grpc.Server {
+func NewServer(params ServerParams, opts ...grpc.ServerOption) *grpc.Server {
 	opts = append(opts, unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...))
 
 	server := grpc.NewServer(opts...)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", params.Config.Port))
 			if err != nil {
 				return err
 			}
 
-			go startServer(s, server, listener, params)
+			go startServer(server, listener, params)
 
 			return nil
 		},
@@ -66,13 +68,13 @@ func NewServer(lc fx.Lifecycle, s fx.Shutdowner, params ServerParams, opts ...gr
 	return server
 }
 
-func startServer(s fx.Shutdowner, server *grpc.Server, listener net.Listener, params ServerParams) {
+func startServer(server *grpc.Server, listener net.Listener, params ServerParams) {
 	params.Logger.Info("starting grpc server", zap.String("port", params.Config.Port))
 
 	if err := server.Serve(listener); err != nil {
 		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
 
-		if err := s.Shutdown(); err != nil {
+		if err := params.Shutdowner.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 

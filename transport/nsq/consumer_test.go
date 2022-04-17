@@ -28,14 +28,15 @@ func TestConsumer(t *testing.T) {
 		cfg := test.NewNSQConfig()
 		Convey("When I register a consumer", func() {
 			params := &nsq.ConsumerParams{
-				Config:  cfg,
-				Logger:  logger,
-				Topic:   "topic",
-				Channel: "channel",
-				Tracer:  tracer,
-				Handler: test.NewHandler(nil),
+				Lifecycle: lc,
+				Config:    cfg,
+				Logger:    logger,
+				Topic:     "topic",
+				Channel:   "channel",
+				Tracer:    tracer,
+				Handler:   test.NewHandler(nil),
 			}
-			err := nsq.RegisterConsumer(lc, params)
+			err := nsq.RegisterConsumer(params)
 
 			lc.RequireStart()
 
@@ -60,24 +61,26 @@ func TestReceiveMessage(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		consumerParams := &nsq.ConsumerParams{
-			Config:  cfg,
-			Logger:  logger,
-			Topic:   "topic",
-			Channel: "channel",
-			Tracer:  tracer,
-			Handler: handler,
+		cparams := &nsq.ConsumerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Topic:     "topic",
+			Channel:   "channel",
+			Tracer:    tracer,
+			Handler:   handler,
 		}
-		producerParams := &nsq.ProducerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
+		pparams := &nsq.ProducerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Tracer:    tracer,
 		}
 
-		producer, err := nsq.NewProducer(lc, producerParams)
+		producer, err := nsq.NewProducer(pparams)
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, consumerParams)
+		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -111,24 +114,26 @@ func TestReceiveError(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		consumerParams := &nsq.ConsumerParams{
-			Config:  cfg,
-			Logger:  logger,
-			Topic:   "topic",
-			Channel: "channel",
-			Tracer:  tracer,
-			Handler: handler,
+		cparams := &nsq.ConsumerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Topic:     "topic",
+			Channel:   "channel",
+			Tracer:    tracer,
+			Handler:   handler,
 		}
-		producerParams := &nsq.ProducerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
+		pparams := &nsq.ProducerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Tracer:    tracer,
 		}
 
-		producer, err := nsq.NewProducer(lc, producerParams)
+		producer, err := nsq.NewProducer(pparams)
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, consumerParams)
+		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

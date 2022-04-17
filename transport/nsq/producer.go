@@ -16,14 +16,15 @@ import (
 
 // ProducerParams for NSQ.
 type ProducerParams struct {
-	Config *Config
-	Logger *zap.Logger
-	Tracer sopentracing.TransportTracer
+	Lifecycle fx.Lifecycle
+	Config    *Config
+	Logger    *zap.Logger
+	Tracer    sopentracing.TransportTracer
 }
 
 // NewProducer for NSQ.
 // nolint:ireturn
-func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
+func NewProducer(params *ProducerParams) (producer.Producer, error) {
 	cfg := nsq.NewConfig()
 
 	p, err := nsq.NewProducer(params.Config.Host, cfg)
@@ -33,7 +34,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 
 	p.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			p.Stop()
 

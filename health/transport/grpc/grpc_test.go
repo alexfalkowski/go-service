@@ -29,7 +29,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -38,8 +38,8 @@ func TestUnary(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
@@ -81,7 +81,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer))
@@ -90,8 +90,8 @@ func TestInvalidUnary(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
@@ -132,7 +132,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -142,14 +142,16 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
@@ -190,7 +192,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -199,8 +201,8 @@ func TestStream(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 
@@ -244,7 +246,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -254,14 +256,16 @@ func TestIgnoreAuthStream(t *testing.T) {
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 

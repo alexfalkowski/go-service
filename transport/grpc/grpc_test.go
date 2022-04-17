@@ -27,12 +27,12 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -74,19 +74,21 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -129,19 +131,21 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -183,19 +187,21 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -236,19 +242,21 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -287,19 +295,21 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -340,12 +350,12 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		serverParams := tgrpc.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -392,19 +402,21 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -451,19 +463,21 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -509,19 +523,21 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -561,19 +577,21 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -617,19 +635,21 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 
@@ -670,19 +690,21 @@ func TestBreakerUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		serverParams := tgrpc.ServerParams{
-			Config: cfg,
-			Logger: logger,
-			Tracer: tracer,
-			Unary:  []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		params := tgrpc.ServerParams{
+			Lifecycle:  lc,
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		}
-		gs := tgrpc.NewServer(lc, test.NewShutdowner(), serverParams)
+		gs := tgrpc.NewServer(params)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
 

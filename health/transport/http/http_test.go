@@ -44,8 +44,8 @@ func TestHealth(t *testing.T) {
 		server := health.NewServer(lc, regs)
 		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), params)
+		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(params)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
@@ -94,8 +94,8 @@ func TestLiveness(t *testing.T) {
 		server := health.NewServer(lc, regs)
 		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), params)
+		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(params)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
@@ -144,8 +144,8 @@ func TestReadiness(t *testing.T) {
 		server := health.NewServer(lc, regs)
 		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), params)
+		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(params)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
@@ -194,8 +194,8 @@ func TestInvalidHealth(t *testing.T) {
 		server := health.NewServer(lc, regs)
 		o := server.Observe("http")
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(lc, test.NewShutdowner(), params)
+		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(params)
 
 		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)

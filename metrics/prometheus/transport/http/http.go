@@ -11,7 +11,7 @@ import (
 func Register(server *shttp.Server) error {
 	handler := promhttp.Handler()
 
-	return server.Mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	return server.Mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, p map[string]string) {
 		handler.ServeHTTP(w, r)
 	})
 }
