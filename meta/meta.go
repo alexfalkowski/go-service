@@ -10,7 +10,7 @@ type contextKey string
 // nolint:gochecknoglobals
 var (
 	meta = contextKey("meta")
-	mux  = sync.Mutex{}
+	mux  = sync.RWMutex{}
 )
 
 // WithAttribute to meta.
@@ -26,16 +26,16 @@ func WithAttribute(ctx context.Context, key, value string) context.Context {
 
 // Attribute of meta.
 func Attribute(ctx context.Context, key string) string {
-	mux.Lock()
-	defer mux.Unlock()
+	mux.RLock()
+	defer mux.RUnlock()
 
 	return attributes(ctx)[key]
 }
 
 // Attributes of meta.
 func Attributes(ctx context.Context) map[string]string {
-	mux.Lock()
-	defer mux.Unlock()
+	mux.RLock()
+	defer mux.RUnlock()
 
 	return attributes(ctx)
 }
