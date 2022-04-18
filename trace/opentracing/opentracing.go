@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/os"
 	otr "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 )
@@ -16,9 +15,6 @@ const (
 	transport = "transport"
 )
 
-// ServiceTracer for opentracing.
-type ServiceTracer otr.Tracer
-
 // DatabaseTracer for opentracing.
 type DatabaseTracer otr.Tracer
 
@@ -28,15 +24,9 @@ type CacheTracer otr.Tracer
 // TransportTracer for opentracing.
 type TransportTracer otr.Tracer
 
-// StartServiceSpanFromContext for opentracing.
-// nolint:ireturn
-func StartServiceSpanFromContext(ctx context.Context, tracer CacheTracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
-	return StartSpanFromContext(ctx, tracer, os.ExecutableName(), operation, method, opts...)
-}
-
 // StartDatabaseSpanFromContext for opentracing.
 // nolint:ireturn
-func StartDatabaseSpanFromContext(ctx context.Context, tracer CacheTracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
+func StartDatabaseSpanFromContext(ctx context.Context, tracer DatabaseTracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
 	return StartSpanFromContext(ctx, tracer, database, operation, method, opts...)
 }
 
@@ -48,7 +38,7 @@ func StartCacheSpanFromContext(ctx context.Context, tracer CacheTracer, operatio
 
 // StartTransportSpanFromContext for opentracing.
 // nolint:ireturn
-func StartTransportSpanFromContext(ctx context.Context, tracer CacheTracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
+func StartTransportSpanFromContext(ctx context.Context, tracer TransportTracer, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
 	return StartSpanFromContext(ctx, tracer, transport, operation, method, opts...)
 }
 

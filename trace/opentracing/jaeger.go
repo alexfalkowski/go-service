@@ -7,26 +7,20 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewJaegerServiceTracer for opentracing.
-// nolint:ireturn
-func NewJaegerServiceTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *jaeger.Config) (ServiceTracer, error) {
-	return jaeger.NewTracer(lc, os.ExecutableName(), logger, cfg)
-}
-
 // NewJaegerDatabaseTracer for opentracing.
 // nolint:ireturn
 func NewJaegerDatabaseTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *jaeger.Config) (DatabaseTracer, error) {
-	return jaeger.NewTracer(lc, database, logger, cfg)
+	return jaeger.NewTracer(lc, os.ExecutableName(), logger, cfg)
 }
 
 // NewJaegerCacheTracer for opentracing.
 // nolint:ireturn
 func NewJaegerCacheTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *jaeger.Config) (CacheTracer, error) {
-	return jaeger.NewTracer(lc, cache, logger, cfg)
+	return jaeger.NewTracer(lc, os.ExecutableName(), logger, cfg)
 }
 
 // NewJaegerTransportTracer for opentracing.
 // nolint:ireturn
 func NewJaegerTransportTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *jaeger.Config) (TransportTracer, error) {
-	return jaeger.NewTracer(lc, transport, logger, cfg)
+	return jaeger.NewTracer(lc, os.ExecutableName(), logger, cfg)
 }
