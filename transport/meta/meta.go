@@ -2,20 +2,16 @@ package meta
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/os"
 )
 
-var (
+const (
 	// RequestIDKey for meta.
-	// nolint:gochecknoglobals
-	RequestIDKey = fmt.Sprintf("%s.request_id", os.ExecutableName())
+	RequestIDKey = "transport.request_id"
 
 	// UserAgentKey for meta.
-	// nolint:gochecknoglobals
-	UserAgentKey = fmt.Sprintf("%s.user_agent", os.ExecutableName())
+	UserAgentKey = "transport.user_agent"
 )
 
 // WithRequestID for transport.

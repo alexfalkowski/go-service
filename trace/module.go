@@ -9,7 +9,6 @@ var (
 	// JaegerOpenTracingModule for fx.
 	// nolint:gochecknoglobals
 	JaegerOpenTracingModule = fx.Options(
-		fx.Provide(opentracing.NewJaegerServiceTracer),
 		fx.Provide(opentracing.NewJaegerDatabaseTracer),
 		fx.Provide(opentracing.NewJaegerCacheTracer),
 		fx.Provide(opentracing.NewJaegerTransportTracer),
@@ -18,7 +17,6 @@ var (
 	// DataDogOpenTracingModule for fx.
 	// nolint:gochecknoglobals
 	DataDogOpenTracingModule = fx.Options(
-		fx.Provide(opentracing.NewDataDogServiceTracer),
 		fx.Provide(opentracing.NewDataDogDatabaseTracer),
 		fx.Provide(opentracing.NewDataDogCacheTracer),
 		fx.Provide(opentracing.NewDataDogTransportTracer),
