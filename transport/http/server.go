@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -16,6 +17,17 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// ServerParams for HTTP.
+type ServerParams struct {
+	fx.In
+
+	Lifecycle  fx.Lifecycle
+	Shutdowner fx.Shutdowner
+	Config     *Config
+	Logger     *zap.Logger
+	Tracer     sopentracing.TransportTracer
+}
+
 // Server for HTTP.
 type Server struct {
 	Mux    *runtime.ServeMux
@@ -23,56 +35,56 @@ type Server struct {
 }
 
 // NewServer for HTTP.
-func NewServer(lc fx.Lifecycle, s fx.Shutdowner, cfg *Config, logger *zap.Logger) *Server {
+func NewServer(params ServerParams) *Server {
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
 
 	var handler http.Handler = mux
 
-	handler = opentracing.NewHandler(handler)
-	handler = szap.NewHandler(logger, handler)
+	handler = opentracing.NewHandler(params.Tracer, handler)
+	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 
-	addr := fmt.Sprintf(":%s", cfg.Port)
+	addr := fmt.Sprintf(":%s", params.Config.Port)
 	server := &Server{Mux: mux, server: &http.Server{Addr: addr, Handler: handler}}
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			listener, err := net.Listen("tcp", addr)
 			if err != nil {
 				return err
 			}
 
-			go startServer(s, server.server, listener, cfg, logger)
+			go startServer(server.server, listener, params)
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return stopServer(ctx, server.server, cfg, logger)
+			return stopServer(ctx, server.server, params)
 		},
 	})
 
 	return server
 }
 
-func startServer(s fx.Shutdowner, server *http.Server, listener net.Listener, cfg *Config, logger *zap.Logger) {
-	logger.Info("starting http server", zap.String("port", cfg.Port))
+func startServer(server *http.Server, listener net.Listener, params ServerParams) {
+	params.Logger.Info("starting http server", zap.String("port", params.Config.Port))
 
 	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("port", cfg.Port), zap.Error(err)}
+		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
 
-		if err := s.Shutdown(); err != nil {
+		if err := params.Shutdowner.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		logger.Error("could not start http server", fields...)
+		params.Logger.Error("could not start http server", fields...)
 	}
 }
 
-func stopServer(ctx context.Context, server *http.Server, cfg *Config, logger *zap.Logger) error {
-	logger.Info("stopping http server", zap.String("port", cfg.Port))
+func stopServer(ctx context.Context, server *http.Server, params ServerParams) error {
+	params.Logger.Info("stopping http server", zap.String("port", params.Config.Port))
 
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Error("could not stop http server", zap.String("port", cfg.Port), zap.Error(err))
+		params.Logger.Error("could not stop http server", zap.String("port", params.Config.Port), zap.Error(err))
 
 		return err
 	}

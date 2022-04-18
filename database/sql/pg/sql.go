@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/sql/metrics/prometheus"
 	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
 	"go.uber.org/fx"

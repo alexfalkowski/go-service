@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -29,21 +30,21 @@ const (
 )
 
 // NewHandler for opentracing.
-func NewHandler(topic, channel string, h handler.Handler) *Handler {
-	return &Handler{topic: topic, channel: channel, Handler: h}
+func NewHandler(topic, channel string, tracer sopentracing.TransportTracer, h handler.Handler) *Handler {
+	return &Handler{topic: topic, channel: channel, tracer: tracer, Handler: h}
 }
 
 // Handler for opentracing.
 type Handler struct {
 	topic, channel string
+	tracer         sopentracing.TransportTracer
 
 	handler.Handler
 }
 
 func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	start := time.Now().UTC()
-	tracer := opentracing.GlobalTracer()
-	traceCtx, _ := tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
+	traceCtx, _ := h.tracer.Extract(opentracing.TextMap, headersTextMap(message.Headers))
 	operationName := fmt.Sprintf("consume %s:%s", h.topic, h.channel)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
@@ -59,7 +60,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 		ext.SpanKindConsumer,
 	}
 
-	span := tracer.StartSpan(operationName, opts...)
+	span := h.tracer.StartSpan(operationName, opts...)
 	defer span.Finish()
 
 	ctx = opentracing.ContextWithSpan(ctx, span)
@@ -79,18 +80,18 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for opentracing.
-func NewProducer(p producer.Producer) *Producer {
-	return &Producer{Producer: p}
+func NewProducer(tracer sopentracing.TransportTracer, p producer.Producer) *Producer {
+	return &Producer{tracer: tracer, Producer: p}
 }
 
 // Producer for opentracing.
 type Producer struct {
+	tracer sopentracing.TransportTracer
 	producer.Producer
 }
 
 func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
 	start := time.Now().UTC()
-	tracer := opentracing.GlobalTracer()
 	operationName := fmt.Sprintf("publish %s", topic)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: nsqStartTime, Value: start.Format(time.RFC3339)},
@@ -100,10 +101,10 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		ext.SpanKindProducer,
 	}
 
-	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, tracer, operationName, opts...)
+	span, ctx := opentracing.StartSpanFromContextWithTracer(ctx, p.tracer, operationName, opts...)
 	defer span.Finish()
 
-	if err := tracer.Inject(span.Context(), opentracing.TextMap, headersTextMap(message.Headers)); err != nil {
+	if err := p.tracer.Inject(span.Context(), opentracing.TextMap, headersTextMap(message.Headers)); err != nil {
 		return err
 	}
 

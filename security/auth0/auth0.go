@@ -2,29 +2,61 @@ package auth0
 
 import (
 	"github.com/alexfalkowski/go-service/security/jwt"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/dgraph-io/ristretto"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
+// GeneratorParams for Auth0.
+type GeneratorParams struct {
+	fx.In
+
+	Config     *Config
+	HTTPConfig *http.Config
+	Logger     *zap.Logger
+	Cache      *ristretto.Cache
+	Tracer     opentracing.TransportTracer
+}
+
 // NewGenerator for Auth0.
 // nolint:ireturn
-func NewGenerator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) jwt.Generator {
-	client := http.NewClient(httpCfg, logger, http.WithClientBreaker(), http.WithClientRetry())
+func NewGenerator(params GeneratorParams) jwt.Generator {
+	client := http.NewClient(
+		http.WithClientConfig(params.HTTPConfig), http.WithClientLogger(params.Logger),
+		http.WithClientBreaker(), http.WithClientRetry(),
+		http.WithClientTracer(params.Tracer),
+	)
 
-	var generator jwt.Generator = &generator{cfg: cfg, client: client}
-	generator = &cachedGenerator{cfg: cfg, cache: cache, Generator: generator}
+	var generator jwt.Generator = &generator{cfg: params.Config, client: client}
+	generator = &cachedGenerator{cfg: params.Config, cache: params.Cache, Generator: generator}
 
 	return generator
 }
 
+// CertificatorParams for Auth0.
+type CertificatorParams struct {
+	fx.In
+
+	Config     *Config
+	HTTPConfig *http.Config
+	Logger     *zap.Logger
+	Cache      *ristretto.Cache
+	Tracer     opentracing.TransportTracer
+}
+
 // NewCertificator for Auth0.
 // nolint:ireturn
-func NewCertificator(cfg *Config, httpCfg *http.Config, logger *zap.Logger, cache *ristretto.Cache) Certificator {
-	client := http.NewClient(httpCfg, logger, http.WithClientBreaker(), http.WithClientRetry())
+func NewCertificator(params CertificatorParams) Certificator {
+	client := http.NewClient(
+		http.WithClientConfig(params.HTTPConfig), http.WithClientLogger(params.Logger),
+		http.WithClientBreaker(), http.WithClientRetry(),
+		http.WithClientTracer(params.Tracer),
+	)
 
-	var certificator Certificator = &pem{cfg: cfg, client: client}
-	certificator = &cachedPEM{cfg: cfg, cache: cache, Certificator: certificator}
+	var certificator Certificator = &pem{cfg: params.Config, client: client}
+	certificator = &cachedPEM{cfg: params.Config, cache: params.Cache, Certificator: certificator}
 
 	return certificator
 }

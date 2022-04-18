@@ -1,7 +1,7 @@
 package sql
 
 import (
-	"github.com/alexfalkowski/go-service/sql/pg"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"go.uber.org/fx"
 )
 

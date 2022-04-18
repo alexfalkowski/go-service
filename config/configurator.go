@@ -3,8 +3,8 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/sql/pg"
 	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/grpc"

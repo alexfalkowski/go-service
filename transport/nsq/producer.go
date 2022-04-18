@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
@@ -15,13 +16,15 @@ import (
 
 // ProducerParams for NSQ.
 type ProducerParams struct {
-	Config *Config
-	Logger *zap.Logger
+	Lifecycle fx.Lifecycle
+	Config    *Config
+	Logger    *zap.Logger
+	Tracer    sopentracing.TransportTracer
 }
 
 // NewProducer for NSQ.
 // nolint:ireturn
-func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, error) {
+func NewProducer(params *ProducerParams) (producer.Producer, error) {
 	cfg := nsq.NewConfig()
 
 	p, err := nsq.NewProducer(params.Config.Host, cfg)
@@ -31,7 +34,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 
 	p.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			p.Stop()
 
@@ -41,7 +44,7 @@ func NewProducer(lc fx.Lifecycle, params *ProducerParams) (producer.Producer, er
 
 	var pr producer.Producer = &nsqProducer{Producer: p}
 	pr = lzap.NewProducer(params.Logger, pr)
-	pr = opentracing.NewProducer(pr)
+	pr = opentracing.NewProducer(params.Tracer, pr)
 	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr, nil

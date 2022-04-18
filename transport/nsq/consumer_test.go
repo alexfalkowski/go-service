@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	. "github.com/smartystreets/goconvey/convey"
@@ -21,16 +22,21 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
 		cfg := test.NewNSQConfig()
 		Convey("When I register a consumer", func() {
 			params := &nsq.ConsumerParams{
-				Config:  cfg,
-				Logger:  logger,
-				Topic:   "topic",
-				Channel: "channel",
-				Handler: test.NewHandler(nil),
+				Lifecycle: lc,
+				Config:    cfg,
+				Logger:    logger,
+				Topic:     "topic",
+				Channel:   "channel",
+				Tracer:    tracer,
+				Handler:   test.NewHandler(nil),
 			}
-			err := nsq.RegisterConsumer(lc, params)
+			err := nsq.RegisterConsumer(params)
 
 			lc.RequireStart()
 
@@ -50,24 +56,31 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
-		handler := test.NewHandler(nil)
-		consumerParams := &nsq.ConsumerParams{
-			Config:  cfg,
-			Logger:  logger,
-			Topic:   "topic",
-			Channel: "channel",
-			Handler: handler,
-		}
-		producerParams := &nsq.ProducerParams{
-			Config: cfg,
-			Logger: logger,
-		}
-
-		producer, err := nsq.NewProducer(lc, producerParams)
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, consumerParams)
+		cfg := test.NewNSQConfig()
+		handler := test.NewHandler(nil)
+		cparams := &nsq.ConsumerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Topic:     "topic",
+			Channel:   "channel",
+			Tracer:    tracer,
+			Handler:   handler,
+		}
+		pparams := &nsq.ProducerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Tracer:    tracer,
+		}
+
+		producer, err := nsq.NewProducer(pparams)
+		So(err, ShouldBeNil)
+
+		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -96,24 +109,31 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
-		handler := test.NewHandler(errors.New("something went wrong"))
-		consumerParams := &nsq.ConsumerParams{
-			Config:  cfg,
-			Logger:  logger,
-			Topic:   "topic",
-			Channel: "channel",
-			Handler: handler,
-		}
-		producerParams := &nsq.ProducerParams{
-			Config: cfg,
-			Logger: logger,
-		}
-
-		producer, err := nsq.NewProducer(lc, producerParams)
+		tracer, err := opentracing.NewJaegerTransportTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		err = nsq.RegisterConsumer(lc, consumerParams)
+		cfg := test.NewNSQConfig()
+		handler := test.NewHandler(errors.New("something went wrong"))
+		cparams := &nsq.ConsumerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Topic:     "topic",
+			Channel:   "channel",
+			Tracer:    tracer,
+			Handler:   handler,
+		}
+		pparams := &nsq.ProducerParams{
+			Lifecycle: lc,
+			Config:    cfg,
+			Logger:    logger,
+			Tracer:    tracer,
+		}
+
+		producer, err := nsq.NewProducer(pparams)
+		So(err, ShouldBeNil)
+
+		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

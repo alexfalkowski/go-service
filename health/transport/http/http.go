@@ -25,7 +25,7 @@ func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, 
 }
 
 func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withErrors bool) {
-	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, p map[string]string) {
 		var (
 			status   int
 			response string

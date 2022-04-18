@@ -3,6 +3,7 @@ package test
 import (
 	"time"
 
+	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	grpcRetry "github.com/alexfalkowski/go-service/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -39,5 +40,12 @@ func NewNSQConfig() *nsq.Config {
 		LookupHost: "localhost:4161",
 		Host:       "localhost:4150",
 		UserAgent:  "TestNSQ/1.0",
+	}
+}
+
+// NewJaegerConfig for test.
+func NewJaegerConfig() *jaeger.Config {
+	return &jaeger.Config{
+		Host: "localhost:6831",
 	}
 }
