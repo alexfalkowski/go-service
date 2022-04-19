@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -29,10 +30,10 @@ func TestCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewJaegerCacheTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		ctx, span := opentracing.StartCacheSpanFromContext(ctx, tracer, "test", "test")
+		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()

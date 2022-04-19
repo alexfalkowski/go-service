@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -30,14 +29,14 @@ const (
 )
 
 // NewHandler for opentracing.
-func NewHandler(topic, channel string, tracer sopentracing.TransportTracer, h handler.Handler) *Handler {
+func NewHandler(topic, channel string, tracer opentracing.Tracer, h handler.Handler) *Handler {
 	return &Handler{topic: topic, channel: channel, tracer: tracer, Handler: h}
 }
 
 // Handler for opentracing.
 type Handler struct {
 	topic, channel string
-	tracer         sopentracing.TransportTracer
+	tracer         opentracing.Tracer
 
 	handler.Handler
 }
@@ -80,13 +79,13 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for opentracing.
-func NewProducer(tracer sopentracing.TransportTracer, p producer.Producer) *Producer {
+func NewProducer(tracer opentracing.Tracer, p producer.Producer) *Producer {
 	return &Producer{tracer: tracer, Producer: p}
 }
 
 // Producer for opentracing.
 type Producer struct {
-	tracer sopentracing.TransportTracer
+	tracer opentracing.Tracer
 	producer.Producer
 }
 

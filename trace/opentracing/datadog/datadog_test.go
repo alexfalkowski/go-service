@@ -22,7 +22,7 @@ func TestDatadog(t *testing.T) {
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
-			_ = datadog.NewTracer(lc, "test", logger, cfg)
+			_ = datadog.NewTracer(lc, logger, cfg)
 
 			lc.RequireStart()
 

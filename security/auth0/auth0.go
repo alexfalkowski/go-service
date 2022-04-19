@@ -2,9 +2,9 @@ package auth0
 
 import (
 	"github.com/alexfalkowski/go-service/security/jwt"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/dgraph-io/ristretto"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -17,7 +17,7 @@ type GeneratorParams struct {
 	HTTPConfig *http.Config
 	Logger     *zap.Logger
 	Cache      *ristretto.Cache
-	Tracer     opentracing.TransportTracer
+	Tracer     opentracing.Tracer
 }
 
 // NewGenerator for Auth0.
@@ -43,7 +43,7 @@ type CertificatorParams struct {
 	HTTPConfig *http.Config
 	Logger     *zap.Logger
 	Cache      *ristretto.Cache
-	Tracer     opentracing.TransportTracer
+	Tracer     opentracing.Tracer
 }
 
 // NewCertificator for Auth0.

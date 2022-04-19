@@ -22,11 +22,11 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	rcache "github.com/go-redis/cache/v8"
+	"github.com/opentracing/opentracing-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -129,7 +129,7 @@ func TestClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.TransportTracer) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tracer) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 	client := shttp.NewClient(shttp.WithClientConfig(cfg), shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer))

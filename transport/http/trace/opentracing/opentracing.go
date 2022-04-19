@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -27,12 +26,12 @@ const (
 
 // Handler for opentracing.
 type Handler struct {
-	tracer sopentracing.TransportTracer
+	tracer opentracing.Tracer
 	http.Handler
 }
 
 // NewHandler for opentracing.
-func NewHandler(tracer sopentracing.TransportTracer, handler http.Handler) *Handler {
+func NewHandler(tracer opentracing.Tracer, handler http.Handler) *Handler {
 	return &Handler{tracer: tracer, Handler: handler}
 }
 
@@ -78,13 +77,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for opentracing.
-func NewRoundTripper(tracer sopentracing.TransportTracer, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(tracer opentracing.Tracer, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for opentracing.
 type RoundTripper struct {
-	tracer sopentracing.TransportTracer
+	tracer opentracing.Tracer
 	http.RoundTripper
 }
 

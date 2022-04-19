@@ -3,6 +3,7 @@ package datadog
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/os"
 	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
@@ -13,9 +14,9 @@ import (
 
 // NewTracer for datadog.
 // nolint:ireturn
-func NewTracer(lc fx.Lifecycle, name string, logger *zap.Logger, cfg *Config) opentracing.Tracer {
+func NewTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) opentracing.Tracer {
 	opts := []tracer.StartOption{
-		tracer.WithService(name),
+		tracer.WithService(os.ExecutableName()),
 		tracer.WithAgentAddr(cfg.Host),
 		tracer.WithLogger(ozap.NewLogger(logger)),
 	}

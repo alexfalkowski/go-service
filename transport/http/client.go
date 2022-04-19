@@ -3,12 +3,12 @@ package http
 import (
 	"net/http"
 
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +18,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	config       *Config
 	logger       *zap.Logger
-	tracer       sopentracing.TransportTracer
+	tracer       opentracing.Tracer
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -70,7 +70,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 
 // WithClientConfig for gRPC.
 // nolint:ireturn
-func WithClientTracer(tracer sopentracing.TransportTracer) ClientOption {
+func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
@@ -93,7 +93,7 @@ func newRoundTripper(opts *clientOptions) http.RoundTripper {
 	}
 
 	hrt = lzap.NewRoundTripper(opts.logger, hrt)
-	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
+	hrt = hopentracing.NewRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
 		hrt = retry.NewRoundTripper(&opts.config.Retry, hrt)
