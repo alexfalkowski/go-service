@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -22,11 +23,11 @@ func TestSQL(t *testing.T) {
 			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
-			tracer, err := opentracing.NewJaegerDatabaseTracer(lc, logger, test.NewJaegerConfig())
+			tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			ctx, span := opentracing.StartDatabaseSpanFromContext(ctx, tracer, "test", "test")
+			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
 			defer span.Finish()
 
 			db, err := pg.NewDB(lc, cfg)

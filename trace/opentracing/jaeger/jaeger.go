@@ -3,6 +3,7 @@ package jaeger
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/os"
 	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,9 +20,9 @@ const (
 
 // NewTracer for jaeger.
 // nolint:ireturn
-func NewTracer(lc fx.Lifecycle, name string, logger *zap.Logger, cfg *Config) (opentracing.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) (opentracing.Tracer, error) {
 	c := jconfig.Configuration{
-		ServiceName: name,
+		ServiceName: os.ExecutableName(),
 		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,

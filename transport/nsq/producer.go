@@ -3,13 +3,13 @@ package nsq
 import (
 	"context"
 
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
-	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
+	nopentracing "github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -19,7 +19,7 @@ type ProducerParams struct {
 	Lifecycle fx.Lifecycle
 	Config    *Config
 	Logger    *zap.Logger
-	Tracer    sopentracing.TransportTracer
+	Tracer    opentracing.Tracer
 }
 
 // NewProducer for NSQ.
@@ -44,7 +44,7 @@ func NewProducer(params *ProducerParams) (producer.Producer, error) {
 
 	var pr producer.Producer = &nsqProducer{Producer: p}
 	pr = lzap.NewProducer(params.Logger, pr)
-	pr = opentracing.NewProducer(params.Tracer, pr)
+	pr = nopentracing.NewProducer(params.Tracer, pr)
 	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr, nil

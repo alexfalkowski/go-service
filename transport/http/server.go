@@ -7,11 +7,11 @@ import (
 	"net"
 	"net/http"
 
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -25,7 +25,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     sopentracing.TransportTracer
+	Tracer     opentracing.Tracer
 }
 
 // Server for HTTP.
@@ -40,7 +40,7 @@ func NewServer(params ServerParams) *Server {
 
 	var handler http.Handler = mux
 
-	handler = opentracing.NewHandler(params.Tracer, handler)
+	handler = hopentracing.NewHandler(params.Tracer, handler)
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 

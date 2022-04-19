@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
-	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -32,7 +31,7 @@ const (
 )
 
 // UnaryServerInterceptor for opentracing.
-func UnaryServerInterceptor(tracer sopentracing.TransportTracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -79,7 +78,7 @@ func UnaryServerInterceptor(tracer sopentracing.TransportTracer) grpc.UnaryServe
 }
 
 // StreamServerInterceptor for opentracing.
-func StreamServerInterceptor(tracer sopentracing.TransportTracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(tracer opentracing.Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -131,7 +130,7 @@ func StreamServerInterceptor(tracer sopentracing.TransportTracer) grpc.StreamSer
 }
 
 // UnaryClientInterceptor for opentracing.
-func UnaryClientInterceptor(tracer sopentracing.TransportTracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -179,7 +178,7 @@ func UnaryClientInterceptor(tracer sopentracing.TransportTracer) grpc.UnaryClien
 }
 
 // StreamClientInterceptor for opentracing.
-func StreamClientInterceptor(tracer sopentracing.TransportTracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(tracer opentracing.Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {

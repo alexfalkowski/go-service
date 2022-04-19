@@ -19,7 +19,7 @@ func TestJaeger(t *testing.T) {
 
 		Convey("When I register the trace system", func() {
 			lc := fxtest.NewLifecycle(t)
-			_, err := jaeger.NewTracer(lc, "test", logger, test.NewJaegerConfig())
+			_, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
 
 			lc.RequireStart()
 
