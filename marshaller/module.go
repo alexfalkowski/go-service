@@ -4,6 +4,12 @@ import (
 	"go.uber.org/fx"
 )
 
-// ProtoModule for fx.
-// nolint:gochecknoglobals
-var ProtoModule = fx.Options(fx.Provide(NewProto))
+var (
+	// ProtoModule for fx.
+	// nolint:gochecknoglobals
+	ProtoModule = fx.Options(fx.Provide(NewProto))
+
+	// MsgPackModule for fx.
+	// nolint:gochecknoglobals
+	MsgPackModule = fx.Options(fx.Provide(NewMsgPack))
+)

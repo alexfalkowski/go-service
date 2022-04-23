@@ -3,7 +3,9 @@ package nsq_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -24,11 +26,13 @@ func TestProducer(t *testing.T) {
 			tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
 			So(err, ShouldBeNil)
 
-			params := &nsq.ProducerParams{
-				Lifecycle: lc,
-				Config:    cfg,
-				Logger:    logger,
-				Tracer:    tracer,
+			params := nsq.ProducerParams{
+				Lifecycle:  lc,
+				Config:     cfg,
+				Logger:     logger,
+				Tracer:     tracer,
+				Compressor: compressor.NewSnappy(),
+				Marshaller: marshaller.NewMsgPack(),
 			}
 			_, err = nsq.NewProducer(params)
 
