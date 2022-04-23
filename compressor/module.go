@@ -4,8 +4,6 @@ import (
 	"go.uber.org/fx"
 )
 
-var (
-	// SnappyModule for fx.
-	// nolint:gochecknoglobals
-	SnappyModule = fx.Options(fx.Provide(NewSnappy))
-)
+// SnappyModule for fx.
+// nolint:gochecknoglobals
+var SnappyModule = fx.Options(fx.Provide(NewSnappy))
