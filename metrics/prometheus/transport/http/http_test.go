@@ -9,8 +9,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/marshaller"
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
@@ -36,7 +38,8 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		r := redis.NewRing(lc, rcfg, logger)
-		opts := redis.NewOptions(r)
+		oparams := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
+		opts := redis.NewOptions(oparams)
 		_ = redis.NewCache(lc, rcfg, opts)
 
 		ricfg := &ristretto.Config{

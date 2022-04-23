@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache/redis"
+	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
@@ -25,7 +27,8 @@ func TestCache(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		r := redis.NewRing(lc, cfg, logger)
-		opts := redis.NewOptions(r)
+		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
+		opts := redis.NewOptions(params)
 
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()

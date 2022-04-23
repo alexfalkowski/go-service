@@ -5,4 +5,4 @@ transport:
   http:
     port: -1
   grpc:
-    port: 9000
+    port: 9090
