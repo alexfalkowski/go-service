@@ -33,8 +33,8 @@ func TestValidConfig(t *testing.T) {
 				So(cfg.PGConfig().URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
 				So(cfg.DatadogConfig().Host, ShouldEqual, "localhost:8126")
 				So(cfg.JaegerConfig().Host, ShouldEqual, "localhost:6831")
-				So(cfg.GRPCConfig().Port, ShouldEqual, "9000")
-				So(cfg.HTTPConfig().Port, ShouldEqual, "8000")
+				So(cfg.GRPCConfig().Port, ShouldEqual, "9090")
+				So(cfg.HTTPConfig().Port, ShouldEqual, "8080")
 				So(cfg.NSQConfig().Host, ShouldEqual, "localhost:4150")
 				So(cfg.NSQConfig().LookupHost, ShouldEqual, "localhost:4161")
 			})
@@ -136,7 +136,7 @@ func TestStringMapConfig(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			port := cfg.Map("transport").Map("http")["port"]
-			So(port, ShouldEqual, 8000)
+			So(port, ShouldEqual, 8080)
 
 			Convey("Then I should have a valid configuration", func() {
 				bytes, err := config.MarshalToBytes(cfg)

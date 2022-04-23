@@ -6,7 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -27,14 +29,16 @@ func TestConsumer(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		Convey("When I register a consumer", func() {
-			params := &nsq.ConsumerParams{
-				Lifecycle: lc,
-				Config:    cfg,
-				Logger:    logger,
-				Topic:     "topic",
-				Channel:   "channel",
-				Tracer:    tracer,
-				Handler:   test.NewHandler(nil),
+			params := nsq.ConsumerParams{
+				Lifecycle:  lc,
+				Config:     cfg,
+				Logger:     logger,
+				Topic:      "topic",
+				Channel:    "channel",
+				Tracer:     tracer,
+				Handler:    test.NewHandler(nil),
+				Compressor: compressor.NewSnappy(),
+				Marshaller: marshaller.NewMsgPack(),
 			}
 			err := nsq.RegisterConsumer(params)
 
@@ -61,20 +65,24 @@ func TestReceiveMessage(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		cparams := &nsq.ConsumerParams{
-			Lifecycle: lc,
-			Config:    cfg,
-			Logger:    logger,
-			Topic:     "topic",
-			Channel:   "channel",
-			Tracer:    tracer,
-			Handler:   handler,
+		cparams := nsq.ConsumerParams{
+			Lifecycle:  lc,
+			Config:     cfg,
+			Logger:     logger,
+			Topic:      "topic",
+			Channel:    "channel",
+			Tracer:     tracer,
+			Handler:    handler,
+			Compressor: compressor.NewSnappy(),
+			Marshaller: marshaller.NewMsgPack(),
 		}
-		pparams := &nsq.ProducerParams{
-			Lifecycle: lc,
-			Config:    cfg,
-			Logger:    logger,
-			Tracer:    tracer,
+		pparams := nsq.ProducerParams{
+			Lifecycle:  lc,
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Compressor: compressor.NewSnappy(),
+			Marshaller: marshaller.NewMsgPack(),
 		}
 
 		producer, err := nsq.NewProducer(pparams)
@@ -114,20 +122,24 @@ func TestReceiveError(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		cparams := &nsq.ConsumerParams{
-			Lifecycle: lc,
-			Config:    cfg,
-			Logger:    logger,
-			Topic:     "topic",
-			Channel:   "channel",
-			Tracer:    tracer,
-			Handler:   handler,
+		cparams := nsq.ConsumerParams{
+			Lifecycle:  lc,
+			Config:     cfg,
+			Logger:     logger,
+			Topic:      "topic",
+			Channel:    "channel",
+			Tracer:     tracer,
+			Handler:    handler,
+			Compressor: compressor.NewSnappy(),
+			Marshaller: marshaller.NewMsgPack(),
 		}
-		pparams := &nsq.ProducerParams{
-			Lifecycle: lc,
-			Config:    cfg,
-			Logger:    logger,
-			Tracer:    tracer,
+		pparams := nsq.ProducerParams{
+			Lifecycle:  lc,
+			Config:     cfg,
+			Logger:     logger,
+			Tracer:     tracer,
+			Compressor: compressor.NewSnappy(),
+			Marshaller: marshaller.NewMsgPack(),
 		}
 
 		producer, err := nsq.NewProducer(pparams)

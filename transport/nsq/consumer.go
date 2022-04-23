@@ -3,6 +3,8 @@ package nsq
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/compressor"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
@@ -15,17 +17,19 @@ import (
 
 // ConsumerParams for NSQ.
 type ConsumerParams struct {
-	Lifecycle fx.Lifecycle
-	Config    *Config
-	Logger    *zap.Logger
-	Topic     string
-	Channel   string
-	Tracer    opentracing.Tracer
-	Handler   handler.Handler
+	Lifecycle  fx.Lifecycle
+	Config     *Config
+	Logger     *zap.Logger
+	Topic      string
+	Channel    string
+	Tracer     opentracing.Tracer
+	Handler    handler.Handler
+	Compressor compressor.Compressor
+	Marshaller marshaller.Marshaller
 }
 
 // RegisterConsumer for NSQ.
-func RegisterConsumer(params *ConsumerParams) error {
+func RegisterConsumer(params ConsumerParams) error {
 	cfg := nsq.NewConfig()
 
 	c, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
@@ -35,11 +39,11 @@ func RegisterConsumer(params *ConsumerParams) error {
 
 	c.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
-	lh := lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
-	oh := nopentracing.NewHandler(params.Topic, params.Channel, params.Tracer, lh)
-	mh := meta.NewHandler(oh)
+	var h handler.Handler = lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
+	h = nopentracing.NewHandler(params.Topic, params.Channel, params.Tracer, h)
+	h = meta.NewHandler(h)
 
-	c.AddHandler(handler.New(mh))
+	c.AddHandler(handler.New(handler.Params{Handler: h, Compressor: params.Compressor, Marshaller: params.Marshaller}))
 
 	err = c.ConnectToNSQLookupd(params.Config.LookupHost)
 	if err != nil {

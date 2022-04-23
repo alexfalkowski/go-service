@@ -3,6 +3,6 @@ sql:
     url: postgres://test:test@localhost:5432/test?sslmode=disable
 transport:
   http:
-    port: 8000
+    port: 8080
   grpc:
     port: -1

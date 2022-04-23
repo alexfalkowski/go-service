@@ -25,9 +25,9 @@ trace:
       host: localhost:6831
 transport:
   http:
-    port: 8000
+    port: 8080
   grpc:
-    port: 9000
+    port: 9090
   nsq:
     lookup_host: localhost:4161
     host: localhost:4150
