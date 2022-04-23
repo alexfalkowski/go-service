@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.54.0](https://github.com/alexfalkowski/go-service/compare/v1.53.0...v1.54.0) (2022-04-23)
+
+
+### Features
+
+* add marshaller and compressor ([#92](https://github.com/alexfalkowski/go-service/issues/92)) ([12fb3df](https://github.com/alexfalkowski/go-service/commit/12fb3df192588d425b192d240ba834a9d32405f9))
+
 ## [1.53.0](https://github.com/alexfalkowski/go-service/compare/v1.52.1...v1.53.0) (2022-04-19)
 
 
