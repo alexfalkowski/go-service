@@ -69,6 +69,8 @@ func TestUnary(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-ID", "test")
+			req.Header.Set("X-Forwarded-For", "test")
+			req.Header.Set("Geolocation", "test")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
