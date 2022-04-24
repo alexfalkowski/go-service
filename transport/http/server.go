@@ -94,10 +94,12 @@ func stopServer(ctx context.Context, server *http.Server, params ServerParams) e
 
 func customMatcher(key string) (string, bool) {
 	switch key {
-	case "Request-Id", "Authorization":
+	case "Request-Id", "Authorization", "Geolocation":
 		return key, true
 	case "User-Agent":
 		return "ua", true
+	case "X-Forwarded-For":
+		return "forwarded-for", true
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}
