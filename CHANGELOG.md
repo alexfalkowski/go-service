@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.55.0](https://github.com/alexfalkowski/go-service/compare/v1.54.0...v1.55.0) (2022-04-24)
+
+
+### Features
+
+* **http:** add headers ([#93](https://github.com/alexfalkowski/go-service/issues/93)) ([c70f44b](https://github.com/alexfalkowski/go-service/commit/c70f44b970b7ac4dad2fd8a3fec16d7f0da05805))
+
 ## [1.54.0](https://github.com/alexfalkowski/go-service/compare/v1.53.0...v1.54.0) (2022-04-23)
 
 
