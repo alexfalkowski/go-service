@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.56.0](https://github.com/alexfalkowski/go-service/compare/v1.55.0...v1.56.0) (2022-04-25)
+
+
+### Features
+
+* **transport:** add remote address ([#94](https://github.com/alexfalkowski/go-service/issues/94)) ([ddf1ad0](https://github.com/alexfalkowski/go-service/commit/ddf1ad0d4fdb7ac42b62df4d7316eb485851757c))
+
 ## [1.55.0](https://github.com/alexfalkowski/go-service/compare/v1.54.0...v1.55.0) (2022-04-24)
 
 
