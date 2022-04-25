@@ -3,7 +3,9 @@ package meta
 import (
 	"context"
 	"net/http"
+	"strings"
 
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 )
@@ -20,9 +22,7 @@ func NewHandler(handler http.Handler) *Handler {
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-
-	userAgent := extractUserAgent(ctx, req)
-	ctx = meta.WithUserAgent(ctx, userAgent)
+	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req))
 
 	requestID := extractRequestID(ctx, req)
 	if requestID == "" {
@@ -30,6 +30,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx = meta.WithRequestID(ctx, requestID)
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
 
 	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
 }
@@ -64,6 +65,19 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Request-ID", requestID)
 	ctx = meta.WithRequestID(ctx, requestID)
 
+	remoteAddress := meta.RemoteAddress(ctx)
+	if remoteAddress == "" {
+		ip, err := net.OutboundIP()
+		if err != nil {
+			return nil, err
+		}
+
+		remoteAddress = ip.String()
+	}
+
+	req.Header.Set("X-Forwarded-For", remoteAddress)
+	ctx = meta.WithRemoteAddress(ctx, remoteAddress)
+
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
@@ -81,4 +95,16 @@ func extractRequestID(ctx context.Context, req *http.Request) string {
 	}
 
 	return meta.RequestID(ctx)
+}
+
+func extractRemoteAddress(ctx context.Context, req *http.Request) string {
+	if forwardedFor := req.Header.Get("X-Forwarded-For"); forwardedFor != "" {
+		return strings.Split(forwardedFor, ",")[0]
+	}
+
+	if ip, _, err := net.SplitHostPort(req.RemoteAddr); err != nil && ip != "" {
+		return ip
+	}
+
+	return meta.RemoteAddress(ctx)
 }
