@@ -2,7 +2,9 @@ package meta
 
 import (
 	"context"
+	"strings"
 
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
@@ -21,15 +23,15 @@ type Handler struct {
 }
 
 func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
-	ctx = meta.WithUserAgent(ctx, message.Headers["user-agent"])
+	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, message.Headers))
 
-	requestID, ok := message.Headers["request-id"]
-	if !ok {
+	requestID := extractRequestID(ctx, message.Headers)
+	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
 	ctx = meta.WithRequestID(ctx, requestID)
-	message.Headers["request-id"] = requestID
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
 
 	return h.Handler.Handle(ctx, message)
 }
@@ -59,8 +61,45 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		requestID = uuid.New().String()
 	}
 
-	ctx = meta.WithRequestID(ctx, requestID)
 	message.Headers["request-id"] = requestID
+	ctx = meta.WithRequestID(ctx, requestID)
+
+	remoteAddress := meta.RemoteAddress(ctx)
+	if remoteAddress == "" {
+		ip, err := net.OutboundIP()
+		if err != nil {
+			return err
+		}
+
+		remoteAddress = ip.String()
+	}
+
+	message.Headers["forwarded-for"] = remoteAddress
+	ctx = meta.WithRemoteAddress(ctx, remoteAddress)
 
 	return p.Producer.Publish(ctx, topic, message)
+}
+
+func extractUserAgent(ctx context.Context, headers message.Headers) string {
+	if userAgent := headers["user-agent"]; userAgent != "" {
+		return userAgent
+	}
+
+	return meta.UserAgent(ctx)
+}
+
+func extractRequestID(ctx context.Context, headers message.Headers) string {
+	if requestID := headers["request-id"]; requestID != "" {
+		return requestID
+	}
+
+	return meta.RequestID(ctx)
+}
+
+func extractRemoteAddress(ctx context.Context, headers message.Headers) string {
+	if forwardedFor := headers["forwarded-for"]; forwardedFor != "" {
+		return strings.Split(forwardedFor, ",")[0]
+	}
+
+	return meta.RemoteAddress(ctx)
 }
