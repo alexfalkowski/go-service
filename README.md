@@ -80,6 +80,10 @@ The transport layer provides ways to abstract communication for in/out of the se
 
 This section describes how to run and contribute to the project, if you are interested.
 
+### Style
+
+We favour what is defined in the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
+
 ### Setup
 
 To get yourself setup, please run:
