@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -65,7 +66,7 @@ func UnaryServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerIntercept
 			span.SetTag(k, v)
 		}
 
-		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
+		span.SetTag(grpcDuration, stime.ToMilliseconds(time.Since(start)))
 		addTags(ctx, span)
 		span.SetTag(grpcCode, status.Code(err))
 
@@ -117,7 +118,7 @@ func StreamServerInterceptor(tracer opentracing.Tracer) grpc.StreamServerInterce
 			span.SetTag(k, v)
 		}
 
-		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
+		span.SetTag(grpcDuration, stime.ToMilliseconds(time.Since(start)))
 		addTags(ctx, span)
 		span.SetTag(grpcCode, status.Code(err))
 
@@ -166,7 +167,7 @@ func UnaryClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientIntercept
 			span.SetTag(k, v)
 		}
 
-		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
+		span.SetTag(grpcDuration, stime.ToMilliseconds(time.Since(start)))
 		span.SetTag(grpcCode, status.Code(err))
 
 		if err != nil {
@@ -214,7 +215,7 @@ func StreamClientInterceptor(tracer opentracing.Tracer) grpc.StreamClientInterce
 			span.SetTag(k, v)
 		}
 
-		span.SetTag(grpcDuration, time.ToMilliseconds(time.Since(start)))
+		span.SetTag(grpcDuration, stime.ToMilliseconds(time.Since(start)))
 		span.SetTag(grpcCode, status.Code(err))
 
 		if err != nil {

@@ -2,10 +2,11 @@ package meta
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/net"
+	snet "github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 )
@@ -67,12 +68,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	remoteAddress := meta.RemoteAddress(ctx)
 	if remoteAddress == "" {
-		ip, err := net.OutboundIP()
-		if err != nil {
-			return nil, err
-		}
-
-		remoteAddress = ip.String()
+		remoteAddress = snet.OutboundIP(ctx)
 	}
 
 	req.Header.Set("X-Forwarded-For", remoteAddress)

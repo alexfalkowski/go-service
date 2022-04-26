@@ -92,12 +92,7 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 
 		remoteAddress := extractRemoteAddress(ctx, md)
 		if remoteAddress == "" {
-			ip, err := net.OutboundIP()
-			if err != nil {
-				return err
-			}
-
-			remoteAddress = ip.String()
+			remoteAddress = net.OutboundIP(ctx)
 		}
 
 		ctx = meta.WithRemoteAddress(ctx, remoteAddress)
@@ -129,12 +124,7 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 
 		remoteAddress := extractRemoteAddress(ctx, md)
 		if remoteAddress == "" {
-			ip, err := net.OutboundIP()
-			if err != nil {
-				return nil, err
-			}
-
-			remoteAddress = ip.String()
+			remoteAddress = net.OutboundIP(ctx)
 		}
 
 		ctx = meta.WithRemoteAddress(ctx, remoteAddress)

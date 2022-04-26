@@ -3,9 +3,10 @@ package opentracing
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -69,7 +70,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 		span.SetTag(k, v)
 	}
 
-	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(nsqDuration, stime.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
 		setError(span, err)
@@ -113,7 +114,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		span.SetTag(k, v)
 	}
 
-	span.SetTag(nsqDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(nsqDuration, stime.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
 		setError(span, err)

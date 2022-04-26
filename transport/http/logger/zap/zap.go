@@ -3,10 +3,11 @@ package zap
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -49,7 +50,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.Handler.ServeHTTP(resp, req)
 
 	fields := []zapcore.Field{
-		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
+		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, url),
 		zap.String(httpMethod, req.Method),
@@ -90,7 +91,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.Int64(httpDuration, time.ToMilliseconds(time.Since(start))),
+		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, url),
 		zap.String(httpMethod, req.Method),

@@ -66,12 +66,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 
 	remoteAddress := meta.RemoteAddress(ctx)
 	if remoteAddress == "" {
-		ip, err := net.OutboundIP()
-		if err != nil {
-			return err
-		}
-
-		remoteAddress = ip.String()
+		remoteAddress = net.OutboundIP(ctx)
 	}
 
 	message.Headers["forwarded-for"] = remoteAddress
