@@ -3,10 +3,9 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/compressor"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	nopentracing "github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
@@ -24,7 +23,6 @@ type ConsumerParams struct {
 	Channel    string
 	Tracer     opentracing.Tracer
 	Handler    handler.Handler
-	Compressor compressor.Compressor
 	Marshaller marshaller.Marshaller
 }
 
@@ -43,7 +41,7 @@ func RegisterConsumer(params ConsumerParams) error {
 	h = nopentracing.NewHandler(params.Topic, params.Channel, params.Tracer, h)
 	h = meta.NewHandler(h)
 
-	c.AddHandler(handler.New(handler.Params{Handler: h, Compressor: params.Compressor, Marshaller: params.Marshaller}))
+	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))
 
 	err = c.ConnectToNSQLookupd(params.Config.LookupHost)
 	if err != nil {

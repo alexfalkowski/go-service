@@ -3,12 +3,11 @@ package nsq_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/nsq"
+	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -31,15 +30,14 @@ func TestProducer(t *testing.T) {
 				Config:     cfg,
 				Logger:     logger,
 				Tracer:     tracer,
-				Compressor: compressor.NewSnappy(),
 				Marshaller: marshaller.NewMsgPack(),
 			}
-			_, err = nsq.NewProducer(params)
+			p := nsq.NewProducer(params)
 
 			lc.RequireStart()
 
 			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
+				So(p, ShouldNotBeNil)
 			})
 
 			lc.RequireStop()

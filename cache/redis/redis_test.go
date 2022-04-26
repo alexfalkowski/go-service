@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/cache/compressor"
+	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
