@@ -1,8 +1,8 @@
 package redis
 
 import (
-	"github.com/alexfalkowski/go-service/compressor"
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/cache/compressor"
+	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
