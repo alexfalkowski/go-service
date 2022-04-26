@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/transport/http/cors"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -40,6 +41,7 @@ func NewServer(params ServerParams) *Server {
 
 	var handler http.Handler = mux
 
+	handler = cors.New().Handler(handler)
 	handler = hopentracing.NewHandler(params.Tracer, handler)
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)

@@ -19,6 +19,7 @@ require (
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.12.1
+	github.com/rs/cors v1.8.2
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.4.0

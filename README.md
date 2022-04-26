@@ -76,6 +76,11 @@ The transport layer provides ways to abstract communication for in/out of the se
 - [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway).
 - [NSQ](https://github.com/nsqio/go-nsq)
 
+### REST
+
+Below is list of the provided handlers:
+- [CORS](https://github.com/rs/cors)
+
 ## Development
 
 This section describes how to run and contribute to the project, if you are interested.
