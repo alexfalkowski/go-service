@@ -32,12 +32,12 @@ func TestProducer(t *testing.T) {
 				Tracer:     tracer,
 				Marshaller: marshaller.NewMsgPack(),
 			}
-			_, err = nsq.NewProducer(params)
+			p := nsq.NewProducer(params)
 
 			lc.RequireStart()
 
 			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
+				So(p, ShouldNotBeNil)
 			})
 
 			lc.RequireStop()

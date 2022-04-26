@@ -26,13 +26,9 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 // nolint:ireturn
-func NewProducer(params ProducerParams) (producer.Producer, error) {
+func NewProducer(params ProducerParams) producer.Producer {
 	cfg := nsq.NewConfig()
-
-	p, err := nsq.NewProducer(params.Config.Host, cfg)
-	if err != nil {
-		return nil, err
-	}
+	p, _ := nsq.NewProducer(params.Config.Host, cfg)
 
 	p.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
 
@@ -49,7 +45,7 @@ func NewProducer(params ProducerParams) (producer.Producer, error) {
 	pr = nopentracing.NewProducer(params.Tracer, pr)
 	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
-	return pr, nil
+	return pr
 }
 
 type nsqProducer struct {

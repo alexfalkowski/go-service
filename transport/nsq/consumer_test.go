@@ -81,8 +81,7 @@ func TestReceiveMessage(t *testing.T) {
 			Marshaller: marshaller.NewMsgPack(),
 		}
 
-		producer, err := nsq.NewProducer(pparams)
-		So(err, ShouldBeNil)
+		producer := nsq.NewProducer(pparams)
 
 		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
@@ -136,8 +135,7 @@ func TestReceiveError(t *testing.T) {
 			Marshaller: marshaller.NewMsgPack(),
 		}
 
-		producer, err := nsq.NewProducer(pparams)
-		So(err, ShouldBeNil)
+		producer := nsq.NewProducer(pparams)
 
 		err = nsq.RegisterConsumer(cparams)
 		So(err, ShouldBeNil)
