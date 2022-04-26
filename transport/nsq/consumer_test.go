@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/logger/zap"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/nsq"
+	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -37,7 +36,6 @@ func TestConsumer(t *testing.T) {
 				Channel:    "channel",
 				Tracer:     tracer,
 				Handler:    test.NewHandler(nil),
-				Compressor: compressor.NewSnappy(),
 				Marshaller: marshaller.NewMsgPack(),
 			}
 			err := nsq.RegisterConsumer(params)
@@ -73,7 +71,6 @@ func TestReceiveMessage(t *testing.T) {
 			Channel:    "channel",
 			Tracer:     tracer,
 			Handler:    handler,
-			Compressor: compressor.NewSnappy(),
 			Marshaller: marshaller.NewMsgPack(),
 		}
 		pparams := nsq.ProducerParams{
@@ -81,7 +78,6 @@ func TestReceiveMessage(t *testing.T) {
 			Config:     cfg,
 			Logger:     logger,
 			Tracer:     tracer,
-			Compressor: compressor.NewSnappy(),
 			Marshaller: marshaller.NewMsgPack(),
 		}
 
@@ -130,7 +126,6 @@ func TestReceiveError(t *testing.T) {
 			Channel:    "channel",
 			Tracer:     tracer,
 			Handler:    handler,
-			Compressor: compressor.NewSnappy(),
 			Marshaller: marshaller.NewMsgPack(),
 		}
 		pparams := nsq.ProducerParams{
@@ -138,7 +133,6 @@ func TestReceiveError(t *testing.T) {
 			Config:     cfg,
 			Logger:     logger,
 			Tracer:     tracer,
-			Compressor: compressor.NewSnappy(),
 			Marshaller: marshaller.NewMsgPack(),
 		}
 

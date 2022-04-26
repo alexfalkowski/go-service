@@ -3,9 +3,8 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/compressor"
-	"github.com/alexfalkowski/go-service/marshaller"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -22,7 +21,6 @@ type ProducerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     opentracing.Tracer
-	Compressor compressor.Compressor
 	Marshaller marshaller.Marshaller
 }
 
@@ -46,7 +44,7 @@ func NewProducer(params ProducerParams) (producer.Producer, error) {
 		},
 	})
 
-	var pr producer.Producer = &nsqProducer{compressor: params.Compressor, marshaller: params.Marshaller, Producer: p}
+	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 	pr = lzap.NewProducer(params.Logger, pr)
 	pr = nopentracing.NewProducer(params.Tracer, pr)
 	pr = meta.NewProducer(params.Config.UserAgent, pr)
@@ -55,7 +53,6 @@ func NewProducer(params ProducerParams) (producer.Producer, error) {
 }
 
 type nsqProducer struct {
-	compressor compressor.Compressor
 	marshaller marshaller.Marshaller
 	*nsq.Producer
 }
@@ -67,5 +64,5 @@ func (p *nsqProducer) Publish(ctx context.Context, topic string, msg *message.Me
 		return err
 	}
 
-	return p.Producer.Publish(topic, p.compressor.Compress(bytes))
+	return p.Producer.Publish(topic, bytes)
 }

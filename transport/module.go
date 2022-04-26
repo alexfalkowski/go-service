@@ -3,6 +3,7 @@ package transport
 import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"go.uber.org/fx"
 )
 
@@ -14,4 +15,8 @@ var (
 	// HTTPServerModule for fx.
 	// nolint:gochecknoglobals
 	HTTPServerModule = fx.Options(fx.Provide(http.NewServer))
+
+	// NSQMsgPackMarshallerModule for fx.
+	// nolint:gochecknoglobals
+	NSQMsgPackMarshallerModule = fx.Options(fx.Provide(marshaller.NewMsgPack))
 )
