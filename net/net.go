@@ -18,8 +18,3 @@ func OutboundIP() (net.IP, error) {
 
 	return addr.IP, nil
 }
-
-// SplitHostPort splits a network address of the form "host:port".
-func SplitHostPort(hostport string) (string, string, error) {
-	return net.SplitHostPort(hostport)
-}
