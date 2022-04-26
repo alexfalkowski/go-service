@@ -31,10 +31,6 @@ type handler struct {
 }
 
 func (h *handler) HandleMessage(m *nsq.Message) error {
-	if m.Body == nil {
-		return nil
-	}
-
 	var msg message.Message
 	if err := h.Marshaller.Unmarshal(m.Body, &msg); err != nil {
 		return err
