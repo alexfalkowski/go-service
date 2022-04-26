@@ -1,13 +1,7 @@
 .PHONY: vendor tools
 
-help: ## Display this help
-	@ echo "Please use \`make <target>' where <target> is one of:"
-	@ echo
-	@ grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[36m%-10s\033[0m - %s\n", $$1, $$2}'
-	@ echo
-
-
-setup: dep ## Setup everything
+# Setup everything
+setup: dep
 
 download:
 	go mod download
@@ -24,51 +18,71 @@ get:
 get-all:
 	go get -u all
 
-dep: download tidy vendor ## Setup go deps
+# Setup go deps
+dep: download tidy vendor
 
-lint: ## Lint all the go code
+# Lint all the go code
+lint:
 	golangci-lint run --timeout 5m
 
-fix-lint: ## Fix the lint issues in the go code (if possible)
+# Fix the lint issues in the go code (if possible)
+fix-lint:
 	golangci-lint run --timeout 5m --fix
 
-specs: ## Run all the specs
+# Run all the specs
+specs:
 	go test -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
 
 remove-generated-coverage:
 	cat test/profile.cov | grep -v "test" > test/final.cov
 
-html-coverage: remove-generated-coverage ## Get the HTML coverage for go
+# Get the HTML coverage for go
+html-coverage: remove-generated-coverage
 	go tool cover -html test/final.cov
 
-func-coverage: remove-generated-coverage  ## Get the func coverage for go
+# Get the func coverage for go
+func-coverage: remove-generated-coverage
 	go tool cover -func test/final.cov
 
-goveralls: remove-generated-coverage ## Send coveralls data
+# Send coveralls data
+goveralls: remove-generated-coverage
 	goveralls -coverprofile=test/final.cov -service=circle-ci -repotoken=IFpI5rZfnsc2EyZNls8sONCiEB6kFKLiB
 
-generate-proto: ## Generate proto for go
+ # Generate proto for go
+generate-proto:
 	make -C test generate
 
-outdated: ## Check outdated go deps
+# Check outdated go deps
+outdated:
 	go list -u -m -mod=mod -json all | go-mod-outdated -update -direct
 
-update-dep: get tidy vendor ## Update go dep
+# Update go dep
+update-dep: get tidy vendor
 
-update-all-deps: get-all tidy vendor ## Update all go dep
+# Update all go dep
+update-all-deps: get-all tidy vendor
 
-setup-nsq: delete-nsq create-nsq ## Setup NSQ
+# Run security checks.
+sec:
+	gosec -quiet -exclude-dir=test -exclude=G104 ./...
 
-create-nsq: ## Create NSQ
+# Setup NSQ
+setup-nsq: delete-nsq create-nsq
+
+# Create NSQ
+create-nsq:
 	curl -X POST http://127.0.0.1:4151/topic/create\?topic\=topic
 	curl -X POST http://127.0.0.1:4151/channel/create\?topic\=topic\&channel\=channel
 
-delete-nsq: ## Delete NSQ
+# Delete NSQ
+delete-nsq:
 	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
 	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
 
-start: ## Start the environment
+# Start the environment
+start:
 	tools/env start
 
-stop: ## Stop the environment
+# Stop the environment
+stop:
 	tools/env stop

@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"path/filepath"
 )
 
 // nolint:gofumpt
@@ -33,7 +34,7 @@ func ReadFile() ([]byte, error) {
 		return nil, err
 	}
 
-	return os.ReadFile(configFile)
+	return os.ReadFile(filepath.Clean(configFile))
 }
 
 // WriteFileToEnv location.
@@ -43,5 +44,5 @@ func WriteFileToEnv(env string, data []byte) error {
 		return err
 	}
 
-	return os.WriteFile(configFile, data, perm)
+	return os.WriteFile(filepath.Clean(configFile), data, perm)
 }

@@ -20,6 +20,7 @@ jobs:
       - run: make setup-nsq
       - run: make dep
       - run: make lint
+      - run: make sec
       - run: make specs
       - run: make goveralls
       - store_artifacts:
