@@ -2,9 +2,10 @@ package zap
 
 import (
 	"context"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -45,7 +46,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	start := time.Now().UTC()
 	err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{
-		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
+		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, h.topic),
 		zap.String(nsqChannel, h.channel),
@@ -90,7 +91,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	start := time.Now().UTC()
 	err := p.Producer.Publish(ctx, topic, message)
 	fields := []zapcore.Field{
-		zap.Int64(nsqDuration, time.ToMilliseconds(time.Since(start))),
+		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, topic),
 		zap.ByteString(nsqBody, message.Body),

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -73,7 +74,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		span.SetTag(k, v)
 	}
 
-	span.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(httpDuration, stime.ToMilliseconds(time.Since(start)))
 }
 
 // NewRoundTripper for opentracing.
@@ -123,7 +124,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		span.SetTag(k, v)
 	}
 
-	span.SetTag(httpDuration, time.ToMilliseconds(time.Since(start)))
+	span.SetTag(httpDuration, stime.ToMilliseconds(time.Since(start)))
 
 	if err != nil {
 		ext.Error.Set(span, true)

@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -41,7 +42,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		method := path.Base(info.FullMethod)
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
-			zap.Int64(grpcDuration, time.ToMilliseconds(time.Since(start))),
+			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
@@ -91,7 +92,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		method := path.Base(info.FullMethod)
 		err := handler(srv, stream)
 		fields := []zapcore.Field{
-			zap.Int64(grpcDuration, time.ToMilliseconds(time.Since(start))),
+			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
@@ -140,7 +141,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		method := path.Base(fullMethod)
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(grpcDuration, time.ToMilliseconds(time.Since(start))),
+			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
@@ -189,7 +190,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		method := path.Base(fullMethod)
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(grpcDuration, time.ToMilliseconds(time.Since(start))),
+			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
