@@ -68,12 +68,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	remoteAddress := meta.RemoteAddress(ctx)
 	if remoteAddress == "" {
-		ip, err := snet.OutboundIP()
-		if err != nil {
-			return nil, err
-		}
-
-		remoteAddress = ip.String()
+		remoteAddress = snet.OutboundIP(ctx)
 	}
 
 	req.Header.Set("X-Forwarded-For", remoteAddress)
