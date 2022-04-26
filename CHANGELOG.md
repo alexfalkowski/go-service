@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.57.0](https://github.com/alexfalkowski/go-service/compare/v1.56.2...v1.57.0) (2022-04-26)
+
+
+### Features
+
+* **http:** add cors ([#97](https://github.com/alexfalkowski/go-service/issues/97)) ([d4a766b](https://github.com/alexfalkowski/go-service/commit/d4a766b3c855a58f4cbdadd4ac64aa8ab08024a2))
+
 ### [1.56.2](https://github.com/alexfalkowski/go-service/compare/v1.56.1...v1.56.2) (2022-04-26)
 
 ### [1.56.1](https://github.com/alexfalkowski/go-service/compare/v1.56.0...v1.56.1) (2022-04-26)
