@@ -30,48 +30,52 @@ func New(timeout time.Duration) *Command {
 }
 
 // AddServer to the command.
-func (c *Command) AddServer(opts []fx.Option) {
-	server := &cobra.Command{
-		Use:          "server",
-		Short:        "Start the server.",
-		Long:         "Start the server.",
-		SilenceUsage: true,
-		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, c.timeout, opts)
-		},
-	}
-
-	c.root.AddCommand(server)
+func (c *Command) AddServer(opts []fx.Option) *cobra.Command {
+	return c.AddServerCommand("server", "Start the server.", opts)
 }
 
 // AddWorker to the command.
-func (c *Command) AddWorker(opts []fx.Option) {
-	worker := &cobra.Command{
-		Use:          "worker",
-		Short:        "Start the worker.",
-		Long:         "Start the worker.",
+func (c *Command) AddWorker(opts []fx.Option) *cobra.Command {
+	return c.AddServerCommand("worker", "Start the worker.", opts)
+}
+
+// AddClient to the command.
+func (c *Command) AddClient(opts []fx.Option) *cobra.Command {
+	return c.AddClientCommand("client", "Start the client.", opts)
+}
+
+// AddServerCommand to root.
+func (c *Command) AddServerCommand(name, description string, opts []fx.Option) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:          name,
+		Short:        description,
+		Long:         description,
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			return RunServer(args, c.timeout, opts)
 		},
 	}
 
-	c.root.AddCommand(worker)
+	c.root.AddCommand(cmd)
+
+	return cmd
 }
 
-// AddClient to the command.
-func (c *Command) AddClient(opts []fx.Option) {
-	worker := &cobra.Command{
-		Use:          "client",
-		Short:        "Start the client.",
-		Long:         "Start the client.",
+// AddClientCommand to root.
+func (c *Command) AddClientCommand(name, description string, opts []fx.Option) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:          name,
+		Short:        description,
+		Long:         description,
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			return RunClient(args, c.timeout, opts)
 		},
 	}
 
-	c.root.AddCommand(worker)
+	c.root.AddCommand(cmd)
+
+	return cmd
 }
 
 // Run the command with a an arg.
