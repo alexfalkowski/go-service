@@ -136,6 +136,36 @@ func TestClient(t *testing.T) {
 	})
 }
 
+// nolint:dupl
+func TestInvalidClient(t *testing.T) {
+	Convey("Given I have invalid HTTP port set", t, func() {
+		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
+
+		Convey("When I try to run an application", func() {
+			opts := []fx.Option{
+				fx.NopLogger,
+				config.Module, logger.ZapModule, transport.HTTPServerModule, transport.GRPCServerModule,
+				health.GRPCModule, health.HTTPModule, health.ServerModule, trace.DataDogOpenTracingModule,
+				marshaller.ProtoModule, compressor.SnappyModule,
+				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver),
+			}
+
+			c := cmd.New(10 * time.Second)
+			c.AddClient(opts)
+
+			Convey("Then I should see an error", func() {
+				err := c.RunWithArg("client")
+
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
+			})
+
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+		})
+	})
+}
+
 func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tracer) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
