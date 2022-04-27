@@ -91,6 +91,71 @@ func TestUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
+func TestDefaultClientUnary(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		sh := test.NewShutdowner()
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
+		grpcCfg := test.NewGRPCConfig()
+		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer})
+
+		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
+
+		lc.RequireStart()
+
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+		defer cancel()
+
+		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
+		)
+		So(err, ShouldBeNil)
+
+		defer conn.Close()
+
+		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		So(err, ShouldBeNil)
+
+		Convey("When I query for a greet", func() {
+			client := http.DefaultClient
+
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			message := []byte(`{"name":"test"}`)
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			actual := strings.TrimSpace(string(body))
+
+			Convey("Then I should have a valid reply", func() {
+				So(actual, ShouldEqual, `{"message":"Hello test"}`)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 // nolint:dupl,funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
