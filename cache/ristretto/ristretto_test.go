@@ -46,3 +46,22 @@ func TestCache(t *testing.T) {
 		lc.RequireStop()
 	})
 }
+
+func TestInvalidCache(t *testing.T) {
+	Convey("Given I have an invalid config", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		cfg := &ristretto.Config{}
+
+		lc.RequireStart()
+
+		Convey("When I try to create a cache", func() {
+			_, err := ristretto.NewCache(lc, cfg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}

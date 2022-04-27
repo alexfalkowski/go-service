@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/transport/nsq/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
@@ -30,7 +31,7 @@ func NewProducer(params ProducerParams) producer.Producer {
 	cfg := nsq.NewConfig()
 	p, _ := nsq.NewProducer(params.Config.Host, cfg)
 
-	p.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
+	p.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {

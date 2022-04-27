@@ -8,9 +8,10 @@ import (
 )
 
 // OutboundIP of the machine.
-// nolint:forcetypeassert
 func OutboundIP(ctx context.Context) string {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
+	var dialer net.Dialer
+
+	conn, err := dialer.DialContext(ctx, "udp", "8.8.8.8:80")
 	if err != nil {
 		meta.WithAttribute(ctx, "net.error", err.Error())
 
@@ -19,7 +20,5 @@ func OutboundIP(ctx context.Context) string {
 
 	defer conn.Close()
 
-	addr := conn.LocalAddr().(*net.UDPAddr)
-
-	return addr.IP.String()
+	return conn.LocalAddr().(*net.UDPAddr).IP.String() // nolint:forcetypeassert
 }

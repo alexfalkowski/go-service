@@ -51,7 +51,7 @@ func TestMissingConfig(t *testing.T) {
 
 			Convey("Then I should have an error of missing config file", func() {
 				So(err, ShouldBeError)
-				So(err.Error(), ShouldEqual, "missing config file")
+				So(err.Error(), ShouldEqual, "read .: is a directory")
 			})
 		})
 	})

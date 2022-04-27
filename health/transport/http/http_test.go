@@ -34,7 +34,7 @@ func TestHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
-		r := redis.NewRing(lc, rcfg, logger)
+		r := redis.NewRing(lc, rcfg)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
