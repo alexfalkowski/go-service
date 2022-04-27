@@ -17,12 +17,12 @@ func NewHandler(err error) *Handler {
 type Handler struct {
 	m   *message.Message
 	err error
-	mux sync.Mutex
+	mux sync.RWMutex
 }
 
 func (h *Handler) Message() *message.Message {
-	h.mux.Lock()
-	defer h.mux.Unlock()
+	h.mux.RLock()
+	defer h.mux.RUnlock()
 
 	return h.m
 }
