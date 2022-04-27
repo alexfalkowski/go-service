@@ -26,6 +26,7 @@ import (
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq"
+	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -46,10 +47,11 @@ func TestShutdown(t *testing.T) {
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
 			c := cmd.New(10 * time.Second)
+			c.AddVersion("1.0.0")
 			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -75,10 +77,11 @@ func TestRun(t *testing.T) {
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
 			c := cmd.New(10 * time.Second)
+			c.AddVersion("1.0.0")
 			c.AddWorker(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -105,7 +108,7 @@ func TestInvalidHTTP(t *testing.T) {
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -138,7 +141,7 @@ func TestInvalidGRPC(t *testing.T) {
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -186,7 +189,7 @@ func TestInvalidClient(t *testing.T) {
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs),
+				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
 			c := cmd.New(10 * time.Second)
@@ -233,6 +236,10 @@ func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
 
 func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {
 	return c.Delete(context.Background(), "test")
+}
+
+func ver() version.Version {
+	return version.Version("1.0.0")
 }
 
 func shutdown(s fx.Shutdowner) {

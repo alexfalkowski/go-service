@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,6 +25,7 @@ type consumerOptions struct {
 	tracer     opentracing.Tracer
 	marshaller marshaller.Marshaller
 	handler    handler.Handler
+	version    version.Version
 }
 
 type consumerOptionFunc func(*consumerOptions)
@@ -72,6 +74,13 @@ func WithConsumerHandler(handler handler.Handler) ConsumerOption {
 	})
 }
 
+// WithConsumerMarshaller for NSQ.
+func WithConsumerVersion(version version.Version) ConsumerOption {
+	return consumerOptionFunc(func(o *consumerOptions) {
+		o.version = version
+	})
+}
+
 // RegisterConsumer for NSQ.
 func RegisterConsumer(topic string, channel string, opts ...ConsumerOption) error {
 	defaultOptions := &consumerOptions{}
@@ -90,7 +99,7 @@ func RegisterConsumer(topic string, channel string, opts ...ConsumerOption) erro
 
 	var h handler.Handler = lzap.NewHandler(topic, channel, defaultOptions.logger, defaultOptions.handler)
 	h = opentracing.NewHandler(topic, channel, defaultOptions.tracer, h)
-	h = meta.NewHandler(h)
+	h = meta.NewHandler(defaultOptions.version, h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: defaultOptions.marshaller}))
 

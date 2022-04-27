@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/zap"
 )
 
@@ -21,6 +22,7 @@ type clientOptions struct {
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
+	version      version.Version
 }
 
 type clientOptionFunc func(*clientOptions)
@@ -69,6 +71,13 @@ func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	})
 }
 
+// WithClientVersion for HTTP.
+func WithClientVersion(version version.Version) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.version = version
+	})
+}
+
 // NewClient for HTTP.
 func NewClient(opts ...ClientOption) *http.Client {
 	defaultOptions := &clientOptions{}
@@ -96,7 +105,7 @@ func newRoundTripper(opts *clientOptions) http.RoundTripper {
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
-	hrt = meta.NewRoundTripper(opts.config.UserAgent, hrt)
+	hrt = meta.NewRoundTripper(opts.config.UserAgent, opts.version, hrt)
 
 	return hrt
 }

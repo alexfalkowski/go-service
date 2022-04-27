@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/alexfalkowski/go-service/os"
@@ -27,6 +28,25 @@ func New(timeout time.Duration) *Command {
 	}
 
 	return &Command{root: root, timeout: timeout}
+}
+
+// AddVersion to root.
+func (c *Command) AddVersion(version string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:          "version",
+		Short:        "The application version",
+		Long:         "The application version",
+		SilenceUsage: true,
+		RunE: func(command *cobra.Command, args []string) error {
+			_, err := fmt.Println(version) // nolint:forbidigo
+
+			return err
+		},
+	}
+
+	c.root.AddCommand(cmd)
+
+	return cmd
 }
 
 // AddServer to the command.
