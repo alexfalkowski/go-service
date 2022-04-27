@@ -5,7 +5,6 @@ import (
 )
 
 // NewCompressor for test.
-// nolint:ireturn
 func NewCompressor(err error) compressor.Compressor {
 	return &cmp{err: err}
 }

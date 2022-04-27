@@ -5,7 +5,6 @@ import (
 )
 
 // NewMsgPack for NSQ.
-// nolint:ireturn
 func NewMsgPack() Marshaller {
 	return marshaller.NewMsgPack()
 }

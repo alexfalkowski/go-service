@@ -7,7 +7,6 @@ import (
 type msgpackMarshaller struct{}
 
 // NewMsgPack for marshaller.
-// nolint:ireturn
 func NewMsgPack() Marshaller {
 	return &msgpackMarshaller{}
 }

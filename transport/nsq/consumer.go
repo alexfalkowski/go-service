@@ -8,9 +8,8 @@ import (
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	nopentracing "github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -39,7 +38,7 @@ func RegisterConsumer(params ConsumerParams) error {
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
 	var h handler.Handler = lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
-	h = nopentracing.NewHandler(params.Topic, params.Channel, params.Tracer, h)
+	h = opentracing.NewHandler(params.Topic, params.Channel, params.Tracer, h)
 	h = meta.NewHandler(h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))

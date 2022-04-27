@@ -9,10 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/logger/zap"
+	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
+	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -24,9 +23,6 @@ func TestCache(t *testing.T) {
 		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
@@ -34,10 +30,10 @@ func TestCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
+		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()
@@ -66,9 +62,6 @@ func TestInvalidHostCache(t *testing.T) {
 		cfg := &redis.Config{Host: "invalid_host"}
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
@@ -76,10 +69,10 @@ func TestInvalidHostCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
+		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()
@@ -103,9 +96,6 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: test.NewMarshaller(errors.New("failed"))}
 		opts := redis.NewOptions(params)
@@ -113,10 +103,10 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
+		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()
@@ -141,9 +131,6 @@ func TestInvalidCompressorCache(t *testing.T) {
 		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: test.NewCompressor(errors.New("failed")), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
@@ -151,10 +138,10 @@ func TestInvalidCompressorCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test", "test")
+		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()
 
 		lc.RequireStart()

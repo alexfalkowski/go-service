@@ -7,7 +7,6 @@ import (
 type snappyCompressor struct{}
 
 // NewSnappy compressor.
-// nolint:ireturn
 func NewSnappy() Compressor {
 	return &snappyCompressor{}
 }

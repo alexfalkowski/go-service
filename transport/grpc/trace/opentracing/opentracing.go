@@ -31,8 +31,11 @@ const (
 	grpcComponent       = "grpc"
 )
 
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
+
 // UnaryServerInterceptor for opentracing.
-func UnaryServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -79,7 +82,7 @@ func UnaryServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerIntercept
 }
 
 // StreamServerInterceptor for opentracing.
-func StreamServerInterceptor(tracer opentracing.Tracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -131,7 +134,7 @@ func StreamServerInterceptor(tracer opentracing.Tracer) grpc.StreamServerInterce
 }
 
 // UnaryClientInterceptor for opentracing.
-func UnaryClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -179,7 +182,7 @@ func UnaryClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientIntercept
 }
 
 // StreamClientInterceptor for opentracing.
-func StreamClientInterceptor(tracer opentracing.Tracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {

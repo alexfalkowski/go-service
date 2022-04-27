@@ -12,9 +12,9 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -29,7 +29,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -81,7 +81,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer))
@@ -132,7 +132,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -193,7 +193,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
@@ -248,7 +248,7 @@ func TestInvalidStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer))
@@ -302,7 +302,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))

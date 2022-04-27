@@ -8,10 +8,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -24,7 +24,7 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
@@ -59,7 +59,7 @@ func TestInvalidConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
@@ -94,7 +94,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
@@ -129,7 +129,7 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
@@ -182,7 +182,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
@@ -228,7 +228,7 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()

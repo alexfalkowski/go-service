@@ -5,7 +5,6 @@ import (
 )
 
 // NewProto for cache.
-// nolint:ireturn
 func NewProto() Marshaller {
 	return marshaller.NewProto()
 }

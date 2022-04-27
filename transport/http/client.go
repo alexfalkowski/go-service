@@ -7,8 +7,7 @@ import (
 	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/opentracing/opentracing-go"
+	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +28,6 @@ type clientOptionFunc func(*clientOptions)
 func (f clientOptionFunc) apply(o *clientOptions) { f(o) }
 
 // WithClientRoundTripper for HTTP.
-// nolint:ireturn
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.roundTripper = rt
@@ -37,7 +35,6 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientRetry for HTTP.
-// nolint:ireturn
 func WithClientRetry() ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.retry = true
@@ -45,7 +42,6 @@ func WithClientRetry() ClientOption {
 }
 
 // WithClientBreaker for HTTP.
-// nolint:ireturn
 func WithClientBreaker() ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.breaker = true
@@ -53,7 +49,6 @@ func WithClientBreaker() ClientOption {
 }
 
 // WithClientConfig for gRPC.
-// nolint:ireturn
 func WithClientConfig(config *Config) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.config = config
@@ -61,7 +56,6 @@ func WithClientConfig(config *Config) ClientOption {
 }
 
 // WithClientLogger for gRPC.
-// nolint:ireturn
 func WithClientLogger(logger *zap.Logger) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.logger = logger
@@ -69,7 +63,6 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientConfig for gRPC.
-// nolint:ireturn
 func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
@@ -93,7 +86,7 @@ func newRoundTripper(opts *clientOptions) http.RoundTripper {
 	}
 
 	hrt = lzap.NewRoundTripper(opts.logger, hrt)
-	hrt = hopentracing.NewRoundTripper(opts.tracer, hrt)
+	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
 		hrt = retry.NewRoundTripper(&opts.config.Retry, hrt)

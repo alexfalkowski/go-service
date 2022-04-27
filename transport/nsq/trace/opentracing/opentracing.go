@@ -29,15 +29,18 @@ const (
 	nsqComponent = "nsq"
 )
 
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
+
 // NewHandler for opentracing.
-func NewHandler(topic, channel string, tracer opentracing.Tracer, h handler.Handler) *Handler {
+func NewHandler(topic, channel string, tracer Tracer, h handler.Handler) *Handler {
 	return &Handler{topic: topic, channel: channel, tracer: tracer, Handler: h}
 }
 
 // Handler for opentracing.
 type Handler struct {
 	topic, channel string
-	tracer         opentracing.Tracer
+	tracer         Tracer
 
 	handler.Handler
 }
@@ -80,13 +83,13 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for opentracing.
-func NewProducer(tracer opentracing.Tracer, p producer.Producer) *Producer {
+func NewProducer(tracer Tracer, p producer.Producer) *Producer {
 	return &Producer{tracer: tracer, Producer: p}
 }
 
 // Producer for opentracing.
 type Producer struct {
-	tracer opentracing.Tracer
+	tracer Tracer
 	producer.Producer
 }
 

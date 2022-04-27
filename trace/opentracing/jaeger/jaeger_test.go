@@ -3,7 +3,6 @@ package jaeger_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
@@ -14,12 +13,9 @@ func TestJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		Convey("When I register the trace system", func() {
-			lc := fxtest.NewLifecycle(t)
-			_, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Config: test.NewJaegerConfig()}
+			_, err := jaeger.NewTracer(params)
 
 			lc.RequireStart()
 
@@ -36,12 +32,9 @@ func TestInvalidJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
 		Convey("When I register the trace system", func() {
-			lc := fxtest.NewLifecycle(t)
-			_, err := jaeger.NewTracer(lc, logger, &jaeger.Config{Host: "invalid_host"})
+			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Config: &jaeger.Config{Host: "invalid_host"}}
+			_, err := jaeger.NewTracer(params)
 
 			lc.RequireStart()
 
