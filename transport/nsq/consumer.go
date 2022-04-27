@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
+	"github.com/alexfalkowski/go-service/transport/nsq/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
@@ -35,7 +36,7 @@ func RegisterConsumer(params ConsumerParams) error {
 		return err
 	}
 
-	c.SetLogger(lzap.NewLogger(params.Logger), nsq.LogLevelInfo)
+	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
 	var h handler.Handler = lzap.NewHandler(params.Topic, params.Channel, params.Logger, params.Handler)
 	h = nopentracing.NewHandler(params.Topic, params.Channel, params.Tracer, h)

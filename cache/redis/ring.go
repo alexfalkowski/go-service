@@ -3,15 +3,14 @@ package redis
 import (
 	"context"
 
-	lzap "github.com/alexfalkowski/go-service/cache/redis/logger/zap"
+	"github.com/alexfalkowski/go-service/cache/redis/logger"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // NewRing for redis.
-func NewRing(lc fx.Lifecycle, cfg *Config, logger *zap.Logger) *redis.Ring {
-	redis.SetLogger(lzap.NewLogger(logger))
+func NewRing(lc fx.Lifecycle, cfg *Config) *redis.Ring {
+	redis.SetLogger(logger.NewLogger())
 
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{

@@ -37,7 +37,7 @@ func TestHTTP(t *testing.T) {
 		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, rcfg, logger)
+		r := redis.NewRing(lc, rcfg)
 		oparams := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(oparams)
 		_ = redis.NewCache(lc, rcfg, opts)

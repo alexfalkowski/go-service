@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/os"
-	ozap "github.com/alexfalkowski/go-service/trace/opentracing/logger/zap"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/uber/jaeger-client-go"
@@ -34,7 +33,7 @@ func NewTracer(lc fx.Lifecycle, logger *zap.Logger, cfg *Config) (opentracing.Tr
 	}
 
 	options := []jconfig.Option{
-		jconfig.Logger(ozap.NewLogger(logger)),
+		jconfig.Logger(jaeger.NullLogger),
 		jconfig.Metrics(jprometheus.New(jprometheus.WithRegisterer(prometheus.NewRegistry()))),
 	}
 

@@ -27,7 +27,7 @@ func TestCache(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, cfg, logger)
+		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
 
@@ -69,7 +69,7 @@ func TestInvalidHostCache(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, cfg, logger)
+		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
 
@@ -106,7 +106,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, cfg, logger)
+		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: test.NewMarshaller(errors.New("failed"))}
 		opts := redis.NewOptions(params)
 
@@ -144,7 +144,7 @@ func TestInvalidCompressorCache(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		r := redis.NewRing(lc, cfg, logger)
+		r := redis.NewRing(lc, cfg)
 		params := redis.OptionsParams{Ring: r, Compressor: test.NewCompressor(errors.New("failed")), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(params)
 
