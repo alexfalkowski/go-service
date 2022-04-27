@@ -17,9 +17,6 @@ var (
 
 	// ErrInvalidAlgorithm for Auth0.
 	ErrInvalidAlgorithm = errors.New("invalid algorithm")
-
-	// ErrInvalidToken for Auth0.
-	ErrInvalidToken = errors.New("invalid token")
 )
 
 type verifier struct {
@@ -42,10 +39,6 @@ func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error)
 
 	if parsedToken.Header["alg"] != v.cfg.Algorithm {
 		return nil, ErrInvalidAlgorithm
-	}
-
-	if !parsedToken.Valid {
-		return nil, ErrInvalidToken
 	}
 
 	return parsedToken, nil
