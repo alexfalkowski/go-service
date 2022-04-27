@@ -20,6 +20,7 @@ import (
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -39,8 +40,9 @@ func TestUnary(t *testing.T) {
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})
-		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer})
+		version := version.Version("1.0.0")
+		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer, Version: version})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer, Version: version})
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -52,7 +54,7 @@ func TestUnary(t *testing.T) {
 		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
 			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
+			tgrpc.WithClientDialOption(grpc.WithBlock()), tgrpc.WithClientVersion(version),
 		)
 		So(err, ShouldBeNil)
 

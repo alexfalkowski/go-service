@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -28,7 +29,7 @@ func TestProducer(t *testing.T) {
 			producer := nsq.NewProducer(
 				nsq.WithProducerLifecycle(lc), nsq.WithProducerConfig(cfg), nsq.WithProducerLogger(logger),
 				nsq.WithProducerTracer(tracer), nsq.WithProducerMarshaller(marshaller.NewMsgPack()),
-				nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
+				nsq.WithProducerRetry(), nsq.WithProducerBreaker(), nsq.WithProducerVersion(version.Version("1.0.0")),
 			)
 
 			lc.RequireStart()

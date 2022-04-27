@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	shttp "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -18,6 +19,6 @@ func NewHTTPClientWithRoundTripper(logger *zap.Logger, tracer opentracing.Tracer
 	return shttp.NewClient(
 		shttp.WithClientConfig(NewHTTPConfig()), shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(),
-		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
+		shttp.WithClientTracer(tracer), shttp.WithClientRetry(), shttp.WithClientVersion(version.Version("1.0.0")),
 	)
 }

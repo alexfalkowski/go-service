@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -28,6 +29,7 @@ type producerOptions struct {
 	retry      bool
 	breaker    bool
 	marshaller marshaller.Marshaller
+	version    version.Version
 }
 
 type producerOptionFunc func(*producerOptions)
@@ -83,6 +85,13 @@ func WithProducerMarshaller(marshaller marshaller.Marshaller) ProducerOption {
 	})
 }
 
+// WithCProducerVersion for NSQ.
+func WithProducerVersion(version version.Version) ProducerOption {
+	return producerOptionFunc(func(o *producerOptions) {
+		o.version = version
+	})
+}
+
 // NewProducer for NSQ.
 func NewProducer(opts ...ProducerOption) producer.Producer {
 	defaultOptions := &producerOptions{}
@@ -115,7 +124,7 @@ func NewProducer(opts ...ProducerOption) producer.Producer {
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(defaultOptions.config.UserAgent, pr)
+	pr = meta.NewProducer(defaultOptions.config.UserAgent, defaultOptions.version, pr)
 
 	return pr
 }

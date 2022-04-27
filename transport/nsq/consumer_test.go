@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -30,12 +31,14 @@ func TestConsumer(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
+		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
 				"topic", "channel",
 				tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
 				tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+				tnsq.WithConsumerVersion(version),
 			)
 
 			lc.RequireStart()
@@ -91,12 +94,14 @@ func TestInvalidConsumerConfig(t *testing.T) {
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
 		handler := test.NewHandler(nil)
+		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
 				"topic", "channel",
 				tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
 				tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+				tnsq.WithConsumerVersion(version),
 			)
 
 			lc.RequireStart()
@@ -122,18 +127,20 @@ func TestReceiveMessage(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
+		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			"topic", "channel",
 			tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
 			tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+			tnsq.WithConsumerVersion(version),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.WithProducerLifecycle(lc), tnsq.WithProducerConfig(cfg), tnsq.WithProducerLogger(logger),
 			tnsq.WithProducerTracer(tracer), tnsq.WithProducerMarshaller(marshaller.NewMsgPack()),
-			tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+			tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(), tnsq.WithProducerVersion(version),
 		)
 
 		lc.RequireStart()
