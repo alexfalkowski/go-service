@@ -8,6 +8,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.0
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-redis/cache/v8 v8.4.3
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0

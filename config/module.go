@@ -7,7 +7,7 @@ import (
 var (
 	// Module for fx.
 	// nolint:gochecknoglobals
-	Module = fx.Options(ConfiguratorModule, UnmarshalModule, ConfigModule)
+	Module = fx.Options(ConfiguratorModule, UnmarshalModule, ConfigModule, WatchModule)
 
 	// ConfiguratorModule for fx.
 	// nolint:gochecknoglobals
@@ -16,6 +16,10 @@ var (
 	// UnmarshalModule for fx.
 	// nolint:gochecknoglobals
 	UnmarshalModule = fx.Invoke(UnmarshalFromFile)
+
+	// WatchModule for fx.
+	// nolint:gochecknoglobals
+	WatchModule = fx.Invoke(Watch)
 
 	// ConfigModule for fx.
 	// nolint:gochecknoglobals
