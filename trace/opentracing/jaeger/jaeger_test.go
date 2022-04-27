@@ -31,3 +31,25 @@ func TestJaeger(t *testing.T) {
 		})
 	})
 }
+
+func TestInvalidJaeger(t *testing.T) {
+	Convey("Given I have a configuration", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		Convey("When I register the trace system", func() {
+			lc := fxtest.NewLifecycle(t)
+			_, err := jaeger.NewTracer(lc, logger, &jaeger.Config{Host: "invalid_host"})
+
+			lc.RequireStart()
+
+			Convey("Then I should have registered unsuccessfully", func() {
+				So(err, ShouldNotBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
