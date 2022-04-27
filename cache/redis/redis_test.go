@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
+	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
@@ -68,9 +69,7 @@ func TestInvalidHostCache(t *testing.T) {
 
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
-
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
-		So(err, ShouldBeNil)
+		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()

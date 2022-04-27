@@ -11,6 +11,7 @@ import (
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
@@ -55,8 +56,7 @@ func TestInvalidConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
-		So(err, ShouldBeNil)
+		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
