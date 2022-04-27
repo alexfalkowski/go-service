@@ -48,21 +48,21 @@ func WithClientBreaker() ClientOption {
 	})
 }
 
-// WithClientConfig for gRPC.
+// WithClientConfig for HTTP.
 func WithClientConfig(config *Config) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.config = config
 	})
 }
 
-// WithClientLogger for gRPC.
+// WithClientLogger for HTTP.
 func WithClientLogger(logger *zap.Logger) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.logger = logger
 	})
 }
 
-// WithClientConfig for gRPC.
+// WithClientTracer for HTTP.
 func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
