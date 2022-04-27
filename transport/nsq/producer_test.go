@@ -25,19 +25,16 @@ func TestProducer(t *testing.T) {
 			tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 			So(err, ShouldBeNil)
 
-			params := nsq.ProducerParams{
-				Lifecycle:  lc,
-				Config:     cfg,
-				Logger:     logger,
-				Tracer:     tracer,
-				Marshaller: marshaller.NewMsgPack(),
-			}
-			p := nsq.NewProducer(params)
+			producer := nsq.NewProducer(
+				nsq.WithProducerLifecycle(lc), nsq.WithProducerConfig(cfg), nsq.WithProducerLogger(logger),
+				nsq.WithProducerTracer(tracer), nsq.WithProducerMarshaller(marshaller.NewMsgPack()),
+				nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
+			)
 
 			lc.RequireStart()
 
 			Convey("Then I should not have an error", func() {
-				So(p, ShouldNotBeNil)
+				So(producer, ShouldNotBeNil)
 			})
 
 			lc.RequireStop()

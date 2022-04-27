@@ -5,10 +5,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	grpcRetry "github.com/alexfalkowski/go-service/transport/grpc/retry"
+	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/transport/http"
-	httpRetry "github.com/alexfalkowski/go-service/transport/http/retry"
+	hretry "github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq"
+	nretry "github.com/alexfalkowski/go-service/transport/nsq/retry"
 )
 
 // NewGRPCConfig for test.
@@ -16,7 +17,7 @@ func NewGRPCConfig() *grpc.Config {
 	return &grpc.Config{
 		Port:      GenerateRandomPort(),
 		UserAgent: "TestGRPC/1.0",
-		Retry: grpcRetry.Config{
+		Retry: gretry.Config{
 			Timeout:  2 * time.Second, // nolint:gomnd
 			Attempts: 1,
 		},
@@ -27,7 +28,7 @@ func NewGRPCConfig() *grpc.Config {
 func NewHTTPConfig() *http.Config {
 	return &http.Config{
 		UserAgent: "TestHTTP/1.0",
-		Retry: httpRetry.Config{
+		Retry: hretry.Config{
 			Timeout:  2 * time.Second, // nolint:gomnd
 			Attempts: 1,
 		},
@@ -40,6 +41,10 @@ func NewNSQConfig() *nsq.Config {
 		LookupHost: "localhost:4161",
 		Host:       "localhost:4150",
 		UserAgent:  "TestNSQ/1.0",
+		Retry: nretry.Config{
+			Timeout:  2 * time.Second, // nolint:gomnd
+			Attempts: 1,
+		},
 	}
 }
 

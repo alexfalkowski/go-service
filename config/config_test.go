@@ -3,6 +3,7 @@ package config_test
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/config"
 	. "github.com/smartystreets/goconvey/convey"
@@ -34,9 +35,15 @@ func TestValidConfig(t *testing.T) {
 				So(cfg.DatadogConfig().Host, ShouldEqual, "localhost:8126")
 				So(cfg.JaegerConfig().Host, ShouldEqual, "localhost:6831")
 				So(cfg.GRPCConfig().Port, ShouldEqual, "9090")
+				So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
+				So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)
 				So(cfg.HTTPConfig().Port, ShouldEqual, "8080")
+				So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
+				So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)
 				So(cfg.NSQConfig().Host, ShouldEqual, "localhost:4150")
 				So(cfg.NSQConfig().LookupHost, ShouldEqual, "localhost:4161")
+				So(cfg.NSQConfig().Retry.Attempts, ShouldEqual, 3)
+				So(cfg.NSQConfig().Retry.Timeout, ShouldEqual, time.Second)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
