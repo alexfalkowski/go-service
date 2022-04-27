@@ -52,6 +52,41 @@ func TestConsumer(t *testing.T) {
 	})
 }
 
+func TestInvalidConsumer(t *testing.T) {
+	Convey("Given I have all the configuration", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		So(err, ShouldBeNil)
+
+		cfg := test.NewNSQConfig()
+		Convey("When I register a consumer", func() {
+			params := tnsq.ConsumerParams{
+				Lifecycle:  lc,
+				Config:     cfg,
+				Logger:     logger,
+				Topic:      "schäfer",
+				Channel:    "schäfer",
+				Tracer:     tracer,
+				Handler:    test.NewHandler(nil),
+				Marshaller: marshaller.NewMsgPack(),
+			}
+			err := tnsq.RegisterConsumer(params)
+
+			lc.RequireStart()
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldNotBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func TestReceiveMessage(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
