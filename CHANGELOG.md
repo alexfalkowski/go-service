@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.58.0](https://github.com/alexfalkowski/go-service/compare/v1.57.3...v1.58.0) (2022-04-27)
+
+
+### Features
+
+* **opentracing:** each package has its own tracer ([#101](https://github.com/alexfalkowski/go-service/issues/101)) ([3224fd2](https://github.com/alexfalkowski/go-service/commit/3224fd28a499a2c7f5be8609cd13e8675fd34680))
+
 ### [1.57.3](https://github.com/alexfalkowski/go-service/compare/v1.57.2...v1.57.3) (2022-04-27)
 
 ### [1.57.2](https://github.com/alexfalkowski/go-service/compare/v1.57.1...v1.57.2) (2022-04-26)
