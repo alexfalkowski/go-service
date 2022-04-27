@@ -15,7 +15,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	github.com/jackc/pgx/v4 v4.16.0
-	github.com/klauspost/compress v1.15.1
+	github.com/klauspost/compress v1.15.2
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.12.1
