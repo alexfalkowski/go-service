@@ -7,7 +7,6 @@ import (
 type protoMarshaller struct{}
 
 // NewProto for marshaller.
-// nolint:ireturn
 func NewProto() Marshaller {
 	return &protoMarshaller{}
 }

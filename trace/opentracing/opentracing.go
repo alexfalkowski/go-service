@@ -10,7 +10,6 @@ import (
 )
 
 // StartSpanFromContext for opentracing.
-// nolint:ireturn
 func StartSpanFromContext(ctx context.Context, tracer otr.Tracer, kind, operation, method string, opts ...otr.StartSpanOption) (context.Context, otr.Span) {
 	fullMethod := fmt.Sprintf("%s %s", strings.ToLower(operation), strings.ToLower(method))
 	clientSpan, ctx := otr.StartSpanFromContextWithTracer(ctx, tracer, fullMethod, opts...)

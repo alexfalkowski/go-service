@@ -25,14 +25,17 @@ const (
 	httpComponent       = "http"
 )
 
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
+
 // Handler for opentracing.
 type Handler struct {
-	tracer opentracing.Tracer
+	tracer Tracer
 	http.Handler
 }
 
 // NewHandler for opentracing.
-func NewHandler(tracer opentracing.Tracer, handler http.Handler) *Handler {
+func NewHandler(tracer Tracer, handler http.Handler) *Handler {
 	return &Handler{tracer: tracer, Handler: handler}
 }
 
@@ -78,13 +81,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for opentracing.
-func NewRoundTripper(tracer opentracing.Tracer, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(tracer Tracer, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for opentracing.
 type RoundTripper struct {
-	tracer opentracing.Tracer
+	tracer Tracer
 	http.RoundTripper
 }
 

@@ -7,11 +7,10 @@ import (
 
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	gopentracing "github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -88,14 +87,13 @@ func stopServer(server *grpc.Server, params ServerParams) {
 	server.GracefulStop()
 }
 
-// nolint:ireturn
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
 		prometheus.UnaryServerInterceptor,
-		gopentracing.UnaryServerInterceptor(params.Tracer),
+		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -103,14 +101,13 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-// nolint:ireturn
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
 		prometheus.StreamServerInterceptor,
-		gopentracing.StreamServerInterceptor(params.Tracer),
+		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

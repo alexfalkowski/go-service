@@ -14,7 +14,6 @@ import (
 )
 
 // NewConfigurator for config.
-// nolint:ireturn
 func NewConfigurator() Configurator {
 	return &Config{}
 }

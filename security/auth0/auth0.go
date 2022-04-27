@@ -21,7 +21,6 @@ type GeneratorParams struct {
 }
 
 // NewGenerator for Auth0.
-// nolint:ireturn
 func NewGenerator(params GeneratorParams) jwt.Generator {
 	client := http.NewClient(
 		http.WithClientConfig(params.HTTPConfig), http.WithClientLogger(params.Logger),
@@ -47,7 +46,6 @@ type CertificatorParams struct {
 }
 
 // NewCertificator for Auth0.
-// nolint:ireturn
 func NewCertificator(params CertificatorParams) Certificator {
 	client := http.NewClient(
 		http.WithClientConfig(params.HTTPConfig), http.WithClientLogger(params.Logger),
@@ -62,7 +60,6 @@ func NewCertificator(params CertificatorParams) Certificator {
 }
 
 // NewVerifier for Auth0.
-// nolint:ireturn
 func NewVerifier(cfg *Config, cert Certificator) jwt.Verifier {
 	var verifier jwt.Verifier = &verifier{cfg: cfg, cert: cert}
 

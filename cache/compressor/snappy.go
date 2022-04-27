@@ -5,7 +5,6 @@ import (
 )
 
 // NewSnappy for cache.
-// nolint:ireturn
 func NewSnappy() Compressor {
 	return compressor.NewSnappy()
 }

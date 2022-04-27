@@ -5,7 +5,6 @@ import (
 )
 
 // NewMarshaller for test.
-// nolint:ireturn
 func NewMarshaller(err error) marshaller.Marshaller {
 	return &mar{err: err}
 }

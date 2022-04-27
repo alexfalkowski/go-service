@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/jaeger"
 	"github.com/form3tech-oss/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -45,7 +45,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -107,7 +107,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -170,7 +170,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -232,7 +232,7 @@ func TestCorruptToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -280,7 +280,7 @@ func TestMissingAudienceToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -338,7 +338,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -397,7 +397,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)
@@ -457,7 +457,7 @@ func TestMissingKidToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, logger, test.NewJaegerConfig())
+		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		cache, err := ristretto.NewCache(lc, cfg)

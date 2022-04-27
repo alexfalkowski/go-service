@@ -9,9 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
-	nopentracing "github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -26,7 +25,6 @@ type ProducerParams struct {
 }
 
 // NewProducer for NSQ.
-// nolint:ireturn
 func NewProducer(params ProducerParams) producer.Producer {
 	cfg := nsq.NewConfig()
 	p, _ := nsq.NewProducer(params.Config.Host, cfg)
@@ -43,7 +41,7 @@ func NewProducer(params ProducerParams) producer.Producer {
 
 	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 	pr = lzap.NewProducer(params.Logger, pr)
-	pr = nopentracing.NewProducer(params.Tracer, pr)
+	pr = opentracing.NewProducer(params.Tracer, pr)
 	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr

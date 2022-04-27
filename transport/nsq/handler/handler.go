@@ -20,7 +20,6 @@ type Params struct {
 }
 
 // New handler for NSQ.
-// nolint:ireturn
 func New(params Params) nsq.Handler {
 	return &handler{Marshaller: params.Marshaller, Handler: params.Handler}
 }
