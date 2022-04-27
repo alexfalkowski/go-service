@@ -11,6 +11,7 @@ import (
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
@@ -28,18 +29,14 @@ func TestConsumer(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
+		handler := test.NewHandler(nil)
+
 		Convey("When I register a consumer", func() {
-			params := tnsq.ConsumerParams{
-				Lifecycle:  lc,
-				Config:     cfg,
-				Logger:     logger,
-				Topic:      "topic",
-				Channel:    "channel",
-				Tracer:     tracer,
-				Handler:    test.NewHandler(nil),
-				Marshaller: marshaller.NewMsgPack(),
-			}
-			err := tnsq.RegisterConsumer(params)
+			err = tnsq.RegisterConsumer(
+				"topic", "channel",
+				tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+				tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+			)
 
 			lc.RequireStart()
 
@@ -59,22 +56,17 @@ func TestInvalidConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
-		So(err, ShouldBeNil)
+		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
 
 		cfg := test.NewNSQConfig()
+		handler := test.NewHandler(nil)
+
 		Convey("When I register a consumer", func() {
-			params := tnsq.ConsumerParams{
-				Lifecycle:  lc,
-				Config:     cfg,
-				Logger:     logger,
-				Topic:      "schäfer",
-				Channel:    "schäfer",
-				Tracer:     tracer,
-				Handler:    test.NewHandler(nil),
-				Marshaller: marshaller.NewMsgPack(),
-			}
-			err := tnsq.RegisterConsumer(params)
+			err = tnsq.RegisterConsumer(
+				"schäfer", "schäfer",
+				tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+				tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+			)
 
 			lc.RequireStart()
 
@@ -98,18 +90,14 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
+		handler := test.NewHandler(nil)
+
 		Convey("When I register a consumer", func() {
-			params := tnsq.ConsumerParams{
-				Lifecycle:  lc,
-				Config:     cfg,
-				Logger:     logger,
-				Topic:      "topic",
-				Channel:    "channel",
-				Tracer:     tracer,
-				Handler:    test.NewHandler(nil),
-				Marshaller: marshaller.NewMsgPack(),
-			}
-			err := tnsq.RegisterConsumer(params)
+			err = tnsq.RegisterConsumer(
+				"topic", "channel",
+				tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+				tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+			)
 
 			lc.RequireStart()
 
@@ -134,28 +122,19 @@ func TestReceiveMessage(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		cparams := tnsq.ConsumerParams{
-			Lifecycle:  lc,
-			Config:     cfg,
-			Logger:     logger,
-			Topic:      "topic",
-			Channel:    "channel",
-			Tracer:     tracer,
-			Handler:    handler,
-			Marshaller: marshaller.NewMsgPack(),
-		}
-		pparams := tnsq.ProducerParams{
-			Lifecycle:  lc,
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Marshaller: marshaller.NewMsgPack(),
-		}
 
-		producer := tnsq.NewProducer(pparams)
-
-		err = tnsq.RegisterConsumer(cparams)
+		err = tnsq.RegisterConsumer(
+			"topic", "channel",
+			tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+			tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+		)
 		So(err, ShouldBeNil)
+
+		producer := tnsq.NewProducer(
+			tnsq.WithProducerLifecycle(lc), tnsq.WithProducerConfig(cfg), tnsq.WithProducerLogger(logger),
+			tnsq.WithProducerTracer(tracer), tnsq.WithProducerMarshaller(marshaller.NewMsgPack()),
+			tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+		)
 
 		lc.RequireStart()
 
@@ -187,18 +166,11 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		cparams := tnsq.ConsumerParams{
-			Lifecycle:  lc,
-			Config:     cfg,
-			Logger:     logger,
-			Topic:      "topic",
-			Channel:    "channel",
-			Tracer:     tracer,
-			Handler:    handler,
-			Marshaller: marshaller.NewMsgPack(),
-		}
-
-		err = tnsq.RegisterConsumer(cparams)
+		err = tnsq.RegisterConsumer(
+			"topic", "channel",
+			tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+			tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+		)
 		So(err, ShouldBeNil)
 
 		producer, _ := nsq.NewProducer(cfg.Host, nsq.NewConfig())
@@ -233,28 +205,18 @@ func TestReceiveError(t *testing.T) {
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		cparams := tnsq.ConsumerParams{
-			Lifecycle:  lc,
-			Config:     cfg,
-			Logger:     logger,
-			Topic:      "topic",
-			Channel:    "channel",
-			Tracer:     tracer,
-			Handler:    handler,
-			Marshaller: marshaller.NewMsgPack(),
-		}
-		pparams := tnsq.ProducerParams{
-			Lifecycle:  lc,
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Marshaller: marshaller.NewMsgPack(),
-		}
-
-		producer := tnsq.NewProducer(pparams)
-
-		err = tnsq.RegisterConsumer(cparams)
+		err = tnsq.RegisterConsumer(
+			"topic", "channel",
+			tnsq.WithConsumerLifecycle(lc), tnsq.WithConsumerConfig(cfg), tnsq.WithConsumerLogger(logger),
+			tnsq.WithConsumerTracer(tracer), tnsq.WithConsumerHandler(handler), tnsq.WithConsumerMarshaller(marshaller.NewMsgPack()),
+		)
 		So(err, ShouldBeNil)
+
+		producer := tnsq.NewProducer(
+			tnsq.WithProducerLifecycle(lc), tnsq.WithProducerConfig(cfg), tnsq.WithProducerLogger(logger),
+			tnsq.WithProducerTracer(tracer), tnsq.WithProducerMarshaller(marshaller.NewMsgPack()),
+			tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+		)
 
 		lc.RequireStart()
 

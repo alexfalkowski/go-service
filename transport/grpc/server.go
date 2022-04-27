@@ -41,9 +41,8 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 }
 
 // NewServer for gRPC.
-func NewServer(params ServerParams, opts ...grpc.ServerOption) *grpc.Server {
-	opts = append(opts, unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...))
-
+func NewServer(params ServerParams) *grpc.Server {
+	opts := []grpc.ServerOption{unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...)}
 	server := grpc.NewServer(opts...)
 
 	params.Lifecycle.Append(fx.Hook{

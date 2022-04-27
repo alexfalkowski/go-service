@@ -18,6 +18,7 @@ import (
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -91,7 +92,6 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestDefaultClientUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -100,9 +100,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
-		So(err, ShouldBeNil)
-
+		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})

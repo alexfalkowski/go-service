@@ -7,6 +7,6 @@ import (
 // Config for gRPC.
 type Config struct {
 	Port      string       `yaml:"port"`
-	UserAgent string       `yaml:"user_agent"`
 	Retry     retry.Config `yaml:"retry"`
+	UserAgent string       `yaml:"user_agent"`
 }

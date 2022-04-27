@@ -12,6 +12,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing/jaeger"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -74,9 +75,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
-		So(err, ShouldBeNil)
-
+		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{

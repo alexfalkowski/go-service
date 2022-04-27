@@ -26,8 +26,17 @@ trace:
 transport:
   http:
     port: 8080
+    retry:
+      timeout: 1s
+      attempts: 3
   grpc:
     port: 9090
+    retry:
+      timeout: 1s
+      attempts: 3
   nsq:
     lookup_host: localhost:4161
     host: localhost:4150
+    retry:
+      timeout: 1s
+      attempts: 3

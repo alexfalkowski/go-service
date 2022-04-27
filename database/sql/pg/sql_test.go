@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -36,6 +37,35 @@ func TestSQL(t *testing.T) {
 
 				err = db.PingContext(ctx)
 				So(err, ShouldBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestInvalidSQLPort(t *testing.T) {
+	Convey("Given I have a configuration", t, func() {
+		cfg := &pg.Config{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}
+
+		Convey("When I try to get a database", func() {
+			lc := fxtest.NewLifecycle(t)
+			tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
+
+			ctx := context.Background()
+			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
+			defer span.Finish()
+
+			db, err := pg.NewDB(lc, cfg)
+			So(err, ShouldBeNil)
+
+			lc.RequireStart()
+
+			Convey("Then I should have an invalid database", func() {
+				So(db, ShouldNotBeNil)
+
+				err = db.PingContext(ctx)
+				So(err, ShouldNotBeNil)
 			})
 
 			lc.RequireStop()
