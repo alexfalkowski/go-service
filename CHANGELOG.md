@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.59.0](https://github.com/alexfalkowski/go-service/compare/v1.58.0...v1.59.0) (2022-04-27)
+
+
+### Features
+
+* **nsq:** add resilience ([#102](https://github.com/alexfalkowski/go-service/issues/102)) ([05a0411](https://github.com/alexfalkowski/go-service/commit/05a0411f41b862ae8622b4a2e9c4f3d2841a2130))
+
 ## [1.58.0](https://github.com/alexfalkowski/go-service/compare/v1.57.3...v1.58.0) (2022-04-27)
 
 
