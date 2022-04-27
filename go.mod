@@ -28,7 +28,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.17.1
 	go.uber.org/zap v1.21.0
-	google.golang.org/genproto v0.0.0-20220422154200-b37d22cd5731
+	google.golang.org/genproto v0.0.0-20220426171045-31bebdecfb46
 	google.golang.org/grpc v1.46.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.38.0
