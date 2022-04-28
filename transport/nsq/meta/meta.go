@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net"
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
@@ -72,13 +71,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	message.Headers["request-id"] = requestID
 	ctx = tmeta.WithRequestID(ctx, requestID)
 
-	remoteAddress := tmeta.RemoteAddress(ctx)
-	if remoteAddress == "" {
-		remoteAddress = net.OutboundIP(ctx)
-	}
-
-	message.Headers["forwarded-for"] = remoteAddress
-	ctx = tmeta.WithRemoteAddress(ctx, remoteAddress)
+	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
 
 	return p.Producer.Publish(ctx, topic, message)
 }

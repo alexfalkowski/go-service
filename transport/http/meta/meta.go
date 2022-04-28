@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
-	snet "github.com/alexfalkowski/go-service/net"
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/google/uuid"
@@ -72,13 +71,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Request-ID", requestID)
 	ctx = tmeta.WithRequestID(ctx, requestID)
 
-	remoteAddress := tmeta.RemoteAddress(ctx)
-	if remoteAddress == "" {
-		remoteAddress = snet.OutboundIP(ctx)
-	}
-
-	req.Header.Set("X-Forwarded-For", remoteAddress)
-	ctx = tmeta.WithRemoteAddress(ctx, remoteAddress)
+	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
