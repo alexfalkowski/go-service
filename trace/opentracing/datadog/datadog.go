@@ -2,7 +2,9 @@ package datadog
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/trace/opentracing/logger"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
@@ -20,7 +22,7 @@ type TracerParams struct {
 // NewTracer for datadog.
 func NewTracer(params TracerParams) opentracing.Tracer {
 	opts := []tracer.StartOption{
-		tracer.WithService(params.Name),
+		tracer.WithService(fmt.Sprintf("%s:%s", os.ExecutableName(), params.Name)),
 		tracer.WithAgentAddr(params.Config.Host),
 		tracer.WithLogger(logger.NewLogger()),
 	}

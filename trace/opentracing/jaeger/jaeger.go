@@ -2,7 +2,9 @@ package jaeger
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/alexfalkowski/go-service/os"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/uber/jaeger-client-go"
@@ -25,7 +27,7 @@ type TracerParams struct {
 // NewTracer for jaeger.
 func NewTracer(params TracerParams) (opentracing.Tracer, error) {
 	c := jconfig.Configuration{
-		ServiceName: params.Name,
+		ServiceName: fmt.Sprintf("%s:%s", os.ExecutableName(), params.Name),
 		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
