@@ -17,8 +17,9 @@ func NewHTTPClient(logger *zap.Logger, tracer opentracing.Tracer) *http.Client {
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(logger *zap.Logger, tracer opentracing.Tracer, roundTripper http.RoundTripper) *http.Client {
 	return shttp.NewClient(
-		shttp.WithClientConfig(NewHTTPConfig()), shttp.WithClientLogger(logger),
+		shttp.ClientParams{Version: version.Version("1.0.0"), Config: NewHTTPConfig()},
+		shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(),
-		shttp.WithClientTracer(tracer), shttp.WithClientRetry(), shttp.WithClientVersion(version.Version("1.0.0")),
+		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
 	)
 }
