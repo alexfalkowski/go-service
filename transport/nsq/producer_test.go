@@ -27,9 +27,8 @@ func TestProducer(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			producer := nsq.NewProducer(
-				nsq.WithProducerLifecycle(lc), nsq.WithProducerConfig(cfg), nsq.WithProducerLogger(logger),
-				nsq.WithProducerTracer(tracer), nsq.WithProducerMarshaller(marshaller.NewMsgPack()),
-				nsq.WithProducerRetry(), nsq.WithProducerBreaker(), nsq.WithProducerVersion(version.Version("1.0.0")),
+				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version.Version("1.0.0")},
+				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
 			)
 
 			lc.RequireStart()
