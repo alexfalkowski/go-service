@@ -22,14 +22,10 @@ import (
 type ProducerOption interface{ apply(*producerOptions) }
 
 type producerOptions struct {
-	lifecycle  fx.Lifecycle
-	config     *Config
-	logger     *zap.Logger
-	tracer     opentracing.Tracer
-	retry      bool
-	breaker    bool
-	marshaller marshaller.Marshaller
-	version    version.Version
+	logger  *zap.Logger
+	tracer  opentracing.Tracer
+	retry   bool
+	breaker bool
 }
 
 type producerOptionFunc func(*producerOptions)
@@ -50,13 +46,6 @@ func WithProducerBreaker() ProducerOption {
 	})
 }
 
-// WithProducerConfig for NSQ.
-func WithProducerConfig(config *Config) ProducerOption {
-	return producerOptionFunc(func(o *producerOptions) {
-		o.config = config
-	})
-}
-
 // WithProducerLogger for NSQ.
 func WithProducerLogger(logger *zap.Logger) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
@@ -71,40 +60,28 @@ func WithProducerTracer(tracer opentracing.Tracer) ProducerOption {
 	})
 }
 
-// WithProducerLifecycle for NSQ.
-func WithProducerLifecycle(lifecycle fx.Lifecycle) ProducerOption {
-	return producerOptionFunc(func(o *producerOptions) {
-		o.lifecycle = lifecycle
-	})
-}
+// ProducerParams for NSQ.
+type ProducerParams struct {
+	Lifecycle fx.Lifecycle
 
-// WithProducerMarshaller for NSQ.
-func WithProducerMarshaller(marshaller marshaller.Marshaller) ProducerOption {
-	return producerOptionFunc(func(o *producerOptions) {
-		o.marshaller = marshaller
-	})
-}
-
-// WithCProducerVersion for NSQ.
-func WithProducerVersion(version version.Version) ProducerOption {
-	return producerOptionFunc(func(o *producerOptions) {
-		o.version = version
-	})
+	Config     *Config
+	Marshaller marshaller.Marshaller
+	Version    version.Version
 }
 
 // NewProducer for NSQ.
-func NewProducer(opts ...ProducerOption) producer.Producer {
+func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
 	defaultOptions := &producerOptions{}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
 	cfg := nsq.NewConfig()
-	p, _ := nsq.NewProducer(defaultOptions.config.Host, cfg)
+	p, _ := nsq.NewProducer(params.Config.Host, cfg)
 
 	p.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	defaultOptions.lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			p.Stop()
 
@@ -112,19 +89,25 @@ func NewProducer(opts ...ProducerOption) producer.Producer {
 		},
 	})
 
-	var pr producer.Producer = &nsqProducer{marshaller: defaultOptions.marshaller, Producer: p}
-	pr = lzap.NewProducer(defaultOptions.logger, pr)
-	pr = opentracing.NewProducer(defaultOptions.tracer, pr)
+	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
+
+	if defaultOptions.logger != nil {
+		pr = lzap.NewProducer(defaultOptions.logger, pr)
+	}
+
+	if defaultOptions.tracer != nil {
+		pr = opentracing.NewProducer(defaultOptions.tracer, pr)
+	}
 
 	if defaultOptions.retry {
-		pr = retry.NewProducer(&defaultOptions.config.Retry, pr)
+		pr = retry.NewProducer(&params.Config.Retry, pr)
 	}
 
 	if defaultOptions.breaker {
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(defaultOptions.config.UserAgent, defaultOptions.version, pr)
+	pr = meta.NewProducer(params.Config.UserAgent, params.Version, pr)
 
 	return pr
 }

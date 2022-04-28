@@ -25,7 +25,6 @@ const (
 type ClientOption interface{ apply(*clientOptions) }
 
 type clientOptions struct {
-	config   *Config
 	logger   *zap.Logger
 	tracer   opentracing.Tracer
 	retry    bool
@@ -34,7 +33,6 @@ type clientOptions struct {
 	unary    []grpc.UnaryClientInterceptor
 	stream   []grpc.StreamClientInterceptor
 	security grpc.DialOption
-	version  version.Version
 }
 
 type clientOptionFunc func(*clientOptions)
@@ -91,50 +89,44 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientConfig for gRPC.
-func WithClientConfig(config *Config) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
-		o.config = config
-	})
-}
-
-// WithClientConfig for gRPC.
 func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
 }
 
-// WithClientVersion for gRPC.
-func WithClientVersion(version version.Version) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
-		o.version = version
-	})
+// ClientParams for gRPC.
+type ClientParams struct {
+	Context context.Context
+	Host    string
+	Version version.Version
+	Config  *Config
 }
 
 // NewClient to host for gRPC.
-func NewClient(context context.Context, host string, opts ...ClientOption) (*grpc.ClientConn, error) {
+func NewClient(params ClientParams, opts ...ClientOption) (*grpc.ClientConn, error) {
 	defaultOptions := &clientOptions{security: grpc.WithTransportCredentials(insecure.NewCredentials())}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
 	grpcOpts := []grpc.DialOption{}
-	grpcOpts = append(grpcOpts, unaryDialOption(defaultOptions), streamDialOption(defaultOptions), defaultOptions.security)
+	grpcOpts = append(grpcOpts, unaryDialOption(params, defaultOptions), streamDialOption(params, defaultOptions), defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
-	return grpc.DialContext(context, host, grpcOpts...)
+	return grpc.DialContext(params.Context, params.Host, grpcOpts...)
 }
 
-func unaryDialOption(opts *clientOptions) grpc.DialOption {
+func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 	unary := []grpc.UnaryClientInterceptor{}
 
 	if opts.retry {
 		unary = append(unary,
 			retry.UnaryClientInterceptor(
 				retry.WithCodes(codes.Unavailable, codes.DataLoss),
-				retry.WithMax(opts.config.Retry.Attempts),
+				retry.WithMax(params.Config.Retry.Attempts),
 				retry.WithBackoff(retry.BackoffLinear(backoffLinear)),
-				retry.WithPerRetryTimeout(opts.config.Retry.Timeout),
+				retry.WithPerRetryTimeout(params.Config.Retry.Timeout),
 			),
 		)
 	}
@@ -143,22 +135,30 @@ func unaryDialOption(opts *clientOptions) grpc.DialOption {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	unary = append(unary,
-		meta.UnaryClientInterceptor(opts.config.UserAgent, opts.version),
-		szap.UnaryClientInterceptor(opts.logger),
-		opentracing.UnaryClientInterceptor(opts.tracer),
-	)
+	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent, params.Version))
+
+	if opts.logger != nil {
+		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
+	}
+
+	if opts.tracer != nil {
+		unary = append(unary, opentracing.UnaryClientInterceptor(opts.tracer))
+	}
 
 	unary = append(unary, opts.unary...)
 
 	return grpc.WithChainUnaryInterceptor(unary...)
 }
 
-func streamDialOption(opts *clientOptions) grpc.DialOption {
-	stream := []grpc.StreamClientInterceptor{
-		meta.StreamClientInterceptor(opts.config.UserAgent, opts.version),
-		szap.StreamClientInterceptor(opts.logger),
-		opentracing.StreamClientInterceptor(opts.tracer),
+func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
+	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent, params.Version)}
+
+	if opts.logger != nil {
+		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
+	}
+
+	if opts.tracer != nil {
+		stream = append(stream, opentracing.StreamClientInterceptor(opts.tracer))
 	}
 
 	stream = append(stream, opts.stream...)

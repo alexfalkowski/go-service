@@ -19,25 +19,13 @@ import (
 type ConsumerOption interface{ apply(*consumerOptions) }
 
 type consumerOptions struct {
-	lifecycle  fx.Lifecycle
-	config     *Config
-	logger     *zap.Logger
-	tracer     opentracing.Tracer
-	marshaller marshaller.Marshaller
-	handler    handler.Handler
-	version    version.Version
+	logger *zap.Logger
+	tracer opentracing.Tracer
 }
 
 type consumerOptionFunc func(*consumerOptions)
 
 func (f consumerOptionFunc) apply(o *consumerOptions) { f(o) }
-
-// WithConsumerConfig for NSQ.
-func WithConsumerConfig(config *Config) ConsumerOption {
-	return consumerOptionFunc(func(o *consumerOptions) {
-		o.config = config
-	})
-}
 
 // WithConsumerLogger for NSQ.
 func WithConsumerLogger(logger *zap.Logger) ConsumerOption {
@@ -53,36 +41,19 @@ func WithConsumerTracer(tracer opentracing.Tracer) ConsumerOption {
 	})
 }
 
-// WithConsumerLifecycle for NSQ.
-func WithConsumerLifecycle(lifecycle fx.Lifecycle) ConsumerOption {
-	return consumerOptionFunc(func(o *consumerOptions) {
-		o.lifecycle = lifecycle
-	})
-}
+// ConsumerParams for NSQ.
+type ConsumerParams struct {
+	Lifecycle fx.Lifecycle
 
-// WithConsumerMarshaller for NSQ.
-func WithConsumerMarshaller(marshaller marshaller.Marshaller) ConsumerOption {
-	return consumerOptionFunc(func(o *consumerOptions) {
-		o.marshaller = marshaller
-	})
-}
-
-// WithConsumerMarshaller for NSQ.
-func WithConsumerHandler(handler handler.Handler) ConsumerOption {
-	return consumerOptionFunc(func(o *consumerOptions) {
-		o.handler = handler
-	})
-}
-
-// WithConsumerMarshaller for NSQ.
-func WithConsumerVersion(version version.Version) ConsumerOption {
-	return consumerOptionFunc(func(o *consumerOptions) {
-		o.version = version
-	})
+	Topic, Channel string
+	Config         *Config
+	Version        version.Version
+	Handler        handler.Handler
+	Marshaller     marshaller.Marshaller
 }
 
 // RegisterConsumer for NSQ.
-func RegisterConsumer(topic string, channel string, opts ...ConsumerOption) error {
+func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 	defaultOptions := &consumerOptions{}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -90,25 +61,33 @@ func RegisterConsumer(topic string, channel string, opts ...ConsumerOption) erro
 
 	cfg := nsq.NewConfig()
 
-	c, err := nsq.NewConsumer(topic, channel, cfg)
+	c, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
 	if err != nil {
 		return err
 	}
 
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	var h handler.Handler = lzap.NewHandler(topic, channel, defaultOptions.logger, defaultOptions.handler)
-	h = opentracing.NewHandler(topic, channel, defaultOptions.tracer, h)
-	h = meta.NewHandler(defaultOptions.version, h)
+	var h handler.Handler = params.Handler
 
-	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: defaultOptions.marshaller}))
+	if defaultOptions.logger != nil {
+		h = lzap.NewHandler(params.Topic, params.Channel, defaultOptions.logger, h)
+	}
 
-	err = c.ConnectToNSQLookupd(defaultOptions.config.LookupHost)
+	if defaultOptions.tracer != nil {
+		h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
+	}
+
+	h = meta.NewHandler(params.Version, h)
+
+	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))
+
+	err = c.ConnectToNSQLookupd(params.Config.LookupHost)
 	if err != nil {
 		return err
 	}
 
-	defaultOptions.lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			c.Stop()
 

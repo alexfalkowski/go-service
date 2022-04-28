@@ -51,10 +51,11 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()), tgrpc.WithClientVersion(version),
+			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
 		So(err, ShouldBeNil)
 
@@ -94,6 +95,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
+// nolint:funlen
 func TestDefaultClientUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()
@@ -103,6 +105,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})
@@ -115,8 +118,9 @@ func TestDefaultClientUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -168,6 +172,7 @@ func TestValidAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -190,8 +195,9 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -244,6 +250,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -266,8 +273,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -320,6 +329,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -342,8 +352,10 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -395,6 +407,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -417,8 +430,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -464,6 +479,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -486,8 +502,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
@@ -539,6 +557,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
+		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
@@ -561,8 +580,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port),
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientConfig(grpcCfg), tgrpc.WithClientTracer(tracer),
+
+		conn, err := tgrpc.NewClient(
+			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", grpcCfg.Port), Version: version, Config: grpcCfg},
+			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 			tgrpc.WithClientDialOption(grpc.WithBlock()),
 		)
