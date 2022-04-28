@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.62.2](https://github.com/alexfalkowski/go-service/compare/v1.62.1...v1.62.2) (2022-04-28)
+
+
+### Bug Fixes
+
+* remove getting ip address ([#108](https://github.com/alexfalkowski/go-service/issues/108)) ([61ab8a7](https://github.com/alexfalkowski/go-service/commit/61ab8a7a231b6da5359826cbe692ca9c69f9f690))
+
 ### [1.62.1](https://github.com/alexfalkowski/go-service/compare/v1.62.0...v1.62.1) (2022-04-28)
 
 
