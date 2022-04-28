@@ -37,8 +37,6 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx = tmeta.WithRequestID(ctx, requestID)
 	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
 
-	resp.Header().Add("Version", string(h.version))
-
 	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
 }
 
