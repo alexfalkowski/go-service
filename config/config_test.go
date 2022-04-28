@@ -109,6 +109,9 @@ func TestWriteConfig(t *testing.T) {
 			So(err, ShouldBeNil)
 		}
 
+		_, err = config.ReadFileFromEnv("NEW_CONFIG_FILE")
+		So(err, ShouldNotBeNil)
+
 		Convey("When I try to write the new configuration file", func() {
 			cfg := config.NewConfigurator()
 			err := config.UnmarshalFromFile(cfg)

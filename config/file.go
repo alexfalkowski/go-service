@@ -5,12 +5,15 @@ import (
 	"path/filepath"
 )
 
-// nolint:gofumpt
-const perm = 0600
+const (
+	// nolint:gofumpt
+	perm       = 0600
+	configfile = "CONFIG_FILE"
+)
 
 // File config location.
 func File() string {
-	return FileFromEnv("CONFIG_FILE")
+	return FileFromEnv(configfile)
 }
 
 // FileFromEnv location.
@@ -20,7 +23,12 @@ func FileFromEnv(env string) string {
 
 // ReadFile from config location.
 func ReadFile() ([]byte, error) {
-	return os.ReadFile(filepath.Clean(File()))
+	return ReadFileFromEnv(configfile)
+}
+
+// ReadFileFromEnv variable of config location.
+func ReadFileFromEnv(env string) ([]byte, error) {
+	return os.ReadFile(filepath.Clean(FileFromEnv(env)))
 }
 
 // WriteFileToEnv location.
