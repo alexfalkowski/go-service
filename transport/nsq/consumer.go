@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
+	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -54,7 +55,7 @@ type ConsumerParams struct {
 
 // RegisterConsumer for NSQ.
 func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
-	defaultOptions := &consumerOptions{}
+	defaultOptions := &consumerOptions{tracer: otr.NoopTracer{}}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -74,10 +75,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 		h = lzap.NewHandler(params.Topic, params.Channel, defaultOptions.logger, h)
 	}
 
-	if defaultOptions.tracer != nil {
-		h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
-	}
-
+	h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
 	h = meta.NewHandler(params.Version, h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))

@@ -39,5 +39,5 @@ func NewTracer(params TracerParams) (otr.Tracer, error) {
 		return datadog.NewTracer(datadog.TracerParams{Lifecycle: params.Lifecycle, Name: params.Name, Host: params.Config.Host}), nil
 	}
 
-	return nil, nil
+	return otr.NoopTracer{}, nil
 }

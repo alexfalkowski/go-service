@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
+	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -71,7 +72,7 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
-	defaultOptions := &producerOptions{}
+	defaultOptions := &producerOptions{tracer: otr.NoopTracer{}}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -95,9 +96,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		pr = lzap.NewProducer(defaultOptions.logger, pr)
 	}
 
-	if defaultOptions.tracer != nil {
-		pr = opentracing.NewProducer(defaultOptions.tracer, pr)
-	}
+	pr = opentracing.NewProducer(defaultOptions.tracer, pr)
 
 	if defaultOptions.retry {
 		pr = retry.NewProducer(&params.Config.Retry, pr)
