@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.64.2](https://github.com/alexfalkowski/go-service/compare/v1.64.1...v1.64.2) (2022-05-06)
+
+
+### Bug Fixes
+
+* **trace:** use noop opentracing tracer ([#113](https://github.com/alexfalkowski/go-service/issues/113)) ([74fdfe5](https://github.com/alexfalkowski/go-service/commit/74fdfe5eddf6a07f6721119b2b9b84aa72e457c5))
+
 ### [1.64.1](https://github.com/alexfalkowski/go-service/compare/v1.64.0...v1.64.1) (2022-05-06)
 
 
