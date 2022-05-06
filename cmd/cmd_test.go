@@ -21,7 +21,6 @@ import (
 	"github.com/alexfalkowski/go-service/logger"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/trace"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -41,9 +40,9 @@ func TestShutdown(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisJaegerModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLJaegerModule,
-				trace.JaegerOpenTracingModule, transport.GRPCJaegerModule, transport.HTTPDataDogModule,
+				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+				transport.GRPCOpentracingModule, transport.HTTPOpentracingModule,
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
@@ -71,9 +70,9 @@ func TestRun(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisJaegerModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLJaegerModule,
-				trace.JaegerOpenTracingModule, transport.GRPCJaegerModule, transport.HTTPDataDogModule,
+				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+				transport.GRPCOpentracingModule, transport.HTTPOpentracingModule,
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
@@ -102,9 +101,9 @@ func TestInvalidHTTP(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisJaegerModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLJaegerModule,
-				trace.JaegerOpenTracingModule, transport.GRPCJaegerModule, transport.HTTPDataDogModule,
+				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+				transport.GRPCOpentracingModule, transport.HTTPOpentracingModule,
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
@@ -135,9 +134,9 @@ func TestInvalidGRPC(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisJaegerModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLJaegerModule,
-				trace.JaegerOpenTracingModule, transport.GRPCJaegerModule, transport.HTTPDataDogModule,
+				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+				transport.GRPCOpentracingModule, transport.HTTPOpentracingModule,
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
@@ -183,9 +182,9 @@ func TestInvalidClient(t *testing.T) {
 			opts := []fx.Option{
 				fx.NopLogger,
 				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisJaegerModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLJaegerModule,
-				trace.JaegerOpenTracingModule, transport.GRPCJaegerModule, transport.HTTPDataDogModule,
+				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+				transport.GRPCOpentracingModule, transport.HTTPOpentracingModule,
 				transport.HTTPServerModule, transport.GRPCServerModule,
 				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),

@@ -11,10 +11,11 @@ import (
 
 func TestJaeger(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
+		cfg := test.NewJaegerConfig()
 		lc := fxtest.NewLifecycle(t)
 
 		Convey("When I register the trace system", func() {
-			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Config: test.NewJaegerConfig()}
+			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Host: cfg.Host}
 			_, err := jaeger.NewTracer(params)
 
 			lc.RequireStart()
@@ -33,7 +34,7 @@ func TestInvalidJaeger(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 
 		Convey("When I register the trace system", func() {
-			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Config: &jaeger.Config{Host: "invalid_host"}}
+			params := jaeger.TracerParams{Lifecycle: lc, Name: "test", Host: "invalid_host"}
 			_, err := jaeger.NewTracer(params)
 
 			lc.RequireStart()

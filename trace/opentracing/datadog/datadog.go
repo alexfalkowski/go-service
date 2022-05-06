@@ -16,14 +16,14 @@ import (
 type TracerParams struct {
 	Lifecycle fx.Lifecycle
 	Name      string
-	Config    *Config
+	Host      string
 }
 
 // NewTracer for datadog.
 func NewTracer(params TracerParams) opentracing.Tracer {
 	opts := []tracer.StartOption{
 		tracer.WithService(fmt.Sprintf("%s:%s", os.ExecutableName(), params.Name)),
-		tracer.WithAgentAddr(params.Config.Host),
+		tracer.WithAgentAddr(params.Host),
 		tracer.WithLogger(logger.NewLogger()),
 	}
 	t := opentracer.New(opts...)
