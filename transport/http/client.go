@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
+	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -70,7 +71,7 @@ type ClientParams struct {
 
 // NewClient for HTTP.
 func NewClient(params ClientParams, opts ...ClientOption) *http.Client {
-	defaultOptions := &clientOptions{}
+	defaultOptions := &clientOptions{tracer: otr.NoopTracer{}}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -88,9 +89,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 		hrt = lzap.NewRoundTripper(opts.logger, hrt)
 	}
 
-	if opts.tracer != nil {
-		hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
-	}
+	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
 		hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)

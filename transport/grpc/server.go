@@ -94,10 +94,7 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
 		prometheus.UnaryServerInterceptor,
-	}
-
-	if params.Tracer != nil {
-		defaultInterceptors = append(defaultInterceptors, opentracing.UnaryServerInterceptor(params.Tracer))
+		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -111,10 +108,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
 		prometheus.StreamServerInterceptor,
-	}
-
-	if params.Tracer != nil {
-		defaultInterceptors = append(defaultInterceptors, opentracing.StreamServerInterceptor(params.Tracer))
+		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

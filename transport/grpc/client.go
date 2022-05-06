@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -105,7 +106,10 @@ type ClientParams struct {
 
 // NewClient to host for gRPC.
 func NewClient(params ClientParams, opts ...ClientOption) (*grpc.ClientConn, error) {
-	defaultOptions := &clientOptions{security: grpc.WithTransportCredentials(insecure.NewCredentials())}
+	defaultOptions := &clientOptions{
+		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
+		tracer:   otr.NoopTracer{},
+	}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -141,10 +145,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
 	}
 
-	if opts.tracer != nil {
-		unary = append(unary, opentracing.UnaryClientInterceptor(opts.tracer))
-	}
-
+	unary = append(unary, opentracing.UnaryClientInterceptor(opts.tracer))
 	unary = append(unary, opts.unary...)
 
 	return grpc.WithChainUnaryInterceptor(unary...)
@@ -157,10 +158,7 @@ func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption 
 		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
 	}
 
-	if opts.tracer != nil {
-		stream = append(stream, opentracing.StreamClientInterceptor(opts.tracer))
-	}
-
+	stream = append(stream, opentracing.StreamClientInterceptor(opts.tracer))
 	stream = append(stream, opts.stream...)
 
 	return grpc.WithChainStreamInterceptor(stream...)
