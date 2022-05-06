@@ -6,8 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -20,7 +18,7 @@ func TestSQL(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 
-			tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+			tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
@@ -50,7 +48,9 @@ func TestInvalidSQLPort(t *testing.T) {
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
-			tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
+
+			tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+			So(err, ShouldBeNil)
 
 			ctx := context.Background()
 			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")

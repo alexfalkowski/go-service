@@ -9,8 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace"
-	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -42,12 +41,8 @@ func (cfg *Config) PGConfig() *pg.Config {
 	return &cfg.SQL.PG
 }
 
-func (cfg *Config) DatadogConfig() *datadog.Config {
-	return &cfg.Trace.Opentracing.Datadog
-}
-
-func (cfg *Config) JaegerConfig() *jaeger.Config {
-	return &cfg.Trace.Opentracing.Jaeger
+func (cfg *Config) OpentracingConfig() *opentracing.Config {
+	return &cfg.Trace.Opentracing
 }
 
 func (cfg *Config) GRPCConfig() *grpc.Config {

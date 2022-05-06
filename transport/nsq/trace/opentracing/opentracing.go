@@ -7,12 +7,14 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	stime "github.com/alexfalkowski/go-service/time"
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"go.uber.org/fx"
 )
 
 const (
@@ -31,6 +33,11 @@ const (
 
 // Tracer for opentracing.
 type Tracer opentracing.Tracer
+
+// NewTracer for opentracing.
+func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "nsq", Config: cfg})
+}
 
 // NewHandler for opentracing.
 func NewHandler(topic, channel string, tracer Tracer, h handler.Handler) *Handler {

@@ -9,9 +9,11 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"go.uber.org/fx"
 )
 
 const (
@@ -27,6 +29,11 @@ const (
 
 // Tracer for opentracing.
 type Tracer opentracing.Tracer
+
+// NewTracer for opentracing.
+func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "http", Config: cfg})
+}
 
 // Handler for opentracing.
 type Handler struct {

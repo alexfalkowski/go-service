@@ -9,12 +9,14 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
+	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -33,6 +35,11 @@ const (
 
 // Tracer for opentracing.
 type Tracer opentracing.Tracer
+
+// NewTracer for opentracing.
+func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "grpc", Config: cfg})
+}
 
 // UnaryServerInterceptor for opentracing.
 func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {

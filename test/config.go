@@ -3,8 +3,7 @@ package test
 import (
 	"time"
 
-	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -50,15 +49,17 @@ func NewNSQConfig() *nsq.Config {
 }
 
 // NewJaegerConfig for test.
-func NewJaegerConfig() *jaeger.Config {
-	return &jaeger.Config{
+func NewJaegerConfig() *opentracing.Config {
+	return &opentracing.Config{
+		Type: "jaeger",
 		Host: "localhost:6831",
 	}
 }
 
 // NewDatadogConfig for test.
-func NewDatadogConfig() *datadog.Config {
-	return &datadog.Config{
+func NewDatadogConfig() *opentracing.Config {
+	return &opentracing.Config{
+		Type: "datadog",
 		Host: "localhost:8126",
 	}
 }

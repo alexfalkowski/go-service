@@ -21,7 +21,7 @@ const (
 type TracerParams struct {
 	Lifecycle fx.Lifecycle
 	Name      string
-	Config    *Config
+	Host      string
 }
 
 // NewTracer for jaeger.
@@ -33,7 +33,7 @@ func NewTracer(params TracerParams) (opentracing.Tracer, error) {
 			Param: eventsPerSecond,
 		},
 		Reporter: &jconfig.ReporterConfig{
-			LocalAgentHostPort: params.Config.Host,
+			LocalAgentHostPort: params.Host,
 			LogSpans:           false,
 		},
 	}

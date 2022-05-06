@@ -27,7 +27,7 @@ var (
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 		fx.Provide(auth0Config),
 		fx.Provide(pgConfig),
-		fx.Provide(datadogConfig), fx.Provide(jaegerConfig),
+		fx.Provide(opentracingConfig),
 		fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
 	)
 )

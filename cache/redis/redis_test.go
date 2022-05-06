@@ -10,8 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
-	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing/jaeger"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
@@ -31,7 +29,7 @@ func TestCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
@@ -69,7 +67,9 @@ func TestInvalidHostCache(t *testing.T) {
 
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
-		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
+
+		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 		defer span.Finish()
@@ -102,7 +102,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
@@ -137,7 +137,7 @@ func TestInvalidCompressorCache(t *testing.T) {
 		c := redis.NewCache(lc, cfg, opts)
 		ctx := context.Background()
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")

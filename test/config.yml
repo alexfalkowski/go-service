@@ -19,10 +19,8 @@ sql:
     url: postgres://test:test@localhost:5432/test?sslmode=disable
 trace:
   opentracing:
-    datadog:
-      host: localhost:8126
-    jaeger:
-      host: localhost:6831
+    type: jaeger
+    host: localhost:6831
 transport:
   http:
     port: 8080

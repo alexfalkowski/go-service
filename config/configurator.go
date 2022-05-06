@@ -5,8 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -24,8 +23,7 @@ type Configurator interface {
 	RistrettoConfig() *ristretto.Config
 	Auth0Config() *auth0.Config
 	PGConfig() *pg.Config
-	DatadogConfig() *datadog.Config
-	JaegerConfig() *jaeger.Config
+	OpentracingConfig() *opentracing.Config
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
@@ -62,12 +60,8 @@ func pgConfig(cfg Configurator) *pg.Config {
 	return cfg.PGConfig()
 }
 
-func datadogConfig(cfg Configurator) *datadog.Config {
-	return cfg.DatadogConfig()
-}
-
-func jaegerConfig(cfg Configurator) *jaeger.Config {
-	return cfg.JaegerConfig()
+func opentracingConfig(cfg Configurator) *opentracing.Config {
+	return cfg.OpentracingConfig()
 }
 
 func grpcConfig(cfg Configurator) *grpc.Config {

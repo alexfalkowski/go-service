@@ -1,12 +1,17 @@
 package opentracing
 
-import (
-	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
-)
-
 // Config for opentracing.
 type Config struct {
-	Datadog datadog.Config `yaml:"datadog"`
-	Jaeger  jaeger.Config  `yaml:"jaeger"`
+	Type string `yaml:"type"`
+	Host string `yaml:"host"`
+}
+
+// IsDataDog config.
+func (c *Config) IsDataDog() bool {
+	return c.Type == "datadog"
+}
+
+// IsJaeger config.
+func (c *Config) IsJaeger() bool {
+	return c.Type == "jaeger"
 }

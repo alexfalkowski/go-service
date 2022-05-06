@@ -18,8 +18,7 @@ import (
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/datadog"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -35,7 +34,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
@@ -104,7 +103,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer := datadog.NewTracer(lc, test.NewDatadogConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
 		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
@@ -169,7 +168,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")
@@ -247,7 +246,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")
@@ -326,7 +325,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")
@@ -404,7 +403,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")
@@ -476,7 +475,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")
@@ -554,7 +553,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
 		version := version.Version("1.0.0")

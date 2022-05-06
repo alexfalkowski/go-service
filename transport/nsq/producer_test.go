@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
-	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -23,7 +23,7 @@ func TestProducer(t *testing.T) {
 			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
-			tracer, err := jaeger.NewTracer(lc, test.NewJaegerConfig())
+			tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 			So(err, ShouldBeNil)
 
 			producer := nsq.NewProducer(
