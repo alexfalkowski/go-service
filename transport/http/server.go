@@ -43,7 +43,11 @@ func NewServer(params ServerParams) *Server {
 	var handler http.Handler = mux
 
 	handler = cors.New().Handler(handler)
-	handler = opentracing.NewHandler(params.Tracer, handler)
+
+	if params.Tracer != nil {
+		handler = opentracing.NewHandler(params.Tracer, handler)
+	}
+
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(params.Version, handler)
 
