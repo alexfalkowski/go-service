@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.64.3](https://github.com/alexfalkowski/go-service/compare/v1.64.2...v1.64.3) (2022-05-07)
+
+
+### Bug Fixes
+
+* **config:** add random wait time to watcher ([#114](https://github.com/alexfalkowski/go-service/issues/114)) ([26b30b9](https://github.com/alexfalkowski/go-service/commit/26b30b9871e4bb6cf05f15e3e40a2516e920613c))
+
 ### [1.64.2](https://github.com/alexfalkowski/go-service/compare/v1.64.1...v1.64.2) (2022-05-06)
 
 
