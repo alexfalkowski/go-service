@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/alexfalkowski/go-service/os"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
@@ -12,6 +13,7 @@ import (
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -44,7 +46,11 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) *grpc.Server {
-	opts := []grpc.ServerOption{unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...)}
+	labels := prom.Labels{"name": os.ExecutableName(), "version": string(params.Version)}
+	metrics := prometheus.NewServerMetrics(prometheus.WithConstLabels(labels))
+	metrics.EnableHandlingTimeHistogram(prometheus.WithHistogramBuckets(prom.DefBuckets))
+
+	opts := []grpc.ServerOption{unaryServerOption(params, metrics, params.Unary...), streamServerOption(params, metrics, params.Stream...)}
 	server := grpc.NewServer(opts...)
 
 	params.Lifecycle.Append(fx.Hook{
@@ -88,12 +94,12 @@ func stopServer(server *grpc.Server, params ServerParams) {
 	server.GracefulStop()
 }
 
-func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, metrics *prometheus.ServerMetrics, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
-		prometheus.UnaryServerInterceptor,
+		metrics.UnaryServerInterceptor(),
 		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
@@ -102,12 +108,12 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, metrics *prometheus.ServerMetrics, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
-		prometheus.StreamServerInterceptor,
+		metrics.StreamServerInterceptor(),
 		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 

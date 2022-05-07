@@ -1,13 +1,10 @@
 package prometheus
 
 import (
+	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"github.com/prometheus/client_golang/prometheus"
-)
-
-const (
-	namespace = "go_ristretto_stats"
-	subsystem = "cache"
 )
 
 // StatsCollector implements the prometheus.Collector interface.
@@ -19,20 +16,20 @@ type StatsCollector struct {
 	missesDesc *prometheus.Desc
 }
 
-// NewStatsCollector creates a new StatsCollector.
-func NewStatsCollector(cacheName string, cache *ristretto.Cache) *StatsCollector {
-	labels := prometheus.Labels{"cache_name": cacheName}
+// NewStatsCollector for prometheus.
+func NewStatsCollector(cache *ristretto.Cache, version version.Version) *StatsCollector {
+	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
 	return &StatsCollector{
 		cache: cache,
 		hitsDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "hits"),
+			"ristretto_hits_total",
 			"The number of hits in the cache.",
 			nil,
 			labels,
 		),
 		missesDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "misses"),
+			"ristretto_misses_total",
 			"The number of misses in the cache.",
 			nil,
 			labels,

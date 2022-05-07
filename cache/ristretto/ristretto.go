@@ -4,17 +4,26 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/cache/ristretto/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/fx"
 )
 
+// CacheParams for ristretto.
+type CacheParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *Config
+	Version   version.Version
+}
+
 // NewCache for ristretto.
-func NewCache(lc fx.Lifecycle, cfg *Config) (*ristretto.Cache, error) {
+func NewCache(params CacheParams) (*ristretto.Cache, error) {
 	rcfg := &ristretto.Config{
-		NumCounters: cfg.NumCounters,
-		MaxCost:     cfg.MaxCost,
-		BufferItems: cfg.BufferItems,
+		NumCounters: params.Config.NumCounters,
+		MaxCost:     params.Config.MaxCost,
+		BufferItems: params.Config.BufferItems,
 		Metrics:     true,
 	}
 
@@ -23,9 +32,9 @@ func NewCache(lc fx.Lifecycle, cfg *Config) (*ristretto.Cache, error) {
 		return nil, err
 	}
 
-	prometheus.Register(lc, os.ExecutableName(), cache)
+	prometheus.Register(params.Lifecycle, cache, params.Version)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			cache.Close()
 

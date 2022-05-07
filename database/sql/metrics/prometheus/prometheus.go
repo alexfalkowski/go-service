@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/dlmiddlecote/sqlstats"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
 // Register for prometheus.
-func Register(lc fx.Lifecycle, name string, db *sql.DB) {
-	collector := sqlstats.NewStatsCollector(name, db)
+func Register(lc fx.Lifecycle, db *sql.DB, version version.Version) {
+	collector := NewStatsCollector(db, version)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

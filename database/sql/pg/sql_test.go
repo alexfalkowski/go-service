@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -25,7 +26,7 @@ func TestSQL(t *testing.T) {
 			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 			defer span.Finish()
 
-			db, err := pg.NewDB(lc, cfg)
+			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -56,7 +57,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 			defer span.Finish()
 
-			db, err := pg.NewDB(lc, cfg)
+			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -79,7 +80,7 @@ func TestInvalidSQL(t *testing.T) {
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
-			_, err := pg.NewDB(lc, cfg)
+			_, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
 
 			lc.RequireStart()
 

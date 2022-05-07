@@ -17,11 +17,11 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -32,23 +32,20 @@ func TestHTTP(t *testing.T) {
 		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
 		So(err, ShouldBeNil)
 
-		rcfg := &redis.Config{Host: "localhost:6379"}
+		version := version.Version("1.0.0")
 
-		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
+		_, err = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: version})
 		So(err, ShouldBeNil)
 
+		rcfg := &redis.Config{Host: "localhost:6379"}
 		r := redis.NewRing(lc, rcfg)
 		oparams := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(oparams)
-		_ = redis.NewCache(lc, rcfg, opts)
+		_ = redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: rcfg, Options: opts, Version: version})
 
-		ricfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
+		ricfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
-		_, err = ristretto.NewCache(lc, ricfg)
+		_, err = ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
@@ -78,9 +75,9 @@ func TestHTTP(t *testing.T) {
 				response := string(body)
 
 				So(response, ShouldContainSubstring, "go_info")
-				So(response, ShouldContainSubstring, "go_sql_stats")
-				So(response, ShouldContainSubstring, "go_redis_stats")
-				So(response, ShouldContainSubstring, "go_ristretto_stats")
+				So(response, ShouldContainSubstring, "redis_hits_total")
+				So(response, ShouldContainSubstring, "ristretto_hits_total")
+				So(response, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})
 
