@@ -3,21 +3,20 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 )
 
 // Command for application.
 type Command struct {
-	root    *cobra.Command
-	timeout time.Duration
+	root *cobra.Command
 }
 
 // New command.
-func New(timeout time.Duration) *Command {
+func New() *Command {
 	name := os.ExecutableName()
 
 	root := &cobra.Command{
@@ -27,7 +26,7 @@ func New(timeout time.Duration) *Command {
 		SilenceUsage: true,
 	}
 
-	return &Command{root: root, timeout: timeout}
+	return &Command{root: root}
 }
 
 // AddVersion to root.
@@ -72,7 +71,7 @@ func (c *Command) AddServerCommand(name, description string, opts []fx.Option) *
 		Long:         description,
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, c.timeout, opts)
+			return RunServer(args, opts)
 		},
 	}
 
@@ -89,7 +88,7 @@ func (c *Command) AddClientCommand(name, description string, opts []fx.Option) *
 		Long:         description,
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return RunClient(args, c.timeout, opts)
+			return RunClient(args, opts)
 		},
 	}
 
@@ -111,11 +110,11 @@ func (c *Command) Run() error {
 }
 
 // RunServer with args and a timeout.
-func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
+func RunServer(args []string, opts []fx.Option) error {
 	app := fx.New(opts...)
 	done := app.Done()
 
-	startCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	startCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 	defer cancel()
 
 	if err := app.Start(startCtx); err != nil {
@@ -124,24 +123,24 @@ func RunServer(args []string, timeout time.Duration, opts []fx.Option) error {
 
 	<-done
 
-	stopCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	stopCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 	defer cancel()
 
 	return app.Stop(stopCtx)
 }
 
 // RunClient with args and a timeout.
-func RunClient(args []string, timeout time.Duration, opts []fx.Option) error {
+func RunClient(args []string, opts []fx.Option) error {
 	app := fx.New(opts...)
 
-	startCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	startCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 	defer cancel()
 
 	if err := app.Start(startCtx); err != nil {
 		return err
 	}
 
-	stopCtx, cancel := context.WithTimeout(context.Background(), timeout)
+	stopCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 	defer cancel()
 
 	return app.Stop(stopCtx)

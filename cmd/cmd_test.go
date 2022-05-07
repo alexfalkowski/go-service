@@ -49,7 +49,7 @@ func TestShutdown(t *testing.T) {
 				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddVersion("1.0.0")
 			c.AddWorker(opts)
 
@@ -79,7 +79,7 @@ func TestRun(t *testing.T) {
 				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddVersion("1.0.0")
 			c.AddWorker(opts)
 
@@ -110,7 +110,7 @@ func TestInvalidHTTP(t *testing.T) {
 				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -143,7 +143,7 @@ func TestInvalidGRPC(t *testing.T) {
 				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddServer(opts)
 
 			Convey("Then I should see an error", func() {
@@ -163,7 +163,7 @@ func TestClient(t *testing.T) {
 		Convey("When I try to run a client", func() {
 			opts := []fx.Option{fx.NopLogger}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddClient(opts)
 
 			Convey("Then I should not see an error", func() {
@@ -191,7 +191,7 @@ func TestInvalidClient(t *testing.T) {
 				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
 			}
 
-			c := cmd.New(10 * time.Second)
+			c := cmd.New()
 			c.AddClient(opts)
 
 			Convey("Then I should see an error", func() {
