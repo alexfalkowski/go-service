@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/fsnotify/fsnotify"
 	"go.uber.org/fx"
 )
@@ -41,22 +42,28 @@ func watch(sh fx.Shutdowner, w *fsnotify.Watcher) {
 		select {
 		case e, ok := <-w.Events:
 			if !ok {
-				sh.Shutdown()
+				shutdown(sh)
 
 				return
 			}
 
 			if e.Op&fsnotify.Write == fsnotify.Write {
-				sh.Shutdown()
+				shutdown(sh)
 
 				return
 			}
 		case _, ok := <-w.Errors:
 			if !ok {
-				sh.Shutdown()
+				shutdown(sh)
 
 				return
 			}
 		}
 	}
+}
+
+func shutdown(sh fx.Shutdowner) error {
+	time.SleepRandomWaitTime()
+
+	return sh.Shutdown()
 }
