@@ -49,8 +49,8 @@ func TestHTTP(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(params)
+		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		httpServer := shttp.NewServer(hparams)
 
 		err = phttp.Register(httpServer)
 		So(err, ShouldBeNil)

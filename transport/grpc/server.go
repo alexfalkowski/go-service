@@ -5,15 +5,13 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/alexfalkowski/go-service/os"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	prom "github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -46,10 +44,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) *grpc.Server {
-	labels := prom.Labels{"name": os.ExecutableName(), "version": string(params.Version)}
-	metrics := prometheus.NewServerMetrics(prometheus.WithConstLabels(labels))
-	metrics.EnableHandlingTimeHistogram(prometheus.WithHistogramBuckets(prom.DefBuckets))
-
+	metrics := prometheus.NewServerMetrics(params.Lifecycle, params.Version)
 	opts := []grpc.ServerOption{unaryServerOption(params, metrics, params.Unary...), streamServerOption(params, metrics, params.Stream...)}
 	server := grpc.NewServer(opts...)
 
