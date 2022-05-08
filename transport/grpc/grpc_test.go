@@ -28,11 +28,12 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer, Version: version}
 		gs := tgrpc.NewServer(params)
 
@@ -78,11 +79,12 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -139,11 +141,12 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -199,11 +202,12 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -258,11 +262,12 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -314,11 +319,12 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -373,11 +379,12 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
 		gs := tgrpc.NewServer(params)
 
@@ -429,11 +436,12 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -495,11 +503,12 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -559,11 +568,12 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -617,11 +627,12 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -678,11 +689,12 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,
@@ -736,11 +748,12 @@ func TestBreakerUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
-		version := version.Version("1.0.0")
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
 			Lifecycle:  lc,

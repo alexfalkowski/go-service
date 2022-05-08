@@ -23,11 +23,13 @@ func TestProducer(t *testing.T) {
 			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
-			tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+			version := version.Version("1.0.0")
+
+			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 			So(err, ShouldBeNil)
 
 			producer := nsq.NewProducer(
-				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version.Version("1.0.0")},
+				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
 			)
 

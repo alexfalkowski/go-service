@@ -12,21 +12,23 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+// nolint:dupl
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
+			version := version.Version("1.0.0")
 
-			tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
 			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 			defer span.Finish()
 
-			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
+			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -43,21 +45,23 @@ func TestSQL(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
+			version := version.Version("1.0.0")
 
-			tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
 			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
 			defer span.Finish()
 
-			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
+			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: version})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()

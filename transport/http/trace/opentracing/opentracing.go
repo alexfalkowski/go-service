@@ -10,6 +10,7 @@ import (
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
 	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -27,13 +28,22 @@ const (
 	httpComponent       = "http"
 )
 
-// Tracer for opentracing.
-type Tracer opentracing.Tracer
+// TracerParams for opentracing.
+type TracerParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *sopentracing.Config
+	Version   version.Version
+}
 
 // NewTracer for opentracing.
-func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
-	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "http", Config: cfg})
+func NewTracer(params TracerParams) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: params.Lifecycle, Name: "http", Config: params.Config, Version: params.Version})
 }
+
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
 
 // Handler for opentracing.
 type Handler struct {
@@ -46,6 +56,7 @@ func NewHandler(tracer Tracer, handler http.Handler) *Handler {
 	return &Handler{tracer: tracer, Handler: handler}
 }
 
+// ServeHTTP for opentracing.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	url := req.URL.String()
 	if sstrings.IsHealth(url) {

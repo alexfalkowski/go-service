@@ -26,12 +26,13 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -62,12 +63,13 @@ func TestInvalidConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -97,12 +99,13 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -132,12 +135,13 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{
@@ -179,12 +183,13 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{
@@ -223,12 +228,13 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{

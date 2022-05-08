@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/trace/opentracing/datadog"
 	"github.com/alexfalkowski/go-service/trace/opentracing/jaeger"
+	"github.com/alexfalkowski/go-service/version"
 	otr "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"go.uber.org/fx"
@@ -26,17 +27,18 @@ func StartSpanFromContext(ctx context.Context, tracer otr.Tracer, kind, operatio
 type TracerParams struct {
 	Lifecycle fx.Lifecycle
 	Name      string
+	Version   version.Version
 	Config    *Config
 }
 
 // NewTracer for opentracing.
 func NewTracer(params TracerParams) (otr.Tracer, error) {
 	if params.Config.IsJaeger() {
-		return jaeger.NewTracer(jaeger.TracerParams{Lifecycle: params.Lifecycle, Name: params.Name, Host: params.Config.Host})
+		return jaeger.NewTracer(jaeger.TracerParams{Lifecycle: params.Lifecycle, Name: params.Name, Version: params.Version, Host: params.Config.Host})
 	}
 
 	if params.Config.IsDataDog() {
-		return datadog.NewTracer(datadog.TracerParams{Lifecycle: params.Lifecycle, Name: params.Name, Host: params.Config.Host}), nil
+		return datadog.NewTracer(datadog.TracerParams{Lifecycle: params.Lifecycle, Name: params.Name, Version: params.Version, Host: params.Config.Host}), nil
 	}
 
 	return otr.NoopTracer{}, nil

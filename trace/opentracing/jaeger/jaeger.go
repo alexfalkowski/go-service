@@ -2,9 +2,9 @@ package jaeger
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/version"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/uber/jaeger-client-go"
@@ -21,13 +21,14 @@ const (
 type TracerParams struct {
 	Lifecycle fx.Lifecycle
 	Name      string
+	Version   version.Version
 	Host      string
 }
 
 // NewTracer for jaeger.
 func NewTracer(params TracerParams) (opentracing.Tracer, error) {
 	c := jconfig.Configuration{
-		ServiceName: fmt.Sprintf("%s:%s", os.ExecutableName(), params.Name),
+		ServiceName: params.Name,
 		Sampler: &jconfig.SamplerConfig{
 			Type:  jaeger.SamplerTypeRateLimiting,
 			Param: eventsPerSecond,
@@ -41,6 +42,8 @@ func NewTracer(params TracerParams) (opentracing.Tracer, error) {
 	options := []jconfig.Option{
 		jconfig.Logger(jaeger.NullLogger),
 		jconfig.Metrics(jprometheus.New(jprometheus.WithRegisterer(prometheus.NewRegistry()))),
+		jconfig.Tag("name", os.ExecutableName()),
+		jconfig.Tag("version", params.Version),
 	}
 
 	tracer, closer, err := c.NewTracer(options...)
