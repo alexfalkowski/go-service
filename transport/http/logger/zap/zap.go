@@ -3,6 +3,7 @@ package zap
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -48,8 +49,8 @@ type Handler struct {
 
 // ServeHTTP  or zap.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	url := req.URL.String() // nolint:ifshort
-	if sstrings.IsHealth(url) {
+	service, method := req.URL.Path, strings.ToLower(req.Method)
+	if sstrings.IsHealth(service) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -65,8 +66,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		zap.String("version", string(h.version)),
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, url),
-		zap.String(httpMethod, req.Method),
+		zap.String(httpURL, service),
+		zap.String(httpMethod, method),
 		zap.String("span.kind", server),
 		zap.String(component, httpComponent),
 	}
@@ -104,11 +105,11 @@ type RoundTripper struct {
 
 // RoundTrip for zap.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	url := req.URL.String() // nolint:ifshort
-	if sstrings.IsHealth(url) {
+	if sstrings.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
 	start := time.Now().UTC()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
@@ -117,8 +118,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String("version", string(r.version)),
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, url),
-		zap.String(httpMethod, req.Method),
+		zap.String(httpURL, service),
+		zap.String(httpMethod, method),
 		zap.String("span.kind", client),
 		zap.String(component, httpComponent),
 	}

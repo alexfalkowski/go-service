@@ -58,8 +58,8 @@ func NewHandler(tracer Tracer, handler http.Handler) *Handler {
 
 // ServeHTTP for opentracing.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	url := req.URL.String()
-	if sstrings.IsHealth(url) {
+	service, method := req.URL.Path, strings.ToLower(req.Method)
+	if sstrings.IsHealth(service) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -67,14 +67,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 	start := time.Now().UTC()
 	ctx := req.Context()
-	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, url)
+	operationName := fmt.Sprintf("%s %s", method, service)
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
 	traceCtx, _ := h.tracer.Extract(opentracing.HTTPHeaders, carrier)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: url},
+		opentracing.Tag{Key: httpURL, Value: service},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCServer,
@@ -110,18 +109,17 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	url := req.URL.String()
-	if sstrings.IsHealth(url) {
+	if sstrings.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
 	start := time.Now().UTC()
 	ctx := req.Context()
-	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, url)
+	operationName := fmt.Sprintf("%s %s", method, service)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: url},
+		opentracing.Tag{Key: httpURL, Value: service},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,

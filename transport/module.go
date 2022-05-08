@@ -2,9 +2,10 @@ package transport
 
 import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
+	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	gopentracing "github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/http"
+	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"go.uber.org/fx"
@@ -17,17 +18,20 @@ var (
 		fx.Provide(grpc.NewServer),
 		fx.Provide(grpc.UnaryServerInterceptor),
 		fx.Provide(grpc.StreamServerInterceptor),
-		fx.Provide(prometheus.NewServerMetrics),
-		fx.Provide(prometheus.NewClientMetrics),
+		fx.Provide(gprometheus.NewServerMetrics),
+		fx.Provide(gprometheus.NewClientMetrics),
 	)
 
 	// GRPCOpentracingModule for fx.
 	// nolint:gochecknoglobals
 	GRPCOpentracingModule = fx.Provide(gopentracing.NewTracer)
 
-	// HTTPServerModule for fx.
+	// HTTPModule for fx.
 	// nolint:gochecknoglobals
-	HTTPServerModule = fx.Provide(http.NewServer)
+	HTTPModule = fx.Options(
+		fx.Provide(http.NewServer),
+		fx.Provide(hprometheus.NewServerMetrics),
+	)
 
 	// HTTPOpentracingModule for fx.
 	// nolint:gochecknoglobals
