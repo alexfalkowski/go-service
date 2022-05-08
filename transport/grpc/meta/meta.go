@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"net"
 	"strings"
 
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
@@ -139,7 +140,9 @@ func extractRemoteAddress(ctx context.Context, md metadata.MD) string {
 	}
 
 	if p, ok := peer.FromContext(ctx); ok {
-		return p.Addr.String()
+		if host, _, err := net.SplitHostPort(p.Addr.String()); err != nil && host != "" {
+			return host
+		}
 	}
 
 	return tmeta.RemoteAddress(ctx)

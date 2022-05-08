@@ -92,8 +92,8 @@ func extractRemoteAddress(ctx context.Context, req *http.Request) string {
 		return strings.Split(forwardedFor, ",")[0]
 	}
 
-	if ip, _, err := net.SplitHostPort(req.RemoteAddr); err != nil && ip != "" {
-		return ip
+	if host, _, err := net.SplitHostPort(req.RemoteAddr); err != nil && host != "" {
+		return host
 	}
 
 	return tmeta.RemoteAddress(ctx)
