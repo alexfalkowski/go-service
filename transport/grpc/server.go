@@ -98,7 +98,7 @@ func unaryServerOption(params ServerParams, metrics *prometheus.ServerMetrics, i
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(params.Logger),
+		szap.UnaryServerInterceptor(params.Logger, params.Version),
 		metrics.UnaryServerInterceptor(),
 		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
@@ -112,7 +112,7 @@ func streamServerOption(params ServerParams, metrics *prometheus.ServerMetrics, 
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(params.Logger),
+		szap.StreamServerInterceptor(params.Logger, params.Version),
 		metrics.StreamServerInterceptor(),
 		opentracing.StreamServerInterceptor(params.Tracer),
 	}

@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/os"
 	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
+	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -29,15 +31,24 @@ const (
 	producerKind = "producer"
 )
 
+// HandlerParams for zap.
+type HandlerParams struct {
+	Topic, Channel string
+	Logger         *zap.Logger
+	Handler        handler.Handler
+	Version        version.Version
+}
+
 // NewHandler for zap.
-func NewHandler(topic, channel string, logger *zap.Logger, h handler.Handler) *Handler {
-	return &Handler{topic: topic, channel: channel, logger: logger, Handler: h}
+func NewHandler(params HandlerParams) *Handler {
+	return &Handler{topic: params.Topic, channel: params.Channel, logger: params.Logger, version: params.Version, Handler: params.Handler}
 }
 
 // Handler for zap.
 type Handler struct {
 	topic, channel string
 	logger         *zap.Logger
+	version        version.Version
 
 	handler.Handler
 }
@@ -46,6 +57,8 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	start := time.Now().UTC()
 	err := h.Handler.Handle(ctx, message)
 	fields := []zapcore.Field{
+		zap.String("name", os.ExecutableName()),
+		zap.String("version", string(h.version)),
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, h.topic),
@@ -75,14 +88,22 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	return nil
 }
 
+// ProducerParams for zap.
+type ProducerParams struct {
+	Logger   *zap.Logger
+	Version  version.Version
+	Producer producer.Producer
+}
+
 // NewProducer for zap.
-func NewProducer(logger *zap.Logger, p producer.Producer) *Producer {
-	return &Producer{logger: logger, Producer: p}
+func NewProducer(params ProducerParams) *Producer {
+	return &Producer{logger: params.Logger, version: params.Version, Producer: params.Producer}
 }
 
 // Producer for zap.
 type Producer struct {
-	logger *zap.Logger
+	logger  *zap.Logger
+	version version.Version
 
 	producer.Producer
 }
@@ -91,6 +112,8 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	start := time.Now().UTC()
 	err := p.Producer.Publish(ctx, topic, message)
 	fields := []zapcore.Field{
+		zap.String("name", os.ExecutableName()),
+		zap.String("version", string(p.version)),
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, topic),

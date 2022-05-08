@@ -86,7 +86,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	}
 
 	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(opts.logger, hrt)
+		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, Version: params.Version, RoundTripper: hrt})
 	}
 
 	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)

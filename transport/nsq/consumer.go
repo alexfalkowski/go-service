@@ -72,7 +72,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 	var h handler.Handler = params.Handler
 
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(params.Topic, params.Channel, defaultOptions.logger, h)
+		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Version: params.Version, Handler: h})
 	}
 
 	h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)

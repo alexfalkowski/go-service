@@ -93,7 +93,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 
 	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(defaultOptions.logger, pr)
+		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Version: params.Version, Producer: pr})
 	}
 
 	pr = opentracing.NewProducer(defaultOptions.tracer, pr)

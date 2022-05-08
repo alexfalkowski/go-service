@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/os"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/version"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -31,7 +33,7 @@ const (
 )
 
 // UnaryServerInterceptor for zap.
-func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(logger *zap.Logger, version version.Version) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -42,6 +44,8 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		method := path.Base(info.FullMethod)
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
+			zap.String("name", os.ExecutableName()),
+			zap.String("version", string(version)),
 			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
@@ -80,7 +84,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for zap.
-func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(logger *zap.Logger, version version.Version) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -92,6 +96,8 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		method := path.Base(info.FullMethod)
 		err := handler(srv, stream)
 		fields := []zapcore.Field{
+			zap.String("name", os.ExecutableName()),
+			zap.String("version", string(version)),
 			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
@@ -130,7 +136,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for zap.
-func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(logger *zap.Logger, version version.Version) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -141,6 +147,8 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		method := path.Base(fullMethod)
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		fields := []zapcore.Field{
+			zap.String("name", os.ExecutableName()),
+			zap.String("version", string(version)),
 			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
@@ -179,7 +187,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for zap.
-func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(logger *zap.Logger, version version.Version) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if sstrings.IsHealth(service) {
@@ -190,6 +198,8 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		method := path.Base(fullMethod)
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		fields := []zapcore.Field{
+			zap.String("name", os.ExecutableName()),
+			zap.String("version", string(version)),
 			zap.Int64(grpcDuration, stime.ToMilliseconds(time.Since(start))),
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),

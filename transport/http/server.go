@@ -44,7 +44,7 @@ func NewServer(params ServerParams) *Server {
 
 	handler = cors.New().Handler(handler)
 	handler = opentracing.NewHandler(params.Tracer, handler)
-	handler = szap.NewHandler(params.Logger, handler)
+	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Version: params.Version, Handler: handler})
 	handler = meta.NewHandler(params.Version, handler)
 
 	addr := fmt.Sprintf(":%s", params.Config.Port)
