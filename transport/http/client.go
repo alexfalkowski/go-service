@@ -99,7 +99,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
-	hrt = meta.NewRoundTripper(params.Config.UserAgent, params.Version, hrt)
+	hrt = meta.NewRoundTripper(params.Config.UserAgent, hrt)
 
 	return hrt
 }

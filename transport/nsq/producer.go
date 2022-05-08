@@ -106,7 +106,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(params.Config.UserAgent, params.Version, pr)
+	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr
 }

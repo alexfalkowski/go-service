@@ -90,7 +90,7 @@ func stopServer(server *grpc.Server, params ServerParams) {
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(params.Version),
+		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
 		prometheus.UnaryServerInterceptor,
@@ -104,7 +104,7 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
-		meta.StreamServerInterceptor(params.Version),
+		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
 		prometheus.StreamServerInterceptor,

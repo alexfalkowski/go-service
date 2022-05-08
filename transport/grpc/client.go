@@ -139,7 +139,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent, params.Version))
+	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent))
 
 	if opts.logger != nil {
 		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
@@ -152,7 +152,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 }
 
 func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
-	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent, params.Version)}
+	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent)}
 
 	if opts.logger != nil {
 		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
