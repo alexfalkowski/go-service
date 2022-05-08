@@ -2,6 +2,7 @@ package transport
 
 import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	gopentracing "github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/http"
 	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -10,9 +11,15 @@ import (
 )
 
 var (
-	// GRPCServerModule for fx.
+	// GRPCModule for fx.
 	// nolint:gochecknoglobals
-	GRPCServerModule = fx.Options(fx.Provide(grpc.NewServer), fx.Provide(grpc.UnaryServerInterceptor), fx.Provide(grpc.StreamServerInterceptor))
+	GRPCModule = fx.Options(
+		fx.Provide(grpc.NewServer),
+		fx.Provide(grpc.UnaryServerInterceptor),
+		fx.Provide(grpc.StreamServerInterceptor),
+		fx.Provide(prometheus.NewServerMetrics),
+		fx.Provide(prometheus.NewClientMetrics),
+	)
 
 	// GRPCOpentracingModule for fx.
 	// nolint:gochecknoglobals

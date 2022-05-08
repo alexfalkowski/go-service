@@ -28,6 +28,7 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     opentracing.Tracer
 	Version    version.Version
+	Metrics    *prometheus.ServerMetrics
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
 }
@@ -44,8 +45,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) *grpc.Server {
-	metrics := prometheus.NewServerMetrics(params.Lifecycle, params.Version)
-	opts := []grpc.ServerOption{unaryServerOption(params, metrics, params.Unary...), streamServerOption(params, metrics, params.Stream...)}
+	opts := []grpc.ServerOption{unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...)}
 	server := grpc.NewServer(opts...)
 
 	params.Lifecycle.Append(fx.Hook{
@@ -89,12 +89,12 @@ func stopServer(server *grpc.Server, params ServerParams) {
 	server.GracefulStop()
 }
 
-func unaryServerOption(params ServerParams, metrics *prometheus.ServerMetrics, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger, params.Version),
-		metrics.UnaryServerInterceptor(),
+		params.Metrics.UnaryServerInterceptor(),
 		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
@@ -103,12 +103,12 @@ func unaryServerOption(params ServerParams, metrics *prometheus.ServerMetrics, i
 	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-func streamServerOption(params ServerParams, metrics *prometheus.ServerMetrics, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger, params.Version),
-		metrics.StreamServerInterceptor(),
+		params.Metrics.StreamServerInterceptor(),
 		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 

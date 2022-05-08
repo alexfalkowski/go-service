@@ -6,10 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/uber/jaeger-client-go"
 	jconfig "github.com/uber/jaeger-client-go/config"
-	jprometheus "github.com/uber/jaeger-lib/metrics/prometheus"
 	"go.uber.org/fx"
 )
 
@@ -41,7 +39,6 @@ func NewTracer(params TracerParams) (opentracing.Tracer, error) {
 
 	options := []jconfig.Option{
 		jconfig.Logger(jaeger.NullLogger),
-		jconfig.Metrics(jprometheus.New(jprometheus.WithRegisterer(prometheus.NewRegistry()))),
 		jconfig.Tag("name", os.ExecutableName()),
 		jconfig.Tag("version", params.Version),
 	}

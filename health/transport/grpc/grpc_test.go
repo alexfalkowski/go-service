@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
@@ -22,7 +23,6 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-// nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -41,13 +41,16 @@ func TestUnary(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		params := tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
 		gs := tgrpc.NewServer(params)
+		metrics := prometheus.NewClientMetrics(lc, version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
@@ -58,6 +61,7 @@ func TestUnary(t *testing.T) {
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
+				tgrpc.WithClientMetrics(metrics),
 			)
 			So(err, ShouldBeNil)
 
@@ -78,7 +82,6 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -97,7 +100,11 @@ func TestInvalidUnary(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		params := tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
 		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -162,6 +169,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -199,7 +207,6 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -218,13 +225,16 @@ func TestStream(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		params := tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
 		gs := tgrpc.NewServer(params)
+		metrics := prometheus.NewClientMetrics(lc, version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
@@ -235,6 +245,7 @@ func TestStream(t *testing.T) {
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
+				tgrpc.WithClientMetrics(metrics),
 			)
 			So(err, ShouldBeNil)
 
@@ -258,7 +269,6 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -277,7 +287,11 @@ func TestInvalidStream(t *testing.T) {
 		hs := health.NewServer(lc, regs)
 		o := hs.Observe("http")
 		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
+		params := tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
 		gs := tgrpc.NewServer(params)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -345,6 +359,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 

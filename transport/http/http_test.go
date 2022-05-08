@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
@@ -42,7 +43,10 @@ func TestUnary(t *testing.T) {
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer, Version: version})
-		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer, Version: version})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: prometheus.NewServerMetrics(lc, version),
+		})
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -112,7 +116,10 @@ func TestDefaultClientUnary(t *testing.T) {
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
 		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})
-		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: prometheus.NewServerMetrics(lc, version),
+		})
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -191,6 +198,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -270,6 +278,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -350,6 +359,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -429,6 +439,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -502,6 +513,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -581,6 +593,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    prometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
