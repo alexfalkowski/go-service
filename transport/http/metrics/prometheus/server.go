@@ -15,7 +15,7 @@ import (
 )
 
 // ServerMetrics represents a collection of metrics to be registered on a
-// Prometheus metrics registry for a gRPC server.
+// Prometheus metrics registry for a HTTP server.
 type ServerMetrics struct {
 	serverStartedCounter    *prometheus.CounterVec
 	serverHandledCounter    *prometheus.CounterVec
@@ -25,6 +25,7 @@ type ServerMetrics struct {
 }
 
 // NewServerMetrics for prometheus.
+// nolint:dupl
 func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
@@ -99,7 +100,7 @@ func (m *ServerMetrics) Collect(ch chan<- prometheus.Metric) {
 	m.serverHandledHistogram.Collect(ch)
 }
 
-// ServeHTTP for opentracing.
+// ServerHandler for prometheus.
 func (m *ServerMetrics) ServerHandler(h http.Handler) http.Handler {
 	return &handler{metrics: m, Handler: h}
 }

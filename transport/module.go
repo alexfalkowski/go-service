@@ -31,6 +31,7 @@ var (
 	HTTPModule = fx.Options(
 		fx.Provide(http.NewServer),
 		fx.Provide(hprometheus.NewServerMetrics),
+		fx.Provide(hprometheus.NewClientMetrics),
 	)
 
 	// HTTPOpentracingModule for fx.

@@ -13,9 +13,10 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
+	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
+	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -35,7 +36,7 @@ func TestUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -44,10 +45,10 @@ func TestUnary(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, version)
+		metrics := gprometheus.NewClientMetrics(lc, version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -94,7 +95,7 @@ func TestInvalidUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -103,7 +104,7 @@ func TestInvalidUnary(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -154,7 +155,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -169,7 +170,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -219,7 +220,7 @@ func TestStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -228,10 +229,10 @@ func TestStream(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, version)
+		metrics := gprometheus.NewClientMetrics(lc, version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -281,7 +282,7 @@ func TestInvalidStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -290,7 +291,7 @@ func TestInvalidStream(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -344,7 +345,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -359,7 +360,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(params)
 

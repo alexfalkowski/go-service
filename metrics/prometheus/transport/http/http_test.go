@@ -64,7 +64,7 @@ func TestHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(logger, tracer)
+			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)
