@@ -11,6 +11,7 @@ import (
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	nprometheus "github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
@@ -156,6 +157,7 @@ func TestReceiveMessage(t *testing.T) {
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+			tnsq.WithProducerMetrics(nprometheus.NewProducerMetrics(lc, version)),
 		)
 
 		lc.RequireStart()
@@ -249,6 +251,7 @@ func TestReceiveError(t *testing.T) {
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+			tnsq.WithProducerMetrics(nprometheus.NewProducerMetrics(lc, version)),
 		)
 
 		lc.RequireStart()

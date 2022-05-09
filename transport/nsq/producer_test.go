@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
+	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
@@ -31,6 +32,7 @@ func TestProducer(t *testing.T) {
 			producer := nsq.NewProducer(
 				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
+				nsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, version)),
 			)
 
 			lc.RequireStart()

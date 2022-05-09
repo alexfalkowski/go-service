@@ -8,6 +8,8 @@ import (
 	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
+	nprometheus "github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
+	nopentracing "github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"go.uber.org/fx"
 )
 
@@ -37,6 +39,16 @@ var (
 	// HTTPOpentracingModule for fx.
 	// nolint:gochecknoglobals
 	HTTPOpentracingModule = fx.Provide(hopentracing.NewTracer)
+
+	// NSQModule for fx.
+	// nolint:gochecknoglobals
+	NSQModule = fx.Options(
+		fx.Provide(nprometheus.NewProducerMetrics),
+	)
+
+	// NSQOpentracingModule for fx.
+	// nolint:gochecknoglobals
+	NSQOpentracingModule = fx.Provide(nopentracing.NewTracer)
 
 	// NSQMsgPackMarshallerModule for fx.
 	// nolint:gochecknoglobals

@@ -14,8 +14,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-// ServerMetrics represents a collection of metrics to be registered on a
-// Prometheus metrics registry for a HTTP server.
+// ServerMetrics for prometheus.
 type ServerMetrics struct {
 	serverStartedCounter    *prometheus.CounterVec
 	serverHandledCounter    *prometheus.CounterVec
