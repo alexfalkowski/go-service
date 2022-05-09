@@ -38,6 +38,7 @@ var (
 	// nolint:gochecknoglobals
 	NSQModule = fx.Options(
 		fx.Provide(nprometheus.NewProducerMetrics),
+		fx.Provide(nprometheus.NewConsumerMetrics),
 		fx.Provide(nopentracing.NewTracer),
 		fx.Provide(marshaller.NewMsgPack),
 	)

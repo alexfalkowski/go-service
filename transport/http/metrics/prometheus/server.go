@@ -16,11 +16,11 @@ import (
 
 // ServerMetrics for prometheus.
 type ServerMetrics struct {
-	serverStartedCounter    *prometheus.CounterVec
-	serverHandledCounter    *prometheus.CounterVec
-	serverStreamMsgReceived *prometheus.CounterVec
-	serverStreamMsgSent     *prometheus.CounterVec
-	serverHandledHistogram  *prometheus.HistogramVec
+	serverStartedCounter   *prometheus.CounterVec
+	serverHandledCounter   *prometheus.CounterVec
+	serverMsgReceived      *prometheus.CounterVec
+	serverMsgSent          *prometheus.CounterVec
+	serverHandledHistogram *prometheus.HistogramVec
 }
 
 // NewServerMetrics for prometheus.
@@ -41,16 +41,16 @@ func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
 				Help:        "Total number of RPCs completed on the server, regardless of success or failure.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method", "http_code"}),
-		serverStreamMsgReceived: prometheus.NewCounterVec(
+		serverMsgReceived: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_msg_received_total",
-				Help:        "Total number of RPC stream messages received on the server.",
+				Help:        "Total number of RPC messages received on the server.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		serverStreamMsgSent: prometheus.NewCounterVec(
+		serverMsgSent: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_msg_sent_total",
-				Help:        "Total number of RPC stream messages sent by the server.",
+				Help:        "Total number of RPC messages sent by the server.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
 		serverHandledHistogram: prometheus.NewHistogramVec(
@@ -83,8 +83,8 @@ func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
 func (m *ServerMetrics) Describe(ch chan<- *prometheus.Desc) {
 	m.serverStartedCounter.Describe(ch)
 	m.serverHandledCounter.Describe(ch)
-	m.serverStreamMsgReceived.Describe(ch)
-	m.serverStreamMsgSent.Describe(ch)
+	m.serverMsgReceived.Describe(ch)
+	m.serverMsgSent.Describe(ch)
 	m.serverHandledHistogram.Describe(ch)
 }
 
@@ -94,8 +94,8 @@ func (m *ServerMetrics) Describe(ch chan<- *prometheus.Desc) {
 func (m *ServerMetrics) Collect(ch chan<- prometheus.Metric) {
 	m.serverStartedCounter.Collect(ch)
 	m.serverHandledCounter.Collect(ch)
-	m.serverStreamMsgReceived.Collect(ch)
-	m.serverStreamMsgSent.Collect(ch)
+	m.serverMsgReceived.Collect(ch)
+	m.serverMsgSent.Collect(ch)
 	m.serverHandledHistogram.Collect(ch)
 }
 
@@ -155,11 +155,11 @@ func newServerReporter(m *ServerMetrics, service, method string) *serverReporter
 }
 
 func (r *serverReporter) ReceivedMessage() {
-	r.metrics.serverStreamMsgReceived.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.serverMsgReceived.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *serverReporter) SentMessage() {
-	r.metrics.serverStreamMsgSent.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.serverMsgSent.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *serverReporter) Handled(code int) {
