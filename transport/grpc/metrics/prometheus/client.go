@@ -20,13 +20,13 @@ import (
 // ClientMetrics represents a collection of metrics to be registered on a
 // prometheus metrics registry for a gRPC client.
 type ClientMetrics struct {
-	clientStartedCounter      *prometheus.CounterVec
-	clientHandledCounter      *prometheus.CounterVec
-	clientStreamMsgReceived   *prometheus.CounterVec
-	clientStreamMsgSent       *prometheus.CounterVec
-	clientHandledHistogram    *prometheus.HistogramVec
-	clientStreamRecvHistogram *prometheus.HistogramVec
-	clientStreamSendHistogram *prometheus.HistogramVec
+	clientStartedCounter   *prometheus.CounterVec
+	clientHandledCounter   *prometheus.CounterVec
+	clientMsgReceived      *prometheus.CounterVec
+	clientMsgSent          *prometheus.CounterVec
+	clientHandledHistogram *prometheus.HistogramVec
+	clientRecvHistogram    *prometheus.HistogramVec
+	clientSendHistogram    *prometheus.HistogramVec
 }
 
 // NewClientMetrics returns a ClientMetrics object. Use a new instance of
@@ -49,16 +49,16 @@ func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 				Help:        "Total number of RPCs completed by the client, regardless of success or failure.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method", "grpc_code"}),
-		clientStreamMsgReceived: prometheus.NewCounterVec(
+		clientMsgReceived: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_msg_received_total",
-				Help:        "Total number of RPC stream messages received by the client.",
+				Help:        "Total number of RPC messages received by the client.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientStreamMsgSent: prometheus.NewCounterVec(
+		clientMsgSent: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_msg_sent_total",
-				Help:        "Total number of gRPC stream messages sent by the client.",
+				Help:        "Total number of gRPC messages sent by the client.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method"}),
 		clientHandledHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -67,13 +67,13 @@ func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 			Buckets:     prometheus.DefBuckets,
 			ConstLabels: labels,
 		}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientStreamRecvHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		clientRecvHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "grpc_client_msg_recv_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the gRPC single message receive.",
 			Buckets:     prometheus.DefBuckets,
 			ConstLabels: labels,
 		}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientStreamSendHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		clientSendHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "grpc_client_msg_send_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the gRPC single message send.",
 			Buckets:     prometheus.DefBuckets,
@@ -101,11 +101,11 @@ func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 func (m *ClientMetrics) Describe(ch chan<- *prometheus.Desc) {
 	m.clientStartedCounter.Describe(ch)
 	m.clientHandledCounter.Describe(ch)
-	m.clientStreamMsgReceived.Describe(ch)
-	m.clientStreamMsgSent.Describe(ch)
+	m.clientMsgReceived.Describe(ch)
+	m.clientMsgSent.Describe(ch)
 	m.clientHandledHistogram.Describe(ch)
-	m.clientStreamRecvHistogram.Describe(ch)
-	m.clientStreamSendHistogram.Describe(ch)
+	m.clientRecvHistogram.Describe(ch)
+	m.clientSendHistogram.Describe(ch)
 }
 
 // Collect is called by the prometheus registry when collecting
@@ -114,11 +114,11 @@ func (m *ClientMetrics) Describe(ch chan<- *prometheus.Desc) {
 func (m *ClientMetrics) Collect(ch chan<- prometheus.Metric) {
 	m.clientStartedCounter.Collect(ch)
 	m.clientHandledCounter.Collect(ch)
-	m.clientStreamMsgReceived.Collect(ch)
-	m.clientStreamMsgSent.Collect(ch)
+	m.clientMsgReceived.Collect(ch)
+	m.clientMsgSent.Collect(ch)
 	m.clientHandledHistogram.Collect(ch)
-	m.clientStreamRecvHistogram.Collect(ch)
-	m.clientStreamSendHistogram.Collect(ch)
+	m.clientRecvHistogram.Collect(ch)
+	m.clientSendHistogram.Collect(ch)
 }
 
 // UnaryClientInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
@@ -237,23 +237,23 @@ type timer interface {
 }
 
 func (r *clientReporter) ReceiveMessageTimer() timer {
-	hist := r.metrics.clientStreamRecvHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
+	hist := r.metrics.clientRecvHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
 
 	return prometheus.NewTimer(hist)
 }
 
 func (r *clientReporter) ReceivedMessage() {
-	r.metrics.clientStreamMsgReceived.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
+	r.metrics.clientMsgReceived.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) SendMessageTimer() timer {
-	hist := r.metrics.clientStreamSendHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
+	hist := r.metrics.clientSendHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
 
 	return prometheus.NewTimer(hist)
 }
 
 func (r *clientReporter) SentMessage() {
-	r.metrics.clientStreamMsgSent.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
+	r.metrics.clientMsgSent.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) Handled(code codes.Code) {
