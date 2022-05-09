@@ -15,8 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ServerMetrics represents a collection of metrics to be registered on a
-// Prometheus metrics registry for a gRPC server.
+// ServerMetrics for prometheus.
 type ServerMetrics struct {
 	serverStartedCounter   *prometheus.CounterVec
 	serverHandledCounter   *prometheus.CounterVec

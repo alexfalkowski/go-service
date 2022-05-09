@@ -17,8 +17,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ClientMetrics represents a collection of metrics to be registered on a
-// prometheus metrics registry for a gRPC client.
+// ClientMetrics for prometheus.
 type ClientMetrics struct {
 	clientStartedCounter   *prometheus.CounterVec
 	clientHandledCounter   *prometheus.CounterVec
@@ -29,10 +28,7 @@ type ClientMetrics struct {
 	clientSendHistogram    *prometheus.HistogramVec
 }
 
-// NewClientMetrics returns a ClientMetrics object. Use a new instance of
-// ClientMetrics when not using the default prometheus metrics registry, for
-// example when wanting to control which metrics are added to a registry as
-// opposed to automatically adding metrics via init functions.
+// NewClientMetrics for prometheus.
 func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
