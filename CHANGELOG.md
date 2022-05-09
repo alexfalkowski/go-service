@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.65.0](https://github.com/alexfalkowski/go-service/compare/v1.64.3...v1.65.0) (2022-05-09)
+
+
+### Features
+
+* **prometheus:** complete metrics ([#115](https://github.com/alexfalkowski/go-service/issues/115)) ([2aa04fc](https://github.com/alexfalkowski/go-service/commit/2aa04fce526d70505486f2413c07750d6fa130a0))
+
 ### [1.64.3](https://github.com/alexfalkowski/go-service/compare/v1.64.2...v1.64.3) (2022-05-07)
 
 
