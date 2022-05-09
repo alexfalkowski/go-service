@@ -22,11 +22,8 @@ var (
 		fx.Provide(grpc.StreamServerInterceptor),
 		fx.Provide(gprometheus.NewServerMetrics),
 		fx.Provide(gprometheus.NewClientMetrics),
+		fx.Provide(gopentracing.NewTracer),
 	)
-
-	// GRPCOpentracingModule for fx.
-	// nolint:gochecknoglobals
-	GRPCOpentracingModule = fx.Provide(gopentracing.NewTracer)
 
 	// HTTPModule for fx.
 	// nolint:gochecknoglobals
@@ -34,23 +31,14 @@ var (
 		fx.Provide(http.NewServer),
 		fx.Provide(hprometheus.NewServerMetrics),
 		fx.Provide(hprometheus.NewClientMetrics),
+		fx.Provide(hopentracing.NewTracer),
 	)
-
-	// HTTPOpentracingModule for fx.
-	// nolint:gochecknoglobals
-	HTTPOpentracingModule = fx.Provide(hopentracing.NewTracer)
 
 	// NSQModule for fx.
 	// nolint:gochecknoglobals
 	NSQModule = fx.Options(
 		fx.Provide(nprometheus.NewProducerMetrics),
+		fx.Provide(nopentracing.NewTracer),
+		fx.Provide(marshaller.NewMsgPack),
 	)
-
-	// NSQOpentracingModule for fx.
-	// nolint:gochecknoglobals
-	NSQOpentracingModule = fx.Provide(nopentracing.NewTracer)
-
-	// NSQMsgPackMarshallerModule for fx.
-	// nolint:gochecknoglobals
-	NSQMsgPackMarshallerModule = fx.Provide(marshaller.NewMsgPack)
 )
