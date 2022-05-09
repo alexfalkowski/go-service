@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -31,13 +32,22 @@ const (
 	nsqComponent = "nsq"
 )
 
-// Tracer for opentracing.
-type Tracer opentracing.Tracer
+// TracerParams for opentracing.
+type TracerParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *sopentracing.Config
+	Version   version.Version
+}
 
 // NewTracer for opentracing.
-func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
-	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "nsq", Config: cfg})
+func NewTracer(params TracerParams) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: params.Lifecycle, Name: "nsq", Config: params.Config, Version: params.Version})
 }
+
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
 
 // NewHandler for opentracing.
 func NewHandler(topic, channel string, tracer Tracer, h handler.Handler) *Handler {

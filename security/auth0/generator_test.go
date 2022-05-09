@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -38,10 +39,12 @@ func TestGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -87,10 +90,12 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -134,10 +139,12 @@ func TestInvalidURLGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -181,10 +188,12 @@ func TestMalformedURLGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -228,10 +237,12 @@ func TestCachedGenerate(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}

@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
+	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
@@ -25,6 +26,7 @@ type ProducerOption interface{ apply(*producerOptions) }
 type producerOptions struct {
 	logger  *zap.Logger
 	tracer  opentracing.Tracer
+	metrics *prometheus.ProducerMetrics
 	retry   bool
 	breaker bool
 }
@@ -61,6 +63,13 @@ func WithProducerTracer(tracer opentracing.Tracer) ProducerOption {
 	})
 }
 
+// WithProducerMetrics for NSQ.
+func WithProducerMetrics(metrics *prometheus.ProducerMetrics) ProducerOption {
+	return producerOptionFunc(func(o *producerOptions) {
+		o.metrics = metrics
+	})
+}
+
 // ProducerParams for NSQ.
 type ProducerParams struct {
 	Lifecycle fx.Lifecycle
@@ -93,7 +102,11 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 
 	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(defaultOptions.logger, pr)
+		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Version: params.Version, Producer: pr})
+	}
+
+	if defaultOptions.metrics != nil {
+		pr = defaultOptions.metrics.Producer(pr)
 	}
 
 	pr = opentracing.NewProducer(defaultOptions.tracer, pr)
@@ -106,7 +119,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(params.Config.UserAgent, params.Version, pr)
+	pr = meta.NewProducer(params.Config.UserAgent, pr)
 
 	return pr
 }

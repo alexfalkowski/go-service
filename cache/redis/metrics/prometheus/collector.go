@@ -1,43 +1,35 @@
 package prometheus
 
 import (
+	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/cache/v8"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const (
-	namespace = "go_redis_stats"
-	subsystem = "cache"
-)
-
-// StatsGetter is an interface that gets *cache.Stats.
-type StatsGetter interface {
-	Stats() *cache.Stats
-}
-
 // StatsCollector implements the prometheus.Collector interface.
 type StatsCollector struct {
-	sg StatsGetter
+	cache *cache.Cache
 
 	// descriptions of exported metrics
 	hitsDesc   *prometheus.Desc
 	missesDesc *prometheus.Desc
 }
 
-// NewStatsCollector creates a new StatsCollector.
-func NewStatsCollector(cacheName string, sg StatsGetter) *StatsCollector {
-	labels := prometheus.Labels{"cache_name": cacheName}
+// NewStatsCollector for prometheus.
+func NewStatsCollector(cache *cache.Cache, version version.Version) *StatsCollector {
+	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
 	return &StatsCollector{
-		sg: sg,
+		cache: cache,
 		hitsDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "hits"),
+			"redis_hits_total",
 			"The number of hits in the cache.",
 			nil,
 			labels,
 		),
 		missesDesc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, subsystem, "misses"),
+			"redis_misses_total",
 			"The number of misses in the cache.",
 			nil,
 			labels,
@@ -53,7 +45,7 @@ func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Collector interface.
 func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
-	stats := c.sg.Stats()
+	stats := c.cache.Stats()
 
 	ch <- prometheus.MustNewConstMetric(
 		c.hitsDesc,

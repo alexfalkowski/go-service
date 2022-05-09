@@ -7,11 +7,11 @@ import (
 
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -28,6 +28,7 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     opentracing.Tracer
 	Version    version.Version
+	Metrics    *prometheus.ServerMetrics
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
 }
@@ -90,10 +91,10 @@ func stopServer(server *grpc.Server, params ServerParams) {
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(params.Version),
+		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(params.Logger),
-		prometheus.UnaryServerInterceptor,
+		szap.UnaryServerInterceptor(params.Logger, params.Version),
+		params.Metrics.UnaryServerInterceptor(),
 		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
 
@@ -104,10 +105,10 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 
 func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
-		meta.StreamServerInterceptor(params.Version),
+		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(params.Logger),
-		prometheus.StreamServerInterceptor,
+		szap.StreamServerInterceptor(params.Logger, params.Version),
+		params.Metrics.StreamServerInterceptor(),
 		opentracing.StreamServerInterceptor(params.Tracer),
 	}
 

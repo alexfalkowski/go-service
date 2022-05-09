@@ -13,20 +13,6 @@ var (
 	mux  = sync.RWMutex{}
 )
 
-const (
-	versionKey = "version"
-)
-
-// WithVersion for meta.
-func WithVersion(ctx context.Context, version string) context.Context {
-	return WithAttribute(ctx, versionKey, version)
-}
-
-// Version for meta.
-func Version(ctx context.Context) string {
-	return Attribute(ctx, versionKey)
-}
-
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key, value string) context.Context {
 	mux.Lock()

@@ -11,6 +11,7 @@ import (
 	stime "github.com/alexfalkowski/go-service/time"
 	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
 	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/opentracing/opentracing-go"
@@ -33,13 +34,22 @@ const (
 	grpcComponent       = "grpc"
 )
 
-// Tracer for opentracing.
-type Tracer opentracing.Tracer
+// TracerParams for opentracing.
+type TracerParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *sopentracing.Config
+	Version   version.Version
+}
 
 // NewTracer for opentracing.
-func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
-	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "grpc", Config: cfg})
+func NewTracer(params TracerParams) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: params.Lifecycle, Name: "grpc", Config: params.Config, Version: params.Version})
 }
+
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
 
 // UnaryServerInterceptor for opentracing.
 func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {

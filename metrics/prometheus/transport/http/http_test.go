@@ -16,7 +16,9 @@ import (
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -29,31 +31,32 @@ func TestHTTP(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		So(err, ShouldBeNil)
+
+		_, err = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: version})
 		So(err, ShouldBeNil)
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
-
-		_, err = pg.NewDB(lc, &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"})
-		So(err, ShouldBeNil)
-
 		r := redis.NewRing(lc, rcfg)
 		oparams := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
 		opts := redis.NewOptions(oparams)
-		_ = redis.NewCache(lc, rcfg, opts)
+		_ = redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: rcfg, Options: opts, Version: version})
 
-		ricfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
+		ricfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
-		_, err = ristretto.NewCache(lc, ricfg)
+		_, err = ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{Lifecycle: lc, Shutdowner: test.NewShutdowner(), Config: cfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(params)
+		hparams := shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
+		httpServer := shttp.NewServer(hparams)
 
 		err = phttp.Register(httpServer)
 		So(err, ShouldBeNil)
@@ -61,7 +64,7 @@ func TestHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(logger, tracer)
+			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -78,9 +81,9 @@ func TestHTTP(t *testing.T) {
 				response := string(body)
 
 				So(response, ShouldContainSubstring, "go_info")
-				So(response, ShouldContainSubstring, "go_sql_stats")
-				So(response, ShouldContainSubstring, "go_redis_stats")
-				So(response, ShouldContainSubstring, "go_ristretto_stats")
+				So(response, ShouldContainSubstring, "redis_hits_total")
+				So(response, ShouldContainSubstring, "ristretto_hits_total")
+				So(response, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})
 

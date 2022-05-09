@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/meta"
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
@@ -15,17 +14,15 @@ import (
 
 // NewHandler for meta.
 func NewHandler(version version.Version, h handler.Handler) *Handler {
-	return &Handler{version: version, Handler: h}
+	return &Handler{Handler: h}
 }
 
 // Handler for meta.
 type Handler struct {
-	version version.Version
 	handler.Handler
 }
 
 func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
-	ctx = meta.WithVersion(ctx, string(h.version))
 	ctx = tmeta.WithUserAgent(ctx, extractUserAgent(ctx, message.Headers))
 
 	requestID := extractRequestID(ctx, message.Headers)
@@ -40,21 +37,17 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for meta.
-func NewProducer(userAgent string, version version.Version, p producer.Producer) *Producer {
-	return &Producer{userAgent: userAgent, version: version, Producer: p}
+func NewProducer(userAgent string, p producer.Producer) *Producer {
+	return &Producer{userAgent: userAgent, Producer: p}
 }
 
 // Producer for meta.
 type Producer struct {
 	userAgent string
-	version   version.Version
 	producer.Producer
 }
 
 func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
-	message.Headers["version"] = string(p.version)
-	ctx = meta.WithVersion(ctx, string(p.version))
-
 	userAgent := tmeta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = p.userAgent

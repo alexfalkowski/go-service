@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -28,6 +29,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	logger   *zap.Logger
 	tracer   opentracing.Tracer
+	metrics  *prometheus.ClientMetrics
 	retry    bool
 	breaker  bool
 	opts     []grpc.DialOption
@@ -96,6 +98,13 @@ func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	})
 }
 
+// WithClientConfig for gRPC.
+func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.metrics = metrics
+	})
+}
+
 // ClientParams for gRPC.
 type ClientParams struct {
 	Context context.Context
@@ -139,10 +148,14 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent, params.Version))
+	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent))
 
 	if opts.logger != nil {
-		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
+		unary = append(unary, szap.UnaryClientInterceptor(opts.logger, params.Version))
+	}
+
+	if opts.metrics != nil {
+		unary = append(unary, opts.metrics.UnaryClientInterceptor())
 	}
 
 	unary = append(unary, opentracing.UnaryClientInterceptor(opts.tracer))
@@ -152,10 +165,14 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 }
 
 func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
-	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent, params.Version)}
+	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent)}
 
 	if opts.logger != nil {
-		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
+		stream = append(stream, szap.StreamClientInterceptor(opts.logger, params.Version))
+	}
+
+	if opts.metrics != nil {
+		stream = append(stream, opts.metrics.StreamClientInterceptor())
 	}
 
 	stream = append(stream, opentracing.StreamClientInterceptor(opts.tracer))

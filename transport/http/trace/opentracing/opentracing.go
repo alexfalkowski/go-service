@@ -10,6 +10,7 @@ import (
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
 	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -27,13 +28,22 @@ const (
 	httpComponent       = "http"
 )
 
-// Tracer for opentracing.
-type Tracer opentracing.Tracer
+// TracerParams for opentracing.
+type TracerParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *sopentracing.Config
+	Version   version.Version
+}
 
 // NewTracer for opentracing.
-func NewTracer(lc fx.Lifecycle, cfg *sopentracing.Config) (Tracer, error) {
-	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: lc, Name: "http", Config: cfg})
+func NewTracer(params TracerParams) (Tracer, error) {
+	return sopentracing.NewTracer(sopentracing.TracerParams{Lifecycle: params.Lifecycle, Name: "http", Config: params.Config, Version: params.Version})
 }
+
+// Tracer for opentracing.
+type Tracer opentracing.Tracer
 
 // Handler for opentracing.
 type Handler struct {
@@ -46,9 +56,10 @@ func NewHandler(tracer Tracer, handler http.Handler) *Handler {
 	return &Handler{tracer: tracer, Handler: handler}
 }
 
+// ServeHTTP for opentracing.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	url := req.URL.String()
-	if sstrings.IsHealth(url) {
+	service, method := req.URL.Path, strings.ToLower(req.Method)
+	if sstrings.IsHealth(service) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
@@ -56,14 +67,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 	start := time.Now().UTC()
 	ctx := req.Context()
-	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, url)
+	operationName := fmt.Sprintf("%s %s", method, service)
 	carrier := opentracing.HTTPHeadersCarrier(req.Header)
 	traceCtx, _ := h.tracer.Extract(opentracing.HTTPHeaders, carrier)
 	opts := []opentracing.StartSpanOption{
 		ext.RPCServerOption(traceCtx),
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: url},
+		opentracing.Tag{Key: httpURL, Value: service},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCServer,
@@ -99,18 +109,17 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	url := req.URL.String()
-	if sstrings.IsHealth(url) {
+	if sstrings.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
 	start := time.Now().UTC()
 	ctx := req.Context()
-	method := strings.ToLower(req.Method)
-	operationName := fmt.Sprintf("%s %s", method, url)
+	operationName := fmt.Sprintf("%s %s", method, service)
 	opts := []opentracing.StartSpanOption{
 		opentracing.Tag{Key: httpStartTime, Value: start.Format(time.RFC3339)},
-		opentracing.Tag{Key: httpURL, Value: url},
+		opentracing.Tag{Key: httpURL, Value: service},
 		opentracing.Tag{Key: httpMethod, Value: method},
 		opentracing.Tag{Key: component, Value: httpComponent},
 		ext.SpanKindRPCClient,

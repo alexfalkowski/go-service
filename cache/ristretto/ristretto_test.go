@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -20,7 +21,7 @@ func TestCache(t *testing.T) {
 		}
 		lc := fxtest.NewLifecycle(t)
 
-		c, err := ristretto.NewCache(lc, cfg)
+		c, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -55,7 +56,7 @@ func TestInvalidCache(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to create a cache", func() {
-			_, err := ristretto.NewCache(lc, cfg)
+			_, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version.Version("1.0.0")})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldNotBeNil)

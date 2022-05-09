@@ -8,6 +8,7 @@ import (
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
+	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
@@ -20,8 +21,9 @@ import (
 type ConsumerOption interface{ apply(*consumerOptions) }
 
 type consumerOptions struct {
-	logger *zap.Logger
-	tracer opentracing.Tracer
+	logger  *zap.Logger
+	tracer  opentracing.Tracer
+	metrics *prometheus.ConsumerMetrics
 }
 
 type consumerOptionFunc func(*consumerOptions)
@@ -39,6 +41,13 @@ func WithConsumerLogger(logger *zap.Logger) ConsumerOption {
 func WithConsumerTracer(tracer opentracing.Tracer) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
 		o.tracer = tracer
+	})
+}
+
+// WithConsumerMetrics for NSQ.
+func WithConsumerMetrics(metrics *prometheus.ConsumerMetrics) ConsumerOption {
+	return consumerOptionFunc(func(o *consumerOptions) {
+		o.metrics = metrics
 	})
 }
 
@@ -72,7 +81,11 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 	var h handler.Handler = params.Handler
 
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(params.Topic, params.Channel, defaultOptions.logger, h)
+		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Version: params.Version, Handler: h})
+	}
+
+	if defaultOptions.metrics != nil {
+		h = defaultOptions.metrics.Handler(params.Topic, params.Channel, h)
 	}
 
 	h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)

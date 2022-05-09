@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
+	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
@@ -19,6 +20,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	logger       *zap.Logger
 	tracer       opentracing.Tracer
+	metrics      *prometheus.ClientMetrics
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -63,6 +65,13 @@ func WithClientTracer(tracer opentracing.Tracer) ClientOption {
 	})
 }
 
+// WithClientMetrics for HTTP.
+func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.metrics = metrics
+	})
+}
+
 // ClientParams for HTTP.
 type ClientParams struct {
 	Version version.Version
@@ -86,7 +95,11 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	}
 
 	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(opts.logger, hrt)
+		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, Version: params.Version, RoundTripper: hrt})
+	}
+
+	if opts.metrics != nil {
+		hrt = opts.metrics.RoundTripper(hrt)
 	}
 
 	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
@@ -99,7 +112,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
-	hrt = meta.NewRoundTripper(params.Config.UserAgent, params.Version, hrt)
+	hrt = meta.NewRoundTripper(params.Config.UserAgent, hrt)
 
 	return hrt
 }

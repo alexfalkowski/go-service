@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/form3tech-oss/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -45,10 +46,12 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -83,7 +86,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
@@ -107,10 +110,12 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -146,7 +151,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+// nolint:dupl,funlen
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		cfg := &ristretto.Config{
@@ -170,10 +175,12 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -232,10 +239,12 @@ func TestCorruptToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -280,10 +289,12 @@ func TestMissingAudienceToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -338,10 +349,12 @@ func TestMissingIssuerToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -397,10 +410,12 @@ func TestInvalidCertificateToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -457,10 +472,12 @@ func TestMissingKidToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(lc, cfg)
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}

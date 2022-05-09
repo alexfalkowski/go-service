@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	retry "github.com/avast/retry-go/v3"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // ErrInvalidStatusCode for http retry.
@@ -35,12 +36,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx))
-		if err != nil {
-			return err
-		}
+		ok, perr := retryablehttp.ErrorPropagatedRetryPolicy(tctx, res, err)
 
-		if res.StatusCode == 0 || (res.StatusCode >= 500 && res.StatusCode != 501) {
-			return ErrInvalidStatusCode
+		if ok {
+			if perr != nil {
+				return perr
+			}
+
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

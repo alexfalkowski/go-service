@@ -11,6 +11,7 @@ import (
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
@@ -26,12 +27,13 @@ func TestConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -41,6 +43,7 @@ func TestConsumer(t *testing.T) {
 					Version: version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 			)
 
 			lc.RequireStart()
@@ -62,12 +65,13 @@ func TestInvalidConsumer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -77,6 +81,7 @@ func TestInvalidConsumer(t *testing.T) {
 					Version: version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 			)
 
 			lc.RequireStart()
@@ -97,12 +102,13 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		Convey("When I register a consumer", func() {
 			err = tnsq.RegisterConsumer(
@@ -112,6 +118,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 					Version: version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 			)
 
 			lc.RequireStart()
@@ -132,12 +139,13 @@ func TestReceiveMessage(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{
@@ -146,12 +154,14 @@ func TestReceiveMessage(t *testing.T) {
 				Version: version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, version)),
 		)
 
 		lc.RequireStart()
@@ -179,12 +189,13 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(nil)
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{
@@ -193,6 +204,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 				Version: version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 		)
 		So(err, ShouldBeNil)
 
@@ -223,12 +235,13 @@ func TestReceiveError(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewNSQConfig()
 		handler := test.NewHandler(errors.New("something went wrong"))
-		version := version.Version("1.0.0")
 
 		err = tnsq.RegisterConsumer(
 			tnsq.ConsumerParams{
@@ -237,12 +250,14 @@ func TestReceiveError(t *testing.T) {
 				Version: version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: version},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
+			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, version)),
 		)
 
 		lc.RequireStart()

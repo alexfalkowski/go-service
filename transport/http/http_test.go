@@ -15,8 +15,10 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
+	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
+	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
@@ -34,14 +36,21 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		version := version.Version("1.0.0")
-		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer, Version: version})
-		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer, Version: version})
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: gprometheus.NewServerMetrics(lc, version),
+		})
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -64,7 +73,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := test.NewHTTPClient(logger, tracer)
+			client := test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -103,12 +112,21 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewDatadogConfig())
 		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
+		So(err, ShouldBeNil)
+
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hs := shttp.NewServer(shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer})
-		gs := tgrpc.NewServer(tgrpc.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger, Tracer: tracer})
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
+		gs := tgrpc.NewServer(tgrpc.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: grpcCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: gprometheus.NewServerMetrics(lc, version),
+		})
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 
@@ -168,14 +186,17 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -186,6 +207,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -204,12 +226,12 @@ func TestValidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, httpServer.Mux, conn)
+		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, tracer, version, hprometheus.NewClientMetrics(lc, version), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -246,14 +268,17 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		httpServer := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -264,6 +289,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -283,12 +309,12 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, httpServer.Mux, conn)
+		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, tracer, version, hprometheus.NewClientMetrics(lc, version), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -325,14 +351,17 @@ func TestMissingAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		hs := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -343,6 +372,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -366,7 +396,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := test.NewHTTPClient(logger, tracer)
+			client := test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -403,14 +433,17 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		hs := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -421,6 +454,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -445,7 +479,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, tracer, version, hprometheus.NewClientMetrics(lc, version), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -475,14 +509,17 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		hs := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -493,6 +530,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -516,7 +554,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := test.NewHTTPClient(logger, tracer)
+			client := test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version))
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))
@@ -553,14 +591,17 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(lc, test.NewJaegerConfig())
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
 		grpcCfg := test.NewGRPCConfig()
 		httpCfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger, Tracer: tracer}
-		hs := shttp.NewServer(hparams)
+		hs := shttp.NewServer(shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: sh, Config: httpCfg, Logger: logger,
+			Tracer: tracer, Version: version, Metrics: hprometheus.NewServerMetrics(lc, version),
+		})
 
 		verifier := test.NewVerifier("test")
 		gparams := tgrpc.ServerParams{
@@ -571,6 +612,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			Metrics:    gprometheus.NewServerMetrics(lc, version),
 		}
 		gs := tgrpc.NewServer(gparams)
 
@@ -595,7 +637,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, transport)
+			client := test.NewHTTPClientWithRoundTripper(logger, tracer, version, hprometheus.NewClientMetrics(lc, version), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", httpCfg.Port), bytes.NewBuffer(message))

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/meta"
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/google/uuid"
@@ -14,18 +13,16 @@ import (
 
 // Handler for meta.
 type Handler struct {
-	version version.Version
 	http.Handler
 }
 
 // NewHandler for meta.
 func NewHandler(version version.Version, handler http.Handler) *Handler {
-	return &Handler{version: version, Handler: handler}
+	return &Handler{Handler: handler}
 }
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	ctx = meta.WithVersion(ctx, string(h.version))
 	ctx = tmeta.WithUserAgent(ctx, extractUserAgent(ctx, req))
 
 	requestID := extractRequestID(ctx, req)
@@ -40,20 +37,18 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for meta.
-func NewRoundTripper(userAgent string, version version.Version, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{userAgent: userAgent, version: version, RoundTripper: hrt}
+func NewRoundTripper(userAgent string, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{userAgent: userAgent, RoundTripper: hrt}
 }
 
 // RoundTripper for meta.
 type RoundTripper struct {
 	userAgent string
-	version   version.Version
 	http.RoundTripper
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
-	ctx = meta.WithVersion(ctx, string(r.version))
 
 	userAgent := tmeta.UserAgent(ctx)
 	if userAgent == "" {
@@ -97,8 +92,8 @@ func extractRemoteAddress(ctx context.Context, req *http.Request) string {
 		return strings.Split(forwardedFor, ",")[0]
 	}
 
-	if ip, _, err := net.SplitHostPort(req.RemoteAddr); err != nil && ip != "" {
-		return ip
+	if host, _, err := net.SplitHostPort(req.RemoteAddr); err != nil && host != "" {
+		return host
 	}
 
 	return tmeta.RemoteAddress(ctx)
