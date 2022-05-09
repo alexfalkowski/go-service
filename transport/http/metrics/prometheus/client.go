@@ -97,8 +97,8 @@ func (m *ClientMetrics) Collect(ch chan<- prometheus.Metric) {
 	m.clientHandledHistogram.Collect(ch)
 }
 
-// ClientRoundTripper for prometheus.
-func (m *ClientMetrics) ClientRoundTripper(rt http.RoundTripper) http.RoundTripper {
+// RoundTripper for prometheus.
+func (m *ClientMetrics) RoundTripper(rt http.RoundTripper) http.RoundTripper {
 	return &roundTripper{Metrics: m, RoundTripper: rt}
 }
 

@@ -99,8 +99,8 @@ func (m *ServerMetrics) Collect(ch chan<- prometheus.Metric) {
 	m.serverHandledHistogram.Collect(ch)
 }
 
-// ServerHandler for prometheus.
-func (m *ServerMetrics) ServerHandler(h http.Handler) http.Handler {
+// Handler for prometheus.
+func (m *ServerMetrics) Handler(h http.Handler) http.Handler {
 	return &handler{metrics: m, Handler: h}
 }
 

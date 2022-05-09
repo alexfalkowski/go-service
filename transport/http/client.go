@@ -99,7 +99,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	}
 
 	if opts.metrics != nil {
-		hrt = opts.metrics.ClientRoundTripper(hrt)
+		hrt = opts.metrics.RoundTripper(hrt)
 	}
 
 	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
