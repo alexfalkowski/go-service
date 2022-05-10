@@ -19,7 +19,7 @@ const (
 func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
 	resister("/health", server.Mux, hob.Observer, true)
 	resister("/liveness", server.Mux, lob.Observer, false)
-	resister("/readiness", server.Mux, hob.Observer, false)
+	resister("/readiness", server.Mux, rob.Observer, false)
 
 	return nil
 }

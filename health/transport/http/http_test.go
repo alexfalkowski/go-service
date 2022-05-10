@@ -197,6 +197,63 @@ func TestReadiness(t *testing.T) {
 	})
 }
 
+func TestReadinessNoop(t *testing.T) {
+	Convey("Given I register the health handler", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		logger, err := zap.NewLogger(lc, zap.NewConfig())
+		So(err, ShouldBeNil)
+
+		version := version.Version("1.0.0")
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		So(err, ShouldBeNil)
+
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+		no := checker.NewNoopChecker()
+		nr := server.NewRegistration("noop", 10*time.Millisecond, no)
+		regs := health.Registrations{hr, nr}
+		server := health.NewServer(lc, regs)
+		o := server.Observe("http")
+		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
+		params := shttp.ServerParams{
+			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
+			Config: cfg, Logger: logger, Tracer: tracer,
+			Metrics: prometheus.NewServerMetrics(lc, version),
+		}
+		httpServer := shttp.NewServer(params)
+
+		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: server.Observe("noop")})
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
+
+		Convey("When I query health", func() {
+			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			actual := strings.TrimSpace(string(body))
+
+			lc.RequireStop()
+
+			Convey("Then I should have a healthy response", func() {
+				So(actual, ShouldEqual, `{"status":"SERVING"}`)
+			})
+		})
+	})
+}
+
 // nolint:dupl
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
