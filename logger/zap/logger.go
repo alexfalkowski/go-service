@@ -16,7 +16,7 @@ func NewLogger(lc fx.Lifecycle, cfg zap.Config) (*zap.Logger, error) {
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			logger.Sync() // nolint:errcheck
+			_ = logger.Sync()
 
 			return nil
 		},
