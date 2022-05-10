@@ -243,6 +243,6 @@ func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
 		time.Sleep(5 * time.Second)
 
-		s.Shutdown() // nolint:errcheck
+		_ = s.Shutdown()
 	}(s)
 }

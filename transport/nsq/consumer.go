@@ -78,7 +78,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	var h handler.Handler = params.Handler
+	h := params.Handler
 
 	if defaultOptions.logger != nil {
 		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Version: params.Version, Handler: h})

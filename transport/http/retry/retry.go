@@ -51,7 +51,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil
 	}
 
-	retry.Do(operation, retry.Attempts(r.cfg.Attempts)) // nolint:errcheck
+	_ = retry.Do(operation, retry.Attempts(r.cfg.Attempts))
 
 	return res, err
 }

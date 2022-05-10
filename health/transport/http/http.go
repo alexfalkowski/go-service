@@ -58,6 +58,6 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withE
 			}
 		}
 
-		json.NewEncoder(w).Encode(data) // nolint:errcheck,errchkjson
+		_ = json.NewEncoder(w).Encode(data)
 	})
 }
