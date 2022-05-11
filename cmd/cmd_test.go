@@ -21,6 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -178,7 +179,7 @@ func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Con
 }
 
 func ver() version.Version {
-	return version.Version("1.0.0")
+	return test.Version
 }
 
 func shutdown(s fx.Shutdowner) {

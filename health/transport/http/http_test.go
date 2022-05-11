@@ -20,7 +20,6 @@ import (
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -32,15 +31,13 @@ func TestHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		rcfg := &redis.Config{Host: "localhost:6379"}
 		r := redis.NewRing(lc, rcfg)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		rc := hchecker.NewRedisChecker(r, 1*time.Second)
 		rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
@@ -51,7 +48,7 @@ func TestHealth(t *testing.T) {
 		params := shttp.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		httpServer := shttp.NewServer(params)
 
@@ -61,7 +58,7 @@ func TestHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -93,12 +90,10 @@ func TestLiveness(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		server := health.NewServer(lc, regs)
@@ -107,7 +102,7 @@ func TestLiveness(t *testing.T) {
 		params := shttp.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		httpServer := shttp.NewServer(params)
 
@@ -117,7 +112,7 @@ func TestLiveness(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/liveness", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -149,12 +144,10 @@ func TestReadiness(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		server := health.NewServer(lc, regs)
@@ -163,7 +156,7 @@ func TestReadiness(t *testing.T) {
 		params := shttp.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		httpServer := shttp.NewServer(params)
 
@@ -173,7 +166,7 @@ func TestReadiness(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -204,12 +197,10 @@ func TestReadinessNoop(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		no := checker.NewNoopChecker()
 		nr := server.NewRegistration("noop", 10*time.Millisecond, no)
@@ -220,7 +211,7 @@ func TestReadinessNoop(t *testing.T) {
 		params := shttp.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		httpServer := shttp.NewServer(params)
 
@@ -230,7 +221,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -262,12 +253,10 @@ func TestInvalidHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		server := health.NewServer(lc, regs)
@@ -276,7 +265,7 @@ func TestInvalidHealth(t *testing.T) {
 		params := shttp.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		httpServer := shttp.NewServer(params)
 
@@ -286,7 +275,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, version, prometheus.NewClientMetrics(lc, version))
+			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
