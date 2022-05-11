@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/form3tech-oss/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -25,12 +24,6 @@ const (
 
 func TestInvalidJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -46,12 +39,11 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -61,11 +53,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-				"iss": acfg.Issuer,
-				"kid": "none",
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -86,15 +74,9 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -110,12 +92,11 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -125,11 +106,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-				"iss": acfg.Issuer,
-				"kid": "none",
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -151,15 +128,9 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -175,12 +146,11 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -190,11 +160,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-				"iss": acfg.Issuer,
-				"kid": "none",
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -218,12 +184,6 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 
 func TestCorruptToken(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -239,12 +199,11 @@ func TestCorruptToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -268,12 +227,6 @@ func TestCorruptToken(t *testing.T) {
 
 func TestMissingAudienceToken(t *testing.T) {
 	Convey("Given I have a missing audience in token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -289,12 +242,11 @@ func TestMissingAudienceToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -326,12 +278,6 @@ func TestMissingAudienceToken(t *testing.T) {
 
 func TestMissingIssuerToken(t *testing.T) {
 	Convey("Given I have a missing issuer in token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -349,12 +295,11 @@ func TestMissingIssuerToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -364,9 +309,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -389,12 +332,6 @@ func TestMissingIssuerToken(t *testing.T) {
 
 func TestInvalidCertificateToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -410,12 +347,11 @@ func TestInvalidCertificateToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -425,10 +361,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-				"iss": acfg.Issuer,
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -451,12 +384,6 @@ func TestInvalidCertificateToken(t *testing.T) {
 
 func TestMissingKidToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
-
 		lc := fxtest.NewLifecycle(t)
 
 		acfg := &auth0.Config{
@@ -472,12 +399,11 @@ func TestMissingKidToken(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: version})
+		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -487,11 +413,7 @@ func TestMissingKidToken(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{
-				"aud": acfg.Audience,
-				"iss": acfg.Issuer,
-				"kid": "none",
-			}
+			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)

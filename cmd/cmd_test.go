@@ -21,6 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/logger"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -37,20 +38,9 @@ func TestShutdown(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
-			opts := []fx.Option{
-				fx.NopLogger,
-				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-				transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
-				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
-			}
-
 			c := cmd.New()
 			c.AddVersion("1.0.0")
-			c.AddWorker(opts)
+			c.AddWorker(opts())
 
 			Convey("Then I should not see an error", func() {
 				So(c.RunWithArg("worker"), ShouldBeNil)
@@ -66,20 +56,9 @@ func TestRun(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
-			opts := []fx.Option{
-				fx.NopLogger,
-				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-				transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
-				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
-			}
-
 			c := cmd.New()
 			c.AddVersion("1.0.0")
-			c.AddWorker(opts)
+			c.AddWorker(opts())
 
 			Convey("Then I should not see an error", func() {
 				So(c.Run(), ShouldBeNil)
@@ -90,25 +69,13 @@ func TestRun(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidHTTP(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_http.config.yml")
 
 		Convey("When I try to run an application", func() {
-			opts := []fx.Option{
-				fx.NopLogger,
-				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-				transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
-				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
-			}
-
 			c := cmd.New()
-			c.AddServer(opts)
+			c.AddServer(opts())
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArg("server")
@@ -122,25 +89,13 @@ func TestInvalidHTTP(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidGRPC(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
 
 		Convey("When I try to run an application", func() {
-			opts := []fx.Option{
-				fx.NopLogger,
-				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-				transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
-				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
-			}
-
 			c := cmd.New()
-			c.AddServer(opts)
+			c.AddServer(opts())
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArg("server")
@@ -169,25 +124,13 @@ func TestClient(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidClient(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
 
 		Convey("When I try to run an application", func() {
-			opts := []fx.Option{
-				fx.NopLogger,
-				config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
-				cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-				security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-				transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
-				cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
-				fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-				fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
-			}
-
 			c := cmd.New()
-			c.AddClient(opts)
+			c.AddClient(opts())
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArg("client")
@@ -236,7 +179,7 @@ func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Con
 }
 
 func ver() version.Version {
-	return version.Version("1.0.0")
+	return test.Version
 }
 
 func shutdown(s fx.Shutdowner) {
@@ -245,4 +188,17 @@ func shutdown(s fx.Shutdowner) {
 
 		_ = s.Shutdown()
 	}(s)
+}
+
+func opts() []fx.Option {
+	return []fx.Option{
+		fx.NopLogger,
+		config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
+		cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
+		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
+		transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
+		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
+		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
+	}
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -29,19 +28,17 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer, Version: version,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Config: cfg, Logger: logger, Tracer: tracer, Version: test.Version,
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, version)
+		metrics := prometheus.NewClientMetrics(lc, test.Version)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 		lc.RequireStart()
@@ -50,7 +47,7 @@ func TestUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -85,9 +82,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -100,7 +95,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -112,7 +107,7 @@ func TestValidAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -148,9 +143,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -163,7 +156,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -175,7 +168,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -210,9 +203,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -225,7 +216,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -237,7 +228,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -271,9 +262,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -286,7 +275,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -298,7 +287,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -329,9 +318,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -344,7 +331,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -356,7 +343,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -390,19 +377,17 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, version),
+			Metrics: prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, version)
+		metrics := prometheus.NewClientMetrics(lc, test.Version)
 
 		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 		lc.RequireStart()
@@ -411,7 +396,7 @@ func TestStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -452,9 +437,7 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -467,7 +450,7 @@ func TestValidAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -479,7 +462,7 @@ func TestValidAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -520,9 +503,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -535,7 +516,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -547,7 +528,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -586,9 +567,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -601,7 +580,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -613,7 +592,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -646,9 +625,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -661,7 +638,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -673,7 +650,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -709,9 +686,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -724,7 +699,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -736,7 +711,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -769,9 +744,7 @@ func TestBreakerUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := test.NewGRPCConfig()
@@ -784,7 +757,7 @@ func TestBreakerUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, version),
+			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -796,7 +769,7 @@ func TestBreakerUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),

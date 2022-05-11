@@ -17,7 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/version"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -31,12 +30,10 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -45,10 +42,10 @@ func TestUnary(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := gprometheus.NewClientMetrics(lc, version)
+		metrics := gprometheus.NewClientMetrics(lc, test.Version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -58,7 +55,7 @@ func TestUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -90,12 +87,10 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -104,7 +99,7 @@ func TestInvalidUnary(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -118,7 +113,7 @@ func TestInvalidUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -142,7 +137,6 @@ func TestInvalidUnary(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -150,12 +144,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -170,7 +162,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    gprometheus.NewServerMetrics(lc, version),
+			Metrics:    gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -184,7 +176,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -215,12 +207,10 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -229,10 +219,10 @@ func TestStream(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
-		metrics := gprometheus.NewClientMetrics(lc, version)
+		metrics := gprometheus.NewClientMetrics(lc, test.Version)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -242,7 +232,7 @@ func TestStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -277,12 +267,10 @@ func TestInvalidStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -291,7 +279,7 @@ func TestInvalidStream(t *testing.T) {
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
 			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, version),
+			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -305,7 +293,7 @@ func TestInvalidStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -340,12 +328,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		version := version.Version("1.0.0")
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, version, hprometheus.NewClientMetrics(lc, version)))
+		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 		regs := health.Registrations{hr}
 		hs := health.NewServer(lc, regs)
@@ -360,7 +346,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			Tracer:     tracer,
 			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    gprometheus.NewServerMetrics(lc, version),
+			Metrics:    gprometheus.NewServerMetrics(lc, test.Version),
 		}
 		gs := tgrpc.NewServer(params)
 
@@ -374,7 +360,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),

@@ -8,10 +8,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -20,16 +18,11 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
-		r := redis.NewRing(lc, cfg)
-		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
-		opts := redis.NewOptions(params)
-		version := version.Version("1.0.0")
-		c := redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: version})
+		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
@@ -58,16 +51,11 @@ func TestCache(t *testing.T) {
 
 func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &redis.Config{Host: "invalid_host"}
 		lc := fxtest.NewLifecycle(t)
-		r := redis.NewRing(lc, cfg)
-		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
-		opts := redis.NewOptions(params)
-		version := version.Version("1.0.0")
-		c := redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: version})
+		c := test.NewRedisCache(lc, "invalid_host", compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
@@ -91,16 +79,11 @@ func TestInvalidHostCache(t *testing.T) {
 // nolint:goerr113
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
-		r := redis.NewRing(lc, cfg)
-		params := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: test.NewMarshaller(errors.New("failed"))}
-		opts := redis.NewOptions(params)
-		version := version.Version("1.0.0")
-		c := redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: version})
+		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
@@ -125,16 +108,11 @@ func TestInvalidMarshallerCache(t *testing.T) {
 // nolint:goerr113
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &redis.Config{Host: "localhost:6379"}
 		lc := fxtest.NewLifecycle(t)
-		r := redis.NewRing(lc, cfg)
-		params := redis.OptionsParams{Ring: r, Compressor: test.NewCompressor(errors.New("failed")), Marshaller: marshaller.NewProto()}
-		opts := redis.NewOptions(params)
-		version := version.Version("1.0.0")
-		c := redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: version})
+		c := test.NewRedisCache(lc, "localhost:6379", test.NewCompressor(errors.New("failed")), marshaller.NewProto())
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: version})
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
