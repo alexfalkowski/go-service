@@ -37,14 +37,7 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-		metrics := gprometheus.NewClientMetrics(lc, test.Version)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -54,11 +47,11 @@ func TestUnary(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(metrics),
+				tgrpc.WithClientMetrics(gprometheus.NewClientMetrics(lc, test.Version)),
 			)
 			So(err, ShouldBeNil)
 
@@ -90,25 +83,17 @@ func TestInvalidUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -143,31 +128,21 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -202,14 +177,7 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-		metrics := gprometheus.NewClientMetrics(lc, test.Version)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -219,11 +187,11 @@ func TestStream(t *testing.T) {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(metrics),
+				tgrpc.WithClientMetrics(gprometheus.NewClientMetrics(lc, test.Version)),
 			)
 			So(err, ShouldBeNil)
 
@@ -258,25 +226,17 @@ func TestInvalidStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),
@@ -314,31 +274,21 @@ func TestIgnoreAuthStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    gprometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
+		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
-
 		lc.RequireStart()
-
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
 			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
+				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
 				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 				tgrpc.WithClientDialOption(grpc.WithBlock()),

@@ -15,14 +15,12 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:funlen
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -47,15 +45,9 @@ func TestHTTP(t *testing.T) {
 		_, err = ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		hparams := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(hparams)
+		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
-		err = phttp.Register(httpServer)
+		err = phttp.Register(hs)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -63,7 +55,7 @@ func TestHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", hport), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

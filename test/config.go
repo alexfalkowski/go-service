@@ -29,6 +29,7 @@ func NewGRPCConfig() *grpc.Config {
 // NewHTTPConfig for test.
 func NewHTTPConfig() *http.Config {
 	return &http.Config{
+		Port:      GenerateRandomPort(),
 		UserAgent: "TestHTTP/1.0",
 		Retry: hretry.Config{
 			Timeout:  timeout,
