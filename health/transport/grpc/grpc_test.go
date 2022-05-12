@@ -3,11 +3,13 @@ package grpc_test
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
+	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/logger/zap"
@@ -18,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -33,11 +36,7 @@ func TestUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
@@ -90,11 +89,7 @@ func TestInvalidUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
@@ -147,11 +142,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
@@ -210,11 +201,7 @@ func TestStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
@@ -270,11 +257,7 @@ func TestInvalidStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		params := tgrpc.ServerParams{
 			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
@@ -320,7 +303,6 @@ func TestInvalidStream(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -331,11 +313,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		hs := health.NewServer(lc, regs)
-		o := hs.Observe("http")
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
 		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
 		params := tgrpc.ServerParams{
@@ -385,4 +363,13 @@ func TestIgnoreAuthStream(t *testing.T) {
 			})
 		})
 	})
+}
+
+func observer(lc fx.Lifecycle, url string, client *http.Client) *subscriber.Observer {
+	cc := checker.NewHTTPChecker(url, client)
+	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+	regs := health.Registrations{hr}
+	hs := health.NewServer(lc, regs)
+
+	return hs.Observe("http")
 }
