@@ -33,7 +33,6 @@ func TestCache(t *testing.T) {
 				v, ok := c.Get("test")
 				So(ok, ShouldBeTrue)
 
-				// nolint:forcetypeassert
 				r := v.(*grpc_health_v1.HealthCheckResponse)
 
 				So(r.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)

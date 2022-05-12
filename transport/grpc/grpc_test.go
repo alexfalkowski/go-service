@@ -3,17 +3,13 @@ package grpc_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
-	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -28,33 +24,13 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer, Version: test.Version,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, test.Version)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(metrics),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -82,42 +58,17 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -143,42 +94,17 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -203,42 +129,17 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -262,38 +163,17 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -310,7 +190,6 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:goerr113
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -318,42 +197,17 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error")))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -377,33 +231,13 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
-		cfg := test.NewGRPCConfig()
-		params := tgrpc.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-		metrics := prometheus.NewClientMetrics(lc, test.Version)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(false))
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(metrics),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -429,7 +263,6 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestValidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -437,42 +270,17 @@ func TestValidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("test", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -495,7 +303,6 @@ func TestValidAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:funlen
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -503,42 +310,17 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -567,42 +349,17 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -625,38 +382,17 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -678,7 +414,6 @@ func TestMissingClientAuthStream(t *testing.T) {
 	})
 }
 
-// nolint:goerr113
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -686,42 +421,17 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error")))),
-				),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -744,43 +454,17 @@ func TestBreakerUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := test.NewGRPCConfig()
 		verifier := test.NewVerifier("test")
-		params := tgrpc.ServerParams{
-			Lifecycle:  lc,
-			Shutdowner: test.NewShutdowner(),
-			Config:     cfg,
-			Logger:     logger,
-			Tracer:     tracer,
-			Unary:      []grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			Stream:     []grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
-			Metrics:    prometheus.NewServerMetrics(lc, test.Version),
-		}
-		gs := tgrpc.NewServer(params)
-
-		v1.RegisterGreeterServiceServer(gs, test.NewServer(true))
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
 
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", cfg.Port), Version: test.Version, Config: cfg},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientDialOption(
-					grpc.WithBlock(),
-					grpc.WithPerRPCCredentials(jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil))),
-				),
-			)
-			So(err, ShouldBeNil)
-
-			defer conn.Close()
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}

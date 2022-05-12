@@ -57,7 +57,7 @@ func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 
 	defer httpResp.Body.Close()
 
-	if httpResp.StatusCode != 200 { // nolint:gomnd
+	if httpResp.StatusCode != http.StatusOK {
 		return nil, ErrInvalidResponse
 	}
 
@@ -76,7 +76,6 @@ type cachedGenerator struct {
 	sjwt.Generator
 }
 
-// nolint:forcetypeassert
 func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {
 	cacheKey := g.cfg.CacheKey("generate")
 

@@ -6,5 +6,4 @@ import (
 )
 
 // ZapModule for fx.
-// nolint:gochecknoglobals
 var ZapModule = fx.Options(fx.Provide(zap.NewConfig), fx.Provide(zap.NewLogger))

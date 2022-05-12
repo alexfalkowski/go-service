@@ -15,7 +15,6 @@ import (
 
 var (
 	// GRPCModule for fx.
-	// nolint:gochecknoglobals
 	GRPCModule = fx.Options(
 		fx.Provide(grpc.NewServer),
 		fx.Provide(grpc.UnaryServerInterceptor),
@@ -26,7 +25,6 @@ var (
 	)
 
 	// HTTPModule for fx.
-	// nolint:gochecknoglobals
 	HTTPModule = fx.Options(
 		fx.Provide(http.NewServer),
 		fx.Provide(hprometheus.NewServerMetrics),
@@ -35,7 +33,6 @@ var (
 	)
 
 	// NSQModule for fx.
-	// nolint:gochecknoglobals
 	NSQModule = fx.Options(
 		fx.Provide(nprometheus.NewProducerMetrics),
 		fx.Provide(nprometheus.NewConsumerMetrics),

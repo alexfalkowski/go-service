@@ -19,7 +19,6 @@ import (
 )
 
 // UnaryServerInterceptor for token.
-// nolint:forcetypeassert
 func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
@@ -51,7 +50,6 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 }
 
 // StreamServerInterceptor for token.
-// nolint:forcetypeassert
 func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]

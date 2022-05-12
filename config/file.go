@@ -6,8 +6,7 @@ import (
 )
 
 const (
-	// nolint:gofumpt
-	perm       = 0600
+	perm       = 0o600
 	configfile = "CONFIG_FILE"
 )
 

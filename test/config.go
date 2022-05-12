@@ -12,13 +12,15 @@ import (
 	nretry "github.com/alexfalkowski/go-service/transport/nsq/retry"
 )
 
+const timeout = 2 * time.Second
+
 // NewGRPCConfig for test.
 func NewGRPCConfig() *grpc.Config {
 	return &grpc.Config{
 		Port:      GenerateRandomPort(),
 		UserAgent: "TestGRPC/1.0",
 		Retry: gretry.Config{
-			Timeout:  2 * time.Second, // nolint:gomnd
+			Timeout:  timeout,
 			Attempts: 1,
 		},
 	}
@@ -27,9 +29,10 @@ func NewGRPCConfig() *grpc.Config {
 // NewHTTPConfig for test.
 func NewHTTPConfig() *http.Config {
 	return &http.Config{
+		Port:      GenerateRandomPort(),
 		UserAgent: "TestHTTP/1.0",
 		Retry: hretry.Config{
-			Timeout:  2 * time.Second, // nolint:gomnd
+			Timeout:  timeout,
 			Attempts: 1,
 		},
 	}
@@ -42,7 +45,7 @@ func NewNSQConfig() *nsq.Config {
 		Host:       "localhost:4150",
 		UserAgent:  "TestNSQ/1.0",
 		Retry: nretry.Config{
-			Timeout:  2 * time.Second, // nolint:gomnd
+			Timeout:  timeout,
 			Attempts: 1,
 		},
 	}

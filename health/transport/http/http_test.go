@@ -17,177 +17,53 @@ import (
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
 
 func TestHealth(t *testing.T) {
-	Convey("Given I register the health handler", t, func() {
-		lc := fxtest.NewLifecycle(t)
+	checks := []string{"health", "liveness", "readiness"}
 
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+	for _, check := range checks {
+		Convey("Given I register the health handler", t, func() {
+			lc := fxtest.NewLifecycle(t)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		rcfg := &redis.Config{Host: "localhost:6379"}
-		r := redis.NewRing(lc, rcfg)
-
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		rc := hchecker.NewRedisChecker(r, 1*time.Second)
-		rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
-		regs := health.Registrations{hr, rr}
-		server := health.NewServer(lc, regs)
-		o := server.Observe("http")
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(params)
-
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
-		So(err, ShouldBeNil)
-
-		lc.RequireStart()
-
-		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
-
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
+			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
-			resp, err := client.Do(req)
+			hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
+			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
+
+			err = hhttp.Register(hs, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 			So(err, ShouldBeNil)
 
-			defer resp.Body.Close()
+			lc.RequireStart()
 
-			body, err := io.ReadAll(resp.Body)
-			So(err, ShouldBeNil)
+			Convey(fmt.Sprintf("When I query %s", check), func() {
+				client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
-			actual := strings.TrimSpace(string(body))
+				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", hport, check), nil)
+				So(err, ShouldBeNil)
 
-			lc.RequireStop()
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
 
-			Convey("Then I should have a healthy response", func() {
-				So(actual, ShouldEqual, `{"status":"SERVING"}`)
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				actual := strings.TrimSpace(string(body))
+
+				lc.RequireStop()
+
+				Convey("Then I should have a healthy response", func() {
+					So(actual, ShouldEqual, `{"status":"SERVING"}`)
+				})
 			})
 		})
-	})
-}
-
-// nolint:dupl
-func TestLiveness(t *testing.T) {
-	Convey("Given I register the health handler", t, func() {
-		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		server := health.NewServer(lc, regs)
-		o := server.Observe("http")
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(params)
-
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
-		So(err, ShouldBeNil)
-
-		lc.RequireStart()
-
-		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
-
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/liveness", cfg.Port), nil)
-			So(err, ShouldBeNil)
-
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
-
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
-			So(err, ShouldBeNil)
-
-			actual := strings.TrimSpace(string(body))
-
-			lc.RequireStop()
-
-			Convey("Then I should have a healthy response", func() {
-				So(actual, ShouldEqual, `{"status":"SERVING"}`)
-			})
-		})
-	})
-}
-
-// nolint:dupl
-func TestReadiness(t *testing.T) {
-	Convey("Given I register the health handler", t, func() {
-		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cc := checker.NewHTTPChecker("https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		server := health.NewServer(lc, regs)
-		o := server.Observe("http")
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(params)
-
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
-		So(err, ShouldBeNil)
-
-		lc.RequireStart()
-
-		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
-
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
-			So(err, ShouldBeNil)
-
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
-
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
-			So(err, ShouldBeNil)
-
-			actual := strings.TrimSpace(string(body))
-
-			lc.RequireStop()
-
-			Convey("Then I should have a healthy response", func() {
-				So(actual, ShouldEqual, `{"status":"SERVING"}`)
-			})
-		})
-	})
+	}
 }
 
 func TestReadinessNoop(t *testing.T) {
@@ -197,33 +73,19 @@ func TestReadinessNoop(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		no := checker.NewNoopChecker()
-		nr := server.NewRegistration("noop", 10*time.Millisecond, no)
-		regs := health.Registrations{hr, nr}
-		server := health.NewServer(lc, regs)
+		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		o := server.Observe("http")
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(params)
+		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: server.Observe("noop")})
+		err = hhttp.Register(hs, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: server.Observe("noop")})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", hport), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -245,7 +107,6 @@ func TestReadinessNoop(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -253,31 +114,18 @@ func TestInvalidHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
+		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
-		cc := checker.NewHTTPChecker("https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
-		hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-		regs := health.Registrations{hr}
-		server := health.NewServer(lc, regs)
-		o := server.Observe("http")
-		cfg := &shttp.Config{Port: test.GenerateRandomPort()}
-		params := shttp.ServerParams{
-			Lifecycle: lc, Shutdowner: test.NewShutdowner(),
-			Config: cfg, Logger: logger, Tracer: tracer,
-			Metrics: prometheus.NewServerMetrics(lc, test.Version),
-		}
-		httpServer := shttp.NewServer(params)
-
-		err = hhttp.Register(httpServer, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
+		err = hhttp.Register(hs, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", hport), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -297,4 +145,21 @@ func TestInvalidHealth(t *testing.T) {
 			})
 		})
 	})
+}
+
+func observer(lc fx.Lifecycle, url string, client *http.Client) *server.Server {
+	rcfg := &redis.Config{Host: "localhost:6379"}
+	r := redis.NewRing(lc, rcfg)
+	rc := hchecker.NewRedisChecker(r, 1*time.Second)
+	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
+
+	cc := checker.NewHTTPChecker(url, client)
+	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+
+	no := checker.NewNoopChecker()
+	nr := server.NewRegistration("noop", 10*time.Millisecond, no)
+
+	regs := health.Registrations{hr, nr, rr}
+
+	return health.NewServer(lc, regs)
 }

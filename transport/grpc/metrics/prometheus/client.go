@@ -193,23 +193,28 @@ func (s *monitoredClientStream) SendMsg(m any) error {
 	return err
 }
 
-// nolint:gocritic
 func (s *monitoredClientStream) RecvMsg(m any) error {
 	timer := s.monitor.ReceiveMessageTimer()
 	err := s.ClientStream.RecvMsg(m)
 
 	timer.ObserveDuration()
 
-	if err == nil {
-		s.monitor.ReceivedMessage()
-	} else if errors.Is(err, io.EOF) {
-		s.monitor.Handled(codes.OK)
-	} else {
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			s.monitor.Handled(codes.OK)
+
+			return err
+		}
+
 		st, _ := status.FromError(err)
 		s.monitor.Handled(st.Code())
+
+		return err
 	}
 
-	return err
+	s.monitor.ReceivedMessage()
+
+	return nil
 }
 
 type clientReporter struct {
