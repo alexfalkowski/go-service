@@ -14,11 +14,8 @@ import (
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
-	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -31,9 +28,6 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -42,21 +36,14 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -93,9 +80,6 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewDatadogConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewDatadogConfig(), false, nil, nil)
 
@@ -104,14 +88,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -154,9 +131,6 @@ func TestValidAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -167,14 +141,7 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -182,7 +149,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version), transport)
+			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewJaegerConfig(), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -210,15 +177,12 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl,funlen
+// nolint:dupl
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		verifier := test.NewVerifier("test")
@@ -231,15 +195,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -247,7 +203,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version), transport)
+			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewJaegerConfig(), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -275,15 +231,11 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		verifier := test.NewVerifier("test")
@@ -296,14 +248,8 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+		defer conn.Close()
 
 		defer conn.Close()
 
@@ -311,7 +257,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -346,9 +292,6 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -359,15 +302,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -375,7 +310,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version), transport)
+			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewJaegerConfig(), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -396,15 +331,11 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		verifier := test.NewVerifier("test")
@@ -417,22 +348,14 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))
@@ -467,9 +390,6 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -480,15 +400,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-
-		conn, err := tgrpc.NewClient(
-			tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-			tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-			tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-			tgrpc.WithClientDialOption(grpc.WithBlock()),
-		)
-		So(err, ShouldBeNil)
-
+		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -496,7 +408,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			transport := jhttp.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
-			client := test.NewHTTPClientWithRoundTripper(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version), transport)
+			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewJaegerConfig(), transport)
 
 			message := []byte(`{"name":"test"}`)
 			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", hport), bytes.NewBuffer(message))

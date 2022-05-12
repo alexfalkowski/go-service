@@ -2,7 +2,6 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -14,11 +13,7 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
-	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -26,6 +21,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -33,10 +29,7 @@ func TestUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -45,16 +38,7 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(gprometheus.NewClientMetrics(lc, test.Version)),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -72,6 +56,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -79,10 +64,7 @@ func TestInvalidUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -91,15 +73,7 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -124,10 +98,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		verifier := test.NewVerifier("test")
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -140,15 +111,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -166,6 +129,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -173,10 +137,7 @@ func TestStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -185,16 +146,7 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-				tgrpc.WithClientMetrics(gprometheus.NewClientMetrics(lc, test.Version)),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -215,6 +167,7 @@ func TestStream(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -222,10 +175,7 @@ func TestInvalidStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -234,15 +184,7 @@ func TestInvalidStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -270,10 +212,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, hprometheus.NewClientMetrics(lc, test.Version)))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		verifier := test.NewVerifier("test")
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -286,15 +225,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-
-			conn, err := tgrpc.NewClient(
-				tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gconfig.Port), Version: test.Version, Config: gconfig},
-				tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-				tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-				tgrpc.WithClientDialOption(grpc.WithBlock()),
-			)
-			So(err, ShouldBeNil)
-
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)

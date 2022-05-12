@@ -17,8 +17,6 @@ import (
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -34,11 +32,8 @@ func TestHealth(t *testing.T) {
 			logger, err := zap.NewLogger(lc, zap.NewConfig())
 			So(err, ShouldBeNil)
 
-			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-			So(err, ShouldBeNil)
-
 			hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
-			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))).Observe("http")
+			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
 
 			err = hhttp.Register(hs, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
 			So(err, ShouldBeNil)
@@ -46,7 +41,7 @@ func TestHealth(t *testing.T) {
 			lc.RequireStart()
 
 			Convey(fmt.Sprintf("When I query %s", check), func() {
-				client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
+				client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", hport, check), nil)
 				So(err, ShouldBeNil)
@@ -78,10 +73,7 @@ func TestReadinessNoop(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version)))
+		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		o := server.Observe("http")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
@@ -91,7 +83,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", hport), nil)
 			So(err, ShouldBeNil)
@@ -122,10 +114,7 @@ func TestInvalidHealth(t *testing.T) {
 		logger, err := zap.NewLogger(lc, zap.NewConfig())
 		So(err, ShouldBeNil)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))).Observe("http")
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
 		err = hhttp.Register(hs, &hhttp.HealthObserver{Observer: o}, &hhttp.LivenessObserver{Observer: o}, &hhttp.ReadinessObserver{Observer: o})
@@ -134,7 +123,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(logger, tracer, test.Version, prometheus.NewClientMetrics(lc, test.Version))
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", hport), nil)
 			So(err, ShouldBeNil)
