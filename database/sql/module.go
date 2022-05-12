@@ -8,10 +8,8 @@ import (
 
 var (
 	// PostgreSQLModule for fx.
-	// nolint:gochecknoglobals
 	PostgreSQLModule = fx.Provide(pg.NewDB)
 
 	// PostgreSQLOpentracingModule for fx.
-	// nolint:gochecknoglobals
 	PostgreSQLOpentracingModule = fx.Provide(opentracing.NewTracer)
 )

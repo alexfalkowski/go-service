@@ -567,7 +567,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:goerr113,funlen
+// nolint:funlen
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		sh := test.NewShutdowner()

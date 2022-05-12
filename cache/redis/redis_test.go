@@ -76,7 +76,6 @@ func TestInvalidHostCache(t *testing.T) {
 	})
 }
 
-// nolint:goerr113
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -105,7 +104,6 @@ func TestInvalidMarshallerCache(t *testing.T) {
 	})
 }
 
-// nolint:goerr113
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)

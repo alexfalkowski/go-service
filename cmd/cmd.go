@@ -37,7 +37,7 @@ func (c *Command) AddVersion(version string) *cobra.Command {
 		Long:         "The application version",
 		SilenceUsage: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			_, err := fmt.Println(version) // nolint:forbidigo
+			_, err := fmt.Println(version)
 
 			return err
 		},

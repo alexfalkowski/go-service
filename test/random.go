@@ -3,7 +3,6 @@ package test
 import (
 	"math/rand"
 	"strconv"
-	"time"
 )
 
 const (
@@ -13,9 +12,7 @@ const (
 
 // GenerateRandomPort for test.
 func GenerateRandomPort() string {
-	rand.Seed(time.Now().UnixNano())
-
-	port := rand.Intn(max-min+1) + min // nolint:gosec
+	port := rand.Intn(max-min+1) + min // #nosec G404
 
 	return strconv.Itoa(port)
 }

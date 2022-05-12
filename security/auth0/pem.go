@@ -11,6 +11,8 @@ import (
 	"github.com/form3tech-oss/jwt-go"
 )
 
+const day = 24 * time.Hour
+
 // ErrMissingCertificate from Auth0.
 var ErrMissingCertificate = errors.New("missing certificate")
 
@@ -47,7 +49,7 @@ func (p *pem) Certificate(ctx context.Context, token *jwt.Token) (string, error)
 
 	defer httpResp.Body.Close()
 
-	if httpResp.StatusCode != 200 { // nolint:gomnd
+	if httpResp.StatusCode != http.StatusOK {
 		return cert, ErrInvalidResponse
 	}
 
@@ -76,7 +78,6 @@ type cachedPEM struct {
 	Certificator
 }
 
-// nolint:forcetypeassert
 func (p *cachedPEM) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cacheKey := p.cfg.CacheKey("certificate")
 
@@ -90,7 +91,7 @@ func (p *cachedPEM) Certificate(ctx context.Context, token *jwt.Token) (string, 
 		return cert, err
 	}
 
-	p.cache.SetWithTTL(cacheKey, cert, 0, 24*time.Hour) // nolint:gomnd
+	p.cache.SetWithTTL(cacheKey, cert, 0, day)
 
 	return cert, nil
 }
