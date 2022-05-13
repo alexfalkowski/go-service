@@ -10,7 +10,7 @@ import (
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
 	sopentracing "github.com/alexfalkowski/go-service/trace/opentracing"
-	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -60,7 +60,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 		}
 
 		start := time.Now().UTC()
-		md := sgmeta.ExtractIncoming(ctx)
+		md := smeta.ExtractIncoming(ctx)
 		method := path.Base(info.FullMethod)
 		traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, metadataTextMap(md))
 		opts := []opentracing.StartSpanOption{
@@ -108,7 +108,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 
 		start := time.Now().UTC()
 		ctx := stream.Context()
-		md := sgmeta.ExtractIncoming(ctx)
+		md := smeta.ExtractIncoming(ctx)
 		method := path.Base(info.FullMethod)
 		traceCtx, _ := tracer.Extract(opentracing.HTTPHeaders, metadataTextMap(md))
 		opts := []opentracing.StartSpanOption{
@@ -175,7 +175,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
 		}
 
-		md := sgmeta.ExtractOutgoing(ctx)
+		md := smeta.ExtractOutgoing(ctx)
 		if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, metadataTextMap(md)); err != nil {
 			return err
 		}
@@ -223,7 +223,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
 		}
 
-		md := sgmeta.ExtractOutgoing(ctx)
+		md := smeta.ExtractOutgoing(ctx)
 		if err := tracer.Inject(span.Context(), opentracing.HTTPHeaders, metadataTextMap(md)); err != nil {
 			return nil, err
 		}

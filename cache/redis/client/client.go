@@ -17,4 +17,6 @@ type Client interface {
 	Del(ctx context.Context, keys ...string) *redis.IntCmd
 
 	Ping(ctx context.Context) *redis.StatusCmd
+
+	Close() error
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
-	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
@@ -21,12 +20,6 @@ func TestCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 
@@ -55,12 +48,6 @@ func TestInvalidHostCache(t *testing.T) {
 		c := test.NewRedisCache(lc, "invalid_host", compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
-
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
@@ -81,12 +68,6 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 
@@ -109,12 +90,6 @@ func TestInvalidCompressorCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		c := test.NewRedisCache(lc, "localhost:6379", test.NewCompressor(errors.New("failed")), marshaller.NewProto())
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 

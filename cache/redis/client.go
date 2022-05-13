@@ -5,29 +5,32 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/alexfalkowski/go-service/cache/redis/logger"
+	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
 )
 
-// RingParams for redis.
-type RingParams struct {
+// ClientParams for redis.
+type ClientParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
 	RingOptions *redis.RingOptions
+	Tracer      opentracing.Tracer
 }
 
 // NewClient for redis.
-func NewClient(params RingParams) client.Client {
+func NewClient(params ClientParams) client.Client {
 	redis.SetLogger(logger.NewLogger())
 
-	ring := redis.NewRing(params.RingOptions)
+	var client client.Client = redis.NewRing(params.RingOptions)
+	client = opentracing.NewClient(params.Tracer, client)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			return ring.Close()
+			return client.Close()
 		},
 	})
 
-	return ring
+	return client
 }
