@@ -167,7 +167,7 @@ func TestInvalidHealth(t *testing.T) {
 
 func observer(lc fx.Lifecycle, url string, client *http.Client) *server.Server {
 	rcfg := &redis.Config{Host: "localhost:6379"}
-	r := redis.NewRing(lc, rcfg)
+	r := redis.NewClient(redis.RingParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(rcfg)})
 	rc := hchecker.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 

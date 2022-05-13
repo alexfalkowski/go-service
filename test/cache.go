@@ -11,8 +11,8 @@ import (
 // NewRedisCache for test.
 func NewRedisCache(lc fx.Lifecycle, host string, compressor compressor.Compressor, marshaller marshaller.Marshaller) *cache.Cache {
 	cfg := &redis.Config{Host: host}
-	r := redis.NewRing(lc, cfg)
-	params := redis.OptionsParams{Ring: r, Compressor: compressor, Marshaller: marshaller}
+	client := redis.NewClient(redis.RingParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(cfg)})
+	params := redis.OptionsParams{Client: client, Compressor: compressor, Marshaller: marshaller}
 	opts := redis.NewOptions(params)
 
 	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: Version})

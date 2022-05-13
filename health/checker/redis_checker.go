@@ -4,17 +4,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/alexfalkowski/go-service/cache/redis/client"
 )
 
 // NewRedisChecker for health.
-func NewRedisChecker(ring *redis.Ring, timeout time.Duration) *RedisChecker {
-	return &RedisChecker{ring: ring, timeout: timeout}
+func NewRedisChecker(client client.Client, timeout time.Duration) *RedisChecker {
+	return &RedisChecker{client: client, timeout: timeout}
 }
 
 // RedisChecker for health.
 type RedisChecker struct {
-	ring    *redis.Ring
+	client  client.Client
 	timeout time.Duration
 }
 
@@ -23,5 +23,5 @@ func (c *RedisChecker) Check(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 
-	return c.ring.Ping(ctx).Err()
+	return c.client.Ping(ctx).Err()
 }

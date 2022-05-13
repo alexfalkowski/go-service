@@ -3,6 +3,7 @@ package redis
 import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
+	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
@@ -12,7 +13,7 @@ import (
 type OptionsParams struct {
 	fx.In
 
-	Ring       *redis.Ring
+	Client     client.Client
 	Marshaller marshaller.Marshaller
 	Compressor compressor.Compressor
 }
@@ -20,7 +21,7 @@ type OptionsParams struct {
 // NewOptions for redis.
 func NewOptions(params OptionsParams) *cache.Options {
 	opts := &cache.Options{
-		Redis:        params.Ring,
+		Redis:        params.Client,
 		StatsEnabled: true,
 		Marshal: func(v any) ([]byte, error) {
 			d, err := params.Marshaller.Marshal(v)
@@ -41,4 +42,13 @@ func NewOptions(params OptionsParams) *cache.Options {
 	}
 
 	return opts
+}
+
+// NewRingOptions for redis.
+func NewRingOptions(cfg *Config) *redis.RingOptions {
+	return &redis.RingOptions{
+		Addrs: map[string]string{
+			"server": cfg.Host,
+		},
+	}
 }
