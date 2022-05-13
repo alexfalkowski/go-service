@@ -25,8 +25,3 @@ func RandomWaitTime() time.Duration {
 
 	return time.Duration(num) * time.Second
 }
-
-// SleepRandomWaitTime from the timeout.
-func SleepRandomWaitTime() {
-	time.Sleep(RandomWaitTime())
-}
