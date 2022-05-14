@@ -18,7 +18,7 @@ const (
 	redisRequestDeadline = "redis.request.deadline"
 	component            = "component"
 	redisComponent       = "redis"
-	kind                 = "cache"
+	kind                 = "redis"
 )
 
 // NewClient for zap.

@@ -20,7 +20,7 @@ const (
 	pgRequestDeadline = "pg.request.deadline"
 	component         = "component"
 	pgComponent       = "pg"
-	kind              = "sql"
+	kind              = "pg"
 )
 
 // NewInterceptor for opentracing.

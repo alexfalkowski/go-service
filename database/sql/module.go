@@ -8,7 +8,10 @@ import (
 
 var (
 	// PostgreSQLModule for fx.
-	PostgreSQLModule = fx.Provide(pg.NewDB)
+	PostgreSQLModule = fx.Options(
+		fx.Provide(pg.Open),
+		fx.Invoke(pg.Register),
+	)
 
 	// PostgreSQLOpentracingModule for fx.
 	PostgreSQLOpentracingModule = fx.Provide(opentracing.NewTracer)

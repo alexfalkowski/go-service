@@ -17,29 +17,17 @@ import (
 
 const driverName = "pgx-mw"
 
-// DBParams for SQL.
+// DBParams for PostgreSQL.
 type DBParams struct {
 	fx.In
 
 	Lifecycle fx.Lifecycle
 	Config    *Config
-	Tracer    opentracing.Tracer
-	Logger    *zap.Logger
 	Version   version.Version
 }
 
-var once sync.Once
-
-// NewDB for SQL.
-func NewDB(params DBParams) *sql.DB {
-	once.Do(func() {
-		var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-		interceptor = opentracing.NewInterceptor(params.Tracer, interceptor)
-		interceptor = szap.NewInterceptor(params.Logger, interceptor)
-
-		sql.Register(driverName, sqlmw.Driver(stdlib.GetDefaultDriver(), interceptor))
-	})
-
+// Open for PostgreSQL.
+func Open(params DBParams) *sql.DB {
 	db, _ := sql.Open(driverName, params.Config.URL)
 
 	prometheus.Register(params.Lifecycle, db, params.Version)
@@ -51,4 +39,17 @@ func NewDB(params DBParams) *sql.DB {
 	})
 
 	return db
+}
+
+var once sync.Once
+
+// Register the driver for PostgreSQL.
+func Register(tracer opentracing.Tracer, logger *zap.Logger) {
+	once.Do(func() {
+		var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
+		interceptor = opentracing.NewInterceptor(tracer, interceptor)
+		interceptor = szap.NewInterceptor(logger, interceptor)
+
+		sql.Register(driverName, sqlmw.Driver(stdlib.GetDefaultDriver(), interceptor))
+	})
 }
