@@ -58,22 +58,22 @@ func NewServer(params ServerParams) *Server {
 				return err
 			}
 
-			go startServer(server.server, listener, params)
+			go server.start(listener, params)
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			return stopServer(ctx, server.server, params)
+			return server.stop(ctx, params)
 		},
 	})
 
 	return server
 }
 
-func startServer(server *http.Server, listener net.Listener, params ServerParams) {
+func (s *Server) start(listener net.Listener, params ServerParams) {
 	params.Logger.Info("starting http server", zap.String("port", params.Config.Port))
 
-	if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
 
 		if err := params.Shutdowner.Shutdown(); err != nil {
@@ -84,10 +84,10 @@ func startServer(server *http.Server, listener net.Listener, params ServerParams
 	}
 }
 
-func stopServer(ctx context.Context, server *http.Server, params ServerParams) error {
+func (s *Server) stop(ctx context.Context, params ServerParams) error {
 	params.Logger.Info("stopping http server", zap.String("port", params.Config.Port))
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := s.server.Shutdown(ctx); err != nil {
 		params.Logger.Error("could not stop http server", zap.String("port", params.Config.Port), zap.Error(err))
 
 		return err
