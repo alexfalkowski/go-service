@@ -8,12 +8,11 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/google/uuid"
 )
 
 // NewHandler for meta.
-func NewHandler(version version.Version, h handler.Handler) *Handler {
+func NewHandler(h handler.Handler) *Handler {
 	return &Handler{Handler: h}
 }
 

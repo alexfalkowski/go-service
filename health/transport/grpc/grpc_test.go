@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	. "github.com/smartystreets/goconvey/convey"
@@ -25,10 +24,7 @@ import (
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -60,10 +56,7 @@ func TestUnary(t *testing.T) {
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -94,10 +87,7 @@ func TestInvalidUnary(t *testing.T) {
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		verifier := test.NewVerifier("test")
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
@@ -133,10 +123,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -171,10 +158,7 @@ func TestStream(t *testing.T) {
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -208,10 +192,7 @@ func TestInvalidStream(t *testing.T) {
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		verifier := test.NewVerifier("test")
 		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,

@@ -63,7 +63,7 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *opentracing.Config)
 
 	server := shttp.NewServer(shttp.ServerParams{
 		Lifecycle: lc, Shutdowner: NewShutdowner(), Config: httpConfig, Logger: logger,
-		Tracer: tracer, Version: Version, Metrics: hprometheus.NewServerMetrics(lc, Version),
+		Tracer: tracer, Metrics: hprometheus.NewServerMetrics(lc, Version),
 	})
 
 	return server, httpConfig.Port
@@ -79,7 +79,7 @@ func NewGRPCServer(
 
 	server := tgrpc.NewServer(tgrpc.ServerParams{
 		Lifecycle: lc, Shutdowner: NewShutdowner(), Config: grpcConfig, Logger: logger,
-		Tracer: tracer, Version: Version, Metrics: gprometheus.NewServerMetrics(lc, Version),
+		Tracer: tracer, Metrics: gprometheus.NewServerMetrics(lc, Version),
 		Unary: unary, Stream: stream,
 	})
 

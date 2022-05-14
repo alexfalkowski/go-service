@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.uber.org/fx"
@@ -27,7 +26,6 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     opentracing.Tracer
-	Version    version.Version
 	Metrics    *prometheus.ServerMetrics
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
@@ -93,7 +91,7 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(params.Logger, params.Version),
+		szap.UnaryServerInterceptor(params.Logger),
 		params.Metrics.UnaryServerInterceptor(),
 		opentracing.UnaryServerInterceptor(params.Tracer),
 	}
@@ -107,7 +105,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(params.Logger, params.Version),
+		szap.StreamServerInterceptor(params.Logger),
 		params.Metrics.StreamServerInterceptor(),
 		opentracing.StreamServerInterceptor(params.Tracer),
 	}

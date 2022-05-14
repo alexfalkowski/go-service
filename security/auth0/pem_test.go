@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cache/ristretto"
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -25,7 +24,6 @@ const (
 func TestInvalidJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -35,9 +33,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
 			JSONWebKeySet: "not a valid URL",
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -78,7 +74,6 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -88,9 +83,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
 			JSONWebKeySet: "https://httpstat.us/400",
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -132,7 +125,6 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -142,9 +134,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
 			JSONWebKeySet: "https://httpstat.us/200",
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -185,7 +175,6 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 func TestCorruptToken(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -195,9 +184,7 @@ func TestCorruptToken(t *testing.T) {
 			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -228,7 +215,6 @@ func TestCorruptToken(t *testing.T) {
 func TestMissingAudienceToken(t *testing.T) {
 	Convey("Given I have a missing audience in token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -238,9 +224,7 @@ func TestMissingAudienceToken(t *testing.T) {
 			Algorithm:     algorithm,
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -279,21 +263,16 @@ func TestMissingAudienceToken(t *testing.T) {
 func TestMissingIssuerToken(t *testing.T) {
 	Convey("Given I have a missing issuer in token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
 			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
 			Audience:      os.Getenv("AUTH0_AUDIENCE"),
 			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
+			Algorithm:     algorithm,
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		acfg.Algorithm = algorithm
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -333,7 +312,6 @@ func TestMissingIssuerToken(t *testing.T) {
 func TestInvalidCertificateToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -343,9 +321,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 			Algorithm:     algorithm,
 			JSONWebKeySet: "https://non-existent.com/.well-known/jwks.json",
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
@@ -385,7 +361,6 @@ func TestInvalidCertificateToken(t *testing.T) {
 func TestMissingKidToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
 			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
@@ -395,9 +370,7 @@ func TestMissingKidToken(t *testing.T) {
 			Algorithm:     algorithm,
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
+		logger := test.NewLogger(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)

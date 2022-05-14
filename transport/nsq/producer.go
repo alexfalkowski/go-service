@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
 	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
@@ -76,7 +75,6 @@ type ProducerParams struct {
 
 	Config     *Config
 	Marshaller marshaller.Marshaller
-	Version    version.Version
 }
 
 // NewProducer for NSQ.
@@ -102,7 +100,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 
 	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Version: params.Version, Producer: pr})
+		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Producer: pr})
 	}
 
 	if defaultOptions.metrics != nil {

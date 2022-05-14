@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/health"
 	hchecker "github.com/alexfalkowski/go-service/health/checker"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -28,10 +27,7 @@ func TestHealth(t *testing.T) {
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
 			lc := fxtest.NewLifecycle(t)
-
-			logger, err := zap.NewLogger(lc, zap.NewConfig())
-			So(err, ShouldBeNil)
-
+			logger := test.NewLogger(lc)
 			hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
 
@@ -40,7 +36,7 @@ func TestHealth(t *testing.T) {
 				Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
 				Version: test.Version,
 			}
-			err = hhttp.Register(params)
+			err := hhttp.Register(params)
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -75,10 +71,7 @@ func TestHealth(t *testing.T) {
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
 		o := server.Observe("http")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
@@ -88,7 +81,7 @@ func TestReadinessNoop(t *testing.T) {
 			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: server.Observe("noop")},
 			Version: test.Version,
 		}
-		err = hhttp.Register(params)
+		err := hhttp.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -122,10 +115,7 @@ func TestReadinessNoop(t *testing.T) {
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
@@ -134,7 +124,7 @@ func TestInvalidHealth(t *testing.T) {
 			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
 			Version: test.Version,
 		}
-		err = hhttp.Register(params)
+		err := hhttp.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
