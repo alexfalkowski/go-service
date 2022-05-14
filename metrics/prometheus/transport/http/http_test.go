@@ -25,7 +25,7 @@ func TestHTTP(t *testing.T) {
 		_, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
 		So(err, ShouldBeNil)
 
-		_ = test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), marshaller.NewProto())
+		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 
 		ricfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 

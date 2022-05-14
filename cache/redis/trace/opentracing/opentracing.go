@@ -57,6 +57,7 @@ type Client struct {
 	client client.Client
 }
 
+// nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
 	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
@@ -87,6 +88,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
@@ -117,6 +119,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
@@ -147,6 +150,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
@@ -176,6 +180,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{

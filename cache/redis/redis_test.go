@@ -18,7 +18,8 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -45,7 +46,8 @@ func TestCache(t *testing.T) {
 func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "invalid_host", compressor.NewSnappy(), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "invalid_host", logger, compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -66,7 +68,8 @@ func TestInvalidHostCache(t *testing.T) {
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -88,7 +91,8 @@ func TestInvalidMarshallerCache(t *testing.T) {
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", test.NewCompressor(errors.New("failed")), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, test.NewCompressor(errors.New("failed")), marshaller.NewProto())
 		ctx := context.Background()
 
 		lc.RequireStart()
