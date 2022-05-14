@@ -17,11 +17,12 @@ func TestSQL(t *testing.T) {
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
 
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer})
+			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer, Logger: logger})
 
 			lc.RequireStart()
 
@@ -51,11 +52,12 @@ func TestInvalidSQLPort(t *testing.T) {
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
 
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer})
+			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer, Logger: logger})
 
 			lc.RequireStart()
 
