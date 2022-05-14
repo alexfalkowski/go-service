@@ -18,7 +18,7 @@ const (
 	redisRequestDeadline = "redis.request.deadline"
 	component            = "component"
 	redisComponent       = "redis"
-	cacheKind            = "cache"
+	kind                 = "cache"
 )
 
 // NewClient for zap.
@@ -39,7 +39,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(redisStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, redisComponent),
 		zap.String("redis.key", key),
 		zap.Duration("redis.ttl", ttl),
@@ -66,7 +66,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(redisStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, redisComponent),
 		zap.String("redis.key", key),
 		zap.Duration("redis.ttl", ttl),
@@ -93,7 +93,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(redisStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, redisComponent),
 		zap.String("redis.key", key),
 		zap.Duration("redis.ttl", ttl),
@@ -119,7 +119,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(redisStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, redisComponent),
 		zap.String("redis.key", key),
 	}
@@ -144,7 +144,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(redisStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, redisComponent),
 		zap.Strings("redis.keys", keys),
 	}

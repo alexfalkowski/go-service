@@ -20,7 +20,7 @@ const (
 	pgRequestDeadline = "pg.request.deadline"
 	component         = "component"
 	pgComponent       = "pg"
-	cacheKind         = "sql"
+	kind              = "sql"
 )
 
 // NewInterceptor for opentracing.
@@ -51,7 +51,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, pgComponent),
 		zap.String("pg.query", query),
 	}
@@ -85,7 +85,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, pgComponent),
 		zap.String("pg.query", query),
 	}
@@ -140,7 +140,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, pgComponent),
 		zap.String("pg.query", query),
 	}
@@ -174,7 +174,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", cacheKind),
+		zap.String("span.kind", kind),
 		zap.String(component, pgComponent),
 		zap.String("pg.query", query),
 	}
