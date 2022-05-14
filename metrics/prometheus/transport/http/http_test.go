@@ -22,14 +22,12 @@ func TestHTTP(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		_, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
-		So(err, ShouldBeNil)
-
+		_ = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 
 		ricfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
-		_, err = ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: test.Version})
+		_, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())

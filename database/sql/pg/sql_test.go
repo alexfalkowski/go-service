@@ -11,7 +11,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:dupl
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}
@@ -22,20 +21,23 @@ func TestSQL(t *testing.T) {
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			ctx := context.Background()
-			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-			defer span.Finish()
-
-			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
-			So(err, ShouldBeNil)
+			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer})
 
 			lc.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
-				So(db, ShouldNotBeNil)
-
+				ctx := context.Background()
 				err = db.PingContext(ctx)
 				So(err, ShouldBeNil)
+
+				rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+				So(err, ShouldBeNil)
+
+				for rows.Next() {
+				}
+
+				So(rows.Err(), ShouldBeNil)
+				So(rows.Close(), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -43,7 +45,6 @@ func TestSQL(t *testing.T) {
 	})
 }
 
-// nolint:dupl
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}
@@ -54,39 +55,14 @@ func TestInvalidSQLPort(t *testing.T) {
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			ctx := context.Background()
-			ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-			defer span.Finish()
-
-			db, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
-			So(err, ShouldBeNil)
+			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer})
 
 			lc.RequireStart()
 
 			Convey("Then I should have an invalid database", func() {
-				So(db, ShouldNotBeNil)
-
+				ctx := context.Background()
 				err = db.PingContext(ctx)
 				So(err, ShouldNotBeNil)
-			})
-
-			lc.RequireStop()
-		})
-	})
-}
-
-func TestInvalidSQL(t *testing.T) {
-	Convey("Given I have an invalid configuration", t, func() {
-		cfg := &pg.Config{URL: "invalid url"}
-
-		Convey("When I try to get a database", func() {
-			lc := fxtest.NewLifecycle(t)
-			_, err := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
-
-			lc.RequireStart()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
 			})
 
 			lc.RequireStop()

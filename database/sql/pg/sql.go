@@ -5,11 +5,14 @@ import (
 	"database/sql"
 
 	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
-	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/ngrok/sqlmw"
 	"go.uber.org/fx"
 )
+
+const driverName = "pgx-mw"
 
 // DBParams for SQL.
 type DBParams struct {
@@ -17,17 +20,20 @@ type DBParams struct {
 
 	Lifecycle fx.Lifecycle
 	Config    *Config
+	Tracer    opentracing.Tracer
 	Version   version.Version
 }
 
 // NewDB for SQL.
-func NewDB(params DBParams) (*sql.DB, error) {
-	config, err := pgx.ParseConfig(params.Config.URL)
-	if err != nil {
-		return nil, err
+func NewDB(params DBParams) *sql.DB {
+	if !isDriverRegistered() {
+		var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
+		interceptor = opentracing.NewInterceptor(params.Tracer, interceptor)
+
+		sql.Register(driverName, sqlmw.Driver(stdlib.GetDefaultDriver(), interceptor))
 	}
 
-	db := stdlib.OpenDB(*config)
+	db, _ := sql.Open(driverName, params.Config.URL)
 
 	prometheus.Register(params.Lifecycle, db, params.Version)
 
@@ -37,5 +43,16 @@ func NewDB(params DBParams) (*sql.DB, error) {
 		},
 	})
 
-	return db, nil
+	return db
+}
+
+// isDriverRegistered as we can only really register it once. This is only a problem during tests.
+func isDriverRegistered() bool {
+	for _, d := range sql.Drivers() {
+		if d == driverName {
+			return true
+		}
+	}
+
+	return false
 }
