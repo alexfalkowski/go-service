@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -34,12 +33,9 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "not a valid URL",
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -84,12 +80,9 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "https://httpstat.us/400",
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -135,12 +128,9 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "https://httpstat.us/200",
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -185,12 +175,9 @@ func TestCorruptToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -225,12 +212,9 @@ func TestMissingAudienceToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -273,12 +257,9 @@ func TestMissingIssuerToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -322,12 +303,9 @@ func TestInvalidCertificateToken(t *testing.T) {
 			JSONWebKeySet: "https://non-existent.com/.well-known/jwks.json",
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -371,12 +349,9 @@ func TestMissingKidToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}

@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -16,11 +15,6 @@ import (
 
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
@@ -32,11 +26,9 @@ func TestVerify(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -66,11 +58,6 @@ func TestVerify(t *testing.T) {
 
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
@@ -82,11 +69,9 @@ func TestCachedVerify(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}

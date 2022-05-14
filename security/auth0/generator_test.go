@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
@@ -16,11 +15,6 @@ import (
 
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
@@ -32,11 +26,9 @@ func TestGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -61,11 +53,6 @@ func TestGenerate(t *testing.T) {
 
 func TestInvalidResponseGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
@@ -77,11 +64,9 @@ func TestInvalidResponseGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -104,11 +89,6 @@ func TestInvalidResponseGenerate(t *testing.T) {
 
 func TestInvalidURLGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           "not a valid URL",
@@ -120,11 +100,9 @@ func TestInvalidURLGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -147,11 +125,6 @@ func TestInvalidURLGenerate(t *testing.T) {
 
 func TestMalformedURLGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           string([]byte{0x7f}),
@@ -163,11 +136,9 @@ func TestMalformedURLGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
@@ -190,11 +161,6 @@ func TestMalformedURLGenerate(t *testing.T) {
 
 func TestCachedGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
-		cfg := &ristretto.Config{
-			NumCounters: 1e7,
-			MaxCost:     1 << 30,
-			BufferItems: 64,
-		}
 		lc := fxtest.NewLifecycle(t)
 		acfg := &auth0.Config{
 			URL:           os.Getenv("AUTH0_URL"),
@@ -206,11 +172,9 @@ func TestCachedGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
+		cache := test.NewRistrettoCache(lc)
 
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		cache, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}

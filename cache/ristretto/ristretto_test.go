@@ -13,11 +13,8 @@ import (
 
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 		lc := fxtest.NewLifecycle(t)
-
-		c, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
-		So(err, ShouldBeNil)
+		c := test.NewRistrettoCache(lc)
 
 		lc.RequireStart()
 
