@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/marshaller"
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
@@ -20,12 +21,18 @@ func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		_ = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
+
+		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
+
+		pg.Register(tracer, logger)
+
+		_ = pg.Open(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		_ = test.NewRistrettoCache(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
-		err := phttp.Register(hs)
+		err = phttp.Register(hs)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

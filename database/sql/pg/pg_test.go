@@ -22,7 +22,9 @@ func TestSQL(t *testing.T) {
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer, Logger: logger})
+			pg.Register(tracer, logger)
+
+			db := pg.Open(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 
 			lc.RequireStart()
 
@@ -57,7 +59,9 @@ func TestInvalidSQLPort(t *testing.T) {
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			db := pg.NewDB(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version, Tracer: tracer, Logger: logger})
+			pg.Register(tracer, logger)
+
+			db := pg.Open(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
 
 			lc.RequireStart()
 
