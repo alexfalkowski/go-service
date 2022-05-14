@@ -3,7 +3,6 @@ package auth0
 import (
 	"github.com/alexfalkowski/go-service/security/jwt"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
@@ -19,13 +18,12 @@ type GeneratorParams struct {
 	Logger     *zap.Logger
 	Cache      *ristretto.Cache
 	Tracer     opentracing.Tracer
-	Version    version.Version
 }
 
 // NewGenerator for Auth0.
 func NewGenerator(params GeneratorParams) jwt.Generator {
 	client := http.NewClient(
-		http.ClientParams{Config: params.HTTPConfig, Version: params.Version},
+		http.ClientParams{Config: params.HTTPConfig},
 		http.WithClientLogger(params.Logger),
 		http.WithClientBreaker(), http.WithClientRetry(),
 		http.WithClientTracer(params.Tracer),
@@ -46,13 +44,12 @@ type CertificatorParams struct {
 	Logger     *zap.Logger
 	Cache      *ristretto.Cache
 	Tracer     opentracing.Tracer
-	Version    version.Version
 }
 
 // NewCertificator for Auth0.
 func NewCertificator(params CertificatorParams) Certificator {
 	client := http.NewClient(
-		http.ClientParams{Config: params.HTTPConfig, Version: params.Version},
+		http.ClientParams{Config: params.HTTPConfig},
 		http.WithClientLogger(params.Logger),
 		http.WithClientBreaker(), http.WithClientRetry(),
 		http.WithClientTracer(params.Tracer),

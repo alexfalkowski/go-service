@@ -28,7 +28,7 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *ope
 	tracer, _ := hopentracing.NewTracer(hopentracing.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
 
 	return shttp.NewClient(
-		shttp.ClientParams{Version: Version, Config: NewHTTPConfig()},
+		shttp.ClientParams{Config: NewHTTPConfig()},
 		shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(),
 		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
@@ -50,7 +50,7 @@ func NewGRPCClient(
 	}
 
 	conn, _ := tgrpc.NewClient(
-		tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gcfg.Port), Version: Version, Config: gcfg},
+		tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", gcfg.Port), Config: gcfg},
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 		tgrpc.WithClientDialOption(dialOpts...),

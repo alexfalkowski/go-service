@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
@@ -109,7 +108,6 @@ func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
 type ClientParams struct {
 	Context context.Context
 	Host    string
-	Version version.Version
 	Config  *Config
 }
 
@@ -151,7 +149,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent))
 
 	if opts.logger != nil {
-		unary = append(unary, szap.UnaryClientInterceptor(opts.logger, params.Version))
+		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
 	}
 
 	if opts.metrics != nil {
@@ -168,7 +166,7 @@ func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption 
 	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent)}
 
 	if opts.logger != nil {
-		stream = append(stream, szap.StreamClientInterceptor(opts.logger, params.Version))
+		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
 	}
 
 	if opts.metrics != nil {

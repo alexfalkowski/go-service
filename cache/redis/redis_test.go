@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
-	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,14 +18,9 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 
@@ -52,14 +46,9 @@ func TestCache(t *testing.T) {
 func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "invalid_host", compressor.NewSnappy(), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "invalid_host", logger, compressor.NewSnappy(), marshaller.NewProto())
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 
@@ -79,14 +68,9 @@ func TestInvalidHostCache(t *testing.T) {
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")))
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 
@@ -107,14 +91,9 @@ func TestInvalidMarshallerCache(t *testing.T) {
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRedisCache(lc, "localhost:6379", test.NewCompressor(errors.New("failed")), marshaller.NewProto())
+		logger := test.NewLogger(lc)
+		c := test.NewRedisCache(lc, "localhost:6379", logger, test.NewCompressor(errors.New("failed")), marshaller.NewProto())
 		ctx := context.Background()
-
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
-
-		ctx, span := opentracing.StartSpanFromContext(ctx, tracer, "test", "test")
-		defer span.Finish()
 
 		lc.RequireStart()
 

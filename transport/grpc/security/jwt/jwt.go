@@ -9,7 +9,7 @@ import (
 	sjwt "github.com/alexfalkowski/go-service/security/jwt"
 	"github.com/alexfalkowski/go-service/security/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
-	sgmeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/form3tech-oss/jwt-go"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -26,7 +26,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 			return handler(ctx, req)
 		}
 
-		md := sgmeta.ExtractIncoming(ctx)
+		md := smeta.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {
@@ -58,7 +58,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 		}
 
 		ctx := stream.Context()
-		md := sgmeta.ExtractIncoming(ctx)
+		md := smeta.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {

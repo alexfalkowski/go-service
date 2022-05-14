@@ -7,7 +7,9 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/config"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/version"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.uber.org/fx"
 )
 
 const (
@@ -15,17 +17,31 @@ const (
 	notServing = "NOT_SERVING"
 )
 
+// RegisterParams health for HTTP.
+type RegisterParams struct {
+	fx.In
+
+	Server    *shttp.Server
+	Health    *HealthObserver
+	Liveness  *LivenessObserver
+	Readiness *ReadinessObserver
+	Version   version.Version
+}
+
 // Register health for HTTP.
-func Register(server *shttp.Server, hob *HealthObserver, lob *LivenessObserver, rob *ReadinessObserver) error {
-	resister("/health", server.Mux, hob.Observer, true)
-	resister("/liveness", server.Mux, lob.Observer, false)
-	resister("/readiness", server.Mux, rob.Observer, false)
+func Register(params RegisterParams) error {
+	resister("/health", params.Server.Mux, params.Health.Observer, params.Version, true)
+	resister("/liveness", params.Server.Mux, params.Liveness.Observer, params.Version, false)
+	resister("/readiness", params.Server.Mux, params.Readiness.Observer, params.Version, false)
 
 	return nil
 }
 
-func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withErrors bool) {
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, version version.Version, withErrors bool) {
 	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, p map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Version", string(version))
+
 		var (
 			status   int
 			response string
@@ -40,7 +56,6 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, withE
 		}
 
 		w.WriteHeader(status)
-		w.Header().Set("Content-Type", "application/json")
 
 		data := config.Map{"status": response}
 		if withErrors {

@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -28,7 +27,6 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     opentracing.Tracer
-	Version    version.Version
 	Metrics    *prometheus.ServerMetrics
 }
 
@@ -47,8 +45,8 @@ func NewServer(params ServerParams) *Server {
 	handler = cors.New().Handler(handler)
 	handler = params.Metrics.Handler(handler)
 	handler = opentracing.NewHandler(params.Tracer, handler)
-	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Version: params.Version, Handler: handler})
-	handler = meta.NewHandler(params.Version, handler)
+	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
+	handler = meta.NewHandler(handler)
 
 	addr := fmt.Sprintf(":%s", params.Config.Port)
 	server := &Server{Mux: mux, server: &http.Server{Addr: addr, Handler: handler}}

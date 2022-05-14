@@ -11,7 +11,7 @@ import (
 
 var (
 	// RedisModule for fx.
-	RedisModule = fx.Options(fx.Provide(redis.NewRing), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache))
+	RedisModule = fx.Options(fx.Provide(redis.NewClient), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache), fx.Provide(redis.NewRingOptions))
 
 	// RedisOpentracingModule for fx.
 	RedisOpentracingModule = fx.Provide(opentracing.NewTracer)

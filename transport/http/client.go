@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
@@ -74,8 +73,7 @@ func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
 
 // ClientParams for HTTP.
 type ClientParams struct {
-	Version version.Version
-	Config  *Config
+	Config *Config
 }
 
 // NewClient for HTTP.
@@ -95,7 +93,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	}
 
 	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, Version: params.Version, RoundTripper: hrt})
+		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, RoundTripper: hrt})
 	}
 
 	if opts.metrics != nil {

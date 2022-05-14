@@ -2,10 +2,12 @@ package config
 
 import (
 	"context"
+	"time"
 
-	"github.com/alexfalkowski/go-service/time"
+	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/fsnotify/fsnotify"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 // WatchParams for config.
@@ -14,6 +16,7 @@ type WatchParams struct {
 
 	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
+	Logger     *zap.Logger
 }
 
 // Watch the configuration. If it changes terminate the application.
@@ -25,7 +28,7 @@ func Watch(params WatchParams) error {
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			go watch(params.Shutdowner, watcher)
+			go watch(params.Shutdowner, watcher, params.Logger)
 
 			return watcher.Add(File())
 		},
@@ -37,24 +40,26 @@ func Watch(params WatchParams) error {
 	return nil
 }
 
-func watch(sh fx.Shutdowner, w *fsnotify.Watcher) {
+func watch(sh fx.Shutdowner, w *fsnotify.Watcher, logger *zap.Logger) {
 	for {
 		select {
 		case e, ok := <-w.Events:
 			if !ok {
-				shutdown(sh)
-
 				return
 			}
 
 			if e.Op&fsnotify.Write == fsnotify.Write {
-				shutdown(sh)
+				shutdown(sh, logger)
 
 				return
 			}
-		case _, ok := <-w.Errors:
+		case err, ok := <-w.Errors:
 			if !ok {
-				shutdown(sh)
+				return
+			}
+
+			if err != nil {
+				logger.Error("watching configuration", zap.Error(err))
 
 				return
 			}
@@ -62,8 +67,11 @@ func watch(sh fx.Shutdowner, w *fsnotify.Watcher) {
 	}
 }
 
-func shutdown(sh fx.Shutdowner) error {
-	time.SleepRandomWaitTime()
+func shutdown(sh fx.Shutdowner, logger *zap.Logger) error {
+	duration := stime.RandomWaitTime()
+
+	logger.Info("configuration has been modified", zap.Duration("duration", duration))
+	time.Sleep(duration)
 
 	return sh.Shutdown()
 }

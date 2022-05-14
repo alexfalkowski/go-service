@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
@@ -24,10 +23,7 @@ import (
 func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
@@ -39,7 +35,7 @@ func TestUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -76,10 +72,7 @@ func TestUnary(t *testing.T) {
 func TestDefaultClientUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewDatadogConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewDatadogConfig(), false, nil, nil)
 
@@ -91,7 +84,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -127,10 +120,7 @@ func TestDefaultClientUnary(t *testing.T) {
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -144,7 +134,7 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -181,10 +171,7 @@ func TestValidAuthUnary(t *testing.T) {
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -198,7 +185,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -231,13 +218,11 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -251,9 +236,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		defer conn.Close()
-
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -288,10 +271,7 @@ func TestMissingAuthUnary(t *testing.T) {
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -305,7 +285,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -331,13 +311,11 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
+// nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -351,7 +329,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -386,10 +364,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
@@ -403,7 +378,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {

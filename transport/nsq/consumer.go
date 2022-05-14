@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/nsqio/go-nsq"
 	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
@@ -57,7 +56,6 @@ type ConsumerParams struct {
 
 	Topic, Channel string
 	Config         *Config
-	Version        version.Version
 	Handler        handler.Handler
 	Marshaller     marshaller.Marshaller
 }
@@ -81,7 +79,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 	h := params.Handler
 
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Version: params.Version, Handler: h})
+		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Handler: h})
 	}
 
 	if defaultOptions.metrics != nil {
@@ -89,7 +87,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 	}
 
 	h = opentracing.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
-	h = meta.NewHandler(params.Version, h)
+	h = meta.NewHandler(h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))
 

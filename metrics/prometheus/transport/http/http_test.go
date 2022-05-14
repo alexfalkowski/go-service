@@ -7,11 +7,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/marshaller"
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/test"
@@ -22,27 +19,13 @@ import (
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
-		_, err = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
-		So(err, ShouldBeNil)
-
-		rcfg := &redis.Config{Host: "localhost:6379"}
-		r := redis.NewRing(lc, rcfg)
-		oparams := redis.OptionsParams{Ring: r, Compressor: compressor.NewSnappy(), Marshaller: marshaller.NewProto()}
-		opts := redis.NewOptions(oparams)
-		_ = redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: rcfg, Options: opts, Version: test.Version})
-
-		ricfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-
-		_, err = ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: ricfg, Version: test.Version})
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
+		_ = pg.NewDB(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
+		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
+		_ = test.NewRistrettoCache(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
 
-		err = phttp.Register(hs)
+		err := phttp.Register(hs)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

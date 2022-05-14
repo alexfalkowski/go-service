@@ -3,13 +3,19 @@ package pg
 import (
 	"context"
 	"database/sql"
+	"sync"
 
 	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
+	szap "github.com/alexfalkowski/go-service/database/sql/pg/logger/zap"
+	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
-	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/ngrok/sqlmw"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
+
+const driverName = "pgx-mw"
 
 // DBParams for SQL.
 type DBParams struct {
@@ -17,17 +23,24 @@ type DBParams struct {
 
 	Lifecycle fx.Lifecycle
 	Config    *Config
+	Tracer    opentracing.Tracer
+	Logger    *zap.Logger
 	Version   version.Version
 }
 
-// NewDB for SQL.
-func NewDB(params DBParams) (*sql.DB, error) {
-	config, err := pgx.ParseConfig(params.Config.URL)
-	if err != nil {
-		return nil, err
-	}
+var once sync.Once
 
-	db := stdlib.OpenDB(*config)
+// NewDB for SQL.
+func NewDB(params DBParams) *sql.DB {
+	once.Do(func() {
+		var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
+		interceptor = opentracing.NewInterceptor(params.Tracer, interceptor)
+		interceptor = szap.NewInterceptor(params.Logger, interceptor)
+
+		sql.Register(driverName, sqlmw.Driver(stdlib.GetDefaultDriver(), interceptor))
+	})
+
+	db, _ := sql.Open(driverName, params.Config.URL)
 
 	prometheus.Register(params.Lifecycle, db, params.Version)
 
@@ -37,5 +50,5 @@ func NewDB(params DBParams) (*sql.DB, error) {
 		},
 	})
 
-	return db, nil
+	return db
 }

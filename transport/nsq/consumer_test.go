@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
@@ -22,10 +21,7 @@ import (
 func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -37,7 +33,6 @@ func TestConsumer(t *testing.T) {
 				tnsq.ConsumerParams{
 					Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-					Version: test.Version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -58,10 +53,7 @@ func TestConsumer(t *testing.T) {
 func TestInvalidConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -73,7 +65,6 @@ func TestInvalidConsumer(t *testing.T) {
 				tnsq.ConsumerParams{
 					Lifecycle: lc, Topic: "schäfer", Channel: "schäfer", Config: cfg,
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-					Version: test.Version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -93,10 +84,7 @@ func TestInvalidConsumer(t *testing.T) {
 func TestInvalidConsumerConfig(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -108,7 +96,6 @@ func TestInvalidConsumerConfig(t *testing.T) {
 				tnsq.ConsumerParams{
 					Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-					Version: test.Version,
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -128,10 +115,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 func TestReceiveMessage(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -142,7 +126,6 @@ func TestReceiveMessage(t *testing.T) {
 			tnsq.ConsumerParams{
 				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				Version: test.Version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -150,7 +133,7 @@ func TestReceiveMessage(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
-			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: test.Version},
+			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
 		)
@@ -176,10 +159,7 @@ func TestReceiveMessage(t *testing.T) {
 func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -190,7 +170,6 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 			tnsq.ConsumerParams{
 				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				Version: test.Version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -219,10 +198,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 func TestReceiveError(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -233,7 +209,6 @@ func TestReceiveError(t *testing.T) {
 			tnsq.ConsumerParams{
 				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				Version: test.Version,
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
@@ -241,7 +216,7 @@ func TestReceiveError(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
-			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: test.Version},
+			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
 		)

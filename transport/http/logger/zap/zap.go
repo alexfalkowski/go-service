@@ -7,10 +7,8 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/os"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	stime "github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,19 +29,17 @@ const (
 // HandlerParams for zap.
 type HandlerParams struct {
 	Logger  *zap.Logger
-	Version version.Version
 	Handler http.Handler
 }
 
 // NewHandler for zap.
 func NewHandler(params HandlerParams) *Handler {
-	return &Handler{logger: params.Logger, version: params.Version, Handler: params.Handler}
+	return &Handler{logger: params.Logger, Handler: params.Handler}
 }
 
 // Handler for zap.
 type Handler struct {
-	logger  *zap.Logger
-	version version.Version
+	logger *zap.Logger
 	http.Handler
 }
 
@@ -62,8 +58,6 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.Handler.ServeHTTP(resp, req)
 
 	fields := []zapcore.Field{
-		zap.String("name", os.ExecutableName()),
-		zap.String("version", string(h.version)),
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, service),
@@ -86,19 +80,17 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 // RoundTripperParams for zap.
 type RoundTripperParams struct {
 	Logger       *zap.Logger
-	Version      version.Version
 	RoundTripper http.RoundTripper
 }
 
 // NewRoundTripper for zap.
 func NewRoundTripper(params RoundTripperParams) *RoundTripper {
-	return &RoundTripper{logger: params.Logger, version: params.Version, RoundTripper: params.RoundTripper}
+	return &RoundTripper{logger: params.Logger, RoundTripper: params.RoundTripper}
 }
 
 // RoundTripper for zap.
 type RoundTripper struct {
-	logger  *zap.Logger
-	version version.Version
+	logger *zap.Logger
 
 	http.RoundTripper
 }
@@ -114,8 +106,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.String("name", os.ExecutableName()),
-		zap.String("version", string(r.version)),
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, service),

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	tmeta "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +16,7 @@ type Handler struct {
 }
 
 // NewHandler for meta.
-func NewHandler(version version.Version, handler http.Handler) *Handler {
+func NewHandler(handler http.Handler) *Handler {
 	return &Handler{Handler: handler}
 }
 

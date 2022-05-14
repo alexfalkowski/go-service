@@ -3,7 +3,6 @@ package nsq_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
@@ -19,15 +18,12 @@ func TestProducer(t *testing.T) {
 
 		Convey("When I register a producer", func() {
 			lc := fxtest.NewLifecycle(t)
-
-			logger, err := zap.NewLogger(lc, zap.NewConfig())
-			So(err, ShouldBeNil)
-
+			logger := test.NewLogger(lc)
 			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			producer := nsq.NewProducer(
-				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack(), Version: test.Version},
+				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
 				nsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
 			)

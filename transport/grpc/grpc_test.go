@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
@@ -20,10 +19,7 @@ import (
 func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		lc.RequireStart()
@@ -54,10 +50,7 @@ func TestUnary(t *testing.T) {
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -90,10 +83,7 @@ func TestValidAuthUnary(t *testing.T) {
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -110,7 +100,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err = client.SayHello(ctx, req)
+			_, err := client.SayHello(ctx, req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -125,10 +115,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -145,7 +132,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err = client.SayHello(ctx, req)
+			_, err := client.SayHello(ctx, req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -159,10 +146,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -179,7 +163,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err = client.SayHello(ctx, req)
+			_, err := client.SayHello(ctx, req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -193,10 +177,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -213,7 +194,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err = client.SayHello(ctx, req)
+			_, err := client.SayHello(ctx, req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -227,10 +208,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
 
 		lc.RequireStart()
@@ -266,10 +244,7 @@ func TestStream(t *testing.T) {
 func TestValidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -306,10 +281,7 @@ func TestValidAuthStream(t *testing.T) {
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -345,10 +317,7 @@ func TestInvalidAuthStream(t *testing.T) {
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -364,7 +333,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			_, err = client.SayStreamHello(ctx)
+			_, err := client.SayStreamHello(ctx)
 
 			Convey("Then I should have an auth error", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -378,10 +347,7 @@ func TestEmptyAuthStream(t *testing.T) {
 func TestMissingClientAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -417,10 +383,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -436,7 +399,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			_, err = client.SayStreamHello(ctx)
+			_, err := client.SayStreamHello(ctx)
 
 			Convey("Then I should have an error", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -450,10 +413,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 func TestBreakerUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		logger, err := zap.NewLogger(lc, zap.NewConfig())
-		So(err, ShouldBeNil)
-
+		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
@@ -468,6 +428,8 @@ func TestBreakerUnary(t *testing.T) {
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
+
+			var err error
 
 			for i := 0; i < 10; i++ {
 				_, err = client.SayHello(ctx, req)

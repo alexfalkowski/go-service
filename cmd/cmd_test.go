@@ -148,7 +148,7 @@ func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tra
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 	client := shttp.NewClient(
-		shttp.ClientParams{Config: cfg, Version: version},
+		shttp.ClientParams{Config: cfg},
 		shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer),
 	)
 
