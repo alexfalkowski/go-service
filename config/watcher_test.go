@@ -35,7 +35,7 @@ func TestWatcher(t *testing.T) {
 				// Wait till we shutdown.
 				time.Sleep(config.RandomWaitTime + time.Second)
 
-				So(sh.Called, ShouldBeTrue)
+				So(sh.Called(), ShouldBeTrue)
 			})
 
 			lc.RequireStop()
