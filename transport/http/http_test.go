@@ -15,6 +15,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -35,7 +36,7 @@ func TestUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -84,7 +85,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -134,7 +135,7 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -185,7 +186,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -236,7 +237,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -285,7 +286,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -329,7 +330,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -378,7 +379,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := hs.Register(func(mux *runtime.ServeMux) error { return v1.RegisterGreeterServiceHandler(ctx, mux, conn) })
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {

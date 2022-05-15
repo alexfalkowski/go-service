@@ -30,49 +30,53 @@ type RegisterParams struct {
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
-	resister("/health", params.Server.Mux, params.Health.Observer, params.Version, true)
-	resister("/liveness", params.Server.Mux, params.Liveness.Observer, params.Version, false)
-	resister("/readiness", params.Server.Mux, params.Readiness.Observer, params.Version, false)
+	_ = resister("/health", params.Server, params.Health.Observer, params.Version, true)
+	_ = resister("/liveness", params.Server, params.Liveness.Observer, params.Version, false)
+	_ = resister("/readiness", params.Server, params.Readiness.Observer, params.Version, false)
 
 	return nil
 }
 
-func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, version version.Version, withErrors bool) {
-	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, p map[string]string) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Version", string(version))
+func resister(path string, server *shttp.Server, ob *subscriber.Observer, version version.Version, withErrors bool) error {
+	return server.Register(
+		func(mux *runtime.ServeMux) error {
+			return mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, p map[string]string) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Version", string(version))
 
-		var (
-			status   int
-			response string
-		)
+				var (
+					status   int
+					response string
+				)
 
-		if err := ob.Error(); err != nil {
-			status = http.StatusServiceUnavailable
-			response = notServing
-		} else {
-			status = http.StatusOK
-			response = serving
-		}
-
-		w.WriteHeader(status)
-
-		data := config.Map{"status": response}
-		if withErrors {
-			errors := config.Map{}
-			for n, e := range ob.Errors() {
-				if e == nil {
-					continue
+				if err := ob.Error(); err != nil {
+					status = http.StatusServiceUnavailable
+					response = notServing
+				} else {
+					status = http.StatusOK
+					response = serving
 				}
 
-				errors[n] = e.Error()
-			}
+				w.WriteHeader(status)
 
-			if len(errors) > 0 {
-				data["errors"] = errors
-			}
-		}
+				data := config.Map{"status": response}
+				if withErrors {
+					errors := config.Map{}
+					for n, e := range ob.Errors() {
+						if e == nil {
+							continue
+						}
 
-		_ = json.NewEncoder(w).Encode(data)
-	})
+						errors[n] = e.Error()
+					}
+
+					if len(errors) > 0 {
+						data["errors"] = errors
+					}
+				}
+
+				_ = json.NewEncoder(w).Encode(data)
+			})
+		},
+	)
 }

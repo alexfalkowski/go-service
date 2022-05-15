@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
@@ -30,12 +31,6 @@ type ServerParams struct {
 	Metrics    *prometheus.ServerMetrics
 }
 
-// Server for HTTP.
-type Server struct {
-	Mux    *runtime.ServeMux
-	server *http.Server
-}
-
 // NewServer for HTTP.
 func NewServer(params ServerParams) *Server {
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
@@ -49,7 +44,7 @@ func NewServer(params ServerParams) *Server {
 	handler = meta.NewHandler(handler)
 
 	addr := fmt.Sprintf(":%s", params.Config.Port)
-	server := &Server{Mux: mux, server: &http.Server{Addr: addr, Handler: handler}}
+	server := &Server{mux: mux, server: &http.Server{Addr: addr, Handler: handler}}
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
@@ -68,6 +63,24 @@ func NewServer(params ServerParams) *Server {
 	})
 
 	return server
+}
+
+// Server for HTTP.
+type Server struct {
+	mux    *runtime.ServeMux
+	server *http.Server
+	m      sync.Mutex
+}
+
+// RegisterFunc with mux.
+type RegisterFunc func(mux *runtime.ServeMux) error
+
+// Register with mux.
+func (s *Server) Register(f RegisterFunc) error {
+	s.m.Lock()
+	defer s.m.Unlock()
+
+	return f(s.mux)
 }
 
 func (s *Server) start(listener net.Listener, params ServerParams) {
