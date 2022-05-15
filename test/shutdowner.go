@@ -8,8 +8,12 @@ func NewShutdowner() *Shutdowner {
 	return &Shutdowner{}
 }
 
-type Shutdowner struct{}
+type Shutdowner struct {
+	Called bool
+}
 
-func (*Shutdowner) Shutdown(...fx.ShutdownOption) error {
+func (s *Shutdowner) Shutdown(...fx.ShutdownOption) error {
+	s.Called = true
+
 	return nil
 }

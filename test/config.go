@@ -3,6 +3,7 @@ package test
 import (
 	"time"
 
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
@@ -65,4 +66,9 @@ func NewDatadogConfig() *opentracing.Config {
 		Type: "datadog",
 		Host: "localhost:8126",
 	}
+}
+
+// NewPGConfig for test.
+func NewPGConfig() *pg.Config {
+	return &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}
 }
