@@ -10,6 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// RandomWaitTime that will be used to shutdown the system.
+var RandomWaitTime = stime.RandomWaitTime()
+
 // WatchParams for config.
 type WatchParams struct {
 	fx.In
@@ -68,10 +71,8 @@ func watch(sh fx.Shutdowner, w *fsnotify.Watcher, logger *zap.Logger) {
 }
 
 func shutdown(sh fx.Shutdowner, logger *zap.Logger) error {
-	duration := stime.RandomWaitTime()
-
-	logger.Info("configuration has been modified", zap.Duration("duration", duration))
-	time.Sleep(duration)
+	logger.Info("configuration has been modified", zap.Duration("duration", RandomWaitTime))
+	time.Sleep(RandomWaitTime)
 
 	return sh.Shutdown()
 }
