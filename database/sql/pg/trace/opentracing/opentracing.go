@@ -8,19 +8,14 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/ngrok/sqlmw"
 	otr "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/fx"
 )
 
 const (
-	pgDuration        = "pg.duration"
-	pgStartTime       = "pg.start_time"
 	pgRequestDeadline = "pg.request.deadline"
 	component         = "component"
 	pgComponent       = "pg"
@@ -73,9 +68,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 
 // nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
-		otr.Tag{Key: pgStartTime, Value: start.Format(time.RFC3339)},
 		otr.Tag{Key: component, Value: pgComponent},
 		otr.Tag{Key: "pg.query", Value: query},
 	}
@@ -91,27 +84,21 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		span.SetTag(pgRequestDeadline, d.UTC().Format(time.RFC3339))
 	}
 
+	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
+	if err != nil {
+		opentracing.SetError(span, err)
+	}
+
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
 	}
 
-	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-	if err != nil {
-		setError(span, err)
-
-		return nil, err
-	}
-
-	span.SetTag(pgDuration, stime.ToMilliseconds(time.Since(start)))
-
-	return res, nil
+	return res, err
 }
 
 // nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
-		otr.Tag{Key: pgStartTime, Value: start.Format(time.RFC3339)},
 		otr.Tag{Key: component, Value: pgComponent},
 		otr.Tag{Key: "pg.query", Value: query},
 	}
@@ -127,20 +114,16 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		span.SetTag(pgRequestDeadline, d.UTC().Format(time.RFC3339))
 	}
 
+	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
+	if err != nil {
+		opentracing.SetError(span, err)
+	}
+
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
 	}
 
-	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-	if err != nil {
-		setError(span, err)
-
-		return nil, err
-	}
-
-	span.SetTag(pgDuration, stime.ToMilliseconds(time.Since(start)))
-
-	return res, nil
+	return res, err
 }
 
 func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
@@ -166,9 +149,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 
 // nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
-		otr.Tag{Key: pgStartTime, Value: start.Format(time.RFC3339)},
 		otr.Tag{Key: component, Value: pgComponent},
 		otr.Tag{Key: "pg.query", Value: query},
 	}
@@ -184,27 +165,21 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		span.SetTag(pgRequestDeadline, d.UTC().Format(time.RFC3339))
 	}
 
+	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
+	if err != nil {
+		opentracing.SetError(span, err)
+	}
+
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
 	}
 
-	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
-	if err != nil {
-		setError(span, err)
-
-		return nil, err
-	}
-
-	span.SetTag(pgDuration, stime.ToMilliseconds(time.Since(start)))
-
-	return res, nil
+	return res, err
 }
 
 // nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
-	start := time.Now().UTC()
 	opts := []otr.StartSpanOption{
-		otr.Tag{Key: pgStartTime, Value: start.Format(time.RFC3339)},
 		otr.Tag{Key: component, Value: pgComponent},
 		otr.Tag{Key: "pg.query", Value: query},
 	}
@@ -220,20 +195,16 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		span.SetTag(pgRequestDeadline, d.UTC().Format(time.RFC3339))
 	}
 
+	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
+	if err != nil {
+		opentracing.SetError(span, err)
+	}
+
 	for k, v := range meta.Attributes(ctx) {
 		span.SetTag(k, v)
 	}
 
-	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-	if err != nil {
-		setError(span, err)
-
-		return nil, err
-	}
-
-	span.SetTag(pgDuration, stime.ToMilliseconds(time.Since(start)))
-
-	return res, nil
+	return res, err
 }
 
 func (i *Interceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
@@ -246,9 +217,4 @@ func (i *Interceptor) TxCommit(ctx context.Context, tx driver.Tx) error {
 
 func (i *Interceptor) TxRollback(ctx context.Context, tx driver.Tx) error {
 	return i.interceptor.TxRollback(ctx, tx)
-}
-
-func setError(span otr.Span, err error) {
-	ext.Error.Set(span, true)
-	span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 }
