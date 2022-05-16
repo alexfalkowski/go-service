@@ -57,7 +57,7 @@ func TestHTTP(t *testing.T) {
 				So(response, ShouldContainSubstring, "go_info")
 				So(response, ShouldContainSubstring, "redis_hits_total")
 				So(response, ShouldContainSubstring, "ristretto_hits_total")
-				So(response, ShouldContainSubstring, "sql_max_open_total")
+				So(response, ShouldContainSubstring, "pg_sql_max_open_total")
 			})
 		})
 

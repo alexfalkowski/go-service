@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
@@ -25,62 +26,62 @@ type StatsCollector struct {
 }
 
 // NewStatsCollector for prometheus.
-func NewStatsCollector(db *sql.DB, version version.Version) *StatsCollector {
+func NewStatsCollector(name string, db *sql.DB, version version.Version) *StatsCollector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
 	return &StatsCollector{
 		db: db,
 		maxOpenDesc: prometheus.NewDesc(
-			"sql_max_open_total",
-			"Maximum number of open connections to the database.",
+			fmt.Sprintf("%s_sql_max_open_total", name),
+			fmt.Sprintf("Maximum number of open connections to %s.", name),
 			nil,
 			labels,
 		),
 		openDesc: prometheus.NewDesc(
-			"sql_open_total",
-			"The number of established connections both in use and idle.",
+			fmt.Sprintf("%s_sql_open_total", name),
+			fmt.Sprintf("The number of established connections both in use and idle for %s.", name),
 			nil,
 			labels,
 		),
 		inUseDesc: prometheus.NewDesc(
-			"sql_in_use_total",
-			"The number of connections currently in use.",
+			fmt.Sprintf("%s_sql_in_use_total", name),
+			fmt.Sprintf("The number of connections currently in use for %s.", name),
 			nil,
 			labels,
 		),
 		idleDesc: prometheus.NewDesc(
-			"sql_idle_total",
-			"The number of idle connections.",
+			fmt.Sprintf("%s_sql_idle_total", name),
+			fmt.Sprintf("The number of idle connections for %s.", name),
 			nil,
 			labels,
 		),
 		waitedForDesc: prometheus.NewDesc(
-			"sql_waited_for_total",
-			"The total number of connections waited for.",
+			fmt.Sprintf("%s_sql_waited_for_total", name),
+			fmt.Sprintf("The total number of connections waited for in %s.", name),
 			nil,
 			labels,
 		),
 		blockedSecondsDesc: prometheus.NewDesc(
-			"sql_blocked_seconds_total",
-			"The total time blocked waiting for a new connection.",
+			fmt.Sprintf("%s_sql_blocked_seconds_total", name),
+			fmt.Sprintf("The total time blocked waiting for a new connection for %s.", name),
 			nil,
 			labels,
 		),
 		closedMaxIdleDesc: prometheus.NewDesc(
-			"sql_closed_max_idle_total",
-			"The total number of connections closed due to SetMaxIdleConns.",
+			fmt.Sprintf("%s_sql_closed_max_idle_total", name),
+			fmt.Sprintf("The total number of connections closed due to SetMaxIdleConns for %s.", name),
 			nil,
 			labels,
 		),
 		closedMaxLifetimeDesc: prometheus.NewDesc(
-			"sql_closed_max_lifetime_total",
-			"The total number of connections closed due to SetConnMaxLifetime.",
+			fmt.Sprintf("%s_sql_closed_max_lifetime_total", name),
+			fmt.Sprintf("The total number of connections closed due to SetConnMaxLifetime for %s.", name),
 			nil,
 			labels,
 		),
 		closedMaxIdleTimeDesc: prometheus.NewDesc(
-			"sql_closed_max_idle_time_total",
-			"The total number of connections closed due to SetConnMaxIdleTime.",
+			fmt.Sprintf("%s_sql_closed_max_idle_time_total", name),
+			fmt.Sprintf("The total number of connections closed due to SetConnMaxIdleTime for %s.", name),
 			nil,
 			labels,
 		),

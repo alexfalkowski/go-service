@@ -29,7 +29,7 @@ func Register(name string, driver driver.Driver, tracer otr.Tracer, logger *zap.
 func Open(lc fx.Lifecycle, name string, cfg *config.Config, ver version.Version) *sql.DB {
 	db, _ := sql.Open(name, cfg.URL)
 
-	prometheus.Register(lc, db, ver)
+	prometheus.Register(lc, name, db, ver)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
