@@ -16,12 +16,12 @@ import (
 )
 
 const (
-	httpURL             = "http.url"
-	httpMethod          = "http.method"
-	httpRequestDeadline = "http.request.deadline"
-	httpStatusCode      = "http.status_code"
-	component           = "component"
-	httpComponent       = "http"
+	httpURL        = "http.url"
+	httpMethod     = "http.method"
+	httpDeadline   = "http.deadline"
+	httpStatusCode = "http.status_code"
+	component      = "component"
+	httpComponent  = "http"
 )
 
 // TracerParams for otr.
@@ -77,7 +77,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(httpRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(httpDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	ctx = otr.ContextWithSpan(ctx, span)
@@ -119,7 +119,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(httpRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(httpDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	carrier := otr.HTTPHeadersCarrier(req.Header)

@@ -15,21 +15,20 @@ import (
 )
 
 const (
-	pgDuration        = "pg.duration"
-	pgStartTime       = "pg.start_time"
-	pgRequestDeadline = "pg.request.deadline"
-	component         = "component"
-	pgComponent       = "pg"
-	kind              = "pg"
+	duration  = "%s.duration"
+	startTime = "%s.start_time"
+	deadline  = "%s.deadline"
+	component = "component"
 )
 
-// NewInterceptor for opentracing.
-func NewInterceptor(logger *zap.Logger, interceptor sqlmw.Interceptor) *Interceptor {
-	return &Interceptor{logger: logger, interceptor: interceptor}
+// NewInterceptor for zap.
+func NewInterceptor(name string, logger *zap.Logger, interceptor sqlmw.Interceptor) *Interceptor {
+	return &Interceptor{name: name, logger: logger, interceptor: interceptor}
 }
 
-// Interceptor for opentracing.
+// Interceptor for zap.
 type Interceptor struct {
+	name        string
 	logger      *zap.Logger
 	interceptor sqlmw.Interceptor
 }
@@ -50,23 +49,27 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
-		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", kind),
-		zap.String(component, pgComponent),
-		zap.String("pg.query", query),
+		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
+		zap.String("span.kind", i.name),
+		zap.String(component, i.name),
+		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
 	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("pg.args.%s", strings.ToLower(a.Name)), a.Value))
+		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+	}
+
+	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
-	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-
-	fields = append(fields, zap.Int64(pgDuration, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(fmt.Sprintf(duration, i.name), stime.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -84,23 +87,27 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
-		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", kind),
-		zap.String(component, pgComponent),
-		zap.String("pg.query", query),
+		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
+		zap.String("span.kind", i.name),
+		zap.String(component, i.name),
+		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
 	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("pg.args.%s", strings.ToLower(a.Name)), a.Value))
+		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+	}
+
+	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
-	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-
-	fields = append(fields, zap.Int64(pgDuration, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(fmt.Sprintf(duration, i.name), stime.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -139,23 +146,27 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
-		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", kind),
-		zap.String(component, pgComponent),
-		zap.String("pg.query", query),
+		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
+		zap.String("span.kind", i.name),
+		zap.String(component, i.name),
+		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
 	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("pg.args.%s", strings.ToLower(a.Name)), a.Value))
+		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+	}
+
+	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
-	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
-
-	fields = append(fields, zap.Int64(pgDuration, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(fmt.Sprintf(duration, i.name), stime.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -173,23 +184,27 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
-		zap.String(pgStartTime, start.Format(time.RFC3339)),
-		zap.String("span.kind", kind),
-		zap.String(component, pgComponent),
-		zap.String("pg.query", query),
+		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
+		zap.String("span.kind", i.name),
+		zap.String(component, i.name),
+		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
 	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("pg.args.%s", strings.ToLower(a.Name)), a.Value))
+		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+	}
+
+	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
-	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-
-	fields = append(fields, zap.Int64(pgDuration, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(fmt.Sprintf(duration, i.name), stime.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))

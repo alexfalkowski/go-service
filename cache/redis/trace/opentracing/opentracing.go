@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	redisRequestDeadline = "redis.request.deadline"
-	component            = "component"
-	redisComponent       = "redis"
+	redisDeadline  = "redis.deadline"
+	component      = "component"
+	redisComponent = "redis"
 )
 
 // TracerParams for opentracing.
@@ -64,7 +64,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(redisRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	cmd := c.client.Set(ctx, key, value, ttl)
@@ -91,7 +91,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(redisRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	cmd := c.client.SetXX(ctx, key, value, ttl)
@@ -118,7 +118,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(redisRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	cmd := c.client.SetNX(ctx, key, value, ttl)
@@ -143,7 +143,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(redisRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	cmd := c.client.Get(ctx, key)
@@ -168,7 +168,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	defer span.Finish()
 
 	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(redisRequestDeadline, d.UTC().Format(time.RFC3339))
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
 	}
 
 	cmd := c.client.Del(ctx, keys...)

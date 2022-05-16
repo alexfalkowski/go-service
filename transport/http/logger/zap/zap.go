@@ -14,16 +14,16 @@ import (
 )
 
 const (
-	httpURL             = "http.url"
-	httpMethod          = "http.method"
-	httpDuration        = "http.duration_ms"
-	httpStartTime       = "http.start_time"
-	httpRequestDeadline = "http.request.deadline"
-	httpStatusCode      = "http.status_code"
-	component           = "component"
-	httpComponent       = "http"
-	client              = "client"
-	server              = "server"
+	httpURL        = "http.url"
+	httpMethod     = "http.method"
+	httpDuration   = "http.duration_ms"
+	httpStartTime  = "http.start_time"
+	httpDeadline   = "http.deadline"
+	httpStatusCode = "http.status_code"
+	component      = "component"
+	httpComponent  = "http"
+	client         = "client"
+	server         = "server"
 )
 
 // HandlerParams for zap.
@@ -71,7 +71,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpRequestDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(httpDeadline, d.UTC().Format(time.RFC3339)))
 	}
 
 	h.logger.Info("finished call", fields...)
@@ -119,7 +119,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpRequestDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(httpDeadline, d.UTC().Format(time.RFC3339)))
 	}
 
 	if err != nil {
