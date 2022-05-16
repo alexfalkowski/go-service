@@ -22,12 +22,12 @@ import (
 )
 
 const (
-	grpcService         = "grpc.service"
-	grpcMethod          = "grpc.method"
-	grpcCode            = "grpc.code"
-	grpcRequestDeadline = "grpc.request.deadline"
-	component           = "component"
-	grpcComponent       = "grpc"
+	grpcService   = "grpc.service"
+	grpcMethod    = "grpc.method"
+	grpcCode      = "grpc.code"
+	grpcDeadline  = "grpc.deadline"
+	component     = "component"
+	grpcComponent = "grpc"
 )
 
 // TracerParams for otr.
@@ -70,7 +70,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
-			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
+			span.SetTag(grpcDeadline, d.UTC().Format(time.RFC3339))
 		}
 
 		ctx = otr.ContextWithSpan(ctx, span)
@@ -115,7 +115,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
-			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
+			span.SetTag(grpcDeadline, d.UTC().Format(time.RFC3339))
 		}
 
 		ctx = otr.ContextWithSpan(ctx, span)
@@ -159,7 +159,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
-			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
+			span.SetTag(grpcDeadline, d.UTC().Format(time.RFC3339))
 		}
 
 		md := gmeta.ExtractOutgoing(ctx)
@@ -204,7 +204,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 		defer span.Finish()
 
 		if d, ok := ctx.Deadline(); ok {
-			span.SetTag(grpcRequestDeadline, d.UTC().Format(time.RFC3339))
+			span.SetTag(grpcDeadline, d.UTC().Format(time.RFC3339))
 		}
 
 		md := gmeta.ExtractOutgoing(ctx)

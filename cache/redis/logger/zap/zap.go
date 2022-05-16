@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	redisDuration        = "redis.duration"
-	redisStartTime       = "redis.start_time"
-	redisRequestDeadline = "redis.request.deadline"
-	component            = "component"
-	redisComponent       = "redis"
-	kind                 = "redis"
+	redisDuration  = "redis.duration"
+	redisStartTime = "redis.start_time"
+	redisDeadline  = "redis.deadline"
+	component      = "component"
+	redisComponent = "redis"
+	kind           = "redis"
 )
 
 // NewClient for zap.
@@ -49,6 +49,10 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 		fields = append(fields, zap.String(k, v))
 	}
 
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+	}
+
 	if err := cmd.Err(); err != nil {
 		fields = append(fields, zap.Error(err))
 		c.logger.Error("finished call with error", fields...)
@@ -74,6 +78,10 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
+	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -103,6 +111,10 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 		fields = append(fields, zap.String(k, v))
 	}
 
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+	}
+
 	if err := cmd.Err(); err != nil {
 		fields = append(fields, zap.Error(err))
 		c.logger.Error("finished call with error", fields...)
@@ -113,6 +125,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	start := time.Now().UTC()
 	cmd := c.client.Get(ctx, key)
@@ -128,6 +141,10 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		fields = append(fields, zap.String(k, v))
 	}
 
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+	}
+
 	if err := cmd.Err(); err != nil {
 		fields = append(fields, zap.Error(err))
 		c.logger.Error("finished call with error", fields...)
@@ -138,6 +155,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	return cmd
 }
 
+// nolint:dupl
 func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	start := time.Now().UTC()
 	cmd := c.client.Del(ctx, keys...)
@@ -151,6 +169,10 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
+	}
+
+	if d, ok := ctx.Deadline(); ok {
+		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {

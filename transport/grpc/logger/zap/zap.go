@@ -18,16 +18,16 @@ import (
 )
 
 const (
-	grpcService         = "grpc.service"
-	grpcMethod          = "grpc.method"
-	grpcCode            = "grpc.code"
-	grpcDuration        = "grpc.duration"
-	grpcStartTime       = "grpc.start_time"
-	grpcRequestDeadline = "grpc.request.deadline"
-	component           = "component"
-	grpcComponent       = "grpc"
-	client              = "client"
-	server              = "server"
+	grpcService   = "grpc.service"
+	grpcMethod    = "grpc.method"
+	grpcCode      = "grpc.code"
+	grpcDuration  = "grpc.duration"
+	grpcStartTime = "grpc.start_time"
+	grpcDeadline  = "grpc.deadline"
+	component     = "component"
+	grpcComponent = "grpc"
+	client        = "client"
+	server        = "server"
 )
 
 // UnaryServerInterceptor for zap.
@@ -55,7 +55,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
 		tags := tags.Extract(ctx)
@@ -105,7 +105,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
 		tags := tags.Extract(ctx)
@@ -154,7 +154,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
 		tags := tags.Extract(ctx)
@@ -203,7 +203,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcRequestDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
 		}
 
 		tags := tags.Extract(ctx)
