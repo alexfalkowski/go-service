@@ -27,7 +27,7 @@ func TestHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		_ = pg.Open(pg.DBParams{Lifecycle: lc, Config: &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}, Version: test.Version})
+		_ = pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		_ = test.NewRistrettoCache(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())

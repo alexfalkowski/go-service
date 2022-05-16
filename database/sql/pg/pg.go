@@ -1,12 +1,10 @@
 package pg
 
 import (
-	"context"
 	"database/sql"
 	"sync"
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
-	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/jackc/pgx/v4/stdlib"
@@ -25,17 +23,7 @@ type DBParams struct {
 
 // Open for PostgreSQL.
 func Open(params DBParams) *sql.DB {
-	db, _ := sql.Open("pg", params.Config.URL)
-
-	prometheus.Register(params.Lifecycle, db, params.Version)
-
-	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			return db.Close()
-		},
-	})
-
-	return db
+	return driver.Open(params.Lifecycle, "pg", &params.Config.Config, params.Version)
 }
 
 var once sync.Once

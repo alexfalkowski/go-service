@@ -1,6 +1,8 @@
 package pg
 
+import "github.com/alexfalkowski/go-service/database/sql/config"
+
 // Config for SQL.
 type Config struct {
-	URL string `yaml:"url"`
+	config.Config `yaml:",inline"`
 }

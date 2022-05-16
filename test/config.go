@@ -3,6 +3,7 @@ package test
 import (
 	"time"
 
+	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -69,6 +70,12 @@ func NewDatadogConfig() *opentracing.Config {
 }
 
 // NewPGConfig for test.
+// nolint:gomnd
 func NewPGConfig() *pg.Config {
-	return &pg.Config{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}
+	return &pg.Config{Config: config.Config{
+		URL:             "postgres://test:test@localhost:5432/test?sslmode=disable",
+		MaxOpenConns:    5,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: time.Hour,
+	}}
 }

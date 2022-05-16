@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/meta"
@@ -394,7 +395,12 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		cfg := &pg.Config{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}
+		cfg := &pg.Config{Config: config.Config{
+			URL:             "postgres://test:test@localhost:5444/test?sslmode=disable",
+			MaxOpenConns:    5,
+			MaxIdleConns:    5,
+			ConnMaxLifetime: time.Hour,
+		}}
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
