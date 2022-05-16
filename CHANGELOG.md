@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.67.0](https://github.com/alexfalkowski/go-service/compare/v1.66.8...v1.67.0) (2022-05-16)
+
+
+### Features
+
+* **sql:** add conn pool settings ([#133](https://github.com/alexfalkowski/go-service/issues/133)) ([31e8d42](https://github.com/alexfalkowski/go-service/commit/31e8d42aab1ecfa35ccb2bea610cf4970c2fbe1b))
+
 ### [1.66.8](https://github.com/alexfalkowski/go-service/compare/v1.66.7...v1.66.8) (2022-05-16)
 
 ### [1.66.7](https://github.com/alexfalkowski/go-service/compare/v1.66.6...v1.66.7) (2022-05-16)
