@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	otr "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/fx"
 )
 
@@ -42,4 +43,10 @@ func NewTracer(params TracerParams) (otr.Tracer, error) {
 	}
 
 	return otr.NoopTracer{}, nil
+}
+
+// SetError on span.
+func SetError(span otr.Span, err error) {
+	ext.Error.Set(span, true)
+	span.LogFields(log.String("event", "error"), log.String("message", err.Error()))
 }
