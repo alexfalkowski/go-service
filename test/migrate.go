@@ -1,6 +1,8 @@
 package test
 
 import (
+	"errors"
+
 	"github.com/golang-migrate/migrate/v4"
 	// This are need to use migrate in test.
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -9,7 +11,7 @@ import (
 
 // NewMigrator for test.
 func NewMigrator() *Migrator {
-	m, _ := migrate.New("file://../../../test/migrations", NewPGConfig().URL)
+	m, _ := migrate.New("file://../../../test/migrations", NewPGConfig().Masters[0].URL)
 
 	return &Migrator{migrate: m}
 }
@@ -21,7 +23,12 @@ type Migrator struct {
 
 // Up to latest version.
 func (m *Migrator) Up() error {
-	return m.migrate.Up()
+	err := m.migrate.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
 }
 
 // Drop the DB.
