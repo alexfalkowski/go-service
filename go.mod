@@ -28,6 +28,7 @@ require (
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.4.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
+	github.com/ulule/limiter/v3 v3.10.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.17.1
 	go.uber.org/multierr v1.8.0

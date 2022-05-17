@@ -8,7 +8,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	"github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -202,6 +204,75 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 			lc.RequireStop()
 		})
+	})
+}
+
+func TestBreakerUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		verifier := test.NewVerifier("test")
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
+			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+		)
+
+		lc.RequireStart()
+
+		Convey("When I query for a unauthenticated greet multiple times", func() {
+			ctx := context.Background()
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			var err error
+
+			for i := 0; i < 10; i++ {
+				_, err = client.SayHello(ctx, req)
+			}
+
+			Convey("Then I should have a unauthenticated reply", func() {
+				So(status.Code(err), ShouldEqual, codes.Unavailable)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestLimiterUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+
+		l, err := limiter.NewLimiter("0-S")
+		So(err, ShouldBeNil)
+
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
+			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
+		)
+
+		lc.RequireStart()
+
+		Convey("When I query repeatedly", func() {
+			ctx := context.Background()
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			_, err := client.SayHello(ctx, req)
+
+			Convey("Then I should have exhausted resources", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
+			})
+		})
+
+		lc.RequireStop()
 	})
 }
 
@@ -410,36 +481,43 @@ func TestTokenErrorAuthStream(t *testing.T) {
 	})
 }
 
-func TestBreakerUnary(t *testing.T) {
+func TestLimiterStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+
+		l, err := limiter.NewLimiter("0-S")
+		So(err, ShouldBeNil)
+
+		_, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
+			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
 		)
 
 		lc.RequireStart()
 
-		Convey("When I query for a unauthenticated greet multiple times", func() {
+		Convey("When I stream repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
+			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+			req := &v1.SayStreamHelloRequest{Name: "test"}
 
-			var err error
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
 
-			for i := 0; i < 10; i++ {
-				_, err = client.SayHello(ctx, req)
-			}
+			err = stream.Send(req)
+			So(err, ShouldBeNil)
 
-			Convey("Then I should have a unauthenticated reply", func() {
-				So(status.Code(err), ShouldEqual, codes.Unavailable)
+			_, err = stream.Recv()
+
+			Convey("Then I should have exhausted resources", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
 			})
-
-			lc.RequireStop()
 		})
+
+		lc.RequireStop()
 	})
 }

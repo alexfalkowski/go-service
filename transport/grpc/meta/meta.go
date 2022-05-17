@@ -64,7 +64,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
 
-		return handler(srv, stream)
+		return handler(srv, wrappedStream)
 	}
 }
 
