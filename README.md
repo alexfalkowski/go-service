@@ -80,6 +80,11 @@ The transport layer provides ways to abstract communication for in/out of the se
 - [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway).
 - [NSQ](https://github.com/nsqio/go-nsq)
 
+### gRPC
+
+Below is list of the provided interceptors:
+- [Limiter](https://github.com/ulule/limiter)
+
 ### REST
 
 Below is list of the provided handlers:
