@@ -64,6 +64,8 @@ For security we support the following:
 For SQL databases we support the following:
 - [Postgres](https://github.com/jackc/pgx)
 
+We also support master, slave combinations with the awesome [mssqlx](https://github.com/linxGnu/mssqlx).
+
 ## Tracing
 
 For distributed tracing we support the following:
