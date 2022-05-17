@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.68.0](https://github.com/alexfalkowski/go-service/compare/v1.67.1...v1.68.0) (2022-05-17)
+
+
+### Features
+
+* **sql:** add master and slaves ([#135](https://github.com/alexfalkowski/go-service/issues/135)) ([2b3272b](https://github.com/alexfalkowski/go-service/commit/2b3272b7fbd287c3e96dbd0ee993a9655a748a5a))
+
 ### [1.67.1](https://github.com/alexfalkowski/go-service/compare/v1.67.0...v1.67.1) (2022-05-16)
 
 
