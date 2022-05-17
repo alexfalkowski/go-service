@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -25,14 +26,14 @@ func TestSQL(t *testing.T) {
 
 			pg.Register(tracer, logger)
 
-			db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+			db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+			So(err, ShouldBeNil)
+			So(db, ShouldNotBeNil)
 
 			lc.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
-				ctx := context.Background()
-				err = db.PingContext(ctx)
-				So(err, ShouldBeNil)
+				So(errors.Combine(db.Ping()), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -55,7 +56,8 @@ func TestDBQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -104,7 +106,8 @@ func TestDBExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -149,7 +152,8 @@ func TestDBTransExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -202,7 +206,8 @@ func TestStatementQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -212,7 +217,7 @@ func TestStatementQuery(t *testing.T) {
 
 			ctx = meta.WithAttribute(ctx, "test,", "test")
 
-			stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
 
 			defer stmt.Close()
@@ -256,7 +261,8 @@ func TestStatementExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -266,7 +272,7 @@ func TestStatementExec(t *testing.T) {
 
 			ctx = meta.WithAttribute(ctx, "test,", "test")
 
-			stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
+			_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 			So(err, ShouldBeNil)
 
 			defer stmt.Close()
@@ -306,7 +312,8 @@ func TestTransStatementExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -364,7 +371,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -374,7 +382,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 			ctx = meta.WithAttribute(ctx, "test,", "test")
 
-			stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
 
 			defer stmt.Close()
@@ -396,7 +404,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{Config: config.Config{
-			URL:             "postgres://test:test@localhost:5444/test?sslmode=disable",
+			Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}},
+			Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour,
@@ -411,14 +420,13 @@ func TestInvalidSQLPort(t *testing.T) {
 
 			pg.Register(tracer, logger)
 
-			db := pg.Open(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
+			db, err := pg.Open(pg.DBParams{Lifecycle: lc, Config: cfg, Version: test.Version})
+			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 
 			Convey("Then I should have an invalid database", func() {
-				ctx := context.Background()
-				err = db.PingContext(ctx)
-				So(err, ShouldNotBeNil)
+				So(errors.Combine(db.Ping()), ShouldBeError)
 			})
 
 			lc.RequireStop()

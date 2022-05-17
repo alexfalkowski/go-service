@@ -27,7 +27,7 @@ func TestHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		_ = pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		_, _ = pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		_ = test.NewRistrettoCache(lc)
 		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())

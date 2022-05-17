@@ -1,13 +1,13 @@
 package pg
 
 import (
-	"database/sql"
 	"sync"
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
 	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -22,8 +22,8 @@ type DBParams struct {
 }
 
 // Open for PostgreSQL.
-func Open(params DBParams) *sql.DB {
-	return driver.Open(params.Lifecycle, "pg", &params.Config.Config, params.Version)
+func Open(params DBParams) (*mssqlx.DBs, error) {
+	return driver.Open(params.Lifecycle, "pg", params.Config.Config, params.Version)
 }
 
 var once sync.Once
