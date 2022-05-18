@@ -18,44 +18,68 @@ type RegisterParams struct {
 	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
 	Config     *Config
-	HTTPServer *http.Server
-	GRPCServer *grpc.Server
+	HTTP       *http.Server
+	GRPC       *grpc.Server
 }
 
 // Register all the transports.
 func Register(params RegisterParams) {
-	var mux cmux.CMux
+	server := NewServer(params)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			l, err := net.Listen("tcp", fmt.Sprintf(":%s", params.Config.Port))
-			if err != nil {
-				return err
-			}
-
-			mux = cmux.New(l)
-			gl := mux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
-			hl := mux.Match(cmux.HTTP1())
-
-			go params.GRPCServer.Start(gl)
-			go params.HTTPServer.Start(hl)
-			go start(mux, params.Shutdowner)
-
-			return nil
+			return server.Start()
 		},
 		OnStop: func(ctx context.Context) error {
-			params.GRPCServer.Stop(ctx)
-			params.HTTPServer.Stop(ctx)
-			mux.Close()
+			server.Stop(ctx)
 
 			return nil
 		},
 	})
 }
 
-func start(mux cmux.CMux, sh fx.Shutdowner) error {
-	if err := mux.Serve(); err != nil {
-		return sh.Shutdown()
+// NewServer for transport.
+func NewServer(params RegisterParams) *Server {
+	return &Server{sh: params.Shutdowner, cfg: params.Config, http: params.HTTP, grpc: params.GRPC}
+}
+
+// Server handles all the transports.
+type Server struct {
+	mux  cmux.CMux
+	sh   fx.Shutdowner
+	cfg  *Config
+	http *http.Server
+	grpc *grpc.Server
+}
+
+// Start all the servers.
+func (s *Server) Start() error {
+	l, err := net.Listen("tcp", fmt.Sprintf(":%s", s.cfg.Port))
+	if err != nil {
+		return err
+	}
+
+	s.mux = cmux.New(l)
+	gl := s.mux.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	hl := s.mux.Match(cmux.HTTP1())
+
+	go s.grpc.Start(gl)
+	go s.http.Start(hl)
+	go s.start()
+
+	return nil
+}
+
+// Stop all the servers.
+func (s *Server) Stop(ctx context.Context) {
+	s.grpc.Stop(ctx)
+	s.http.Stop(ctx)
+	s.mux.Close()
+}
+
+func (s *Server) start() error {
+	if err := s.mux.Serve(); err != nil {
+		return s.sh.Shutdown()
 	}
 
 	return nil
