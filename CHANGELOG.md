@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.70.0](https://github.com/alexfalkowski/go-service/compare/v1.69.0...v1.70.0) (2022-05-18)
+
+
+### Features
+
+* **transport:** add conn mux ([#138](https://github.com/alexfalkowski/go-service/issues/138)) ([d0b2478](https://github.com/alexfalkowski/go-service/commit/d0b2478a916d83f390119c506bc6a110326bd915))
+
 ## [1.69.0](https://github.com/alexfalkowski/go-service/compare/v1.68.1...v1.69.0) (2022-05-17)
 
 
