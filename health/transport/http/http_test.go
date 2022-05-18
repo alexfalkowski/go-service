@@ -28,8 +28,12 @@ func TestHealth(t *testing.T) {
 		Convey("Given I register the health handler", t, func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-			hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
-			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
+			cfg := test.NewTransportConfig()
+			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)).Observe("http")
+			hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+			gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+
+			test.RegisterTransport(lc, cfg, gs, hs)
 
 			params := hhttp.RegisterParams{
 				Server: hs, Health: &hhttp.HealthObserver{Observer: o},
@@ -42,9 +46,9 @@ func TestHealth(t *testing.T) {
 			lc.RequireStart()
 
 			Convey(fmt.Sprintf("When I query %s", check), func() {
-				client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
+				client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", hport, check), nil)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.Port, check), nil)
 				So(err, ShouldBeNil)
 
 				resp, err := client.Do(req)
@@ -72,9 +76,13 @@ func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
+		cfg := test.NewTransportConfig()
+		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
 		o := server.Observe("http")
-		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
 
 		params := hhttp.RegisterParams{
 			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
@@ -87,9 +95,9 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", hport), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -116,8 +124,12 @@ func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig())).Observe("http")
-		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)).Observe("http")
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
 
 		params := hhttp.RegisterParams{
 			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
@@ -130,9 +142,9 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", hport), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

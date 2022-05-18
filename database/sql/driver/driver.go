@@ -62,9 +62,9 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 
-	return db, errors.Combine(errs)
+	return db, errors.Combine(errs...)
 }
 
 func destroy(db *mssqlx.DBs) error {
-	return errors.Combine(db.Destroy())
+	return errors.Combine(db.Destroy()...)
 }

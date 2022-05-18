@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"net"
 
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -21,7 +22,6 @@ import (
 type ServerParams struct {
 	fx.In
 
-	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
@@ -41,50 +41,44 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 	return nil
 }
 
+// Server for gRPC.
+type Server struct {
+	Server *grpc.Server
+	params ServerParams
+}
+
 // NewServer for gRPC.
-func NewServer(params ServerParams) *grpc.Server {
+func NewServer(params ServerParams) *Server {
 	opts := []grpc.ServerOption{unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...)}
-	server := grpc.NewServer(opts...)
-
-	params.Lifecycle.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", fmt.Sprintf(":%s", params.Config.Port))
-			if err != nil {
-				return err
-			}
-
-			go startServer(server, listener, params)
-
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			stopServer(server, params)
-
-			return nil
-		},
-	})
+	server := &Server{Server: grpc.NewServer(opts...), params: params}
 
 	return server
 }
 
-func startServer(server *grpc.Server, listener net.Listener, params ServerParams) {
-	params.Logger.Info("starting grpc server", zap.String("port", params.Config.Port))
+// Start the server.
+func (s *Server) Start(listener net.Listener) {
+	s.params.Logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
 
-	if err := server.Serve(listener); err != nil {
-		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
+	if err := s.Server.Serve(listener); err != nil && !s.ignoreError(err) {
+		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
-		if err := params.Shutdowner.Shutdown(); err != nil {
+		if err := s.params.Shutdowner.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		params.Logger.Error("could not start grpc server", fields...)
+		s.params.Logger.Error("could not start grpc server", fields...)
 	}
 }
 
-func stopServer(server *grpc.Server, params ServerParams) {
-	params.Logger.Info("stopping grpc server", zap.String("port", params.Config.Port))
+// Stop the server.
+func (s *Server) Stop(ctx context.Context) {
+	s.params.Logger.Info("stopping grpc server")
 
-	server.GracefulStop()
+	s.Server.GracefulStop()
+}
+
+func (s *Server) ignoreError(err error) bool {
+	return errors.Is(err, cmux.ErrListenerClosed) || errors.Is(err, cmux.ErrServerClosed)
 }
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {

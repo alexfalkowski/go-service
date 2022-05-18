@@ -25,7 +25,7 @@ func TestConsumer(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
+		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
 		Convey("When I register a consumer", func() {
@@ -57,7 +57,7 @@ func TestInvalidConsumer(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
+		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
 		Convey("When I register a consumer", func() {
@@ -119,7 +119,7 @@ func TestReceiveMessage(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
+		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
 		err = tnsq.RegisterConsumer(
@@ -163,7 +163,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
+		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
 		err = tnsq.RegisterConsumer(
@@ -202,7 +202,7 @@ func TestReceiveError(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		cfg := test.NewNSQConfig()
+		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(errors.New("something went wrong"))
 
 		err = tnsq.RegisterConsumer(

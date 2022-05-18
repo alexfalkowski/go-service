@@ -33,7 +33,7 @@ func TestSQL(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
-				So(errors.Combine(db.Ping()), ShouldBeNil)
+				So(errors.Combine(db.Ping()...), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -426,7 +426,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have an invalid database", func() {
-				So(errors.Combine(db.Ping()), ShouldBeError)
+				So(errors.Combine(db.Ping()...), ShouldBeError)
 			})
 
 			lc.RequireStop()

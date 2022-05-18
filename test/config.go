@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -16,39 +17,32 @@ import (
 
 const timeout = 2 * time.Second
 
-// NewGRPCConfig for test.
-func NewGRPCConfig() *grpc.Config {
-	return &grpc.Config{
-		Port:      GenerateRandomPort(),
-		UserAgent: "TestGRPC/1.0",
-		Retry: gretry.Config{
-			Timeout:  timeout,
-			Attempts: 1,
+// NewTransportConfig for test.
+func NewTransportConfig() *transport.Config {
+	return &transport.Config{
+		Port: GenerateRandomPort(),
+		HTTP: http.Config{
+			UserAgent: "TestHTTP/1.0",
+			Retry: hretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
 		},
-	}
-}
-
-// NewHTTPConfig for test.
-func NewHTTPConfig() *http.Config {
-	return &http.Config{
-		Port:      GenerateRandomPort(),
-		UserAgent: "TestHTTP/1.0",
-		Retry: hretry.Config{
-			Timeout:  timeout,
-			Attempts: 1,
+		GRPC: grpc.Config{
+			UserAgent: "TestGRPC/1.0",
+			Retry: gretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
 		},
-	}
-}
-
-// NewNSQConfig for test.
-func NewNSQConfig() *nsq.Config {
-	return &nsq.Config{
-		LookupHost: "localhost:4161",
-		Host:       "localhost:4150",
-		UserAgent:  "TestNSQ/1.0",
-		Retry: nretry.Config{
-			Timeout:  timeout,
-			Attempts: 1,
+		NSQ: nsq.Config{
+			LookupHost: "localhost:4161",
+			Host:       "localhost:4150",
+			UserAgent:  "TestNSQ/1.0",
+			Retry: nretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
 		},
 	}
 }

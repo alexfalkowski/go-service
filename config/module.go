@@ -23,6 +23,9 @@ var (
 		fx.Provide(auth0Config),
 		fx.Provide(pgConfig),
 		fx.Provide(opentracingConfig),
-		fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
+		fx.Provide(transportConfig),
+		fx.Provide(grpcConfig),
+		fx.Provide(httpConfig),
+		fx.Provide(nsqConfig),
 	)
 )

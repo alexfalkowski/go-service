@@ -40,10 +40,9 @@ func TestValidConfig(t *testing.T) {
 				So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, time.Hour)
 				So(cfg.OpentracingConfig().Type, ShouldEqual, "jaeger")
 				So(cfg.OpentracingConfig().Host, ShouldEqual, "localhost:6831")
-				So(cfg.GRPCConfig().Port, ShouldEqual, "9090")
+				So(cfg.TransportConfig().Port, ShouldEqual, "8080")
 				So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
 				So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)
-				So(cfg.HTTPConfig().Port, ShouldEqual, "8080")
 				So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
 				So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)
 				So(cfg.NSQConfig().Host, ShouldEqual, "localhost:4150")
@@ -151,7 +150,7 @@ func TestStringMapConfig(t *testing.T) {
 			err = config.UnmarshalFromBytes(bytes, cfg)
 			So(err, ShouldBeNil)
 
-			port := cfg.Map("transport").Map("http")["port"]
+			port := cfg.Map("transport")["port"]
 			So(port, ShouldEqual, 8080)
 
 			Convey("Then I should have a valid configuration", func() {

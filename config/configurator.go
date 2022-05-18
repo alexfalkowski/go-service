@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -24,6 +25,7 @@ type Configurator interface {
 	Auth0Config() *auth0.Config
 	PGConfig() *pg.Config
 	OpentracingConfig() *opentracing.Config
+	TransportConfig() *transport.Config
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
@@ -62,6 +64,10 @@ func pgConfig(cfg Configurator) *pg.Config {
 
 func opentracingConfig(cfg Configurator) *opentracing.Config {
 	return cfg.OpentracingConfig()
+}
+
+func transportConfig(cfg Configurator) *transport.Config {
+	return cfg.TransportConfig()
 }
 
 func grpcConfig(cfg Configurator) *grpc.Config {

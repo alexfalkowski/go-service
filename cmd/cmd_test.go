@@ -69,29 +69,9 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func TestInvalidHTTP(t *testing.T) {
+func TestInvalid(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/invalid_http.config.yml")
-
-		Convey("When I try to run an application", func() {
-			c := cmd.New()
-			c.AddServer(opts())
-
-			Convey("Then I should see an error", func() {
-				err := c.RunWithArg("server")
-
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
-			})
-
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
-		})
-	})
-}
-
-func TestInvalidGRPC(t *testing.T) {
-	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
+		os.Setenv("CONFIG_FILE", "../test/invalid.config.yml")
 
 		Convey("When I try to run an application", func() {
 			c := cmd.New()
@@ -126,7 +106,7 @@ func TestClient(t *testing.T) {
 
 func TestInvalidClient(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/invalid_grpc.config.yml")
+		os.Setenv("CONFIG_FILE", "../test/invalid.config.yml")
 
 		Convey("When I try to run an application", func() {
 			c := cmd.New()
@@ -195,8 +175,7 @@ func opts() []fx.Option {
 		fx.NopLogger,
 		config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
 		cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
-		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule,
-		transport.HTTPModule, transport.GRPCModule, transport.NSQModule,
+		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),

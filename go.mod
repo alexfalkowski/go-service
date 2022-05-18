@@ -25,6 +25,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/rs/cors v1.8.2
 	github.com/smartystreets/goconvey v1.7.2
+	github.com/soheilhy/cmux v0.1.5
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.4.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
