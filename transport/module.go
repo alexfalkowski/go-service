@@ -39,4 +39,12 @@ var (
 		fx.Provide(nopentracing.NewTracer),
 		fx.Provide(marshaller.NewMsgPack),
 	)
+
+	// Module for fx.
+	Module = fx.Options(
+		GRPCModule,
+		HTTPModule,
+		NSQModule,
+		fx.Invoke(Register),
+	)
 )

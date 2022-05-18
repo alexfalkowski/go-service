@@ -45,6 +45,10 @@ func (cfg *Config) OpentracingConfig() *opentracing.Config {
 	return &cfg.Trace.Opentracing
 }
 
+func (cfg *Config) TransportConfig() *transport.Config {
+	return &cfg.Transport
+}
+
 func (cfg *Config) GRPCConfig() *grpc.Config {
 	return &cfg.Transport.GRPC
 }

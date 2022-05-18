@@ -30,7 +30,11 @@ func TestHTTP(t *testing.T) {
 		_, _ = pg.Open(pg.DBParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		_ = test.NewRistrettoCache(lc)
-		hs, hport := test.NewHTTPServer(lc, logger, test.NewJaegerConfig())
+		cfg := test.NewTransportConfig()
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
 
 		err = phttp.Register(hs)
 		So(err, ShouldBeNil)
@@ -38,9 +42,9 @@ func TestHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig())
+			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", hport), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

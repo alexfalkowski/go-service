@@ -5,7 +5,7 @@ import (
 )
 
 // Combine errors into a single error, making sure we do not have any nils.
-func Combine(errs []error) error {
+func Combine(errs ...error) error {
 	newErrs := make([]error, 0)
 
 	for _, err := range errs {

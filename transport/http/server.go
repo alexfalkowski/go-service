@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -22,7 +22,6 @@ import (
 type ServerParams struct {
 	fx.In
 
-	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
@@ -34,6 +33,7 @@ type ServerParams struct {
 type Server struct {
 	Mux    *runtime.ServeMux
 	server *http.Server
+	params ServerParams
 }
 
 // NewServer for HTTP.
@@ -48,52 +48,33 @@ func NewServer(params ServerParams) *Server {
 	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
 	handler = meta.NewHandler(handler)
 
-	addr := fmt.Sprintf(":%s", params.Config.Port)
-	server := &Server{Mux: mux, server: &http.Server{Addr: addr, Handler: handler}}
-
-	params.Lifecycle.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			listener, err := net.Listen("tcp", addr)
-			if err != nil {
-				return err
-			}
-
-			go server.start(listener, params)
-
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			return server.stop(ctx, params)
-		},
-	})
+	server := &Server{Mux: mux, server: &http.Server{Handler: handler}, params: params}
 
 	return server
 }
 
-func (s *Server) start(listener net.Listener, params ServerParams) {
-	params.Logger.Info("starting http server", zap.String("port", params.Config.Port))
+// Start the server.
+func (s *Server) Start(listener net.Listener) {
+	s.params.Logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
 
-	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("port", params.Config.Port), zap.Error(err)}
+	if err := s.server.Serve(listener); err != nil && !s.ignoreError(err) {
+		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
-		if err := params.Shutdowner.Shutdown(); err != nil {
+		if err := s.params.Shutdowner.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		params.Logger.Error("could not start http server", fields...)
+		s.params.Logger.Error("could not start http server", fields...)
 	}
 }
 
-func (s *Server) stop(ctx context.Context, params ServerParams) error {
-	params.Logger.Info("stopping http server", zap.String("port", params.Config.Port))
+// Stop the server.
+func (s *Server) Stop(ctx context.Context) {
+	s.params.Logger.Info("stopping http server", zap.Error(s.server.Shutdown(ctx)))
+}
 
-	if err := s.server.Shutdown(ctx); err != nil {
-		params.Logger.Error("could not stop http server", zap.String("port", params.Config.Port), zap.Error(err))
-
-		return err
-	}
-
-	return nil
+func (s *Server) ignoreError(err error) bool {
+	return errors.Is(err, http.ErrServerClosed) || errors.Is(err, cmux.ErrListenerClosed) || errors.Is(err, cmux.ErrServerClosed)
 }
 
 func customMatcher(key string) (string, bool) {

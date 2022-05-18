@@ -38,7 +38,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -85,7 +85,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -133,7 +133,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -180,7 +180,7 @@ func TestCorruptToken(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -217,7 +217,7 @@ func TestMissingAudienceToken(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -262,7 +262,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -308,7 +308,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 
@@ -354,7 +354,7 @@ func TestMissingKidToken(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		cert := auth0.NewCertificator(params)
 		ver := auth0.NewVerifier(acfg, cert)
 

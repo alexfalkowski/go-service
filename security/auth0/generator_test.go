@@ -31,7 +31,7 @@ func TestGenerate(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
@@ -69,7 +69,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
@@ -105,7 +105,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
@@ -141,7 +141,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()
@@ -177,7 +177,7 @@ func TestCachedGenerate(t *testing.T) {
 		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: test.NewHTTPConfig(), Cache: cache, Logger: logger, Tracer: tracer}
+		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
 		gen := auth0.NewGenerator(params)
 
 		lc.RequireStart()

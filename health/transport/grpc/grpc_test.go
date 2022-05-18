@@ -25,8 +25,12 @@ func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -34,7 +38,7 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -57,16 +61,19 @@ func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
 
+		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -88,20 +95,23 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
 		verifier := test.NewVerifier("test")
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
 
+		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -124,16 +134,19 @@ func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
 
+		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -159,16 +172,19 @@ func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false, nil, nil)
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
 
+		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -193,20 +209,23 @@ func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig()))
+		cfg := test.NewTransportConfig()
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
 		verifier := test.NewVerifier("test")
-		gs, gconfig := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), false,
+		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
 
+		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, gconfig, logger, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
