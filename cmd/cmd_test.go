@@ -164,7 +164,7 @@ func ver() version.Version {
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Second)
 
 		_ = s.Shutdown()
 	}(s)

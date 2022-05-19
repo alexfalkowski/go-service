@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -12,35 +13,41 @@ import (
 )
 
 func TestWatcher(t *testing.T) {
-	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/config.yml")
+	runtimes := []string{"os", "container"}
 
-		Convey("When I watch the config file", func() {
-			lc := fxtest.NewLifecycle(t)
-			sh := test.NewShutdowner()
-			logger := test.NewLogger(lc)
+	for _, runtime := range runtimes {
+		Convey("Given I have valid configuration", t, func() {
+			os.Setenv("CONFIG_FILE", "../test/config.yml")
 
-			err := config.Watch(config.WatchParams{Lifecycle: lc, Shutdowner: sh, Logger: logger})
-			So(err, ShouldBeNil)
+			Convey(fmt.Sprintf("When I watch the config file for runtime %s", runtime), func() {
+				lc := fxtest.NewLifecycle(t)
+				sh := test.NewShutdowner()
+				logger := test.NewLogger(lc)
+				waitTime := config.WaitTime(time.Second)
+				params := config.WatchParams{Lifecycle: lc, Shutdowner: sh, Logger: logger, WaitTime: waitTime, Config: &test.Config{Runtime: runtime}}
 
-			lc.RequireStart()
-
-			Convey("Then I should shutdown when the config changes", func() {
-				bytes, err := os.ReadFile(os.Getenv("CONFIG_FILE"))
+				err := config.Watch(params)
 				So(err, ShouldBeNil)
 
-				config.WriteFileToEnv("CONFIG_FILE", bytes)
-				So(err, ShouldBeNil)
+				lc.RequireStart()
 
-				// Wait till we shutdown.
-				time.Sleep(config.RandomWaitTime + time.Second)
+				Convey("Then I should shutdown when the config changes", func() {
+					bytes, err := os.ReadFile(os.Getenv("CONFIG_FILE"))
+					So(err, ShouldBeNil)
 
-				So(sh.Called(), ShouldBeTrue)
+					config.WriteFileToEnv("CONFIG_FILE", bytes)
+					So(err, ShouldBeNil)
+
+					// Wait till we shutdown.
+					time.Sleep(3 * time.Second)
+
+					So(sh.Called(), ShouldBeTrue)
+				})
+
+				lc.RequireStop()
 			})
 
-			lc.RequireStop()
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
-
-		So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
-	})
+	}
 }

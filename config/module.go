@@ -15,7 +15,10 @@ var (
 	UnmarshalModule = fx.Invoke(UnmarshalFromFile)
 
 	// WatchModule for fx.
-	WatchModule = fx.Invoke(Watch)
+	WatchModule = fx.Options(
+		fx.Invoke(Watch),
+		fx.Provide(NewWaitTime),
+	)
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(

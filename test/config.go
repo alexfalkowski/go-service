@@ -3,8 +3,11 @@ package test
 import (
 	"time"
 
+	"github.com/alexfalkowski/go-service/cache/redis"
+	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -16,6 +19,51 @@ import (
 )
 
 const timeout = 2 * time.Second
+
+// Config for test.
+type Config struct {
+	Runtime string
+}
+
+func (cfg *Config) GetRuntime() string {
+	return cfg.Runtime
+}
+
+func (cfg *Config) RedisConfig() *redis.Config {
+	return nil
+}
+
+func (cfg *Config) RistrettoConfig() *ristretto.Config {
+	return nil
+}
+
+func (cfg *Config) Auth0Config() *auth0.Config {
+	return nil
+}
+
+func (cfg *Config) PGConfig() *pg.Config {
+	return nil
+}
+
+func (cfg *Config) OpentracingConfig() *opentracing.Config {
+	return nil
+}
+
+func (cfg *Config) TransportConfig() *transport.Config {
+	return nil
+}
+
+func (cfg *Config) GRPCConfig() *grpc.Config {
+	return nil
+}
+
+func (cfg *Config) HTTPConfig() *http.Config {
+	return nil
+}
+
+func (cfg *Config) NSQConfig() *nsq.Config {
+	return nil
+}
 
 // NewTransportConfig for test.
 func NewTransportConfig() *transport.Config {
