@@ -19,8 +19,9 @@ func TestWatcher(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			sh := test.NewShutdowner()
 			logger := test.NewLogger(lc)
+			waitTime := config.WaitTime(time.Second)
 
-			err := config.Watch(config.WatchParams{Lifecycle: lc, Shutdowner: sh, Logger: logger})
+			err := config.Watch(config.WatchParams{Lifecycle: lc, Shutdowner: sh, Logger: logger, WaitTime: waitTime})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -33,7 +34,7 @@ func TestWatcher(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				// Wait till we shutdown.
-				time.Sleep(config.RandomWaitTime + time.Second)
+				time.Sleep(2 * time.Second)
 
 				So(sh.Called(), ShouldBeTrue)
 			})
