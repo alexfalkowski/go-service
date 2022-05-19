@@ -26,7 +26,7 @@ The configuration is based on YAML and is read from an env variable called `CONF
 
 The configuration can be [watched](https://github.com/fsnotify/fsnotify) for write changes. If it changes the application is stopped. This way an [orchestration](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) system can just restart the process.
 
-This is the [configuration](config/config.go).
+This is the [configuration](config/config.go). We will outline the config required in each section.
 
 ## Caching
 
@@ -36,6 +36,20 @@ The framework currently supports the following caching solutions:
 
 We also support the following compressions to optimize cache size:
 - [Snappy](https://github.com/golang/snappy)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+cache:
+  redis:
+    host: localhost:6379
+  ristretto:
+    max_counters: 10000000
+    max_cost: 100000000
+    buffer_items: 64
+```
 
 ## Health
 
@@ -59,6 +73,22 @@ For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
 For security we support the following:
 - [Auth0](https://auth0.com/)
 
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+security:
+  auth0:
+    url: test_url
+    client_id: test_client_id
+    client_secret: test_client_secret
+    audience: test_audience
+    issuer: test_issuer
+    algorithm: test_algorithm
+    json_web_key_set: test_json_web_key_set
+```
+
 ## SQL
 
 For SQL databases we support the following:
@@ -66,12 +96,41 @@ For SQL databases we support the following:
 
 We also support master, slave combinations with the awesome [mssqlx](https://github.com/linxGnu/mssqlx).
 
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+sql:
+  pg:
+    masters:
+      -
+        url: postgres://test:test@localhost:5432/test?sslmode=disable
+    slaves:
+      -
+        url: postgres://test:test@localhost:5432/test?sslmode=disable
+    max_open_conns: 5
+    max_idle_conns: 5
+    conn_max_lifetime: 1h
+```
+
 ## Tracing
 
 For distributed tracing we support the following:
 - [OpenTracing](https://github.com/opentracing/opentracing-go)
 - [Jaeger](https://github.com/jaegertracing/jaeger)
 - [DataDog](https://github.com/DataDog/dd-trace-go)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+trace:
+  opentracing:
+    type: jaeger
+    host: localhost:6831
+```
 
 ## Transport
 
@@ -89,6 +148,29 @@ Below is list of the provided interceptors:
 
 Below is list of the provided handlers:
 - [CORS](https://github.com/rs/cors)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+transport:
+  port: 8080
+  http:
+    retry:
+      timeout: 1s
+      attempts: 3
+  grpc:
+    retry:
+      timeout: 1s
+      attempts: 3
+  nsq:
+    lookup_host: localhost:4161
+    host: localhost:4150
+    retry:
+      timeout: 1s
+      attempts: 3
+```
 
 ## Development
 
@@ -138,3 +220,5 @@ make specs
 
 Below is a list of projects using this framework:
 - [Konfig](https://github.com/alexfalkowski/konfig)
+- [Standort](https://github.com/alexfalkowski/standort)
+- [Migrieren](https://github.com/alexfalkowski/migrieren)
