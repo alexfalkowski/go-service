@@ -20,6 +20,7 @@ func NewConfigurator() Configurator {
 
 // Configurator for config.
 type Configurator interface {
+	GetRuntime() string
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
 	Auth0Config() *auth0.Config

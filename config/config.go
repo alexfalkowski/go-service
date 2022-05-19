@@ -18,11 +18,23 @@ import (
 
 // Config for the service.
 type Config struct {
+	Runtime   string           `yaml:"runtime"`
 	Cache     cache.Config     `yaml:"cache"`
 	Security  security.Config  `yaml:"security"`
 	SQL       sql.Config       `yaml:"sql"`
 	Trace     trace.Config     `yaml:"trace"`
 	Transport transport.Config `yaml:"transport"`
+}
+
+// GetRuntime of the application. The values can be os or container.
+// This is used to determine how we watch the configuration.
+func (cfg *Config) GetRuntime() string {
+	runtime := cfg.Runtime
+	if runtime == "" {
+		return "os"
+	}
+
+	return runtime
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {
