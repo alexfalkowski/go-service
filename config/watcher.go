@@ -24,45 +24,70 @@ type WatchParams struct {
 
 // Watch the configuration. If it changes terminate the application.
 func Watch(params WatchParams) error {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return err
-	}
+	watcher := NewWatcher(params)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			go watch(params.Shutdowner, watcher, params.Logger)
-
-			return watcher.Add(File())
+			return watcher.Start()
 		},
 		OnStop: func(ctx context.Context) error {
-			return watcher.Close()
+			return watcher.Stop()
 		},
 	})
 
 	return nil
 }
 
-func watch(sh fx.Shutdowner, w *fsnotify.Watcher, logger *zap.Logger) {
+// NewWatcher of config changes.
+func NewWatcher(params WatchParams) *Watcher {
+	return &Watcher{sh: params.Shutdowner, logger: params.Logger}
+}
+
+// Watcher of config changes.
+type Watcher struct {
+	watcher *fsnotify.Watcher
+	sh      fx.Shutdowner
+	logger  *zap.Logger
+}
+
+// Start watching.
+func (w *Watcher) Start() error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+
+	w.watcher = watcher
+	go w.watch()
+
+	return watcher.Add(File())
+}
+
+// Stop watching.
+func (w *Watcher) Stop() error {
+	return w.watcher.Close()
+}
+
+func (w *Watcher) watch() {
 	for {
 		select {
-		case e, ok := <-w.Events:
+		case e, ok := <-w.watcher.Events:
 			if !ok {
 				return
 			}
 
 			if e.Op&fsnotify.Write == fsnotify.Write {
-				shutdown(sh, logger)
+				_ = w.shutdown()
 
 				return
 			}
-		case err, ok := <-w.Errors:
+		case err, ok := <-w.watcher.Errors:
 			if !ok {
 				return
 			}
 
 			if err != nil {
-				logger.Error("watching configuration", zap.Error(err))
+				w.logger.Error("watching configuration", zap.Error(err))
 
 				return
 			}
@@ -70,9 +95,9 @@ func watch(sh fx.Shutdowner, w *fsnotify.Watcher, logger *zap.Logger) {
 	}
 }
 
-func shutdown(sh fx.Shutdowner, logger *zap.Logger) error {
-	logger.Info("configuration has been modified", zap.Duration("duration", RandomWaitTime))
+func (w *Watcher) shutdown() error {
+	w.logger.Info("configuration has been modified", zap.Duration("duration", RandomWaitTime))
 	time.Sleep(RandomWaitTime)
 
-	return sh.Shutdown()
+	return w.sh.Shutdown()
 }
