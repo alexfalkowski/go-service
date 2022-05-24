@@ -13,7 +13,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.2
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jmoiron/sqlx v1.3.5
