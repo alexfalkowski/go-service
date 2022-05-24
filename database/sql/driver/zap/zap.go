@@ -33,11 +33,11 @@ type Interceptor struct {
 	interceptor sqlmw.Interceptor
 }
 
-func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (driver.Tx, error) {
+func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {
 	return i.interceptor.ConnBeginTx(ctx, conn, txOpts)
 }
 
-func (i *Interceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (driver.Stmt, error) {
+func (i *Interceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (context.Context, driver.Stmt, error) {
 	return i.interceptor.ConnPrepareContext(ctx, conn, query)
 }
 
@@ -83,8 +83,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	return res, nil
 }
 
-// nolint:dupl
-func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
@@ -101,7 +100,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
 	}
 
-	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
+	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
@@ -113,12 +112,12 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		fields = append(fields, zap.Error(err))
 		i.logger.Error("finished call with error", fields...)
 
-		return nil, err
+		return ctx, nil, err
 	}
 
 	i.logger.Info("finished call with success", fields...)
 
-	return res, nil
+	return ctx, res, nil
 }
 
 func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
@@ -180,8 +179,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	return res, nil
 }
 
-// nolint:dupl
-func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
@@ -198,7 +196,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
 	}
 
-	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
+	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
 	for k, v := range meta.Attributes(ctx) {
 		fields = append(fields, zap.String(k, v))
@@ -210,12 +208,12 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		fields = append(fields, zap.Error(err))
 		i.logger.Error("finished call with error", fields...)
 
-		return nil, err
+		return ctx, nil, err
 	}
 
 	i.logger.Info("finished call with success", fields...)
 
-	return res, nil
+	return ctx, res, nil
 }
 
 func (i *Interceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
