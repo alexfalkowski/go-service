@@ -30,11 +30,11 @@ type Interceptor struct {
 	interceptor sqlmw.Interceptor
 }
 
-func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (driver.Tx, error) {
+func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {
 	return i.interceptor.ConnBeginTx(ctx, conn, txOpts)
 }
 
-func (i *Interceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (driver.Stmt, error) {
+func (i *Interceptor) ConnPrepareContext(ctx context.Context, conn driver.ConnPrepareContext, query string) (context.Context, driver.Stmt, error) {
 	return i.interceptor.ConnPrepareContext(ctx, conn, query)
 }
 
@@ -72,8 +72,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	return res, err
 }
 
-// nolint:dupl
-func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	opts := []otr.StartSpanOption{
 		otr.Tag{Key: component, Value: i.driver},
 		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
@@ -90,7 +89,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
 	}
 
-	res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
+	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 	if err != nil {
 		opentracing.SetError(span, err)
 	}
@@ -99,7 +98,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		span.SetTag(k, v)
 	}
 
-	return res, err
+	return ctx, res, err
 }
 
 func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
@@ -153,8 +152,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	return res, err
 }
 
-// nolint:dupl
-func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (driver.Rows, error) {
+func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	opts := []otr.StartSpanOption{
 		otr.Tag{Key: component, Value: i.driver},
 		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
@@ -171,7 +169,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
 	}
 
-	res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
+	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 	if err != nil {
 		opentracing.SetError(span, err)
 	}
@@ -180,7 +178,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		span.SetTag(k, v)
 	}
 
-	return res, err
+	return ctx, res, err
 }
 
 func (i *Interceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
