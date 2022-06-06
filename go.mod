@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/klauspost/compress v1.15.5
+	github.com/klauspost/compress v1.15.6
 	github.com/linxGnu/mssqlx v1.1.6
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/nsqio/go-nsq v1.1.0
