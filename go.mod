@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.18
 
 require (
-	github.com/alexfalkowski/go-health v1.10.3
+	github.com/alexfalkowski/go-health v1.10.4
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
