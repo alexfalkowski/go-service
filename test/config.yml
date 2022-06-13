@@ -28,7 +28,7 @@ sql:
     conn_max_lifetime: 1h
 trace:
   opentracing:
-    type: jaeger
+    kind: jaeger
     host: localhost:6831
 transport:
   port: 8080

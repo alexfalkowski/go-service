@@ -142,7 +142,7 @@ To configure, please specify the following:
 ```yaml
 trace:
   opentracing:
-    type: jaeger
+    kind: jaeger
     host: localhost:6831
 ```
 

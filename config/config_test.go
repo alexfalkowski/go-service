@@ -39,7 +39,7 @@ func TestValidConfig(t *testing.T) {
 				So(cfg.PGConfig().MaxIdleConns, ShouldEqual, 5)
 				So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
 				So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, time.Hour)
-				So(cfg.OpentracingConfig().Type, ShouldEqual, "jaeger")
+				So(cfg.OpentracingConfig().Kind, ShouldEqual, "jaeger")
 				So(cfg.OpentracingConfig().Host, ShouldEqual, "localhost:6831")
 				So(cfg.TransportConfig().Port, ShouldEqual, "8080")
 				So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
