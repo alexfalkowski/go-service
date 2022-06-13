@@ -98,7 +98,7 @@ func NewTransportConfig() *transport.Config {
 // NewJaegerConfig for test.
 func NewJaegerConfig() *opentracing.Config {
 	return &opentracing.Config{
-		Type: "jaeger",
+		Kind: "jaeger",
 		Host: "localhost:6831",
 	}
 }
@@ -106,7 +106,7 @@ func NewJaegerConfig() *opentracing.Config {
 // NewDatadogConfig for test.
 func NewDatadogConfig() *opentracing.Config {
 	return &opentracing.Config{
-		Type: "datadog",
+		Kind: "datadog",
 		Host: "localhost:8126",
 	}
 }
