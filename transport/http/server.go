@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -48,7 +49,11 @@ func NewServer(params ServerParams) *Server {
 	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
 	handler = meta.NewHandler(handler)
 
-	server := &Server{Mux: mux, server: &http.Server{Handler: handler}, params: params}
+	server := &Server{
+		Mux:    mux,
+		server: &http.Server{Handler: handler, ReadHeaderTimeout: time.Timeout},
+		params: params,
+	}
 
 	return server
 }
