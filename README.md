@@ -28,20 +28,6 @@ The configuration can be [watched](https://github.com/fsnotify/fsnotify) for wri
 
 This is the [configuration](config/config.go). We will outline the config required in each section.
 
-## Runtime
-
-The system needs to be told what runtime it is running under. The values can be `os` or `container`. The reason for this is that the system will watch for config changes differently depending on the runtime. If nothing is specified it will default to `os`.
-
-There is a great article [Inotify in Containers](https://william-yeh.net/post/2019/06/inotify-in-containers/) that describes the issues.
-
-### Configuration
-
-To configure, please specify the following:
-
-```yaml
-runtime: os
-```
-
 ## Caching
 
 The framework currently supports the following caching solutions:

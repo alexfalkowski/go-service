@@ -21,13 +21,7 @@ import (
 const timeout = 2 * time.Second
 
 // Config for test.
-type Config struct {
-	Runtime string
-}
-
-func (cfg *Config) GetRuntime() string {
-	return cfg.Runtime
-}
+type Config struct{}
 
 func (cfg *Config) RedisConfig() *redis.Config {
 	return nil
@@ -112,7 +106,6 @@ func NewDatadogConfig() *opentracing.Config {
 }
 
 // NewPGConfig for test.
-// nolint:gomnd
 func NewPGConfig() *pg.Config {
 	return &pg.Config{Config: config.Config{
 		Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},

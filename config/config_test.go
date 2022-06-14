@@ -20,7 +20,6 @@ func TestValidConfig(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(cfg.GetRuntime(), ShouldEqual, "os")
 				So(cfg.RedisConfig().Host, ShouldEqual, "localhost:6379")
 				So(cfg.RistrettoConfig().BufferItems, ShouldEqual, 64)
 				So(cfg.RistrettoConfig().MaxCost, ShouldEqual, 100000000)

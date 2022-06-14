@@ -5,7 +5,6 @@ import (
 	"time"
 
 	stime "github.com/alexfalkowski/go-service/time"
-	"github.com/fsnotify/fsnotify"
 	"github.com/radovskyb/watcher"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -53,7 +52,6 @@ func NewWatcher(params WatchParams) *Watcher {
 
 // Watcher of config changes.
 type Watcher struct {
-	event    *fsnotify.Watcher
 	poll     *watcher.Watcher
 	sh       fx.Shutdowner
 	logger   *zap.Logger
@@ -63,70 +61,27 @@ type Watcher struct {
 
 // Start watching.
 func (w *Watcher) Start() error {
-	if !w.isOSRuntime() {
-		poll := watcher.New()
+	poll := watcher.New()
 
-		poll.FilterOps(watcher.Write)
+	poll.FilterOps(watcher.Write)
 
-		w.poll = poll
-		go w.pollWatch()
+	w.poll = poll
+	go w.pollWatch()
 
-		if err := poll.Add(File()); err != nil {
-			return err
-		}
-
-		go poll.Start(time.Second)
-
-		return nil
-	}
-
-	event, err := fsnotify.NewWatcher()
-	if err != nil {
+	if err := poll.Add(File()); err != nil {
 		return err
 	}
 
-	w.event = event
-	go w.eventWatch()
+	go poll.Start(time.Second)
 
-	return event.Add(File())
+	return nil
 }
 
 // Stop watching.
 func (w *Watcher) Stop() error {
-	if !w.isOSRuntime() {
-		w.poll.Close()
+	w.poll.Close()
 
-		return nil
-	}
-
-	return w.event.Close()
-}
-
-func (w *Watcher) eventWatch() {
-	for {
-		select {
-		case e, ok := <-w.event.Events:
-			if !ok {
-				return
-			}
-
-			if e.Op&fsnotify.Write == fsnotify.Write {
-				_ = w.shutdown()
-
-				return
-			}
-		case err, ok := <-w.event.Errors:
-			if !ok {
-				return
-			}
-
-			if err != nil {
-				w.logger.Error("watching configuration", zap.Error(err))
-
-				return
-			}
-		}
-	}
+	return nil
 }
 
 func (w *Watcher) pollWatch() {
@@ -147,8 +102,4 @@ func (w *Watcher) shutdown() error {
 	time.Sleep(w.waitTime)
 
 	return w.sh.Shutdown()
-}
-
-func (w *Watcher) isOSRuntime() bool {
-	return w.cfg.GetRuntime() == "os"
 }
