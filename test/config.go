@@ -106,7 +106,6 @@ func NewDatadogConfig() *opentracing.Config {
 }
 
 // NewPGConfig for test.
-// nolint:gomnd
 func NewPGConfig() *pg.Config {
 	return &pg.Config{Config: config.Config{
 		Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},

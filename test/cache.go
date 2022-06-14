@@ -24,7 +24,6 @@ func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor 
 }
 
 // NewRistrettoCache for test.
-// nolint:gomnd
 func NewRistrettoCache(lc fx.Lifecycle) *ristretto.Cache {
 	cfg := &cristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 	c, _ := cristretto.NewCache(cristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
