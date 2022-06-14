@@ -21,13 +21,7 @@ import (
 const timeout = 2 * time.Second
 
 // Config for test.
-type Config struct {
-	Runtime string
-}
-
-func (cfg *Config) GetRuntime() string {
-	return cfg.Runtime
-}
+type Config struct{}
 
 func (cfg *Config) RedisConfig() *redis.Config {
 	return nil
