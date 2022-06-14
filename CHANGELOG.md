@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.73.0](https://github.com/alexfalkowski/go-service/compare/v1.72.0...v1.73.0) (2022-06-14)
+
+
+### Features
+
+* **time:** change to 30s ([#153](https://github.com/alexfalkowski/go-service/issues/153)) ([bc79624](https://github.com/alexfalkowski/go-service/commit/bc796249c5cb4cf11d4ccc8c7d681239b2cdf83f))
+
 ## [1.72.0](https://github.com/alexfalkowski/go-service/compare/v1.71.10...v1.72.0) (2022-06-13)
 
 
