@@ -24,7 +24,7 @@ These are configured in the main function.
 
 The configuration is based on YAML and is read from an env variable called `CONFIG_FILE`. The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
 
-The configuration can be [watched](https://github.com/fsnotify/fsnotify) for write changes. If it changes the application is stopped. This way an [orchestration](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) system can just restart the process.
+The configuration can be [watched](https://github.com/radovskyb/watcher) for write changes. If it changes the application is stopped. This way an [orchestration](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) system can just restart the process.
 
 This is the [configuration](config/config.go). We will outline the config required in each section.
 
