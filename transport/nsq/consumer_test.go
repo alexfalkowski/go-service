@@ -17,7 +17,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-// nolint:dupl
+//nolint:dupl
 func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -49,7 +49,7 @@ func TestConsumer(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)

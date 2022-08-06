@@ -120,7 +120,7 @@ func TestDefaultClientUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -173,7 +173,7 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -226,7 +226,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -323,7 +323,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)

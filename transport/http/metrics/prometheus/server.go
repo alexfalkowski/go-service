@@ -24,7 +24,8 @@ type ServerMetrics struct {
 }
 
 // NewServerMetrics for prometheus.
-// nolint:dupl
+//
+//nolint:dupl
 func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 

@@ -66,7 +66,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -114,7 +114,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)

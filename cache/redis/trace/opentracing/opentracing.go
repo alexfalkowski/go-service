@@ -52,7 +52,7 @@ type Client struct {
 	client client.Client
 }
 
-// nolint:dupl
+//nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
 	opts := []otr.StartSpanOption{
 		otr.Tag{Key: component, Value: redisComponent},
@@ -79,7 +79,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	return cmd
 }
 
-// nolint:dupl
+//nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	opts := []otr.StartSpanOption{
 		otr.Tag{Key: component, Value: redisComponent},
@@ -106,7 +106,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	return cmd
 }
 
-// nolint:dupl
+//nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	opts := []otr.StartSpanOption{
 		otr.Tag{Key: component, Value: redisComponent},

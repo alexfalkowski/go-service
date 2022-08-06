@@ -9,7 +9,6 @@ linters:
   enable:
     - asciicheck
     - bidichk
-    - bodyclose
     - contextcheck
     - cyclop
     - decorder
@@ -39,7 +38,6 @@ linters:
     - goprintffuncname
     - gosec
     - grouper
-    - ifshort
     - importas
     - lll
     - maintidx
