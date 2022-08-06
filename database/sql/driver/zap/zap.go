@@ -45,7 +45,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 	return i.interceptor.ConnPing(ctx, conn)
 }
 
-// nolint:dupl
+//nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
@@ -124,7 +124,7 @@ func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Conne
 	return i.interceptor.ConnectorConnect(ctx, connect)
 }
 
-// nolint:revive,stylecheck
+//nolint:revive,stylecheck
 func (i *Interceptor) ResultLastInsertId(res driver.Result) (int64, error) {
 	return i.interceptor.ResultLastInsertId(res)
 }
@@ -141,7 +141,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return i.interceptor.RowsClose(ctx, rows)
 }
 
-// nolint:dupl
+//nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now().UTC()
 	fields := []zapcore.Field{

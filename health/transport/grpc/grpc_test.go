@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-// nolint:dupl
+//nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -56,7 +56,7 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -129,7 +129,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -167,7 +167,7 @@ func TestStream(t *testing.T) {
 	})
 }
 
-// nolint:dupl
+//nolint:dupl
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)

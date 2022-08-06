@@ -24,7 +24,8 @@ type ClientMetrics struct {
 }
 
 // NewClientMetrics for prometheus.
-// nolint:dupl
+//
+//nolint:dupl
 func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
