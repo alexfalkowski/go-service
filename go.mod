@@ -1,6 +1,6 @@
 module github.com/alexfalkowski/go-service
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alexfalkowski/go-health v1.10.4
