@@ -18,7 +18,6 @@ jobs:
       - checkout
       - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait
           tcp://localhost:4161 -wait tcp://localhost:4150 -timeout 1m
-      - run: make setup-nsq
       - run: make dep
       - run: make lint
       - run: make sec
