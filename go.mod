@@ -31,11 +31,11 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/ulule/limiter/v3 v3.10.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.uber.org/fx v1.17.1
+	go.uber.org/fx v1.18.1
 	go.uber.org/multierr v1.8.0
-	go.uber.org/zap v1.21.0
-	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
-	google.golang.org/genproto v0.0.0-20220805133916-01dd62135a58
+	go.uber.org/zap v1.22.0
+	golang.org/x/net v0.0.0-20220809012201-f428fae20770
+	google.golang.org/genproto v0.0.0-20220808204814-fd01256a5276
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/DataDog/dd-trace-go.v1 v1.40.1
@@ -61,7 +61,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -88,7 +88,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
+	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
