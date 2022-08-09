@@ -33,7 +33,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.17.1
 	go.uber.org/multierr v1.8.0
-	go.uber.org/zap v1.21.0
+	go.uber.org/zap v1.22.0
 	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
 	google.golang.org/genproto v0.0.0-20220805133916-01dd62135a58
 	google.golang.org/grpc v1.48.0
