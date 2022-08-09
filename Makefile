@@ -30,7 +30,7 @@ fix-lint:
 	golangci-lint run --timeout 5m --fix
 
 # Run all the specs
-specs:
+specs: setup-nsq
 	go test -race -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
 
 remove-generated-coverage:
