@@ -14,7 +14,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/hashicorp/go-retryablehttp v0.7.1
-	github.com/jackc/pgx/v4 v4.17.1
+	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/klauspost/compress v1.15.9
 	github.com/linxGnu/mssqlx v1.1.7
