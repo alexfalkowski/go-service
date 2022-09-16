@@ -9,7 +9,6 @@ linters:
   enable:
     - asciicheck
     - bidichk
-    - contextcheck
     - cyclop
     - decorder
     - depguard
