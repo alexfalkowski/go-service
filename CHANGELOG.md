@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.74.20](https://github.com/alexfalkowski/go-service/compare/v1.74.19...v1.74.20) (2022-10-07)
+
 ### [1.74.19](https://github.com/alexfalkowski/go-service/compare/v1.74.18...v1.74.19) (2022-09-29)
 
 ### [1.74.18](https://github.com/alexfalkowski/go-service/compare/v1.74.17...v1.74.18) (2022-09-27)
