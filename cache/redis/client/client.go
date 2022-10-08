@@ -16,6 +16,8 @@ type Client interface {
 	Get(ctx context.Context, key string) *redis.StringCmd
 	Del(ctx context.Context, keys ...string) *redis.IntCmd
 
+	Incr(ctx context.Context, key string) *redis.IntCmd
+
 	Ping(ctx context.Context) *redis.StatusCmd
 
 	Close() error
