@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
+	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
 	cristretto "github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/compressor"
@@ -14,13 +15,19 @@ import (
 
 // NewRedisCache for test.
 func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor compressor.Compressor, marshaller marshaller.Marshaller) *cache.Cache {
+	params := redis.OptionsParams{Client: NewRedisClient(lc, host, logger), Compressor: compressor, Marshaller: marshaller}
+	opts := redis.NewOptions(params)
+
+	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: &redis.Config{Host: host}, Options: opts, Version: Version})
+}
+
+// NewRedisClient for test.
+func NewRedisClient(lc fx.Lifecycle, host string, logger *zap.Logger) client.Client {
 	tracer, _ := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: NewJaegerConfig(), Version: Version})
 	cfg := &redis.Config{Host: host}
 	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(cfg), Tracer: tracer, Logger: logger})
-	params := redis.OptionsParams{Client: client, Compressor: compressor, Marshaller: marshaller}
-	opts := redis.NewOptions(params)
 
-	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: cfg, Options: opts, Version: Version})
+	return client
 }
 
 // NewRistrettoCache for test.

@@ -183,6 +183,31 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	return cmd
 }
 
+func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
+	opts := []otr.StartSpanOption{
+		otr.Tag{Key: component, Value: redisComponent},
+		otr.Tag{Key: "redis.key", Value: key},
+	}
+
+	ctx, span := StartSpanFromContext(ctx, c.tracer, "client", "incr", opts...)
+	defer span.Finish()
+
+	if d, ok := ctx.Deadline(); ok {
+		span.SetTag(redisDeadline, d.UTC().Format(time.RFC3339))
+	}
+
+	cmd := c.client.Incr(ctx, key)
+	if err := cmd.Err(); err != nil {
+		opentracing.SetError(span, err)
+	}
+
+	for k, v := range meta.Attributes(ctx) {
+		span.SetTag(k, v)
+	}
+
+	return cmd
+}
+
 func (c *Client) Ping(ctx context.Context) *redis.StatusCmd {
 	return c.client.Ping(ctx)
 }
