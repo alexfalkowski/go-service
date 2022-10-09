@@ -1,6 +1,7 @@
 cache:
   redis:
-    host: localhost:6379
+    addresses:
+      server: localhost:6379
   ristretto:
     max_counters: 10000000
     max_cost: 100000000
@@ -18,11 +19,9 @@ security:
 sql:
   pg:
     masters:
-      -
-        url: postgres://test:test@localhost:5432/test?sslmode=disable
+      - url: postgres://test:test@localhost:5432/test?sslmode=disable
     slaves:
-      -
-        url: postgres://test:test@localhost:5432/test?sslmode=disable
+      - url: postgres://test:test@localhost:5432/test?sslmode=disable
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h

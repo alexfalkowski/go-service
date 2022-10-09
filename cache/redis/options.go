@@ -47,8 +47,9 @@ func NewOptions(params OptionsParams) *cache.Options {
 // NewRingOptions for redis.
 func NewRingOptions(cfg *Config) *redis.RingOptions {
 	return &redis.RingOptions{
-		Addrs: map[string]string{
-			"server": cfg.Host,
-		},
+		Addrs:    cfg.Addresses,
+		Username: cfg.Username,
+		Password: cfg.Password,
+		DB:       cfg.DB,
 	}
 }

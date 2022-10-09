@@ -18,16 +18,20 @@ func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor 
 	params := redis.OptionsParams{Client: NewRedisClient(lc, host, logger), Compressor: compressor, Marshaller: marshaller}
 	opts := redis.NewOptions(params)
 
-	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: &redis.Config{Host: host}, Options: opts, Version: Version})
+	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: NewRedisConfig(host), Options: opts, Version: Version})
 }
 
 // NewRedisClient for test.
 func NewRedisClient(lc fx.Lifecycle, host string, logger *zap.Logger) client.Client {
 	tracer, _ := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: NewJaegerConfig(), Version: Version})
-	cfg := &redis.Config{Host: host}
-	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(cfg), Tracer: tracer, Logger: logger})
+	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(NewRedisConfig(host)), Tracer: tracer, Logger: logger})
 
 	return client
+}
+
+// NewRedisConfig for test.
+func NewRedisConfig(host string) *redis.Config {
+	return &redis.Config{Addresses: map[string]string{"server": host}}
 }
 
 // NewRistrettoCache for test.
