@@ -44,7 +44,11 @@ To configure, please specify the following:
 ```yaml
 cache:
   redis:
-    host: localhost:6379
+    addresses:
+      server: localhost:6379
+    username: test
+    password: test
+    db: 0
   ristretto:
     max_counters: 10000000
     max_cost: 100000000

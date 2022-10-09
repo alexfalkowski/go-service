@@ -11,7 +11,6 @@ import (
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/health"
 	hchecker "github.com/alexfalkowski/go-service/health/checker"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
@@ -19,6 +18,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
+	"go.uber.org/zap"
 )
 
 func TestHealth(t *testing.T) {
@@ -29,7 +29,7 @@ func TestHealth(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewTransportConfig()
-			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)).Observe("http")
+			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg), logger).Observe("http")
 			hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
 			gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
 
@@ -77,7 +77,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg))
+		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg), logger)
 		o := server.Observe("http")
 		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
 		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
@@ -125,7 +125,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)).Observe("http")
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg), logger).Observe("http")
 		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
 		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
 
@@ -167,9 +167,8 @@ func TestInvalidHealth(t *testing.T) {
 	})
 }
 
-func observer(lc fx.Lifecycle, url string, client *http.Client) *server.Server {
-	rcfg := &redis.Config{Host: "localhost:6379"}
-	r := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(rcfg)})
+func observer(lc fx.Lifecycle, url string, client *http.Client, logger *zap.Logger) *server.Server {
+	r := test.NewRedisClient(lc, "localhost:6379", logger)
 	rc := hchecker.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
