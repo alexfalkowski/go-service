@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.76.0](https://github.com/alexfalkowski/go-service/compare/v1.75.0...v1.76.0) (2022-10-09)
+
+
+### Features
+
+* **cache:** add addresses to config ([#191](https://github.com/alexfalkowski/go-service/issues/191)) ([094ee4d](https://github.com/alexfalkowski/go-service/commit/094ee4d200f935f13af36281d17b93be18d665ee))
+
 ## [1.75.0](https://github.com/alexfalkowski/go-service/compare/v1.74.20...v1.75.0) (2022-10-08)
 
 
