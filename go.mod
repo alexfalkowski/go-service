@@ -27,7 +27,7 @@ require (
 	github.com/smartystreets/goconvey v1.7.2
 	github.com/soheilhy/cmux v0.1.5
 	github.com/sony/gobreaker v0.5.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/ulule/limiter/v3 v3.10.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
