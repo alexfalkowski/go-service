@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/ristretto"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 const day = 24 * time.Hour

@@ -3,7 +3,7 @@ package auth0
 import (
 	"context"
 
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // Certificator for Auth0.
