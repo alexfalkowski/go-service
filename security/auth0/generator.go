@@ -10,7 +10,7 @@ import (
 
 	sjwt "github.com/alexfalkowski/go-service/security/jwt"
 	"github.com/dgraph-io/ristretto"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // ErrInvalidResponse from Auth0.

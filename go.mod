@@ -6,9 +6,9 @@ require (
 	github.com/alexfalkowski/go-health v1.10.4
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.1
-	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
 	github.com/go-redis/cache/v8 v8.4.3
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

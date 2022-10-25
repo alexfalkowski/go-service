@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/meta"
 	sstrings "github.com/alexfalkowski/go-service/strings"
 	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
