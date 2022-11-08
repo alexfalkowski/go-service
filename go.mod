@@ -21,7 +21,7 @@ require (
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	github.com/radovskyb/watcher v1.0.7
 	github.com/rs/cors v1.8.2
 	github.com/smartystreets/goconvey v1.7.2
