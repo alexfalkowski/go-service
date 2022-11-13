@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.19
 
 require (
-	github.com/alexfalkowski/go-health v1.10.4
+	github.com/alexfalkowski/go-health v1.11.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/go-redis/cache/v8 v8.4.3
