@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.19
 
 require (
-	github.com/alexfalkowski/go-health v1.10.4
+	github.com/alexfalkowski/go-health v1.11.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/go-redis/cache/v8 v8.4.3
@@ -17,7 +17,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/klauspost/compress v1.15.12
-	github.com/linxGnu/mssqlx v1.1.7
+	github.com/linxGnu/mssqlx v1.1.8
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/opentracing/opentracing-go v1.2.0
@@ -70,7 +70,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.12.0 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
-	github.com/lib/pq v1.10.6 // indirect
+	github.com/lib/pq v1.10.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
