@@ -4,19 +4,20 @@ jobs:
   build:
     docker:
       - image: alexfalkowski/go:1.19
-      - image: postgres
+      - image: postgres:latest
         environment:
           POSTGRES_DB: test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-      - image: redis
-      - image: nsqio/nsq
+      - image: redis:latest
+      - image: nsqio/nsq:latest
         command: /nsqlookupd
-      - image: nsqio/nsq
+      - image: nsqio/nsq:latest
         command: /nsqd --lookupd-tcp-address=localhost:4160
     steps:
       - checkout
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait
+      - run:
+          dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait
           tcp://localhost:4161 -wait tcp://localhost:4150 -timeout 1m
       - run: make dep
       - run: make lint
