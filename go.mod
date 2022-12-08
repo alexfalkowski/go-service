@@ -34,7 +34,7 @@ require (
 	go.uber.org/fx v1.18.2
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.24.0
-	golang.org/x/net v0.3.0
+	golang.org/x/net v0.4.0
 	google.golang.org/genproto v0.0.0-20221114212237-e4508ebdbee1
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
