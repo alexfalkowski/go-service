@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/jwt"
 )
 
@@ -26,10 +27,10 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if len(t) == 0 {
-		return nil, jwt.ErrMissingToken
+		return nil, header.ErrInvalidAuthorization
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", string(t)))
+	req.Header.Add("Authorization", fmt.Sprintf("%s %s", header.BearerAuthorization, string(t)))
 
 	return r.RoundTripper.RoundTrip(req)
 }
