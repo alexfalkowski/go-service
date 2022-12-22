@@ -270,7 +270,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			actual := strings.TrimSpace(string(body))
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(actual, ShouldContainSubstring, `authorization token is not provided`)
+				So(actual, ShouldContainSubstring, "authorization is invalid")
 			})
 
 			lc.RequireStop()
@@ -315,7 +315,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "authorization token is not provided")
+				So(err.Error(), ShouldContainSubstring, "authorization is invalid")
 			})
 
 			lc.RequireStop()
@@ -367,7 +367,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			actual := strings.TrimSpace(string(body))
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(actual, ShouldContainSubstring, `authorization token is not provided`)
+				So(actual, ShouldContainSubstring, "authorization is invalid")
 			})
 
 			lc.RequireStop()

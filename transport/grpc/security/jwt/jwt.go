@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"path"
-	"strings"
 
+	"github.com/alexfalkowski/go-service/security/header"
 	sjwt "github.com/alexfalkowski/go-service/security/jwt"
 	"github.com/alexfalkowski/go-service/security/meta"
-	sstrings "github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/strings"
 	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/golang-jwt/jwt/v4"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -22,7 +22,7 @@ import (
 func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if sstrings.IsHealth(service) {
+		if strings.IsHealth(service) {
 			return handler(ctx, req)
 		}
 
@@ -30,10 +30,15 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return nil, status.Errorf(codes.Unauthenticated, sjwt.ErrMissingToken.Error())
+			return nil, status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
 		}
 
-		token, err := verifier.Verify(ctx, tkn(values[0]))
+		_, credentials, err := header.ParseAuthorization(values[0])
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		token, err := verifier.Verify(ctx, []byte(credentials))
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
@@ -53,7 +58,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if sstrings.IsHealth(service) {
+		if strings.IsHealth(service) {
 			return handler(srv, stream)
 		}
 
@@ -62,10 +67,15 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 
 		values := md["authorization"]
 		if len(values) == 0 {
-			return status.Errorf(codes.Unauthenticated, sjwt.ErrMissingToken.Error())
+			return status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
 		}
 
-		token, err := verifier.Verify(ctx, tkn(values[0]))
+		_, credentials, err := header.ParseAuthorization(values[0])
+		if err != nil {
+			return status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		token, err := verifier.Verify(ctx, []byte(credentials))
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
@@ -100,18 +110,12 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...
 	}
 
 	if len(t) == 0 {
-		return nil, sjwt.ErrMissingToken
+		return nil, header.ErrInvalidAuthorization
 	}
 
-	return map[string]string{"authorization": fmt.Sprintf("Bearer %s", t)}, nil
+	return map[string]string{"authorization": fmt.Sprintf("%s %s", header.BearerAuthorization, t)}, nil
 }
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {
 	return false
-}
-
-func tkn(header string) []byte {
-	s := strings.Split(header, " ")
-
-	return []byte(s[1])
 }
