@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.77.0](https://github.com/alexfalkowski/go-service/compare/v1.76.27...v1.77.0) (2022-12-22)
+
+
+### Features
+
+* **security:** parse authorization header ([#221](https://github.com/alexfalkowski/go-service/issues/221)) ([5a0fea9](https://github.com/alexfalkowski/go-service/commit/5a0fea9e08592c0a67461d43e46c4c64b3480263))
+
 ### [1.76.27](https://github.com/alexfalkowski/go-service/compare/v1.76.26...v1.76.27) (2022-12-22)
 
 ### [1.76.26](https://github.com/alexfalkowski/go-service/compare/v1.76.25...v1.76.26) (2022-12-20)
