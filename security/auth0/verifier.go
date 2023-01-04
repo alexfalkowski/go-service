@@ -3,7 +3,6 @@ package auth0
 import (
 	"context"
 	"errors"
-	"sync"
 
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -22,42 +21,33 @@ var (
 type verifier struct {
 	cfg  *Config
 	cert Certificator
-	ctx  context.Context
-	mux  sync.Mutex
 }
 
 func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error) {
-	v.mux.Lock()
-	defer v.mux.Unlock()
+	claims := &jwt.RegisteredClaims{}
 
-	v.ctx = ctx
-
-	parsedToken, err := jwt.Parse(string(token), v.validate)
+	t, err := jwt.ParseWithClaims(string(token), claims, v.key)
 	if err != nil {
 		return nil, err
 	}
 
-	if parsedToken.Header["alg"] != v.cfg.Algorithm {
-		return nil, ErrInvalidAlgorithm
+	if t.Header["alg"] != v.cfg.Algorithm {
+		return t, ErrInvalidAlgorithm
 	}
 
-	return parsedToken, nil
+	if !claims.VerifyIssuer(v.cfg.Issuer, true) {
+		return t, ErrInvalidIssuer
+	}
+
+	if !claims.VerifyAudience(v.cfg.Audience, true) {
+		return t, ErrInvalidAudience
+	}
+
+	return t, nil
 }
 
-func (v *verifier) validate(token *jwt.Token) (any, error) {
-	claims := token.Claims.(jwt.MapClaims)
-
-	checkAud := claims.VerifyAudience(v.cfg.Audience, true)
-	if !checkAud {
-		return token, ErrInvalidAudience
-	}
-
-	checkIss := claims.VerifyIssuer(v.cfg.Issuer, true)
-	if !checkIss {
-		return token, ErrInvalidIssuer
-	}
-
-	cert, err := v.cert.Certificate(v.ctx, token)
+func (v *verifier) key(token *jwt.Token) (any, error) {
+	cert, err := v.cert.Certificate(context.Background(), token)
 	if err != nil {
 		return token, err
 	}
