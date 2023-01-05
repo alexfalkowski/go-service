@@ -45,7 +45,7 @@ func TestVerify(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -88,12 +88,12 @@ func TestCachedVerify(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -139,7 +139,7 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 
 			acfg.Algorithm = "Algorithm"
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid algorithm", func() {
 				So(err, ShouldBeError)
@@ -186,7 +186,7 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 
 			acfg.Issuer = "Issuer"
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid issuer", func() {
 				So(err, ShouldBeError)
@@ -233,7 +233,7 @@ func TestVerifyInvalidAudience(t *testing.T) {
 
 			acfg.Audience = "Audience"
 
-			_, err = ver.Verify(ctx, token)
+			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid audience", func() {
 				So(err, ShouldBeError)

@@ -7,10 +7,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/security/header"
 	sjwt "github.com/alexfalkowski/go-service/security/jwt"
-	"github.com/alexfalkowski/go-service/security/meta"
+	"github.com/alexfalkowski/go-service/security/jwt/meta"
 	"github.com/alexfalkowski/go-service/strings"
 	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
-	"github.com/golang-jwt/jwt/v4"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,16 +37,14 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
 
-		token, err := verifier.Verify(ctx, []byte(credentials))
+		_, claims, err := verifier.Verify(ctx, []byte(credentials))
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
-
-		azp, ok := claims["azp"]
-		if ok {
-			ctx = meta.WithAuthorizedParty(ctx, azp.(string))
+		ctx, err = meta.WithRegisteredClaims(ctx, claims)
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
 
 		return handler(ctx, req)
@@ -75,16 +72,14 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
 
-		token, err := verifier.Verify(ctx, []byte(credentials))
+		_, claims, err := verifier.Verify(ctx, []byte(credentials))
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
-		claims := token.Claims.(jwt.MapClaims)
-
-		azp, ok := claims["azp"]
-		if ok {
-			ctx = meta.WithAuthorizedParty(ctx, azp.(string))
+		ctx, err = meta.WithRegisteredClaims(ctx, claims)
+		if err != nil {
+			return status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
 
 		wrapped := middleware.WrapServerStream(stream)

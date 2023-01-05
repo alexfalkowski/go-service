@@ -32,16 +32,16 @@ type Verifier struct {
 	token string
 }
 
-func (v *Verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error) {
+func (v *Verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
 	if string(token) != v.token {
-		return nil, errors.New("invalid token")
+		return nil, nil, errors.New("invalid token")
 	}
 
-	jwtToken := &jwt.Token{
-		Claims: jwt.MapClaims{
-			"azp": v.token,
-		},
+	claims := &jwt.RegisteredClaims{
+		Issuer:   "test",
+		Subject:  "test",
+		Audience: jwt.ClaimStrings{"test"},
 	}
 
-	return jwtToken, nil
+	return &jwt.Token{Claims: claims}, claims, nil
 }
