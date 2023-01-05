@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.7](https://github.com/alexfalkowski/go-service/compare/v1.77.6...v1.77.7) (2023-01-05)
+
+
+### Bug Fixes
+
+* **security:** verifier must return registered claims ([#229](https://github.com/alexfalkowski/go-service/issues/229)) ([f8a9578](https://github.com/alexfalkowski/go-service/commit/f8a95781752f4218ce93d5304760cd37a0604533))
+
 ### [1.77.6](https://github.com/alexfalkowski/go-service/compare/v1.77.5...v1.77.6) (2023-01-04)
 
 ### [1.77.5](https://github.com/alexfalkowski/go-service/compare/v1.77.4...v1.77.5) (2023-01-04)
