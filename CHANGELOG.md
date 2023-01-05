@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.77.8](https://github.com/alexfalkowski/go-service/compare/v1.77.7...v1.77.8) (2023-01-05)
+
+
+### Bug Fixes
+
+* downgrade go.uber.org/fx to v1.18.2 ([#230](https://github.com/alexfalkowski/go-service/issues/230)) ([8894ed4](https://github.com/alexfalkowski/go-service/commit/8894ed41b8db72b52d7814ba48b5d8b37c854181))
+
 ### [1.77.7](https://github.com/alexfalkowski/go-service/compare/v1.77.6...v1.77.7) (2023-01-05)
 
 
