@@ -31,7 +31,7 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/ulule/limiter/v3 v3.10.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.uber.org/fx v1.19.0
+	go.uber.org/fx v1.18.2
 	go.uber.org/multierr v1.9.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.5.0
