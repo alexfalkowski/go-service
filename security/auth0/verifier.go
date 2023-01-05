@@ -23,27 +23,27 @@ type verifier struct {
 	cert Certificator
 }
 
-func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, error) {
+func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
 	claims := &jwt.RegisteredClaims{}
 
 	t, err := jwt.ParseWithClaims(string(token), claims, v.key)
 	if err != nil {
-		return nil, err
+		return nil, claims, err
 	}
 
 	if t.Header["alg"] != v.cfg.Algorithm {
-		return t, ErrInvalidAlgorithm
+		return t, claims, ErrInvalidAlgorithm
 	}
 
 	if !claims.VerifyIssuer(v.cfg.Issuer, true) {
-		return t, ErrInvalidIssuer
+		return t, claims, ErrInvalidIssuer
 	}
 
 	if !claims.VerifyAudience(v.cfg.Audience, true) {
-		return t, ErrInvalidAudience
+		return t, claims, ErrInvalidAudience
 	}
 
-	return t, nil
+	return t, claims, nil
 }
 
 func (v *verifier) key(token *jwt.Token) (any, error) {
