@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.78.0](https://github.com/alexfalkowski/go-service/compare/v1.77.8...v1.78.0) (2023-01-06)
+
+
+### Features
+
+* **config:** allow to read from multiple sources ([#232](https://github.com/alexfalkowski/go-service/issues/232)) ([5fbe33f](https://github.com/alexfalkowski/go-service/commit/5fbe33ff06edab996ddb510672dd7fdfcfa93263))
+
 ### [1.77.8](https://github.com/alexfalkowski/go-service/compare/v1.77.7...v1.77.8) (2023-01-05)
 
 
