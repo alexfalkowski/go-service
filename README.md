@@ -23,9 +23,9 @@ These are configured in the main function.
 ## Configuration
 
 The configuration is based on YAML and can be read from multiple sources by specifying a flag called `--config`. As per the following:
-- `env:CONFIG_FILE` - read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed.
-- `file:path` - read from the path.
-- `mem:base64` - read from memory.
+- `env:CONFIG_FILE` - Read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed.
+- `file:path` - Read from the path.
+- `mem:kind=>base64` - Read from memory. Kind can be `yaml`.
 
 The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
 

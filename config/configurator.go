@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
@@ -39,12 +38,16 @@ type UnmarshalParams struct {
 
 	Configurator Configurator
 	Config       *cmd.Config
-	YAML         *marshaller.YAML
 }
 
 // Unmarshal to config.
 func Unmarshal(params UnmarshalParams) error {
-	return params.YAML.Unmarshal(params.Config.Data, params.Configurator)
+	m, err := params.Config.Marshaller()
+	if err != nil {
+		return err
+	}
+
+	return m.Unmarshal(params.Config.Data, params.Configurator)
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

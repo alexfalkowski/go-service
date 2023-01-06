@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/config"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -57,9 +56,9 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, versi
 
 		w.WriteHeader(status)
 
-		data := config.Map{"status": response}
+		data := map[string]any{"status": response}
 		if withErrors {
-			errors := config.Map{}
+			errors := map[string]any{}
 			for n, e := range ob.Errors() {
 				if e == nil {
 					continue
