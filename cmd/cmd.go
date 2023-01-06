@@ -26,6 +26,8 @@ func New() *Command {
 		SilenceUsage: true,
 	}
 
+	root.PersistentFlags().StringVar(&ConfigFlag, "config", "", "config location (format kind:location, default env:CONFIG_FILE)")
+
 	return &Command{root: root}
 }
 
@@ -98,8 +100,8 @@ func (c *Command) AddClientCommand(name, description string, opts []fx.Option) *
 }
 
 // Run the command with a an arg.
-func (c *Command) RunWithArg(arg string) error {
-	c.root.SetArgs([]string{arg})
+func (c *Command) RunWithArgs(args []string) error {
+	c.root.SetArgs(args)
 
 	return c.root.Execute()
 }

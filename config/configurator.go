@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
@@ -31,19 +32,9 @@ type Configurator interface {
 	NSQConfig() *nsq.Config
 }
 
-// UnmarshalFromFile to config.
-func UnmarshalFromFile(cfg Configurator) error {
-	bytes, err := ReadFile()
-	if err != nil {
-		return err
-	}
-
-	err = yaml.Unmarshal(bytes, cfg)
-	if err != nil {
-		return err
-	}
-
-	return nil
+// Unmarshal to config.
+func Unmarshal(cfg Configurator, c *cmd.Config) error {
+	return yaml.Unmarshal(c.Data, cfg)
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

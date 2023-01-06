@@ -22,7 +22,12 @@ These are configured in the main function.
 
 ## Configuration
 
-The configuration is based on YAML and is read from an env variable called `CONFIG_FILE`. The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
+The configuration is based on YAML and can be read from multiple sources by specifying a flag called `--config`. As per the following:
+- `env:CONFIG_FILE` - read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed.
+- `file:path` - read from the path.
+- `mem:base64` - read from memory.
+
+The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
 
 The configuration can be [watched](https://github.com/radovskyb/watcher) for write changes. If it changes the application is stopped. This way an [orchestration](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) system can just restart the process.
 

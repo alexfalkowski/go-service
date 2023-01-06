@@ -6,19 +6,13 @@ import (
 
 var (
 	// Module for fx.
-	Module = fx.Options(ConfiguratorModule, UnmarshalModule, ConfigModule, WatchModule)
+	Module = fx.Options(ConfiguratorModule, UnmarshalModule, ConfigModule)
 
 	// ConfiguratorModule for fx.
 	ConfiguratorModule = fx.Provide(NewConfigurator)
 
 	// UnmarshalModule for fx.
-	UnmarshalModule = fx.Invoke(UnmarshalFromFile)
-
-	// WatchModule for fx.
-	WatchModule = fx.Options(
-		fx.Invoke(Watch),
-		fx.Provide(NewWaitTime),
-	)
+	UnmarshalModule = fx.Invoke(Unmarshal)
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(
