@@ -6,5 +6,5 @@ import (
 
 // Config for trace.
 type Config struct {
-	Opentracing opentracing.Config `yaml:"opentracing"`
+	Opentracing opentracing.Config `yaml:"opentracing" json:"opentracing"`
 }

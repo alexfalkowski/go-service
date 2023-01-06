@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	LookupHost string       `yaml:"lookup_host"`
-	Host       string       `yaml:"host"`
-	Retry      retry.Config `yaml:"retry"`
-	UserAgent  string       `yaml:"user_agent"`
+	LookupHost string       `yaml:"lookup_host" json:"lookup_host"`
+	Host       string       `yaml:"host" json:"host"`
+	Retry      retry.Config `yaml:"retry" json:"retry"`
+	UserAgent  string       `yaml:"user_agent" json:"user_agent"`
 }

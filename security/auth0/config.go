@@ -8,13 +8,13 @@ import (
 
 // Config for Auth0.
 type Config struct {
-	URL           string `yaml:"url"`
-	ClientID      string `yaml:"client_id"`
-	ClientSecret  string `yaml:"client_secret"`
-	Audience      string `yaml:"audience"`
-	Issuer        string `yaml:"issuer"`
-	Algorithm     string `yaml:"algorithm"`
-	JSONWebKeySet string `yaml:"json_web_key_set"`
+	URL           string `yaml:"url" json:"url"`
+	ClientID      string `yaml:"client_id" json:"client_id"`
+	ClientSecret  string `yaml:"client_secret" json:"client_secret"`
+	Audience      string `yaml:"audience" json:"audience"`
+	Issuer        string `yaml:"issuer" json:"issuer"`
+	Algorithm     string `yaml:"algorithm" json:"algorithm"`
+	JSONWebKeySet string `yaml:"json_web_key_set" json:"json_web_key_set"`
 }
 
 // CacheKey for config.
