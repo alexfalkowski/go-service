@@ -18,11 +18,11 @@ import (
 
 // Config for the service.
 type Config struct {
-	Cache     cache.Config     `yaml:"cache"`
-	Security  security.Config  `yaml:"security"`
-	SQL       sql.Config       `yaml:"sql"`
-	Trace     trace.Config     `yaml:"trace"`
-	Transport transport.Config `yaml:"transport"`
+	Cache     cache.Config     `yaml:"cache" json:"cache"`
+	Security  security.Config  `yaml:"security" json:"security"`
+	SQL       sql.Config       `yaml:"sql" json:"sql"`
+	Trace     trace.Config     `yaml:"trace" json:"trace"`
+	Transport transport.Config `yaml:"transport" json:"transport"`
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {

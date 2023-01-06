@@ -43,7 +43,7 @@ func TestShutdown(t *testing.T) {
 			c.AddWorker(opts())
 
 			Convey("Then I should not see an error", func() {
-				So(c.RunWithArg("worker"), ShouldBeNil)
+				So(c.RunWithArgs([]string{"worker"}), ShouldBeNil)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -71,20 +71,16 @@ func TestRun(t *testing.T) {
 
 func TestInvalid(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/invalid.config.yml")
-
 		Convey("When I try to run an application", func() {
 			c := cmd.New()
 			c.AddServer(opts())
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArg("server")
+				err := c.RunWithArgs([]string{"server", "--config", "file:../test/invalid.config.yml"})
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
 			})
-
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -98,7 +94,7 @@ func TestClient(t *testing.T) {
 			c.AddClient(opts)
 
 			Convey("Then I should not see an error", func() {
-				So(c.RunWithArg("client"), ShouldBeNil)
+				So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
 			})
 		})
 	})
@@ -106,20 +102,20 @@ func TestClient(t *testing.T) {
 
 func TestInvalidClient(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/invalid.config.yml")
+		os.Setenv("TEST_CONFIG_FILE", "../test/invalid.config.yml")
 
 		Convey("When I try to run an application", func() {
 			c := cmd.New()
 			c.AddClient(opts())
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArg("client")
+				err := c.RunWithArgs([]string{"client", "--config", "env:TEST_CONFIG_FILE"})
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
 			})
 
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+			So(os.Unsetenv("TEST_CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -173,7 +169,8 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
-		config.Module, logger.ZapModule, health.GRPCModule, health.HTTPModule, health.ServerModule,
+		cmd.Module, config.Module, logger.ZapModule,
+		health.GRPCModule, health.HTTPModule, health.ServerModule,
 		cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
 		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,

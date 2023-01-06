@@ -6,6 +6,6 @@ import (
 
 // Config for gRPC.
 type Config struct {
-	Retry     retry.Config `yaml:"retry"`
-	UserAgent string       `yaml:"user_agent"`
+	Retry     retry.Config `yaml:"retry" json:"retry"`
+	UserAgent string       `yaml:"user_agent" json:"user_agent"`
 }

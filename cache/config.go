@@ -7,6 +7,6 @@ import (
 
 // Config for cache.
 type Config struct {
-	Redis     redis.Config     `yaml:"redis"`
-	Ristretto ristretto.Config `yaml:"ristretto"`
+	Redis     redis.Config     `yaml:"redis" json:"redis"`
+	Ristretto ristretto.Config `yaml:"ristretto" json:"ristretto"`
 }

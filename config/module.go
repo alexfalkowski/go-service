@@ -1,24 +1,24 @@
 package config
 
 import (
+	"github.com/alexfalkowski/go-service/marshaller"
 	"go.uber.org/fx"
 )
 
 var (
 	// Module for fx.
-	Module = fx.Options(ConfiguratorModule, UnmarshalModule, ConfigModule, WatchModule)
+	Module = fx.Options(
+		ConfiguratorModule,
+		UnmarshalModule,
+		ConfigModule,
+		marshaller.Module,
+	)
 
 	// ConfiguratorModule for fx.
 	ConfiguratorModule = fx.Provide(NewConfigurator)
 
 	// UnmarshalModule for fx.
-	UnmarshalModule = fx.Invoke(UnmarshalFromFile)
-
-	// WatchModule for fx.
-	WatchModule = fx.Options(
-		fx.Invoke(Watch),
-		fx.Provide(NewWaitTime),
-	)
+	UnmarshalModule = fx.Invoke(Unmarshal)
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(
