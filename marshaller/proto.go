@@ -4,17 +4,18 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type protoMarshaller struct{}
+// Proto for marshaller.
+type Proto struct{}
 
 // NewProto for marshaller.
-func NewProto() Marshaller {
-	return &protoMarshaller{}
+func NewProto() *Proto {
+	return &Proto{}
 }
 
-func (m *protoMarshaller) Marshal(v any) ([]byte, error) {
+func (m *Proto) Marshal(v any) ([]byte, error) {
 	return proto.Marshal(v.(proto.Message))
 }
 
-func (m *protoMarshaller) Unmarshal(data []byte, v any) error {
+func (m *Proto) Unmarshal(data []byte, v any) error {
 	return proto.Unmarshal(data, v.(proto.Message))
 }

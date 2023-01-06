@@ -5,13 +5,14 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
-	"gopkg.in/yaml.v3"
+	"go.uber.org/fx"
 )
 
 // NewConfigurator for config.
@@ -32,9 +33,18 @@ type Configurator interface {
 	NSQConfig() *nsq.Config
 }
 
+// UnmarshalParams for config.
+type UnmarshalParams struct {
+	fx.In
+
+	Configurator Configurator
+	Config       *cmd.Config
+	YAML         *marshaller.YAML
+}
+
 // Unmarshal to config.
-func Unmarshal(cfg Configurator, c *cmd.Config) error {
-	return yaml.Unmarshal(c.Data, cfg)
+func Unmarshal(params UnmarshalParams) error {
+	return params.YAML.Unmarshal(params.Config.Data, params.Configurator)
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

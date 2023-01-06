@@ -4,17 +4,18 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-type msgpackMarshaller struct{}
+// MsgPack for marshaller.
+type MsgPack struct{}
 
 // NewMsgPack for marshaller.
-func NewMsgPack() Marshaller {
-	return &msgpackMarshaller{}
+func NewMsgPack() *MsgPack {
+	return &MsgPack{}
 }
 
-func (m *msgpackMarshaller) Marshal(v any) ([]byte, error) {
+func (m *MsgPack) Marshal(v any) ([]byte, error) {
 	return msgpack.Marshal(v)
 }
 
-func (m *msgpackMarshaller) Unmarshal(data []byte, v any) error {
+func (m *MsgPack) Unmarshal(data []byte, v any) error {
 	return msgpack.Unmarshal(data, v)
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/marshaller"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -24,7 +25,13 @@ func TestValidEnvConfig(t *testing.T) {
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg := config.NewConfigurator()
-			err := config.Unmarshal(cfg, c)
+			p := config.UnmarshalParams{
+				Configurator: cfg,
+				Config:       c,
+				YAML:         marshaller.NewYAML(),
+			}
+
+			err := config.Unmarshal(p)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -74,7 +81,13 @@ func TestValidFileConfig(t *testing.T) {
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg := config.NewConfigurator()
-			err := config.Unmarshal(cfg, c)
+			p := config.UnmarshalParams{
+				Configurator: cfg,
+				Config:       c,
+				YAML:         marshaller.NewYAML(),
+			}
+
+			err := config.Unmarshal(p)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -124,7 +137,13 @@ func TestValidMemConfig(t *testing.T) {
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg := config.NewConfigurator()
-			err := config.Unmarshal(cfg, c)
+			p := config.UnmarshalParams{
+				Configurator: cfg,
+				Config:       c,
+				YAML:         marshaller.NewYAML(),
+			}
+
+			err := config.Unmarshal(p)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -171,7 +190,14 @@ func TestInvalidConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			err := config.Unmarshal(config.NewConfigurator(), c)
+			cfg := config.NewConfigurator()
+			p := config.UnmarshalParams{
+				Configurator: cfg,
+				Config:       c,
+				YAML:         marshaller.NewYAML(),
+			}
+
+			err := config.Unmarshal(p)
 
 			Convey("Then I should have an error of invalid configuration file", func() {
 				So(err, ShouldBeError)
