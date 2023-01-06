@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.79.0](https://github.com/alexfalkowski/go-service/compare/v1.78.0...v1.79.0) (2023-01-06)
+
+
+### Features
+
+* **config:** add kind to marshaller ([#233](https://github.com/alexfalkowski/go-service/issues/233)) ([97f6284](https://github.com/alexfalkowski/go-service/commit/97f628418f2c7e0b3c10bec396d134d6b23ae1ea))
+
 ## [1.78.0](https://github.com/alexfalkowski/go-service/compare/v1.77.8...v1.78.0) (2023-01-06)
 
 
