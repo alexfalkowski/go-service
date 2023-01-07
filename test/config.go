@@ -5,8 +5,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
@@ -114,4 +116,11 @@ func NewPGConfig() *pg.Config {
 		MaxIdleConns:    5,
 		ConnMaxLifetime: time.Hour,
 	}}
+}
+
+// NewCmdConfig for test.
+func NewCmdConfig() (*cmd.Config, error) {
+	p := marshaller.FactoryParams{YAML: marshaller.NewYAML(), TOML: marshaller.NewTOML()}
+
+	return cmd.NewConfig(marshaller.NewFactory(p))
 }

@@ -6,7 +6,6 @@ cache:
     max_counters: 10000000
     max_cost: 100000000
     buffer_items: 64
-runtime: os
 security:
   auth0:
     url: test_url

@@ -8,8 +8,8 @@ import (
 
 // Config for transport.
 type Config struct {
-	Port string      `yaml:"port" json:"port"`
-	GRPC grpc.Config `yaml:"grpc" json:"grpc"`
-	HTTP http.Config `yaml:"http" json:"http"`
-	NSQ  nsq.Config  `yaml:"nsq" json:"nsq"`
+	Port string      `yaml:"port" json:"port" toml:"port"`
+	GRPC grpc.Config `yaml:"grpc" json:"grpc" toml:"grpc"`
+	HTTP http.Config `yaml:"http" json:"http" toml:"http"`
+	NSQ  nsq.Config  `yaml:"nsq" json:"nsq" toml:"nsq"`
 }
