@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.80.0](https://github.com/alexfalkowski/go-service/compare/v1.79.0...v1.80.0) (2023-01-07)
+
+
+### Features
+
+* **config:** add toml support ([#234](https://github.com/alexfalkowski/go-service/issues/234)) ([dc29ef2](https://github.com/alexfalkowski/go-service/commit/dc29ef2ef792e3a96741fc10689928894b2c78e6))
+
 ## [1.79.0](https://github.com/alexfalkowski/go-service/compare/v1.78.0...v1.79.0) (2023-01-06)
 
 
