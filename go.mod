@@ -3,6 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.19
 
 require (
+	github.com/BurntSushi/toml v1.2.1
 	github.com/alexfalkowski/go-health v1.11.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.1
@@ -81,6 +82,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
 	github.com/smartystreets/assertions v1.13.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect

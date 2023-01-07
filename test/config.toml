@@ -1,0 +1,50 @@
+[cache.redis.addresses]
+server = "localhost:6379"
+
+[cache.ristretto]
+max_counters = 10_000_000
+max_cost = 100_000_000
+buffer_items = 64
+
+[security.auth0]
+url = "test_url"
+client_id = "test_client_id"
+client_secret = "test_client_secret"
+audience = "test_audience"
+issuer = "test_issuer"
+algorithm = "test_algorithm"
+json_web_key_set = "test_json_web_key_set"
+
+[sql.pg]
+max_open_conns = 5
+max_idle_conns = 5
+conn_max_lifetime = "1h"
+
+[[sql.pg.masters]]
+url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+
+[[sql.pg.slaves]]
+url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+
+[trace.opentracing]
+kind = "jaeger"
+host = "localhost:6831"
+
+[transport]
+port = "8080"
+
+[transport.http.retry]
+timeout = "1s"
+attempts = 3
+
+[transport.grpc.retry]
+timeout = "1s"
+attempts = 3
+
+[transport.nsq]
+lookup_host = "localhost:4161"
+host = "localhost:4150"
+
+[transport.nsq.retry]
+timeout = "1s"
+attempts = 3

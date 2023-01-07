@@ -6,5 +6,5 @@ import (
 
 // Config for security.
 type Config struct {
-	Auth0 auth0.Config `yaml:"auth0" json:"auth0"`
+	Auth0 auth0.Config `yaml:"auth0" json:"auth0" toml:"auth0"`
 }

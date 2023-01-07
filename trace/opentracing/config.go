@@ -2,8 +2,8 @@ package opentracing
 
 // Config for opentracing.
 type Config struct {
-	Kind string `yaml:"kind" json:"kind"`
-	Host string `yaml:"host" json:"host"`
+	Kind string `yaml:"kind" json:"kind" toml:"kind"`
+	Host string `yaml:"host" json:"host" toml:"host"`
 }
 
 // IsDataDog config.

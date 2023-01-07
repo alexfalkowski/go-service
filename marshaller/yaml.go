@@ -7,7 +7,7 @@ import (
 // YAML for marshaller.
 type YAML struct{}
 
-// NewMsgPack for marshaller.
+// NewYAML for marshaller.
 func NewYAML() *YAML {
 	return &YAML{}
 }

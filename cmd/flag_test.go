@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -15,8 +15,7 @@ func TestValidConfig(t *testing.T) {
 		cmd.ConfigFlag = ""
 
 		Convey("When I read the config", func() {
-			p := marshaller.FactoryParams{YAML: marshaller.NewYAML()}
-			c, err := cmd.NewConfig(marshaller.NewFactory(p))
+			c, err := test.NewCmdConfig()
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -33,8 +32,7 @@ func TestMissingConfig(t *testing.T) {
 		cmd.ConfigFlag = ""
 
 		Convey("When I read the config", func() {
-			p := marshaller.FactoryParams{YAML: marshaller.NewYAML()}
-			_, err := cmd.NewConfig(marshaller.NewFactory(p))
+			_, err := test.NewCmdConfig()
 
 			Convey("Then I should have an error of missing config file", func() {
 				So(err, ShouldBeError)
@@ -50,8 +48,7 @@ func TestNonExistentConfig(t *testing.T) {
 		cmd.ConfigFlag = ""
 
 		Convey("When I try to parse the configuration file", func() {
-			p := marshaller.FactoryParams{YAML: marshaller.NewYAML()}
-			_, err := cmd.NewConfig(marshaller.NewFactory(p))
+			_, err := test.NewCmdConfig()
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)
@@ -68,8 +65,7 @@ func TestInvalidKindConfig(t *testing.T) {
 		cmd.ConfigFlag = "test:test"
 
 		Convey("When I try to parse the configuration file", func() {
-			p := marshaller.FactoryParams{YAML: marshaller.NewYAML()}
-			_, err := cmd.NewConfig(marshaller.NewFactory(p))
+			_, err := test.NewCmdConfig()
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)

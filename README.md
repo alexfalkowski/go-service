@@ -22,14 +22,16 @@ These are configured in the main function.
 
 ## Configuration
 
-The configuration is based on YAML and can be read from multiple sources by specifying a flag called `--config`. As per the following:
+The supported configuration kinds are as follows:
+- [YAML](https://github.com/go-yaml/yaml)
+- [TOML](https://github.com/BurntSushi/toml)
+
+The configuration can be read from multiple sources by specifying a flag called `--config`. As per the following:
 - `env:CONFIG_FILE` - Read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed.
 - `file:path` - Read from the path.
-- `mem:kind=>base64` - Read from memory. Kind can be `yaml`.
+- `mem:kind=>base64` - Read from memory. Kind can be `yaml`, `toml`.
 
 The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
-
-The configuration can be [watched](https://github.com/radovskyb/watcher) for write changes. If it changes the application is stopped. This way an [orchestration](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy) system can just restart the process.
 
 This is the [configuration](config/config.go). We will outline the config required in each section.
 
@@ -58,6 +60,21 @@ cache:
     max_counters: 10000000
     max_cost: 100000000
     buffer_items: 64
+```
+
+```toml
+[cache.redis]
+username = "test"
+password = "test"
+db = 0
+
+[cache.redis.addresses]
+server = "localhost:6379"
+
+[cache.ristretto]
+max_counters = 10_000_000
+max_cost = 100_000_000
+buffer_items = 64
 ```
 
 ## Health
@@ -98,6 +115,17 @@ security:
     json_web_key_set: test_json_web_key_set
 ```
 
+```toml
+[security.auth0]
+url = "test_url"
+client_id = "test_client_id"
+client_secret = "test_client_secret"
+audience = "test_audience"
+issuer = "test_issuer"
+algorithm = "test_algorithm"
+json_web_key_set = "test_json_web_key_set"
+```
+
 ## SQL
 
 For SQL databases we support the following:
@@ -123,6 +151,19 @@ sql:
     conn_max_lifetime: 1h
 ```
 
+```toml
+[sql.pg]
+max_open_conns = 5
+max_idle_conns = 5
+conn_max_lifetime = "1h"
+
+[[sql.pg.masters]]
+url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+
+[[sql.pg.slaves]]
+url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+```
+
 ## Tracing
 
 For distributed tracing we support the following:
@@ -139,6 +180,12 @@ trace:
   opentracing:
     kind: jaeger
     host: localhost:6831
+```
+
+```toml
+[trace.opentracing]
+kind = "jaeger"
+host = "localhost:6831"
 ```
 
 ## Transport
@@ -179,6 +226,27 @@ transport:
     retry:
       timeout: 1s
       attempts: 3
+```
+
+```toml
+[transport]
+port = "8080"
+
+[transport.http.retry]
+timeout = "1s"
+attempts = 3
+
+[transport.grpc.retry]
+timeout = "1s"
+attempts = 3
+
+[transport.nsq]
+lookup_host = "localhost:4161"
+host = "localhost:4150"
+
+[transport.nsq.retry]
+timeout = "1s"
+attempts = 3
 ```
 
 ## Development
@@ -224,10 +292,3 @@ To be able to test locally, please run:
 ```sh
 make specs
 ```
-
-## Projects
-
-Below is a list of projects using this framework:
-- [Konfig](https://github.com/alexfalkowski/konfig)
-- [Standort](https://github.com/alexfalkowski/standort)
-- [Migrieren](https://github.com/alexfalkowski/migrieren)
