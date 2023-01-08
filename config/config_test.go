@@ -9,7 +9,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -19,14 +18,12 @@ func TestValidEnvConfig(t *testing.T) {
 		Convey("Given I have configuration file", t, func() {
 			os.Setenv("CONFIG_FILE", f)
 
-			cmd.ConfigFlag = "env:CONFIG_FILE"
-
-			c, err := test.NewCmdConfig()
+			c, err := test.NewCmdConfig("env:CONFIG_FILE")
 			So(err, ShouldBeNil)
 
 			Convey("When I try to parse the configuration file", func() {
 				cfg := config.NewConfigurator()
-				p := config.UnmarshalParams{Configurator: cfg, Config: c}
+				p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
 
 				err := config.Unmarshal(p)
 				So(err, ShouldBeNil)
@@ -43,14 +40,12 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestValidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		cmd.ConfigFlag = "file:../test/config.yml"
-
-		c, err := test.NewCmdConfig()
+		c, err := test.NewCmdConfig("file:../test/config.yml")
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg := config.NewConfigurator()
-			p := config.UnmarshalParams{Configurator: cfg, Config: c}
+			p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
 
 			err := config.Unmarshal(p)
 			So(err, ShouldBeNil)
@@ -68,14 +63,12 @@ func TestValidMemConfig(t *testing.T) {
 
 	for _, f := range []string{fmt.Sprintf("mem:%s", s), fmt.Sprintf("mem:yaml=>%s", s)} {
 		Convey("Given I have configuration file", t, func() {
-			cmd.ConfigFlag = f
-
-			c, err := test.NewCmdConfig()
+			c, err := test.NewCmdConfig(f)
 			So(err, ShouldBeNil)
 
 			Convey("When I try to parse the configuration file", func() {
 				cfg := config.NewConfigurator()
-				p := config.UnmarshalParams{Configurator: cfg, Config: c}
+				p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
 
 				err := config.Unmarshal(p)
 				So(err, ShouldBeNil)
@@ -86,30 +79,6 @@ func TestValidMemConfig(t *testing.T) {
 			})
 		})
 	}
-}
-
-func TestInvalidConfig(t *testing.T) {
-	Convey("Given I have configuration file", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/greet/v1/service.proto")
-		cmd.ConfigFlag = ""
-
-		c, err := test.NewCmdConfig()
-		So(err, ShouldBeNil)
-
-		Convey("When I try to parse the configuration file", func() {
-			cfg := config.NewConfigurator()
-			p := config.UnmarshalParams{Configurator: cfg, Config: c}
-
-			err := config.Unmarshal(p)
-
-			Convey("Then I should have an error of invalid configuration file", func() {
-				So(err, ShouldBeError)
-				So(err, ShouldEqual, marshaller.ErrInvalidKind)
-			})
-
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
-		})
-	})
 }
 
 func verifyConfig(cfg config.Configurator) {

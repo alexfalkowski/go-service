@@ -37,17 +37,12 @@ type UnmarshalParams struct {
 	fx.In
 
 	Configurator Configurator
-	Config       *cmd.Config
+	Config       *cmd.InputConfig
 }
 
 // Unmarshal to config.
 func Unmarshal(params UnmarshalParams) error {
-	m, err := params.Config.Marshaller()
-	if err != nil {
-		return err
-	}
-
-	return m.Unmarshal(params.Config.Data, params.Configurator)
+	return params.Config.Unmarshal(params.Configurator)
 }
 
 func redisConfig(cfg Configurator) *redis.Config {
