@@ -26,7 +26,7 @@ The supported configuration kinds are as follows:
 - [YAML](https://github.com/go-yaml/yaml)
 - [TOML](https://github.com/BurntSushi/toml)
 
-The configuration can be read from multiple sources by specifying a flag called `--config`. As per the following:
+The configuration can be read from multiple sources by specifying a flag called `--input`. As per the following:
 - `env:CONFIG_FILE` - Read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed.
 - `file:path` - Read from the path.
 - `mem:kind=>base64` - Read from memory. Kind can be `yaml`, `toml`.

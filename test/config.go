@@ -119,8 +119,8 @@ func NewPGConfig() *pg.Config {
 }
 
 // NewCmdConfig for test.
-func NewCmdConfig() (*cmd.Config, error) {
+func NewCmdConfig(flag string) (*cmd.Config, error) {
 	p := marshaller.FactoryParams{YAML: marshaller.NewYAML(), TOML: marshaller.NewTOML()}
 
-	return cmd.NewConfig(marshaller.NewFactory(p))
+	return cmd.NewConfig(flag, marshaller.NewFactory(p))
 }

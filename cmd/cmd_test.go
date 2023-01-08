@@ -76,7 +76,7 @@ func TestInvalid(t *testing.T) {
 			c.AddServer(opts())
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--config", "file:../test/invalid.config.yml"})
+				err := c.RunWithArgs([]string{"server", "--input", "file:../test/invalid.config.yml"})
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
@@ -109,7 +109,7 @@ func TestInvalidClient(t *testing.T) {
 			c.AddClient(opts())
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"client", "--config", "env:TEST_CONFIG_FILE"})
+				err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "listen tcp: address -1: invalid port")
