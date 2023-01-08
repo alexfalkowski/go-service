@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.81.0](https://github.com/alexfalkowski/go-service/compare/v1.80.0...v1.81.0) (2023-01-08)
+
+
+### Features
+
+* **cmd:** allow config to be resused ([#235](https://github.com/alexfalkowski/go-service/issues/235)) ([1a9484d](https://github.com/alexfalkowski/go-service/commit/1a9484d0b55ccde55b7c398b1e1bf8a219eea01b))
+
 ## [1.80.0](https://github.com/alexfalkowski/go-service/compare/v1.79.0...v1.80.0) (2023-01-07)
 
 
