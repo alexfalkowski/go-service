@@ -29,7 +29,7 @@ jobs:
     resource_class: large
   release:
     docker:
-      - image: alexfalkowski/release:3.0
+      - image: alexfalkowski/release:3.1
     steps:
       - checkout
       - run: release
