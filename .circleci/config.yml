@@ -16,6 +16,8 @@ jobs:
         command: /nsqd --lookupd-tcp-address=localhost:4160
     steps:
       - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
       - run:
           dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait
           tcp://localhost:4161 -wait tcp://localhost:4150 -timeout 1m
