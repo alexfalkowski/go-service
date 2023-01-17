@@ -38,8 +38,6 @@ func NewConfig(flag string, factory *marshaller.Factory) (*Config, error) {
 		rw = NewENV(l)
 	case "file":
 		rw = NewFile(l)
-	case "mem":
-		rw = NewMEM(l)
 	}
 
 	if rw == nil {
