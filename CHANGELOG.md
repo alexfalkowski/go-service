@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.82.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.82.0) - 2023-01-17
+
+- [`7e5f549`](https://github.com/alexfalkowski/go-service/commit/7e5f54993a8db25b1c7540e256818b807241781e) feat(cmd): use env variable rather than mem flag (#243)
+- [`f0d10ff`](https://github.com/alexfalkowski/go-service/commit/f0d10ff1158a59e53ac9198e0b74dfa59d974fa8) build: add github.com:alexfalkowski/bin (#242)
+- [`4ac3330`](https://github.com/alexfalkowski/go-service/commit/4ac33308a31945c4d3ed89889caed6eac99a9477) ci(dependabot): change commit message (#241)
+- [`8338d58`](https://github.com/alexfalkowski/go-service/commit/8338d58d12c44274a6323b8d2699ceea474bd40b) ci: use release 3.1 (#240)
+- [`f238289`](https://github.com/alexfalkowski/go-service/commit/f23828907e13e72ee29a338c86342ab8bc4e761e) ci: use release 3.0 (#239)
+
 ## [v1.81.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.81.3) - 2023-01-11
 
 - [`226b066`](https://github.com/alexfalkowski/go-service/commit/226b06629ea966fcad4b044b6772e576f48d27e3) build(deps): bump go.uber.org/fx from 1.18.2 to 1.19.1 (#238)
