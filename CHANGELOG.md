@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.82.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.82.1) - 2023-01-23
+
+- [`e27fd55`](https://github.com/alexfalkowski/go-service/commit/e27fd55c863b6256fff48a20b7989a12fa875673) fix(deps): bump github.com/klauspost/compress from 1.15.14 to 1.15.15 (#245)
+
 ## [v1.82.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.82.0) - 2023-01-17
 
 - [`7e5f549`](https://github.com/alexfalkowski/go-service/commit/7e5f54993a8db25b1c7540e256818b807241781e) feat(cmd): use env variable rather than mem flag (#243)
