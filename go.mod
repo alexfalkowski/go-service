@@ -38,7 +38,7 @@ require (
 	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
 	google.golang.org/grpc v1.52.0
 	google.golang.org/protobuf v1.28.1
-	gopkg.in/DataDog/dd-trace-go.v1 v1.46.0
+	gopkg.in/DataDog/dd-trace-go.v1 v1.46.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
