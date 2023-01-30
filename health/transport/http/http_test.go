@@ -22,7 +22,7 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	checks := []string{"health", "liveness", "readiness"}
+	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
@@ -97,7 +97,7 @@ func TestReadinessNoop(t *testing.T) {
 		Convey("When I query health", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readiness", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -144,7 +144,7 @@ func TestInvalidHealth(t *testing.T) {
 		Convey("When I query health", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/health", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/healthz", cfg.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
