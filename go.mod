@@ -29,7 +29,7 @@ require (
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
-	github.com/ulule/limiter/v3 v3.10.0
+	github.com/ulule/limiter/v3 v3.11.0
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.19.1
 	go.uber.org/multierr v1.9.0
@@ -51,7 +51,7 @@ require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
