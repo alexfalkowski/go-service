@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.84.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.84.0) - 2023-02-03
+
+- [`6e4d26b`](https://github.com/alexfalkowski/go-service/commit/6e4d26b4a875bb74916396600ec864671f333f67) feat(go): update to v1.20 (#251)
+
 ## [v1.83.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.83.2) - 2023-02-01
 
 - [`23ce4cc`](https://github.com/alexfalkowski/go-service/commit/23ce4cce941f4a10113de9599ef9052dd0bc921e) fix(deps): bump github.com/ulule/limiter/v3 from 3.10.0 to 3.11.0 (#249)
