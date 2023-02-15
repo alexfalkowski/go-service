@@ -37,24 +37,24 @@ type pem struct {
 func (p *pem) Certificate(ctx context.Context, token *jwt.Token) (string, error) {
 	cert := ""
 
-	httpReq, err := http.NewRequestWithContext(ctx, "GET", p.cfg.JSONWebKeySet, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", p.cfg.JSONWebKeySet, nil)
 	if err != nil {
 		return cert, err
 	}
 
-	httpResp, err := p.client.Do(httpReq)
+	res, err := p.client.Do(req)
 	if err != nil {
 		return cert, err
 	}
 
-	defer httpResp.Body.Close()
+	defer res.Body.Close()
 
-	if httpResp.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		return cert, ErrInvalidResponse
 	}
 
 	var resp jwksResponse
-	if err := json.NewDecoder(httpResp.Body).Decode(&resp); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
 		return cert, err
 	}
 

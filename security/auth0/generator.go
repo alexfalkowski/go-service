@@ -34,35 +34,35 @@ type generator struct {
 }
 
 func (g *generator) Generate(ctx context.Context) ([]byte, error) {
-	req := &generatorRequest{
+	request := &generatorRequest{
 		ClientID:     g.cfg.ClientID,
 		ClientSecret: g.cfg.ClientSecret,
 		Audience:     g.cfg.Audience,
 		GrantType:    "client_credentials",
 	}
 
-	body, _ := json.Marshal(req) //nolint:errchkjson
+	body, _ := json.Marshal(request) //nolint:errchkjson
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
 
-	httpReq.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
-	httpResp, err := g.client.Do(httpReq)
+	res, err := g.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	defer httpResp.Body.Close()
+	defer res.Body.Close()
 
-	if httpResp.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		return nil, ErrInvalidResponse
 	}
 
 	var resp generatorResponse
-	if err := json.NewDecoder(httpResp.Body).Decode(&resp); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
 		return nil, err
 	}
 
