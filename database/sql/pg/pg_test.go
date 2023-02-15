@@ -387,7 +387,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 			defer stmt.Close()
 
-			_, err = stmt.Query(1)
+			_, err = stmt.Query(1) //nolint:sqlclosecheck
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

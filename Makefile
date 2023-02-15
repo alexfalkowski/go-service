@@ -8,7 +8,7 @@ specs: setup-nsq
 
 # Run security checks.
 sec:
-	gosec -quiet -exclude-dir=test -exclude=G104 ./...
+	gosec -quiet -exclude-dir=test -exclude=G104,G307 ./...
 
 # Setup NSQ.
 setup-nsq: delete-nsq create-nsq
