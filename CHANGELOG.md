@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.84.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.84.5) - 2023-02-15
+
+- [`820bafa`](https://github.com/alexfalkowski/go-service/commit/820bafa73bbe442243798bd30ef0cac18002d3e0) fix(deps): bump golang.org/x/net from 0.6.0 to 0.7.0 (#256)
+- [`380c873`](https://github.com/alexfalkowski/go-service/commit/380c8730ecc0ada808ca34da9dd91da635a35f38) build(deps): update bin (#258)
+- [`0d76a6b`](https://github.com/alexfalkowski/go-service/commit/0d76a6b914d120c46c8105aece2356251a862690) test: ignore sqlclosecheck (#257)
+
 ## [v1.84.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.84.4) - 2023-02-13
 
 - [`d249c32`](https://github.com/alexfalkowski/go-service/commit/d249c3294ae33dd223ed26791f5722a7e9ca1298) fix(deps): bump github.com/jackc/pgx/v4 from 4.17.2 to 4.18.0 (#255)
