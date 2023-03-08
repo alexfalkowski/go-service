@@ -29,7 +29,7 @@ require (
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
-	github.com/ulule/limiter/v3 v3.11.0
+	github.com/ulule/limiter/v3 v3.11.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.19.2
 	go.uber.org/multierr v1.9.0
@@ -90,7 +90,7 @@ require (
 	go.uber.org/dig v1.16.1 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760 // indirect
-	golang.org/x/crypto v0.6.0 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
