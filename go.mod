@@ -32,7 +32,7 @@ require (
 	github.com/ulule/limiter/v3 v3.11.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.uber.org/fx v1.19.2
-	go.uber.org/multierr v1.9.0
+	go.uber.org/multierr v1.10.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.8.0
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
