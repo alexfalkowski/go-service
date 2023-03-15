@@ -2,10 +2,6 @@
 
 include bin/build/make/go.mak
 
-# Run all the specs.
-specs: setup-nsq
-	go test -race -mod vendor -v -covermode=atomic -coverpkg=./... -coverprofile=test/profile.cov ./...
-
 # Run security checks.
 sec:
 	gosec -quiet -exclude-dir=test -exclude=G104,G307 ./...
