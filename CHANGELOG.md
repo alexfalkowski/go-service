@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.84.20](https://github.com/alexfalkowski/go-service/releases/tag/v1.84.20) - 2023-03-16
+
+- [`e55123c`](https://github.com/alexfalkowski/go-service/commit/e55123c17640c91884e2fc1dff023080e8dd6066) fix(deps): bump google.golang.org/protobuf from 1.29.1 to 1.30.0 (#275)
+
 ## [v1.84.19](https://github.com/alexfalkowski/go-service/releases/tag/v1.84.19) - 2023-03-16
 
 - [`c54a587`](https://github.com/alexfalkowski/go-service/commit/c54a587c32ece27ba1e89e843dfbc816714a2a9c) fix(deps): bump github.com/grpc-ecosystem/go-grpc-middleware (#274)
