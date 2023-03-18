@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"

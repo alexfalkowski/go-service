@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/os"
-	sstrings "github.com/alexfalkowski/go-service/strings"
+	tstrings "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
@@ -109,7 +109,7 @@ type roundTripper struct {
 }
 
 func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if sstrings.IsHealth(req.URL.String()) {
+	if tstrings.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/os"
-	sstrings "github.com/alexfalkowski/go-service/strings"
+	tstrings "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
@@ -112,7 +112,7 @@ type handler struct {
 
 func (h *handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if sstrings.IsHealth(service) {
+	if tstrings.IsHealth(service) {
 		h.Handler.ServeHTTP(resp, req)
 
 		return
