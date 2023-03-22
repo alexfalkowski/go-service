@@ -67,6 +67,7 @@ func TestDBQuery(t *testing.T) {
 
 			ctx = meta.WithAttribute(ctx, "test,", "test")
 
+			//nolint:rowserrcheck
 			rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
 
 			Convey("Then I should have valid data", func() {
@@ -222,6 +223,7 @@ func TestStatementQuery(t *testing.T) {
 
 			defer stmt.Close()
 
+			//nolint:rowserrcheck
 			rows, err := stmt.Query("public")
 
 			Convey("Then I should have valid data", func() {
@@ -387,7 +389,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 			defer stmt.Close()
 
-			_, err = stmt.Query(1) //nolint:sqlclosecheck
+			//nolint:sqlclosecheck,rowserrcheck
+			_, err = stmt.Query(1)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

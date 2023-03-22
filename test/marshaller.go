@@ -13,10 +13,10 @@ type mar struct {
 	err error
 }
 
-func (m *mar) Marshal(v any) ([]byte, error) {
+func (m *mar) Marshal(_ any) ([]byte, error) {
 	return nil, m.err
 }
 
-func (m *mar) Unmarshal(data []byte, v any) error {
+func (m *mar) Unmarshal(_ []byte, _ any) error {
 	return m.err
 }

@@ -11,7 +11,7 @@ type server struct {
 }
 
 // Check the health.
-func (s *server) Check(ctx context.Context, req *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+func (s *server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
 
 	if err := s.ob.Error(); err != nil {
@@ -22,7 +22,7 @@ func (s *server) Check(ctx context.Context, req *health.HealthCheckRequest) (*he
 }
 
 // Watch the health.
-func (s *server) Watch(req *health.HealthCheckRequest, w health.Health_WatchServer) error {
+func (s *server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
 	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
 
 	if err := s.ob.Error(); err != nil {

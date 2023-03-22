@@ -12,4 +12,4 @@ func NewLogger() *Logger {
 	return &Logger{}
 }
 
-func (l *Logger) Printf(ctx context.Context, format string, v ...any) {}
+func (l *Logger) Printf(_ context.Context, _ string, _ ...any) {}

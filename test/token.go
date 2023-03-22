@@ -18,7 +18,7 @@ type Generator struct {
 	err   error
 }
 
-func (g *Generator) Generate(ctx context.Context) ([]byte, error) {
+func (g *Generator) Generate(_ context.Context) ([]byte, error) {
 	return []byte(g.token), g.err
 }
 
@@ -32,7 +32,7 @@ type Verifier struct {
 	token string
 }
 
-func (v *Verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
+func (v *Verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
 	if string(token) != v.token {
 		return nil, nil, errors.New("invalid token")
 	}

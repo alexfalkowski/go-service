@@ -98,7 +98,7 @@ type tokenPerRPCCredentials struct {
 	generator sjwt.Generator
 }
 
-func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
 	t, err := p.generator.Generate(ctx)
 	if err != nil {
 		return nil, err

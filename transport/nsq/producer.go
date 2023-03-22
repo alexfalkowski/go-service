@@ -128,7 +128,7 @@ type nsqProducer struct {
 }
 
 // Publish a message to a topic.
-func (p *nsqProducer) Publish(ctx context.Context, topic string, msg *message.Message) error {
+func (p *nsqProducer) Publish(_ context.Context, topic string, msg *message.Message) error {
 	bytes, err := p.marshaller.Marshal(msg)
 	if err != nil {
 		return err

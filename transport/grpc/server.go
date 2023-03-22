@@ -71,7 +71,7 @@ func (s *Server) Start(listener net.Listener) {
 }
 
 // Stop the server.
-func (s *Server) Stop(ctx context.Context) {
+func (s *Server) Stop(_ context.Context) {
 	s.params.Logger.Info("stopping grpc server")
 
 	s.Server.GracefulStop()
