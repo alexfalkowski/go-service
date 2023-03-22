@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.85.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.85.1) - 2023-03-22
+
+- [`0a828bd`](https://github.com/alexfalkowski/go-service/commit/0a828bde1878f5659fe9fd9d776ee9377104ece1) fix(deps): bump google.golang.org/grpc from 1.53.0 to 1.54.0 (#277)
+- [`bb5e1b1`](https://github.com/alexfalkowski/go-service/commit/bb5e1b12adb848804338351e33b08875d7edebf0) style: ignore unused (#278)
+
 ## [v1.85.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.85.0) - 2023-03-18
 
 - [`1b4a160`](https://github.com/alexfalkowski/go-service/commit/1b4a1602cf8956ac68c864bdc336f5c82df62eb9) feat(transport): move strings (#276)
