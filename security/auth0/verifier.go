@@ -23,7 +23,7 @@ type verifier struct {
 	cert Certificator
 }
 
-func (v *verifier) Verify(ctx context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
+func (v *verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
 	claims := &jwt.RegisteredClaims{}
 
 	t, err := jwt.ParseWithClaims(string(token), claims, v.key)

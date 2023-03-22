@@ -9,6 +9,6 @@ func NewLogger() *Logger {
 }
 
 // Output for the logger.
-func (l *Logger) Output(calldepth int, s string) error {
+func (l *Logger) Output(_ int, _ string) error {
 	return nil
 }

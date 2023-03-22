@@ -72,8 +72,8 @@ func (c *Command) AddServerCommand(name, description string, opts []fx.Option) *
 		Short:        description,
 		Long:         description,
 		SilenceUsage: true,
-		RunE: func(command *cobra.Command, args []string) error {
-			return RunServer(args, opts)
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return RunServer(opts)
 		},
 	}
 
@@ -89,8 +89,8 @@ func (c *Command) AddClientCommand(name, description string, opts []fx.Option) *
 		Short:        description,
 		Long:         description,
 		SilenceUsage: true,
-		RunE: func(command *cobra.Command, args []string) error {
-			return RunClient(args, opts)
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return RunClient(opts)
 		},
 	}
 
@@ -112,7 +112,7 @@ func (c *Command) Run() error {
 }
 
 // RunServer with args and a timeout.
-func RunServer(args []string, opts []fx.Option) error {
+func RunServer(opts []fx.Option) error {
 	app := fx.New(opts...)
 	done := app.Done()
 
@@ -132,7 +132,7 @@ func RunServer(args []string, opts []fx.Option) error {
 }
 
 // RunClient with args and a timeout.
-func RunClient(args []string, opts []fx.Option) error {
+func RunClient(opts []fx.Option) error {
 	app := fx.New(opts...)
 
 	startCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)

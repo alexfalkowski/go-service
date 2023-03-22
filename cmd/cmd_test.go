@@ -120,7 +120,7 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tracer, version version.Version) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tracer, _ version.Version) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 	client := shttp.NewClient(

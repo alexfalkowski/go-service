@@ -13,10 +13,10 @@ type cmp struct {
 	err error
 }
 
-func (c *cmp) Compress(src []byte) []byte {
+func (c *cmp) Compress(_ []byte) []byte {
 	return nil
 }
 
-func (c *cmp) Decompress(src []byte) ([]byte, error) {
+func (c *cmp) Decompress(_ []byte) ([]byte, error) {
 	return nil, c.err
 }
