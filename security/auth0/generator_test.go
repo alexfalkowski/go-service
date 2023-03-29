@@ -6,12 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
@@ -28,7 +32,7 @@ func TestGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -66,7 +70,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -102,7 +106,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -138,7 +142,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -174,7 +178,7 @@ func TestCachedGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}

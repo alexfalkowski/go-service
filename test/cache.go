@@ -3,7 +3,7 @@ package test
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/redis/client"
-	"github.com/alexfalkowski/go-service/cache/redis/trace/opentracing"
+	"github.com/alexfalkowski/go-service/cache/redis/otel"
 	cristretto "github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/marshaller"
@@ -23,7 +23,7 @@ func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor 
 
 // NewRedisClient for test.
 func NewRedisClient(lc fx.Lifecycle, host string, logger *zap.Logger) client.Client {
-	tracer, _ := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: NewJaegerConfig(), Version: Version})
+	tracer, _ := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: NewOTELConfig(), Version: Version})
 	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(NewRedisConfig(host)), Tracer: tracer, Logger: logger})
 
 	return client

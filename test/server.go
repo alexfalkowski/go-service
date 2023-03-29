@@ -5,16 +5,16 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/jwt/meta"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
 	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
-	gopentracing "github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
+	gotel "github.com/alexfalkowski/go-service/transport/grpc/otel"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	hopentracing "github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -60,8 +60,8 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 }
 
 // NewHTTPServer for test.
-func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *opentracing.Config, tcfg *transport.Config) *shttp.Server {
-	tracer, _ := hopentracing.NewTracer(hopentracing.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
+func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *otel.Config, tcfg *transport.Config) *shttp.Server {
+	tracer, _ := hotel.NewTracer(hotel.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
 
 	server := shttp.NewServer(shttp.ServerParams{
 		Shutdowner: NewShutdowner(), Config: &tcfg.HTTP, Logger: logger,
@@ -73,10 +73,10 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *opentracing.Config,
 
 // NewGRPCServer for test.
 func NewGRPCServer(
-	lc fx.Lifecycle, logger *zap.Logger, cfg *opentracing.Config, tcfg *transport.Config,
+	lc fx.Lifecycle, logger *zap.Logger, cfg *otel.Config, tcfg *transport.Config,
 	verifyAuth bool, unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tgrpc.Server {
-	tracer, _ := gopentracing.NewTracer(gopentracing.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
+	tracer, _ := gotel.NewTracer(gotel.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
 
 	server := tgrpc.NewServer(tgrpc.ServerParams{
 		Shutdowner: NewShutdowner(), Config: &tcfg.GRPC, Logger: logger,

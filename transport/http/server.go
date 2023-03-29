@@ -11,7 +11,7 @@ import (
 	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	"github.com/alexfalkowski/go-service/transport/http/otel"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
@@ -26,7 +26,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     opentracing.Tracer
+	Tracer     otel.Tracer
 	Metrics    *prometheus.ServerMetrics
 }
 
@@ -45,7 +45,7 @@ func NewServer(params ServerParams) *Server {
 
 	handler = cors.New().Handler(handler)
 	handler = params.Metrics.Handler(handler)
-	handler = opentracing.NewHandler(params.Tracer, handler)
+	handler = otel.NewHandler(params.Tracer, handler)
 	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
 	handler = meta.NewHandler(handler)
 

@@ -9,12 +9,17 @@ import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
@@ -25,7 +30,7 @@ func TestSetCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test,", "test")
+		ctx = meta.WithAttribute(ctx, "test", "test")
 
 		lc.RequireStart()
 
@@ -60,7 +65,7 @@ func TestSetXXCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test,", "test")
+		ctx = meta.WithAttribute(ctx, "test", "test")
 
 		lc.RequireStart()
 
@@ -90,7 +95,7 @@ func TestSetNXCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test,", "test")
+		ctx = meta.WithAttribute(ctx, "test", "test")
 
 		lc.RequireStart()
 

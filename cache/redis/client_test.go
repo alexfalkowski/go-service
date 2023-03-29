@@ -6,10 +6,15 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestClientIncr(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
@@ -20,7 +25,7 @@ func TestClientIncr(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test,", "test")
+		ctx = meta.WithAttribute(ctx, "test", "test")
 
 		lc.RequireStart()
 

@@ -6,12 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
@@ -28,7 +32,7 @@ func TestVerify(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -71,7 +75,7 @@ func TestCachedVerify(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -120,7 +124,7 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -167,7 +171,7 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -214,7 +218,7 @@ func TestVerifyInvalidAudience(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := otel.NewTracer(otel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport/grpc/limiter"
@@ -18,20 +19,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func init() {
+	otel.Register()
+}
+
 func TestUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -58,8 +63,8 @@ func TestValidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -69,7 +74,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -94,8 +99,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -105,7 +110,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -129,8 +134,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -140,7 +145,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -163,8 +168,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -174,7 +179,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -197,8 +202,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -208,7 +213,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -231,8 +236,8 @@ func TestBreakerUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -242,7 +247,7 @@ func TestBreakerUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
@@ -271,8 +276,8 @@ func TestLimiterUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
 			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
 		)
@@ -282,7 +287,7 @@ func TestLimiterUnary(t *testing.T) {
 
 		Convey("When I query repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -305,15 +310,15 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -345,8 +350,8 @@ func TestValidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -356,7 +361,7 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -385,8 +390,8 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -396,7 +401,7 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -424,8 +429,8 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -435,7 +440,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -457,8 +462,8 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -468,7 +473,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -496,8 +501,8 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, true,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -507,7 +512,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))))
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))))
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -532,8 +537,8 @@ func TestLimiterStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
 			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
 		)
@@ -543,7 +548,7 @@ func TestLimiterStream(t *testing.T) {
 
 		Convey("When I stream repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewJaegerConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)

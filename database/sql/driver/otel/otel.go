@@ -1,32 +1,25 @@
-package opentracing
+package otel
 
 import (
 	"context"
 	"database/sql/driver"
-	"fmt"
-	"strings"
-	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/ngrok/sqlmw"
-	otr "github.com/opentracing/opentracing-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
-const (
-	deadline  = "%s.deadline"
-	component = "component"
-)
-
-// NewInterceptor for opentracing.
-func NewInterceptor(driver string, tracer otr.Tracer, interceptor sqlmw.Interceptor) *Interceptor {
+// NewInterceptor for otel.
+func NewInterceptor(driver string, tracer trace.Tracer, interceptor sqlmw.Interceptor) *Interceptor {
 	return &Interceptor{driver: driver, tracer: tracer, interceptor: interceptor}
 }
 
-// Interceptor for opentracing.
+// Interceptor for otel.
 type Interceptor struct {
 	driver      string
-	tracer      otr.Tracer
+	tracer      trace.Tracer
 	interceptor sqlmw.Interceptor
 }
 
@@ -42,60 +35,56 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 	return i.interceptor.ConnPing(ctx, conn)
 }
 
-//nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	opts := []otr.StartSpanOption{
-		otr.Tag{Key: component, Value: i.driver},
-		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
+	operationName := "connection exec"
+	attrs := []attribute.KeyValue{
+		attribute.Key("db.sql.query").String(query),
 	}
 
-	for _, a := range args {
-		opts = append(opts, otr.Tag{Key: fmt.Sprintf("%s.args.%s", i.driver, strings.ToLower(a.Name)), Value: a.Value})
-	}
-
-	ctx, span := opentracing.StartSpanFromContext(ctx, i.tracer, i.driver, "connection", "exec", opts...)
-	defer span.Finish()
-
-	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
-	}
+	ctx, span := i.tracer.Start(
+		ctx,
+		operationName,
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(attrs...),
+	)
+	defer span.End()
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 	if err != nil {
-		opentracing.SetError(span, err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
 	}
 
 	for k, v := range meta.Attributes(ctx) {
-		span.SetTag(k, v)
+		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
 	return res, err
 }
 
+//nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	opts := []otr.StartSpanOption{
-		otr.Tag{Key: component, Value: i.driver},
-		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
+	operationName := "connection query"
+	attrs := []attribute.KeyValue{
+		attribute.Key("db.sql.query").String(query),
 	}
 
-	for _, a := range args {
-		opts = append(opts, otr.Tag{Key: fmt.Sprintf("%s.args.%s", i.driver, strings.ToLower(a.Name)), Value: a.Value})
-	}
-
-	ctx, span := opentracing.StartSpanFromContext(ctx, i.tracer, i.driver, "connection", "query", opts...)
-	defer span.Finish()
-
-	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
-	}
+	ctx, span := i.tracer.Start(
+		ctx,
+		operationName,
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(attrs...),
+	)
+	defer span.End()
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 	if err != nil {
-		opentracing.SetError(span, err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
 	}
 
 	for k, v := range meta.Attributes(ctx) {
-		span.SetTag(k, v)
+		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
 	return ctx, res, err
@@ -122,60 +111,56 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return i.interceptor.RowsClose(ctx, rows)
 }
 
-//nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	opts := []otr.StartSpanOption{
-		otr.Tag{Key: component, Value: i.driver},
-		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
+	operationName := "statement exec"
+	attrs := []attribute.KeyValue{
+		attribute.Key("db.sql.query").String(query),
 	}
 
-	for _, a := range args {
-		opts = append(opts, otr.Tag{Key: fmt.Sprintf("%s.args.%s", i.driver, strings.ToLower(a.Name)), Value: a.Value})
-	}
-
-	ctx, span := opentracing.StartSpanFromContext(ctx, i.tracer, i.driver, "statement", "exec", opts...)
-	defer span.Finish()
-
-	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
-	}
+	ctx, span := i.tracer.Start(
+		ctx,
+		operationName,
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(attrs...),
+	)
+	defer span.End()
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 	if err != nil {
-		opentracing.SetError(span, err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
 	}
 
 	for k, v := range meta.Attributes(ctx) {
-		span.SetTag(k, v)
+		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
 	return res, err
 }
 
+//nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	opts := []otr.StartSpanOption{
-		otr.Tag{Key: component, Value: i.driver},
-		otr.Tag{Key: fmt.Sprintf("%s.query", i.driver), Value: query},
+	operationName := "statement query"
+	attrs := []attribute.KeyValue{
+		attribute.Key("db.sql.query").String(query),
 	}
 
-	for _, a := range args {
-		opts = append(opts, otr.Tag{Key: fmt.Sprintf("%s.args.%s", i.driver, strings.ToLower(a.Name)), Value: a.Value})
-	}
-
-	ctx, span := opentracing.StartSpanFromContext(ctx, i.tracer, i.driver, "statement", "query", opts...)
-	defer span.Finish()
-
-	if d, ok := ctx.Deadline(); ok {
-		span.SetTag(fmt.Sprintf(deadline, i.driver), d.UTC().Format(time.RFC3339))
-	}
+	ctx, span := i.tracer.Start(
+		ctx,
+		operationName,
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(attrs...),
+	)
+	defer span.End()
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 	if err != nil {
-		opentracing.SetError(span, err)
+		span.SetStatus(codes.Error, err.Error())
+		span.RecordError(err)
 	}
 
 	for k, v := range meta.Attributes(ctx) {
-		span.SetTag(k, v)
+		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
 	return ctx, res, err

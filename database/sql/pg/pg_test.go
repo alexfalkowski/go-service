@@ -7,13 +7,18 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	potel "github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
@@ -21,7 +26,7 @@ func TestSQL(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+			tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			pg.Register(tracer, logger)
@@ -51,7 +56,7 @@ func TestDBQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -65,7 +70,7 @@ func TestDBQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			//nolint:rowserrcheck
 			rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
@@ -102,7 +107,7 @@ func TestDBExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -116,7 +121,7 @@ func TestDBExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			result, err := db.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
 			So(err, ShouldBeNil)
@@ -148,7 +153,7 @@ func TestDBTransExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -162,7 +167,7 @@ func TestDBTransExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			tx, err := db.Begin()
 			So(err, ShouldBeNil)
@@ -202,7 +207,7 @@ func TestStatementQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -216,7 +221,7 @@ func TestStatementQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
@@ -258,7 +263,7 @@ func TestStatementExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -272,7 +277,7 @@ func TestStatementExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 			So(err, ShouldBeNil)
@@ -309,7 +314,7 @@ func TestTransStatementExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -323,7 +328,7 @@ func TestTransStatementExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			tx, err := db.Begin()
 			So(err, ShouldBeNil)
@@ -368,7 +373,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -382,7 +387,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test,", "test")
+			ctx = meta.WithAttribute(ctx, "test", "test")
 
 			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
@@ -418,7 +423,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewDatadogConfig(), Version: test.Version})
+			tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			pg.Register(tracer, logger)
