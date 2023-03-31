@@ -13,8 +13,8 @@ var (
 	// RedisModule for fx.
 	RedisModule = fx.Options(fx.Provide(redis.NewClient), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache), fx.Provide(redis.NewRingOptions))
 
-	// RedisOpentracingModule for fx.
-	RedisOpentracingModule = fx.Provide(otel.NewTracer)
+	// RedisOTELModule for fx.
+	RedisOTELModule = fx.Provide(otel.NewTracer)
 
 	// RistrettoModule for fx.
 	RistrettoModule = fx.Provide(ristretto.NewCache)
