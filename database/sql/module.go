@@ -13,6 +13,6 @@ var (
 		fx.Invoke(pg.Register),
 	)
 
-	// PostgreSQLOpentracingModule for fx.
-	PostgreSQLOpentracingModule = fx.Provide(otel.NewTracer)
+	// PostgreSQLOTELModule for fx.
+	PostgreSQLOTELModule = fx.Provide(otel.NewTracer)
 )

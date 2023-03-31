@@ -33,7 +33,7 @@ func NewTracer(params TracerParams) (Tracer, error) {
 // Tracer for otel.
 type Tracer trace.Tracer
 
-// NewClient for opentracing.
+// NewClient for otel.
 func NewClient(tracer Tracer, client client.Client) *Client {
 	return &Client{tracer: tracer, client: client}
 }
