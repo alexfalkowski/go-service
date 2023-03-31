@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.1) - 2023-03-31
+
+- [`5ed4922`](https://github.com/alexfalkowski/go-service/commit/5ed492247c46520c60cb83f72b6d21dbea11d9f6) fix: the deps (#281)
+
 ## [v1.86.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.0) - 2023-03-31
 
 - [`88baddc`](https://github.com/alexfalkowski/go-service/commit/88baddc9fb9be66dfe704e4ef5758fe12a112ca3) feat: replace opentracing with otel (#279)
