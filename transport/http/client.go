@@ -3,13 +3,13 @@ package http
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
+	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
-	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -18,7 +18,7 @@ type ClientOption interface{ apply(*clientOptions) }
 
 type clientOptions struct {
 	logger       *zap.Logger
-	tracer       opentracing.Tracer
+	tracer       hotel.Tracer
 	metrics      *prometheus.ClientMetrics
 	retry        bool
 	breaker      bool
@@ -58,7 +58,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for HTTP.
-func WithClientTracer(tracer opentracing.Tracer) ClientOption {
+func WithClientTracer(tracer hotel.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
@@ -78,7 +78,7 @@ type ClientParams struct {
 
 // NewClient for HTTP.
 func NewClient(params ClientParams, opts ...ClientOption) *http.Client {
-	defaultOptions := &clientOptions{tracer: otr.NoopTracer{}}
+	defaultOptions := &clientOptions{tracer: otel.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -100,7 +100,7 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 		hrt = opts.metrics.RoundTripper(hrt)
 	}
 
-	hrt = opentracing.NewRoundTripper(opts.tracer, hrt)
+	hrt = hotel.NewRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
 		hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)

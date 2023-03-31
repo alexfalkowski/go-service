@@ -6,22 +6,22 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	"github.com/alexfalkowski/go-service/database/sql/driver/trace/opentracing"
+	sotel "github.com/alexfalkowski/go-service/database/sql/driver/otel"
 	dzap "github.com/alexfalkowski/go-service/database/sql/driver/zap"
 	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
-	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, tracer otr.Tracer, logger *zap.Logger) {
+func Register(name string, driver driver.Driver, tracer otel.Tracer, logger *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-	interceptor = opentracing.NewInterceptor(name, tracer, interceptor)
+	interceptor = sotel.NewInterceptor(name, tracer, interceptor)
 	interceptor = dzap.NewInterceptor(name, logger, interceptor)
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))

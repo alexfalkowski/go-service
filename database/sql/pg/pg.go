@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/linxGnu/mssqlx"
@@ -29,7 +29,7 @@ func Open(params DBParams) (*mssqlx.DBs, error) {
 var once sync.Once
 
 // Register the driver for PostgreSQL.
-func Register(tracer opentracing.Tracer, logger *zap.Logger) {
+func Register(tracer otel.Tracer, logger *zap.Logger) {
 	once.Do(func() {
 		driver.Register("pg", stdlib.GetDefaultDriver(), tracer, logger)
 	})

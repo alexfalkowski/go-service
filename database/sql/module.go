@@ -2,7 +2,7 @@ package sql
 
 import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"go.uber.org/fx"
 )
 
@@ -14,5 +14,5 @@ var (
 	)
 
 	// PostgreSQLOpentracingModule for fx.
-	PostgreSQLOpentracingModule = fx.Provide(opentracing.NewTracer)
+	PostgreSQLOpentracingModule = fx.Provide(otel.NewTracer)
 )

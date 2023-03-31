@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/transport/nsq/breaker"
 	"github.com/alexfalkowski/go-service/transport/nsq/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
@@ -10,11 +11,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
+	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
-	"github.com/alexfalkowski/go-service/transport/nsq/trace/opentracing"
 	"github.com/nsqio/go-nsq"
-	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -24,7 +24,7 @@ type ProducerOption interface{ apply(*producerOptions) }
 
 type producerOptions struct {
 	logger  *zap.Logger
-	tracer  opentracing.Tracer
+	tracer  notel.Tracer
 	metrics *prometheus.ProducerMetrics
 	retry   bool
 	breaker bool
@@ -56,7 +56,7 @@ func WithProducerLogger(logger *zap.Logger) ProducerOption {
 }
 
 // WithProducerConfig for NSQ.
-func WithProducerTracer(tracer opentracing.Tracer) ProducerOption {
+func WithProducerTracer(tracer notel.Tracer) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.tracer = tracer
 	})
@@ -79,7 +79,7 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
-	defaultOptions := &producerOptions{tracer: otr.NoopTracer{}}
+	defaultOptions := &producerOptions{tracer: otel.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -107,7 +107,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		pr = defaultOptions.metrics.Producer(pr)
 	}
 
-	pr = opentracing.NewProducer(defaultOptions.tracer, pr)
+	pr = notel.NewProducer(defaultOptions.tracer, pr)
 
 	if defaultOptions.retry {
 		pr = retry.NewProducer(&params.Config.Retry, pr)

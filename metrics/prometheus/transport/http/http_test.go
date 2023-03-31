@@ -9,20 +9,25 @@ import (
 
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/database/sql/pg/trace/opentracing"
+	potel "github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/marshaller"
 	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	otel.Register()
+}
 
 func TestHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := opentracing.NewTracer(opentracing.TracerParams{Lifecycle: lc, Config: test.NewJaegerConfig(), Version: test.Version})
+		tracer, err := potel.NewTracer(potel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -31,8 +36,8 @@ func TestHTTP(t *testing.T) {
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
 		_ = test.NewRistrettoCache(lc)
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewJaegerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewJaegerConfig(), cfg, false, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -42,7 +47,7 @@ func TestHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewJaegerConfig(), cfg)
+			client := test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
 			So(err, ShouldBeNil)

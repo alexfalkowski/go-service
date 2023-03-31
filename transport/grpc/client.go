@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/grpc/trace/opentracing"
+	gotel "github.com/alexfalkowski/go-service/transport/grpc/otel"
 	retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
-	otr "github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -27,7 +27,7 @@ type ClientOption interface{ apply(*clientOptions) }
 
 type clientOptions struct {
 	logger   *zap.Logger
-	tracer   opentracing.Tracer
+	tracer   gotel.Tracer
 	metrics  *prometheus.ClientMetrics
 	retry    bool
 	breaker  bool
@@ -91,7 +91,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientConfig for gRPC.
-func WithClientTracer(tracer opentracing.Tracer) ClientOption {
+func WithClientTracer(tracer gotel.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
@@ -115,7 +115,7 @@ type ClientParams struct {
 func NewClient(params ClientParams, opts ...ClientOption) (*grpc.ClientConn, error) {
 	defaultOptions := &clientOptions{
 		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
-		tracer:   otr.NoopTracer{},
+		tracer:   otel.NewNoopTracer("grpc"),
 	}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -156,7 +156,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 		unary = append(unary, opts.metrics.UnaryClientInterceptor())
 	}
 
-	unary = append(unary, opentracing.UnaryClientInterceptor(opts.tracer))
+	unary = append(unary, gotel.UnaryClientInterceptor(opts.tracer))
 	unary = append(unary, opts.unary...)
 
 	return grpc.WithChainUnaryInterceptor(unary...)
@@ -173,7 +173,7 @@ func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption 
 		stream = append(stream, opts.metrics.StreamClientInterceptor())
 	}
 
-	stream = append(stream, opentracing.StreamClientInterceptor(opts.tracer))
+	stream = append(stream, gotel.StreamClientInterceptor(opts.tracer))
 	stream = append(stream, opts.stream...)
 
 	return grpc.WithChainStreamInterceptor(stream...)

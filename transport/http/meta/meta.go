@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	tmeta "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 )
 
@@ -22,15 +22,15 @@ func NewHandler(handler http.Handler) *Handler {
 
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	ctx = tmeta.WithUserAgent(ctx, extractUserAgent(ctx, req))
+	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req))
 
 	requestID := extractRequestID(ctx, req)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
-	ctx = tmeta.WithRequestID(ctx, requestID)
-	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
+	ctx = meta.WithRequestID(ctx, requestID)
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
 
 	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
 }
@@ -49,23 +49,23 @@ type RoundTripper struct {
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
-	userAgent := tmeta.UserAgent(ctx)
+	userAgent := meta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = r.userAgent
 	}
 
 	req.Header.Set("User-Agent", userAgent)
-	ctx = tmeta.WithUserAgent(ctx, userAgent)
+	ctx = meta.WithUserAgent(ctx, userAgent)
 
-	requestID := tmeta.RequestID(ctx)
+	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
 	req.Header.Set("Request-ID", requestID)
-	ctx = tmeta.WithRequestID(ctx, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 
-	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, req))
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
@@ -75,7 +75,7 @@ func extractUserAgent(ctx context.Context, req *http.Request) string {
 		return userAgent
 	}
 
-	return tmeta.UserAgent(ctx)
+	return meta.UserAgent(ctx)
 }
 
 func extractRequestID(ctx context.Context, req *http.Request) string {
@@ -83,7 +83,7 @@ func extractRequestID(ctx context.Context, req *http.Request) string {
 		return requestID
 	}
 
-	return tmeta.RequestID(ctx)
+	return meta.RequestID(ctx)
 }
 
 func extractRemoteAddress(ctx context.Context, req *http.Request) string {
@@ -95,5 +95,5 @@ func extractRemoteAddress(ctx context.Context, req *http.Request) string {
 		return host
 	}
 
-	return tmeta.RemoteAddress(ctx)
+	return meta.RemoteAddress(ctx)
 }

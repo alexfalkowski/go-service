@@ -5,8 +5,8 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -25,7 +25,7 @@ type Configurator interface {
 	RistrettoConfig() *ristretto.Config
 	Auth0Config() *auth0.Config
 	PGConfig() *pg.Config
-	OpentracingConfig() *opentracing.Config
+	OTELConfig() *otel.Config
 	TransportConfig() *transport.Config
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
@@ -61,8 +61,8 @@ func pgConfig(cfg Configurator) *pg.Config {
 	return cfg.PGConfig()
 }
 
-func opentracingConfig(cfg Configurator) *opentracing.Config {
-	return cfg.OpentracingConfig()
+func otelConfig(cfg Configurator) *otel.Config {
+	return cfg.OTELConfig()
 }
 
 func transportConfig(cfg Configurator) *transport.Config {

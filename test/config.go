@@ -9,8 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/auth0"
-	"github.com/alexfalkowski/go-service/trace/opentracing"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
@@ -38,10 +38,6 @@ func (cfg *Config) Auth0Config() *auth0.Config {
 }
 
 func (cfg *Config) PGConfig() *pg.Config {
-	return nil
-}
-
-func (cfg *Config) OpentracingConfig() *opentracing.Config {
 	return nil
 }
 
@@ -91,19 +87,11 @@ func NewTransportConfig() *transport.Config {
 	}
 }
 
-// NewJaegerConfig for test.
-func NewJaegerConfig() *opentracing.Config {
-	return &opentracing.Config{
+// NewOTELConfig for test.
+func NewOTELConfig() *otel.Config {
+	return &otel.Config{
 		Kind: "jaeger",
 		Host: "localhost:6831",
-	}
-}
-
-// NewDatadogConfig for test.
-func NewDatadogConfig() *opentracing.Config {
-	return &opentracing.Config{
-		Kind: "datadog",
-		Host: "localhost:8126",
 	}
 }
 

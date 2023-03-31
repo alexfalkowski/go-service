@@ -1,14 +1,9 @@
-package opentracing
+package otel
 
-// Config for opentracing.
+// Config for otel.
 type Config struct {
 	Kind string `yaml:"kind" json:"kind" toml:"kind"`
 	Host string `yaml:"host" json:"host" toml:"host"`
-}
-
-// IsDataDog config.
-func (c *Config) IsDataDog() bool {
-	return c.Kind == "datadog"
 }
 
 // IsJaeger config.

@@ -25,7 +25,7 @@ var (
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 		fx.Provide(auth0Config),
 		fx.Provide(pgConfig),
-		fx.Provide(opentracingConfig),
+		fx.Provide(otelConfig),
 		fx.Provide(transportConfig),
 		fx.Provide(grpcConfig),
 		fx.Provide(httpConfig),

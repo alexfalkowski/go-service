@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	tmeta "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
@@ -22,15 +22,15 @@ type Handler struct {
 }
 
 func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
-	ctx = tmeta.WithUserAgent(ctx, extractUserAgent(ctx, message.Headers))
+	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, message.Headers))
 
 	requestID := extractRequestID(ctx, message.Headers)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
-	ctx = tmeta.WithRequestID(ctx, requestID)
-	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
+	ctx = meta.WithRequestID(ctx, requestID)
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
 
 	return h.Handler.Handle(ctx, message)
 }
@@ -47,23 +47,23 @@ type Producer struct {
 }
 
 func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
-	userAgent := tmeta.UserAgent(ctx)
+	userAgent := meta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = p.userAgent
 	}
 
 	message.Headers["user-agent"] = userAgent
-	ctx = tmeta.WithUserAgent(ctx, userAgent)
+	ctx = meta.WithUserAgent(ctx, userAgent)
 
-	requestID := tmeta.RequestID(ctx)
+	requestID := meta.RequestID(ctx)
 	if requestID == "" {
 		requestID = uuid.New().String()
 	}
 
 	message.Headers["request-id"] = requestID
-	ctx = tmeta.WithRequestID(ctx, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 
-	ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
+	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
 
 	return p.Producer.Publish(ctx, topic, message)
 }
@@ -73,7 +73,7 @@ func extractUserAgent(ctx context.Context, headers message.Headers) string {
 		return userAgent
 	}
 
-	return tmeta.UserAgent(ctx)
+	return meta.UserAgent(ctx)
 }
 
 func extractRequestID(ctx context.Context, headers message.Headers) string {
@@ -81,7 +81,7 @@ func extractRequestID(ctx context.Context, headers message.Headers) string {
 		return requestID
 	}
 
-	return tmeta.RequestID(ctx)
+	return meta.RequestID(ctx)
 }
 
 func extractRemoteAddress(ctx context.Context, headers message.Headers) string {
@@ -89,5 +89,5 @@ func extractRemoteAddress(ctx context.Context, headers message.Headers) string {
 		return strings.Split(forwardedFor, ",")[0]
 	}
 
-	return tmeta.RemoteAddress(ctx)
+	return meta.RemoteAddress(ctx)
 }

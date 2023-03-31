@@ -24,10 +24,9 @@ sql:
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h
-trace:
-  opentracing:
-    kind: jaeger
-    host: localhost:6831
+otel:
+  kind: jaeger
+  host: localhost:6831
 transport:
   port: 8080
   http:

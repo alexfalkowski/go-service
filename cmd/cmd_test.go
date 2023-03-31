@@ -19,12 +19,13 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/logger"
+	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/transport/http/trace/opentracing"
+	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
@@ -120,7 +121,7 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config, tracer opentracing.Tracer, _ version.Version) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config, tracer hotel.Tracer, _ version.Version) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 	client := shttp.NewClient(
@@ -169,7 +170,7 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
-		cmd.Module, config.Module, logger.ZapModule,
+		cmd.Module, config.Module, logger.ZapModule, otel.Module,
 		health.GRPCModule, health.HTTPModule, health.ServerModule,
 		cache.RedisModule, cache.RistrettoModule, cache.RedisOpentracingModule,
 		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOpentracingModule, transport.Module,

@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	tmeta "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -18,17 +18,17 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md := ExtractIncoming(ctx)
 		userAgent := extractUserAgent(ctx, md)
-		ctx = tmeta.WithUserAgent(ctx, userAgent)
+		ctx = meta.WithUserAgent(ctx, userAgent)
 
 		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = tmeta.WithRequestID(ctx, requestID)
+		ctx = meta.WithRequestID(ctx, requestID)
 
 		remoteAddress := extractRemoteAddress(ctx, md)
-		ctx = tmeta.WithRemoteAddress(ctx, remoteAddress)
+		ctx = meta.WithRemoteAddress(ctx, remoteAddress)
 
 		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
@@ -46,15 +46,15 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		md := ExtractIncoming(ctx)
 
 		userAgent := extractUserAgent(ctx, md)
-		ctx = tmeta.WithUserAgent(ctx, userAgent)
+		ctx = meta.WithUserAgent(ctx, userAgent)
 
 		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = tmeta.WithRequestID(ctx, requestID)
-		ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
+		ctx = meta.WithRequestID(ctx, requestID)
+		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 
 		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
@@ -78,15 +78,15 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 			ua = userAgent
 		}
 
-		ctx = tmeta.WithUserAgent(ctx, ua)
+		ctx = meta.WithUserAgent(ctx, ua)
 
 		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = tmeta.WithRequestID(ctx, requestID)
-		ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
+		ctx = meta.WithRequestID(ctx, requestID)
+		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -103,15 +103,15 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 			ua = userAgent
 		}
 
-		ctx = tmeta.WithUserAgent(ctx, ua)
+		ctx = meta.WithUserAgent(ctx, ua)
 
 		requestID := extractRequestID(ctx, md)
 		if requestID == "" {
 			requestID = uuid.New().String()
 		}
 
-		ctx = tmeta.WithRequestID(ctx, requestID)
-		ctx = tmeta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
+		ctx = meta.WithRequestID(ctx, requestID)
+		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
@@ -123,7 +123,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD) string {
 		return mdUserAgent[0]
 	}
 
-	return tmeta.UserAgent(ctx)
+	return meta.UserAgent(ctx)
 }
 
 func extractRequestID(ctx context.Context, md metadata.MD) string {
@@ -131,7 +131,7 @@ func extractRequestID(ctx context.Context, md metadata.MD) string {
 		return mdRequestID[0]
 	}
 
-	return tmeta.RequestID(ctx)
+	return meta.RequestID(ctx)
 }
 
 func extractRemoteAddress(ctx context.Context, md metadata.MD) string {
@@ -145,5 +145,5 @@ func extractRemoteAddress(ctx context.Context, md metadata.MD) string {
 		}
 	}
 
-	return tmeta.RemoteAddress(ctx)
+	return meta.RemoteAddress(ctx)
 }
