@@ -14,15 +14,3 @@ create-nsq:
 delete-nsq:
 	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
 	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
-
-# Send coveralls data.
-goveralls: remove-generated-coverage
-	goveralls -coverprofile=test/final.cov -service=circle-ci -repotoken=IFpI5rZfnsc2EyZNls8sONCiEB6kFKLiB
-
-# Start the environment.
-start:
-	bin/build/docker/env start
-
-# Stop the environment.
-stop:
-	bin/build/docker/env stop
