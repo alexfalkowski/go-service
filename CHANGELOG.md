@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.6](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.6) - 2023-04-12
+
+- [`7244b60`](https://github.com/alexfalkowski/go-service/commit/7244b605a8b0a594c44b01598129574b95dcd68d) fix(deps): bump github.com/alexfalkowski/go-health from 1.12.0 to 1.12.1 (#288)
+- [`da5a45c`](https://github.com/alexfalkowski/go-service/commit/da5a45cd3d3d3bbc77480f980421316f931c3379) build(deps): update bin (#287)
+- [`3c920ab`](https://github.com/alexfalkowski/go-service/commit/3c920aba8707c9426e148abf72a5b44d72f26a6c) build(deps): update bin (#286)
+
 ## [v1.86.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.5) - 2023-04-10
 
 - [`cd52c6e`](https://github.com/alexfalkowski/go-service/commit/cd52c6ef84f5f2f04a3870753c3888fa60f59dbc) fix(deps): bump github.com/smartystreets/goconvey from 1.7.2 to 1.8.0 (#285)
