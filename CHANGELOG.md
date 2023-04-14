@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.7](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.7) - 2023-04-14
+
+- [`ced9627`](https://github.com/alexfalkowski/go-service/commit/ced9627d966d6606ee00c59dd215d78616ccd26e) fix(deps): bump github.com/rs/cors from 1.8.3 to 1.9.0 (#290)
+- [`1c893ef`](https://github.com/alexfalkowski/go-service/commit/1c893ef4e1e82e65385cc1fc637354ee3c5e8801) test: update grpc-gateway to v2.15.0-1 (#289)
+
 ## [v1.86.6](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.6) - 2023-04-12
 
 - [`7244b60`](https://github.com/alexfalkowski/go-service/commit/7244b605a8b0a594c44b01598129574b95dcd68d) fix(deps): bump github.com/alexfalkowski/go-health from 1.12.0 to 1.12.1 (#288)
