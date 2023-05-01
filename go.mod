@@ -29,10 +29,10 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/ulule/limiter/v3 v3.11.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.opentelemetry.io/otel v1.14.0
+	go.opentelemetry.io/otel v1.15.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
-	go.opentelemetry.io/otel/sdk v1.14.0
-	go.opentelemetry.io/otel/trace v1.14.0
+	go.opentelemetry.io/otel/sdk v1.15.0
+	go.opentelemetry.io/otel/trace v1.15.0
 	go.uber.org/fx v1.19.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
@@ -50,7 +50,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/glog v1.0.0 // indirect
