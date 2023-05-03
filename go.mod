@@ -29,10 +29,10 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/ulule/limiter/v3 v3.11.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	go.opentelemetry.io/otel v1.15.0
+	go.opentelemetry.io/otel v1.15.1
 	go.opentelemetry.io/otel/exporters/jaeger v1.15.0
-	go.opentelemetry.io/otel/sdk v1.15.0
-	go.opentelemetry.io/otel/trace v1.15.0
+	go.opentelemetry.io/otel/sdk v1.15.1
+	go.opentelemetry.io/otel/trace v1.15.1
 	go.uber.org/fx v1.19.2
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.24.0
