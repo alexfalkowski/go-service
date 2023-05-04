@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.14](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.14) - 2023-05-04
+
+- [`2ded4af`](https://github.com/alexfalkowski/go-service/commit/2ded4afd2223890b93b5231d6decfccfded3b79c) fix(deps): bump github.com/prometheus/client_golang (#301)
+
 ## [v1.86.13](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.13) - 2023-05-03
 
 - [`2c2a892`](https://github.com/alexfalkowski/go-service/commit/2c2a892486adcdbab33a536e99fd7a2a672b3227) fix(deps): bump go.opentelemetry.io/otel/exporters/jaeger (#300)
