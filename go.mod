@@ -27,7 +27,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.7.0
-	github.com/ulule/limiter/v3 v3.11.1
+	github.com/ulule/limiter/v3 v3.11.2
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.16.0
