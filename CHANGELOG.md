@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.25](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.25) - 2023-06-07
+
+- [`d8bed4d`](https://github.com/alexfalkowski/go-service/commit/d8bed4dc6fba12904608b34cffa3190aa4ad4208) fix(deps): bump github.com/BurntSushi/toml from 1.3.0 to 1.3.1 (#314)
+
 ## [v1.86.24](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.24) - 2023-06-06
 
 - [`1be74ae`](https://github.com/alexfalkowski/go-service/commit/1be74ae59a6601d6ba6d6b734e247c202a51aaf9) fix(deps): bump github.com/golang-migrate/migrate/v4 (#313)
