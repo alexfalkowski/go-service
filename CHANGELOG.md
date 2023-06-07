@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.26](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.26) - 2023-06-07
+
+- [`82b5086`](https://github.com/alexfalkowski/go-service/commit/82b5086d3bc3bf1c9db0aaf6eac75861d3c796d3) fix(deps): bump github.com/hashicorp/go-retryablehttp (#315)
+
 ## [v1.86.25](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.25) - 2023-06-07
 
 - [`d8bed4d`](https://github.com/alexfalkowski/go-service/commit/d8bed4dc6fba12904608b34cffa3190aa4ad4208) fix(deps): bump github.com/BurntSushi/toml from 1.3.0 to 1.3.1 (#314)
