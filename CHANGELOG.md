@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.27](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.27) - 2023-06-12
+
+- [`6e52a6d`](https://github.com/alexfalkowski/go-service/commit/6e52a6d5f3ededdaaec72b071af578c15f306316) fix(deps): bump github.com/golang-migrate/migrate/v4 (#317)
+
 ## [v1.86.26](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.26) - 2023-06-07
 
 - [`82b5086`](https://github.com/alexfalkowski/go-service/commit/82b5086d3bc3bf1c9db0aaf6eac75861d3c796d3) fix(deps): bump github.com/hashicorp/go-retryablehttp (#315)
