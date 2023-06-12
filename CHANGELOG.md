@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.29](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.29) - 2023-06-12
+
+- [`3352a0c`](https://github.com/alexfalkowski/go-service/commit/3352a0c589533c7a8035f41af2232c0cc4be8fa6) fix(deps): bump go.uber.org/fx from 1.19.3 to 1.20.0 (#318)
+- [`21e4553`](https://github.com/alexfalkowski/go-service/commit/21e45535abee60835bdc1b16ff0d14e5d0905589) build(deps): update bin (#319)
+
 ## [v1.86.28](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.28) - 2023-06-12
 
 - [`93bd88c`](https://github.com/alexfalkowski/go-service/commit/93bd88cdf6f8f23e979a08fa1c32d6d8de520a43) fix(deps): bump github.com/BurntSushi/toml from 1.3.1 to 1.3.2 (#316)
