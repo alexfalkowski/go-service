@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.36](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.36) - 2023-06-29
+
+- [`8da16e6`](https://github.com/alexfalkowski/go-service/commit/8da16e60537c10eb26ae6b5ef9b488169bed7969) fix(deps): bump github.com/smartystreets/goconvey from 1.8.0 to 1.8.1 (#326)
+
 ## [v1.86.35](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.35) - 2023-06-27
 
 - [`3dc7e16`](https://github.com/alexfalkowski/go-service/commit/3dc7e160b18cdf51167c38206e199709a02d407b) fix(deps): bump google.golang.org/protobuf from 1.30.0 to 1.31.0 (#325)
