@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.86.45](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.45) - 2023-08-03
+
+- [`97a8ff4`](https://github.com/alexfalkowski/go-service/commit/97a8ff45ef664af053534baaccd368877ddd863c) fix(deps): bump go.uber.org/zap from 1.24.0 to 1.25.0 (#336)
+
 ## [v1.86.44](https://github.com/alexfalkowski/go-service/releases/tag/v1.86.44) - 2023-08-02
 
 - [`4f3b0ba`](https://github.com/alexfalkowski/go-service/commit/4f3b0baeda00a1c9c9d9c1353ee4d6e5de7b07c7) fix(deps): bump golang.org/x/net from 0.12.0 to 0.13.0 (#335)
