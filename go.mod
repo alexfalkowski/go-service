@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/alexfalkowski/go-health v1.12.2
+	github.com/alexfalkowski/go-health v1.13.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/go-redis/cache/v8 v8.4.4
