@@ -60,7 +60,7 @@ func (cfg *Config) NSQConfig() *nsq.Config {
 // NewTransportConfig for test.
 func NewTransportConfig() *transport.Config {
 	return &transport.Config{
-		Port: GenerateRandomPort(),
+		Port: Port(),
 		HTTP: http.Config{
 			UserAgent: "TestHTTP/1.0",
 			Retry: hretry.Config{
