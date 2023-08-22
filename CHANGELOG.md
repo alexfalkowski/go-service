@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.87.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.87.2) - 2023-08-22
+
+- [`60b30ac`](https://github.com/alexfalkowski/go-service/commit/60b30accaf73d99d05fd6522375143f4c1d5a456) fix(deps): bump github.com/google/uuid from 1.3.0 to 1.3.1 (#341)
+- [`8a96df5`](https://github.com/alexfalkowski/go-service/commit/8a96df58395973b83e02c48f57163111e8828de8) test: use net for random port (#340)
+
 ## [v1.87.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.87.1) - 2023-08-10
 
 - [`542c0c8`](https://github.com/alexfalkowski/go-service/commit/542c0c8b8f74494b4c46b5bb109e03f2eb6b03e7) fix(deps): bump github.com/alexfalkowski/go-health from 1.12.2 to 1.13.0 (#339)
