@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.88.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.88.0) - 2023-09-12
+
+- [`1b6d5e7`](https://github.com/alexfalkowski/go-service/commit/1b6d5e76e58fc60f4bd2668be235d4da588650e0) feat: add go.uber.org/automaxprocs (#343)
+
 ## [v1.87.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.87.3) - 2023-08-23
 
 - [`c88cea5`](https://github.com/alexfalkowski/go-service/commit/c88cea50c1919ae1f17f90e7c358f3ba8cbc3582) fix(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2 (#342)
