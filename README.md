@@ -100,6 +100,11 @@ For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
 For security we support the following:
 - [Auth0](https://auth0.com/)
 
+## Runtime
+
+We enhance the runtime with the following:
+- [Automaxprocs](https://github.com/uber-go/automaxprocs)
+
 ### Configuration
 
 To configure, please specify the following:
