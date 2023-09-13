@@ -174,7 +174,6 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
 For distributed tracing we support the following:
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
-- [Jaeger](https://github.com/jaegertracing/jaeger)
 
 ### Configuration
 
@@ -182,14 +181,12 @@ To configure, please specify the following:
 
 ```yaml
 otel:
-  kind: jaeger
-  host: localhost:6831
+  host: localhost:4318
 ```
 
 ```toml
 [otel]
-kind = "jaeger"
-host = "localhost:6831"
+host = "localhost:4318"
 ```
 
 ## Transport
