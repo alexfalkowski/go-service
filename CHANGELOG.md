@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.89.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.89.0) - 2023-09-13
+
+- [`2b292fe`](https://github.com/alexfalkowski/go-service/commit/2b292fe561e3d54f6a7f6992b0294e93e97fd3f9) feat(otel): support native protocol (#345)
+- [`dc97a62`](https://github.com/alexfalkowski/go-service/commit/dc97a628e0397a865fd947e644d5b138fff844e4) docs: fix section for runtime (#344)
+
 ## [v1.88.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.88.0) - 2023-09-12
 
 - [`1b6d5e7`](https://github.com/alexfalkowski/go-service/commit/1b6d5e76e58fc60f4bd2668be235d4da588650e0) feat: add go.uber.org/automaxprocs (#343)
