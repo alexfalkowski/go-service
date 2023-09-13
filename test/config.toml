@@ -27,8 +27,7 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
 [otel]
-kind = "jaeger"
-host = "localhost:6831"
+host = "localhost:4318"
 
 [transport]
 port = "8080"

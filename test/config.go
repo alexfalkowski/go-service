@@ -90,8 +90,7 @@ func NewTransportConfig() *transport.Config {
 // NewOTELConfig for test.
 func NewOTELConfig() *otel.Config {
 	return &otel.Config{
-		Kind: "jaeger",
-		Host: "localhost:6831",
+		Host: "localhost:4318",
 	}
 }
 
