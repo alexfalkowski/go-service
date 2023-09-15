@@ -101,7 +101,7 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.PGConfig().MaxIdleConns, ShouldEqual, 5)
 	So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
 	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, time.Hour)
-	So(cfg.OTELConfig().Host, ShouldEqual, "localhost:4318")
+	So(cfg.TelemetryConfig().Host, ShouldEqual, "localhost:4318")
 	So(cfg.TransportConfig().Port, ShouldEqual, "8080")
 	So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)

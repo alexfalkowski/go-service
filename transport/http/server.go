@@ -8,11 +8,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
-	szap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/http/otel"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -26,8 +25,8 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     otel.Tracer
-	Metrics    *prometheus.ServerMetrics
+	Tracer     telemetry.Tracer
+	Metrics    *telemetry.ServerMetrics
 }
 
 // Server for HTTP.
@@ -41,12 +40,14 @@ type Server struct {
 func NewServer(params ServerParams) *Server {
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
 
+	registerHandles(mux)
+
 	var handler http.Handler = mux
 
 	handler = cors.New().Handler(handler)
 	handler = params.Metrics.Handler(handler)
-	handler = otel.NewHandler(params.Tracer, handler)
-	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
+	handler = telemetry.NewTracerHandler(params.Tracer, handler)
+	handler = telemetry.NewLoggerHandler(telemetry.LoggerHandlerParams{Logger: params.Logger, Handler: handler})
 	handler = meta.NewHandler(handler)
 
 	server := &Server{
@@ -93,4 +94,12 @@ func customMatcher(key string) (string, bool) {
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}
+}
+
+func registerHandles(mux *runtime.ServeMux) {
+	ph := promhttp.Handler()
+
+	mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, p map[string]string) {
+		ph.ServeHTTP(w, r)
+	})
 }

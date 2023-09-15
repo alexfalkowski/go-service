@@ -3,13 +3,11 @@ package http
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
-	lzap "github.com/alexfalkowski/go-service/transport/http/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	"github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
+	htel "github.com/alexfalkowski/go-service/transport/http/telemetry"
 	"go.uber.org/zap"
 )
 
@@ -18,8 +16,8 @@ type ClientOption interface{ apply(*clientOptions) }
 
 type clientOptions struct {
 	logger       *zap.Logger
-	tracer       hotel.Tracer
-	metrics      *prometheus.ClientMetrics
+	tracer       htel.Tracer
+	metrics      *htel.ClientMetrics
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -58,14 +56,14 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for HTTP.
-func WithClientTracer(tracer hotel.Tracer) ClientOption {
+func WithClientTracer(tracer htel.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
 }
 
 // WithClientMetrics for HTTP.
-func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
+func WithClientMetrics(metrics *htel.ClientMetrics) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.metrics = metrics
 	})
@@ -78,7 +76,7 @@ type ClientParams struct {
 
 // NewClient for HTTP.
 func NewClient(params ClientParams, opts ...ClientOption) *http.Client {
-	defaultOptions := &clientOptions{tracer: otel.NewNoopTracer("http")}
+	defaultOptions := &clientOptions{tracer: telemetry.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -93,14 +91,14 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	}
 
 	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, RoundTripper: hrt})
+		hrt = htel.NewLoggerRoundTripper(htel.LoggerRoundTripperParams{Logger: opts.logger, RoundTripper: hrt})
 	}
 
 	if opts.metrics != nil {
 		hrt = opts.metrics.RoundTripper(hrt)
 	}
 
-	hrt = hotel.NewRoundTripper(opts.tracer, hrt)
+	hrt = htel.NewTracerRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
 		hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)

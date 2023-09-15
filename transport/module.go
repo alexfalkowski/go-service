@@ -2,14 +2,11 @@ package transport
 
 import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
-	gotel "github.com/alexfalkowski/go-service/transport/grpc/otel"
+	gtel "github.com/alexfalkowski/go-service/transport/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/transport/http"
-	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
+	htel "github.com/alexfalkowski/go-service/transport/http/telemetry"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
-	nprometheus "github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	ntel "github.com/alexfalkowski/go-service/transport/nsq/telemetry"
 	"go.uber.org/fx"
 )
 
@@ -19,24 +16,24 @@ var (
 		fx.Provide(grpc.NewServer),
 		fx.Provide(grpc.UnaryServerInterceptor),
 		fx.Provide(grpc.StreamServerInterceptor),
-		fx.Provide(gprometheus.NewServerMetrics),
-		fx.Provide(gprometheus.NewClientMetrics),
-		fx.Provide(gotel.NewTracer),
+		fx.Provide(gtel.NewServerMetrics),
+		fx.Provide(gtel.NewClientMetrics),
+		fx.Provide(gtel.NewTracer),
 	)
 
 	// HTTPModule for fx.
 	HTTPModule = fx.Options(
 		fx.Provide(http.NewServer),
-		fx.Provide(hprometheus.NewServerMetrics),
-		fx.Provide(hprometheus.NewClientMetrics),
-		fx.Provide(hotel.NewTracer),
+		fx.Provide(htel.NewServerMetrics),
+		fx.Provide(htel.NewClientMetrics),
+		fx.Provide(htel.NewTracer),
 	)
 
 	// NSQModule for fx.
 	NSQModule = fx.Options(
-		fx.Provide(nprometheus.NewProducerMetrics),
-		fx.Provide(nprometheus.NewConsumerMetrics),
-		fx.Provide(notel.NewTracer),
+		fx.Provide(ntel.NewProducerMetrics),
+		fx.Provide(ntel.NewConsumerMetrics),
+		fx.Provide(ntel.NewTracer),
 		fx.Provide(marshaller.NewMsgPack),
 	)
 

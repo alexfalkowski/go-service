@@ -3,14 +3,11 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/logger"
-	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	ntel "github.com/alexfalkowski/go-service/transport/nsq/telemetry"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,8 +18,8 @@ type ConsumerOption interface{ apply(*consumerOptions) }
 
 type consumerOptions struct {
 	logger  *zap.Logger
-	tracer  notel.Tracer
-	metrics *prometheus.ConsumerMetrics
+	tracer  ntel.Tracer
+	metrics *ntel.ConsumerMetrics
 }
 
 type consumerOptionFunc func(*consumerOptions)
@@ -37,14 +34,14 @@ func WithConsumerLogger(logger *zap.Logger) ConsumerOption {
 }
 
 // WithConsumerConfig for NSQ.
-func WithConsumerTracer(tracer notel.Tracer) ConsumerOption {
+func WithConsumerTracer(tracer ntel.Tracer) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
 		o.tracer = tracer
 	})
 }
 
 // WithConsumerMetrics for NSQ.
-func WithConsumerMetrics(metrics *prometheus.ConsumerMetrics) ConsumerOption {
+func WithConsumerMetrics(metrics *ntel.ConsumerMetrics) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
 		o.metrics = metrics
 	})
@@ -62,7 +59,7 @@ type ConsumerParams struct {
 
 // RegisterConsumer for NSQ.
 func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
-	defaultOptions := &consumerOptions{tracer: otel.NewNoopTracer("nsq")}
+	defaultOptions := &consumerOptions{tracer: telemetry.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -74,19 +71,19 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 		return err
 	}
 
-	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
+	c.SetLogger(&logger{}, nsq.LogLevelInfo)
 
 	h := params.Handler
 
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Handler: h})
+		h = ntel.NewLoggerHandler(ntel.LoggerHandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Handler: h})
 	}
 
 	if defaultOptions.metrics != nil {
 		h = defaultOptions.metrics.Handler(params.Topic, params.Channel, h)
 	}
 
-	h = notel.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
+	h = ntel.NewTracerHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
 	h = meta.NewHandler(h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))

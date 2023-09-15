@@ -3,18 +3,17 @@ package nsq_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	ntel "github.com/alexfalkowski/go-service/transport/nsq/telemetry"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
-	otel.Register()
+	telemetry.RegisterTracer()
 }
 
 func TestProducer(t *testing.T) {
@@ -24,13 +23,13 @@ func TestProducer(t *testing.T) {
 		Convey("When I register a producer", func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-			tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+			tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			producer := nsq.NewProducer(
 				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
-				nsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+				nsq.WithProducerMetrics(ntel.NewProducerMetrics(lc, test.Version)),
 			)
 
 			lc.RequireStart()

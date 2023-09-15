@@ -6,20 +6,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	ntel "github.com/alexfalkowski/go-service/transport/nsq/telemetry"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
-	otel.Register()
+	telemetry.RegisterTracer()
 }
 
 //nolint:dupl
@@ -27,7 +26,7 @@ func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -40,7 +39,7 @@ func TestConsumer(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -59,7 +58,7 @@ func TestInvalidConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -72,7 +71,7 @@ func TestInvalidConsumer(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -90,7 +89,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
@@ -103,7 +102,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -121,7 +120,7 @@ func TestReceiveMessage(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -133,14 +132,14 @@ func TestReceiveMessage(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
-			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+			tnsq.WithProducerMetrics(ntel.NewProducerMetrics(lc, test.Version)),
 		)
 
 		lc.RequireStart()
@@ -165,7 +164,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -177,7 +176,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
@@ -204,7 +203,7 @@ func TestReceiveError(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntel.NewTracer(ntel.TracerParams{Lifecycle: lc, Config: test.NewTelemetryConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -216,14 +215,14 @@ func TestReceiveError(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(ntel.NewConsumerMetrics(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
-			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+			tnsq.WithProducerMetrics(ntel.NewProducerMetrics(lc, test.Version)),
 		)
 
 		lc.RequireStart()

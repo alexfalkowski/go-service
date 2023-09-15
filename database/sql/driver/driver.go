@@ -6,23 +6,21 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	sotel "github.com/alexfalkowski/go-service/database/sql/driver/otel"
-	dzap "github.com/alexfalkowski/go-service/database/sql/driver/zap"
-	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
+	dtel "github.com/alexfalkowski/go-service/database/sql/driver/telemetry"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, tracer otel.Tracer, logger *zap.Logger) {
+func Register(name string, driver driver.Driver, tracer trace.Tracer, logger *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-	interceptor = sotel.NewInterceptor(name, tracer, interceptor)
-	interceptor = dzap.NewInterceptor(name, logger, interceptor)
+	interceptor = dtel.NewTracerInterceptor(name, tracer, interceptor)
+	interceptor = dtel.NewLoggerInterceptor(name, logger, interceptor)
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
 }
@@ -44,7 +42,7 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) 
 		return nil, err
 	}
 
-	prometheus.Register(lc, name, db, ver)
+	dtel.RegisterMetrics(lc, name, db, ver)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

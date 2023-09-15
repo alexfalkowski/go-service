@@ -3,17 +3,14 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/transport/nsq/breaker"
-	"github.com/alexfalkowski/go-service/transport/nsq/logger"
-	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
+	ntel "github.com/alexfalkowski/go-service/transport/nsq/telemetry"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,8 +21,8 @@ type ProducerOption interface{ apply(*producerOptions) }
 
 type producerOptions struct {
 	logger  *zap.Logger
-	tracer  notel.Tracer
-	metrics *prometheus.ProducerMetrics
+	tracer  ntel.Tracer
+	metrics *ntel.ProducerMetrics
 	retry   bool
 	breaker bool
 }
@@ -56,14 +53,14 @@ func WithProducerLogger(logger *zap.Logger) ProducerOption {
 }
 
 // WithProducerConfig for NSQ.
-func WithProducerTracer(tracer notel.Tracer) ProducerOption {
+func WithProducerTracer(tracer ntel.Tracer) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.tracer = tracer
 	})
 }
 
 // WithProducerMetrics for NSQ.
-func WithProducerMetrics(metrics *prometheus.ProducerMetrics) ProducerOption {
+func WithProducerMetrics(metrics *ntel.ProducerMetrics) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.metrics = metrics
 	})
@@ -79,7 +76,7 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
-	defaultOptions := &producerOptions{tracer: otel.NewNoopTracer("nsq")}
+	defaultOptions := &producerOptions{tracer: telemetry.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -87,7 +84,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	cfg := nsq.NewConfig()
 	p, _ := nsq.NewProducer(params.Config.Host, cfg)
 
-	p.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
+	p.SetLogger(&logger{}, nsq.LogLevelInfo)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(context.Context) error {
@@ -100,14 +97,14 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
 
 	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Producer: pr})
+		pr = ntel.NewLoggerProducer(ntel.LoggerProducerParams{Logger: defaultOptions.logger, Producer: pr})
 	}
 
 	if defaultOptions.metrics != nil {
 		pr = defaultOptions.metrics.Producer(pr)
 	}
 
-	pr = notel.NewProducer(defaultOptions.tracer, pr)
+	pr = ntel.NewTracerProducer(defaultOptions.tracer, pr)
 
 	if defaultOptions.retry {
 		pr = retry.NewProducer(&params.Config.Retry, pr)

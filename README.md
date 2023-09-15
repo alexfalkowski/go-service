@@ -87,14 +87,6 @@ We also provide ways to integrate into container integration systems. So we prov
 
 This is modelled around [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
 
-## Logging
-
-For logging we use [Uber Zap](https://github.com/uber-go/zap).
-
-## Metrics
-
-For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
-
 ## Runtime
 
 We enhance the runtime with the following:
@@ -172,20 +164,31 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
 ## Telemetry
 
-For distributed tracing we support the following:
-- [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
+Check out [Observability Primer](https://opentelemetry.io/docs/concepts/observability-primer/).
+
+### Logging
+
+For logging we use [Uber Zap](https://github.com/uber-go/zap).
+
+### Metrics
+
+For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
+
+### Tracing
+
+For distributed tracing we use [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go).
 
 ### Configuration
 
 To configure, please specify the following:
 
 ```yaml
-otel:
+telemetry:
   host: localhost:4318
 ```
 
 ```toml
-[otel]
+[telemetry]
 host = "localhost:4318"
 ```
 
