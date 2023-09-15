@@ -1,4 +1,4 @@
-package http_test
+package telemetry_test
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	potel "github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/marshaller"
-	phttp "github.com/alexfalkowski/go-service/metrics/prometheus/transport/http"
 	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -41,7 +41,7 @@ func TestHTTP(t *testing.T) {
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
-		err = phttp.Register(hs)
+		err = telemetry.RegisterMetrics(hs)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

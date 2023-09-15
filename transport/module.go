@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
 	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	nprometheus "github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
 	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
@@ -30,6 +31,7 @@ var (
 		fx.Provide(hprometheus.NewServerMetrics),
 		fx.Provide(hprometheus.NewClientMetrics),
 		fx.Provide(hotel.NewTracer),
+		fx.Invoke(telemetry.RegisterMetrics),
 	)
 
 	// NSQModule for fx.

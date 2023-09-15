@@ -1,4 +1,4 @@
-package http
+package telemetry
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 )
 
 // Register metrics for HTTP.
-func Register(server *shttp.Server) error {
+func RegisterMetrics(server *shttp.Server) error {
 	handler := promhttp.Handler()
 
 	return server.Mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, p map[string]string) {
