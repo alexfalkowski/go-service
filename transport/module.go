@@ -45,6 +45,7 @@ var (
 		GRPCModule,
 		HTTPModule,
 		NSQModule,
+		fx.Provide(NewServer),
 		fx.Invoke(Register),
 	)
 )

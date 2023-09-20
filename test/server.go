@@ -91,5 +91,7 @@ func NewGRPCServer(
 
 // RegisterTransport for test.
 func RegisterTransport(lc fx.Lifecycle, cfg *transport.Config, gs *tgrpc.Server, hs *shttp.Server) {
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Shutdowner: NewShutdowner(), Config: cfg, HTTP: hs, GRPC: gs})
+	server := transport.NewServer(transport.ServerParams{Lifecycle: lc, Shutdowner: NewShutdowner(), Config: cfg, HTTP: hs, GRPC: gs})
+
+	transport.Register(lc, server)
 }

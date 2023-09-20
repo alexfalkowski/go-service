@@ -3,8 +3,10 @@ package test
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/redis/client"
+	reprom "github.com/alexfalkowski/go-service/cache/redis/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/cache/redis/otel"
 	cristretto "github.com/alexfalkowski/go-service/cache/ristretto"
+	riprom "github.com/alexfalkowski/go-service/cache/ristretto/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/dgraph-io/ristretto"
@@ -17,8 +19,11 @@ import (
 func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor compressor.Compressor, marshaller marshaller.Marshaller) *cache.Cache {
 	params := redis.OptionsParams{Client: NewRedisClient(lc, host, logger), Compressor: compressor, Marshaller: marshaller}
 	opts := redis.NewOptions(params)
+	cache := redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: NewRedisConfig(host), Options: opts, Version: Version})
 
-	return redis.NewCache(redis.CacheParams{Lifecycle: lc, Config: NewRedisConfig(host), Options: opts, Version: Version})
+	reprom.Register(lc, reprom.NewCollector(cache, Version))
+
+	return cache
 }
 
 // NewRedisClient for test.
@@ -38,6 +43,8 @@ func NewRedisConfig(host string) *redis.Config {
 func NewRistrettoCache(lc fx.Lifecycle) *ristretto.Cache {
 	cfg := &cristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 	c, _ := cristretto.NewCache(cristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
+
+	riprom.Register(lc, riprom.NewCollector(c, Version))
 
 	return c
 }

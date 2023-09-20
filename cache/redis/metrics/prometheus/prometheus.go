@@ -3,16 +3,12 @@ package prometheus
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/version"
-	"github.com/go-redis/cache/v8"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/fx"
 )
 
 // Register for prometheus.
-func Register(lc fx.Lifecycle, cache *cache.Cache, version version.Version) {
-	collector := NewStatsCollector(cache, version)
-
+func Register(lc fx.Lifecycle, collector *Collector) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			return prometheus.Register(collector)
