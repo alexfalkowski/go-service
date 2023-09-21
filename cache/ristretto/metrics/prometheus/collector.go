@@ -7,28 +7,26 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// StatsCollector implements the prometheus.Collector interface.
-type StatsCollector struct {
-	cache *ristretto.Cache
-
-	// descriptions of exported metrics
-	hitsDesc   *prometheus.Desc
-	missesDesc *prometheus.Desc
+// Collector implements the prometheus.Collector interface.
+type Collector struct {
+	cache  *ristretto.Cache
+	hits   *prometheus.Desc
+	misses *prometheus.Desc
 }
 
-// NewStatsCollector for prometheus.
-func NewStatsCollector(cache *ristretto.Cache, version version.Version) *StatsCollector {
+// NewCollector for prometheus.
+func NewCollector(cache *ristretto.Cache, version version.Version) *Collector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
-	return &StatsCollector{
+	return &Collector{
 		cache: cache,
-		hitsDesc: prometheus.NewDesc(
+		hits: prometheus.NewDesc(
 			"ristretto_hits_total",
 			"The number of hits in the cache.",
 			nil,
 			labels,
 		),
-		missesDesc: prometheus.NewDesc(
+		misses: prometheus.NewDesc(
 			"ristretto_misses_total",
 			"The number of misses in the cache.",
 			nil,
@@ -38,22 +36,22 @@ func NewStatsCollector(cache *ristretto.Cache, version version.Version) *StatsCo
 }
 
 // Describe implements the prometheus.Collector interface.
-func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.hitsDesc
-	ch <- c.missesDesc
+func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.hits
+	ch <- c.misses
 }
 
 // Collect implements the prometheus.Collector interface.
-func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	metrics := c.cache.Metrics
 
 	ch <- prometheus.MustNewConstMetric(
-		c.hitsDesc,
+		c.hits,
 		prometheus.CounterValue,
 		float64(metrics.Hits()),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.missesDesc,
+		c.misses,
 		prometheus.CounterValue,
 		float64(metrics.Misses()),
 	)

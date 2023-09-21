@@ -10,77 +10,75 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// StatsCollector implements the prometheus.Collector interface.
-type StatsCollector struct {
-	db *mssqlx.DBs
-
-	// descriptions of exported metrics
-	maxOpenDesc           *prometheus.Desc
-	openDesc              *prometheus.Desc
-	inUseDesc             *prometheus.Desc
-	idleDesc              *prometheus.Desc
-	waitedForDesc         *prometheus.Desc
-	blockedSecondsDesc    *prometheus.Desc
-	closedMaxIdleDesc     *prometheus.Desc
-	closedMaxLifetimeDesc *prometheus.Desc
-	closedMaxIdleTimeDesc *prometheus.Desc
+// Collector implements the prometheus.Collector interface.
+type Collector struct {
+	db                *mssqlx.DBs
+	maxOpen           *prometheus.Desc
+	open              *prometheus.Desc
+	inUse             *prometheus.Desc
+	idle              *prometheus.Desc
+	waitedFor         *prometheus.Desc
+	blockedSeconds    *prometheus.Desc
+	closedMaxIdle     *prometheus.Desc
+	closedMaxLifetime *prometheus.Desc
+	closedMaxIdleTime *prometheus.Desc
 }
 
-// NewStatsCollector for prometheus.
-func NewStatsCollector(name string, db *mssqlx.DBs, version version.Version) *StatsCollector {
+// NewCollector for prometheus.
+func NewCollector(name string, db *mssqlx.DBs, version version.Version) *Collector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
-	return &StatsCollector{
+	return &Collector{
 		db: db,
-		maxOpenDesc: prometheus.NewDesc(
+		maxOpen: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_max_open_total", name),
 			fmt.Sprintf("Maximum number of open connections to %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		openDesc: prometheus.NewDesc(
+		open: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_open_total", name),
 			fmt.Sprintf("The number of established connections both in use and idle for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		inUseDesc: prometheus.NewDesc(
+		inUse: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_in_use_total", name),
 			fmt.Sprintf("The number of connections currently in use for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		idleDesc: prometheus.NewDesc(
+		idle: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_idle_total", name),
 			fmt.Sprintf("The number of idle connections for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		waitedForDesc: prometheus.NewDesc(
+		waitedFor: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_waited_for_total", name),
 			fmt.Sprintf("The total number of connections waited for in %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		blockedSecondsDesc: prometheus.NewDesc(
+		blockedSeconds: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_blocked_seconds_total", name),
 			fmt.Sprintf("The total time blocked waiting for a new connection for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		closedMaxIdleDesc: prometheus.NewDesc(
+		closedMaxIdle: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_closed_max_idle_total", name),
 			fmt.Sprintf("The total number of connections closed due to SetMaxIdleConns for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		closedMaxLifetimeDesc: prometheus.NewDesc(
+		closedMaxLifetime: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_closed_max_lifetime_total", name),
 			fmt.Sprintf("The total number of connections closed due to SetConnMaxLifetime for %s.", name),
 			[]string{"db_name"},
 			labels,
 		),
-		closedMaxIdleTimeDesc: prometheus.NewDesc(
+		closedMaxIdleTime: prometheus.NewDesc(
 			fmt.Sprintf("%s_sql_closed_max_idle_time_total", name),
 			fmt.Sprintf("The total number of connections closed due to SetConnMaxIdleTime for %s.", name),
 			[]string{"db_name"},
@@ -90,20 +88,20 @@ func NewStatsCollector(name string, db *mssqlx.DBs, version version.Version) *St
 }
 
 // Describe implements the prometheus.Collector interface.
-func (c StatsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.maxOpenDesc
-	ch <- c.openDesc
-	ch <- c.inUseDesc
-	ch <- c.idleDesc
-	ch <- c.waitedForDesc
-	ch <- c.blockedSecondsDesc
-	ch <- c.closedMaxIdleDesc
-	ch <- c.closedMaxLifetimeDesc
-	ch <- c.closedMaxIdleTimeDesc
+func (c Collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.maxOpen
+	ch <- c.open
+	ch <- c.inUse
+	ch <- c.idle
+	ch <- c.waitedFor
+	ch <- c.blockedSeconds
+	ch <- c.closedMaxIdle
+	ch <- c.closedMaxLifetime
+	ch <- c.closedMaxIdleTime
 }
 
 // Collect implements the prometheus.Collector interface.
-func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c Collector) Collect(ch chan<- prometheus.Metric) {
 	ms, _ := c.db.GetAllMasters()
 	for i, m := range ms {
 		c.collect(fmt.Sprintf("master_%d", i), m, ch)
@@ -116,59 +114,59 @@ func (c StatsCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // Collect implements the prometheus.Collector interface.
-func (c StatsCollector) collect(name string, db *sqlx.DB, ch chan<- prometheus.Metric) {
+func (c Collector) collect(name string, db *sqlx.DB, ch chan<- prometheus.Metric) {
 	stats := db.Stats()
 
 	ch <- prometheus.MustNewConstMetric(
-		c.maxOpenDesc,
+		c.maxOpen,
 		prometheus.GaugeValue,
 		float64(stats.MaxOpenConnections),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.openDesc,
+		c.open,
 		prometheus.GaugeValue,
 		float64(stats.OpenConnections),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.inUseDesc,
+		c.inUse,
 		prometheus.GaugeValue,
 		float64(stats.InUse),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.idleDesc,
+		c.idle,
 		prometheus.GaugeValue,
 		float64(stats.Idle),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.waitedForDesc,
+		c.waitedFor,
 		prometheus.CounterValue,
 		float64(stats.WaitCount),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.blockedSecondsDesc,
+		c.blockedSeconds,
 		prometheus.CounterValue,
 		stats.WaitDuration.Seconds(),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.closedMaxIdleDesc,
+		c.closedMaxIdle,
 		prometheus.CounterValue,
 		float64(stats.MaxIdleClosed),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.closedMaxLifetimeDesc,
+		c.closedMaxLifetime,
 		prometheus.CounterValue,
 		float64(stats.MaxLifetimeClosed),
 		name,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		c.closedMaxIdleTimeDesc,
+		c.closedMaxIdleTime,
 		prometheus.CounterValue,
 		float64(stats.MaxIdleTimeClosed),
 		name,
