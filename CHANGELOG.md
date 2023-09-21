@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.90.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.90.2) - 2023-09-21
+
+- [`203bc96`](https://github.com/alexfalkowski/go-service/commit/203bc96adfb631eff6c2e665796c4fbfc8d7c5cb) fix(metrics): use consistent naming (#357)
+
 ## [v1.90.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.90.1) - 2023-09-21
 
 - [`0bc2866`](https://github.com/alexfalkowski/go-service/commit/0bc28664547c018ecb75915caaad9a18ff44a927) fix(fx): simplify modules (#356)
