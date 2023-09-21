@@ -11,9 +11,22 @@ import (
 	"go.uber.org/fx"
 )
 
+// RegisterParams for transport.
+type RegisterParams struct {
+	fx.In
+
+	Lifecycle  fx.Lifecycle
+	Shutdowner fx.Shutdowner
+	Config     *Config
+	HTTP       *http.Server
+	GRPC       *grpc.Server
+}
+
 // Register all the transports.
-func Register(lc fx.Lifecycle, server *Server) {
-	lc.Append(fx.Hook{
+func Register(params RegisterParams) {
+	server := NewServer(params)
+
+	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			return server.Start()
 		},
@@ -25,19 +38,8 @@ func Register(lc fx.Lifecycle, server *Server) {
 	})
 }
 
-// ServerParams for transport.
-type ServerParams struct {
-	fx.In
-
-	Lifecycle  fx.Lifecycle
-	Shutdowner fx.Shutdowner
-	Config     *Config
-	HTTP       *http.Server
-	GRPC       *grpc.Server
-}
-
 // NewServer for transport.
-func NewServer(params ServerParams) *Server {
+func NewServer(params RegisterParams) *Server {
 	return &Server{sh: params.Shutdowner, cfg: params.Config, http: params.HTTP, grpc: params.GRPC}
 }
 
