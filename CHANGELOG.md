@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.90.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.90.1) - 2023-09-21
+
+- [`0bc2866`](https://github.com/alexfalkowski/go-service/commit/0bc28664547c018ecb75915caaad9a18ff44a927) fix(fx): simplify modules (#356)
+- [`d5d14fc`](https://github.com/alexfalkowski/go-service/commit/d5d14fc97f66383b94361fc3433417e01e66a728) Revert "feat(metrics): register through DI (#354)" (#355)
+
 ## [v1.90.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.90.0) - 2023-09-21
 
 - [`d56e71a`](https://github.com/alexfalkowski/go-service/commit/d56e71a47a40d5dced836ded6b7aaf4c8eefbb18) feat(metrics): register through DI (#354)
