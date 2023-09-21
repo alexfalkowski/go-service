@@ -17,59 +17,59 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ClientMetrics for prometheus.
-type ClientMetrics struct {
-	clientStartedCounter   *prometheus.CounterVec
-	clientHandledCounter   *prometheus.CounterVec
-	clientMsgReceived      *prometheus.CounterVec
-	clientMsgSent          *prometheus.CounterVec
-	clientHandledHistogram *prometheus.HistogramVec
-	clientRecvHistogram    *prometheus.HistogramVec
-	clientSendHistogram    *prometheus.HistogramVec
+// ClientCollector for prometheus.
+type ClientCollector struct {
+	started          *prometheus.CounterVec
+	handled          *prometheus.CounterVec
+	messageReceived  *prometheus.CounterVec
+	messageSent      *prometheus.CounterVec
+	handledHistogram *prometheus.HistogramVec
+	received         *prometheus.HistogramVec
+	send             *prometheus.HistogramVec
 }
 
-// NewClientMetrics for prometheus.
-func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
+// NewClientCollector for prometheus.
+func NewClientCollector(lc fx.Lifecycle, version version.Version) *ClientCollector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
-	metrics := &ClientMetrics{
-		clientStartedCounter: prometheus.NewCounterVec(
+	metrics := &ClientCollector{
+		started: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_started_total",
 				Help:        "Total number of RPCs started on the client.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientHandledCounter: prometheus.NewCounterVec(
+		handled: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_handled_total",
 				Help:        "Total number of RPCs completed by the client, regardless of success or failure.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method", "grpc_code"}),
-		clientMsgReceived: prometheus.NewCounterVec(
+		messageReceived: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_msg_received_total",
 				Help:        "Total number of RPC messages received by the client.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientMsgSent: prometheus.NewCounterVec(
+		messageSent: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "grpc_client_msg_sent_total",
 				Help:        "Total number of gRPC messages sent by the client.",
 				ConstLabels: labels,
 			}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientHandledHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		handledHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "grpc_client_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the gRPC until it is finished by the application.",
 			Buckets:     prometheus.DefBuckets,
 			ConstLabels: labels,
 		}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientRecvHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		received: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "grpc_client_msg_recv_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the gRPC single message receive.",
 			Buckets:     prometheus.DefBuckets,
 			ConstLabels: labels,
 		}, []string{"grpc_type", "grpc_service", "grpc_method"}),
-		clientSendHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		send: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "grpc_client_msg_send_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the gRPC single message send.",
 			Buckets:     prometheus.DefBuckets,
@@ -94,31 +94,31 @@ func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 // Describe sends the super-set of all possible descriptors of metrics
 // collected by this Collector to the provided channel and returns once
 // the last descriptor has been sent.
-func (m *ClientMetrics) Describe(ch chan<- *prometheus.Desc) {
-	m.clientStartedCounter.Describe(ch)
-	m.clientHandledCounter.Describe(ch)
-	m.clientMsgReceived.Describe(ch)
-	m.clientMsgSent.Describe(ch)
-	m.clientHandledHistogram.Describe(ch)
-	m.clientRecvHistogram.Describe(ch)
-	m.clientSendHistogram.Describe(ch)
+func (m *ClientCollector) Describe(ch chan<- *prometheus.Desc) {
+	m.started.Describe(ch)
+	m.handled.Describe(ch)
+	m.messageReceived.Describe(ch)
+	m.messageSent.Describe(ch)
+	m.handledHistogram.Describe(ch)
+	m.received.Describe(ch)
+	m.send.Describe(ch)
 }
 
 // Collect is called by the prometheus registry when collecting
 // metrics. The implementation sends each collected metric via the
 // provided channel and returns once the last metric has been sent.
-func (m *ClientMetrics) Collect(ch chan<- prometheus.Metric) {
-	m.clientStartedCounter.Collect(ch)
-	m.clientHandledCounter.Collect(ch)
-	m.clientMsgReceived.Collect(ch)
-	m.clientMsgSent.Collect(ch)
-	m.clientHandledHistogram.Collect(ch)
-	m.clientRecvHistogram.Collect(ch)
-	m.clientSendHistogram.Collect(ch)
+func (m *ClientCollector) Collect(ch chan<- prometheus.Metric) {
+	m.started.Collect(ch)
+	m.handled.Collect(ch)
+	m.messageReceived.Collect(ch)
+	m.messageSent.Collect(ch)
+	m.handledHistogram.Collect(ch)
+	m.received.Collect(ch)
+	m.send.Collect(ch)
 }
 
 // UnaryClientInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
-func (m *ClientMetrics) UnaryClientInterceptor() grpc.UnaryClientInterceptor {
+func (m *ClientCollector) UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -142,7 +142,7 @@ func (m *ClientMetrics) UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Streaming RPCs.
-func (m *ClientMetrics) StreamClientInterceptor() grpc.StreamClientInterceptor {
+func (m *ClientCollector) StreamClientInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -218,16 +218,16 @@ func (s *monitoredClientStream) RecvMsg(m any) error {
 }
 
 type clientReporter struct {
-	metrics     *ClientMetrics
+	metrics     *ClientCollector
 	rpcType     grpcType
 	serviceName string
 	methodName  string
 	startTime   time.Time
 }
 
-func newClientReporter(m *ClientMetrics, rpcType grpcType, service, method string) *clientReporter {
+func newClientReporter(m *ClientCollector, rpcType grpcType, service, method string) *clientReporter {
 	r := &clientReporter{metrics: m, rpcType: rpcType, startTime: time.Now(), serviceName: service, methodName: method}
-	r.metrics.clientStartedCounter.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
+	r.metrics.started.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
 
 	return r
 }
@@ -238,26 +238,26 @@ type timer interface {
 }
 
 func (r *clientReporter) ReceiveMessageTimer() timer {
-	hist := r.metrics.clientRecvHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
+	hist := r.metrics.received.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
 
 	return prometheus.NewTimer(hist)
 }
 
 func (r *clientReporter) ReceivedMessage() {
-	r.metrics.clientMsgReceived.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
+	r.metrics.messageReceived.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) SendMessageTimer() timer {
-	hist := r.metrics.clientSendHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
+	hist := r.metrics.send.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName)
 
 	return prometheus.NewTimer(hist)
 }
 
 func (r *clientReporter) SentMessage() {
-	r.metrics.clientMsgSent.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
+	r.metrics.messageSent.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) Handled(code codes.Code) {
-	r.metrics.clientHandledCounter.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName, code.String()).Inc()
-	r.metrics.clientHandledHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
+	r.metrics.handled.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName, code.String()).Inc()
+	r.metrics.handledHistogram.WithLabelValues(string(r.rpcType), r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
 }

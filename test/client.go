@@ -33,7 +33,7 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *ote
 		shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(),
 		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
-		shttp.WithClientMetrics(hprometheus.NewClientMetrics(lc, Version)),
+		shttp.WithClientMetrics(hprometheus.NewClientCollector(lc, Version)),
 	)
 }
 
@@ -55,7 +55,7 @@ func NewGRPCClient(
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 		tgrpc.WithClientDialOption(dialOpts...),
-		tgrpc.WithClientMetrics(gprometheus.NewClientMetrics(lc, Version)),
+		tgrpc.WithClientMetrics(gprometheus.NewClientCollector(lc, Version)),
 	)
 
 	return conn

@@ -40,7 +40,7 @@ func TestConsumer(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -72,7 +72,7 @@ func TestInvalidConsumer(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -103,7 +103,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 					Handler: handler, Marshaller: marshaller.NewMsgPack(),
 				},
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-				tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
 
 			lc.RequireStart()
@@ -133,14 +133,14 @@ func TestReceiveMessage(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
-			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+			tnsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 		)
 
 		lc.RequireStart()
@@ -177,7 +177,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
@@ -216,14 +216,14 @@ func TestReceiveError(t *testing.T) {
 				Handler: handler, Marshaller: marshaller.NewMsgPack(),
 			},
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
-			tnsq.WithConsumerMetrics(prometheus.NewConsumerMetrics(lc, test.Version)),
+			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
 		producer := tnsq.NewProducer(
 			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
-			tnsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+			tnsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 		)
 
 		lc.RequireStart()

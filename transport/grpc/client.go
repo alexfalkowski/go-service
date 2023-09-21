@@ -28,7 +28,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	logger   *zap.Logger
 	tracer   gotel.Tracer
-	metrics  *prometheus.ClientMetrics
+	metrics  *prometheus.ClientCollector
 	retry    bool
 	breaker  bool
 	opts     []grpc.DialOption
@@ -98,7 +98,7 @@ func WithClientTracer(tracer gotel.Tracer) ClientOption {
 }
 
 // WithClientConfig for gRPC.
-func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
+func WithClientMetrics(metrics *prometheus.ClientCollector) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.metrics = metrics
 	})

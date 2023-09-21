@@ -14,47 +14,47 @@ import (
 	"golang.org/x/net/context"
 )
 
-// ServerMetrics for prometheus.
-type ServerMetrics struct {
-	serverStartedCounter   *prometheus.CounterVec
-	serverHandledCounter   *prometheus.CounterVec
-	serverMsgReceived      *prometheus.CounterVec
-	serverMsgSent          *prometheus.CounterVec
-	serverHandledHistogram *prometheus.HistogramVec
+// ServerCollector for prometheus.
+type ServerCollector struct {
+	started          *prometheus.CounterVec
+	handled          *prometheus.CounterVec
+	received         *prometheus.CounterVec
+	sent             *prometheus.CounterVec
+	handledHistogram *prometheus.HistogramVec
 }
 
-// NewServerMetrics for prometheus.
+// NewServerCollector for prometheus.
 //
 //nolint:dupl
-func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
+func NewServerCollector(lc fx.Lifecycle, version version.Version) *ServerCollector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
-	metrics := &ServerMetrics{
-		serverStartedCounter: prometheus.NewCounterVec(
+	metrics := &ServerCollector{
+		started: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_started_total",
 				Help:        "Total number of RPCs started on the server.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		serverHandledCounter: prometheus.NewCounterVec(
+		handled: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_handled_total",
 				Help:        "Total number of RPCs completed on the server, regardless of success or failure.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method", "http_code"}),
-		serverMsgReceived: prometheus.NewCounterVec(
+		received: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_msg_received_total",
 				Help:        "Total number of RPC messages received on the server.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		serverMsgSent: prometheus.NewCounterVec(
+		sent: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_server_msg_sent_total",
 				Help:        "Total number of RPC messages sent by the server.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		serverHandledHistogram: prometheus.NewHistogramVec(
+		handledHistogram: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
 				Name:        "http_server_handling_seconds",
 				Help:        "Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.",
@@ -81,32 +81,32 @@ func NewServerMetrics(lc fx.Lifecycle, version version.Version) *ServerMetrics {
 // Describe sends the super-set of all possible descriptors of metrics
 // collected by this Collector to the provided channel and returns once
 // the last descriptor has been sent.
-func (m *ServerMetrics) Describe(ch chan<- *prometheus.Desc) {
-	m.serverStartedCounter.Describe(ch)
-	m.serverHandledCounter.Describe(ch)
-	m.serverMsgReceived.Describe(ch)
-	m.serverMsgSent.Describe(ch)
-	m.serverHandledHistogram.Describe(ch)
+func (m *ServerCollector) Describe(ch chan<- *prometheus.Desc) {
+	m.started.Describe(ch)
+	m.handled.Describe(ch)
+	m.received.Describe(ch)
+	m.sent.Describe(ch)
+	m.handledHistogram.Describe(ch)
 }
 
 // Collect is called by the Prometheus registry when collecting
 // metrics. The implementation sends each collected metric via the
 // provided channel and returns once the last metric has been sent.
-func (m *ServerMetrics) Collect(ch chan<- prometheus.Metric) {
-	m.serverStartedCounter.Collect(ch)
-	m.serverHandledCounter.Collect(ch)
-	m.serverMsgReceived.Collect(ch)
-	m.serverMsgSent.Collect(ch)
-	m.serverHandledHistogram.Collect(ch)
+func (m *ServerCollector) Collect(ch chan<- prometheus.Metric) {
+	m.started.Collect(ch)
+	m.handled.Collect(ch)
+	m.received.Collect(ch)
+	m.sent.Collect(ch)
+	m.handledHistogram.Collect(ch)
 }
 
 // Handler for prometheus.
-func (m *ServerMetrics) Handler(h http.Handler) http.Handler {
+func (m *ServerCollector) Handler(h http.Handler) http.Handler {
 	return &handler{metrics: m, Handler: h}
 }
 
 type handler struct {
-	metrics *ServerMetrics
+	metrics *ServerCollector
 	http.Handler
 }
 
@@ -142,28 +142,28 @@ func (r *responseWriter) WriteHeader(status int) {
 }
 
 type serverReporter struct {
-	metrics     *ServerMetrics
+	metrics     *ServerCollector
 	serviceName string
 	methodName  string
 	startTime   time.Time
 }
 
-func newServerReporter(m *ServerMetrics, service, method string) *serverReporter {
+func newServerReporter(m *ServerCollector, service, method string) *serverReporter {
 	r := &serverReporter{metrics: m, startTime: time.Now(), serviceName: service, methodName: method}
-	r.metrics.serverStartedCounter.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.started.WithLabelValues(r.serviceName, r.methodName).Inc()
 
 	return r
 }
 
 func (r *serverReporter) ReceivedMessage() {
-	r.metrics.serverMsgReceived.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.received.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *serverReporter) SentMessage() {
-	r.metrics.serverMsgSent.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.sent.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *serverReporter) Handled(code int) {
-	r.metrics.serverHandledCounter.WithLabelValues(r.serviceName, r.methodName, strconv.Itoa(code)).Inc()
-	r.metrics.serverHandledHistogram.WithLabelValues(r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
+	r.metrics.handled.WithLabelValues(r.serviceName, r.methodName, strconv.Itoa(code)).Inc()
+	r.metrics.handledHistogram.WithLabelValues(r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
 }

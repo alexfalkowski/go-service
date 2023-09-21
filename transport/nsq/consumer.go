@@ -22,7 +22,7 @@ type ConsumerOption interface{ apply(*consumerOptions) }
 type consumerOptions struct {
 	logger  *zap.Logger
 	tracer  notel.Tracer
-	metrics *prometheus.ConsumerMetrics
+	metrics *prometheus.ConsumerCollector
 }
 
 type consumerOptionFunc func(*consumerOptions)
@@ -44,7 +44,7 @@ func WithConsumerTracer(tracer notel.Tracer) ConsumerOption {
 }
 
 // WithConsumerMetrics for NSQ.
-func WithConsumerMetrics(metrics *prometheus.ConsumerMetrics) ConsumerOption {
+func WithConsumerMetrics(metrics *prometheus.ConsumerCollector) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
 		o.metrics = metrics
 	})

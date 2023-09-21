@@ -30,7 +30,7 @@ func TestProducer(t *testing.T) {
 			producer := nsq.NewProducer(
 				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
-				nsq.WithProducerMetrics(prometheus.NewProducerMetrics(lc, test.Version)),
+				nsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 			)
 
 			lc.RequireStart()

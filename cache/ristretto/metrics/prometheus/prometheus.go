@@ -11,7 +11,7 @@ import (
 
 // Register for prometheus.
 func Register(lc fx.Lifecycle, cache *ristretto.Cache, version version.Version) {
-	collector := NewStatsCollector(cache, version)
+	collector := NewCollector(cache, version)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {

@@ -19,7 +19,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	logger       *zap.Logger
 	tracer       hotel.Tracer
-	metrics      *prometheus.ClientMetrics
+	metrics      *prometheus.ClientCollector
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -65,7 +65,7 @@ func WithClientTracer(tracer hotel.Tracer) ClientOption {
 }
 
 // WithClientMetrics for HTTP.
-func WithClientMetrics(metrics *prometheus.ClientMetrics) ClientOption {
+func WithClientMetrics(metrics *prometheus.ClientCollector) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.metrics = metrics
 	})

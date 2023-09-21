@@ -6,8 +6,8 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
+	dzap "github.com/alexfalkowski/go-service/database/sql/driver/logger/zap"
 	sotel "github.com/alexfalkowski/go-service/database/sql/driver/otel"
-	dzap "github.com/alexfalkowski/go-service/database/sql/driver/zap"
 	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
 	"github.com/alexfalkowski/go-service/errors"

@@ -26,7 +26,7 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     otel.Tracer
-	Metrics    *prometheus.ServerMetrics
+	Metrics    *prometheus.ServerCollector
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
 }
