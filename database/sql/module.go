@@ -6,9 +6,13 @@ import (
 	"go.uber.org/fx"
 )
 
-// PostgreSQLModule for fx.
-var PostgreSQLModule = fx.Options(
-	fx.Provide(pg.Open),
-	fx.Invoke(pg.Register),
-	fx.Provide(otel.NewTracer),
+var (
+	// PostgreSQLModule for fx.
+	PostgreSQLModule = fx.Options(
+		fx.Provide(pg.Open),
+		fx.Invoke(pg.Register),
+	)
+
+	// PostgreSQLOTELModule for fx.
+	PostgreSQLOTELModule = fx.Provide(otel.NewTracer)
 )

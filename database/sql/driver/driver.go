@@ -44,7 +44,7 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) 
 		return nil, err
 	}
 
-	prometheus.Register(lc, prometheus.NewCollector(name, db, ver))
+	prometheus.Register(lc, name, db, ver)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

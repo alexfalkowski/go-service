@@ -172,8 +172,9 @@ func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, logger.ZapModule, otel.Module,
-		health.Module, cache.RedisModule, cache.RistrettoModule,
-		security.Auth0Module, sql.PostgreSQLModule, transport.Module,
+		health.GRPCModule, health.HTTPModule, health.ServerModule,
+		cache.RedisModule, cache.RistrettoModule, cache.RedisOTELModule,
+		security.Auth0Module, sql.PostgreSQLModule, sql.PostgreSQLOTELModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
