@@ -10,11 +10,11 @@ import (
 	sotel "github.com/alexfalkowski/go-service/database/sql/driver/otel"
 	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
-	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
 	"go.uber.org/fx"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -62,9 +62,9 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 
-	return db, errors.Combine(errs...)
+	return db, multierr.Combine(errs...)
 }
 
 func destroy(db *mssqlx.DBs) error {
-	return errors.Combine(db.Destroy()...)
+	return multierr.Combine(db.Destroy()...)
 }

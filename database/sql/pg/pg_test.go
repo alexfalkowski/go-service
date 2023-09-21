@@ -8,12 +8,12 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	potel "github.com/alexfalkowski/go-service/database/sql/pg/otel"
-	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
+	"go.uber.org/multierr"
 )
 
 func init() {
@@ -38,7 +38,7 @@ func TestSQL(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
-				So(errors.Combine(db.Ping()...), ShouldBeNil)
+				So(multierr.Combine(db.Ping()...), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -434,7 +434,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have an invalid database", func() {
-				So(errors.Combine(db.Ping()...), ShouldBeError)
+				So(multierr.Combine(db.Ping()...), ShouldBeError)
 			})
 
 			lc.RequireStop()
