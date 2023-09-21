@@ -27,7 +27,7 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     otel.Tracer
-	Metrics    *prometheus.ServerMetrics
+	Metrics    *prometheus.ServerCollector
 }
 
 // Server for HTTP.

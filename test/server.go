@@ -65,7 +65,7 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *otel.Config, tcfg *
 
 	server := shttp.NewServer(shttp.ServerParams{
 		Shutdowner: NewShutdowner(), Config: &tcfg.HTTP, Logger: logger,
-		Tracer: tracer, Metrics: hprometheus.NewServerMetrics(lc, Version),
+		Tracer: tracer, Metrics: hprometheus.NewServerCollector(lc, Version),
 	})
 
 	return server
@@ -80,7 +80,7 @@ func NewGRPCServer(
 
 	server := tgrpc.NewServer(tgrpc.ServerParams{
 		Shutdowner: NewShutdowner(), Config: &tcfg.GRPC, Logger: logger,
-		Tracer: tracer, Metrics: gprometheus.NewServerMetrics(lc, Version),
+		Tracer: tracer, Metrics: gprometheus.NewServerCollector(lc, Version),
 		Unary: unary, Stream: stream,
 	})
 

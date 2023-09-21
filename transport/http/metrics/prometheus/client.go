@@ -14,47 +14,47 @@ import (
 	"golang.org/x/net/context"
 )
 
-// ClientMetrics for prometheus.
-type ClientMetrics struct {
-	clientStartedCounter   *prometheus.CounterVec
-	clientHandledCounter   *prometheus.CounterVec
-	clientMsgReceived      *prometheus.CounterVec
-	clientMsgSent          *prometheus.CounterVec
-	clientHandledHistogram *prometheus.HistogramVec
+// ClientCollector for prometheus.
+type ClientCollector struct {
+	started          *prometheus.CounterVec
+	handled          *prometheus.CounterVec
+	received         *prometheus.CounterVec
+	sent             *prometheus.CounterVec
+	handledHistogram *prometheus.HistogramVec
 }
 
-// NewClientMetrics for prometheus.
+// NewClientCollector for prometheus.
 //
 //nolint:dupl
-func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
+func NewClientCollector(lc fx.Lifecycle, version version.Version) *ClientCollector {
 	labels := prometheus.Labels{"name": os.ExecutableName(), "version": string(version)}
 
-	metrics := &ClientMetrics{
-		clientStartedCounter: prometheus.NewCounterVec(
+	metrics := &ClientCollector{
+		started: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_client_started_total",
 				Help:        "Total number of RPCs started on the client.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		clientHandledCounter: prometheus.NewCounterVec(
+		handled: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_client_handled_total",
 				Help:        "Total number of RPCs completed by the client, regardless of success or failure.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method", "http_code"}),
-		clientMsgReceived: prometheus.NewCounterVec(
+		received: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_client_msg_received_total",
 				Help:        "Total number of RPC stream messages received by the client.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		clientMsgSent: prometheus.NewCounterVec(
+		sent: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Name:        "http_client_msg_sent_total",
 				Help:        "Total number of HTTP stream messages sent by the client.",
 				ConstLabels: labels,
 			}, []string{"http_service", "http_method"}),
-		clientHandledHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		handledHistogram: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:        "http_client_handling_seconds",
 			Help:        "Histogram of response latency (seconds) of the HTTP until it is finished by the application.",
 			Buckets:     prometheus.DefBuckets,
@@ -79,32 +79,32 @@ func NewClientMetrics(lc fx.Lifecycle, version version.Version) *ClientMetrics {
 // Describe sends the super-set of all possible descriptors of metrics
 // collected by this Collector to the provided channel and returns once
 // the last descriptor has been sent.
-func (m *ClientMetrics) Describe(ch chan<- *prometheus.Desc) {
-	m.clientStartedCounter.Describe(ch)
-	m.clientHandledCounter.Describe(ch)
-	m.clientMsgReceived.Describe(ch)
-	m.clientMsgSent.Describe(ch)
-	m.clientHandledHistogram.Describe(ch)
+func (m *ClientCollector) Describe(ch chan<- *prometheus.Desc) {
+	m.started.Describe(ch)
+	m.handled.Describe(ch)
+	m.received.Describe(ch)
+	m.sent.Describe(ch)
+	m.handledHistogram.Describe(ch)
 }
 
 // Collect is called by the prometheus registry when collecting
 // metrics. The implementation sends each collected metric via the
 // provided channel and returns once the last metric has been sent.
-func (m *ClientMetrics) Collect(ch chan<- prometheus.Metric) {
-	m.clientStartedCounter.Collect(ch)
-	m.clientHandledCounter.Collect(ch)
-	m.clientMsgReceived.Collect(ch)
-	m.clientMsgSent.Collect(ch)
-	m.clientHandledHistogram.Collect(ch)
+func (m *ClientCollector) Collect(ch chan<- prometheus.Metric) {
+	m.started.Collect(ch)
+	m.handled.Collect(ch)
+	m.received.Collect(ch)
+	m.sent.Collect(ch)
+	m.handledHistogram.Collect(ch)
 }
 
 // RoundTripper for prometheus.
-func (m *ClientMetrics) RoundTripper(rt http.RoundTripper) http.RoundTripper {
+func (m *ClientCollector) RoundTripper(rt http.RoundTripper) http.RoundTripper {
 	return &roundTripper{Metrics: m, RoundTripper: rt}
 }
 
 type roundTripper struct {
-	Metrics *ClientMetrics
+	Metrics *ClientCollector
 	http.RoundTripper
 }
 
@@ -129,28 +129,28 @@ func (r *roundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 type clientReporter struct {
-	metrics     *ClientMetrics
+	metrics     *ClientCollector
 	serviceName string
 	methodName  string
 	startTime   time.Time
 }
 
-func newClientReporter(m *ClientMetrics, service, method string) *clientReporter {
+func newClientReporter(m *ClientCollector, service, method string) *clientReporter {
 	r := &clientReporter{metrics: m, startTime: time.Now(), serviceName: service, methodName: method}
-	r.metrics.clientStartedCounter.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.started.WithLabelValues(r.serviceName, r.methodName).Inc()
 
 	return r
 }
 
 func (r *clientReporter) ReceivedMessage() {
-	r.metrics.clientMsgReceived.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.received.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) SentMessage() {
-	r.metrics.clientMsgSent.WithLabelValues(r.serviceName, r.methodName).Inc()
+	r.metrics.sent.WithLabelValues(r.serviceName, r.methodName).Inc()
 }
 
 func (r *clientReporter) Handled(code int) {
-	r.metrics.clientHandledCounter.WithLabelValues(r.serviceName, r.methodName, strconv.Itoa(code)).Inc()
-	r.metrics.clientHandledHistogram.WithLabelValues(r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
+	r.metrics.handled.WithLabelValues(r.serviceName, r.methodName, strconv.Itoa(code)).Inc()
+	r.metrics.handledHistogram.WithLabelValues(r.serviceName, r.methodName).Observe(time.Since(r.startTime).Seconds())
 }

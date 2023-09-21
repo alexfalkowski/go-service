@@ -25,7 +25,7 @@ type ProducerOption interface{ apply(*producerOptions) }
 type producerOptions struct {
 	logger  *zap.Logger
 	tracer  notel.Tracer
-	metrics *prometheus.ProducerMetrics
+	metrics *prometheus.ProducerCollector
 	retry   bool
 	breaker bool
 }
@@ -63,7 +63,7 @@ func WithProducerTracer(tracer notel.Tracer) ProducerOption {
 }
 
 // WithProducerMetrics for NSQ.
-func WithProducerMetrics(metrics *prometheus.ProducerMetrics) ProducerOption {
+func WithProducerMetrics(metrics *prometheus.ProducerCollector) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.metrics = metrics
 	})

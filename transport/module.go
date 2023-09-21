@@ -19,23 +19,23 @@ var (
 		fx.Provide(grpc.NewServer),
 		fx.Provide(grpc.UnaryServerInterceptor),
 		fx.Provide(grpc.StreamServerInterceptor),
-		fx.Provide(gprometheus.NewServerMetrics),
-		fx.Provide(gprometheus.NewClientMetrics),
+		fx.Provide(gprometheus.NewServerCollector),
+		fx.Provide(gprometheus.NewClientCollector),
 		fx.Provide(gotel.NewTracer),
 	)
 
 	// HTTPModule for fx.
 	HTTPModule = fx.Options(
 		fx.Provide(http.NewServer),
-		fx.Provide(hprometheus.NewServerMetrics),
-		fx.Provide(hprometheus.NewClientMetrics),
+		fx.Provide(hprometheus.NewServerCollector),
+		fx.Provide(hprometheus.NewClientCollector),
 		fx.Provide(hotel.NewTracer),
 	)
 
 	// NSQModule for fx.
 	NSQModule = fx.Options(
-		fx.Provide(nprometheus.NewProducerMetrics),
-		fx.Provide(nprometheus.NewConsumerMetrics),
+		fx.Provide(nprometheus.NewProducerCollector),
+		fx.Provide(nprometheus.NewConsumerCollector),
 		fx.Provide(notel.NewTracer),
 		fx.Provide(marshaller.NewMsgPack),
 	)

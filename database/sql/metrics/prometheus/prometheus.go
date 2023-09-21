@@ -11,7 +11,7 @@ import (
 
 // Register for prometheus.
 func Register(lc fx.Lifecycle, name string, db *mssqlx.DBs, version version.Version) {
-	collector := NewStatsCollector(name, db, version)
+	collector := NewCollector(name, db, version)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
