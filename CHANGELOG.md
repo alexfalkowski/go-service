@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.90.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.90.0) - 2023-09-21
+
+- [`d56e71a`](https://github.com/alexfalkowski/go-service/commit/d56e71a47a40d5dced836ded6b7aaf4c8eefbb18) feat(metrics): register through DI (#354)
+
 ## [v1.89.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.89.5) - 2023-09-20
 
 - [`19dd81d`](https://github.com/alexfalkowski/go-service/commit/19dd81db96b61648141609c02d097c23bfa49fa7) fix(deps): bump github.com/rs/cors from 1.9.0 to 1.10.0 (#353)
