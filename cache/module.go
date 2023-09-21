@@ -11,10 +11,13 @@ import (
 
 var (
 	// RedisModule for fx.
-	RedisModule = fx.Options(fx.Provide(redis.NewClient), fx.Provide(redis.NewOptions), fx.Provide(redis.NewCache), fx.Provide(redis.NewRingOptions))
-
-	// RedisOTELModule for fx.
-	RedisOTELModule = fx.Provide(otel.NewTracer)
+	RedisModule = fx.Options(
+		fx.Provide(redis.NewClient),
+		fx.Provide(redis.NewOptions),
+		fx.Provide(redis.NewCache),
+		fx.Provide(redis.NewRingOptions),
+		fx.Provide(otel.NewTracer),
+	)
 
 	// RistrettoModule for fx.
 	RistrettoModule = fx.Provide(ristretto.NewCache)
