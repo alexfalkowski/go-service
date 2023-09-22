@@ -2,7 +2,7 @@ package sql
 
 import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
+	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
 	"go.uber.org/fx"
 )
 
@@ -10,5 +10,5 @@ import (
 var PostgreSQLModule = fx.Options(
 	fx.Provide(pg.Open),
 	fx.Invoke(pg.Register),
-	fx.Provide(otel.NewTracer),
+	fx.Provide(tracer.NewTracer),
 )

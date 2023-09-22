@@ -4,7 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/redis/otel"
+	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"go.uber.org/fx"
 )
@@ -16,7 +16,7 @@ var (
 		fx.Provide(redis.NewOptions),
 		fx.Provide(redis.NewCache),
 		fx.Provide(redis.NewRingOptions),
-		fx.Provide(otel.NewTracer),
+		fx.Provide(tracer.NewTracer),
 	)
 
 	// RistrettoModule for fx.

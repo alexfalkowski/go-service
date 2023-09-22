@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
-	gotel "github.com/alexfalkowski/go-service/transport/grpc/otel"
+	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics/prometheus"
+	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
-	hprometheus "github.com/alexfalkowski/go-service/transport/http/metrics/prometheus"
-	hotel "github.com/alexfalkowski/go-service/transport/http/otel"
+	hprometheus "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics/prometheus"
+	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -20,13 +20,13 @@ import (
 )
 
 // NewHTTPClient for test.
-func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *otel.Config, tcfg *transport.Config) *http.Client {
+func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config) *http.Client {
 	return NewHTTPClientWithRoundTripper(lc, logger, cfg, tcfg, nil)
 }
 
 // NewHTTPClientWithRoundTripper for test.
-func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *otel.Config, tcfg *transport.Config, roundTripper http.RoundTripper) *http.Client {
-	tracer, _ := hotel.NewTracer(hotel.TracerParams{Lifecycle: lc, Config: cfg, Version: Version})
+func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, roundTripper http.RoundTripper) *http.Client {
+	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
 
 	return shttp.NewClient(
 		shttp.ClientParams{Config: &tcfg.HTTP},
@@ -40,10 +40,10 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *ote
 // NewGRPCClient for test.
 func NewGRPCClient(
 	ctx context.Context, lc fx.Lifecycle, logger *zap.Logger,
-	tcfg *transport.Config, ocfg *otel.Config,
+	tcfg *transport.Config, ocfg *tracer.Config,
 	cred credentials.PerRPCCredentials,
 ) *grpc.ClientConn {
-	tracer, _ := gotel.NewTracer(gotel.TracerParams{Lifecycle: lc, Config: ocfg, Version: Version})
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
 
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 	if cred != nil {

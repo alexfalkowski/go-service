@@ -14,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/health"
 	hchecker "github.com/alexfalkowski/go-service/health/checker"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -23,7 +23,7 @@ import (
 )
 
 func init() {
-	otel.Register()
+	tracer.Register()
 }
 
 func TestHealth(t *testing.T) {
@@ -34,9 +34,9 @@ func TestHealth(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewTransportConfig()
-			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg), logger).Observe("http")
-			hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-			gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg), logger).Observe("http")
+			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 			test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -51,7 +51,7 @@ func TestHealth(t *testing.T) {
 			lc.RequireStart()
 
 			Convey(fmt.Sprintf("When I query %s", check), func() {
-				client := test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg)
+				client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.Port, check), nil)
 				So(err, ShouldBeNil)
@@ -82,10 +82,10 @@ func TestReadinessNoop(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg), logger)
+		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg), logger)
 		o := server.Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -100,7 +100,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg)
+			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.Port), nil)
 			So(err, ShouldBeNil)
@@ -130,9 +130,9 @@ func TestInvalidHealth(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg), logger).Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg), logger).Observe("http")
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -147,7 +147,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg)
+			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/healthz", cfg.Port), nil)
 			So(err, ShouldBeNil)

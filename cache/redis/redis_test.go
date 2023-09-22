@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	otel.Register()
+	tracer.Register()
 }
 
 func TestSetCache(t *testing.T) {

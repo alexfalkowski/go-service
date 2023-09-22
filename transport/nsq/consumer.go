@@ -3,14 +3,14 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/logger"
-	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
+	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics/prometheus"
+	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -21,7 +21,7 @@ type ConsumerOption interface{ apply(*consumerOptions) }
 
 type consumerOptions struct {
 	logger  *zap.Logger
-	tracer  notel.Tracer
+	tracer  ntracer.Tracer
 	metrics *prometheus.ConsumerCollector
 }
 
@@ -37,7 +37,7 @@ func WithConsumerLogger(logger *zap.Logger) ConsumerOption {
 }
 
 // WithConsumerConfig for NSQ.
-func WithConsumerTracer(tracer notel.Tracer) ConsumerOption {
+func WithConsumerTracer(tracer ntracer.Tracer) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
 		o.tracer = tracer
 	})
@@ -62,7 +62,7 @@ type ConsumerParams struct {
 
 // RegisterConsumer for NSQ.
 func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
-	defaultOptions := &consumerOptions{tracer: otel.NewNoopTracer("nsq")}
+	defaultOptions := &consumerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -86,7 +86,7 @@ func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
 		h = defaultOptions.metrics.Handler(params.Topic, params.Channel, h)
 	}
 
-	h = notel.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
+	h = ntracer.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
 	h = meta.NewHandler(h)
 
 	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))
