@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net"
 
-	szap "github.com/alexfalkowski/go-service/transport/grpc/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	"github.com/alexfalkowski/go-service/transport/grpc/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/transport/grpc/otel"
+	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"github.com/soheilhy/cmux"
@@ -25,7 +25,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     otel.Tracer
+	Tracer     tracer.Tracer
 	Metrics    *prometheus.ServerCollector
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
@@ -87,7 +87,7 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
 		params.Metrics.UnaryServerInterceptor(),
-		otel.UnaryServerInterceptor(params.Tracer),
+		tracer.UnaryServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -101,7 +101,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
 		params.Metrics.StreamServerInterceptor(),
-		otel.StreamServerInterceptor(params.Tracer),
+		tracer.StreamServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

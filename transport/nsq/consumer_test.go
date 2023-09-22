@@ -6,20 +6,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics/prometheus"
+	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
-	otel.Register()
+	tracer.Register()
 }
 
 //nolint:dupl
@@ -27,7 +27,7 @@ func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -59,7 +59,7 @@ func TestInvalidConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -90,7 +90,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
@@ -121,7 +121,7 @@ func TestReceiveMessage(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -165,7 +165,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -204,7 +204,7 @@ func TestReceiveError(t *testing.T) {
 	Convey("Given I have a consumer and a producer", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer, err := notel.NewTracer(notel.TracerParams{Lifecycle: lc, Config: test.NewOTELConfig(), Version: test.Version})
+		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ

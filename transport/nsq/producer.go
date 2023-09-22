@@ -3,17 +3,17 @@ package nsq
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq/breaker"
-	"github.com/alexfalkowski/go-service/transport/nsq/logger"
-	lzap "github.com/alexfalkowski/go-service/transport/nsq/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/metrics/prometheus"
-	notel "github.com/alexfalkowski/go-service/transport/nsq/otel"
 	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
+	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics/prometheus"
+	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,7 +24,7 @@ type ProducerOption interface{ apply(*producerOptions) }
 
 type producerOptions struct {
 	logger  *zap.Logger
-	tracer  notel.Tracer
+	tracer  ntracer.Tracer
 	metrics *prometheus.ProducerCollector
 	retry   bool
 	breaker bool
@@ -56,7 +56,7 @@ func WithProducerLogger(logger *zap.Logger) ProducerOption {
 }
 
 // WithProducerConfig for NSQ.
-func WithProducerTracer(tracer notel.Tracer) ProducerOption {
+func WithProducerTracer(tracer ntracer.Tracer) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.tracer = tracer
 	})
@@ -79,7 +79,7 @@ type ProducerParams struct {
 
 // NewProducer for NSQ.
 func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
-	defaultOptions := &producerOptions{tracer: otel.NewNoopTracer("nsq")}
+	defaultOptions := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
@@ -107,7 +107,7 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		pr = defaultOptions.metrics.Producer(pr)
 	}
 
-	pr = notel.NewProducer(defaultOptions.tracer, pr)
+	pr = ntracer.NewProducer(defaultOptions.tracer, pr)
 
 	if defaultOptions.retry {
 		pr = retry.NewProducer(&params.Config.Retry, pr)

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/cache/redis/client"
-	"github.com/alexfalkowski/go-service/cache/redis/logger"
-	rzap "github.com/alexfalkowski/go-service/cache/redis/logger/zap"
-	"github.com/alexfalkowski/go-service/cache/redis/otel"
+	"github.com/alexfalkowski/go-service/cache/redis/telemetry/logger"
+	rzap "github.com/alexfalkowski/go-service/cache/redis/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -18,7 +18,7 @@ type ClientParams struct {
 
 	Lifecycle   fx.Lifecycle
 	RingOptions *redis.RingOptions
-	Tracer      otel.Tracer
+	Tracer      tracer.Tracer
 	Logger      *zap.Logger
 }
 
@@ -27,7 +27,7 @@ func NewClient(params ClientParams) client.Client {
 	redis.SetLogger(logger.NewLogger())
 
 	var client client.Client = redis.NewRing(params.RingOptions)
-	client = otel.NewClient(params.Tracer, client)
+	client = tracer.NewClient(params.Tracer, client)
 	client = rzap.NewClient(params.Logger, client)
 
 	params.Lifecycle.Append(fx.Hook{

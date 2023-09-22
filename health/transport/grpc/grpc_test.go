@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
-	"github.com/alexfalkowski/go-service/otel"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	. "github.com/smartystreets/goconvey/convey"
@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	otel.Register()
+	tracer.Register()
 }
 
 //nolint:dupl
@@ -31,9 +31,9 @@ func TestUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -43,7 +43,7 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -67,9 +67,9 @@ func TestInvalidUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -78,7 +78,7 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -101,10 +101,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -116,7 +116,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -140,9 +140,9 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -151,7 +151,7 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -178,9 +178,9 @@ func TestInvalidStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false, nil, nil)
+		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -189,7 +189,7 @@ func TestInvalidStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -215,10 +215,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewOTELConfig(), cfg))
+		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTELConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTELConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
 			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
 		)
@@ -230,7 +230,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewOTELConfig(), nil)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)

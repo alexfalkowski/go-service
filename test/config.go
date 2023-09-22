@@ -9,8 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/alexfalkowski/go-service/otel"
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
@@ -87,9 +87,9 @@ func NewTransportConfig() *transport.Config {
 	}
 }
 
-// NewOTELConfig for test.
-func NewOTELConfig() *otel.Config {
-	return &otel.Config{
+// NewTracerConfig for test.
+func NewTracerConfig() *tracer.Config {
+	return &tracer.Config{
 		Host: "localhost:4318",
 	}
 }

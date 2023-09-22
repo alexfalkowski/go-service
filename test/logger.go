@@ -1,7 +1,7 @@
 package test
 
 import (
-	szap "github.com/alexfalkowski/go-service/logger/zap"
+	szap "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )

@@ -6,10 +6,10 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	dzap "github.com/alexfalkowski/go-service/database/sql/driver/logger/zap"
-	sotel "github.com/alexfalkowski/go-service/database/sql/driver/otel"
-	"github.com/alexfalkowski/go-service/database/sql/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/database/sql/pg/otel"
+	dzap "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
+	stracer "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/database/sql/telemetry/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
@@ -19,9 +19,9 @@ import (
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, tracer otel.Tracer, logger *zap.Logger) {
+func Register(name string, driver driver.Driver, tracer tracer.Tracer, logger *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-	interceptor = sotel.NewInterceptor(name, tracer, interceptor)
+	interceptor = stracer.NewInterceptor(name, tracer, interceptor)
 	interceptor = dzap.NewInterceptor(name, logger, interceptor)
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
