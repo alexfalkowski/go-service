@@ -180,13 +180,16 @@ For distributed tracing we support the following:
 To configure, please specify the following:
 
 ```yaml
-otel:
-  host: localhost:4318
+telemetry:
+  tracer:
+    host: localhost:4318
+    secure: false
 ```
 
 ```toml
-[otel]
+[telemetry.tracer]
 host = "localhost:4318"
+secure = false
 ```
 
 ## Transport
