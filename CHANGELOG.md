@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.92.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.92.1) - 2023-10-02
+
+- [`16ff5df`](https://github.com/alexfalkowski/go-service/commit/16ff5df9dcf6411c764177a0ecf2a4e0b3afc11f) fix(deps): bump github.com/vmihailenco/msgpack/v5 from 5.3.5 to 5.4.0 (#369)
+
 ## [v1.92.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.92.0) - 2023-09-29
 
 - [`2ce4910`](https://github.com/alexfalkowski/go-service/commit/2ce4910e77145eae4abb13173654c210c18c421f) feat(deps): update otel to v1.19.0 (#367)
