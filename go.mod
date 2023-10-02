@@ -28,7 +28,7 @@ require (
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.7.0
 	github.com/ulule/limiter/v3 v3.11.2
-	github.com/vmihailenco/msgpack/v5 v5.3.5
+	github.com/vmihailenco/msgpack/v5 v5.4.0
 	go.opentelemetry.io/otel v1.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.19.0
