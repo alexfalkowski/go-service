@@ -28,12 +28,13 @@ telemetry:
   tracer:
     host: localhost:4318
 transport:
-  port: 8080
   http:
+    port: 8080
     retry:
       timeout: 1s
       attempts: 3
   grpc:
+    port: 9090
     retry:
       timeout: 1s
       attempts: 3

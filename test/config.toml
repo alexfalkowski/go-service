@@ -29,12 +29,15 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 [telemetry.tracer]
 host = "localhost:4318"
 
-[transport]
+[transport.http]
 port = "8080"
 
 [transport.http.retry]
 timeout = "1s"
 attempts = 3
+
+[transport.grpc]
+port = "9090"
 
 [transport.grpc.retry]
 timeout = "1s"

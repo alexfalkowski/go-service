@@ -51,7 +51,7 @@ func NewGRPCClient(
 	}
 
 	conn, _ := tgrpc.NewClient(
-		tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", tcfg.Port), Config: &tcfg.GRPC},
+		tgrpc.ClientParams{Context: ctx, Host: fmt.Sprintf("127.0.0.1:%s", tcfg.GRPC.Port), Config: &tcfg.GRPC},
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 		tgrpc.WithClientDialOption(dialOpts...),

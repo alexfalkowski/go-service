@@ -6,4 +6,7 @@ sql:
   pg:
     url: postgres://test:test@localhost:5432/test?sslmode=disable
 transport:
-  port: -1
+  http:
+    port: -1
+  grpc:
+    port: -1

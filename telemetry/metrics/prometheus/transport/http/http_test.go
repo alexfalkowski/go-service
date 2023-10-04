@@ -49,7 +49,7 @@ func TestHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
