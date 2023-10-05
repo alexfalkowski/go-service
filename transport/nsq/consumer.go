@@ -50,53 +50,39 @@ func WithConsumerMetrics(metrics *prometheus.ConsumerCollector) ConsumerOption {
 	})
 }
 
-// ConsumerParams for NSQ.
-type ConsumerParams struct {
-	Lifecycle fx.Lifecycle
-
-	Topic, Channel string
-	Config         *Config
-	Handler        handler.Handler
-	Marshaller     marshaller.Marshaller
-}
-
 // RegisterConsumer for NSQ.
-func RegisterConsumer(params ConsumerParams, opts ...ConsumerOption) error {
+func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, h handler.Handler, m marshaller.Marshaller, opts ...ConsumerOption) error {
 	defaultOptions := &consumerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
-	cfg := nsq.NewConfig()
-
-	c, err := nsq.NewConsumer(params.Topic, params.Channel, cfg)
+	c, err := nsq.NewConsumer(topic, channel, nsq.NewConfig())
 	if err != nil {
 		return err
 	}
 
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	h := params.Handler
-
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(lzap.HandlerParams{Topic: params.Topic, Channel: params.Channel, Logger: defaultOptions.logger, Handler: h})
+		h = lzap.NewHandler(topic, channel, defaultOptions.logger, h)
 	}
 
 	if defaultOptions.metrics != nil {
-		h = defaultOptions.metrics.Handler(params.Topic, params.Channel, h)
+		h = defaultOptions.metrics.Handler(topic, channel, h)
 	}
 
-	h = ntracer.NewHandler(params.Topic, params.Channel, defaultOptions.tracer, h)
+	h = ntracer.NewHandler(topic, channel, defaultOptions.tracer, h)
 	h = meta.NewHandler(h)
 
-	c.AddHandler(handler.New(handler.Params{Handler: h, Marshaller: params.Marshaller}))
+	c.AddHandler(handler.New(h, m))
 
-	err = c.ConnectToNSQLookupd(params.Config.LookupHost)
+	err = c.ConnectToNSQLookupd(cfg.LookupHost)
 	if err != nil {
 		return err
 	}
 
-	params.Lifecycle.Append(fx.Hook{
+	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			c.Stop()
 

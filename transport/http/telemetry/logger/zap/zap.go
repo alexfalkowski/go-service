@@ -26,15 +26,9 @@ const (
 	server         = "server"
 )
 
-// HandlerParams for zap.
-type HandlerParams struct {
-	Logger  *zap.Logger
-	Handler http.Handler
-}
-
 // NewHandler for zap.
-func NewHandler(params HandlerParams) *Handler {
-	return &Handler{logger: params.Logger, Handler: params.Handler}
+func NewHandler(logger *zap.Logger, handler http.Handler) *Handler {
+	return &Handler{logger: logger, Handler: handler}
 }
 
 // Handler for zap.
@@ -77,15 +71,9 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.logger.Info("finished call", fields...)
 }
 
-// RoundTripperParams for zap.
-type RoundTripperParams struct {
-	Logger       *zap.Logger
-	RoundTripper http.RoundTripper
-}
-
 // NewRoundTripper for zap.
-func NewRoundTripper(params RoundTripperParams) *RoundTripper {
-	return &RoundTripper{logger: params.Logger, RoundTripper: params.RoundTripper}
+func NewRoundTripper(logger *zap.Logger, r http.RoundTripper) *RoundTripper {
+	return &RoundTripper{logger: logger, RoundTripper: r}
 }
 
 // RoundTripper for zap.

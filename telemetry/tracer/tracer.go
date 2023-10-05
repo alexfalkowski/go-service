@@ -17,14 +17,6 @@ import (
 	"go.uber.org/fx"
 )
 
-// Params for tracer.
-type Params struct {
-	Lifecycle fx.Lifecycle
-	Name      string
-	Version   version.Version
-	Config    *Config
-}
-
 // Register for tracer.
 func Register() {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
@@ -36,14 +28,14 @@ func NewNoopTracer(name string) trace.Tracer {
 }
 
 // NewTracer for tracer.
-func NewTracer(params Params) (trace.Tracer, error) {
-	if params.Config.Host == "" {
-		return NewNoopTracer(params.Name), nil
+func NewTracer(lc fx.Lifecycle, name string, ver version.Version, cfg *Config) (trace.Tracer, error) {
+	if cfg.Host == "" {
+		return NewNoopTracer(name), nil
 	}
 
-	opts := []otlptracehttp.Option{otlptracehttp.WithEndpoint(params.Config.Host)}
+	opts := []otlptracehttp.Option{otlptracehttp.WithEndpoint(cfg.Host)}
 
-	if !params.Config.Secure {
+	if !cfg.Secure {
 		opts = append(opts, otlptracehttp.WithInsecure())
 	}
 
@@ -56,8 +48,8 @@ func NewTracer(params Params) (trace.Tracer, error) {
 
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName(params.Name),
-		semconv.ServiceVersion(string(params.Version)),
+		semconv.ServiceName(name),
+		semconv.ServiceVersion(string(ver)),
 		attribute.String("name", os.ExecutableName()),
 	)
 
@@ -69,13 +61,13 @@ func NewTracer(params Params) (trace.Tracer, error) {
 	otel.SetTracerProvider(p)
 	otel.SetErrorHandler(&errorHandler{})
 
-	params.Lifecycle.Append(fx.Hook{
+	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			return p.Shutdown(ctx)
 		},
 	})
 
-	return p.Tracer(params.Name), nil
+	return p.Tracer(name), nil
 }
 
 type errorHandler struct{}

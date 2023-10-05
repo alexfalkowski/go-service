@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/golang-jwt/jwt/v4"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -39,7 +40,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -86,7 +87,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -134,7 +135,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -181,7 +182,7 @@ func TestCorruptToken(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -218,7 +219,7 @@ func TestMissingAudienceToken(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -263,7 +264,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -309,7 +310,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -355,7 +356,7 @@ func TestMissingKidToken(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}

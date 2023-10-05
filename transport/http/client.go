@@ -71,29 +71,24 @@ func WithClientMetrics(metrics *prometheus.ClientCollector) ClientOption {
 	})
 }
 
-// ClientParams for HTTP.
-type ClientParams struct {
-	Config *Config
-}
-
 // NewClient for HTTP.
-func NewClient(params ClientParams, opts ...ClientOption) *http.Client {
+func NewClient(cfg *Config, opts ...ClientOption) *http.Client {
 	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
-	return &http.Client{Transport: newRoundTripper(params, defaultOptions)}
+	return &http.Client{Transport: newRoundTripper(cfg, defaultOptions)}
 }
 
-func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper {
+func newRoundTripper(cfg *Config, opts *clientOptions) http.RoundTripper {
 	hrt := opts.roundTripper
 	if hrt == nil {
 		hrt = http.DefaultTransport
 	}
 
 	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(lzap.RoundTripperParams{Logger: opts.logger, RoundTripper: hrt})
+		hrt = lzap.NewRoundTripper(opts.logger, hrt)
 	}
 
 	if opts.metrics != nil {
@@ -103,14 +98,14 @@ func newRoundTripper(params ClientParams, opts *clientOptions) http.RoundTripper
 	hrt = htracer.NewRoundTripper(opts.tracer, hrt)
 
 	if opts.retry {
-		hrt = retry.NewRoundTripper(&params.Config.Retry, hrt)
+		hrt = retry.NewRoundTripper(&cfg.Retry, hrt)
 	}
 
 	if opts.breaker {
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
-	hrt = meta.NewRoundTripper(params.Config.UserAgent, hrt)
+	hrt = meta.NewRoundTripper(cfg.UserAgent, hrt)
 
 	return hrt
 }

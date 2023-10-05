@@ -30,7 +30,7 @@ type Params struct {
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(tracer.Params{Lifecycle: params.Lifecycle, Name: "grpc", Version: params.Version, Config: params.Config})
+	return tracer.NewTracer(params.Lifecycle, "grpc", params.Version, params.Config)
 }
 
 // Tracer for tracer.

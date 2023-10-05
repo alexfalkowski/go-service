@@ -69,27 +69,17 @@ func WithProducerMetrics(metrics *prometheus.ProducerCollector) ProducerOption {
 	})
 }
 
-// ProducerParams for NSQ.
-type ProducerParams struct {
-	Lifecycle fx.Lifecycle
-
-	Config     *Config
-	Marshaller marshaller.Marshaller
-}
-
 // NewProducer for NSQ.
-func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Producer {
+func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...ProducerOption) producer.Producer {
 	defaultOptions := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
-	cfg := nsq.NewConfig()
-	p, _ := nsq.NewProducer(params.Config.Host, cfg)
-
+	p, _ := nsq.NewProducer(cfg.Host, nsq.NewConfig())
 	p.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	params.Lifecycle.Append(fx.Hook{
+	lc.Append(fx.Hook{
 		OnStop: func(context.Context) error {
 			p.Stop()
 
@@ -97,10 +87,10 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 		},
 	})
 
-	var pr producer.Producer = &nsqProducer{marshaller: params.Marshaller, Producer: p}
+	var pr producer.Producer = &nsqProducer{marshaller: m, Producer: p}
 
 	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(lzap.ProducerParams{Logger: defaultOptions.logger, Producer: pr})
+		pr = lzap.NewProducer(defaultOptions.logger, pr)
 	}
 
 	if defaultOptions.metrics != nil {
@@ -110,14 +100,14 @@ func NewProducer(params ProducerParams, opts ...ProducerOption) producer.Produce
 	pr = ntracer.NewProducer(defaultOptions.tracer, pr)
 
 	if defaultOptions.retry {
-		pr = retry.NewProducer(&params.Config.Retry, pr)
+		pr = retry.NewProducer(&cfg.Retry, pr)
 	}
 
 	if defaultOptions.breaker {
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(params.Config.UserAgent, pr)
+	pr = meta.NewProducer(cfg.UserAgent, pr)
 
 	return pr
 }

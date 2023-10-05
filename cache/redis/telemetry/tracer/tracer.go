@@ -27,7 +27,7 @@ type Params struct {
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(tracer.Params{Lifecycle: params.Lifecycle, Name: "redis", Config: params.Config, Version: params.Version})
+	return tracer.NewTracer(params.Lifecycle, "redis", params.Version, params.Config)
 }
 
 // Tracer for tracer.
