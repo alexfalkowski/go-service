@@ -124,8 +124,7 @@ func TestInvalidClient(t *testing.T) {
 func registrations(logger *zap.Logger, cfg *shttp.Config, tracer htracer.Tracer, _ version.Version) health.Registrations {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
-	client := shttp.NewClient(
-		shttp.ClientParams{Config: cfg},
+	client := shttp.NewClient(cfg,
 		shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer),
 	)
 

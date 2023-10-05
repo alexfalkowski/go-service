@@ -13,15 +13,9 @@ type Handler interface {
 	Handle(ctx context.Context, message *message.Message) error
 }
 
-// Params for handler.
-type Params struct {
-	Handler    Handler
-	Marshaller marshaller.Marshaller
-}
-
 // New handler for NSQ.
-func New(params Params) nsq.Handler {
-	return &handler{Marshaller: params.Marshaller, Handler: params.Handler}
+func New(h Handler, m marshaller.Marshaller) nsq.Handler {
+	return &handler{Marshaller: m, Handler: h}
 }
 
 type handler struct {

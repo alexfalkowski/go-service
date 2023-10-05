@@ -12,8 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// DBParams for PostgreSQL.
-type DBParams struct {
+// OpenParams for pg.
+type OpenParams struct {
 	fx.In
 
 	Lifecycle fx.Lifecycle
@@ -21,14 +21,14 @@ type DBParams struct {
 	Version   version.Version
 }
 
-// Open for PostgreSQL.
-func Open(params DBParams) (*mssqlx.DBs, error) {
+// Open for pg.
+func Open(params OpenParams) (*mssqlx.DBs, error) {
 	return driver.Open(params.Lifecycle, "pg", params.Config.Config, params.Version)
 }
 
 var once sync.Once
 
-// Register the driver for PostgreSQL.
+// Register the driver for pg.
 func Register(tracer tracer.Tracer, logger *zap.Logger) {
 	once.Do(func() {
 		driver.Register("pg", stdlib.GetDefaultDriver(), tracer, logger)

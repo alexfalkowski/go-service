@@ -17,7 +17,7 @@ import (
 	"go.uber.org/fx"
 )
 
-// Params for otr.
+// Params for tracer.
 type Params struct {
 	fx.In
 
@@ -26,20 +26,20 @@ type Params struct {
 	Version   version.Version
 }
 
-// NewTracer for otr.
+// NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(tracer.Params{Lifecycle: params.Lifecycle, Name: "nsq", Config: params.Config, Version: params.Version})
+	return tracer.NewTracer(params.Lifecycle, "nsq", params.Version, params.Config)
 }
 
-// Tracer for otr.
+// Tracer for tracer.
 type Tracer trace.Tracer
 
-// NewHandler for otr.
+// NewHandler for tracer.
 func NewHandler(topic, channel string, tracer Tracer, h handler.Handler) *Handler {
 	return &Handler{topic: topic, channel: channel, tracer: tracer, Handler: h}
 }
 
-// Handler for otr.
+// Handler for tracer.
 type Handler struct {
 	topic, channel string
 	tracer         Tracer
@@ -78,12 +78,12 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	return err
 }
 
-// NewProducer for otr.
+// NewProducer for tracer.
 func NewProducer(tracer Tracer, p producer.Producer) *Producer {
 	return &Producer{tracer: tracer, Producer: p}
 }
 
-// Producer for otr.
+// Producer for tracer.
 type Producer struct {
 	tracer Tracer
 	producer.Producer

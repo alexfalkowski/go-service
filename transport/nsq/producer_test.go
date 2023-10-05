@@ -27,8 +27,7 @@ func TestProducer(t *testing.T) {
 			tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			producer := nsq.NewProducer(
-				nsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
+			producer := nsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
 				nsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 			)

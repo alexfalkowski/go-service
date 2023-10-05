@@ -45,7 +45,7 @@ func NewServer(params ServerParams) *Server {
 	handler = cors.New().Handler(handler)
 	handler = params.Metrics.Handler(handler)
 	handler = tracer.NewHandler(params.Tracer, handler)
-	handler = szap.NewHandler(szap.HandlerParams{Logger: params.Logger, Handler: handler})
+	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 
 	server := &Server{

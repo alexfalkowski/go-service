@@ -29,16 +29,9 @@ const (
 	producerKind = "producer"
 )
 
-// HandlerParams for zap.
-type HandlerParams struct {
-	Topic, Channel string
-	Logger         *zap.Logger
-	Handler        handler.Handler
-}
-
 // NewHandler for zap.
-func NewHandler(params HandlerParams) *Handler {
-	return &Handler{topic: params.Topic, channel: params.Channel, logger: params.Logger, Handler: params.Handler}
+func NewHandler(topic, channel string, logger *zap.Logger, handler handler.Handler) *Handler {
+	return &Handler{topic: topic, channel: channel, logger: logger, Handler: handler}
 }
 
 // Handler for zap.
@@ -82,15 +75,9 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	return nil
 }
 
-// ProducerParams for zap.
-type ProducerParams struct {
-	Logger   *zap.Logger
-	Producer producer.Producer
-}
-
 // NewProducer for zap.
-func NewProducer(params ProducerParams) *Producer {
-	return &Producer{logger: params.Logger, Producer: params.Producer}
+func NewProducer(logger *zap.Logger, producer producer.Producer) *Producer {
+	return &Producer{logger: logger, Producer: producer}
 }
 
 // Producer for zap.

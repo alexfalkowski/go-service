@@ -104,15 +104,8 @@ func WithClientMetrics(metrics *prometheus.ClientCollector) ClientOption {
 	})
 }
 
-// ClientParams for gRPC.
-type ClientParams struct {
-	Context context.Context
-	Host    string
-	Config  *Config
-}
-
 // NewClient to host for gRPC.
-func NewClient(params ClientParams, opts ...ClientOption) (*grpc.ClientConn, error) {
+func NewClient(ctx context.Context, host string, cfg *Config, opts ...ClientOption) (*grpc.ClientConn, error) {
 	defaultOptions := &clientOptions{
 		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
 		tracer:   tracer.NewNoopTracer("grpc"),
@@ -122,22 +115,22 @@ func NewClient(params ClientParams, opts ...ClientOption) (*grpc.ClientConn, err
 	}
 
 	grpcOpts := []grpc.DialOption{}
-	grpcOpts = append(grpcOpts, unaryDialOption(params, defaultOptions), streamDialOption(params, defaultOptions), defaultOptions.security)
+	grpcOpts = append(grpcOpts, unaryDialOption(cfg, defaultOptions), streamDialOption(cfg, defaultOptions), defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
-	return grpc.DialContext(params.Context, params.Host, grpcOpts...)
+	return grpc.DialContext(ctx, host, grpcOpts...)
 }
 
-func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
+func unaryDialOption(cfg *Config, opts *clientOptions) grpc.DialOption {
 	unary := []grpc.UnaryClientInterceptor{}
 
 	if opts.retry {
 		unary = append(unary,
 			retry.UnaryClientInterceptor(
 				retry.WithCodes(codes.Unavailable, codes.DataLoss),
-				retry.WithMax(params.Config.Retry.Attempts),
+				retry.WithMax(cfg.Retry.Attempts),
 				retry.WithBackoff(retry.BackoffLinear(backoffLinear)),
-				retry.WithPerRetryTimeout(params.Config.Retry.Timeout),
+				retry.WithPerRetryTimeout(cfg.Retry.Timeout),
 			),
 		)
 	}
@@ -146,7 +139,7 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(params.Config.UserAgent))
+	unary = append(unary, meta.UnaryClientInterceptor(cfg.UserAgent))
 
 	if opts.logger != nil {
 		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
@@ -162,8 +155,8 @@ func unaryDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
 	return grpc.WithChainUnaryInterceptor(unary...)
 }
 
-func streamDialOption(params ClientParams, opts *clientOptions) grpc.DialOption {
-	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(params.Config.UserAgent)}
+func streamDialOption(cfg *Config, opts *clientOptions) grpc.DialOption {
+	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(cfg.UserAgent)}
 
 	if opts.logger != nil {
 		stream = append(stream, szap.StreamClientInterceptor(opts.logger))

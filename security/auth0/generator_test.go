@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -32,7 +33,7 @@ func TestGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -70,7 +71,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -106,7 +107,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -142,7 +143,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -178,7 +179,7 @@ func TestCachedGenerate(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}

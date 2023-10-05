@@ -22,8 +22,7 @@ type GeneratorParams struct {
 
 // NewGenerator for Auth0.
 func NewGenerator(params GeneratorParams) jwt.Generator {
-	client := http.NewClient(
-		http.ClientParams{Config: params.HTTPConfig},
+	client := http.NewClient(params.HTTPConfig,
 		http.WithClientLogger(params.Logger),
 		http.WithClientBreaker(), http.WithClientRetry(),
 		http.WithClientTracer(params.Tracer),
@@ -48,8 +47,7 @@ type CertificatorParams struct {
 
 // NewCertificator for Auth0.
 func NewCertificator(params CertificatorParams) Certificator {
-	client := http.NewClient(
-		http.ClientParams{Config: params.HTTPConfig},
+	client := http.NewClient(params.HTTPConfig,
 		http.WithClientLogger(params.Logger),
 		http.WithClientBreaker(), http.WithClientRetry(),
 		http.WithClientTracer(params.Tracer),

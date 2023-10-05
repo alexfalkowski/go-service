@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )
@@ -32,7 +33,7 @@ func TestVerify(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -75,7 +76,7 @@ func TestCachedVerify(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -124,7 +125,7 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -171,7 +172,7 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
@@ -218,7 +219,7 @@ func TestVerifyInvalidAudience(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cache := test.NewRistrettoCache(lc)
 
-		tracer, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}

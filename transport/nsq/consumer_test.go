@@ -22,7 +22,6 @@ func init() {
 	tracer.Register()
 }
 
-//nolint:dupl
 func TestConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -34,11 +33,7 @@ func TestConsumer(t *testing.T) {
 		handler := test.NewHandler(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(
-				tnsq.ConsumerParams{
-					Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
-					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				},
+			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
@@ -54,7 +49,6 @@ func TestConsumer(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestInvalidConsumer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -66,11 +60,7 @@ func TestInvalidConsumer(t *testing.T) {
 		handler := test.NewHandler(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(
-				tnsq.ConsumerParams{
-					Lifecycle: lc, Topic: "schäfer", Channel: "schäfer", Config: cfg,
-					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				},
+			err = tnsq.RegisterConsumer(lc, "schäfer", "schäfer", cfg, handler, marshaller.NewMsgPack(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
@@ -97,11 +87,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		handler := test.NewHandler(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(
-				tnsq.ConsumerParams{
-					Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
-					Handler: handler, Marshaller: marshaller.NewMsgPack(),
-				},
+			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 			)
@@ -127,18 +113,13 @@ func TestReceiveMessage(t *testing.T) {
 		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
-		err = tnsq.RegisterConsumer(
-			tnsq.ConsumerParams{
-				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
-				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-			},
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
-		producer := tnsq.NewProducer(
-			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
+		producer := tnsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 		)
@@ -171,11 +152,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(nil)
 
-		err = tnsq.RegisterConsumer(
-			tnsq.ConsumerParams{
-				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
-				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-			},
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
@@ -210,18 +187,13 @@ func TestReceiveError(t *testing.T) {
 		cfg := &test.NewTransportConfig().NSQ
 		handler := test.NewHandler(errors.New("something went wrong"))
 
-		err = tnsq.RegisterConsumer(
-			tnsq.ConsumerParams{
-				Lifecycle: lc, Topic: "topic", Channel: "channel", Config: cfg,
-				Handler: handler, Marshaller: marshaller.NewMsgPack(),
-			},
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(prometheus.NewConsumerCollector(lc, test.Version)),
 		)
 		So(err, ShouldBeNil)
 
-		producer := tnsq.NewProducer(
-			tnsq.ProducerParams{Lifecycle: lc, Config: cfg, Marshaller: marshaller.NewMsgPack()},
+		producer := tnsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(prometheus.NewProducerCollector(lc, test.Version)),
 		)
