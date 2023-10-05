@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.94.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.94.0) - 2023-10-05
+
+- [`a6b9db1`](https://github.com/alexfalkowski/go-service/commit/a6b9db162ff93c42552dfc2444a8217ba949b4e6) feat: remove some params (#372)
+- [`15aa7ae`](https://github.com/alexfalkowski/go-service/commit/15aa7ae4195aba691978cb48516d24602815603d) docs: change ports for transport (#371)
+
 ## [v1.93.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.93.0) - 2023-10-05
 
 - [`a9158e8`](https://github.com/alexfalkowski/go-service/commit/a9158e8fb63d9b7931ce01e41824d0a99722480b) feat(transport): separate ports (#370)
