@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics/prometheus"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -62,7 +61,7 @@ func NewServer(params ServerParams) *Server {
 func (s *Server) Start(listener net.Listener) {
 	s.params.Logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
 
-	if err := s.server.Serve(listener); err != nil && !s.ignoreError(err) {
+	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
 		if err := s.params.Shutdowner.Shutdown(); err != nil {
@@ -76,10 +75,6 @@ func (s *Server) Start(listener net.Listener) {
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) {
 	s.params.Logger.Info("stopping http server", zap.Error(s.server.Shutdown(ctx)))
-}
-
-func (s *Server) ignoreError(err error) bool {
-	return errors.Is(err, http.ErrServerClosed) || errors.Is(err, cmux.ErrListenerClosed) || errors.Is(err, cmux.ErrServerClosed)
 }
 
 func customMatcher(key string) (string, bool) {

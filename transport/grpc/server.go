@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"net"
 
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -11,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"github.com/soheilhy/cmux"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -59,7 +57,7 @@ func NewServer(params ServerParams) *Server {
 func (s *Server) Start(listener net.Listener) {
 	s.params.Logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
 
-	if err := s.Server.Serve(listener); err != nil && !s.ignoreError(err) {
+	if err := s.Server.Serve(listener); err != nil {
 		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
 		if err := s.params.Shutdowner.Shutdown(); err != nil {
@@ -75,10 +73,6 @@ func (s *Server) Stop(_ context.Context) {
 	s.params.Logger.Info("stopping grpc server")
 
 	s.Server.GracefulStop()
-}
-
-func (s *Server) ignoreError(err error) bool {
-	return errors.Is(err, cmux.ErrListenerClosed) || errors.Is(err, cmux.ErrServerClosed)
 }
 
 func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {

@@ -60,8 +60,8 @@ func (cfg *Config) NSQConfig() *nsq.Config {
 // NewTransportConfig for test.
 func NewTransportConfig() *transport.Config {
 	return &transport.Config{
-		Port: Port(),
 		HTTP: http.Config{
+			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
 			Retry: hretry.Config{
 				Timeout:  timeout,
@@ -69,6 +69,7 @@ func NewTransportConfig() *transport.Config {
 			},
 		},
 		GRPC: grpc.Config{
+			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
 			Retry: gretry.Config{
 				Timeout:  timeout,

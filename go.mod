@@ -24,7 +24,6 @@ require (
 	github.com/prometheus/client_golang v1.17.0
 	github.com/rs/cors v1.10.1
 	github.com/smartystreets/goconvey v1.8.1
-	github.com/soheilhy/cmux v0.1.5
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.7.0
 	github.com/ulule/limiter/v3 v3.11.2

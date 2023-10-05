@@ -49,7 +49,7 @@ func TestUnary(t *testing.T) {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -103,7 +103,7 @@ func TestDefaultClientUnary(t *testing.T) {
 			defer cancel()
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -153,7 +153,7 @@ func TestValidAuthUnary(t *testing.T) {
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -206,7 +206,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -258,7 +258,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -310,7 +310,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -355,7 +355,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -407,7 +407,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport)
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
