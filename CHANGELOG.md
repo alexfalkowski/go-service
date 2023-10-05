@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.93.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.93.0) - 2023-10-05
+
+- [`a9158e8`](https://github.com/alexfalkowski/go-service/commit/a9158e8fb63d9b7931ce01e41824d0a99722480b) feat(transport): separate ports (#370)
+
 ## [v1.92.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.92.2) - 2023-10-02
 
 - [`9057ccc`](https://github.com/alexfalkowski/go-service/commit/9057cccd2a21b96bf246c45fb9b9e451a6ec9ce7) fix(deps): bump github.com/rs/cors from 1.10.0 to 1.10.1 (#368)
