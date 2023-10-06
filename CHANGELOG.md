@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.95.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.95.0) - 2023-10-06
+
+- [`6a470bd`](https://github.com/alexfalkowski/go-service/commit/6a470bd9faa9032744bd798b31efb77904acd078) feat(grpc): add ability to enable or disable (#375)
+
 ## [v1.94.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.94.2) - 2023-10-06
 
 - [`691ea14`](https://github.com/alexfalkowski/go-service/commit/691ea14cf367b0bd8719aae782ece66529828439) fix(transport): validate port (#374)
