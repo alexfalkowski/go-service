@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.94.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.94.2) - 2023-10-06
+
+- [`691ea14`](https://github.com/alexfalkowski/go-service/commit/691ea14cf367b0bd8719aae782ece66529828439) fix(transport): validate port (#374)
+
 ## [v1.94.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.94.1) - 2023-10-06
 
 - [`9025d66`](https://github.com/alexfalkowski/go-service/commit/9025d668c613b0f2fcc8bf80937ca98de604b70f) fix(deps): bump golang.org/x/net from 0.15.0 to 0.16.0 (#373)
