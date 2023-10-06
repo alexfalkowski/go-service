@@ -69,6 +69,7 @@ func NewTransportConfig() *transport.Config {
 			},
 		},
 		GRPC: grpc.Config{
+			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
 			Retry: gretry.Config{
