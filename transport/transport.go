@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 
@@ -9,6 +10,9 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/fx"
 )
+
+// ErrInvalidPort for transport.
+var ErrInvalidPort = errors.New("invalid port")
 
 // RegisterParams for transport.
 type RegisterParams struct {
@@ -45,12 +49,12 @@ type server struct {
 
 // Start all the servers.
 func (s *server) Start() error {
-	gl, err := net.Listen("tcp", fmt.Sprintf(":%s", s.cfg.GRPC.Port))
+	gl, err := s.listener(s.cfg.GRPC.Port)
 	if err != nil {
 		return err
 	}
 
-	hl, err := net.Listen("tcp", fmt.Sprintf(":%s", s.cfg.HTTP.Port))
+	hl, err := s.listener(s.cfg.HTTP.Port)
 	if err != nil {
 		return err
 	}
@@ -65,4 +69,12 @@ func (s *server) Start() error {
 func (s *server) Stop(ctx context.Context) {
 	s.grpc.Stop(ctx)
 	s.http.Stop(ctx)
+}
+
+func (s *server) listener(port string) (net.Listener, error) {
+	if port == "" {
+		return nil, ErrInvalidPort
+	}
+
+	return net.Listen("tcp", fmt.Sprintf(":%s", port))
 }
