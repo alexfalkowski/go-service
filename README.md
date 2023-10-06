@@ -224,6 +224,7 @@ transport:
       timeout: 1s
       attempts: 3
   grpc:
+    enabled: true
     port: 9090
     retry:
       timeout: 1s
@@ -245,6 +246,7 @@ timeout = "1s"
 attempts = 3
 
 [transport.grpc]
+enabled = true
 port = "9090"
 
 [transport.grpc.retry]

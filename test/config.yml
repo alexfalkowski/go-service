@@ -34,6 +34,7 @@ transport:
       timeout: 1s
       attempts: 3
   grpc:
+    enabled: true
     port: 9090
     retry:
       timeout: 1s

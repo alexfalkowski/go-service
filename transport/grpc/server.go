@@ -55,6 +55,12 @@ func NewServer(params ServerParams) *Server {
 
 // Start the server.
 func (s *Server) Start(listener net.Listener) {
+	if !s.params.Config.Enabled {
+		listener.Close()
+
+		return
+	}
+
 	s.params.Logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
 
 	if err := s.Server.Serve(listener); err != nil {
@@ -70,6 +76,10 @@ func (s *Server) Start(listener net.Listener) {
 
 // Stop the server.
 func (s *Server) Stop(_ context.Context) {
+	if !s.params.Config.Enabled {
+		return
+	}
+
 	s.params.Logger.Info("stopping grpc server")
 
 	s.Server.GracefulStop()
