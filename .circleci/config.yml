@@ -14,6 +14,7 @@ jobs:
         command: /nsqlookupd
       - image: nsqio/nsq:latest
         command: /nsqd --lookupd-tcp-address=localhost:4160
+    working_directory: ~/go-service
     steps:
       - checkout
       - run: git submodule sync
@@ -33,9 +34,11 @@ jobs:
   release:
     docker:
       - image: alexfalkowski/release:3.1
+    working_directory: ~/go-service
     steps:
       - checkout
       - run: release
+    resource_class: large
 
 workflows:
   go-service:
