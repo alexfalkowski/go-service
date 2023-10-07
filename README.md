@@ -56,7 +56,7 @@ cache:
     password: test
     db: 0
   ristretto:
-    max_counters: 10000000
+    num_counters: 10000000
     max_cost: 100000000
     buffer_items: 64
 ```
@@ -71,7 +71,7 @@ db = 0
 server = "localhost:6379"
 
 [cache.ristretto]
-max_counters = 10_000_000
+num_counters = 10_000_000
 max_cost = 100_000_000
 buffer_items = 64
 ```

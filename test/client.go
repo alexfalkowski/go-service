@@ -8,11 +8,10 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	gprometheus "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics/prometheus"
 	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
-	hprometheus "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics/prometheus"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -20,20 +19,21 @@ import (
 )
 
 // NewHTTPClient for test.
-func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config) *http.Client {
-	return NewHTTPClientWithRoundTripper(lc, logger, cfg, tcfg, nil)
+func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter) *http.Client {
+	return NewHTTPClientWithRoundTripper(lc, logger, cfg, tcfg, nil, meter)
 }
 
 // NewHTTPClientWithRoundTripper for test.
-func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, roundTripper http.RoundTripper) *http.Client {
+func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
 	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
-
-	return shttp.NewClient(&tcfg.HTTP,
+	client, _ := shttp.NewClient(&tcfg.HTTP,
 		shttp.WithClientLogger(logger),
-		shttp.WithClientRoundTripper(roundTripper), shttp.WithClientBreaker(),
+		shttp.WithClientRoundTripper(rt), shttp.WithClientBreaker(),
 		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
-		shttp.WithClientMetrics(hprometheus.NewClientCollector(lc, Version)),
+		shttp.WithClientMetrics(meter),
 	)
+
+	return client
 }
 
 // NewGRPCClient for test.
@@ -41,6 +41,7 @@ func NewGRPCClient(
 	ctx context.Context, lc fx.Lifecycle, logger *zap.Logger,
 	tcfg *transport.Config, ocfg *tracer.Config,
 	cred credentials.PerRPCCredentials,
+	meter metric.Meter,
 ) *grpc.ClientConn {
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
 
@@ -53,7 +54,7 @@ func NewGRPCClient(
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
 		tgrpc.WithClientDialOption(dialOpts...),
-		tgrpc.WithClientMetrics(gprometheus.NewClientCollector(lc, Version)),
+		tgrpc.WithClientMetrics(meter),
 	)
 
 	return conn

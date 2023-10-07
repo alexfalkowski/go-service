@@ -10,9 +10,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	szap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -26,7 +27,7 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     tracer.Tracer
-	Metrics    *prometheus.ServerCollector
+	Meter      metric.Meter
 }
 
 // Server for HTTP.
@@ -37,13 +38,19 @@ type Server struct {
 }
 
 // NewServer for HTTP.
-func NewServer(params ServerParams) *Server {
+func NewServer(params ServerParams) (*Server, error) {
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
 
 	var handler http.Handler = mux
 
 	handler = cors.New().Handler(handler)
-	handler = params.Metrics.Handler(handler)
+
+	h, err := metrics.NewHandler(params.Meter, handler)
+	if err != nil {
+		return nil, err
+	}
+
+	handler = h
 	handler = tracer.NewHandler(params.Tracer, handler)
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
@@ -54,7 +61,7 @@ func NewServer(params ServerParams) *Server {
 		params: params,
 	}
 
-	return server
+	return server, nil
 }
 
 // Start the server.

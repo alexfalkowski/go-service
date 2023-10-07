@@ -8,8 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	lzap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +20,7 @@ type ClientOption interface{ apply(*clientOptions) }
 type clientOptions struct {
 	logger       *zap.Logger
 	tracer       htracer.Tracer
-	metrics      *prometheus.ClientCollector
+	meter        metric.Meter
 	retry        bool
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -65,23 +66,30 @@ func WithClientTracer(tracer htracer.Tracer) ClientOption {
 }
 
 // WithClientMetrics for HTTP.
-func WithClientMetrics(metrics *prometheus.ClientCollector) ClientOption {
+func WithClientMetrics(meter metric.Meter) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
-		o.metrics = metrics
+		o.meter = meter
 	})
 }
 
 // NewClient for HTTP.
-func NewClient(cfg *Config, opts ...ClientOption) *http.Client {
+func NewClient(cfg *Config, opts ...ClientOption) (*http.Client, error) {
 	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
-	return &http.Client{Transport: newRoundTripper(cfg, defaultOptions)}
+	rt, err := newRoundTripper(cfg, defaultOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{Transport: rt}
+
+	return client, nil
 }
 
-func newRoundTripper(cfg *Config, opts *clientOptions) http.RoundTripper {
+func newRoundTripper(cfg *Config, opts *clientOptions) (http.RoundTripper, error) {
 	hrt := opts.roundTripper
 	if hrt == nil {
 		hrt = http.DefaultTransport
@@ -91,8 +99,13 @@ func newRoundTripper(cfg *Config, opts *clientOptions) http.RoundTripper {
 		hrt = lzap.NewRoundTripper(opts.logger, hrt)
 	}
 
-	if opts.metrics != nil {
-		hrt = opts.metrics.RoundTripper(hrt)
+	if opts.meter != nil {
+		rt, err := metrics.NewRoundTripper(opts.meter, hrt)
+		if err != nil {
+			return nil, err
+		}
+
+		hrt = rt
 	}
 
 	hrt = htracer.NewRoundTripper(opts.tracer, hrt)
@@ -107,5 +120,5 @@ func newRoundTripper(cfg *Config, opts *clientOptions) http.RoundTripper {
 
 	hrt = meta.NewRoundTripper(cfg.UserAgent, hrt)
 
-	return hrt
+	return hrt, nil
 }

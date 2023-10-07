@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
@@ -31,13 +32,18 @@ func TestGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(params)
+		gen, err := auth0.NewGenerator(params)
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -69,13 +75,18 @@ func TestInvalidResponseGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(params)
+		gen, err := auth0.NewGenerator(params)
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -105,13 +116,18 @@ func TestInvalidURLGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(params)
+		gen, err := auth0.NewGenerator(params)
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -141,13 +157,18 @@ func TestMalformedURLGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(params)
+		gen, err := auth0.NewGenerator(params)
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -177,13 +198,18 @@ func TestCachedGenerate(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(params)
+		gen, err := auth0.NewGenerator(params)
+		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 

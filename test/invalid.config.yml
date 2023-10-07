@@ -2,6 +2,10 @@ cache:
   redis:
     addresses:
       server: localhost:6379
+  ristretto:
+    num_counters: 10000000
+    max_cost: 100000000
+    buffer_items: 64
 sql:
   pg:
     url: postgres://test:test@localhost:5432/test?sslmode=disable

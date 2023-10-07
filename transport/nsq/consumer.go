@@ -9,9 +9,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -20,9 +21,9 @@ import (
 type ConsumerOption interface{ apply(*consumerOptions) }
 
 type consumerOptions struct {
-	logger  *zap.Logger
-	tracer  ntracer.Tracer
-	metrics *prometheus.ConsumerCollector
+	logger *zap.Logger
+	tracer ntracer.Tracer
+	meter  metric.Meter
 }
 
 type consumerOptionFunc func(*consumerOptions)
@@ -44,9 +45,9 @@ func WithConsumerTracer(tracer ntracer.Tracer) ConsumerOption {
 }
 
 // WithConsumerMetrics for NSQ.
-func WithConsumerMetrics(metrics *prometheus.ConsumerCollector) ConsumerOption {
+func WithConsumerMetrics(meter metric.Meter) ConsumerOption {
 	return consumerOptionFunc(func(o *consumerOptions) {
-		o.metrics = metrics
+		o.meter = meter
 	})
 }
 
@@ -68,8 +69,13 @@ func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, h han
 		h = lzap.NewHandler(topic, channel, defaultOptions.logger, h)
 	}
 
-	if defaultOptions.metrics != nil {
-		h = defaultOptions.metrics.Handler(topic, channel, h)
+	if defaultOptions.meter != nil {
+		handler, err := metrics.NewHandler(topic, channel, defaultOptions.meter, h)
+		if err != nil {
+			return err
+		}
+
+		h = handler
 	}
 
 	h = ntracer.NewHandler(topic, channel, defaultOptions.tracer, h)

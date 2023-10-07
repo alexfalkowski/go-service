@@ -1,4 +1,4 @@
-package http_test
+package metrics_test
 
 import (
 	"context"
@@ -10,8 +10,9 @@ import (
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	ptracer "github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
+	smetrics "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/marshaller"
-	phttp "github.com/alexfalkowski/go-service/telemetry/metrics/prometheus/transport/http"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -32,22 +33,29 @@ func TestHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		_, _ = pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
-		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto())
-		_ = test.NewRistrettoCache(lc)
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		So(err, ShouldBeNil)
+
+		smetrics.Register(dbs, test.Version, m)
+
+		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
-		err = phttp.Register(hs)
+		err = metrics.Register(hs)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg)
+			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
@@ -66,7 +74,7 @@ func TestHTTP(t *testing.T) {
 				So(response, ShouldContainSubstring, "go_info")
 				So(response, ShouldContainSubstring, "redis_hits_total")
 				So(response, ShouldContainSubstring, "ristretto_hits_total")
-				So(response, ShouldContainSubstring, "pg_sql_max_open_total")
+				So(response, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})
 
