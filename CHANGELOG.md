@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.95.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.95.1) - 2023-10-11
+
+- [`113f432`](https://github.com/alexfalkowski/go-service/commit/113f432324decdc83eca76791836a1da3c53d1a5) fix(deps): bump golang.org/x/net from 0.16.0 to 0.17.0 (#380)
+- [`0c7a299`](https://github.com/alexfalkowski/go-service/commit/0c7a299c895a0799cf5ceae0c90f8afd49e9b047) build: remove tools (#378)
+- [`6940911`](https://github.com/alexfalkowski/go-service/commit/69409116a7ca6a015a7e117ecbcacbf4e71de39e) build: update bin (#377)
+- [`456f42c`](https://github.com/alexfalkowski/go-service/commit/456f42ced3da48103643ba26b963a09642bdfc37) ci: use resource_class large (#376)
+
 ## [v1.95.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.95.0) - 2023-10-06
 
 - [`6a470bd`](https://github.com/alexfalkowski/go-service/commit/6a470bd9faa9032744bd798b31efb77904acd078) feat(grpc): add ability to enable or disable (#375)
