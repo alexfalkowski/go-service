@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
@@ -38,13 +39,19 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "not a valid URL",
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -85,13 +92,19 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "https://httpstat.us/400",
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -133,13 +146,19 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 			JSONWebKeySet: "https://httpstat.us/200",
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -180,13 +199,19 @@ func TestCorruptToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -217,13 +242,19 @@ func TestMissingAudienceToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -262,13 +293,19 @@ func TestMissingIssuerToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -308,13 +345,19 @@ func TestInvalidCertificateToken(t *testing.T) {
 			JSONWebKeySet: "https://non-existent.com/.well-known/jwks.json",
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -354,13 +397,19 @@ func TestMissingKidToken(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(params)
+		cert, err := auth0.NewCertificator(params)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

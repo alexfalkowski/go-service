@@ -31,7 +31,7 @@ func TestSQL(t *testing.T) {
 
 			pg.Register(tracer, logger)
 
-			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 			So(err, ShouldBeNil)
 			So(db, ShouldNotBeNil)
 
@@ -61,7 +61,7 @@ func TestDBQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -112,7 +112,7 @@ func TestDBExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -158,7 +158,7 @@ func TestDBTransExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -212,7 +212,7 @@ func TestStatementQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -268,7 +268,7 @@ func TestStatementExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -319,7 +319,7 @@ func TestTransStatementExec(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -378,7 +378,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig(), Version: test.Version})
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -428,7 +428,7 @@ func TestInvalidSQLPort(t *testing.T) {
 
 			pg.Register(tracer, logger)
 
-			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: cfg, Version: test.Version})
+			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: cfg})
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()

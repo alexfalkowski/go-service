@@ -8,18 +8,16 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	dzap "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
 	stracer "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/database/sql/telemetry/metrics/prometheus"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, tracer tracer.Tracer, logger *zap.Logger) {
+func Register(name string, driver driver.Driver, tracer trace.Tracer, logger *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
 	interceptor = stracer.NewInterceptor(name, tracer, interceptor)
 	interceptor = dzap.NewInterceptor(name, logger, interceptor)
@@ -28,7 +26,7 @@ func Register(name string, driver driver.Driver, tracer tracer.Tracer, logger *z
 }
 
 // Open a DB pool.
-func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) (*mssqlx.DBs, error) {
+func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) {
 	masterDSNs := make([]string, len(cfg.Masters))
 	for i, m := range cfg.Masters {
 		masterDSNs[i] = m.URL
@@ -43,8 +41,6 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config, ver version.Version) 
 	if err != nil {
 		return nil, err
 	}
-
-	prometheus.Register(lc, name, db, ver)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

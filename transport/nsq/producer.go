@@ -12,9 +12,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/metrics"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -25,7 +26,7 @@ type ProducerOption interface{ apply(*producerOptions) }
 type producerOptions struct {
 	logger  *zap.Logger
 	tracer  ntracer.Tracer
-	metrics *prometheus.ProducerCollector
+	meter   metric.Meter
 	retry   bool
 	breaker bool
 }
@@ -63,14 +64,14 @@ func WithProducerTracer(tracer ntracer.Tracer) ProducerOption {
 }
 
 // WithProducerMetrics for NSQ.
-func WithProducerMetrics(metrics *prometheus.ProducerCollector) ProducerOption {
+func WithProducerMetrics(meter metric.Meter) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
-		o.metrics = metrics
+		o.meter = meter
 	})
 }
 
 // NewProducer for NSQ.
-func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...ProducerOption) producer.Producer {
+func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...ProducerOption) (producer.Producer, error) {
 	defaultOptions := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -93,8 +94,13 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...
 		pr = lzap.NewProducer(defaultOptions.logger, pr)
 	}
 
-	if defaultOptions.metrics != nil {
-		pr = defaultOptions.metrics.Producer(pr)
+	if defaultOptions.meter != nil {
+		producer, err := metrics.NewProducer(defaultOptions.meter, pr)
+		if err != nil {
+			return nil, err
+		}
+
+		pr = producer
 	}
 
 	pr = ntracer.NewProducer(defaultOptions.tracer, pr)
@@ -109,7 +115,7 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...
 
 	pr = meta.NewProducer(cfg.UserAgent, pr)
 
-	return pr
+	return pr, nil
 }
 
 type nsqProducer struct {

@@ -22,6 +22,7 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
@@ -30,6 +31,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -121,17 +123,21 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config, tracer htracer.Tracer, _ version.Version) health.Registrations {
+func registrations(logger *zap.Logger, cfg *shttp.Config, tracer htracer.Tracer, _ version.Version) (health.Registrations, error) {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
-	client := shttp.NewClient(cfg,
+
+	client, err := shttp.NewClient(cfg,
 		shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
-	return health.Registrations{nr, hr}
+	return health.Registrations{nr, hr}, nil
 }
 
 func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
@@ -154,6 +160,9 @@ func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Con
 	return c.Delete(context.Background(), "test")
 }
 
+func meter(_ metric.Meter) {
+}
+
 func ver() version.Version {
 	return test.Version
 }
@@ -169,11 +178,12 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
-		runtime.Module, cmd.Module, config.Module, telemetry.Module,
+		runtime.Module, cmd.Module, config.Module, telemetry.Module, metrics.Module,
 		health.Module, cache.RedisModule, cache.RistrettoModule,
 		security.Auth0Module, sql.PostgreSQLModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown), fx.Invoke(configs), fx.Provide(ver),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
+		fx.Invoke(configs), fx.Provide(ver), fx.Invoke(meter),
 	}
 }

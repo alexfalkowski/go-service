@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
@@ -31,15 +32,23 @@ func TestVerify(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(gp)
+		gen, err := auth0.NewGenerator(gp)
+		So(err, ShouldBeNil)
+
 		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(cp)
+		cert, err := auth0.NewCertificator(cp)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -74,15 +83,23 @@ func TestCachedVerify(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(gp)
+		gen, err := auth0.NewGenerator(gp)
+		So(err, ShouldBeNil)
+
 		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(cp)
+		cert, err := auth0.NewCertificator(cp)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -123,15 +140,23 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(gp)
+		gen, err := auth0.NewGenerator(gp)
+		So(err, ShouldBeNil)
+
 		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(cp)
+		cert, err := auth0.NewCertificator(cp)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -170,15 +195,23 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(gp)
+		gen, err := auth0.NewGenerator(gp)
+		So(err, ShouldBeNil)
+
 		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(cp)
+		cert, err := auth0.NewCertificator(cp)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()
@@ -217,15 +250,23 @@ func TestVerifyInvalidAudience(t *testing.T) {
 			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
 		}
 		logger := test.NewLogger(lc)
-		cache := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		cache := test.NewRistrettoCache(lc, m)
 
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen := auth0.NewGenerator(gp)
+		gen, err := auth0.NewGenerator(gp)
+		So(err, ShouldBeNil)
+
 		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert := auth0.NewCertificator(cp)
+		cert, err := auth0.NewCertificator(cp)
+		So(err, ShouldBeNil)
+
 		ver := auth0.NewVerifier(acfg, cert)
 
 		lc.RequireStart()

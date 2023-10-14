@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
 	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"
@@ -18,12 +17,11 @@ type OpenParams struct {
 
 	Lifecycle fx.Lifecycle
 	Config    *Config
-	Version   version.Version
 }
 
 // Open for pg.
 func Open(params OpenParams) (*mssqlx.DBs, error) {
-	return driver.Open(params.Lifecycle, "pg", params.Config.Config, params.Version)
+	return driver.Open(params.Lifecycle, "pg", params.Config.Config)
 }
 
 var once sync.Once

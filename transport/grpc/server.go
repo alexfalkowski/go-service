@@ -6,10 +6,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics/prometheus"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -24,7 +25,7 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     tracer.Tracer
-	Metrics    *prometheus.ServerCollector
+	Meter      metric.Meter
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
 }
@@ -46,11 +47,21 @@ type Server struct {
 }
 
 // NewServer for gRPC.
-func NewServer(params ServerParams) *Server {
-	opts := []grpc.ServerOption{unaryServerOption(params, params.Unary...), streamServerOption(params, params.Stream...)}
+func NewServer(params ServerParams) (*Server, error) {
+	uso, err := unaryServerOption(params, params.Unary...)
+	if err != nil {
+		return nil, err
+	}
+
+	sso, err := streamServerOption(params, params.Stream...)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := []grpc.ServerOption{uso, sso}
 	server := &Server{Server: grpc.NewServer(opts...), params: params}
 
-	return server
+	return server, nil
 }
 
 // Start the server.
@@ -85,30 +96,40 @@ func (s *Server) Stop(_ context.Context) {
 	s.Server.GracefulStop()
 }
 
-func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) (grpc.ServerOption, error) {
+	server, err := metrics.NewServer(params.Meter)
+	if err != nil {
+		return nil, err
+	}
+
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
 		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
-		params.Metrics.UnaryServerInterceptor(),
+		server.UnaryInterceptor(),
 		tracer.UnaryServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
+	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...)), nil
 }
 
-func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) (grpc.ServerOption, error) {
+	server, err := metrics.NewServer(params.Meter)
+	if err != nil {
+		return nil, err
+	}
+
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
 		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
-		params.Metrics.StreamServerInterceptor(),
+		server.StreamInterceptor(),
 		tracer.StreamServerInterceptor(params.Tracer),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
+	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...)), nil
 }

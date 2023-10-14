@@ -16,7 +16,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0
 	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/jackc/pgx/v4 v4.18.1
-	github.com/jmoiron/sqlx v1.3.5
 	github.com/klauspost/compress v1.17.0
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
@@ -31,7 +30,10 @@ require (
 	go.opentelemetry.io/otel v1.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.19.0
+	go.opentelemetry.io/otel/exporters/prometheus v0.42.0
+	go.opentelemetry.io/otel/metric v1.19.0
 	go.opentelemetry.io/otel/sdk v1.19.0
+	go.opentelemetry.io/otel/sdk/metric v1.19.0
 	go.opentelemetry.io/otel/trace v1.19.0
 	go.uber.org/automaxprocs v1.5.3
 	go.uber.org/fx v1.20.0
@@ -71,6 +73,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgtype v1.14.0 // indirect
+	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
@@ -83,7 +86,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/dig v1.17.0 // indirect

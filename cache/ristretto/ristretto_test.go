@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
@@ -14,7 +15,11 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		c := test.NewRistrettoCache(lc)
+
+		m, err := metrics.NewMeter(lc)
+		So(err, ShouldBeNil)
+
+		c := test.NewRistrettoCache(lc, m)
 
 		lc.RequireStart()
 
