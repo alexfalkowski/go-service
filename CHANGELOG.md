@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.96.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.96.1) - 2023-10-14
+
+- [`d4484eb`](https://github.com/alexfalkowski/go-service/commit/d4484ebfa08bc39d01e8a81475bf7d43861698c4) fix: deps mod (#382)
+
 ## [v1.96.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.96.0) - 2023-10-14
 
 - [`c5ef5c5`](https://github.com/alexfalkowski/go-service/commit/c5ef5c5392d1560286b0141b4449920484bb4b9d) feat(telemetry): use otel for metrics (#379)
