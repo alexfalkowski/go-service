@@ -20,10 +20,7 @@ func TestValidEnvConfig(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("When I try to parse the configuration file", func() {
-				cfg := config.NewConfigurator()
-				p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
-
-				err := config.Unmarshal(p)
+				cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -42,10 +39,7 @@ func TestValidFileConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg := config.NewConfigurator()
-			p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
-
-			err := config.Unmarshal(p)
+			cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -66,10 +60,7 @@ func TestValidMemConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg := config.NewConfigurator()
-			p := config.UnmarshalParams{Configurator: cfg, Config: &cmd.InputConfig{Config: c}}
-
-			err := config.Unmarshal(p)
+			cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
