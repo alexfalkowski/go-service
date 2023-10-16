@@ -11,12 +11,17 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
-	"go.uber.org/fx"
 )
 
 // NewConfigurator for config.
-func NewConfigurator() Configurator {
-	return &Config{}
+func NewConfigurator(i *cmd.InputConfig) (Configurator, error) {
+	c := &Config{}
+
+	if err := i.Unmarshal(c); err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // Configurator for config.
@@ -30,19 +35,6 @@ type Configurator interface {
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
-}
-
-// UnmarshalParams for config.
-type UnmarshalParams struct {
-	fx.In
-
-	Configurator Configurator
-	Config       *cmd.InputConfig
-}
-
-// Unmarshal to config.
-func Unmarshal(params UnmarshalParams) error {
-	return params.Config.Unmarshal(params.Configurator)
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

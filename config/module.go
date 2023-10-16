@@ -9,16 +9,12 @@ var (
 	// Module for fx.
 	Module = fx.Options(
 		ConfiguratorModule,
-		UnmarshalModule,
 		ConfigModule,
 		marshaller.Module,
 	)
 
 	// ConfiguratorModule for fx.
 	ConfiguratorModule = fx.Provide(NewConfigurator)
-
-	// UnmarshalModule for fx.
-	UnmarshalModule = fx.Invoke(Unmarshal)
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(
