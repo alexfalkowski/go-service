@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry"
+	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -43,6 +44,10 @@ func (cfg *Config) PGConfig() *pg.Config {
 
 func (cfg *Config) TracerConfig() *tracer.Config {
 	return &cfg.Telemetry.Tracer
+}
+
+func (cfg *Config) LoggerConfig() *zap.Config {
+	return &cfg.Telemetry.Logger
 }
 
 func (cfg *Config) TransportConfig() *transport.Config {

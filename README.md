@@ -169,6 +169,21 @@ Telemetry is broken down in the following sections:
 
 For logging we use [Uber Zap](https://github.com/uber-go/zap).
 
+#### Configuration
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  logger:
+    level: info
+```
+
+```toml
+[telemetry.logger]
+level = "info"
+```
+
 ### Metrics
 
 For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
