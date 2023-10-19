@@ -8,7 +8,8 @@ import (
 
 // NewLogger for test.
 func NewLogger(lc fx.Lifecycle) *zap.Logger {
-	logger, _ := szap.NewLogger(szap.LoggerParams{Lifecycle: lc, Config: szap.NewConfig(), Version: Version})
+	cfg, _ := szap.NewConfig(&szap.Config{Level: "info"})
+	logger, _ := szap.NewLogger(szap.LoggerParams{Lifecycle: lc, Config: cfg, Version: Version})
 
 	return logger
 }

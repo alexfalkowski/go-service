@@ -26,6 +26,9 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 [[sql.pg.slaves]]
 url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
+[telemetry.logger]
+level = "info"
+
 [telemetry.tracer]
 host = "localhost:4318"
 
