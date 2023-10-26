@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
@@ -21,14 +22,15 @@ import (
 type Params struct {
 	fx.In
 
-	Lifecycle fx.Lifecycle
-	Config    *tracer.Config
-	Version   version.Version
+	Lifecycle   fx.Lifecycle
+	Config      *tracer.Config
+	Environment env.Environment
+	Version     version.Version
 }
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(params.Lifecycle, "http", params.Version, params.Config)
+	return tracer.NewTracer(params.Lifecycle, "http", params.Environment, params.Version, params.Config)
 }
 
 // Tracer for tracer.

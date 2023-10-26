@@ -3,6 +3,7 @@ package zap
 import (
 	"time"
 
+	"github.com/alexfalkowski/go-service/env"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -13,13 +14,20 @@ type Config struct {
 }
 
 // NewConfig for zap.
-func NewConfig(config *Config) (zap.Config, error) {
+func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 	l, err := zap.ParseAtomicLevel(config.Level)
 	if err != nil {
 		return zap.Config{}, err
 	}
 
-	cfg := zap.NewProductionConfig()
+	var cfg zap.Config
+
+	if env.IsDevelopment() {
+		cfg = zap.NewDevelopmentConfig()
+	} else {
+		cfg = zap.NewProductionConfig()
+	}
+
 	cfg.Level = l
 	cfg.DisableCaller = true
 	cfg.DisableStacktrace = true

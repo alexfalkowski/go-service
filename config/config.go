@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry"
@@ -19,11 +20,16 @@ import (
 
 // Config for the service.
 type Config struct {
-	Cache     cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
-	Security  security.Config  `yaml:"security" json:"security" toml:"security"`
-	SQL       sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
-	Telemetry telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
-	Transport transport.Config `yaml:"transport" json:"transport" toml:"transport"`
+	Environment env.Environment  `yaml:"environment" json:"environment" toml:"environment"`
+	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
+	Security    security.Config  `yaml:"security" json:"security" toml:"security"`
+	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
+	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
+	Transport   transport.Config `yaml:"transport" json:"transport" toml:"transport"`
+}
+
+func (cfg *Config) EnvironmentConfig() env.Environment {
+	return cfg.Environment
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {

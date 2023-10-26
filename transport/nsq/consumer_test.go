@@ -31,7 +31,7 @@ func TestConsumer(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -63,7 +63,7 @@ func TestInvalidConsumer(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -94,7 +94,7 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
@@ -125,7 +125,7 @@ func TestReceiveMessage(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -169,7 +169,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
@@ -209,7 +209,7 @@ func TestReceiveError(t *testing.T) {
 		tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ

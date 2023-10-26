@@ -1,3 +1,5 @@
+environment = "development"
+
 [cache.redis.addresses]
 server = "localhost:6379"
 

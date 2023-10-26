@@ -18,13 +18,12 @@ var (
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(
+		fx.Provide(environmentConfig),
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 		fx.Provide(auth0Config),
 		fx.Provide(pgConfig),
 		fx.Provide(loggerConfig), fx.Provide(tracerConfig),
 		fx.Provide(transportConfig),
-		fx.Provide(grpcConfig),
-		fx.Provide(httpConfig),
-		fx.Provide(nsqConfig),
+		fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
 	)
 )

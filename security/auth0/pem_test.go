@@ -40,7 +40,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -93,7 +93,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -147,7 +147,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -200,7 +200,7 @@ func TestCorruptToken(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -243,7 +243,7 @@ func TestMissingAudienceToken(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -294,7 +294,7 @@ func TestMissingIssuerToken(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -346,7 +346,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -398,7 +398,7 @@ func TestMissingKidToken(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)

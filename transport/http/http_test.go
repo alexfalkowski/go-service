@@ -32,7 +32,7 @@ func TestUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -87,7 +87,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -142,7 +142,7 @@ func TestValidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -200,7 +200,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -258,7 +258,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -314,7 +314,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -365,7 +365,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
@@ -421,7 +421,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewTransportConfig()
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)

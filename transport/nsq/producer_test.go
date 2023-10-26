@@ -28,7 +28,7 @@ func TestProducer(t *testing.T) {
 			tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
-			m, err := metrics.NewMeter(lc)
+			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
 			producer, err := nsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),

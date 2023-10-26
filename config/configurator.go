@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/security/auth0"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -27,6 +28,7 @@ func NewConfigurator(i *cmd.InputConfig) (Configurator, error) {
 
 // Configurator for config.
 type Configurator interface {
+	EnvironmentConfig() env.Environment
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
 	Auth0Config() *auth0.Config
@@ -37,6 +39,10 @@ type Configurator interface {
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
+}
+
+func environmentConfig(cfg Configurator) env.Environment {
+	return cfg.EnvironmentConfig()
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

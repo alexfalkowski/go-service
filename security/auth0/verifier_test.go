@@ -33,7 +33,7 @@ func TestVerify(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -84,7 +84,7 @@ func TestCachedVerify(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -141,7 +141,7 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -196,7 +196,7 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -251,7 +251,7 @@ func TestVerifyInvalidAudience(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
