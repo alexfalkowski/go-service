@@ -33,7 +33,7 @@ func TestGenerate(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -76,7 +76,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -117,7 +117,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -158,7 +158,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)
@@ -199,7 +199,7 @@ func TestCachedGenerate(t *testing.T) {
 		}
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cache := test.NewRistrettoCache(lc, m)

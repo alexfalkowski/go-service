@@ -3,6 +3,7 @@ package tracer
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel"
@@ -28,7 +29,7 @@ func NewNoopTracer(name string) trace.Tracer {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, name string, ver version.Version, cfg *Config) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
 	if cfg.Host == "" {
 		return NewNoopTracer(name), nil
 	}
@@ -50,6 +51,7 @@ func NewTracer(lc fx.Lifecycle, name string, ver version.Version, cfg *Config) (
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(string(ver)),
+		semconv.DeploymentEnvironment(string(env)),
 		attribute.String("name", os.ExecutableName()),
 	)
 

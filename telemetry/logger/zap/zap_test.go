@@ -16,7 +16,7 @@ func TestLogger(t *testing.T) {
 		cfg := zap.Config{}
 
 		Convey("When I try to get a logger", func() {
-			_, err := lzap.NewLogger(lzap.LoggerParams{Lifecycle: lc, Config: cfg, Version: test.Version})
+			_, err := lzap.NewLogger(lzap.LoggerParams{Lifecycle: lc, Config: cfg, Environment: test.Environment, Version: test.Version})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

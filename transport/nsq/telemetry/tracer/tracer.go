@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
@@ -21,14 +22,15 @@ import (
 type Params struct {
 	fx.In
 
-	Lifecycle fx.Lifecycle
-	Config    *tracer.Config
-	Version   version.Version
+	Lifecycle   fx.Lifecycle
+	Config      *tracer.Config
+	Version     version.Version
+	Environment env.Environment
 }
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(params.Lifecycle, "nsq", params.Version, params.Config)
+	return tracer.NewTracer(params.Lifecycle, "nsq", params.Environment, params.Version, params.Config)
 }
 
 // Tracer for tracer.

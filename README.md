@@ -34,6 +34,22 @@ The reason for this is that we want to be able to separate how configuration is 
 
 This is the [configuration](config/config.go). We will outline the config required in each section.
 
+## Environment
+
+You can specify the environment of the service.
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+environment: development
+```
+
+```toml
+environment = "development"
+```
+
 ## Caching
 
 The framework currently supports the following caching solutions:

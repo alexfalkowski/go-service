@@ -3,6 +3,7 @@ package zap
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/fx"
@@ -13,14 +14,21 @@ import (
 type LoggerParams struct {
 	fx.In
 
-	Lifecycle fx.Lifecycle
-	Config    zap.Config
-	Version   version.Version
+	Lifecycle   fx.Lifecycle
+	Config      zap.Config
+	Environment env.Environment
+	Version     version.Version
 }
 
 // NewLogger using zap.
 func NewLogger(params LoggerParams) (*zap.Logger, error) {
-	logger, err := params.Config.Build(zap.Fields(zap.String("name", os.ExecutableName()), zap.String("version", string(params.Version))))
+	fields := zap.Fields(
+		zap.String("name", os.ExecutableName()),
+		zap.String("environment", string(params.Environment)),
+		zap.String("version", string(params.Version)),
+	)
+
+	logger, err := params.Config.Build(fields)
 	if err != nil {
 		return nil, err
 	}
