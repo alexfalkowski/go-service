@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.100.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.100.0) - 2023-10-26
+
+- [`2354314`](https://github.com/alexfalkowski/go-service/commit/2354314b5d29aef6651dd97353df24d5223ec935) feat: add environment (#391)
+
 ## [v1.99.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.99.0) - 2023-10-26
 
 - [`43f7a1c`](https://github.com/alexfalkowski/go-service/commit/43f7a1c8ac9ad02266ba551545cf9110cf1ed0c9) feat(logger): use kind (#390)
