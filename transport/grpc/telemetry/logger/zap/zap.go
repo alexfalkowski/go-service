@@ -24,8 +24,8 @@ const (
 	grpcDuration  = "grpc.duration"
 	grpcStartTime = "grpc.start_time"
 	grpcDeadline  = "grpc.deadline"
-	component     = "component"
-	grpcComponent = "grpc"
+	kind          = "kind"
+	grpcKind      = "grpc"
 	client        = "client"
 	server        = "server"
 )
@@ -46,8 +46,8 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String("span.kind", server),
-			zap.String(component, grpcComponent),
+			zap.String("grpc.kind", server),
+			zap.String(kind, grpcKind),
 		}
 
 		for k, v := range meta.Attributes(ctx) {
@@ -96,8 +96,8 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String("span.kind", server),
-			zap.String(component, grpcComponent),
+			zap.String("grpc.kind", server),
+			zap.String(kind, grpcKind),
 		}
 
 		for k, v := range meta.Attributes(ctx) {
@@ -145,8 +145,8 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String("span.kind", client),
-			zap.String(component, grpcComponent),
+			zap.String("grpc.kind", client),
+			zap.String(kind, grpcKind),
 		}
 
 		for k, v := range meta.Attributes(ctx) {
@@ -194,8 +194,8 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			zap.String(grpcStartTime, start.Format(time.RFC3339)),
 			zap.String(grpcService, service),
 			zap.String(grpcMethod, method),
-			zap.String("span.kind", client),
-			zap.String(component, grpcComponent),
+			zap.String("grpc.kind", client),
+			zap.String(kind, grpcKind),
 		}
 
 		for k, v := range meta.Attributes(ctx) {

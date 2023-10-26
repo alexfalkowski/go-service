@@ -18,7 +18,8 @@ const (
 	duration  = "%s.duration"
 	startTime = "%s.start_time"
 	deadline  = "%s.deadline"
-	component = "component"
+	kind      = "kind"
+	client    = "client"
 )
 
 // NewInterceptor for zap.
@@ -50,8 +51,8 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
-		zap.String("span.kind", i.name),
-		zap.String(component, i.name),
+		zap.String("sql.kind", client),
+		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
@@ -87,8 +88,8 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
-		zap.String("span.kind", i.name),
-		zap.String(component, i.name),
+		zap.String("sql.kind", client),
+		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
@@ -146,8 +147,8 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
-		zap.String("span.kind", i.name),
-		zap.String(component, i.name),
+		zap.String("sql.kind", client),
+		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
@@ -183,8 +184,8 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	start := time.Now().UTC()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
-		zap.String("span.kind", i.name),
-		zap.String(component, i.name),
+		zap.String("sql.kind", client),
+		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
