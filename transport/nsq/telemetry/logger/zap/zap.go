@@ -23,8 +23,8 @@ const (
 	nsqStartTime = "nsq.start_time"
 	nsqTopic     = "nsq.topic"
 	nsqChannel   = "nsq.channel"
-	component    = "component"
-	nsqComponent = "nsq"
+	kind         = "kind"
+	nsqKind      = "nsq"
 	consumerKind = "consumer"
 	producerKind = "producer"
 )
@@ -55,8 +55,8 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 		zap.Int64(nsqTimestamp, message.Timestamp),
 		zap.Uint16(nsqAttempts, message.Attempts),
 		zap.String(nsqAddress, message.NSQDAddress),
-		zap.String("span.kind", consumerKind),
-		zap.String(component, nsqComponent),
+		zap.String("nsq.kind", consumerKind),
+		zap.String(kind, nsqKind),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -95,8 +95,8 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
 		zap.String(nsqTopic, topic),
 		zap.ByteString(nsqBody, message.Body),
-		zap.String("span.kind", producerKind),
-		zap.String(component, nsqComponent),
+		zap.String("nsq.kind", producerKind),
+		zap.String(kind, nsqKind),
 	}
 
 	for k, v := range meta.Attributes(ctx) {

@@ -20,8 +20,8 @@ const (
 	httpStartTime  = "http.start_time"
 	httpDeadline   = "http.deadline"
 	httpStatusCode = "http.status_code"
-	component      = "component"
-	httpComponent  = "http"
+	kind           = "kind"
+	httpKind       = "http"
 	client         = "client"
 	server         = "server"
 )
@@ -56,8 +56,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, service),
 		zap.String(httpMethod, method),
-		zap.String("span.kind", server),
-		zap.String(component, httpComponent),
+		zap.String("http.kind", server),
+		zap.String(kind, httpKind),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -98,8 +98,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String(httpStartTime, start.Format(time.RFC3339)),
 		zap.String(httpURL, service),
 		zap.String(httpMethod, method),
-		zap.String("span.kind", client),
-		zap.String(component, httpComponent),
+		zap.String("http.kind", client),
+		zap.String(kind, httpKind),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
