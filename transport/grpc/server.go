@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // ServerParams for gRPC.
@@ -59,7 +60,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	opts := []grpc.ServerOption{uso, sso}
-	server := &Server{Server: grpc.NewServer(opts...), params: params}
+
+	s := grpc.NewServer(opts...)
+	reflection.Register(s)
+
+	server := &Server{Server: s, params: params}
 
 	return server, nil
 }
