@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.100.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.100.1) - 2023-10-27
+
+- [`09a6123`](https://github.com/alexfalkowski/go-service/commit/09a6123d0e0a9e653aba1d560298d8af0012c06c) fix(deps): bump github.com/vmihailenco/msgpack/v5 from 5.4.0 to 5.4.1 (#392)
+
 ## [v1.100.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.100.0) - 2023-10-26
 
 - [`2354314`](https://github.com/alexfalkowski/go-service/commit/2354314b5d29aef6651dd97353df24d5223ec935) feat: add environment (#391)
