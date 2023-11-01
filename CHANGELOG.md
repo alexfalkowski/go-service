@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.101.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.101.0) - 2023-11-01
+
+- [`f844bef`](https://github.com/alexfalkowski/go-service/commit/f844bef6909baf25bd50077f745723e12541b938) feat(http): add marshal options to mux (#394)
+
 ## [v1.100.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.100.2) - 2023-10-27
 
 - [`75f53e5`](https://github.com/alexfalkowski/go-service/commit/75f53e5bd8a4f260a9b8b32a349c65e22263221b) fix(deps): bump github.com/google/uuid from 1.3.1 to 1.4.0 (#393)
