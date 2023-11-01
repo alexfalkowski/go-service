@@ -17,6 +17,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // ServerParams for HTTP.
@@ -39,7 +40,18 @@ type Server struct {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
-	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(customMatcher))
+	opts := []runtime.ServeMuxOption{
+		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	}
+	mux := runtime.NewServeMux(opts...)
 
 	var handler http.Handler = mux
 
