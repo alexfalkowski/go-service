@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -24,7 +25,7 @@ func (e *ENV) Read() ([]byte, error) {
 	if e.isMem() {
 		_, e := e.split()
 
-		return []byte(os.Getenv(e)), nil
+		return base64.StdEncoding.DecodeString(os.Getenv(e))
 	}
 
 	return os.ReadFile(e.path())
@@ -35,7 +36,7 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 	if e.isMem() {
 		_, e := e.split()
 
-		return os.Setenv(e, string(data))
+		return os.Setenv(e, base64.StdEncoding.EncodeToString(data))
 	}
 
 	return os.WriteFile(e.path(), data, mode)

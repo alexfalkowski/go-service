@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"encoding/base64"
 	"os"
 	"testing"
 	"time"
@@ -50,11 +51,12 @@ func TestValidFileConfig(t *testing.T) {
 }
 
 func TestValidMemConfig(t *testing.T) {
-	d, _ := os.ReadFile("../test/config.yml")
-
 	Convey("Given I have configuration file", t, func() {
+		d, err := os.ReadFile("../test/config.yml")
+		So(err, ShouldBeNil)
+
 		So(os.Setenv("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
-		So(os.Setenv("CONFIG", string(d)), ShouldBeNil)
+		So(os.Setenv("CONFIG", base64.StdEncoding.EncodeToString(d)), ShouldBeNil)
 
 		c, err := test.NewCmdConfig("env:CONFIG_FILE")
 		So(err, ShouldBeNil)
