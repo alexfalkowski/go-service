@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -40,8 +40,8 @@ func (cfg *Config) RistrettoConfig() *ristretto.Config {
 	return &cfg.Cache.Ristretto
 }
 
-func (cfg *Config) Auth0Config() *auth0.Config {
-	return &cfg.Security.Auth0
+func (cfg *Config) OAuthConfig() *oauth.Config {
+	return &cfg.Security.OAuth
 }
 
 func (cfg *Config) PGConfig() *pg.Config {

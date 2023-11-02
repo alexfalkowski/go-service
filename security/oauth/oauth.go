@@ -1,4 +1,4 @@
-package auth0
+package oauth
 
 import (
 	"github.com/alexfalkowski/go-service/security/jwt"
@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// GeneratorParams for Auth0.
+// GeneratorParams for OAuth.
 type GeneratorParams struct {
 	fx.In
 
@@ -22,7 +22,7 @@ type GeneratorParams struct {
 	Meter      metric.Meter
 }
 
-// NewGenerator for Auth0.
+// NewGenerator for OAuth.
 func NewGenerator(params GeneratorParams) (jwt.Generator, error) {
 	client, err := http.NewClient(params.HTTPConfig,
 		http.WithClientLogger(params.Logger),
@@ -39,7 +39,7 @@ func NewGenerator(params GeneratorParams) (jwt.Generator, error) {
 	return generator, nil
 }
 
-// CertificatorParams for Auth0.
+// CertificatorParams for OAuth.
 type CertificatorParams struct {
 	fx.In
 
@@ -51,7 +51,7 @@ type CertificatorParams struct {
 	Meter      metric.Meter
 }
 
-// NewCertificator for Auth0.
+// NewCertificator for OAuth.
 func NewCertificator(params CertificatorParams) (Certificator, error) {
 	client, err := http.NewClient(params.HTTPConfig,
 		http.WithClientLogger(params.Logger),
@@ -62,13 +62,13 @@ func NewCertificator(params CertificatorParams) (Certificator, error) {
 		return nil, err
 	}
 
-	var certificator Certificator = &pem{cfg: params.Config, client: client}
-	certificator = &cachedPEM{cfg: params.Config, cache: params.Cache, Certificator: certificator}
+	var certificator Certificator = &certificate{cfg: params.Config, client: client}
+	certificator = &cachedCertificate{cfg: params.Config, cache: params.Cache, Certificator: certificator}
 
 	return certificator, nil
 }
 
-// NewVerifier for Auth0.
+// NewVerifier for OAuth.
 func NewVerifier(cfg *Config, cert Certificator) jwt.Verifier {
 	var verifier jwt.Verifier = &verifier{cfg: cfg, cert: cert}
 

@@ -8,7 +8,7 @@ num_counters = 10_000_000
 max_cost = 100_000_000
 buffer_items = 64
 
-[security.auth0]
+[security.oauth]
 url = "test_url"
 client_id = "test_client_id"
 client_secret = "test_client_secret"

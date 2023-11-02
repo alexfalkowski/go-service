@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
@@ -31,7 +31,7 @@ type Configurator interface {
 	EnvironmentConfig() env.Environment
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
-	Auth0Config() *auth0.Config
+	OAuthConfig() *oauth.Config
 	PGConfig() *pg.Config
 	LoggerConfig() *zap.Config
 	TracerConfig() *tracer.Config
@@ -53,8 +53,8 @@ func ristrettoConfig(cfg Configurator) *ristretto.Config {
 	return cfg.RistrettoConfig()
 }
 
-func auth0Config(cfg Configurator) *auth0.Config {
-	return cfg.Auth0Config()
+func oauthConfig(cfg Configurator) *oauth.Config {
+	return cfg.OAuthConfig()
 }
 
 func pgConfig(cfg Configurator) *pg.Config {

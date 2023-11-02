@@ -1,4 +1,4 @@
-package auth0
+package oauth
 
 import (
 	"crypto/sha256"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// Config for Auth0.
+// Config for OAuth.
 type Config struct {
 	URL           string `yaml:"url" json:"url" toml:"url"`
 	ClientID      string `yaml:"client_id" json:"client_id" toml:"client_id"`
