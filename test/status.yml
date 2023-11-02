@@ -1,0 +1,24 @@
+environment: production
+health:
+  duration: 1s
+  timeout: 1s
+telemetry:
+  logger:
+    level: info
+  tracer:
+    host: localhost:4318
+    secure: false
+transport:
+  http:
+    port: 6000
+    user_agent: "Status-server/1.0 http/1.0"
+    retry:
+      timeout: 2s
+      attempts: 3
+  grpc:
+    enabled: true
+    port: 6001
+    user_agent: "Status-server/1.0 grpc/1.0"
+    retry:
+      timeout: 2s
+      attempts: 3

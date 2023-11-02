@@ -36,7 +36,7 @@ func TestUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
@@ -76,7 +76,7 @@ func TestInvalidUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
@@ -114,7 +114,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
@@ -158,7 +158,7 @@ func TestStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
@@ -200,7 +200,7 @@ func TestInvalidStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
@@ -241,7 +241,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
