@@ -2,7 +2,6 @@ package meta
 
 import (
 	"context"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/handler"
@@ -30,7 +29,6 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	}
 
 	ctx = meta.WithRequestID(ctx, requestID)
-	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
 
 	return h.Handler.Handle(ctx, message)
 }
@@ -63,8 +61,6 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	message.Headers["request-id"] = requestID
 	ctx = meta.WithRequestID(ctx, requestID)
 
-	ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, message.Headers))
-
 	return p.Producer.Publish(ctx, topic, message)
 }
 
@@ -82,12 +78,4 @@ func extractRequestID(ctx context.Context, headers message.Headers) string {
 	}
 
 	return meta.RequestID(ctx)
-}
-
-func extractRemoteAddress(ctx context.Context, headers message.Headers) string {
-	if forwardedFor := headers["forwarded-for"]; forwardedFor != "" {
-		return strings.Split(forwardedFor, ",")[0]
-	}
-
-	return meta.RemoteAddress(ctx)
 }
