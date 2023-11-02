@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.102.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.102.0) - 2023-11-02
+
+- [`4ba0951`](https://github.com/alexfalkowski/go-service/commit/4ba095168e878550302008832288babfb63afd93) feat(config): encode config in env variable (#396)
+
 ## [v1.101.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.101.0) - 2023-11-01
 
 - [`f844bef`](https://github.com/alexfalkowski/go-service/commit/f844bef6909baf25bd50077f745723e12541b938) feat(http): add marshal options to mux (#394)
