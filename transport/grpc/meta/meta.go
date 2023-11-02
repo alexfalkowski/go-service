@@ -2,15 +2,12 @@ package meta
 
 import (
 	"context"
-	"net"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 // UnaryServerInterceptor for meta.
@@ -26,9 +23,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-
-		remoteAddress := extractRemoteAddress(ctx, md)
-		ctx = meta.WithRemoteAddress(ctx, remoteAddress)
 
 		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
@@ -54,7 +48,6 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 
 		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
@@ -86,7 +79,6 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -111,7 +103,6 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = meta.WithRemoteAddress(ctx, extractRemoteAddress(ctx, md))
 		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
@@ -132,18 +123,4 @@ func extractRequestID(ctx context.Context, md metadata.MD) string {
 	}
 
 	return meta.RequestID(ctx)
-}
-
-func extractRemoteAddress(ctx context.Context, md metadata.MD) string {
-	if mdfForwardedFor := md.Get("forwarded-for"); len(mdfForwardedFor) > 0 {
-		return strings.Split(mdfForwardedFor[0], ",")[0]
-	}
-
-	if p, ok := peer.FromContext(ctx); ok {
-		if host, _, err := net.SplitHostPort(p.Addr.String()); err != nil && host != "" {
-			return host
-		}
-	}
-
-	return meta.RemoteAddress(ctx)
 }
