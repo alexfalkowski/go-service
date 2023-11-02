@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.103.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.103.1) - 2023-11-02
+
+- [`71b426c`](https://github.com/alexfalkowski/go-service/commit/71b426c6cdcee2d4bbae3f2373f7a8a3093bd30b) fix(meta): remove remote address (#398)
+- [`acb3bb3`](https://github.com/alexfalkowski/go-service/commit/acb3bb3d6042645a64fc2dc88eb0f378d55c9905) test: move way from httpstatus (#397)
+
 ## [v1.103.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.103.0) - 2023-11-02
 
 - [`a1a41ec`](https://github.com/alexfalkowski/go-service/commit/a1a41ecf3256597246a05f2ddbef68748cf8628d) feat(security): move auth0 to oauth (#395)
