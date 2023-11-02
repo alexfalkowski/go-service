@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -33,7 +33,7 @@ func (cfg *Config) RistrettoConfig() *ristretto.Config {
 	return nil
 }
 
-func (cfg *Config) Auth0Config() *auth0.Config {
+func (cfg *Config) OAuthConfig() *oauth.Config {
 	return nil
 }
 

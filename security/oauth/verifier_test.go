@@ -1,12 +1,11 @@
-package auth0_test
+package oauth_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -22,15 +21,7 @@ func init() {
 func TestVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -41,15 +32,15 @@ func TestVerify(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(gp)
+		gp := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(gp)
 		So(err, ShouldBeNil)
 
-		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(cp)
+		cp := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(cp)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -73,15 +64,7 @@ func TestVerify(t *testing.T) {
 func TestCachedVerify(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -92,15 +75,15 @@ func TestCachedVerify(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(gp)
+		gp := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(gp)
 		So(err, ShouldBeNil)
 
-		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(cp)
+		cp := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(cp)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -130,15 +113,7 @@ func TestCachedVerify(t *testing.T) {
 func TestVerifyInvalidAlgorithm(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -149,15 +124,15 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(gp)
+		gp := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(gp)
 		So(err, ShouldBeNil)
 
-		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(cp)
+		cp := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(cp)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -167,13 +142,13 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			acfg.Algorithm = "Algorithm"
+			cfg.Algorithm = "Algorithm"
 
 			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid algorithm", func() {
 				So(err, ShouldBeError)
-				So(err, ShouldEqual, auth0.ErrInvalidAlgorithm)
+				So(err, ShouldEqual, oauth.ErrInvalidAlgorithm)
 			})
 		})
 
@@ -185,15 +160,7 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 func TestVerifyInvalidIssuer(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -204,15 +171,15 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(gp)
+		gp := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(gp)
 		So(err, ShouldBeNil)
 
-		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(cp)
+		cp := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(cp)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -222,13 +189,13 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			acfg.Issuer = "Issuer"
+			cfg.Issuer = "Issuer"
 
 			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid issuer", func() {
 				So(err, ShouldBeError)
-				So(err, ShouldEqual, auth0.ErrInvalidIssuer)
+				So(err, ShouldEqual, oauth.ErrInvalidIssuer)
 			})
 		})
 
@@ -240,15 +207,7 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 func TestVerifyInvalidAudience(t *testing.T) {
 	Convey("Given I have a valid token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -259,15 +218,15 @@ func TestVerifyInvalidAudience(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		gp := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(gp)
+		gp := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(gp)
 		So(err, ShouldBeNil)
 
-		cp := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(cp)
+		cp := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(cp)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -277,13 +236,13 @@ func TestVerifyInvalidAudience(t *testing.T) {
 			token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			acfg.Audience = "Audience"
+			cfg.Audience = "Audience"
 
 			_, _, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid audience", func() {
 				So(err, ShouldBeError)
-				So(err, ShouldEqual, auth0.ErrInvalidAudience)
+				So(err, ShouldEqual, oauth.ErrInvalidAudience)
 			})
 		})
 

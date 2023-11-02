@@ -1,4 +1,4 @@
-package auth0
+package oauth
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	// ErrInvalidAudience for Auth0.
+	// ErrInvalidAudience for OAuth.
 	ErrInvalidAudience = errors.New("invalid audience")
 
-	// ErrInvalidIssuer for Auth0.
+	// ErrInvalidIssuer for OAuth.
 	ErrInvalidIssuer = errors.New("invalid issuer")
 
-	// ErrInvalidAlgorithm for Auth0.
+	// ErrInvalidAlgorithm for OAuth.
 	ErrInvalidAlgorithm = errors.New("invalid algorithm")
 )
 
@@ -26,7 +26,7 @@ type verifier struct {
 func (v *verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
 	claims := &jwt.RegisteredClaims{}
 
-	t, err := jwt.ParseWithClaims(string(token), claims, v.key)
+	t, err := jwt.ParseWithClaims(string(token), claims, v.validate)
 	if err != nil {
 		return nil, claims, err
 	}
@@ -46,16 +46,6 @@ func (v *verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.Reg
 	return t, claims, nil
 }
 
-func (v *verifier) key(token *jwt.Token) (any, error) {
-	cert, err := v.cert.Certificate(context.Background(), token)
-	if err != nil {
-		return token, err
-	}
-
-	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
-	if err != nil {
-		return token, err
-	}
-
-	return key, nil
+func (v *verifier) validate(token *jwt.Token) (any, error) {
+	return v.cert.Certificate(context.Background(), token)
 }

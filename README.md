@@ -100,7 +100,7 @@ We enhance the runtime with the following:
 ## Security
 
 For security we support the following:
-- [Auth0](https://auth0.com/)
+- [OAuth 2.0](https://oauth.net/2/)
 
 ### Configuration
 
@@ -108,7 +108,7 @@ To configure, please specify the following:
 
 ```yaml
 security:
-  auth0:
+  oauth:
     url: test_url
     client_id: test_client_id
     client_secret: test_client_secret
@@ -119,7 +119,7 @@ security:
 ```
 
 ```toml
-[security.auth0]
+[security.oauth]
 url = "test_url"
 client_id = "test_client_id"
 client_secret = "test_client_secret"

@@ -1,10 +1,10 @@
 package security
 
 import (
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 )
 
 // Config for security.
 type Config struct {
-	Auth0 auth0.Config `yaml:"auth0" json:"auth0" toml:"auth0"`
+	OAuth oauth.Config `yaml:"oauth" json:"oauth" toml:"oauth"`
 }

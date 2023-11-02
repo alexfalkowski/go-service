@@ -1,12 +1,11 @@
-package auth0_test
+package oauth_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -22,15 +21,7 @@ func init() {
 func TestGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -41,8 +32,8 @@ func TestGenerate(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(params)
+		params := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -65,15 +56,10 @@ func TestGenerate(t *testing.T) {
 func TestInvalidResponseGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  "invalid-secret",
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.ClientSecret = "invalid-secret"
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -84,8 +70,8 @@ func TestInvalidResponseGenerate(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(params)
+		params := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -95,7 +81,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 			_, err := gen.Generate(ctx)
 
 			Convey("Then I should have an error", func() {
-				So(err, ShouldEqual, auth0.ErrInvalidResponse)
+				So(err, ShouldEqual, oauth.ErrInvalidResponse)
 			})
 		})
 
@@ -106,15 +92,10 @@ func TestInvalidResponseGenerate(t *testing.T) {
 func TestInvalidURLGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           "not a valid URL",
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  "invalid-secret",
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.URL = "not a valid URL"
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -125,8 +106,8 @@ func TestInvalidURLGenerate(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(params)
+		params := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -147,15 +128,10 @@ func TestInvalidURLGenerate(t *testing.T) {
 func TestMalformedURLGenerate(t *testing.T) {
 	Convey("Given I have an invalid generator", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           string([]byte{0x7f}),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  "invalid-secret",
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.URL = string([]byte{0x7f})
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -166,8 +142,8 @@ func TestMalformedURLGenerate(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(params)
+		params := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -188,15 +164,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 func TestCachedGenerate(t *testing.T) {
 	Convey("Given I have a generator", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -207,8 +175,8 @@ func TestCachedGenerate(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.GeneratorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		gen, err := auth0.NewGenerator(params)
+		params := oauth.GeneratorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		gen, err := oauth.NewGenerator(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

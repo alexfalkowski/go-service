@@ -20,7 +20,7 @@ import (
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -156,7 +156,7 @@ func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
 	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
 }
 
-func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *auth0.Config, _ *pg.Config, _ *nsq.Config) error {
+func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *oauth.Config, _ *pg.Config, _ *nsq.Config) error {
 	return c.Delete(context.Background(), "test")
 }
 
@@ -180,7 +180,7 @@ func opts() []fx.Option {
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, telemetry.Module, metrics.Module,
 		health.Module, cache.RedisModule, cache.RistrettoModule,
-		security.Auth0Module, sql.PostgreSQLModule, transport.Module,
+		security.OAuthModule, sql.PostgreSQLModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),

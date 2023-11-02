@@ -20,7 +20,7 @@ var (
 	ConfigModule = fx.Options(
 		fx.Provide(environmentConfig),
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
-		fx.Provide(auth0Config),
+		fx.Provide(oauthConfig),
 		fx.Provide(pgConfig),
 		fx.Provide(loggerConfig), fx.Provide(tracerConfig),
 		fx.Provide(transportConfig),

@@ -1,4 +1,4 @@
-package auth0
+package oauth
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// ErrInvalidResponse from Auth0.
+// ErrInvalidResponse from OAuth.
 var ErrInvalidResponse = errors.New("invalid response")
 
 type generatorRequest struct {

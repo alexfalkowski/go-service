@@ -1,14 +1,14 @@
-package auth0_test
+package oauth_test
 
 import (
 	"context"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
-	"os"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/security/auth0"
+	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -18,10 +18,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-const (
-	algorithm = "ES256"
-)
-
 func init() {
 	tracer.Register()
 }
@@ -29,15 +25,10 @@ func init() {
 func TestInvalidJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: "not a valid URL",
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.JSONWebKeySet = "not a valid URL"
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -48,16 +39,16 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
+			claims := jwt.MapClaims{"aud": cfg.Audience, "iss": cfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -82,15 +73,10 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: "https://httpstat.us/400",
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.JSONWebKeySet = "https://httpstat.us/400"
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -101,16 +87,16 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
+			claims := jwt.MapClaims{"aud": cfg.Audience, "iss": cfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -136,15 +122,10 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: "https://httpstat.us/200",
-		}
+
+		cfg := test.NewOAuthConfig()
+		cfg.JSONWebKeySet = "https://httpstat.us/200"
+
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -155,16 +136,16 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
+			claims := jwt.MapClaims{"aud": cfg.Audience, "iss": cfg.Issuer, "kid": "none"}
 			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
 
 			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -178,7 +159,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-				So(err.Error(), ShouldEqual, "json: cannot unmarshal number into Go value of type auth0.jwksResponse")
+				So(err.Error(), ShouldEqual, "json: cannot unmarshal number into Go value of type oauth.jwksResponse")
 			})
 		})
 
@@ -189,15 +170,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 func TestCorruptToken(t *testing.T) {
 	Convey("Given I have a corrupt token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     os.Getenv("AUTH0_ALGORITHM"),
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -208,11 +181,11 @@ func TestCorruptToken(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
@@ -232,15 +205,7 @@ func TestCorruptToken(t *testing.T) {
 func TestMissingAudienceToken(t *testing.T) {
 	Convey("Given I have a missing audience in token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     algorithm,
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -251,21 +216,21 @@ func TestMissingAudienceToken(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{})
+			token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, jwt.MapClaims{})
 
-			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			_, pri, err := ed25519.GenerateKey(rand.Reader)
 			So(err, ShouldBeNil)
 
-			tkn, err := token.SignedString(key)
+			tkn, err := token.SignedString(pri)
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
@@ -283,15 +248,7 @@ func TestMissingAudienceToken(t *testing.T) {
 func TestMissingIssuerToken(t *testing.T) {
 	Convey("Given I have a missing issuer in token", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     algorithm,
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -302,22 +259,22 @@ func TestMissingIssuerToken(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience}
-			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+			claims := jwt.MapClaims{"aud": cfg.Audience}
+			token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 
-			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			_, pri, err := ed25519.GenerateKey(rand.Reader)
 			So(err, ShouldBeNil)
 
-			tkn, err := token.SignedString(key)
+			tkn, err := token.SignedString(pri)
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
@@ -335,15 +292,7 @@ func TestMissingIssuerToken(t *testing.T) {
 func TestInvalidCertificateToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     algorithm,
-			JSONWebKeySet: "https://non-existent.com/.well-known/jwks.json",
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -354,22 +303,22 @@ func TestInvalidCertificateToken(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer}
-			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+			claims := jwt.MapClaims{"aud": cfg.Audience, "iss": cfg.Issuer}
+			token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 
-			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			_, pri, err := ed25519.GenerateKey(rand.Reader)
 			So(err, ShouldBeNil)
 
-			tkn, err := token.SignedString(key)
+			tkn, err := token.SignedString(pri)
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
@@ -387,15 +336,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 func TestMissingKidToken(t *testing.T) {
 	Convey("Given I have an invalid jwks endpoint", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		acfg := &auth0.Config{
-			URL:           os.Getenv("AUTH0_URL"),
-			ClientID:      os.Getenv("AUTH0_CLIENT_ID"),
-			ClientSecret:  os.Getenv("AUTH0_CLIENT_SECRET"),
-			Audience:      os.Getenv("AUTH0_AUDIENCE"),
-			Issuer:        os.Getenv("AUTH0_ISSUER"),
-			Algorithm:     algorithm,
-			JSONWebKeySet: os.Getenv("AUTH0_JSON_WEB_KEY_SET"),
-		}
+		cfg := test.NewOAuthConfig()
 		logger := test.NewLogger(lc)
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
@@ -406,22 +347,22 @@ func TestMissingKidToken(t *testing.T) {
 		tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		params := auth0.CertificatorParams{Config: acfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
-		cert, err := auth0.NewCertificator(params)
+		params := oauth.CertificatorParams{Config: cfg, HTTPConfig: &test.NewTransportConfig().HTTP, Cache: cache, Logger: logger, Tracer: tracer}
+		cert, err := oauth.NewCertificator(params)
 		So(err, ShouldBeNil)
 
-		ver := auth0.NewVerifier(acfg, cert)
+		ver := oauth.NewVerifier(cfg, cert)
 
 		lc.RequireStart()
 
 		Convey("When I try to verify the token", func() {
-			claims := jwt.MapClaims{"aud": acfg.Audience, "iss": acfg.Issuer, "kid": "none"}
-			token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+			claims := jwt.MapClaims{"aud": cfg.Audience, "iss": cfg.Issuer, "kid": "none"}
+			token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 
-			key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			_, pri, err := ed25519.GenerateKey(rand.Reader)
 			So(err, ShouldBeNil)
 
-			tkn, err := token.SignedString(key)
+			tkn, err := token.SignedString(pri)
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
