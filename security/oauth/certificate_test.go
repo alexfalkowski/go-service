@@ -75,7 +75,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 
 		cfg := test.NewOAuthConfig()
-		cfg.JSONWebKeySet = "https://httpstat.us/400"
+		cfg.JSONWebKeySet = "http://localhost:6000/v1/status/400"
 
 		logger := test.NewLogger(lc)
 
@@ -124,7 +124,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 
 		cfg := test.NewOAuthConfig()
-		cfg.JSONWebKeySet = "https://httpstat.us/200"
+		cfg.JSONWebKeySet = "http://localhost:6000/v1/status/200"
 
 		logger := test.NewLogger(lc)
 

@@ -39,7 +39,7 @@ func TestHealth(t *testing.T) {
 			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
-			o := observer(lc, "https://httpstat.us/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
+			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
 			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
@@ -91,7 +91,7 @@ func TestReadinessNoop(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		server := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger)
+		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger)
 		o := server.Observe("http")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
@@ -143,7 +143,7 @@ func TestInvalidHealth(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "https://httpstat.us/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
 
