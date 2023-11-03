@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.103.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.103.2) - 2023-11-03
+
+- [`bcd5921`](https://github.com/alexfalkowski/go-service/commit/bcd59213731cc85b56d0d8d54b85c43421129759) fix(transport): logger level (#399)
+
 ## [v1.103.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.103.1) - 2023-11-02
 
 - [`71b426c`](https://github.com/alexfalkowski/go-service/commit/71b426c6cdcee2d4bbae3f2373f7a8a3093bd30b) fix(meta): remove remote address (#398)
