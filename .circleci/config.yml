@@ -38,7 +38,7 @@ jobs:
       - run: make specs
       - run: make goveralls
       - store_artifacts:
-          path: test
+          path: test/reports
     resource_class: large
   release:
     docker:
