@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	shttp "github.com/alexfalkowski/go-service/http"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -49,17 +50,6 @@ func NewHandler(meter metric.Meter, handler http.Handler) (*Handler, error) {
 	return h, nil
 }
 
-type responseWriter struct {
-	Status int
-
-	http.ResponseWriter
-}
-
-func (r *responseWriter) WriteHeader(status int) {
-	r.Status = status
-	r.ResponseWriter.WriteHeader(status)
-}
-
 // Handler for metrics.
 type Handler struct {
 	started     metric.Float64Counter
@@ -91,13 +81,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.started.Add(ctx, 1, opts)
 	h.received.Add(ctx, 1, opts)
 
-	res := &responseWriter{ResponseWriter: resp, Status: http.StatusOK}
+	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	h.Handler.ServeHTTP(res, req)
 
-	h.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(res.Status)))
+	h.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(res.StatusCode)))
 	h.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
 
-	if res.Status >= 200 && res.Status <= 299 {
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
 		h.sent.Add(ctx, 1, opts)
 	}
 }

@@ -65,7 +65,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 
 		code := status.Code(err)
 		message := fmt.Sprintf("finished call with code %s", code.String())
-		loggerLevel := codeToLevel(code, logger)
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -73,6 +72,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
+		loggerLevel := codeToLevel(code, logger)
 		loggerLevel(message, fields...)
 
 		return resp, err
@@ -115,7 +115,6 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 
 		code := status.Code(err)
 		message := fmt.Sprintf("finished call with code %s", code.String())
-		loggerLevel := codeToLevel(code, logger)
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -123,6 +122,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
+		loggerLevel := codeToLevel(code, logger)
 		loggerLevel(message, fields...)
 
 		return err
@@ -164,7 +164,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 
 		code := status.Code(err)
 		message := fmt.Sprintf("finished call with code %s", code.String())
-		loggerLevel := codeToLevel(code, logger)
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -172,6 +171,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
+		loggerLevel := codeToLevel(code, logger)
 		loggerLevel(message, fields...)
 
 		return err
@@ -213,7 +213,6 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 
 		code := status.Code(err)
 		message := fmt.Sprintf("finished call with code %s", code.String())
-		loggerLevel := codeToLevel(code, logger)
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -221,6 +220,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			fields = append(fields, zap.Error(err))
 		}
 
+		loggerLevel := codeToLevel(code, logger)
 		loggerLevel(message, fields...)
 
 		return stream, err
@@ -229,11 +229,12 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 
 func codeToLevel(code codes.Code, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
 	switch code {
-	case codes.OK, codes.Canceled, codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.Unauthenticated:
+	case codes.OK:
 		return logger.Info
-	case codes.DeadlineExceeded, codes.PermissionDenied, codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange, codes.Unavailable:
+	case codes.Canceled, codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.Unauthenticated,
+		codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange:
 		return logger.Warn
-	case codes.Unknown, codes.Unimplemented, codes.Internal, codes.DataLoss:
+	case codes.Unknown, codes.DeadlineExceeded, codes.Unimplemented, codes.Internal, codes.Unavailable, codes.DataLoss:
 		return logger.Error
 	default:
 		return logger.Error
