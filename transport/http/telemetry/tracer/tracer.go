@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
+	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
@@ -72,11 +73,14 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	)
 	defer span.End()
 
-	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
+	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
+	h.Handler.ServeHTTP(res, req.WithContext(ctx))
 
 	for k, v := range meta.Attributes(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
+
+	span.SetAttributes(semconv.HTTPStatusCode(res.StatusCode))
 }
 
 // NewRoundTripper for tracer.

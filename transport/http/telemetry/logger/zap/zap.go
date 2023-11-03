@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
 	stime "github.com/alexfalkowski/go-service/time"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
@@ -49,7 +50,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	start := time.Now().UTC()
 	ctx := req.Context()
 
-	h.Handler.ServeHTTP(resp, req)
+	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
+	h.Handler.ServeHTTP(res, req)
 
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
@@ -68,7 +70,10 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		fields = append(fields, zap.String(httpDeadline, d.UTC().Format(time.RFC3339)))
 	}
 
-	h.logger.Info("finished call", fields...)
+	fields = append(fields, zap.Int(httpStatusCode, res.StatusCode))
+
+	loggerLevel := codeToLevel(res.StatusCode, h.logger)
+	loggerLevel(fmt.Sprintf("finished call with code %s", res.Status()), fields...)
 }
 
 // NewRoundTripper for zap.
@@ -119,7 +124,20 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode))
 
-	r.logger.Info(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
+	loggerLevel := codeToLevel(resp.StatusCode, r.logger)
+	loggerLevel(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
 
 	return resp, nil
+}
+
+func codeToLevel(code int, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
+	if code >= 400 && code <= 499 {
+		return logger.Warn
+	}
+
+	if code >= 500 && code <= 599 {
+		return logger.Error
+	}
+
+	return logger.Info
 }
