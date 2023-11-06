@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.104.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.104.0) - 2023-11-06
+
+- [`4d897b3`](https://github.com/alexfalkowski/go-service/commit/4d897b3ce8c14aaaa1180bcd608ef212dc99d774) feat(telemetry): want to sync all the time in developement mode (#403)
+
 ## [v1.103.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.103.3) - 2023-11-06
 
 - [`50320b6`](https://github.com/alexfalkowski/go-service/commit/50320b6c2fe3a38a23f41900b35ca09a11ed4c62) fix(deps): bump github.com/spf13/cobra from 1.7.0 to 1.8.0 (#402)
