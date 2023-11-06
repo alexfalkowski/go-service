@@ -72,35 +72,24 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 	})
 }
 
-// NewClient for HTTP.
-func NewClient(cfg *Config, opts ...ClientOption) (*http.Client, error) {
-	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
+// NewRoundTripper for HTTP.
+func NewRoundTripper(cfg *Config, opts ...ClientOption) (http.RoundTripper, error) {
+	os := &clientOptions{tracer: tracer.NewNoopTracer("http")}
 	for _, o := range opts {
-		o.apply(defaultOptions)
+		o.apply(os)
 	}
 
-	rt, err := newRoundTripper(cfg, defaultOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	client := &http.Client{Transport: rt}
-
-	return client, nil
-}
-
-func newRoundTripper(cfg *Config, opts *clientOptions) (http.RoundTripper, error) {
-	hrt := opts.roundTripper
+	hrt := os.roundTripper
 	if hrt == nil {
 		hrt = http.DefaultTransport
 	}
 
-	if opts.logger != nil {
-		hrt = lzap.NewRoundTripper(opts.logger, hrt)
+	if os.logger != nil {
+		hrt = lzap.NewRoundTripper(os.logger, hrt)
 	}
 
-	if opts.meter != nil {
-		rt, err := metrics.NewRoundTripper(opts.meter, hrt)
+	if os.meter != nil {
+		rt, err := metrics.NewRoundTripper(os.meter, hrt)
 		if err != nil {
 			return nil, err
 		}
@@ -108,17 +97,34 @@ func newRoundTripper(cfg *Config, opts *clientOptions) (http.RoundTripper, error
 		hrt = rt
 	}
 
-	hrt = htracer.NewRoundTripper(opts.tracer, hrt)
+	hrt = htracer.NewRoundTripper(os.tracer, hrt)
 
-	if opts.retry {
+	if os.retry {
 		hrt = retry.NewRoundTripper(&cfg.Retry, hrt)
 	}
 
-	if opts.breaker {
+	if os.breaker {
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
 	hrt = meta.NewRoundTripper(cfg.UserAgent, hrt)
 
 	return hrt, nil
+}
+
+// NewClient for HTTP.
+func NewClient(cfg *Config, opts ...ClientOption) (*http.Client, error) {
+	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
+	for _, o := range opts {
+		o.apply(defaultOptions)
+	}
+
+	rt, err := NewRoundTripper(cfg, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{Transport: rt}
+
+	return client, nil
 }

@@ -105,8 +105,8 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 	})
 }
 
-// NewClient to host for gRPC.
-func NewClient(ctx context.Context, host string, cfg *Config, opts ...ClientOption) (*grpc.ClientConn, error) {
+// NewDialOptions for gRPC.
+func NewDialOptions(cfg *Config, opts ...ClientOption) ([]grpc.DialOption, error) {
 	defaultOptions := &clientOptions{
 		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
 		tracer:   tracer.NewNoopTracer("grpc"),
@@ -129,7 +129,17 @@ func NewClient(ctx context.Context, host string, cfg *Config, opts ...ClientOpti
 	grpcOpts = append(grpcOpts, udo, sto, defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
-	return grpc.DialContext(ctx, host, grpcOpts...)
+	return grpcOpts, nil
+}
+
+// NewClient to host for gRPC.
+func NewClient(ctx context.Context, host string, cfg *Config, opts ...ClientOption) (*grpc.ClientConn, error) {
+	os, err := NewDialOptions(cfg, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return grpc.DialContext(ctx, host, os...)
 }
 
 func unaryDialOption(cfg *Config, opts *clientOptions) (grpc.DialOption, error) {
