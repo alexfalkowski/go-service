@@ -30,7 +30,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

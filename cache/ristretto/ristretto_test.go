@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )

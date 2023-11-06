@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/test"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestValidEnvConfig(t *testing.T) {

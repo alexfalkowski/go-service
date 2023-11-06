@@ -14,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
