@@ -6,9 +6,9 @@ import (
 	"path"
 
 	"github.com/alexfalkowski/go-service/security/header"
-	sjwt "github.com/alexfalkowski/go-service/security/jwt"
-	"github.com/alexfalkowski/go-service/security/jwt/meta"
-	smeta "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/security/jwt"
+	jm "github.com/alexfalkowski/go-service/security/jwt/meta"
+	gm "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -18,14 +18,14 @@ import (
 )
 
 // UnaryServerInterceptor for token.
-func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(verifier jwt.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
 			return handler(ctx, req)
 		}
 
-		md := smeta.ExtractIncoming(ctx)
+		md := gm.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {
@@ -42,7 +42,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
-		ctx, err = meta.WithRegisteredClaims(ctx, claims)
+		ctx, err = jm.WithRegisteredClaims(ctx, claims)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
@@ -52,7 +52,7 @@ func UnaryServerInterceptor(verifier sjwt.Verifier) grpc.UnaryServerInterceptor 
 }
 
 // StreamServerInterceptor for token.
-func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(verifier jwt.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -60,7 +60,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 		}
 
 		ctx := stream.Context()
-		md := smeta.ExtractIncoming(ctx)
+		md := gm.ExtractIncoming(ctx)
 
 		values := md["authorization"]
 		if len(values) == 0 {
@@ -77,7 +77,7 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
 		}
 
-		ctx, err = meta.WithRegisteredClaims(ctx, claims)
+		ctx, err = jm.WithRegisteredClaims(ctx, claims)
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
@@ -90,12 +90,12 @@ func StreamServerInterceptor(verifier sjwt.Verifier) grpc.StreamServerIntercepto
 }
 
 // NewPerRPCCredentials for token.
-func NewPerRPCCredentials(generator sjwt.Generator) credentials.PerRPCCredentials {
+func NewPerRPCCredentials(generator jwt.Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
 }
 
 type tokenPerRPCCredentials struct {
-	generator sjwt.Generator
+	generator jwt.Generator
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
