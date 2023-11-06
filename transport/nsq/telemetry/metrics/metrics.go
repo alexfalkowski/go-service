@@ -4,15 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
+	"github.com/alexfalkowski/go-service/nsq"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
-// NewHandler for metrics.
-func NewHandler(topic, channel string, meter metric.Meter, handler handler.Handler) (*Handler, error) {
+// NewConsumer for metrics.
+func NewConsumer(topic, channel string, meter metric.Meter, handler nsq.Consumer) (*Consumer, error) {
 	started, err := meter.Float64Counter("nsq_consumer_started_total", metric.WithDescription("Total number of messages started to be consumed."))
 	if err != nil {
 		return nil, err
@@ -39,32 +37,32 @@ func NewHandler(topic, channel string, meter metric.Meter, handler handler.Handl
 		attribute.Key("nsq_channel").String(channel),
 	)
 
-	h := &Handler{
+	h := &Consumer{
 		opts: opts, started: started, received: received, handled: handled, handledHist: handledHist,
-		Handler: handler,
+		Consumer: handler,
 	}
 
 	return h, nil
 }
 
-// Handler for metrics.
-type Handler struct {
+// Consumer for metrics.
+type Consumer struct {
 	opts        metric.MeasurementOption
 	started     metric.Float64Counter
 	received    metric.Float64Counter
 	handled     metric.Float64Counter
 	handledHist metric.Float64Histogram
 
-	handler.Handler
+	nsq.Consumer
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
+func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	st := time.Now()
 
 	h.started.Add(ctx, 1, h.opts)
 	h.received.Add(ctx, 1, h.opts)
 
-	if err := h.Handler.Handle(ctx, message); err != nil {
+	if err := h.Consumer.Consume(ctx, message); err != nil {
 		return err
 	}
 
@@ -75,7 +73,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for metrics.
-func NewProducer(meter metric.Meter, producer producer.Producer) (*Producer, error) {
+func NewProducer(meter metric.Meter, producer nsq.Producer) (*Producer, error) {
 	started, err := meter.Float64Counter("nsq_producer_started_total", metric.WithDescription("Total number of messages started by the producer."))
 	if err != nil {
 		return nil, err
@@ -112,10 +110,10 @@ type Producer struct {
 	handled     metric.Float64Counter
 	handledHist metric.Float64Histogram
 
-	producer.Producer
+	nsq.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
+func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
 	st := time.Now()
 	opts := metric.WithAttributes(
 		attribute.Key("nsq_topic").String(topic),
@@ -124,7 +122,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	p.started.Add(ctx, 1, opts)
 	p.sent.Add(ctx, 1, opts)
 
-	err := p.Producer.Publish(ctx, topic, message)
+	err := p.Producer.Produce(ctx, topic, message)
 	if err != nil {
 		return err
 	}

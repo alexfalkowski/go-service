@@ -3,12 +3,10 @@ package nsq
 import (
 	"context"
 
+	gn "github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq/breaker"
-	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/transport/nsq/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
@@ -71,7 +69,7 @@ func WithProducerMetrics(meter metric.Meter) ProducerOption {
 }
 
 // NewProducer for NSQ.
-func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...ProducerOption) (producer.Producer, error) {
+func NewProducer(lc fx.Lifecycle, cfg *Config, m gn.Marshaller, opts ...ProducerOption) (gn.Producer, error) {
 	defaultOptions := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -88,7 +86,7 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...
 		},
 	})
 
-	var pr producer.Producer = &nsqProducer{marshaller: m, Producer: p}
+	var pr gn.Producer = &nsqProducer{marshaller: m, Producer: p}
 
 	if defaultOptions.logger != nil {
 		pr = lzap.NewProducer(defaultOptions.logger, pr)
@@ -119,12 +117,12 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m marshaller.Marshaller, opts ...
 }
 
 type nsqProducer struct {
-	marshaller marshaller.Marshaller
+	marshaller gn.Marshaller
 	*nsq.Producer
 }
 
-// Publish a message to a topic.
-func (p *nsqProducer) Publish(_ context.Context, topic string, msg *message.Message) error {
+// Produce a message to a topic.
+func (p *nsqProducer) Produce(_ context.Context, topic string, msg *gn.Message) error {
 	bytes, err := p.marshaller.Marshal(msg)
 	if err != nil {
 		return err

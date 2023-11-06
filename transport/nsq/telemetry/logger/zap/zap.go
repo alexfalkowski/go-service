@@ -5,10 +5,8 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/nsq"
 	stime "github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -29,22 +27,22 @@ const (
 	producerKind = "producer"
 )
 
-// NewHandler for zap.
-func NewHandler(topic, channel string, logger *zap.Logger, handler handler.Handler) *Handler {
-	return &Handler{topic: topic, channel: channel, logger: logger, Handler: handler}
+// NewConsumer for zap.
+func NewConsumer(topic, channel string, logger *zap.Logger, handler nsq.Consumer) *Consumer {
+	return &Consumer{topic: topic, channel: channel, logger: logger, Consumer: handler}
 }
 
-// Handler for zap.
-type Handler struct {
+// Consumer for zap.
+type Consumer struct {
 	topic, channel string
 	logger         *zap.Logger
 
-	handler.Handler
+	nsq.Consumer
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
+func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	start := time.Now().UTC()
-	err := h.Handler.Handle(ctx, message)
+	err := h.Consumer.Consume(ctx, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),
@@ -76,7 +74,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for zap.
-func NewProducer(logger *zap.Logger, producer producer.Producer) *Producer {
+func NewProducer(logger *zap.Logger, producer nsq.Producer) *Producer {
 	return &Producer{logger: logger, Producer: producer}
 }
 
@@ -84,12 +82,12 @@ func NewProducer(logger *zap.Logger, producer producer.Producer) *Producer {
 type Producer struct {
 	logger *zap.Logger
 
-	producer.Producer
+	nsq.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
+func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
 	start := time.Now().UTC()
-	err := p.Producer.Publish(ctx, topic, message)
+	err := p.Producer.Produce(ctx, topic, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
 		zap.String(nsqStartTime, start.Format(time.RFC3339)),

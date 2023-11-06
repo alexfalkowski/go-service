@@ -3,24 +3,24 @@ package tracer
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
+	"github.com/alexfalkowski/go-service/nsq"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
 
-func extract(ctx context.Context, h message.Headers) context.Context {
+func extract(ctx context.Context, h nsq.Headers) context.Context {
 	prop := otel.GetTextMapPropagator()
 
 	return prop.Extract(ctx, headerCarrier(h))
 }
 
-func inject(ctx context.Context, h message.Headers) {
+func inject(ctx context.Context, h nsq.Headers) {
 	prop := otel.GetTextMapPropagator()
 
 	prop.Inject(ctx, headerCarrier(h))
 }
 
-type headerCarrier message.Headers
+type headerCarrier nsq.Headers
 
 var _ propagation.TextMapCarrier = &headerCarrier{}
 

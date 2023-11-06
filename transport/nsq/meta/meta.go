@@ -3,24 +3,22 @@ package meta
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/google/uuid"
 )
 
-// NewHandler for meta.
-func NewHandler(h handler.Handler) *Handler {
-	return &Handler{Handler: h}
+// NewConsumer for meta.
+func NewConsumer(h nsq.Consumer) *Consumer {
+	return &Consumer{Consumer: h}
 }
 
-// Handler for meta.
-type Handler struct {
-	handler.Handler
+// Consumer for meta.
+type Consumer struct {
+	nsq.Consumer
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
+func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, message.Headers))
 
 	requestID := extractRequestID(ctx, message.Headers)
@@ -30,21 +28,21 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 
 	ctx = meta.WithRequestID(ctx, requestID)
 
-	return h.Handler.Handle(ctx, message)
+	return h.Consumer.Consume(ctx, message)
 }
 
 // NewProducer for meta.
-func NewProducer(userAgent string, p producer.Producer) *Producer {
+func NewProducer(userAgent string, p nsq.Producer) *Producer {
 	return &Producer{userAgent: userAgent, Producer: p}
 }
 
 // Producer for meta.
 type Producer struct {
 	userAgent string
-	producer.Producer
+	nsq.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
+func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
 	userAgent := meta.UserAgent(ctx)
 	if userAgent == "" {
 		userAgent = p.userAgent
@@ -61,10 +59,10 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 	message.Headers["request-id"] = requestID
 	ctx = meta.WithRequestID(ctx, requestID)
 
-	return p.Producer.Publish(ctx, topic, message)
+	return p.Producer.Produce(ctx, topic, message)
 }
 
-func extractUserAgent(ctx context.Context, headers message.Headers) string {
+func extractUserAgent(ctx context.Context, headers nsq.Headers) string {
 	if userAgent := headers["user-agent"]; userAgent != "" {
 		return userAgent
 	}
@@ -72,7 +70,7 @@ func extractUserAgent(ctx context.Context, headers message.Headers) string {
 	return meta.UserAgent(ctx)
 }
 
-func extractRequestID(ctx context.Context, headers message.Headers) string {
+func extractRequestID(ctx context.Context, headers nsq.Headers) string {
 	if requestID := headers["request-id"]; requestID != "" {
 		return requestID
 	}

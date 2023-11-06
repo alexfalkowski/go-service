@@ -1,4 +1,4 @@
-package marshaller
+package nsq
 
 import (
 	"github.com/alexfalkowski/go-service/marshaller"

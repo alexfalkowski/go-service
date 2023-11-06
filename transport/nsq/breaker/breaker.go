@@ -3,13 +3,12 @@ package breaker
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
+	"github.com/alexfalkowski/go-service/nsq"
 	breaker "github.com/sony/gobreaker"
 )
 
 // NewProducer for retry.
-func NewProducer(p producer.Producer) *Producer {
+func NewProducer(p nsq.Producer) *Producer {
 	cb := breaker.NewCircuitBreaker(breaker.Settings{})
 
 	return &Producer{cb: cb, Producer: p}
@@ -18,12 +17,12 @@ func NewProducer(p producer.Producer) *Producer {
 // Producer for retry.
 type Producer struct {
 	cb *breaker.CircuitBreaker
-	producer.Producer
+	nsq.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
+func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
 	operation := func() (any, error) {
-		return nil, p.Producer.Publish(ctx, topic, message)
+		return nil, p.Producer.Produce(ctx, topic, message)
 	}
 
 	_, err := p.cb.Execute(operation)
