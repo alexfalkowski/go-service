@@ -3,7 +3,7 @@ package redis
 import (
 	"github.com/alexfalkowski/go-service/cache/compressor"
 	"github.com/alexfalkowski/go-service/cache/marshaller"
-	"github.com/alexfalkowski/go-service/cache/redis/client"
+	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
@@ -13,7 +13,7 @@ import (
 type OptionsParams struct {
 	fx.In
 
-	Client     client.Client
+	Client     gr.Client
 	Marshaller marshaller.Marshaller
 	Compressor compressor.Compressor
 }

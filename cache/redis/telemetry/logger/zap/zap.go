@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/alexfalkowski/go-service/meta"
+	gr "github.com/alexfalkowski/go-service/redis"
 	stime "github.com/alexfalkowski/go-service/time"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -22,14 +22,14 @@ const (
 )
 
 // NewClient for zap.
-func NewClient(logger *zap.Logger, client client.Client) *Client {
+func NewClient(logger *zap.Logger, client gr.Client) *Client {
 	return &Client{logger: logger, client: client}
 }
 
 // Client for zap.
 type Client struct {
 	logger *zap.Logger
-	client client.Client
+	client gr.Client
 }
 
 //nolint:dupl
