@@ -6,10 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
-	"github.com/alexfalkowski/go-service/transport/nsq/producer"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -36,20 +34,20 @@ func NewTracer(params Params) (Tracer, error) {
 // Tracer for tracer.
 type Tracer trace.Tracer
 
-// NewHandler for tracer.
-func NewHandler(topic, channel string, tracer Tracer, h handler.Handler) *Handler {
-	return &Handler{topic: topic, channel: channel, tracer: tracer, Handler: h}
+// NewConsumer for tracer.
+func NewConsumer(topic, channel string, tracer Tracer, h nsq.Consumer) *Consumer {
+	return &Consumer{topic: topic, channel: channel, tracer: tracer, Consumer: h}
 }
 
-// Handler for tracer.
-type Handler struct {
+// Consumer for tracer.
+type Consumer struct {
 	topic, channel string
 	tracer         Tracer
 
-	handler.Handler
+	nsq.Consumer
 }
 
-func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
+func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	ctx = extract(ctx, message.Headers)
 
 	operationName := fmt.Sprintf("consume %s:%s", h.topic, h.channel)
@@ -67,7 +65,7 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 	)
 	defer span.End()
 
-	err := h.Handler.Handle(ctx, message)
+	err := h.Consumer.Consume(ctx, message)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
@@ -81,17 +79,17 @@ func (h *Handler) Handle(ctx context.Context, message *message.Message) error {
 }
 
 // NewProducer for tracer.
-func NewProducer(tracer Tracer, p producer.Producer) *Producer {
+func NewProducer(tracer Tracer, p nsq.Producer) *Producer {
 	return &Producer{tracer: tracer, Producer: p}
 }
 
 // Producer for tracer.
 type Producer struct {
 	tracer Tracer
-	producer.Producer
+	nsq.Producer
 }
 
-func (p *Producer) Publish(ctx context.Context, topic string, message *message.Message) error {
+func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
 	operationName := fmt.Sprintf("publish %s", topic)
 	attrs := []attribute.KeyValue{
 		semconv.MessagingSystem("nsq"),
@@ -109,7 +107,7 @@ func (p *Producer) Publish(ctx context.Context, topic string, message *message.M
 
 	inject(ctx, message.Headers)
 
-	err := p.Producer.Publish(ctx, topic, message)
+	err := p.Producer.Produce(ctx, topic, message)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)

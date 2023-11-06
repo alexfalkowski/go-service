@@ -6,12 +6,11 @@ import (
 	"testing"
 	"time"
 
+	gn "github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tnsq "github.com/alexfalkowski/go-service/transport/nsq"
-	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
-	"github.com/alexfalkowski/go-service/transport/nsq/message"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"github.com/nsqio/go-nsq"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -35,10 +34,10 @@ func TestConsumer(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
-		handler := test.NewHandler(nil)
+		handler := test.NewConsumer(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
+			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(m),
 			)
@@ -67,10 +66,10 @@ func TestInvalidConsumer(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
-		handler := test.NewHandler(nil)
+		handler := test.NewConsumer(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(lc, "schäfer", "schäfer", cfg, handler, marshaller.NewMsgPack(),
+			err = tnsq.RegisterConsumer(lc, "schäfer", "schäfer", cfg, handler, gn.NewMsgPackMarshaller(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(m),
 			)
@@ -98,10 +97,10 @@ func TestInvalidConsumerConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &tnsq.Config{LookupHost: "invalid_host"}
-		handler := test.NewHandler(nil)
+		handler := test.NewConsumer(nil)
 
 		Convey("When I register a consumer", func() {
-			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
+			err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
 				tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 				tnsq.WithConsumerMetrics(m),
 			)
@@ -129,15 +128,15 @@ func TestReceiveMessage(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
-		handler := test.NewHandler(nil)
+		handler := test.NewConsumer(nil)
 
-		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(m),
 		)
 		So(err, ShouldBeNil)
 
-		producer, err := tnsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
+		producer, err := tnsq.NewProducer(lc, cfg, gn.NewMsgPackMarshaller(),
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(m),
 		)
@@ -146,8 +145,8 @@ func TestReceiveMessage(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			message := message.New([]byte("test"))
-			err = producer.Publish(context.Background(), "topic", message)
+			message := gn.NewMessage([]byte("test"))
+			err = producer.Produce(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
@@ -173,9 +172,9 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
-		handler := test.NewHandler(nil)
+		handler := test.NewConsumer(nil)
 
-		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(m),
 		)
@@ -213,15 +212,15 @@ func TestReceiveError(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := &test.NewTransportConfig().NSQ
-		handler := test.NewHandler(errors.New("something went wrong"))
+		handler := test.NewConsumer(errors.New("something went wrong"))
 
-		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, marshaller.NewMsgPack(),
+		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
 			tnsq.WithConsumerLogger(logger), tnsq.WithConsumerTracer(tracer),
 			tnsq.WithConsumerMetrics(m),
 		)
 		So(err, ShouldBeNil)
 
-		producer, err := tnsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
+		producer, err := tnsq.NewProducer(lc, cfg, gn.NewMsgPackMarshaller(),
 			tnsq.WithProducerLogger(logger), tnsq.WithProducerTracer(tracer), tnsq.WithProducerRetry(), tnsq.WithProducerBreaker(),
 			tnsq.WithProducerMetrics(m),
 		)
@@ -230,8 +229,8 @@ func TestReceiveError(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send a message", func() {
-			message := message.New([]byte("test"))
-			err = producer.Publish(context.Background(), "topic", message)
+			message := gn.NewMessage([]byte("test"))
+			err = producer.Produce(context.Background(), "topic", message)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)

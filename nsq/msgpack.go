@@ -1,10 +1,10 @@
-package marshaller
+package nsq
 
 import (
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
-// NewMsgPack for NSQ.
-func NewMsgPack() Marshaller {
+// NewMsgPackMarshaller for NSQ.
+func NewMsgPackMarshaller() Marshaller {
 	return marshaller.NewMsgPack()
 }

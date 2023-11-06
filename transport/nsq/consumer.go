@@ -3,9 +3,8 @@ package nsq
 import (
 	"context"
 
+	gn "github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/transport/nsq/handler"
-	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
 	"github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger"
 	lzap "github.com/alexfalkowski/go-service/transport/nsq/telemetry/logger/zap"
@@ -52,7 +51,7 @@ func WithConsumerMetrics(meter metric.Meter) ConsumerOption {
 }
 
 // RegisterConsumer for NSQ.
-func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, h handler.Handler, m marshaller.Marshaller, opts ...ConsumerOption) error {
+func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, con gn.Consumer, mar gn.Marshaller, opts ...ConsumerOption) error {
 	defaultOptions := &consumerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -66,25 +65,24 @@ func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, h han
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
 	if defaultOptions.logger != nil {
-		h = lzap.NewHandler(topic, channel, defaultOptions.logger, h)
+		con = lzap.NewConsumer(topic, channel, defaultOptions.logger, con)
 	}
 
 	if defaultOptions.meter != nil {
-		handler, err := metrics.NewHandler(topic, channel, defaultOptions.meter, h)
+		handler, err := metrics.NewConsumer(topic, channel, defaultOptions.meter, con)
 		if err != nil {
 			return err
 		}
 
-		h = handler
+		con = handler
 	}
 
-	h = ntracer.NewHandler(topic, channel, defaultOptions.tracer, h)
-	h = meta.NewHandler(h)
+	con = ntracer.NewConsumer(topic, channel, defaultOptions.tracer, con)
+	con = meta.NewConsumer(con)
 
-	c.AddHandler(handler.New(h, m))
+	c.AddHandler(gn.NewConsumer(con, mar))
 
-	err = c.ConnectToNSQLookupd(cfg.LookupHost)
-	if err != nil {
+	if err := c.ConnectToNSQLookupd(cfg.LookupHost); err != nil {
 		return err
 	}
 

@@ -1,4 +1,4 @@
-package message
+package nsq
 
 import (
 	"github.com/nsqio/go-nsq"
@@ -16,7 +16,7 @@ type Message struct {
 }
 
 // New message.
-func New(body []byte) *Message {
+func NewMessage(body []byte) *Message {
 	message := &Message{
 		Headers: Headers{},
 		Body:    body,

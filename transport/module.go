@@ -1,11 +1,11 @@
 package transport
 
 import (
+	"github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/http"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	"go.uber.org/fx"
 )
@@ -28,7 +28,7 @@ var (
 	// NSQModule for fx.
 	NSQModule = fx.Options(
 		fx.Provide(ntracer.NewTracer),
-		fx.Provide(marshaller.NewMsgPack),
+		fx.Provide(nsq.NewMsgPackMarshaller),
 	)
 
 	// Module for fx.

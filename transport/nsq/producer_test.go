@@ -3,11 +3,11 @@ package nsq_test
 import (
 	"testing"
 
+	gn "github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/nsq"
-	"github.com/alexfalkowski/go-service/transport/nsq/marshaller"
 	ntracer "github.com/alexfalkowski/go-service/transport/nsq/telemetry/tracer"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -31,7 +31,7 @@ func TestProducer(t *testing.T) {
 			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
-			producer, err := nsq.NewProducer(lc, cfg, marshaller.NewMsgPack(),
+			producer, err := nsq.NewProducer(lc, cfg, gn.NewMsgPackMarshaller(),
 				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
 				nsq.WithProducerMetrics(m),
 			)
