@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.104.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.104.1) - 2023-11-06
+
+- [`2a328f8`](https://github.com/alexfalkowski/go-service/commit/2a328f8a9cdecf870e280a85436f89f78a29c594) fix(grpc): rename packages (#404)
+
 ## [v1.104.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.104.0) - 2023-11-06
 
 - [`4d897b3`](https://github.com/alexfalkowski/go-service/commit/4d897b3ce8c14aaaa1180bcd608ef212dc99d774) feat(telemetry): want to sync all the time in developement mode (#403)
