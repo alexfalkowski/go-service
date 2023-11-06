@@ -55,10 +55,17 @@ func NewTracer(lc fx.Lifecycle, name string, env env.Environment, ver version.Ve
 		attribute.String("name", os.ExecutableName()),
 	)
 
-	p := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exporter),
+	tracerOpts := []sdktrace.TracerProviderOption{
 		sdktrace.WithResource(attrs),
-	)
+	}
+
+	if env.IsDevelopment() {
+		tracerOpts = append(tracerOpts, sdktrace.WithSyncer(exporter))
+	} else {
+		tracerOpts = append(tracerOpts, sdktrace.WithBatcher(exporter))
+	}
+
+	p := sdktrace.NewTracerProvider(tracerOpts...)
 
 	otel.SetTracerProvider(p)
 	otel.SetErrorHandler(&errorHandler{})

@@ -17,7 +17,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
 	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 )

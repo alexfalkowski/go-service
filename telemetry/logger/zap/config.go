@@ -20,12 +20,12 @@ func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 		return zap.Config{}, err
 	}
 
-	var cfg zap.Config
+	cfg := zap.NewProductionConfig()
 
 	if env.IsDevelopment() {
-		cfg = zap.NewDevelopmentConfig()
-	} else {
-		cfg = zap.NewProductionConfig()
+		cfg.Encoding = "json"
+		cfg.Sampling = nil
+		cfg.Development = true
 	}
 
 	cfg.Level = l
