@@ -2,13 +2,13 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/redis/client"
 	rem "github.com/alexfalkowski/go-service/cache/redis/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
 	cristretto "github.com/alexfalkowski/go-service/cache/ristretto"
 	rim "github.com/alexfalkowski/go-service/cache/ristretto/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/marshaller"
+	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/dgraph-io/ristretto"
 	"github.com/go-redis/cache/v8"
 	"go.opentelemetry.io/otel/metric"
@@ -28,7 +28,7 @@ func NewRedisCache(lc fx.Lifecycle, host string, logger *zap.Logger, compressor 
 }
 
 // NewRedisClient for test.
-func NewRedisClient(lc fx.Lifecycle, host string, logger *zap.Logger) client.Client {
+func NewRedisClient(lc fx.Lifecycle, host string, logger *zap.Logger) gr.Client {
 	tracer, _ := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: NewTracerConfig(), Version: Version})
 	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(NewRedisConfig(host)), Tracer: tracer, Logger: logger})
 

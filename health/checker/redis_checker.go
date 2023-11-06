@@ -4,17 +4,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/redis/client"
+	gr "github.com/alexfalkowski/go-service/redis"
 )
 
 // NewRedisChecker for health.
-func NewRedisChecker(client client.Client, timeout time.Duration) *RedisChecker {
+func NewRedisChecker(client gr.Client, timeout time.Duration) *RedisChecker {
 	return &RedisChecker{client: client, timeout: timeout}
 }
 
 // RedisChecker for health.
 type RedisChecker struct {
-	client  client.Client
+	client  gr.Client
 	timeout time.Duration
 }
 

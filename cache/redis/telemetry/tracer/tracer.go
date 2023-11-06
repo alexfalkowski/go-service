@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
+	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/redis/v8"
@@ -36,14 +36,14 @@ func NewTracer(params Params) (Tracer, error) {
 type Tracer trace.Tracer
 
 // NewClient for tracer.
-func NewClient(tracer Tracer, client client.Client) *Client {
+func NewClient(tracer Tracer, client gr.Client) *Client {
 	return &Client{tracer: tracer, client: client}
 }
 
 // Client for tracer.
 type Client struct {
 	tracer Tracer
-	client client.Client
+	client gr.Client
 }
 
 //nolint:dupl

@@ -3,10 +3,10 @@ package redis
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/redis/client"
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/logger"
 	rzap "github.com/alexfalkowski/go-service/cache/redis/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
+	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -23,10 +23,10 @@ type ClientParams struct {
 }
 
 // NewClient for redis.
-func NewClient(params ClientParams) client.Client {
+func NewClient(params ClientParams) gr.Client {
 	redis.SetLogger(logger.NewLogger())
 
-	var client client.Client = redis.NewRing(params.RingOptions)
+	var client gr.Client = redis.NewRing(params.RingOptions)
 	client = tracer.NewClient(params.Tracer, client)
 	client = rzap.NewClient(params.Logger, client)
 
