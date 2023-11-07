@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.106.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.106.1) - 2023-11-07
+
+- [`03fb44a`](https://github.com/alexfalkowski/go-service/commit/03fb44a752f106082e05083382c760ba6988f119) fix(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2 (#407)
+
 ## [v1.106.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.106.0) - 2023-11-06
 
 - [`c4109a1`](https://github.com/alexfalkowski/go-service/commit/c4109a16b0f463c585dd62f2fe6c9ab71f5e7bd2) feat(nsq): move consumer/producer (#406)
