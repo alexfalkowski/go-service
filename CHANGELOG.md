@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.107.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.107.0) - 2023-11-08
+
+- [`c2954ce`](https://github.com/alexfalkowski/go-service/commit/c2954ce02e4c5e4a63d93e3401271407760d17d4) feat(security): have a generic way to use auth (#409)
+- [`cdbce53`](https://github.com/alexfalkowski/go-service/commit/cdbce537916f0c3efbfe1de277c75ef90f46a264) build(deps): update bin (#408)
+
 ## [v1.106.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.106.1) - 2023-11-07
 
 - [`03fb44a`](https://github.com/alexfalkowski/go-service/commit/03fb44a752f106082e05083382c760ba6988f119) fix(deps): bump github.com/grpc-ecosystem/grpc-gateway/v2 (#407)
