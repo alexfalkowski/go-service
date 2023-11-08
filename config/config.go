@@ -7,8 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/security/oauth"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -22,7 +20,6 @@ import (
 type Config struct {
 	Environment env.Environment  `yaml:"environment" json:"environment" toml:"environment"`
 	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
-	Security    security.Config  `yaml:"security" json:"security" toml:"security"`
 	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
 	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
 	Transport   transport.Config `yaml:"transport" json:"transport" toml:"transport"`
@@ -38,10 +35,6 @@ func (cfg *Config) RedisConfig() *redis.Config {
 
 func (cfg *Config) RistrettoConfig() *ristretto.Config {
 	return &cfg.Cache.Ristretto
-}
-
-func (cfg *Config) OAuthConfig() *oauth.Config {
-	return &cfg.Security.OAuth
 }
 
 func (cfg *Config) PGConfig() *pg.Config {

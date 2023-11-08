@@ -9,7 +9,6 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/go-redis/cache/v8 v8.4.4
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/uuid v1.4.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
