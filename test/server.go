@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/security/oauth/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport"
@@ -35,8 +34,7 @@ type Server struct {
 
 // SayHello ...
 func (s *Server) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
-	c, _ := meta.RegisteredClaims(ctx)
-	if s.verifyAuth && c == nil {
+	if s.verifyAuth && Test(ctx) != "auth" {
 		return nil, ErrInvalidToken
 	}
 
@@ -45,8 +43,7 @@ func (s *Server) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.Say
 
 // SayStreamHello ...
 func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
-	c, _ := meta.RegisteredClaims(stream.Context())
-	if s.verifyAuth && c == nil {
+	if s.verifyAuth && Test(stream.Context()) != "auth" {
 		return ErrInvalidToken
 	}
 

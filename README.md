@@ -97,38 +97,6 @@ buffer_items = 64
 We enhance the runtime with the following:
 - [Automaxprocs](https://github.com/uber-go/automaxprocs)
 
-## Security
-
-For security we support the following:
-- [OAuth 2.0](https://oauth.net/2/)
-
-### Configuration
-
-To configure, please specify the following:
-
-```yaml
-security:
-  oauth:
-    url: test_url
-    client_id: test_client_id
-    client_secret: test_client_secret
-    audience: test_audience
-    issuer: test_issuer
-    algorithm: test_algorithm
-    json_web_key_set: test_json_web_key_set
-```
-
-```toml
-[security.oauth]
-url = "test_url"
-client_id = "test_client_id"
-client_secret = "test_client_secret"
-audience = "test_audience"
-issuer = "test_issuer"
-algorithm = "test_algorithm"
-json_web_key_set = "test_json_web_key_set"
-```
-
 ## SQL
 
 For SQL databases we support the following:

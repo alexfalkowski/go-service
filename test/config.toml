@@ -8,15 +8,6 @@ num_counters = 10_000_000
 max_cost = 100_000_000
 buffer_items = 64
 
-[security.oauth]
-url = "test_url"
-client_id = "test_client_id"
-client_secret = "test_client_secret"
-audience = "test_audience"
-issuer = "test_issuer"
-algorithm = "test_algorithm"
-json_web_key_set = "test_json_web_key_set"
-
 [sql.pg]
 max_open_conns = 5
 max_idle_conns = 5

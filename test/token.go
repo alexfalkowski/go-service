@@ -3,9 +3,6 @@ package test
 import (
 	"context"
 	"errors"
-
-	"github.com/alexfalkowski/go-service/security/oauth/meta"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 // NewGenerator for test.
@@ -38,11 +35,5 @@ func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, e
 		return ctx, errors.New("invalid token")
 	}
 
-	claims := &jwt.RegisteredClaims{
-		Issuer:   "test",
-		Subject:  "test",
-		Audience: jwt.ClaimStrings{"test"},
-	}
-
-	return meta.WithRegisteredClaims(ctx, claims)
+	return WithTest(ctx, "auth"), nil
 }
