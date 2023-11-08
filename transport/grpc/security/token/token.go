@@ -1,4 +1,4 @@
-package jwt
+package token
 
 import (
 	"context"
@@ -6,9 +6,8 @@ import (
 	"path"
 
 	"github.com/alexfalkowski/go-service/security/header"
-	"github.com/alexfalkowski/go-service/security/jwt"
-	jm "github.com/alexfalkowski/go-service/security/jwt/meta"
-	gm "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/security/token"
+	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"google.golang.org/grpc"
@@ -17,34 +16,41 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ExtractToken from context.
+func ExtractToken(ctx context.Context) (string, error) {
+	md := meta.ExtractIncoming(ctx)
+
+	values := md["authorization"]
+	if len(values) == 0 {
+		return "", header.ErrInvalidAuthorization
+	}
+
+	_, token, err := header.ParseAuthorization(values[0])
+
+	return token, err
+}
+
+// VerifyToken from context.
+func VerifyToken(ctx context.Context, verifier token.Verifier) (context.Context, error) {
+	token, err := ExtractToken(ctx)
+	if err != nil {
+		return ctx, err
+	}
+
+	return verifier.Verify(ctx, []byte(token))
+}
+
 // UnaryServerInterceptor for token.
-func UnaryServerInterceptor(verifier jwt.Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
 			return handler(ctx, req)
 		}
 
-		md := gm.ExtractIncoming(ctx)
-
-		values := md["authorization"]
-		if len(values) == 0 {
-			return nil, status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
-		}
-
-		_, credentials, err := header.ParseAuthorization(values[0])
-		if err != nil {
-			return nil, status.Error(codes.Unauthenticated, err.Error())
-		}
-
-		_, claims, err := verifier.Verify(ctx, []byte(credentials))
+		ctx, err := VerifyToken(ctx, verifier)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
-		}
-
-		ctx, err = jm.WithRegisteredClaims(ctx, claims)
-		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
 
 		return handler(ctx, req)
@@ -52,7 +58,7 @@ func UnaryServerInterceptor(verifier jwt.Verifier) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for token.
-func StreamServerInterceptor(verifier jwt.Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -60,26 +66,10 @@ func StreamServerInterceptor(verifier jwt.Verifier) grpc.StreamServerInterceptor
 		}
 
 		ctx := stream.Context()
-		md := gm.ExtractIncoming(ctx)
 
-		values := md["authorization"]
-		if len(values) == 0 {
-			return status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
-		}
-
-		_, credentials, err := header.ParseAuthorization(values[0])
-		if err != nil {
-			return status.Error(codes.Unauthenticated, err.Error())
-		}
-
-		_, claims, err := verifier.Verify(ctx, []byte(credentials))
+		ctx, err := VerifyToken(ctx, verifier)
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
-		}
-
-		ctx, err = jm.WithRegisteredClaims(ctx, claims)
-		if err != nil {
-			return status.Errorf(codes.Unauthenticated, "could store registered claims: %s", err.Error())
 		}
 
 		wrapped := middleware.WrapServerStream(stream)
@@ -90,16 +80,16 @@ func StreamServerInterceptor(verifier jwt.Verifier) grpc.StreamServerInterceptor
 }
 
 // NewPerRPCCredentials for token.
-func NewPerRPCCredentials(generator jwt.Generator) credentials.PerRPCCredentials {
+func NewPerRPCCredentials(generator token.Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
 }
 
 type tokenPerRPCCredentials struct {
-	generator jwt.Generator
+	generator token.Generator
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
-	t, err := p.generator.Generate(ctx)
+	_, t, err := p.generator.Generate(ctx)
 	if err != nil {
 		return nil, err
 	}

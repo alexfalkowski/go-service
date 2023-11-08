@@ -1,7 +1,7 @@
 package oauth
 
 import (
-	"github.com/alexfalkowski/go-service/security/jwt"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/dgraph-io/ristretto"
@@ -23,7 +23,7 @@ type GeneratorParams struct {
 }
 
 // NewGenerator for OAuth.
-func NewGenerator(params GeneratorParams) (jwt.Generator, error) {
+func NewGenerator(params GeneratorParams) (token.Generator, error) {
 	client, err := http.NewClient(params.HTTPConfig,
 		http.WithClientLogger(params.Logger),
 		http.WithClientBreaker(), http.WithClientRetry(),
@@ -33,7 +33,7 @@ func NewGenerator(params GeneratorParams) (jwt.Generator, error) {
 		return nil, err
 	}
 
-	var generator jwt.Generator = &generator{cfg: params.Config, client: client}
+	var generator token.Generator = &generator{cfg: params.Config, client: client}
 	generator = &cachedGenerator{cfg: params.Config, cache: params.Cache, Generator: generator}
 
 	return generator, nil
@@ -69,8 +69,8 @@ func NewCertificator(params CertificatorParams) (Certificator, error) {
 }
 
 // NewVerifier for OAuth.
-func NewVerifier(cfg *Config, cert Certificator) jwt.Verifier {
-	var verifier jwt.Verifier = &verifier{cfg: cfg, cert: cert}
+func NewVerifier(cfg *Config, cert Certificator) token.Verifier {
+	var verifier token.Verifier = &verifier{cfg: cfg, cert: cert}
 
 	return verifier
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/alexfalkowski/go-service/security/oauth/meta"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -23,27 +24,27 @@ type verifier struct {
 	cert Certificator
 }
 
-func (v *verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
+func (v *verifier) Verify(ctx context.Context, token []byte) (context.Context, error) {
 	claims := &jwt.RegisteredClaims{}
 
 	t, err := jwt.ParseWithClaims(string(token), claims, v.validate)
 	if err != nil {
-		return nil, claims, err
+		return ctx, err
 	}
 
 	if t.Header["alg"] != v.cfg.Algorithm {
-		return t, claims, ErrInvalidAlgorithm
+		return ctx, ErrInvalidAlgorithm
 	}
 
 	if !claims.VerifyIssuer(v.cfg.Issuer, true) {
-		return t, claims, ErrInvalidIssuer
+		return ctx, ErrInvalidIssuer
 	}
 
 	if !claims.VerifyAudience(v.cfg.Audience, true) {
-		return t, claims, ErrInvalidAudience
+		return ctx, ErrInvalidAudience
 	}
 
-	return t, claims, nil
+	return meta.WithRegisteredClaims(ctx, claims)
 }
 
 func (v *verifier) validate(token *jwt.Token) (any, error) {

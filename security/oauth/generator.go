@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	sjwt "github.com/alexfalkowski/go-service/security/jwt"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/dgraph-io/ristretto"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -33,7 +33,7 @@ type generator struct {
 	client *http.Client
 }
 
-func (g *generator) Generate(ctx context.Context) ([]byte, error) {
+func (g *generator) Generate(ctx context.Context) (context.Context, []byte, error) {
 	request := &generatorRequest{
 		ClientID:     g.cfg.ClientID,
 		ClientSecret: g.cfg.ClientSecret,
@@ -45,55 +45,55 @@ func (g *generator) Generate(ctx context.Context) ([]byte, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "POST", g.cfg.URL, bytes.NewBuffer(body))
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := g.client.Do(req)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, ErrInvalidResponse
+		return ctx, nil, ErrInvalidResponse
 	}
 
 	var resp generatorResponse
 	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
-	return []byte(resp.AccessToken), nil
+	return ctx, []byte(resp.AccessToken), nil
 }
 
 type cachedGenerator struct {
 	cfg   *Config
 	cache *ristretto.Cache
 
-	sjwt.Generator
+	token.Generator
 }
 
-func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {
+func (g *cachedGenerator) Generate(ctx context.Context) (context.Context, []byte, error) {
 	cacheKey := g.cfg.CacheKey("generate")
 
 	v, ok := g.cache.Get(cacheKey)
 	if ok {
-		return v.([]byte), nil
+		return ctx, v.([]byte), nil
 	}
 
-	key, err := g.Generator.Generate(ctx)
+	ctx, key, err := g.Generator.Generate(ctx)
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
 	parser := &jwt.Parser{}
 
 	token, _, err := parser.ParseUnverified(string(key), jwt.MapClaims{})
 	if err != nil {
-		return nil, err
+		return ctx, nil, err
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -102,5 +102,5 @@ func (g *cachedGenerator) Generate(ctx context.Context) ([]byte, error) {
 
 	g.cache.SetWithTTL(cacheKey, key, 0, time.Until(ttl))
 
-	return key, nil
+	return ctx, key, nil
 }

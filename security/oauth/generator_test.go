@@ -41,7 +41,7 @@ func TestGenerate(t *testing.T) {
 		Convey("When I generate a token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid token", func() {
@@ -78,7 +78,7 @@ func TestInvalidResponseGenerate(t *testing.T) {
 
 		Convey("When I generate a token", func() {
 			ctx := context.Background()
-			_, err := gen.Generate(ctx)
+			_, _, err := gen.Generate(ctx)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldEqual, oauth.ErrInvalidResponse)
@@ -114,7 +114,7 @@ func TestInvalidURLGenerate(t *testing.T) {
 
 		Convey("When I generate a token", func() {
 			ctx := context.Background()
-			_, err := gen.Generate(ctx)
+			_, _, err := gen.Generate(ctx)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -150,7 +150,7 @@ func TestMalformedURLGenerate(t *testing.T) {
 
 		Convey("When I generate a token", func() {
 			ctx := context.Background()
-			_, err := gen.Generate(ctx)
+			_, _, err := gen.Generate(ctx)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -184,12 +184,12 @@ func TestCachedGenerate(t *testing.T) {
 		Convey("When I generate a token twice", func() {
 			ctx := context.Background()
 
-			_, err = gen.Generate(ctx)
+			_, _, err = gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid cached token", func() {
