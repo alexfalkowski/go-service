@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/security/jwt/meta"
+	"github.com/alexfalkowski/go-service/security/oauth/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport"

@@ -14,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -118,8 +118,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -245,8 +245,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 

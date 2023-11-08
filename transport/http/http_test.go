@@ -15,8 +15,8 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	jgrpc "github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
-	jhttp "github.com/alexfalkowski/go-service/transport/http/security/jwt"
+	gt "github.com/alexfalkowski/go-service/transport/grpc/security/token"
+	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -147,8 +147,8 @@ func TestValidAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -163,7 +163,7 @@ func TestValidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
-			transport := jhttp.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
+			transport := ht.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport)
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport, m)
 
 			message := []byte(`{"name":"test"}`)
@@ -205,8 +205,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -221,7 +221,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := jhttp.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
+			transport := ht.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport)
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport, m)
 
 			message := []byte(`{"name":"test"}`)
@@ -263,8 +263,8 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -319,8 +319,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -335,7 +335,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
-			transport := jhttp.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
+			transport := ht.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport)
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport, m)
 
 			message := []byte(`{"name":"test"}`)
@@ -370,8 +370,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -426,8 +426,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jgrpc.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jgrpc.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -442,7 +442,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
-			transport := jhttp.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
+			transport := ht.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport)
 			client := test.NewHTTPClientWithRoundTripper(lc, logger, test.NewTracerConfig(), cfg, transport, m)
 
 			message := []byte(`{"name":"test"}`)

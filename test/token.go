@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/alexfalkowski/go-service/security/oauth/meta"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -18,8 +19,8 @@ type Generator struct {
 	err   error
 }
 
-func (g *Generator) Generate(_ context.Context) ([]byte, error) {
-	return []byte(g.token), g.err
+func (g *Generator) Generate(ctx context.Context) (context.Context, []byte, error) {
+	return ctx, []byte(g.token), g.err
 }
 
 // NewVerifier for test.
@@ -32,9 +33,9 @@ type Verifier struct {
 	token string
 }
 
-func (v *Verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.RegisteredClaims, error) {
+func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, error) {
 	if string(token) != v.token {
-		return nil, nil, errors.New("invalid token")
+		return ctx, errors.New("invalid token")
 	}
 
 	claims := &jwt.RegisteredClaims{
@@ -43,5 +44,5 @@ func (v *Verifier) Verify(_ context.Context, token []byte) (*jwt.Token, *jwt.Reg
 		Audience: jwt.ClaimStrings{"test"},
 	}
 
-	return &jwt.Token{Claims: claims}, claims, nil
+	return meta.WithRegisteredClaims(ctx, claims)
 }

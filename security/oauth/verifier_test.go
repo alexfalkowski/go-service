@@ -47,10 +47,10 @@ func TestVerify(t *testing.T) {
 		Convey("When I verify the token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -90,15 +90,15 @@ func TestCachedVerify(t *testing.T) {
 		Convey("When I verify the token twice", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 			So(err, ShouldBeNil)
 
 			time.Sleep(1 * time.Second)
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have no errors", func() {
 				So(err, ShouldBeNil)
@@ -139,12 +139,12 @@ func TestVerifyInvalidAlgorithm(t *testing.T) {
 		Convey("When I verify the token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			cfg.Algorithm = "Algorithm"
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid algorithm", func() {
 				So(err, ShouldBeError)
@@ -186,12 +186,12 @@ func TestVerifyInvalidIssuer(t *testing.T) {
 		Convey("When I verify the token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			cfg.Issuer = "Issuer"
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid issuer", func() {
 				So(err, ShouldBeError)
@@ -233,12 +233,12 @@ func TestVerifyInvalidAudience(t *testing.T) {
 		Convey("When I verify the token", func() {
 			ctx := context.Background()
 
-			token, err := gen.Generate(ctx)
+			_, token, err := gen.Generate(ctx)
 			So(err, ShouldBeNil)
 
 			cfg.Audience = "Audience"
 
-			_, _, err = ver.Verify(ctx, token)
+			_, err = ver.Verify(ctx, token)
 
 			Convey("Then I should have an invalid audience", func() {
 				So(err, ShouldBeError)

@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport/grpc/limiter"
-	"github.com/alexfalkowski/go-service/transport/grpc/security/jwt"
+	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -74,8 +74,8 @@ func TestValidAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -84,7 +84,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -115,8 +115,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -125,7 +125,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -155,8 +155,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -165,7 +165,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -194,8 +194,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -233,8 +233,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -243,7 +243,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -272,8 +272,8 @@ func TestBreakerUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -282,7 +282,7 @@ func TestBreakerUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
@@ -400,8 +400,8 @@ func TestValidAuthStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -410,7 +410,7 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -445,8 +445,8 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -455,7 +455,7 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -489,8 +489,8 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -499,7 +499,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -527,8 +527,8 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -571,8 +571,8 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
-			[]grpc.UnaryServerInterceptor{jwt.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{jwt.StreamServerInterceptor(verifier)},
+			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 			m,
 		)
 
@@ -581,7 +581,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), jwt.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)

@@ -58,7 +58,7 @@ func TestInvalidJSONWebKeySet(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -106,7 +106,7 @@ func TestInvalidResponseJSONWebKeySet(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -155,7 +155,7 @@ func TestInvalidJSONResponseJSONWebKeySet(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -191,7 +191,7 @@ func TestCorruptToken(t *testing.T) {
 
 		Convey("When I try to verify the token", func() {
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte("corrupt-token"))
+			_, err = ver.Verify(ctx, []byte("corrupt-token"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -234,7 +234,7 @@ func TestMissingAudienceToken(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -278,7 +278,7 @@ func TestMissingIssuerToken(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -322,7 +322,7 @@ func TestInvalidCertificateToken(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -366,7 +366,7 @@ func TestMissingKidToken(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			ctx := context.Background()
-			_, _, err = ver.Verify(ctx, []byte(tkn))
+			_, err = ver.Verify(ctx, []byte(tkn))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
