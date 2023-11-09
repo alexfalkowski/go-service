@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -56,10 +55,6 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
-	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
-	}
-
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
 	}
@@ -91,10 +86,6 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
-	}
-
-	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
 
 	if d, ok := ctx.Deadline(); ok {
@@ -152,10 +143,6 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
 	}
 
-	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
-	}
-
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
 	}
@@ -187,10 +174,6 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
 		zap.String(fmt.Sprintf("%s.query", i.name), query),
-	}
-
-	for _, a := range args {
-		fields = append(fields, zap.Any(fmt.Sprintf("%s.args.%s", i.name, strings.ToLower(a.Name)), a.Value))
 	}
 
 	if d, ok := ctx.Deadline(); ok {

@@ -143,7 +143,7 @@ func TestDBExec(t *testing.T) {
 	})
 }
 
-func TestDBTransExec(t *testing.T) {
+func TestDBCommitTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		m := test.NewMigrator()
 
@@ -169,7 +169,7 @@ func TestDBTransExec(t *testing.T) {
 
 			ctx = meta.WithAttribute(ctx, "test", "test")
 
-			tx, err := db.Begin()
+			tx, err := db.BeginTx(ctx, nil)
 			So(err, ShouldBeNil)
 
 			defer tx.Rollback()
@@ -178,6 +178,58 @@ func TestDBTransExec(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			err = tx.Commit()
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have successfully inserted data", func() {
+				_, err := result.LastInsertId()
+				So(err, ShouldBeError)
+
+				num, err := result.RowsAffected()
+				So(err, ShouldBeNil)
+				So(num, ShouldBeGreaterThan, 0)
+			})
+		})
+
+		lc.RequireStop()
+
+		err = m.Drop()
+		So(err, ShouldBeNil)
+	})
+}
+
+func TestDBRollbackTransExec(t *testing.T) {
+	Convey("Given I have a ready database", t, func() {
+		m := test.NewMigrator()
+
+		err := m.Up()
+		So(err, ShouldBeNil)
+
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
+
+		pg.Register(tracer, logger)
+
+		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
+
+		Convey("When I insert data into a table", func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
+			ctx = meta.WithAttribute(ctx, "test", "test")
+
+			tx, err := db.BeginTx(ctx, nil)
+			So(err, ShouldBeNil)
+
+			result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+			So(err, ShouldBeNil)
+
+			err = tx.Rollback()
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have successfully inserted data", func() {
@@ -229,7 +281,7 @@ func TestStatementQuery(t *testing.T) {
 			defer stmt.Close()
 
 			//nolint:rowserrcheck
-			rows, err := stmt.Query("public")
+			rows, err := stmt.QueryContext(ctx, "public")
 
 			Convey("Then I should have valid data", func() {
 				So(err, ShouldBeNil)
@@ -395,7 +447,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 			defer stmt.Close()
 
 			//nolint:sqlclosecheck,rowserrcheck
-			_, err = stmt.Query(1)
+			_, err = stmt.QueryContext(ctx, 1)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
