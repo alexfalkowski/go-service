@@ -98,10 +98,8 @@ func (s *Server) Stop(ctx context.Context) {
 
 func customMatcher(key string) (string, bool) {
 	switch key {
-	case "Request-Id", "Authorization", "Geolocation":
+	case "Request-Id", "Authorization", "User-Agent", "Geolocation":
 		return key, true
-	case "User-Agent":
-		return "ua", true
 	case "X-Forwarded-For":
 		return "forwarded-for", true
 	default:

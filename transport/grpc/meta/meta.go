@@ -24,7 +24,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = meta.WithRequestID(ctx, requestID)
 
-		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
+		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
 			return nil, err
 		}
@@ -49,7 +49,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 
 		ctx = meta.WithRequestID(ctx, requestID)
 
-		headers := metadata.Pairs("request-id", requestID, "ua", userAgent)
+		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
 		if err := grpc.SendHeader(ctx, headers); err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
 	}
@@ -103,23 +103,23 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "ua", ua)
+		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
 	}
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD) string {
-	if mdUserAgent := md.Get("ua"); len(mdUserAgent) > 0 {
-		return mdUserAgent[0]
+	if ua := md.Get("user-agent"); len(ua) > 0 {
+		return ua[0]
 	}
 
 	return meta.UserAgent(ctx)
 }
 
 func extractRequestID(ctx context.Context, md metadata.MD) string {
-	if mdRequestID := md.Get("request-id"); len(mdRequestID) > 0 {
-		return mdRequestID[0]
+	if id := md.Get("request-id"); len(id) > 0 {
+		return id[0]
 	}
 
 	return meta.RequestID(ctx)
