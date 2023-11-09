@@ -4,15 +4,15 @@ jobs:
   build:
     docker:
       - image: alexfalkowski/go:1.21-ruby
-      - image: postgres:latest
+      - image: postgres:16-bullseye
         environment:
           POSTGRES_DB: test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-      - image: redis:latest
-      - image: nsqio/nsq:latest
+      - image: redis:7.2-alpine
+      - image: nsqio/nsq:v1.2.1
         command: /nsqlookupd
-      - image: nsqio/nsq:latest
+      - image: nsqio/nsq:v1.2.1
         command: /nsqd --lookupd-tcp-address=localhost:4160
       - image: alexfalkowski/status:latest
         command: server
