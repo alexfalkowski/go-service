@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.108.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.3) - 2023-11-09
+
+- [`d47fa6f`](https://github.com/alexfalkowski/go-service/commit/d47fa6fd6f075d3dc2d80021a2994a0441ca0604) fix(transport): use user-agent (#415)
+- [`13f2701`](https://github.com/alexfalkowski/go-service/commit/13f2701217bc34526941f7d6c66ba61e0e3c3c1a) test: for sql (#414)
+- [`9bd7fad`](https://github.com/alexfalkowski/go-service/commit/9bd7fadebf5499e84e5cf46eb476e7138f88027f) test: write config file (#413)
+
 ## [v1.108.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.2) - 2023-11-09
 
 - [`27c2d59`](https://github.com/alexfalkowski/go-service/commit/27c2d594e3ce795f80351498df386c9286f688bf) fix(deps): bump github.com/hashicorp/go-retryablehttp (#412)
