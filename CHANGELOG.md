@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.108.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.4) - 2023-11-09
+
+- [`bce1b02`](https://github.com/alexfalkowski/go-service/commit/bce1b021043c42b8a19397412351201e6178b769) fix(grpc): set the user-agent (#416)
+
 ## [v1.108.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.3) - 2023-11-09
 
 - [`d47fa6f`](https://github.com/alexfalkowski/go-service/commit/d47fa6fd6f075d3dc2d80021a2994a0441ca0604) fix(transport): use user-agent (#415)
