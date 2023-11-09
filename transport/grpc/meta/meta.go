@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -14,6 +15,7 @@ import (
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md := ExtractIncoming(ctx)
+
 		userAgent := extractUserAgent(ctx, md)
 		ctx = meta.WithUserAgent(ctx, userAgent)
 
@@ -23,11 +25,6 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-
-		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
-		if err := grpc.SendHeader(ctx, headers); err != nil {
-			return nil, err
-		}
 
 		return handler(ctx, req)
 	}
@@ -48,11 +45,6 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-
-		headers := metadata.Pairs("request-id", requestID, "user-agent", userAgent)
-		if err := grpc.SendHeader(ctx, headers); err != nil {
-			return err
-		}
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -79,7 +71,6 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
 	}
@@ -103,13 +94,16 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 		}
 
 		ctx = meta.WithRequestID(ctx, requestID)
-		ctx = metadata.AppendToOutgoingContext(ctx, "request-id", requestID, "user-agent", ua)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
 	}
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD) string {
+	if ua := md.Get(runtime.MetadataPrefix + "user-agent"); len(ua) > 0 {
+		return ua[0]
+	}
+
 	if ua := md.Get("user-agent"); len(ua) > 0 {
 		return ua[0]
 	}
