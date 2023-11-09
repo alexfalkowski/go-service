@@ -18,11 +18,7 @@ import (
 func NewConfigurator(i *cmd.InputConfig) (Configurator, error) {
 	c := &Config{}
 
-	if err := i.Unmarshal(c); err != nil {
-		return nil, err
-	}
-
-	return c, nil
+	return c, i.Unmarshal(c)
 }
 
 // Configurator for config.

@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"encoding/base64"
 	"os"
 	"testing"
 
@@ -9,18 +10,50 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestValidConfig(t *testing.T) {
+func TestValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
 		Convey("When I read the config", func() {
 			_, err := test.NewCmdConfig("")
-			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeNil)
 			})
 
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+		})
+	})
+}
+
+func TestValidConfigEnv(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		os.Setenv("CONFIG_FILE", "yaml:CONFIG")
+		os.Setenv("CONFIG", "ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==")
+
+		Convey("When I read the config", func() {
+			_, err := test.NewCmdConfig("")
+
+			Convey("Then I should have a valid configuration", func() {
+				So(err, ShouldBeNil)
+			})
+
+			So(os.Unsetenv("CONFIG"), ShouldBeNil)
+			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+		})
+
+		Convey("When I write the config", func() {
+			c, err := test.NewCmdConfig("")
+			So(err, ShouldBeNil)
+
+			err = c.Write([]byte("test"), os.ModeAppend)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a valid configuration", func() {
+				So(os.Getenv("CONFIG"), ShouldEqual, base64.StdEncoding.EncodeToString([]byte("test")))
+			})
+
+			So(os.Unsetenv("CONFIG"), ShouldBeNil)
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
