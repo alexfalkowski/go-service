@@ -27,6 +27,7 @@ host = "localhost:4318"
 
 [transport.http]
 port = "8080"
+user_agent = "Service http/1.0"
 
 [transport.http.retry]
 timeout = "1s"
@@ -35,6 +36,7 @@ attempts = 3
 [transport.grpc]
 enabled = true
 port = "9090"
+user_agent = "Service grpc/1.0"
 
 [transport.grpc.retry]
 timeout = "1s"
@@ -43,6 +45,7 @@ attempts = 3
 [transport.nsq]
 lookup_host = "localhost:4161"
 host = "localhost:4150"
+user_agent = "Service nsq/1.0"
 
 [transport.nsq.retry]
 timeout = "1s"

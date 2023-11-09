@@ -27,15 +27,18 @@ transport:
     retry:
       timeout: 1s
       attempts: 3
+    user_agent: Service http/1.0
   grpc:
     enabled: true
     port: 9090
     retry:
       timeout: 1s
       attempts: 3
+    user_agent: Service grpc/1.0
   nsq:
     lookup_host: localhost:4161
     host: localhost:4150
     retry:
       timeout: 1s
       attempts: 3
+    user_agent: Service nsq/1.0
