@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.108.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.1) - 2023-11-09
+
+- [`715808f`](https://github.com/alexfalkowski/go-service/commit/715808f64fc38450c1762c90d3401bcd0260fb1c) fix(config): unmarshal in return (#411)
+
 ## [v1.108.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.108.0) - 2023-11-08
 
 - [`a74a0c1`](https://github.com/alexfalkowski/go-service/commit/a74a0c1232fb7fd70c59158a9afbe7e6dbd7ab1a) feat(security): remove oauth (#410)
