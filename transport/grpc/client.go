@@ -125,7 +125,7 @@ func NewDialOptions(cfg *Config, opts ...ClientOption) ([]grpc.DialOption, error
 		return nil, err
 	}
 
-	grpcOpts := []grpc.DialOption{}
+	grpcOpts := []grpc.DialOption{grpc.WithUserAgent(cfg.UserAgent)}
 	grpcOpts = append(grpcOpts, udo, sto, defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
