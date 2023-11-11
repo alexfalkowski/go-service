@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
+	sh "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
@@ -18,7 +18,7 @@ import (
 )
 
 // Register metrics.
-func Register(server *shttp.Server) error {
+func Register(server *sh.Server) error {
 	handler := promhttp.Handler()
 
 	return server.Mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, p map[string]string) {

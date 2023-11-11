@@ -261,6 +261,11 @@ timeout = "1s"
 attempts = 3
 ```
 
+## Debug
+
+We add the following systems to help you troubleshoot:
+- [Statsviz](https://github.com/arl/statsviz)
+
 ## Development
 
 This section describes how to run and contribute to the project, if you are interested.

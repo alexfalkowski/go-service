@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
@@ -176,7 +177,8 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
-		runtime.Module, cmd.Module, config.Module, telemetry.Module, metrics.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module,
+		telemetry.Module, metrics.Module,
 		health.Module, cache.RedisModule, cache.RistrettoModule,
 		sql.PostgreSQLModule, transport.Module,
 		cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
