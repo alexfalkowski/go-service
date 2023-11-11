@@ -264,7 +264,8 @@ attempts = 3
 ## Debug
 
 For your troubleshooting abilities we added the following:
-- [Statsviz](https://github.com/arl/statsviz)
+- [statsviz](https://github.com/arl/statsviz)
+- [pprof](https://pkg.go.dev/net/http/pprof)
 
 ## Development
 
