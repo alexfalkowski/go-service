@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/http/pprof"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/time"
@@ -20,12 +21,18 @@ func Register(lc fx.Lifecycle, env env.Environment, logger *zap.Logger) {
 
 	mux := http.NewServeMux()
 	server := &http.Server{
-		Addr:              "localhost:4200",
+		Addr:              "localhost:6060",
 		Handler:           mux,
 		ReadHeaderTimeout: time.Timeout,
 	}
 
 	statsviz.Register(mux)
+
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
