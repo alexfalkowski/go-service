@@ -263,9 +263,35 @@ attempts = 3
 
 ## Debug
 
-For your troubleshooting abilities we added the following:
-- [statsviz](https://github.com/arl/statsviz)
-- [pprof](https://pkg.go.dev/net/http/pprof)
+This section outlines all utilities added for you troubleshooting abilities.
+
+### statsviz
+
+```http
+GET http://localhost:6060/debug/statsviz
+```
+
+Check out [statsviz](https://github.com/arl/statsviz).
+
+### pprof
+
+```http
+GET http://localhost:6060/debug/pprof/
+GET http://localhost:6060/debug/pprof/cmdline
+GET http://localhost:6060/debug/pprof/profile
+GET http://localhost:6060/debug/pprof/symbol
+GET http://localhost:6060/debug/pprof/trace
+```
+
+Check out [pprof](https://pkg.go.dev/net/http/pprof)
+
+### gopsutil
+
+```http
+GET http://localhost:6060/debug/psutil
+```
+
+Check out [gopsutil](https://github.com/shirou/gopsutil)
 
 ## Development
 
