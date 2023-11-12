@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.111.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.111.0) - 2023-11-12
+
+- [`7b46648`](https://github.com/alexfalkowski/go-service/commit/7b46648b8444c240c0d5a7059aaed0e6e56507a9) feat(debug): add gopsutil (#428)
+- [`2257bc0`](https://github.com/alexfalkowski/go-service/commit/2257bc0186eac5965f3f311c7f9016f70deafe1a) ci(deps): use postgres 15 (#426)
+- [`a0fbfe8`](https://github.com/alexfalkowski/go-service/commit/a0fbfe855b70e0b5b4732b5806ca11b7ca6898e9) docs(debug): add pprof (#425)
+
 ## [v1.110.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.110.0) - 2023-11-11
 
 - [`149b102`](https://github.com/alexfalkowski/go-service/commit/149b102db1038dce3ca75762c5c7ed27eb51bf23) feat(debug): add pprof (#424)
