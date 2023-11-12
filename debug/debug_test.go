@@ -2,6 +2,7 @@ package debug_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -23,6 +24,7 @@ func TestUDebug(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+		time.Sleep(1 * time.Second)
 
 		Convey("Then all the debug URLs are valid", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
