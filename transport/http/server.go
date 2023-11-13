@@ -93,7 +93,14 @@ func (s *Server) Start(listener net.Listener) {
 
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) {
-	s.params.Logger.Info("stopping http server", zap.Error(s.server.Shutdown(ctx)))
+	message := "stopping http server"
+	err := s.server.Shutdown(ctx)
+
+	if err != nil {
+		s.params.Logger.Error(message, zap.Error(err))
+	} else {
+		s.params.Logger.Info(message)
+	}
 }
 
 func customMatcher(key string) (string, bool) {

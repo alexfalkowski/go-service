@@ -44,5 +44,12 @@ func start(l *zap.Logger, s *http.Server) {
 }
 
 func stop(ctx context.Context, l *zap.Logger, s *http.Server) {
-	l.Debug("stopping debug server", zap.Error(s.Shutdown(ctx)))
+	message := "stopping debug server"
+	err := s.Shutdown(ctx)
+
+	if err != nil {
+		l.Error(message, zap.Error(err))
+	} else {
+		l.Info(message)
+	}
 }
