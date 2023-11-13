@@ -1,7 +1,9 @@
 package debug_test
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -10,12 +12,21 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestUDebug(t *testing.T) {
+func TestDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		debug.Register(lc, test.Environment, logger)
+		p := debug.RegisterParams{
+			Lifecycle: lc,
+			Config:    test.NewDebugConfig(),
+			Env:       test.Environment,
+			Logger:    logger,
+		}
+
+		port := p.Config.Port
+
+		debug.Register(p)
 
 		cfg := test.NewTransportConfig()
 
@@ -23,16 +34,17 @@ func TestUDebug(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+		time.Sleep(1 * time.Second)
 
 		Convey("Then all the debug URLs are valid", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
 			urls := []string{
-				"http://localhost:6060/debug/statsviz",
-				"http://localhost:6060/debug/pprof/",
-				"http://localhost:6060/debug/pprof/cmdline",
-				"http://localhost:6060/debug/pprof/symbol",
-				"http://localhost:6060/debug/pprof/trace",
-				"http://localhost:6060/debug/psutil",
+				url(port, "debug/statsviz"),
+				url(port, "debug/pprof/"),
+				url(port, "debug/pprof/cmdline"),
+				url(port, "debug/pprof/symbol"),
+				url(port, "debug/pprof/trace"),
+				url(port, "debug/psutil"),
 			}
 
 			for _, u := range urls {
@@ -47,4 +59,8 @@ func TestUDebug(t *testing.T) {
 			lc.RequireStop()
 		})
 	})
+}
+
+func url(port, path string) string {
+	return fmt.Sprintf("http://localhost:%s/%s", port, path)
 }

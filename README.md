@@ -283,7 +283,7 @@ GET http://localhost:6060/debug/pprof/symbol
 GET http://localhost:6060/debug/pprof/trace
 ```
 
-Check out [pprof](https://pkg.go.dev/net/http/pprof)
+Check out [pprof](https://pkg.go.dev/net/http/pprof).
 
 ### gopsutil
 
@@ -291,7 +291,21 @@ Check out [pprof](https://pkg.go.dev/net/http/pprof)
 GET http://localhost:6060/debug/psutil
 ```
 
-Check out [gopsutil](https://github.com/shirou/gopsutil)
+Check out [gopsutil](https://github.com/shirou/gopsutil).
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+debug:
+  port: 6060
+```
+
+```toml
+[debug]
+port = "6060"
+```
 
 ## Development
 
