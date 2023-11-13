@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
@@ -107,4 +108,11 @@ func NewCmdConfig(flag string) (*cmd.Config, error) {
 	p := marshaller.FactoryParams{YAML: marshaller.NewYAML(), TOML: marshaller.NewTOML()}
 
 	return cmd.NewConfig(flag, marshaller.NewFactory(p))
+}
+
+// NewDebugConfig for test.
+func NewDebugConfig() *debug.Config {
+	return &debug.Config{
+		Port: Port(),
+	}
 }

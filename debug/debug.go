@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 
@@ -16,15 +17,25 @@ import (
 	"go.uber.org/zap"
 )
 
+// RegisterParams for debug.
+type RegisterParams struct {
+	fx.In
+
+	Lifecycle fx.Lifecycle
+	Config    *Config
+	Env       env.Environment
+	Logger    *zap.Logger
+}
+
 // Register debug.
-func Register(lc fx.Lifecycle, env env.Environment, logger *zap.Logger) {
-	if !env.IsDevelopment() {
+func Register(params RegisterParams) {
+	if !params.Env.IsDevelopment() {
 		return
 	}
 
 	mux := http.NewServeMux()
 	server := &http.Server{
-		Addr:              "localhost:6060",
+		Addr:              fmt.Sprintf("localhost:%s", params.Config.Port),
 		Handler:           mux,
 		ReadHeaderTimeout: time.Timeout,
 	}
@@ -38,14 +49,14 @@ func Register(lc fx.Lifecycle, env env.Environment, logger *zap.Logger) {
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	mux.HandleFunc("/debug/psutil", psutil)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			go start(logger, server)
+			go start(params.Logger, server)
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			stop(ctx, logger, server)
+			stop(ctx, params.Logger, server)
 
 			return nil
 		},

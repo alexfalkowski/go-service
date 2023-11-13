@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
@@ -19,6 +20,7 @@ import (
 // Config for the service.
 type Config struct {
 	Environment env.Environment  `yaml:"environment" json:"environment" toml:"environment"`
+	Debug       debug.Config     `yaml:"debug" json:"debug" toml:"debug"`
 	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
 	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
 	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
@@ -27,6 +29,10 @@ type Config struct {
 
 func (cfg *Config) EnvironmentConfig() env.Environment {
 	return cfg.Environment
+}
+
+func (cfg *Config) DebugConfig() *debug.Config {
+	return &cfg.Debug
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {

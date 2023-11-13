@@ -17,10 +17,10 @@ func TestEnv(t *testing.T) {
 		})
 	})
 
-	Convey("When I retrieve env:BOB", t, func() {
+	Convey("When I retrieve bob", t, func() {
 		home := os.GetFromEnv("bob")
 
-		Convey("Then I should have a value for env:HOME", func() {
+		Convey("Then I the value should be bob", func() {
 			So(home, ShouldNotBeEmpty)
 			So(home, ShouldEqual, "bob")
 		})
