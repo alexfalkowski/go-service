@@ -2,6 +2,7 @@ package debug_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -10,7 +11,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestUDebug(t *testing.T) {
+func TestDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
@@ -23,6 +24,7 @@ func TestUDebug(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+		time.Sleep(1 * time.Second)
 
 		Convey("Then all the debug URLs are valid", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)

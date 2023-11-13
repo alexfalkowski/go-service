@@ -53,10 +53,10 @@ func Register(lc fx.Lifecycle, env env.Environment, logger *zap.Logger) {
 }
 
 func start(l *zap.Logger, s *http.Server) {
-	l.Debug("starting debug server")
+	l.Info("starting debug server")
 
 	if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		l.Debug("could not start debug server", zap.Error(err))
+		l.Error("could not start debug server", zap.Error(err))
 	}
 }
 
