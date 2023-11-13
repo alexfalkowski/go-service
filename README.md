@@ -293,6 +293,20 @@ GET http://localhost:6060/debug/psutil
 
 Check out [gopsutil](https://github.com/shirou/gopsutil).
 
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+debug:
+  port: 6060
+```
+
+```toml
+[debug]
+port = "6060"
+```
+
 ## Development
 
 This section describes how to run and contribute to the project, if you are interested.
