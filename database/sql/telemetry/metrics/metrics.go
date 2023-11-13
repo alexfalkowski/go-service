@@ -75,15 +75,7 @@ func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) erro
 		mic: maxIdleClosed, mitc: maxIdleTimeClosed, mlc: maxLifetimeClosed,
 	}
 
-	meter.RegisterCallback(m.maxOpen, maxOpen)
-	meter.RegisterCallback(m.open, open)
-	meter.RegisterCallback(m.inUse, inUse)
-	meter.RegisterCallback(m.idle, idle)
-	meter.RegisterCallback(m.waited, waited)
-	meter.RegisterCallback(m.blocked, blocked)
-	meter.RegisterCallback(m.maxIdleClosed, maxIdleClosed)
-	meter.RegisterCallback(m.maxIdleTimeClosed, maxIdleTimeClosed)
-	meter.RegisterCallback(m.maxLifetimeClosed, maxLifetimeClosed)
+	meter.RegisterCallback(m.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
 
 	return nil
 }
@@ -103,7 +95,8 @@ type metrics struct {
 	mlc  metric.Float64ObservableCounter
 }
 
-func (m *metrics) maxOpen(_ context.Context, o metric.Observer) error {
+//nolint:dupl
+func (m *metrics) callback(_ context.Context, o metric.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
 		stats := ma.Stats()
@@ -112,6 +105,14 @@ func (m *metrics) maxOpen(_ context.Context, o metric.Observer) error {
 		)
 
 		o.ObserveFloat64(m.mo, float64(stats.MaxOpenConnections), m.opts, opts)
+		o.ObserveFloat64(m.o, float64(stats.OpenConnections), m.opts, opts)
+		o.ObserveFloat64(m.iu, float64(stats.InUse), m.opts, opts)
+		o.ObserveFloat64(m.i, float64(stats.Idle), m.opts, opts)
+		o.ObserveFloat64(m.w, float64(stats.WaitCount), m.opts, opts)
+		o.ObserveFloat64(m.b, stats.WaitDuration.Seconds(), m.opts, opts)
+		o.ObserveFloat64(m.mic, float64(stats.MaxIdleClosed), m.opts, opts)
+		o.ObserveFloat64(m.mitc, float64(stats.MaxIdleTimeClosed), m.opts, opts)
+		o.ObserveFloat64(m.mlc, float64(stats.MaxLifetimeClosed), m.opts, opts)
 	}
 
 	ss, _ := m.dbs.GetAllSlaves()
@@ -122,198 +123,14 @@ func (m *metrics) maxOpen(_ context.Context, o metric.Observer) error {
 		)
 
 		o.ObserveFloat64(m.mo, float64(stats.MaxOpenConnections), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) open(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
 		o.ObserveFloat64(m.o, float64(stats.OpenConnections), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.o, float64(stats.OpenConnections), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) inUse(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
 		o.ObserveFloat64(m.iu, float64(stats.InUse), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.iu, float64(stats.InUse), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) idle(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
 		o.ObserveFloat64(m.i, float64(stats.Idle), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.i, float64(stats.Idle), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) waited(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
 		o.ObserveFloat64(m.w, float64(stats.WaitCount), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.WaitCount), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) blocked(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, stats.WaitDuration.Seconds(), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, stats.WaitDuration.Seconds(), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) maxIdleClosed(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxIdleClosed), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxIdleClosed), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) maxIdleTimeClosed(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxIdleTimeClosed), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxIdleTimeClosed), m.opts, opts)
-	}
-
-	return nil
-}
-
-func (m *metrics) maxLifetimeClosed(_ context.Context, o metric.Observer) error {
-	ms, _ := m.dbs.GetAllMasters()
-	for i, ma := range ms {
-		stats := ma.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxLifetimeClosed), m.opts, opts)
-	}
-
-	ss, _ := m.dbs.GetAllSlaves()
-	for i, s := range ss {
-		stats := s.Stats()
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
-		)
-
-		o.ObserveFloat64(m.w, float64(stats.MaxLifetimeClosed), m.opts, opts)
+		o.ObserveFloat64(m.b, stats.WaitDuration.Seconds(), m.opts, opts)
+		o.ObserveFloat64(m.mic, float64(stats.MaxIdleClosed), m.opts, opts)
+		o.ObserveFloat64(m.mitc, float64(stats.MaxIdleTimeClosed), m.opts, opts)
+		o.ObserveFloat64(m.mlc, float64(stats.MaxLifetimeClosed), m.opts, opts)
 	}
 
 	return nil

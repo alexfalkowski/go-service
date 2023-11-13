@@ -29,8 +29,7 @@ func Register(cache *cache.Cache, version version.Version, meter metric.Meter) e
 
 	m := &metrics{cache: cache, opts: opts, hit: hits, miss: misses}
 
-	meter.RegisterCallback(m.hits, hits)
-	meter.RegisterCallback(m.misses, misses)
+	meter.RegisterCallback(m.callback, hits, misses)
 
 	return nil
 }
@@ -43,17 +42,10 @@ type metrics struct {
 	miss metric.Float64ObservableCounter
 }
 
-func (m *metrics) hits(_ context.Context, o metric.Observer) error {
+func (m *metrics) callback(_ context.Context, o metric.Observer) error {
 	stats := m.cache.Stats()
 
 	o.ObserveFloat64(m.hit, float64(stats.Hits), m.opts)
-
-	return nil
-}
-
-func (m *metrics) misses(_ context.Context, o metric.Observer) error {
-	stats := m.cache.Stats()
-
 	o.ObserveFloat64(m.miss, float64(stats.Misses), m.opts)
 
 	return nil
