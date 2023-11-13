@@ -1,5 +1,8 @@
 environment = "development"
 
+[debug]
+port = "6060"
+
 [cache.redis.addresses]
 server = "localhost:6379"
 

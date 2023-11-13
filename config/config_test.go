@@ -77,6 +77,7 @@ func TestValidMemConfig(t *testing.T) {
 
 func verifyConfig(cfg config.Configurator) {
 	So(string(cfg.EnvironmentConfig()), ShouldEqual, "development")
+	So(cfg.DebugConfig().Port, ShouldEqual, "6060")
 	So(cfg.RedisConfig().Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
 	So(cfg.RistrettoConfig().BufferItems, ShouldEqual, 64)
 	So(cfg.RistrettoConfig().MaxCost, ShouldEqual, 100000000)
