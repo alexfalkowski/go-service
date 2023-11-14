@@ -17,12 +17,12 @@ func Register(cache *ristretto.Cache, version version.Version, meter metric.Mete
 		attribute.Key("version").String(string(version)),
 	)
 
-	hits, err := meter.Float64ObservableCounter("ristretto_hits_total", metric.WithDescription("The number of hits in the cache."))
+	hits, err := meter.Int64ObservableCounter("ristretto_hits_total", metric.WithDescription("The number of hits in the cache."))
 	if err != nil {
 		return err
 	}
 
-	misses, err := meter.Float64ObservableCounter("ristretto_misses_total", metric.WithDescription("The number of misses in the cache."))
+	misses, err := meter.Int64ObservableCounter("ristretto_misses_total", metric.WithDescription("The number of misses in the cache."))
 	if err != nil {
 		return err
 	}
@@ -38,15 +38,15 @@ type metrics struct {
 	cache *ristretto.Cache
 	opts  metric.MeasurementOption
 
-	hit  metric.Float64ObservableCounter
-	miss metric.Float64ObservableCounter
+	hit  metric.Int64ObservableCounter
+	miss metric.Int64ObservableCounter
 }
 
 func (m *metrics) callback(_ context.Context, o metric.Observer) error {
 	stats := m.cache.Metrics
 
-	o.ObserveFloat64(m.hit, float64(stats.Hits()), m.opts)
-	o.ObserveFloat64(m.miss, float64(stats.Misses()), m.opts)
+	o.ObserveInt64(m.hit, int64(stats.Hits()), m.opts)
+	o.ObserveInt64(m.miss, int64(stats.Misses()), m.opts)
 
 	return nil
 }

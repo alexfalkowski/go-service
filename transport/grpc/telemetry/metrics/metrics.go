@@ -46,22 +46,22 @@ func clientStreamType(desc *grpc.StreamDesc) grpcType {
 
 // NewServer for metrics.
 func NewServer(meter metric.Meter) (*Server, error) {
-	started, err := meter.Float64Counter("grpc_server_started_total", metric.WithDescription("Total number of RPCs started on the server."))
+	started, err := meter.Int64Counter("grpc_server_started_total", metric.WithDescription("Total number of RPCs started on the server."))
 	if err != nil {
 		return nil, err
 	}
 
-	received, err := meter.Float64Counter("grpc_server_msg_received_total", metric.WithDescription("Total number of RPC messages received on the server."))
+	received, err := meter.Int64Counter("grpc_server_msg_received_total", metric.WithDescription("Total number of RPC messages received on the server."))
 	if err != nil {
 		return nil, err
 	}
 
-	sent, err := meter.Float64Counter("grpc_server_msg_sent_total", metric.WithDescription("Total number of RPC messages sent by the server."))
+	sent, err := meter.Int64Counter("grpc_server_msg_sent_total", metric.WithDescription("Total number of RPC messages sent by the server."))
 	if err != nil {
 		return nil, err
 	}
 
-	handled, err := meter.Float64Counter("grpc_server_handled_total",
+	handled, err := meter.Int64Counter("grpc_server_handled_total",
 		metric.WithDescription("Total number of RPCs completed on the server, regardless of success or failure."))
 	if err != nil {
 		return nil, err
@@ -83,10 +83,10 @@ func NewServer(meter metric.Meter) (*Server, error) {
 
 // Server for metrics.
 type Server struct {
-	started     metric.Float64Counter
-	received    metric.Float64Counter
-	sent        metric.Float64Counter
-	handled     metric.Float64Counter
+	started     metric.Int64Counter
+	received    metric.Int64Counter
+	sent        metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 }
 
@@ -159,9 +159,9 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 // monitoredStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
 type monitoredServerStream struct {
 	opts        metric.MeasurementOption
-	received    metric.Float64Counter
-	sent        metric.Float64Counter
-	handled     metric.Float64Counter
+	received    metric.Int64Counter
+	sent        metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 
 	grpc.ServerStream
@@ -213,22 +213,22 @@ func (s *monitoredServerStream) RecvMsg(m any) error {
 
 // NewClient for metrics.
 func NewClient(meter metric.Meter) (*Client, error) {
-	started, err := meter.Float64Counter("grpc_client_started_total", metric.WithDescription("Total number of RPCs started on the client."))
+	started, err := meter.Int64Counter("grpc_client_started_total", metric.WithDescription("Total number of RPCs started on the client."))
 	if err != nil {
 		return nil, err
 	}
 
-	received, err := meter.Float64Counter("grpc_client_msg_received_total", metric.WithDescription("Total number of RPC messages received on the client."))
+	received, err := meter.Int64Counter("grpc_client_msg_received_total", metric.WithDescription("Total number of RPC messages received on the client."))
 	if err != nil {
 		return nil, err
 	}
 
-	sent, err := meter.Float64Counter("grpc_client_msg_sent_total", metric.WithDescription("Total number of RPC messages sent by the client."))
+	sent, err := meter.Int64Counter("grpc_client_msg_sent_total", metric.WithDescription("Total number of RPC messages sent by the client."))
 	if err != nil {
 		return nil, err
 	}
 
-	handled, err := meter.Float64Counter("grpc_client_handled_total",
+	handled, err := meter.Int64Counter("grpc_client_handled_total",
 		metric.WithDescription("Total number of RPCs completed on the client, regardless of success or failure."))
 	if err != nil {
 		return nil, err
@@ -250,10 +250,10 @@ func NewClient(meter metric.Meter) (*Client, error) {
 
 // Client for metrics.
 type Client struct {
-	started     metric.Float64Counter
-	received    metric.Float64Counter
-	sent        metric.Float64Counter
-	handled     metric.Float64Counter
+	started     metric.Int64Counter
+	received    metric.Int64Counter
+	sent        metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 }
 
@@ -329,9 +329,9 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 // monitoredClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
 type monitoredClientStream struct {
 	opts        metric.MeasurementOption
-	received    metric.Float64Counter
-	sent        metric.Float64Counter
-	handled     metric.Float64Counter
+	received    metric.Int64Counter
+	sent        metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 
 	grpc.ClientStream
