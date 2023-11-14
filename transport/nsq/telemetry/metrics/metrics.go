@@ -11,17 +11,17 @@ import (
 
 // NewConsumer for metrics.
 func NewConsumer(topic, channel string, meter metric.Meter, handler nsq.Consumer) (*Consumer, error) {
-	started, err := meter.Float64Counter("nsq_consumer_started_total", metric.WithDescription("Total number of messages started to be consumed."))
+	started, err := meter.Int64Counter("nsq_consumer_started_total", metric.WithDescription("Total number of messages started to be consumed."))
 	if err != nil {
 		return nil, err
 	}
 
-	received, err := meter.Float64Counter("nsq_consumer_msg_received_total", metric.WithDescription("Total number of messages consumed."))
+	received, err := meter.Int64Counter("nsq_consumer_msg_received_total", metric.WithDescription("Total number of messages consumed."))
 	if err != nil {
 		return nil, err
 	}
 
-	handled, err := meter.Float64Counter("nsq_consumer_handled_total", metric.WithDescription("Total number of messages consumed, regardless of success or failure."))
+	handled, err := meter.Int64Counter("nsq_consumer_handled_total", metric.WithDescription("Total number of messages consumed, regardless of success or failure."))
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +48,9 @@ func NewConsumer(topic, channel string, meter metric.Meter, handler nsq.Consumer
 // Consumer for metrics.
 type Consumer struct {
 	opts        metric.MeasurementOption
-	started     metric.Float64Counter
-	received    metric.Float64Counter
-	handled     metric.Float64Counter
+	started     metric.Int64Counter
+	received    metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 
 	nsq.Consumer
@@ -74,17 +74,17 @@ func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 
 // NewProducer for metrics.
 func NewProducer(meter metric.Meter, producer nsq.Producer) (*Producer, error) {
-	started, err := meter.Float64Counter("nsq_producer_started_total", metric.WithDescription("Total number of messages started by the producer."))
+	started, err := meter.Int64Counter("nsq_producer_started_total", metric.WithDescription("Total number of messages started by the producer."))
 	if err != nil {
 		return nil, err
 	}
 
-	sent, err := meter.Float64Counter("nsq_producer_msg_sent_total", metric.WithDescription("Total number of stream messages sent by the producer."))
+	sent, err := meter.Int64Counter("nsq_producer_msg_sent_total", metric.WithDescription("Total number of stream messages sent by the producer."))
 	if err != nil {
 		return nil, err
 	}
 
-	handled, err := meter.Float64Counter("nsq_producer_handled_total", metric.WithDescription("Total number of messages published, regardless of success or failure."))
+	handled, err := meter.Int64Counter("nsq_producer_handled_total", metric.WithDescription("Total number of messages published, regardless of success or failure."))
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +105,9 @@ func NewProducer(meter metric.Meter, producer nsq.Producer) (*Producer, error) {
 
 // Producer for metrics.
 type Producer struct {
-	started     metric.Float64Counter
-	sent        metric.Float64Counter
-	handled     metric.Float64Counter
+	started     metric.Int64Counter
+	sent        metric.Int64Counter
+	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
 
 	nsq.Producer
