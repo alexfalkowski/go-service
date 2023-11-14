@@ -24,9 +24,18 @@ jobs:
       - checkout
       - run: git submodule sync
       - run: git submodule update --init
-      - run:
-          dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -wait tcp://localhost:6000 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -wait tcp://localhost:6000 -timeout 1m
+      - restore_cache:
+          name: restore deps
+          keys:
+            - go-service-go-mod-{{ checksum "go.sum" }}
+            - go-service-go-mod-
       - run: make dep
+      - save_cache:
+          name: save deps
+          key: go-service-go-mod-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run: make lint
       - run: make sec
       - run: make setup-nsq
