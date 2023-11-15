@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -16,6 +17,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -60,7 +62,21 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	opts := []grpc.ServerOption{uso, sso}
+	opts := []grpc.ServerOption{
+		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+			MinTime:             5 * time.Second,
+			PermitWithoutStream: true,
+		}),
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     15 * time.Second,
+			MaxConnectionAge:      30 * time.Second,
+			MaxConnectionAgeGrace: 5 * time.Second,
+			Time:                  5 * time.Second,
+			Timeout:               20 * time.Second,
+		}),
+		uso,
+		sso,
+	}
 
 	opt, err := creds(params)
 	if err != nil {

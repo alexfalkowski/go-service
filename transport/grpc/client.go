@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 )
 
 const (
@@ -141,7 +142,14 @@ func NewDialOptions(cfg *Config, opts ...ClientOption) ([]grpc.DialOption, error
 		return nil, err
 	}
 
-	grpcOpts := []grpc.DialOption{grpc.WithUserAgent(cfg.UserAgent)}
+	grpcOpts := []grpc.DialOption{
+		grpc.WithUserAgent(cfg.UserAgent),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                10 * time.Second,
+			Timeout:             10 * time.Second,
+			PermitWithoutStream: true,
+		}),
+	}
 	grpcOpts = append(grpcOpts, udo, sto, defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
