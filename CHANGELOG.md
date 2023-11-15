@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.114.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.114.0) - 2023-11-16
+
+- [`258d2d8`](https://github.com/alexfalkowski/go-service/commit/258d2d8fe494e141dc0071797988be571e30bd08) feat: add keepalive (#439)
+
 ## [v1.113.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.113.1) - 2023-11-15
 
 - [`8039f9b`](https://github.com/alexfalkowski/go-service/commit/8039f9bb22862a30023977b6fd40569ea5513028) fix(grpc): remove tags (#438)
