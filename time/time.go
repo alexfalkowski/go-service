@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	timeout = 30
-
 	// Timeout as a general guidance of the maximum time any operation should take.
-	Timeout = timeout * time.Second
+	Timeout = 30 * time.Second
+
+	// Backoff as a general guidance of the scalar time any retry should take.
+	Backoff = 100 * time.Millisecond
 )
 
 // ToMilliseconds from the duration.

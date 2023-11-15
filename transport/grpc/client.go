@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
@@ -18,10 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
-)
-
-const (
-	backoffLinear = 50 * time.Millisecond
+	"google.golang.org/grpc/keepalive"
 )
 
 // ClientOption for HTTP.
@@ -141,7 +138,14 @@ func NewDialOptions(cfg *Config, opts ...ClientOption) ([]grpc.DialOption, error
 		return nil, err
 	}
 
-	grpcOpts := []grpc.DialOption{grpc.WithUserAgent(cfg.UserAgent)}
+	grpcOpts := []grpc.DialOption{
+		grpc.WithUserAgent(cfg.UserAgent),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                time.Timeout,
+			Timeout:             time.Timeout,
+			PermitWithoutStream: true,
+		}),
+	}
 	grpcOpts = append(grpcOpts, udo, sto, defaultOptions.security)
 	grpcOpts = append(grpcOpts, defaultOptions.opts...)
 
@@ -166,7 +170,7 @@ func unaryDialOption(cfg *Config, opts *clientOptions) (grpc.DialOption, error) 
 			retry.UnaryClientInterceptor(
 				retry.WithCodes(codes.Unavailable, codes.DataLoss),
 				retry.WithMax(cfg.Retry.Attempts),
-				retry.WithBackoff(retry.BackoffLinear(backoffLinear)),
+				retry.WithBackoff(retry.BackoffLinear(time.Backoff)),
 				retry.WithPerRetryTimeout(cfg.Retry.Timeout),
 			),
 		)

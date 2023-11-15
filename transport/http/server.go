@@ -67,9 +67,17 @@ func NewServer(params ServerParams) (*Server, error) {
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 
+	s := &http.Server{
+		Handler:           handler,
+		ReadTimeout:       time.Timeout,
+		WriteTimeout:      time.Timeout,
+		IdleTimeout:       time.Timeout,
+		ReadHeaderTimeout: time.Timeout,
+	}
+
 	server := &Server{
 		Mux:    mux,
-		server: &http.Server{Handler: handler, ReadHeaderTimeout: time.Timeout},
+		server: s,
 		params: params,
 	}
 
