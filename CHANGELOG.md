@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.113.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.113.0) - 2023-11-15
+
+- [`2df826d`](https://github.com/alexfalkowski/go-service/commit/2df826d3545466a3ad533b6f1b66b1cf43f8f880) feat(security): enable mtls (#436)
+- [`94431fa`](https://github.com/alexfalkowski/go-service/commit/94431fa10333389c8ae1ee174a793fdefd7d5b1e) build(deps): update bin (#434)
+
 ## [v1.112.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.112.3) - 2023-11-14
 
 - [`5f0df1e`](https://github.com/alexfalkowski/go-service/commit/5f0df1e997cf3e28cafbc6c83d731707148edf6d) fix(metrics): use int64 (#433)
