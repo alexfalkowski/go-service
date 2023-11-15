@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 	"net"
-	"time"
 
 	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
@@ -64,15 +64,15 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-			MinTime:             5 * time.Second,
+			MinTime:             time.Timeout,
 			PermitWithoutStream: true,
 		}),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     15 * time.Second,
-			MaxConnectionAge:      30 * time.Second,
-			MaxConnectionAgeGrace: 5 * time.Second,
-			Time:                  5 * time.Second,
-			Timeout:               20 * time.Second,
+			MaxConnectionIdle:     time.Timeout,
+			MaxConnectionAge:      time.Timeout,
+			MaxConnectionAgeGrace: time.Timeout,
+			Time:                  time.Timeout,
+			Timeout:               time.Timeout,
 		}),
 		uso,
 		sso,
