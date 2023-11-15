@@ -24,11 +24,11 @@ func init() {
 	tracer.Register()
 }
 
-func TestUnary(t *testing.T) {
+func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -47,10 +47,43 @@ func TestUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
-			defer cancel()
+			resp, err := client.SayHello(context.Background(), req)
+			So(err, ShouldBeNil)
 
-			resp, err := client.SayHello(ctx, req)
+			Convey("Then I should have a valid reply", func() {
+				So(resp.GetMessage(), ShouldEqual, "Hello test")
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestSecureUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewSecureTransportConfig()
+
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		So(err, ShouldBeNil)
+
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := context.Background()
+			conn := test.NewSecureGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), m)
+
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			resp, err := client.SayHello(context.Background(), req)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -67,7 +100,7 @@ func TestValidAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -108,7 +141,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -148,7 +181,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -187,7 +220,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -226,7 +259,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -265,7 +298,7 @@ func TestBreakerUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -310,7 +343,7 @@ func TestLimiterUnary(t *testing.T) {
 		l, err := limiter.NewLimiter("0-S")
 		So(err, ShouldBeNil)
 
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -349,7 +382,7 @@ func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -393,7 +426,7 @@ func TestValidAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -438,7 +471,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -482,7 +515,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -520,7 +553,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -564,7 +597,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -605,7 +638,7 @@ func TestLimiterStream(t *testing.T) {
 		l, err := limiter.NewLimiter("0-S")
 		So(err, ShouldBeNil)
 
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)

@@ -31,7 +31,7 @@ func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -71,7 +71,7 @@ func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -109,7 +109,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -153,7 +153,7 @@ func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -195,7 +195,7 @@ func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -236,7 +236,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)

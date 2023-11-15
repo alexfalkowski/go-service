@@ -28,7 +28,7 @@ func TestDebug(t *testing.T) {
 
 		debug.Register(p)
 
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)

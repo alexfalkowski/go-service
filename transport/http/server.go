@@ -80,7 +80,7 @@ func NewServer(params ServerParams) (*Server, error) {
 func (s *Server) Start(listener net.Listener) {
 	s.params.Logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
 
-	if err := s.server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := s.serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
 		if err := s.params.Shutdowner.Shutdown(); err != nil {
@@ -101,6 +101,14 @@ func (s *Server) Stop(ctx context.Context) {
 	} else {
 		s.params.Logger.Info(message)
 	}
+}
+
+func (s *Server) serve(l net.Listener) error {
+	if s.params.Config.Security.IsEnabled() {
+		return s.server.ServeTLS(l, s.params.Config.Security.CertFile, s.params.Config.Security.KeyFile)
+	}
+
+	return s.server.Serve(l)
 }
 
 func customMatcher(key string) (string, bool) {

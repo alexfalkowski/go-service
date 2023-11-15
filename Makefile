@@ -14,3 +14,8 @@ create-nsq:
 delete-nsq:
 	curl -X POST http://127.0.0.1:4151/channel/delete\?topic\=topic\&channel\=channel
 	curl -X POST http://127.0.0.1:4151/topic/delete\?topic\=topic
+
+# Create certificates:
+create-certs:
+	mkcert -key-file test/certs/key.pem -cert-file test/certs/cert.pem localhost
+	mkcert -client -key-file test/certs/client-key.pem -cert-file test/certs/client-cert.pem localhost

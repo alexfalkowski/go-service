@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
@@ -15,6 +16,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -60,6 +62,15 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	opts := []grpc.ServerOption{uso, sso}
+
+	opt, err := creds(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if opt != nil {
+		opts = append(opts, opt)
+	}
 
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
@@ -137,4 +148,17 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
 	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...)), nil
+}
+
+func creds(params ServerParams) (grpc.ServerOption, error) {
+	if !params.Config.Security.IsEnabled() {
+		return nil, nil
+	}
+
+	conf, err := security.TLSConfig(params.Config.Security)
+	if err != nil {
+		return nil, err
+	}
+
+	return grpc.Creds(credentials.NewTLS(conf)), nil
 }

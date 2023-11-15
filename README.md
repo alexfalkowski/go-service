@@ -261,6 +261,38 @@ timeout = "1s"
 attempts = 3
 ```
 
+If you would like to enable TLS, do the following:
+
+```yaml
+transport:
+  http:
+    security:
+      cert_file: certs/cert.pem
+      key_file: certs/key.pem
+      client_cert_file: certs/client-cert.pem
+      client_key_file: certs/client-key.pem
+  grpc:
+    security:
+      cert_file: certs/cert.pem
+      key_file: certs/key.pem
+      client_cert_file: certs/client-cert.pem
+      client_key_file: certs/client-key.pem
+```
+
+```toml
+[transport.http.security]
+cert_file = "certs/cert.pem"
+key_file = "certs/key.pem"
+client_cert_file = "certs/client-cert.pem"
+client_key_file = "certs/client-key.pem"
+
+[transport.grpc.security]
+cert_file = "certs/cert.pem"
+key_file = "certs/key.pem"
+client_cert_file = "certs/client-cert.pem"
+client_key_file = "certs/client-key.pem"
+```
+
 ## Debug
 
 This section outlines all utilities added for you troubleshooting abilities.
