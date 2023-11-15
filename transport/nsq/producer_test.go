@@ -19,7 +19,7 @@ func init() {
 
 func TestProducer(t *testing.T) {
 	Convey("Given I have all the configuration", t, func() {
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 
 		Convey("When I register a producer", func() {
 			lc := fxtest.NewLifecycle(t)

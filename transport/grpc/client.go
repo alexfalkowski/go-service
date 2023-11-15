@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -57,10 +58,25 @@ func WithClientBreaker() ClientOption {
 }
 
 // WithClientSecure for gRPC.
-func WithClientSecure() ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
-		o.security = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
+func WithClientSecure(sec security.Config) (ClientOption, error) {
+	var creds credentials.TransportCredentials
+
+	if sec.IsClientEnabled() {
+		conf, err := security.ClientTLSConfig(sec)
+		if err != nil {
+			return nil, err
+		}
+
+		creds = credentials.NewTLS(conf)
+	} else {
+		creds = credentials.NewClientTLSFromCert(nil, "")
+	}
+
+	opt := clientOptionFunc(func(o *clientOptions) {
+		o.security = grpc.WithTransportCredentials(creds)
 	})
+
+	return opt, nil
 }
 
 // WithClientDialOption for gRPC.

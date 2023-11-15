@@ -59,3 +59,22 @@ func NewGRPCClient(
 
 	return conn
 }
+
+// NewSecureGRPCClient for test.
+func NewSecureGRPCClient(
+	ctx context.Context, lc fx.Lifecycle, logger *zap.Logger,
+	tcfg *transport.Config, ocfg *tracer.Config,
+	meter metric.Meter,
+) *grpc.ClientConn {
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
+	sec, _ := tgrpc.WithClientSecure(tcfg.GRPC.Security)
+
+	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("localhost:%s", tcfg.GRPC.Port), &tcfg.GRPC,
+		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
+		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
+		tgrpc.WithClientMetrics(meter),
+		sec,
+	)
+
+	return conn
+}

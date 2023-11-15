@@ -1,6 +1,8 @@
 package test
 
 import (
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache/redis"
@@ -10,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -53,8 +56,8 @@ func (cfg *Config) NSQConfig() *nsq.Config {
 	return nil
 }
 
-// NewTransportConfig for test.
-func NewTransportConfig() *transport.Config {
+// NewInsecureTransportConfig for test.
+func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: http.Config{
 			Port:      Port(),
@@ -66,6 +69,50 @@ func NewTransportConfig() *transport.Config {
 		},
 		GRPC: grpc.Config{
 			Enabled:   true,
+			Port:      Port(),
+			UserAgent: "TestGRPC/1.0",
+			Retry: gretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
+		},
+		NSQ: nsq.Config{
+			LookupHost: "localhost:4161",
+			Host:       "localhost:4150",
+			UserAgent:  "TestNSQ/1.0",
+			Retry: nretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
+		},
+	}
+}
+
+// NewSecureTransportConfig for test.
+func NewSecureTransportConfig() *transport.Config {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	s := security.Config{
+		CertFile:       filepath.Join(dir, "certs/cert.pem"),
+		KeyFile:        filepath.Join(dir, "certs/key.pem"),
+		ClientCertFile: filepath.Join(dir, "certs/client-cert.pem"),
+		ClientKeyFile:  filepath.Join(dir, "certs/client-key.pem"),
+	}
+
+	return &transport.Config{
+		HTTP: http.Config{
+			Security:  s,
+			Port:      Port(),
+			UserAgent: "TestHTTP/1.0",
+			Retry: hretry.Config{
+				Timeout:  timeout,
+				Attempts: 1,
+			},
+		},
+		GRPC: grpc.Config{
+			Enabled:   true,
+			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
 			Retry: gretry.Config{

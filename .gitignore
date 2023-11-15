@@ -2,4 +2,5 @@ vendor
 *.prof
 *.cov
 *.out
+*.pem
 test/new_config.yml

@@ -33,7 +33,7 @@ func TestConsumer(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 		handler := test.NewConsumer(nil)
 
 		Convey("When I register a consumer", func() {
@@ -65,7 +65,7 @@ func TestInvalidConsumer(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 		handler := test.NewConsumer(nil)
 
 		Convey("When I register a consumer", func() {
@@ -127,7 +127,7 @@ func TestReceiveMessage(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 		handler := test.NewConsumer(nil)
 
 		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
@@ -171,7 +171,7 @@ func TestReceiveMessageWithDefaultProducer(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 		handler := test.NewConsumer(nil)
 
 		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),
@@ -211,7 +211,7 @@ func TestReceiveError(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		cfg := &test.NewTransportConfig().NSQ
+		cfg := &test.NewInsecureTransportConfig().NSQ
 		handler := test.NewConsumer(errors.New("something went wrong"))
 
 		err = tnsq.RegisterConsumer(lc, "topic", "channel", cfg, handler, gn.NewMsgPackMarshaller(),

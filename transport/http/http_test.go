@@ -30,7 +30,7 @@ func TestUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -85,7 +85,7 @@ func TestDefaultClientUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -140,7 +140,7 @@ func TestValidAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -198,7 +198,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -256,7 +256,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -312,7 +312,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -363,7 +363,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
@@ -419,7 +419,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
-		cfg := test.NewTransportConfig()
+		cfg := test.NewInsecureTransportConfig()
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
