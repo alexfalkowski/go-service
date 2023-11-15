@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	tags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -120,7 +119,6 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
-		tags.UnaryServerInterceptor(),
 		szap.UnaryServerInterceptor(params.Logger),
 		server.UnaryInterceptor(),
 		tracer.UnaryServerInterceptor(params.Tracer),
@@ -139,7 +137,6 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
-		tags.StreamServerInterceptor(),
 		szap.StreamServerInterceptor(params.Logger),
 		server.StreamInterceptor(),
 		tracer.StreamServerInterceptor(params.Tracer),
