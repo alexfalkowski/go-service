@@ -13,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/sdk/metric"
-	semconv "go.opentelemetry.io/otel/semconv/v1.19.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 )
 

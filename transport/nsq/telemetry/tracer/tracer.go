@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	semconv "go.opentelemetry.io/otel/semconv/v1.19.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
@@ -53,8 +53,7 @@ func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	operationName := fmt.Sprintf("consume %s:%s", h.topic, h.channel)
 	attrs := []attribute.KeyValue{
 		semconv.MessagingSystem("nsq"),
-		semconv.MessagingSourceKindTopic,
-		semconv.MessagingSourceName(h.topic),
+		semconv.MessagingDestinationName(h.topic),
 	}
 
 	ctx, span := h.tracer.Start(
@@ -93,7 +92,6 @@ func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Messa
 	operationName := fmt.Sprintf("publish %s", topic)
 	attrs := []attribute.KeyValue{
 		semconv.MessagingSystem("nsq"),
-		semconv.MessagingDestinationKindTopic,
 		semconv.MessagingDestinationName(topic),
 	}
 
