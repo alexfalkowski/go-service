@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
 	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
-	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
