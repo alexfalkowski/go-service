@@ -32,6 +32,9 @@ host = "localhost:4318"
 port = "8080"
 user_agent = "Service http/1.0"
 
+[transport.http.security]
+enabled = false
+
 [transport.http.retry]
 timeout = "1s"
 attempts = 3
@@ -40,6 +43,9 @@ attempts = 3
 enabled = true
 port = "9090"
 user_agent = "Service grpc/1.0"
+
+[transport.grpc.security]
+enabled = false
 
 [transport.grpc.retry]
 timeout = "1s"

@@ -94,6 +94,7 @@ func NewSecureTransportConfig() *transport.Config {
 	dir := filepath.Dir(b)
 
 	s := security.Config{
+		Enabled:        true,
 		CertFile:       filepath.Join(dir, "certs/cert.pem"),
 		KeyFile:        filepath.Join(dir, "certs/key.pem"),
 		ClientCertFile: filepath.Join(dir, "certs/client-cert.pem"),

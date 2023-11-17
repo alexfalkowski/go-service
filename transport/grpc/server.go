@@ -168,7 +168,7 @@ func creds(params ServerParams) (grpc.ServerOption, error) {
 		return nil, nil
 	}
 
-	conf, err := security.TLSConfig(params.Config.Security)
+	conf, err := security.NewTLSConfig(params.Config.Security)
 	if err != nil {
 		return nil, err
 	}
