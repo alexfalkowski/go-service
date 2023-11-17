@@ -9,11 +9,6 @@ var (
 	verRegister = verifierRegister{}
 )
 
-func init() {
-	RegisterGenerator("none", NewGenerator())
-	RegisterVerifier("none", NewVerifier())
-}
-
 // RegisterGenerator for token.
 func RegisterGenerator(kind string, g Generator) {
 	genRegister[kind] = g
