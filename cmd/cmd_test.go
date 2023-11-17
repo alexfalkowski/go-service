@@ -20,6 +20,8 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -155,8 +157,20 @@ func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
 	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
 }
 
-func configs(c *rcache.Cache, _ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config) error {
+func redisCache(c *rcache.Cache) error {
 	return c.Delete(context.Background(), "test")
+}
+
+func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config) {
+}
+
+func tkn(g token.Generator, v token.Verifier) error {
+	ctx := context.Background()
+
+	_, t, _ := g.Generate(ctx)
+	_, err := v.Verify(ctx, t)
+
+	return err
 }
 
 func meter(_ metric.Meter) {
@@ -177,11 +191,11 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
-		runtime.Module, cmd.Module, config.Module, debug.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module, security.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, transport.Module,
 		cache.RedisModule, cache.RistrettoModule, cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
-		fx.Invoke(configs), fx.Provide(ver), fx.Invoke(meter),
+		fx.Invoke(configs), fx.Invoke(redisCache), fx.Invoke(tkn), fx.Provide(ver), fx.Invoke(meter),
 	}
 }
