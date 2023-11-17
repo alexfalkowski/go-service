@@ -194,6 +194,24 @@ host = "localhost:4318"
 secure = false
 ```
 
+## Token
+
+The framework allows you to register different token generators and verifiers. By default we have one called none, that as you guessed it does nothing.
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+token:
+  Kind: none
+```
+
+```toml
+[token]
+kind = "none"
+```
+
 ## Transport
 
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
