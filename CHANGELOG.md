@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.117.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.117.1) - 2023-11-17
+
+- [`9284f61`](https://github.com/alexfalkowski/go-service/commit/9284f61c0507cb409dbb3ffd31b51d05bdf4ce90) fix(security): move register to constructor (#447)
+
 ## [v1.117.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.117.0) - 2023-11-17
 
 - [`4a023f6`](https://github.com/alexfalkowski/go-service/commit/4a023f6b969ae990645db024e1350867ddf7f8dd) feat(security): add ability to register generators and verifiers (#446)
