@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 )
 
-// TLSConfig for security.
-func TLSConfig(sec Config) (*tls.Config, error) {
+// NewTLSConfig for security.
+func NewTLSConfig(sec Config) (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(sec.CertFile, sec.KeyFile)
 	if err != nil {
 		return nil, err
@@ -20,8 +20,8 @@ func TLSConfig(sec Config) (*tls.Config, error) {
 	return conf, nil
 }
 
-// ClientTLSConfig for security.
-func ClientTLSConfig(sec Config) (*tls.Config, error) {
+// NewClientTLSConfig for security.
+func NewClientTLSConfig(sec Config) (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(sec.ClientCertFile, sec.ClientKeyFile)
 	if err != nil {
 		return nil, err

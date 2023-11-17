@@ -33,6 +33,8 @@ transport:
   grpc:
     enabled: true
     port: 9090
+    security:
+      enabled: false
     retry:
       timeout: 1s
       attempts: 3
@@ -40,6 +42,8 @@ transport:
   nsq:
     lookup_host: localhost:4161
     host: localhost:4150
+    security:
+      enabled: false
     retry:
       timeout: 1s
       attempts: 3
