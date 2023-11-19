@@ -14,8 +14,6 @@ var (
 	// GRPCModule for fx.
 	GRPCModule = fx.Options(
 		fx.Provide(grpc.NewServer),
-		fx.Provide(grpc.UnaryServerInterceptor),
-		fx.Provide(grpc.StreamServerInterceptor),
 		fx.Provide(gtracer.NewTracer),
 	)
 

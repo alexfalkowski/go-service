@@ -22,7 +22,7 @@ var (
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 		fx.Provide(pgConfig),
 		fx.Provide(loggerConfig), fx.Provide(tracerConfig),
-		fx.Provide(tokenConfig), fx.Provide(transportConfig),
+		fx.Provide(transportConfig),
 		fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
 	)
 )

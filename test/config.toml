@@ -28,9 +28,6 @@ level = "info"
 [telemetry.tracer]
 host = "localhost:4318"
 
-[token]
-kind = "none"
-
 [transport.http]
 port = "8080"
 user_agent = "Service http/1.0"

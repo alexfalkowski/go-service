@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -25,7 +24,6 @@ type Config struct {
 	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
 	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
 	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
-	Token       token.Config     `yaml:"token" json:"token" toml:"token"`
 	Transport   transport.Config `yaml:"transport" json:"transport" toml:"transport"`
 }
 
@@ -59,10 +57,6 @@ func (cfg *Config) LoggerConfig() *zap.Config {
 
 func (cfg *Config) TransportConfig() *transport.Config {
 	return &cfg.Transport
-}
-
-func (cfg *Config) TokenConfig() *token.Config {
-	return &cfg.Token
 }
 
 func (cfg *Config) GRPCConfig() *grpc.Config {
