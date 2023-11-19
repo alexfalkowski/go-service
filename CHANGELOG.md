@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.119.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.119.0) - 2023-11-19
+
+- [`c048bcc`](https://github.com/alexfalkowski/go-service/commit/c048bcc56ded6bb8bcd7d12c476d18a98406af25) feat(security): add ability to configure token kind (#449)
+
 ## [v1.118.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.118.0) - 2023-11-19
 
 - [`7dc5655`](https://github.com/alexfalkowski/go-service/commit/7dc5655b3e1762363db73b440723db54e9ac3595) feat(security): remove register as it can be done through grpc (#448)
