@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
@@ -30,6 +31,7 @@ type Configurator interface {
 	RistrettoConfig() *ristretto.Config
 	PGConfig() *pg.Config
 	LoggerConfig() *zap.Config
+	TokenConfig() *token.Config
 	TracerConfig() *tracer.Config
 	TransportConfig() *transport.Config
 	GRPCConfig() *grpc.Config
@@ -59,6 +61,10 @@ func pgConfig(cfg Configurator) *pg.Config {
 
 func loggerConfig(cfg Configurator) *zap.Config {
 	return cfg.LoggerConfig()
+}
+
+func tokenConfig(cfg Configurator) *token.Config {
+	return cfg.TokenConfig()
 }
 
 func tracerConfig(cfg Configurator) *tracer.Config {

@@ -20,9 +20,8 @@ var (
 	ConfigModule = fx.Options(
 		fx.Provide(environmentConfig), fx.Provide(debugConfig),
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
-		fx.Provide(pgConfig),
+		fx.Provide(pgConfig), fx.Provide(tokenConfig),
 		fx.Provide(loggerConfig), fx.Provide(tracerConfig),
-		fx.Provide(transportConfig),
-		fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
+		fx.Provide(transportConfig), fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(nsqConfig),
 	)
 )

@@ -20,6 +20,7 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -160,7 +161,7 @@ func redisCache(c *rcache.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config) {
+func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config, _ *token.Config) {
 }
 
 func meter(_ metric.Meter) {
