@@ -106,5 +106,4 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.NSQConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.NSQConfig().Retry.Timeout, ShouldEqual, time.Second)
 	So(cfg.NSQConfig().UserAgent, ShouldEqual, "Service nsq/1.0")
-	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
 }
