@@ -89,6 +89,7 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.PGConfig().MaxIdleConns, ShouldEqual, 5)
 	So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
 	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, time.Hour)
+	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
 	So(cfg.TracerConfig().Host, ShouldEqual, "localhost:4318")
 	So(cfg.GRPCConfig().Enabled, ShouldEqual, true)
 	So(cfg.GRPCConfig().Port, ShouldEqual, "9090")

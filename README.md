@@ -194,6 +194,24 @@ host = "localhost:4318"
 secure = false
 ```
 
+## Token
+
+The framework allows you to define different token generators and verifiers. We provide the config, how these are defined are up to you.
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+token:
+  Kind: none
+```
+
+```toml
+[token]
+kind = "none"
+```
+
 ## Transport
 
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
