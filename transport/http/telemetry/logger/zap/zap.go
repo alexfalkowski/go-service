@@ -28,21 +28,20 @@ const (
 )
 
 // NewHandler for zap.
-func NewHandler(logger *zap.Logger, handler http.Handler) *Handler {
-	return &Handler{logger: logger, Handler: handler}
+func NewHandler(logger *zap.Logger) *Handler {
+	return &Handler{logger: logger}
 }
 
 // Handler for zap.
 type Handler struct {
 	logger *zap.Logger
-	http.Handler
 }
 
-// ServeHTTP  or zap.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+// ServeHTTP or zap.
+func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
 	if tstrings.IsHealth(service) {
-		h.Handler.ServeHTTP(resp, req)
+		next(resp, req)
 
 		return
 	}
@@ -51,7 +50,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
-	h.Handler.ServeHTTP(res, req)
+	next(res, req)
 
 	fields := []zapcore.Field{
 		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),

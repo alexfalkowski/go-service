@@ -466,13 +466,17 @@ func TestGet(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
+
+		l, err := limiter.New("100-S")
+		So(err, ShouldBeNil)
+
 		cfg := test.NewInsecureTransportConfig()
 		cfg.GRPC.Enabled = false
 
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)

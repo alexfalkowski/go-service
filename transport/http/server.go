@@ -62,28 +62,25 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n := negroni.New()
+	n.Use(meta.NewHandler())
+	n.Use(szap.NewHandler(params.Logger))
+	n.Use(tracer.NewHandler(params.Tracer))
+
+	h, err := metrics.NewHandler(params.Meter)
+	if err != nil {
+		return nil, err
+	}
+
+	n.Use(h)
 
 	for _, hd := range params.Handlers {
 		n.Use(hd)
 	}
 
+	n.Use(cors.New())
+
 	mux := runtime.NewServeMux(opts...)
-
-	var handler http.Handler = mux
-
-	handler = cors.New().Handler(handler)
-
-	h, err := metrics.NewHandler(params.Meter, handler)
-	if err != nil {
-		return nil, err
-	}
-
-	handler = h
-	handler = tracer.NewHandler(params.Tracer, handler)
-	handler = szap.NewHandler(params.Logger, handler)
-	handler = meta.NewHandler(handler)
-
-	n.UseHandler(handler)
+	n.UseHandler(mux)
 
 	s := &http.Server{
 		Handler:           n,
