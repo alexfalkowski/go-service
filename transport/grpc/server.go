@@ -47,7 +47,9 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 // Server for gRPC.
 type Server struct {
 	Server *grpc.Server
-	params ServerParams
+	sh     fx.Shutdowner
+	config *Config
+	logger *zap.Logger
 }
 
 // NewServer for gRPC.
@@ -90,39 +92,44 @@ func NewServer(params ServerParams) (*Server, error) {
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	server := &Server{Server: s, params: params}
+	server := &Server{
+		Server: s,
+		sh:     params.Shutdowner,
+		config: params.Config,
+		logger: params.Logger,
+	}
 
 	return server, nil
 }
 
 // Start the server.
 func (s *Server) Start(listener net.Listener) {
-	if !s.params.Config.Enabled {
+	if !s.config.Enabled {
 		listener.Close()
 
 		return
 	}
 
-	s.params.Logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
+	s.logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
 
 	if err := s.Server.Serve(listener); err != nil {
 		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
-		if err := s.params.Shutdowner.Shutdown(); err != nil {
+		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		s.params.Logger.Error("could not start grpc server", fields...)
+		s.logger.Error("could not start grpc server", fields...)
 	}
 }
 
 // Stop the server.
 func (s *Server) Stop(_ context.Context) {
-	if !s.params.Config.Enabled {
+	if !s.config.Enabled {
 		return
 	}
 
-	s.params.Logger.Info("stopping grpc server")
+	s.logger.Info("stopping grpc server")
 
 	s.Server.GracefulStop()
 }

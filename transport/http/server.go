@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -29,13 +30,21 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     tracer.Tracer
 	Meter      metric.Meter
+	Handlers   []http.Handler
 }
 
 // Server for HTTP.
 type Server struct {
 	Mux    *runtime.ServeMux
 	server *http.Server
-	params ServerParams
+	sh     fx.Shutdowner
+	config *Config
+	logger *zap.Logger
+}
+
+// ServerHandlers for HTTP.
+func ServerHandlers() []http.Handler {
+	return nil
 }
 
 // NewServer for HTTP.
@@ -52,6 +61,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		}),
 	}
 	mux := runtime.NewServeMux(opts...)
+	n := negroni.New()
 
 	var handler http.Handler = mux
 
@@ -67,8 +77,14 @@ func NewServer(params ServerParams) (*Server, error) {
 	handler = szap.NewHandler(params.Logger, handler)
 	handler = meta.NewHandler(handler)
 
+	n.UseHandler(handler)
+
+	for _, hd := range params.Handlers {
+		n.UseHandler(hd)
+	}
+
 	s := &http.Server{
-		Handler:           handler,
+		Handler:           n,
 		ReadTimeout:       time.Timeout,
 		WriteTimeout:      time.Timeout,
 		IdleTimeout:       time.Timeout,
@@ -78,7 +94,9 @@ func NewServer(params ServerParams) (*Server, error) {
 	server := &Server{
 		Mux:    mux,
 		server: s,
-		params: params,
+		sh:     params.Shutdowner,
+		config: params.Config,
+		logger: params.Logger,
 	}
 
 	return server, nil
@@ -86,16 +104,16 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Start the server.
 func (s *Server) Start(listener net.Listener) {
-	s.params.Logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
+	s.logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
 
 	if err := s.serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
 
-		if err := s.params.Shutdowner.Shutdown(); err != nil {
+		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		s.params.Logger.Error("could not start http server", fields...)
+		s.logger.Error("could not start http server", fields...)
 	}
 }
 
@@ -105,15 +123,15 @@ func (s *Server) Stop(ctx context.Context) {
 	err := s.server.Shutdown(ctx)
 
 	if err != nil {
-		s.params.Logger.Error(message, zap.Error(err))
+		s.logger.Error(message, zap.Error(err))
 	} else {
-		s.params.Logger.Info(message)
+		s.logger.Info(message)
 	}
 }
 
 func (s *Server) serve(l net.Listener) error {
-	if s.params.Config.Security.IsEnabled() {
-		return s.server.ServeTLS(l, s.params.Config.Security.CertFile, s.params.Config.Security.KeyFile)
+	if s.config.Security.IsEnabled() {
+		return s.server.ServeTLS(l, s.config.Security.CertFile, s.config.Security.KeyFile)
 	}
 
 	return s.server.Serve(l)
