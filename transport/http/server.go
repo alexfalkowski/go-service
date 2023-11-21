@@ -49,6 +49,11 @@ func ServerHandlers() []negroni.Handler {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
+	m, err := metrics.NewHandler(params.Meter)
+	if err != nil {
+		return nil, err
+	}
+
 	opts := []runtime.ServeMuxOption{
 		runtime.WithIncomingHeaderMatcher(customMatcher),
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
@@ -65,13 +70,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	n.Use(meta.NewHandler())
 	n.Use(szap.NewHandler(params.Logger))
 	n.Use(tracer.NewHandler(params.Tracer))
-
-	h, err := metrics.NewHandler(params.Meter)
-	if err != nil {
-		return nil, err
-	}
-
-	n.Use(h)
+	n.Use(m)
 
 	for _, hd := range params.Handlers {
 		n.Use(hd)

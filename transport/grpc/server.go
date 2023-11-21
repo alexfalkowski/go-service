@@ -54,12 +54,7 @@ type Server struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
-	uso, err := unaryServerOption(params, params.Unary...)
-	if err != nil {
-		return nil, err
-	}
-
-	sso, err := streamServerOption(params, params.Stream...)
+	metrics, err := metrics.NewServer(params.Meter)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +71,8 @@ func NewServer(params ServerParams) (*Server, error) {
 			Time:                  time.Timeout,
 			Timeout:               time.Timeout,
 		}),
-		uso,
-		sso,
+		unaryServerOption(params.Logger, metrics, params.Tracer, params.Unary...),
+		streamServerOption(params.Logger, metrics, params.Tracer, params.Stream...),
 	}
 
 	opt, err := creds(params)
@@ -134,40 +129,30 @@ func (s *Server) Stop(_ context.Context) {
 	s.Server.GracefulStop()
 }
 
-func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) (grpc.ServerOption, error) {
-	server, err := metrics.NewServer(params.Meter)
-	if err != nil {
-		return nil, err
-	}
-
+func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(params.Logger),
-		server.UnaryInterceptor(),
-		tracer.UnaryServerInterceptor(params.Tracer),
+		szap.UnaryServerInterceptor(l),
+		tracer.UnaryServerInterceptor(t),
+		m.UnaryInterceptor(),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...)), nil
+	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) (grpc.ServerOption, error) {
-	server, err := metrics.NewServer(params.Meter)
-	if err != nil {
-		return nil, err
-	}
-
+func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(params.Logger),
-		server.StreamInterceptor(),
-		tracer.StreamServerInterceptor(params.Tracer),
+		szap.StreamServerInterceptor(l),
+		tracer.StreamServerInterceptor(t),
+		m.StreamInterceptor(),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...)), nil
+	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
 }
 
 func creds(params ServerParams) (grpc.ServerOption, error) {
