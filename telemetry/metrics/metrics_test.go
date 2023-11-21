@@ -45,8 +45,8 @@ func TestInsecureHTTP(t *testing.T) {
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewInsecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -105,8 +105,8 @@ func TestSecureHTTP(t *testing.T) {
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewSecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 

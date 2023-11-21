@@ -37,8 +37,8 @@ func TestUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -77,8 +77,8 @@ func TestInvalidUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -116,11 +116,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -159,8 +158,8 @@ func TestStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -201,8 +200,8 @@ func TestInvalidStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -243,11 +242,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)

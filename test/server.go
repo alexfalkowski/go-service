@@ -12,6 +12,7 @@ import (
 	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -56,12 +57,12 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 }
 
 // NewHTTPServer for test.
-func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter) *shttp.Server {
+func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *shttp.Server {
 	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
 
 	server, _ := shttp.NewServer(shttp.ServerParams{
 		Shutdowner: NewShutdowner(), Config: &tcfg.HTTP, Logger: logger,
-		Tracer: tracer, Meter: meter,
+		Tracer: tracer, Meter: meter, Handlers: handlers,
 	})
 
 	return server
@@ -70,8 +71,8 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 // NewGRPCServer for test.
 func NewGRPCServer(
 	lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config,
-	verifyAuth bool, unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
-	meter metric.Meter,
+	verifyAuth bool, meter metric.Meter,
+	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tgrpc.Server {
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
 

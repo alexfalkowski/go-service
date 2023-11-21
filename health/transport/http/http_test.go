@@ -40,8 +40,8 @@ func TestHealth(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
-			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 			test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -93,8 +93,8 @@ func TestReadinessNoop(t *testing.T) {
 
 		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger)
 		o := server.Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 
@@ -144,8 +144,8 @@ func TestInvalidHealth(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 

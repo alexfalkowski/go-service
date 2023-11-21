@@ -30,7 +30,7 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     tracer.Tracer
 	Meter      metric.Meter
-	Handlers   []http.Handler
+	Handlers   []negroni.Handler
 }
 
 // Server for HTTP.
@@ -43,7 +43,7 @@ type Server struct {
 }
 
 // ServerHandlers for HTTP.
-func ServerHandlers() []http.Handler {
+func ServerHandlers() []negroni.Handler {
 	return nil
 }
 
@@ -60,8 +60,14 @@ func NewServer(params ServerParams) (*Server, error) {
 			},
 		}),
 	}
-	mux := runtime.NewServeMux(opts...)
+
 	n := negroni.New()
+
+	for _, hd := range params.Handlers {
+		n.Use(hd)
+	}
+
+	mux := runtime.NewServeMux(opts...)
 
 	var handler http.Handler = mux
 
@@ -78,10 +84,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	handler = meta.NewHandler(handler)
 
 	n.UseHandler(handler)
-
-	for _, hd := range params.Handlers {
-		n.UseHandler(hd)
-	}
 
 	s := &http.Server{
 		Handler:           n,
