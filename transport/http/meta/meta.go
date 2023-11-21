@@ -9,16 +9,14 @@ import (
 )
 
 // Handler for meta.
-type Handler struct {
-	http.Handler
-}
+type Handler struct{}
 
 // NewHandler for meta.
-func NewHandler(handler http.Handler) *Handler {
-	return &Handler{Handler: handler}
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	ctx := req.Context()
 	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req))
 
@@ -29,7 +27,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 
 	ctx = meta.WithRequestID(ctx, requestID)
 
-	h.Handler.ServeHTTP(resp, req.WithContext(ctx))
+	next(resp, req.WithContext(ctx))
 }
 
 // NewRoundTripper for meta.

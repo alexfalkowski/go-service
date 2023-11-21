@@ -228,6 +228,7 @@ Below is list of the provided interceptors:
 
 Below is list of the provided handlers:
 - [CORS](https://github.com/rs/cors)
+- [Limiter](https://github.com/ulule/limiter)
 
 ### Configuration
 

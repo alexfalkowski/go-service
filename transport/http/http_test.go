@@ -11,13 +11,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	gt "github.com/alexfalkowski/go-service/transport/grpc/security/token"
+	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"github.com/urfave/negroni/v3"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 )
@@ -35,8 +39,8 @@ func TestUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
@@ -90,8 +94,8 @@ func TestDefaultClientUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
@@ -145,11 +149,10 @@ func TestValidAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -203,11 +206,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -261,11 +263,10 @@ func TestMissingAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -317,11 +318,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -368,11 +368,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -424,11 +423,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -457,6 +455,102 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "token error")
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestGet(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+
+		l, err := limiter.New("100-S")
+		So(err, ShouldBeNil)
+
+		cfg := test.NewInsecureTransportConfig()
+		cfg.GRPC.Enabled = false
+
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		So(err, ShouldBeNil)
+
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
+		lc.RequireStart()
+
+		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			w.Write([]byte("hello!"))
+		})
+		So(err, ShouldBeNil)
+
+		Convey("When I query for a greet", func() {
+			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), nil)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			actual := strings.TrimSpace(string(body))
+
+			Convey("Then I should have a valid greet", func() {
+				So(actual, ShouldEqual, "hello!")
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestLimiter(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+
+		l, err := limiter.New("0-S")
+		So(err, ShouldBeNil)
+
+		cfg := test.NewInsecureTransportConfig()
+		cfg.GRPC.Enabled = false
+
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		So(err, ShouldBeNil)
+
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+
+		test.RegisterTransport(lc, cfg, gs, hs)
+		lc.RequireStart()
+
+		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			w.Write([]byte("hello!"))
+		})
+		So(err, ShouldBeNil)
+
+		Convey("When I query for a greet", func() {
+			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), nil)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			Convey("Then I should have been rate limited", func() {
+				So(resp.StatusCode, ShouldEqual, http.StatusTooManyRequests)
+				So(resp.Header.Get("X-Rate-Limit-Limit"), ShouldEqual, "0")
 			})
 
 			lc.RequireStop()

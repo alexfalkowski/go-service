@@ -26,7 +26,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/http"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/version"
@@ -124,12 +124,12 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *shttp.Config, tracer htracer.Tracer, _ version.Version) (health.Registrations, error) {
+func registrations(logger *zap.Logger, cfg *http.Config, tracer htracer.Tracer, _ version.Version) (health.Registrations, error) {
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	client, err := shttp.NewClient(cfg,
-		shttp.WithClientLogger(logger), shttp.WithClientTracer(tracer),
+	client, err := http.NewClient(cfg,
+		http.WithClientLogger(logger), http.WithClientTracer(tracer),
 	)
 	if err != nil {
 		return nil, err
@@ -184,6 +184,7 @@ func opts() []fx.Option {
 		transport.Module,
 		fx.Provide(grpc.UnaryServerInterceptor),
 		fx.Provide(grpc.StreamServerInterceptor),
+		fx.Provide(http.ServerHandlers),
 	)
 
 	return []fx.Option{

@@ -40,19 +40,18 @@ type Tracer trace.Tracer
 // Handler for tracer.
 type Handler struct {
 	tracer Tracer
-	http.Handler
 }
 
 // NewHandler for tracer.
-func NewHandler(tracer Tracer, handler http.Handler) *Handler {
-	return &Handler{tracer: tracer, Handler: handler}
+func NewHandler(tracer Tracer) *Handler {
+	return &Handler{tracer: tracer}
 }
 
 // ServeHTTP for tracer.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
 	if tstrings.IsHealth(service) {
-		h.Handler.ServeHTTP(resp, req)
+		next(resp, req)
 
 		return
 	}
@@ -74,7 +73,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	defer span.End()
 
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
-	h.Handler.ServeHTTP(res, req.WithContext(ctx))
+	next(res, req.WithContext(ctx))
 
 	for k, v := range meta.Attributes(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))

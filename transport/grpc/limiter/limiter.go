@@ -3,30 +3,15 @@ package limiter
 import (
 	"context"
 
-	"github.com/ulule/limiter/v3"
-	"github.com/ulule/limiter/v3/drivers/store/memory"
+	"github.com/alexfalkowski/go-service/limiter"
+	l "github.com/ulule/limiter/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// NewLimiter for gRPC.
-func NewLimiter(formatted string) (*limiter.Limiter, error) {
-	rate, err := limiter.NewRateFromFormatted(formatted)
-	if err != nil {
-		return nil, err
-	}
-
-	store := memory.NewStore()
-
-	return limiter.New(store, rate), nil
-}
-
-// KeyFunc to get for gRPC.
-type KeyFunc func(context.Context) string
-
 // UnaryServerInterceptor for gRPC.
-func UnaryServerInterceptor(limiter *limiter.Limiter, key KeyFunc) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		context, err := limiter.Get(ctx, key(ctx))
 		if err != nil {
@@ -42,7 +27,7 @@ func UnaryServerInterceptor(limiter *limiter.Limiter, key KeyFunc) grpc.UnarySer
 }
 
 // StreamServerInterceptor for gRPC.
-func StreamServerInterceptor(limiter *limiter.Limiter, key KeyFunc) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 

@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	"github.com/alexfalkowski/go-service/transport/grpc/limiter"
+	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -33,8 +34,8 @@ func TestInsecureUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
@@ -68,8 +69,8 @@ func TestSecureUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
@@ -105,11 +106,10 @@ func TestValidAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -146,11 +146,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -186,11 +185,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -225,11 +223,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -264,11 +261,10 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -303,11 +299,10 @@ func TestBreakerUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -340,7 +335,7 @@ func TestLimiterUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.NewLimiter("0-S")
+		l, err := limiter.New("0-S")
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -348,11 +343,10 @@ func TestLimiterUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
-			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
-			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
-			m,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
+			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, meta.UserAgent)},
+			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -387,8 +381,8 @@ func TestStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, nil, nil, m)
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
@@ -431,11 +425,10 @@ func TestValidAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -476,11 +469,10 @@ func TestInvalidAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -520,11 +512,10 @@ func TestEmptyAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -558,11 +549,10 @@ func TestMissingClientAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -602,11 +592,10 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			m,
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)
@@ -635,7 +624,7 @@ func TestLimiterStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.NewLimiter("0-S")
+		l, err := limiter.New("0-S")
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -643,11 +632,10 @@ func TestLimiterStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false,
-			[]grpc.UnaryServerInterceptor{limiter.UnaryServerInterceptor(l, meta.UserAgent)},
-			[]grpc.StreamServerInterceptor{limiter.StreamServerInterceptor(l, meta.UserAgent)},
-			m,
+		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
+			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, meta.UserAgent)},
+			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
 		)
 
 		test.RegisterTransport(lc, cfg, gs, hs)

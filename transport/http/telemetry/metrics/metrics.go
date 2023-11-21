@@ -12,9 +12,7 @@ import (
 )
 
 // NewHandler for metrics.
-//
-//nolint:dupl
-func NewHandler(meter metric.Meter, handler http.Handler) (*Handler, error) {
+func NewHandler(meter metric.Meter) (*Handler, error) {
 	started, err := meter.Int64Counter("http_server_started_total", metric.WithDescription("Total number of RPCs started on the server."))
 	if err != nil {
 		return nil, err
@@ -43,8 +41,9 @@ func NewHandler(meter metric.Meter, handler http.Handler) (*Handler, error) {
 	}
 
 	h := &Handler{
-		started: started, received: received, sent: sent, handled: handled, handledHist: handledHist,
-		Handler: handler,
+		started: started, received: received,
+		sent: sent, handled: handled,
+		handledHist: handledHist,
 	}
 
 	return h, nil
@@ -57,15 +56,13 @@ type Handler struct {
 	sent        metric.Int64Counter
 	handled     metric.Int64Counter
 	handledHist metric.Float64Histogram
-
-	http.Handler
 }
 
-// ServeHTTP  or metrics.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+// ServeHTTP for metrics.
+func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
 	if tstrings.IsHealth(service) {
-		h.Handler.ServeHTTP(resp, req)
+		next(resp, req)
 
 		return
 	}
@@ -82,7 +79,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.received.Add(ctx, 1, opts)
 
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
-	h.Handler.ServeHTTP(res, req)
+	next(res, req)
 
 	h.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(res.StatusCode)))
 	h.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
@@ -93,8 +90,6 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for metrics.
-//
-//nolint:dupl
 func NewRoundTripper(meter metric.Meter, r http.RoundTripper) (*RoundTripper, error) {
 	started, err := meter.Int64Counter("http_client_started_total", metric.WithDescription("Total number of RPCs started on the client."))
 	if err != nil {
