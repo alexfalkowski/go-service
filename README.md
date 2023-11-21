@@ -370,12 +370,23 @@ This section describes how to run and contribute to the project, if you are inte
 
 We favour what is defined in the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
 
+### Dependencies
+
+Please setup the following:
+- https://github.com/FiloSottile/mkcert
+
 ### Setup
 
 To get yourself setup, please run:
 
 ```sh
-make setup
+git submodule sync
+git submodule update --init
+
+mkcert -install
+make create-certs
+
+make dep
 ```
 
 ### Environment
