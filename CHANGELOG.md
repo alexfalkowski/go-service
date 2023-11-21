@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.120.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.120.0) - 2023-11-21
+
+- [`de98542`](https://github.com/alexfalkowski/go-service/commit/de985423eb7a4398f5cfd0ccbf98ebb0c7e94db1) feat(http): add ability to extend http server with middleware (#450)
+
 ## [v1.119.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.119.0) - 2023-11-19
 
 - [`c048bcc`](https://github.com/alexfalkowski/go-service/commit/c048bcc56ded6bb8bcd7d12c476d18a98406af25) feat(security): add ability to configure token kind (#449)
