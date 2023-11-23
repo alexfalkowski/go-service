@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.121.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.121.0) - 2023-11-23
+
+- [`c3e6bba`](https://github.com/alexfalkowski/go-service/commit/c3e6bbaf609953c879d8803003e943f2d491673f) feat(transport): do not pass config and use options (#454)
+- [`f4418f5`](https://github.com/alexfalkowski/go-service/commit/f4418f5b0b1463536444e702e861c91a2358a4f0) build(deps): add bin (#453)
+- [`12ca5ea`](https://github.com/alexfalkowski/go-service/commit/12ca5eab6aef28c9650008313425f61853fc4c45) build(deps): update bin (#452)
+- [`98b609c`](https://github.com/alexfalkowski/go-service/commit/98b609c58bb45019df9faf5fbee8a95fdb65a278) docs: add some prerequisites and steps (#451)
+
 ## [v1.120.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.120.0) - 2023-11-21
 
 - [`de98542`](https://github.com/alexfalkowski/go-service/commit/de985423eb7a4398f5cfd0ccbf98ebb0c7e94db1) feat(http): add ability to extend http server with middleware (#450)
