@@ -51,10 +51,10 @@ func WithConsumerMetrics(meter metric.Meter) ConsumerOption {
 }
 
 // RegisterConsumer for NSQ.
-func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, con gn.Consumer, mar gn.Marshaller, opts ...ConsumerOption) error {
-	defaultOptions := &consumerOptions{tracer: tracer.NewNoopTracer("nsq")}
+func RegisterConsumer(lc fx.Lifecycle, host, topic, channel string, con gn.Consumer, mar gn.Marshaller, opts ...ConsumerOption) error {
+	os := &consumerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
-		o.apply(defaultOptions)
+		o.apply(os)
 	}
 
 	c, err := nsq.NewConsumer(topic, channel, nsq.NewConfig())
@@ -64,12 +64,12 @@ func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, con g
 
 	c.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
-	if defaultOptions.logger != nil {
-		con = lzap.NewConsumer(topic, channel, defaultOptions.logger, con)
+	if os.logger != nil {
+		con = lzap.NewConsumer(topic, channel, os.logger, con)
 	}
 
-	if defaultOptions.meter != nil {
-		handler, err := metrics.NewConsumer(topic, channel, defaultOptions.meter, con)
+	if os.meter != nil {
+		handler, err := metrics.NewConsumer(topic, channel, os.meter, con)
 		if err != nil {
 			return err
 		}
@@ -77,12 +77,12 @@ func RegisterConsumer(lc fx.Lifecycle, topic, channel string, cfg *Config, con g
 		con = handler
 	}
 
-	con = ntracer.NewConsumer(topic, channel, defaultOptions.tracer, con)
+	con = ntracer.NewConsumer(topic, channel, os.tracer, con)
 	con = meta.NewConsumer(con)
 
 	c.AddHandler(gn.NewConsumer(con, mar))
 
-	if err := c.ConnectToNSQLookupd(cfg.LookupHost); err != nil {
+	if err := c.ConnectToNSQLookupd(host); err != nil {
 		return err
 	}
 

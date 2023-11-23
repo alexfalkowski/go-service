@@ -128,8 +128,8 @@ func registrations(logger *zap.Logger, cfg *http.Config, tracer htracer.Tracer, 
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	client, err := http.NewClient(cfg,
-		http.WithClientLogger(logger), http.WithClientTracer(tracer),
+	client, err := http.NewClient(
+		http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(cfg.UserAgent),
 	)
 	if err != nil {
 		return nil, err

@@ -22,11 +22,12 @@ import (
 type ProducerOption interface{ apply(*producerOptions) }
 
 type producerOptions struct {
-	logger  *zap.Logger
-	tracer  ntracer.Tracer
-	meter   metric.Meter
-	retry   bool
-	breaker bool
+	logger    *zap.Logger
+	tracer    ntracer.Tracer
+	meter     metric.Meter
+	retry     *retry.Config
+	userAgent string
+	breaker   bool
 }
 
 type producerOptionFunc func(*producerOptions)
@@ -34,9 +35,9 @@ type producerOptionFunc func(*producerOptions)
 func (f producerOptionFunc) apply(o *producerOptions) { f(o) }
 
 // WithProducerRetry for NSQ.
-func WithProducerRetry() ProducerOption {
+func WithProducerRetry(cfg *retry.Config) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
-		o.retry = true
+		o.retry = cfg
 	})
 }
 
@@ -68,14 +69,21 @@ func WithProducerMetrics(meter metric.Meter) ProducerOption {
 	})
 }
 
+// WithUserAgent for NSQ.
+func WithProducerUserAgent(userAgent string) ProducerOption {
+	return producerOptionFunc(func(o *producerOptions) {
+		o.userAgent = userAgent
+	})
+}
+
 // NewProducer for NSQ.
-func NewProducer(lc fx.Lifecycle, cfg *Config, m gn.Marshaller, opts ...ProducerOption) (gn.Producer, error) {
-	defaultOptions := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
+func NewProducer(lc fx.Lifecycle, host string, m gn.Marshaller, opts ...ProducerOption) (gn.Producer, error) {
+	os := &producerOptions{tracer: tracer.NewNoopTracer("nsq")}
 	for _, o := range opts {
-		o.apply(defaultOptions)
+		o.apply(os)
 	}
 
-	p, _ := nsq.NewProducer(cfg.Host, nsq.NewConfig())
+	p, _ := nsq.NewProducer(host, nsq.NewConfig())
 	p.SetLogger(logger.NewLogger(), nsq.LogLevelInfo)
 
 	lc.Append(fx.Hook{
@@ -88,12 +96,12 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m gn.Marshaller, opts ...Producer
 
 	var pr gn.Producer = &nsqProducer{marshaller: m, Producer: p}
 
-	if defaultOptions.logger != nil {
-		pr = lzap.NewProducer(defaultOptions.logger, pr)
+	if os.logger != nil {
+		pr = lzap.NewProducer(os.logger, pr)
 	}
 
-	if defaultOptions.meter != nil {
-		producer, err := metrics.NewProducer(defaultOptions.meter, pr)
+	if os.meter != nil {
+		producer, err := metrics.NewProducer(os.meter, pr)
 		if err != nil {
 			return nil, err
 		}
@@ -101,17 +109,17 @@ func NewProducer(lc fx.Lifecycle, cfg *Config, m gn.Marshaller, opts ...Producer
 		pr = producer
 	}
 
-	pr = ntracer.NewProducer(defaultOptions.tracer, pr)
+	pr = ntracer.NewProducer(os.tracer, pr)
 
-	if defaultOptions.retry {
-		pr = retry.NewProducer(&cfg.Retry, pr)
+	if os.retry != nil {
+		pr = retry.NewProducer(os.retry, pr)
 	}
 
-	if defaultOptions.breaker {
+	if os.breaker {
 		pr = breaker.NewProducer(pr)
 	}
 
-	pr = meta.NewProducer(cfg.UserAgent, pr)
+	pr = meta.NewProducer(os.userAgent, pr)
 
 	return pr, nil
 }
