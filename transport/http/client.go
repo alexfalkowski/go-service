@@ -21,7 +21,8 @@ type clientOptions struct {
 	logger       *zap.Logger
 	tracer       htracer.Tracer
 	meter        metric.Meter
-	retry        bool
+	retry        *retry.Config
+	userAgent    string
 	breaker      bool
 	roundTripper http.RoundTripper
 }
@@ -38,9 +39,9 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientRetry for HTTP.
-func WithClientRetry() ClientOption {
+func WithClientRetry(cfg *retry.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
-		o.retry = true
+		o.retry = cfg
 	})
 }
 
@@ -72,8 +73,15 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 	})
 }
 
+// WithUserAgent for HTTP.
+func WithClientUserAgent(userAgent string) ClientOption {
+	return clientOptionFunc(func(o *clientOptions) {
+		o.userAgent = userAgent
+	})
+}
+
 // NewRoundTripper for HTTP.
-func NewRoundTripper(cfg *Config, opts ...ClientOption) (http.RoundTripper, error) {
+func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := &clientOptions{tracer: tracer.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(os)
@@ -99,27 +107,27 @@ func NewRoundTripper(cfg *Config, opts ...ClientOption) (http.RoundTripper, erro
 
 	hrt = htracer.NewRoundTripper(os.tracer, hrt)
 
-	if os.retry {
-		hrt = retry.NewRoundTripper(&cfg.Retry, hrt)
+	if os.retry != nil {
+		hrt = retry.NewRoundTripper(os.retry, hrt)
 	}
 
 	if os.breaker {
 		hrt = breaker.NewRoundTripper(hrt)
 	}
 
-	hrt = meta.NewRoundTripper(cfg.UserAgent, hrt)
+	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
 	return hrt, nil
 }
 
 // NewClient for HTTP.
-func NewClient(cfg *Config, opts ...ClientOption) (*http.Client, error) {
+func NewClient(opts ...ClientOption) (*http.Client, error) {
 	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
 
-	rt, err := NewRoundTripper(cfg, opts...)
+	rt, err := NewRoundTripper(opts...)
 	if err != nil {
 		return nil, err
 	}

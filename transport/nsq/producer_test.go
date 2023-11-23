@@ -31,9 +31,9 @@ func TestProducer(t *testing.T) {
 			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
-			producer, err := nsq.NewProducer(lc, cfg, gn.NewMsgPackMarshaller(),
-				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(), nsq.WithProducerBreaker(),
-				nsq.WithProducerMetrics(m),
+			producer, err := nsq.NewProducer(lc, cfg.Host, gn.NewMsgPackMarshaller(),
+				nsq.WithProducerLogger(logger), nsq.WithProducerTracer(tracer), nsq.WithProducerRetry(&cfg.Retry),
+				nsq.WithProducerBreaker(), nsq.WithProducerMetrics(m), nsq.WithProducerUserAgent(cfg.UserAgent),
 			)
 			So(err, ShouldBeNil)
 

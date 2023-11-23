@@ -26,11 +26,11 @@ func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
 	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
-	client, _ := shttp.NewClient(&tcfg.HTTP,
+	client, _ := shttp.NewClient(
 		shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(rt), shttp.WithClientBreaker(),
-		shttp.WithClientTracer(tracer), shttp.WithClientRetry(),
-		shttp.WithClientMetrics(meter),
+		shttp.WithClientTracer(tracer), shttp.WithClientRetry(&tcfg.HTTP.Retry),
+		shttp.WithClientMetrics(meter), shttp.WithClientUserAgent(tcfg.HTTP.UserAgent),
 	)
 
 	return client
@@ -50,11 +50,11 @@ func NewGRPCClient(
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(cred))
 	}
 
-	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", tcfg.GRPC.Port), &tcfg.GRPC,
+	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", tcfg.GRPC.Port),
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-		tgrpc.WithClientDialOption(dialOpts...),
-		tgrpc.WithClientMetrics(meter),
+		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&tcfg.GRPC.Retry),
+		tgrpc.WithClientDialOption(dialOpts...), tgrpc.WithClientMetrics(meter),
+		tgrpc.WithClientUserAgent(tcfg.GRPC.UserAgent),
 	)
 
 	return conn
@@ -69,11 +69,10 @@ func NewSecureGRPCClient(
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
 	sec, _ := tgrpc.WithClientSecure(tcfg.GRPC.Security)
 
-	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("localhost:%s", tcfg.GRPC.Port), &tcfg.GRPC,
+	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("localhost:%s", tcfg.GRPC.Port),
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(),
-		tgrpc.WithClientMetrics(meter),
-		sec,
+		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&tcfg.GRPC.Retry),
+		tgrpc.WithClientMetrics(meter), tgrpc.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,
 	)
 
 	return conn
