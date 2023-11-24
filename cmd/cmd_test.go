@@ -42,9 +42,8 @@ func TestShutdown(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
-			c := cmd.New()
-			c.AddVersion("1.0.0")
-			c.AddWorker(opts())
+			c := cmd.New("1.0.0")
+			c.AddWorker(opts()...)
 
 			Convey("Then I should not see an error", func() {
 				So(c.RunWithArgs([]string{"worker"}), ShouldBeNil)
@@ -60,9 +59,8 @@ func TestRun(t *testing.T) {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
-			c := cmd.New()
-			c.AddVersion("1.0.0")
-			c.AddWorker(opts())
+			c := cmd.New("1.0.0")
+			c.AddWorker(opts()...)
 
 			Convey("Then I should not see an error", func() {
 				So(c.Run(), ShouldBeNil)
@@ -76,8 +74,8 @@ func TestRun(t *testing.T) {
 func TestInvalid(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		Convey("When I try to run an application", func() {
-			c := cmd.New()
-			c.AddServer(opts())
+			c := cmd.New("1.0.0")
+			c.AddServer(opts()...)
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArgs([]string{"server", "--input", "file:../test/invalid.config.yml"})
@@ -94,8 +92,8 @@ func TestClient(t *testing.T) {
 		Convey("When I try to run a client", func() {
 			opts := []fx.Option{fx.NopLogger}
 
-			c := cmd.New()
-			c.AddClient(opts)
+			c := cmd.New("1.0.0")
+			c.AddClient(opts...)
 
 			Convey("Then I should not see an error", func() {
 				So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
@@ -109,8 +107,8 @@ func TestInvalidClient(t *testing.T) {
 		os.Setenv("TEST_CONFIG_FILE", "../test/invalid.config.yml")
 
 		Convey("When I try to run an application", func() {
-			c := cmd.New()
-			c.AddClient(opts())
+			c := cmd.New("1.0.0")
+			c.AddClient(opts()...)
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
