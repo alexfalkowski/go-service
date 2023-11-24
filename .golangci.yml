@@ -68,6 +68,7 @@ linters:
     - predeclared
     - promlinter
     - protogetter
+    - reassign
     - revive
     - rowserrcheck
     - sqlclosecheck
