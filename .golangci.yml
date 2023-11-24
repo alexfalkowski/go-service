@@ -51,6 +51,7 @@ linters:
     - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
     - nakedret
     - nestif
