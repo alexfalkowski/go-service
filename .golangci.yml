@@ -16,6 +16,7 @@ linters:
     - decorder
     - dogsled
     - dupl
+    - dupword
     - durationcheck
     - errchkjson
     - errname
