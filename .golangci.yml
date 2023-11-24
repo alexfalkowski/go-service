@@ -35,6 +35,7 @@ linters:
     - gomodguard
     - goprintffuncname
     - gosec
+    - gosimple
     - grouper
     - importas
     - lll
