@@ -46,7 +46,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		return
 	}
 
-	start := time.Now().UTC()
+	start := time.Now()
 	ctx := req.Context()
 
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
@@ -66,7 +66,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(httpDeadline, d.Format(time.RFC3339)))
 	}
 
 	fields = append(fields, zap.Int(httpStatusCode, res.StatusCode))
@@ -94,7 +94,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
-	start := time.Now().UTC()
+	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
@@ -111,7 +111,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(httpDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err != nil {

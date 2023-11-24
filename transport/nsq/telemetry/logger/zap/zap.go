@@ -41,7 +41,7 @@ type Consumer struct {
 }
 
 func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
-	start := time.Now().UTC()
+	start := time.Now()
 	err := h.Consumer.Consume(ctx, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
@@ -86,7 +86,7 @@ type Producer struct {
 }
 
 func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
-	start := time.Now().UTC()
+	start := time.Now()
 	err := p.Producer.Produce(ctx, topic, message)
 	fields := []zapcore.Field{
 		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),

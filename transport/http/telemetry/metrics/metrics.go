@@ -72,7 +72,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		attribute.Key("http_method").String(method),
 	)
 
-	st := time.Now()
+	start := time.Now()
 	ctx := req.Context()
 
 	h.started.Add(ctx, 1, opts)
@@ -82,7 +82,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	next(res, req)
 
 	h.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(res.StatusCode)))
-	h.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
+	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	if res.StatusCode >= 200 && res.StatusCode <= 299 {
 		h.sent.Add(ctx, 1, opts)
@@ -144,7 +144,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
-	st := time.Now()
+	start := time.Now()
 	ctx := req.Context()
 
 	opts := metric.WithAttributes(
@@ -162,7 +162,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	r.received.Add(ctx, 1, opts)
 	r.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(resp.StatusCode)))
-	r.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
+	r.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return resp, nil
 }

@@ -34,7 +34,7 @@ type Client struct {
 
 //nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.Set(ctx, key, value, ttl)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -50,7 +50,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -65,7 +65,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 
 //nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -81,7 +81,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -96,7 +96,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 
 //nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -112,7 +112,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -127,7 +127,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 
 //nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.Get(ctx, key)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -142,7 +142,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -157,7 +157,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 
 //nolint:dupl
 func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.Del(ctx, keys...)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -172,7 +172,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {
@@ -187,7 +187,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 
 //nolint:dupl
 func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
-	start := time.Now().UTC()
+	start := time.Now()
 	cmd := c.client.Incr(ctx, key)
 	fields := []zapcore.Field{
 		zap.Int64(redisDuration, stime.ToMilliseconds(time.Since(start))),
@@ -202,7 +202,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(redisDeadline, d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(redisDeadline, d.Format(time.RFC3339)))
 	}
 
 	if err := cmd.Err(); err != nil {

@@ -37,7 +37,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		start := time.Now().UTC()
+		start := time.Now()
 		method := path.Base(info.FullMethod)
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
@@ -54,7 +54,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.Format(time.RFC3339)))
 		}
 
 		code := status.Code(err)
@@ -81,7 +81,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		start := time.Now().UTC()
+		start := time.Now()
 		ctx := stream.Context()
 		method := path.Base(info.FullMethod)
 		err := handler(srv, stream)
@@ -99,7 +99,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.Format(time.RFC3339)))
 		}
 
 		code := status.Code(err)
@@ -126,7 +126,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
-		start := time.Now().UTC()
+		start := time.Now()
 		method := path.Base(fullMethod)
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		fields := []zapcore.Field{
@@ -143,7 +143,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.Format(time.RFC3339)))
 		}
 
 		code := status.Code(err)
@@ -170,7 +170,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 
-		start := time.Now().UTC()
+		start := time.Now()
 		method := path.Base(fullMethod)
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		fields := []zapcore.Field{
@@ -187,7 +187,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		}
 
 		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(grpcDeadline, d.UTC().Format(time.RFC3339)))
+			fields = append(fields, zap.String(grpcDeadline, d.Format(time.RFC3339)))
 		}
 
 		code := status.Code(err)
