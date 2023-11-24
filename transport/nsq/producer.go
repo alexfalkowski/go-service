@@ -19,7 +19,7 @@ import (
 )
 
 // ProducerOption for NSQ.
-type ProducerOption interface{ apply(*producerOptions) }
+type ProducerOption interface{ apply(opts *producerOptions) }
 
 type producerOptions struct {
 	logger    *zap.Logger

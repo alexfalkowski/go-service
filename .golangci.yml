@@ -46,6 +46,7 @@ linters:
     - gosimple
     - grouper
     - importas
+    - inamedparam
     - lll
     - maintidx
     - makezero

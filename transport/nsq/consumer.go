@@ -17,7 +17,7 @@ import (
 )
 
 // ConsumerOption for NSQ.
-type ConsumerOption interface{ apply(*consumerOptions) }
+type ConsumerOption interface{ apply(opts *consumerOptions) }
 
 type consumerOptions struct {
 	logger *zap.Logger
