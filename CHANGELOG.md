@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.122.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.2) - 2023-11-24
+
+- [`fe28a86`](https://github.com/alexfalkowski/go-service/commit/fe28a86f962297c2709da47c5e9adcbe57008d77) fix(cmd): use built in version (#457)
+
 ## [v1.122.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.1) - 2023-11-24
 
 - [`995a879`](https://github.com/alexfalkowski/go-service/commit/995a87922c3628ee5a49998941dbd914fa9bfedf) fix: remove utc (#456)
