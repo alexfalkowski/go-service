@@ -53,6 +53,7 @@ linters:
     - makezero
     - mirror
     - misspell
+    - musttag
     - nakedret
     - nestif
     - nilerr
