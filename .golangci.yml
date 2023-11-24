@@ -75,6 +75,7 @@ linters:
     - sqlclosecheck
     - stylecheck
     - tenv
+    - testableexamples
     - testpackage
     - thelper
     - tparallel
