@@ -50,7 +50,7 @@ func TestSetCache(t *testing.T) {
 				err := c.Get(ctx, "test", &v)
 				So(err, ShouldBeNil)
 
-				So(v.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(v.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 
 				err = c.Delete(ctx, "test")
 				So(err, ShouldBeNil)
@@ -122,7 +122,7 @@ func TestSetNXCache(t *testing.T) {
 				err := c.Get(ctx, "test", &v)
 				So(err, ShouldBeNil)
 
-				So(v.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(v.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 
 				err = c.Delete(ctx, "test")
 				So(err, ShouldBeNil)

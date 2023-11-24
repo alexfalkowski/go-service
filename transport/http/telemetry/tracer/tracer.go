@@ -1,6 +1,7 @@
 package tracer
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -31,7 +32,7 @@ type Params struct {
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(params.Lifecycle, "http", params.Environment, params.Version, params.Config)
+	return tracer.NewTracer(context.Background(), params.Lifecycle, "http", params.Environment, params.Version, params.Config)
 }
 
 // Tracer for tracer.

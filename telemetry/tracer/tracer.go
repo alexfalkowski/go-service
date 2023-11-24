@@ -15,6 +15,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
 )
 
@@ -25,11 +26,11 @@ func Register() {
 
 // NewNoopTracer for tracer.
 func NewNoopTracer(name string) trace.Tracer {
-	return trace.NewNoopTracerProvider().Tracer(name)
+	return noop.NewTracerProvider().Tracer(name)
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
+func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
 	if cfg.Host == "" {
 		return NewNoopTracer(name), nil
 	}
@@ -42,7 +43,7 @@ func NewTracer(lc fx.Lifecycle, name string, env env.Environment, ver version.Ve
 
 	client := otlptracehttp.NewClient(opts...)
 
-	exporter, err := otlptrace.New(context.Background(), client)
+	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
 		return nil, err
 	}

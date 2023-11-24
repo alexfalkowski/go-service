@@ -1,6 +1,8 @@
 package tracer
 
 import (
+	"context"
+
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/version"
@@ -20,7 +22,7 @@ type Params struct {
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(params.Lifecycle, "pg", params.Environment, params.Version, params.Config)
+	return tracer.NewTracer(context.Background(), params.Lifecycle, "pg", params.Environment, params.Version, params.Config)
 }
 
 // Tracer for tracer.

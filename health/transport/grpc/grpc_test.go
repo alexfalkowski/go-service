@@ -60,7 +60,7 @@ func TestUnary(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
 		})
 	})
@@ -99,7 +99,7 @@ func TestInvalidUnary(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have an unhealthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
 			})
 		})
 	})
@@ -141,7 +141,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
 		})
 	})
@@ -183,7 +183,7 @@ func TestStream(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
 		})
 	})
@@ -225,7 +225,7 @@ func TestInvalidStream(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
 			})
 		})
 	})
@@ -270,7 +270,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(resp.Status, ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
 		})
 	})

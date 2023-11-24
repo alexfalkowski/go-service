@@ -23,7 +23,7 @@ import (
 )
 
 // ClientOption for HTTP.
-type ClientOption interface{ apply(*clientOptions) }
+type ClientOption interface{ apply(opts *clientOptions) }
 
 type clientOptions struct {
 	logger    *zap.Logger

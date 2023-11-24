@@ -17,7 +17,7 @@ var (
 // ReaderWriter for cmd.
 type ReaderWriter interface {
 	Read() ([]byte, error)
-	Write([]byte, fs.FileMode) error
+	Write(data []byte, mode fs.FileMode) error
 	Kind() string
 }
 

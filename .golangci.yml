@@ -7,18 +7,25 @@ linters-settings:
 linters:
   disable-all: true
   enable:
+    - asasalint
     - asciicheck
     - bidichk
+    - containedctx
+    - contextcheck
     - cyclop
     - decorder
     - dogsled
     - dupl
+    - dupword
     - durationcheck
     - errchkjson
     - errname
     - errorlint
     - exportloopref
+    - execinquery
     - exhaustive
+    - exportloopref
+    - forbidigo
     - funlen
     - gci
     - gocognit
@@ -35,12 +42,18 @@ linters:
     - gomodguard
     - goprintffuncname
     - gosec
+    - gosmopolitan
+    - gosimple
     - grouper
     - importas
+    - inamedparam
     - lll
+    - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
+    - musttag
     - nakedret
     - nestif
     - nilerr
@@ -48,19 +61,28 @@ linters:
     - nlreturn
     - noctx
     - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter
+    - protogetter
+    - reassign
     - revive
     - rowserrcheck
+    - sloglint
     - sqlclosecheck
     - stylecheck
     - tenv
+    - testableexamples
+    - testifylint
     - testpackage
     - thelper
     - tparallel
     - unconvert
     - unparam
+    - unused
     - wastedassign
     - whitespace
     - wsl
