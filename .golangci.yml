@@ -24,6 +24,7 @@ linters:
     - exportloopref
     - execinquery
     - exhaustive
+    - exportloopref
     - funlen
     - gci
     - gocognit
