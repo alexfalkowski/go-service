@@ -61,6 +61,7 @@ linters:
     - nlreturn
     - noctx
     - nolintlint
+    - nonamedreturns
     - prealloc
     - predeclared
     - promlinter
