@@ -98,7 +98,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		st := time.Now().UTC()
+		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
 			attribute.Key("grpc_type").String(string(unary)),
@@ -117,7 +117,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		stat, _ := status.FromError(err)
 
 		s.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-		s.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
+		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 		return resp, err
 	}
@@ -131,7 +131,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		st := time.Now()
+		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
 			attribute.Key("grpc_type").String(string(streamRPCType(info))),
@@ -150,7 +150,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 
 		s.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-		s.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
+		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 		return err
 	}
@@ -168,7 +168,7 @@ type monitoredServerStream struct {
 }
 
 func (s *monitoredServerStream) SendMsg(m any) error {
-	st := time.Now()
+	start := time.Now()
 	ctx := s.ServerStream.Context()
 
 	err := s.ServerStream.SendMsg(m)
@@ -179,21 +179,21 @@ func (s *monitoredServerStream) SendMsg(m any) error {
 	stat, _ := status.FromError(err)
 
 	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-	s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 	return err
 }
 
 //nolint:dupl
 func (s *monitoredServerStream) RecvMsg(m any) error {
-	st := time.Now()
+	start := time.Now()
 	ctx := s.ServerStream.Context()
 
 	err := s.ServerStream.RecvMsg(m)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(codes.OK.String())))
-			s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 			return err
 		}
@@ -201,7 +201,7 @@ func (s *monitoredServerStream) RecvMsg(m any) error {
 		stat, _ := status.FromError(err)
 
 		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-		s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 		return err
 	}
@@ -265,7 +265,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
-		st := time.Now().UTC()
+		start := time.Now()
 		method := path.Base(fullMethod)
 		o := metric.WithAttributes(
 			attribute.Key("grpc_type").String(string(unary)),
@@ -284,7 +284,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		stat, _ := status.FromError(err)
 
 		c.handled.Add(ctx, 1, o, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-		c.handledHist.Record(ctx, time.Since(st).Seconds(), o)
+		c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
 
 		return err
 	}
@@ -298,7 +298,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 
-		st := time.Now()
+		start := time.Now()
 		method := path.Base(fullMethod)
 		o := metric.WithAttributes(
 			attribute.Key("grpc_type").String(string(clientStreamType(desc))),
@@ -311,7 +311,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			stat, _ := status.FromError(err)
 
 			c.handled.Add(ctx, 1, o, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-			c.handledHist.Record(ctx, time.Since(st).Seconds(), o)
+			c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
 
 			return nil, err
 		}
@@ -338,7 +338,7 @@ type monitoredClientStream struct {
 }
 
 func (s *monitoredClientStream) SendMsg(m any) error {
-	st := time.Now()
+	start := time.Now()
 	ctx := s.ClientStream.Context()
 
 	err := s.ClientStream.SendMsg(m)
@@ -349,21 +349,21 @@ func (s *monitoredClientStream) SendMsg(m any) error {
 	stat, _ := status.FromError(err)
 
 	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-	s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 	return err
 }
 
 //nolint:dupl
 func (s *monitoredClientStream) RecvMsg(m any) error {
-	st := time.Now()
+	start := time.Now()
 	ctx := s.ClientStream.Context()
 
 	err := s.ClientStream.RecvMsg(m)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(codes.OK.String())))
-			s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 			return err
 		}
@@ -371,7 +371,7 @@ func (s *monitoredClientStream) RecvMsg(m any) error {
 		stat, _ := status.FromError(err)
 
 		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(stat.String())))
-		s.handledHist.Record(ctx, time.Since(st).Seconds(), s.opts)
+		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 		return err
 	}

@@ -47,7 +47,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 
 //nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	start := time.Now().UTC()
+	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
@@ -56,7 +56,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.Format(time.RFC3339)))
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
@@ -80,7 +80,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 }
 
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	start := time.Now().UTC()
+	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
@@ -89,7 +89,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.Format(time.RFC3339)))
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
@@ -135,7 +135,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 
 //nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	start := time.Now().UTC()
+	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
@@ -144,7 +144,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.Format(time.RFC3339)))
 	}
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
@@ -168,7 +168,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 }
 
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	start := time.Now().UTC()
+	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
@@ -177,7 +177,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.UTC().Format(time.RFC3339)))
+		fields = append(fields, zap.String(fmt.Sprintf(deadline, i.name), d.Format(time.RFC3339)))
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)

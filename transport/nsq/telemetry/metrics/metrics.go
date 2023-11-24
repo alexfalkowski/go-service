@@ -57,7 +57,7 @@ type Consumer struct {
 }
 
 func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
-	st := time.Now()
+	start := time.Now()
 
 	h.started.Add(ctx, 1, h.opts)
 	h.received.Add(ctx, 1, h.opts)
@@ -67,7 +67,7 @@ func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	}
 
 	h.handled.Add(ctx, 1, h.opts)
-	h.handledHist.Record(ctx, time.Since(st).Seconds(), h.opts)
+	h.handledHist.Record(ctx, time.Since(start).Seconds(), h.opts)
 
 	return nil
 }
@@ -114,7 +114,7 @@ type Producer struct {
 }
 
 func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
-	st := time.Now()
+	start := time.Now()
 	opts := metric.WithAttributes(
 		attribute.Key("nsq_topic").String(topic),
 	)
@@ -128,7 +128,7 @@ func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Messa
 	}
 
 	p.handled.Add(ctx, 1, opts)
-	p.handledHist.Record(ctx, time.Since(st).Seconds(), opts)
+	p.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return nil
 }
