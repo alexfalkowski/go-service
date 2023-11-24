@@ -43,7 +43,7 @@ func NewGRPCClient(
 	cred credentials.PerRPCCredentials,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
 
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 	if cred != nil {
@@ -66,7 +66,7 @@ func NewSecureGRPCClient(
 	tcfg *transport.Config, ocfg *tracer.Config,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
 	sec, _ := tgrpc.WithClientSecure(tcfg.GRPC.Security)
 
 	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("localhost:%s", tcfg.GRPC.Port),

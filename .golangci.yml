@@ -11,6 +11,7 @@ linters:
     - asciicheck
     - bidichk
     - containedctx
+    - contextcheck
     - cyclop
     - decorder
     - dogsled

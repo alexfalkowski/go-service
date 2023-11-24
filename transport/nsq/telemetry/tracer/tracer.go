@@ -28,7 +28,7 @@ type Params struct {
 
 // NewTracer for tracer.
 func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(params.Lifecycle, "nsq", params.Environment, params.Version, params.Config)
+	return tracer.NewTracer(context.Background(), params.Lifecycle, "nsq", params.Environment, params.Version, params.Config)
 }
 
 // Tracer for tracer.
