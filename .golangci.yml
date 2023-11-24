@@ -76,6 +76,7 @@ linters:
     - stylecheck
     - tenv
     - testableexamples
+    - testifylint
     - testpackage
     - thelper
     - tparallel
