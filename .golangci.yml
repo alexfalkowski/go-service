@@ -10,6 +10,7 @@ linters:
     - asasalint
     - asciicheck
     - bidichk
+    - containedctx
     - cyclop
     - decorder
     - dogsled
