@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.122.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.1) - 2023-11-24
+
+- [`995a879`](https://github.com/alexfalkowski/go-service/commit/995a87922c3628ee5a49998941dbd914fa9bfedf) fix: remove utc (#456)
+
 ## [v1.122.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.0) - 2023-11-24
 
 - [`8295436`](https://github.com/alexfalkowski/go-service/commit/8295436ccb00ae0fd3a4dc8c5c4383a8557f0278) feat: add new linters (#455)
