@@ -12,3 +12,9 @@ updates:
       otel:
         patterns:
         - "*otel*"
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "bin"
