@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.122.6](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.6) - 2023-12-12
+
+- [`7bdd343`](https://github.com/alexfalkowski/go-service/commit/7bdd34372ab596e5ea630b7dd4626a1394b6f3a4) fix(deps): bump github.com/alexfalkowski/go-health from 1.13.0 to 1.13.1 (#464)
+
 ## [v1.122.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.122.5) - 2023-12-11
 
 - [`84288c0`](https://github.com/alexfalkowski/go-service/commit/84288c04c874333338bda6c380cc30b06bff76b6) fix(deps): bump github.com/jackc/pgx/v5 from 5.5.0 to 5.5.1 (#462)
