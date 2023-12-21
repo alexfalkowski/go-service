@@ -101,7 +101,7 @@ require (
 	go.flipt.io/flipt/errors v1.19.3 // indirect
 	go.flipt.io/flipt/rpc/flipt v1.30.0 // indirect
 	go.flipt.io/flipt/sdk/go v0.7.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.45.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/dig v1.17.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
