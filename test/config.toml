@@ -11,6 +11,10 @@ num_counters = 10_000_000
 max_cost = 100_000_000
 buffer_items = 64
 
+[feature]
+kind = "flipt"
+host = "localhost:9000"
+
 [sql.pg]
 max_open_conns = 5
 max_idle_conns = 5
@@ -32,7 +36,7 @@ host = "localhost:4318"
 kind = "none"
 
 [transport.http]
-port = "8080"
+port = "8000"
 user_agent = "Service http/1.0"
 
 [transport.http.security]

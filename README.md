@@ -92,6 +92,26 @@ max_cost = 100_000_000
 buffer_items = 64
 ```
 
+## Feature
+
+The framework supports [OpenFeature](https://openfeature.dev/).
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+feature:
+  kind: flipt
+  host: localhost:9000
+```
+
+```toml
+[feature]
+kind = "flipt"
+host = "localhost:9000"
+```
+
 ## Runtime
 
 We enhance the runtime with the following:
@@ -237,13 +257,13 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
-    port: 8080
+    port: 8000
     retry:
       timeout: 1s
       attempts: 3
   grpc:
     enabled: true
-    port: 9090
+    port: 9000
     retry:
       timeout: 1s
       attempts: 3
@@ -257,7 +277,7 @@ transport:
 
 ```toml
 [transport.http]
-port = "8080"
+port = "8000"
 
 [transport.http.retry]
 timeout = "1s"
@@ -265,7 +285,7 @@ attempts = 3
 
 [transport.grpc]
 enabled = true
-port = "9090"
+port = "9000"
 
 [transport.grpc.retry]
 timeout = "1s"

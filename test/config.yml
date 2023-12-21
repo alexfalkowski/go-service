@@ -9,6 +9,9 @@ cache:
     num_counters: 10000000
     max_cost: 100000000
     buffer_items: 64
+feature:
+  kind: flipt
+  host: localhost:9000
 sql:
   pg:
     masters:
@@ -27,7 +30,7 @@ token:
   kind: none
 transport:
   http:
-    port: 8080
+    port: 8000
     retry:
       timeout: 1s
       attempts: 3

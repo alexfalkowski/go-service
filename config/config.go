@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
@@ -23,6 +24,7 @@ type Config struct {
 	Environment env.Environment  `yaml:"environment" json:"environment" toml:"environment"`
 	Debug       debug.Config     `yaml:"debug" json:"debug" toml:"debug"`
 	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
+	Feature     feature.Config   `yaml:"feature" json:"feature" toml:"feature"`
 	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
 	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
 	Token       token.Config     `yaml:"token" json:"token" toml:"token"`
@@ -47,6 +49,10 @@ func (cfg *Config) RistrettoConfig() *ristretto.Config {
 
 func (cfg *Config) PGConfig() *pg.Config {
 	return &cfg.SQL.PG
+}
+
+func (cfg *Config) FeatureConfig() *feature.Config {
+	return &cfg.Feature
 }
 
 func (cfg *Config) TracerConfig() *tracer.Config {
