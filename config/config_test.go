@@ -78,6 +78,8 @@ func TestValidMemConfig(t *testing.T) {
 func verifyConfig(cfg config.Configurator) {
 	So(string(cfg.EnvironmentConfig()), ShouldEqual, "development")
 	So(cfg.DebugConfig().Port, ShouldEqual, "6060")
+	So(cfg.FeatureConfig().Kind, ShouldEqual, "flipt")
+	So(cfg.FeatureConfig().Host, ShouldEqual, "localhost:9000")
 	So(cfg.RedisConfig().Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
 	So(cfg.RistrettoConfig().BufferItems, ShouldEqual, 64)
 	So(cfg.RistrettoConfig().MaxCost, ShouldEqual, 100000000)
@@ -97,7 +99,7 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)
 	So(cfg.GRPCConfig().UserAgent, ShouldEqual, "Service grpc/1.0")
 	So(cfg.GRPCConfig().Security.IsEnabled(), ShouldEqual, false)
-	So(cfg.HTTPConfig().Port, ShouldEqual, "8080")
+	So(cfg.HTTPConfig().Port, ShouldEqual, "8000")
 	So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)
 	So(cfg.HTTPConfig().UserAgent, ShouldEqual, "Service http/1.0")

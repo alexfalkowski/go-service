@@ -16,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
@@ -31,6 +32,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
+	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -165,6 +167,9 @@ func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config, 
 func meter(_ metric.Meter) {
 }
 
+func featureClient(_ *openfeature.Client) {
+}
+
 func ver() version.Version {
 	return test.Version
 }
@@ -187,11 +192,11 @@ func opts() []fx.Option {
 
 	return []fx.Option{
 		fx.NopLogger,
-		runtime.Module, cmd.Module, config.Module, debug.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm,
 		cache.RedisModule, cache.RistrettoModule, cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
-		fx.Invoke(configs), fx.Invoke(redisCache), fx.Provide(ver), fx.Invoke(meter),
+		fx.Invoke(featureClient), fx.Invoke(configs), fx.Invoke(redisCache), fx.Provide(ver), fx.Invoke(meter),
 	}
 }

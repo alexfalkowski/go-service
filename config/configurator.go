@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -29,6 +30,7 @@ type Configurator interface {
 	DebugConfig() *debug.Config
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
+	FeatureConfig() *feature.Config
 	PGConfig() *pg.Config
 	LoggerConfig() *zap.Config
 	TokenConfig() *token.Config
@@ -45,6 +47,10 @@ func environmentConfig(cfg Configurator) env.Environment {
 
 func debugConfig(cfg Configurator) *debug.Config {
 	return cfg.DebugConfig()
+}
+
+func featureConfig(cfg Configurator) *feature.Config {
+	return cfg.FeatureConfig()
 }
 
 func redisConfig(cfg Configurator) *redis.Config {

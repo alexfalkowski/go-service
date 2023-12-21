@@ -19,6 +19,7 @@ jobs:
         environment:
           CONFIG_FILE: yaml:CONFIG
           CONFIG: ZW52aXJvbm1lbnQ6IHByb2R1Y3Rpb24KaGVhbHRoOgogIGR1cmF0aW9uOiAxcwogIHRpbWVvdXQ6IDFzCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBsZXZlbDogaW5mbwogIHRyYWNlcjoKICAgIGhvc3Q6IGxvY2FsaG9zdDo0MzE4CiAgICBzZWN1cmU6IGZhbHNlCnRyYW5zcG9ydDoKICBodHRwOgogICAgcG9ydDogNjAwMAogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgogICAgcmV0cnk6CiAgICAgIHRpbWVvdXQ6IDJzCiAgICAgIGF0dGVtcHRzOiAzCiAgZ3JwYzoKICAgIGVuYWJsZWQ6IHRydWUKICAgIHBvcnQ6IDYwMDEKICAgIHVzZXJfYWdlbnQ6ICJTdGF0dXMtc2VydmVyLzEuMCBncnBjLzEuMCIKICAgIHJldHJ5OgogICAgICB0aW1lb3V0OiAycwogICAgICBhdHRlbXB0czogMwo=
+      - image: flipt/flipt:latest
     working_directory: ~/go-service
     steps:
       - checkout
@@ -26,7 +27,7 @@ jobs:
       - run: git submodule update --init
       - run: mkcert -install
       - run: make create-certs
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -wait tcp://localhost:6000 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -wait tcp://localhost:6000 -wait tcp://localhost:9000 -timeout 1m
       - run: make dep
       - run: make lint
       - run: make sec
