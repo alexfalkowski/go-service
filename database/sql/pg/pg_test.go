@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/linxGnu/mssqlx"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/multierr"
@@ -18,6 +19,31 @@ import (
 
 func init() {
 	tracer.Register()
+}
+
+func up(db *mssqlx.DBs) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	query := `CREATE TABLE accounts (
+		user_id serial PRIMARY KEY,
+		created_at TIMESTAMP NOT NULL
+	);`
+
+	_, err := db.ExecContext(ctx, query)
+
+	return err
+}
+
+func down(db *mssqlx.DBs) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	query := "DROP TABLE accounts;"
+
+	_, err := db.ExecContext(ctx, query)
+
+	return err
 }
 
 func TestSQL(t *testing.T) {
@@ -48,11 +74,6 @@ func TestSQL(t *testing.T) {
 
 func TestDBQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -65,6 +86,9 @@ func TestDBQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I select data with a query", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -90,20 +114,15 @@ func TestDBQuery(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestDBExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -116,6 +135,9 @@ func TestDBExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -136,20 +158,15 @@ func TestDBExec(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestDBCommitTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -162,6 +179,9 @@ func TestDBCommitTransExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -190,20 +210,15 @@ func TestDBCommitTransExec(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestDBRollbackTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -216,6 +231,9 @@ func TestDBRollbackTransExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -242,20 +260,15 @@ func TestDBRollbackTransExec(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -268,6 +281,9 @@ func TestStatementQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I select data with a query", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -298,20 +314,15 @@ func TestStatementQuery(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -324,6 +335,9 @@ func TestStatementExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -349,20 +363,15 @@ func TestStatementExec(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestTransStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -375,6 +384,9 @@ func TestTransStatementExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -408,20 +420,15 @@ func TestTransStatementExec(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
 func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		m := test.NewMigrator()
-
-		err := m.Up()
-		So(err, ShouldBeNil)
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -434,6 +441,9 @@ func TestInvalidStatementQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
+
+		err = up(db)
+		So(err, ShouldBeNil)
 
 		Convey("When I select data with an invalid query", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -454,10 +464,10 @@ func TestInvalidStatementQuery(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
-
-		err = m.Drop()
+		err = down(db)
 		So(err, ShouldBeNil)
+
+		lc.RequireStop()
 	})
 }
 
