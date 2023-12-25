@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.124.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.2) - 2023-12-25
+
+- [`8d68486`](https://github.com/alexfalkowski/go-service/commit/8d68486c0e70bcc0f8605f9bf429e68cbad50b1c) fix(deps): bump google.golang.org/protobuf from 1.31.0 to 1.32.0 (#473)
+
 ## [v1.124.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.1) - 2023-12-21
 
 - [`7c688d1`](https://github.com/alexfalkowski/go-service/commit/7c688d1203a6361d68d86999973b6c8afec54078) fix(deps): bump go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc from 0.45.0 to 0.46.0 (#472)
