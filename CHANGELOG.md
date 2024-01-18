@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.124.8](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.8) - 2024-01-18
+
+- [`e09955b`](https://github.com/alexfalkowski/go-service/commit/e09955b443eee1dba077dd1e4583505467f104aa) fix(deps): bump the otel group with 4 updates (#479)
+
 ## [v1.124.7](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.7) - 2024-01-15
 
 - [`c98f553`](https://github.com/alexfalkowski/go-service/commit/c98f5538703a1d8916d789c5b08f886f5735ebcc) fix(deps): bump github.com/jackc/pgx/v5 from 5.5.1 to 5.5.2 (#478)
