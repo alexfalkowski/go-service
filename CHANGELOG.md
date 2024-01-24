@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.124.9](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.9) - 2024-01-24
+
+- [`0a96d0c`](https://github.com/alexfalkowski/go-service/commit/0a96d0c77e677abca0f7f55d9be3f27984673ea8) fix(deps): bump github.com/google/uuid from 1.5.0 to 1.6.0 (#481)
+
 ## [v1.124.8](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.8) - 2024-01-18
 
 - [`e09955b`](https://github.com/alexfalkowski/go-service/commit/e09955b443eee1dba077dd1e4583505467f104aa) fix(deps): bump the otel group with 4 updates (#479)
