@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.124.16](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.16) - 2024-02-07
+
+- [`526bd6f`](https://github.com/alexfalkowski/go-service/commit/526bd6f60fd4aba8b1773f595ec03d406a6bc7f8) fix(deps): bump the otel group with 4 updates (#487)
+
 ## [v1.124.15](https://github.com/alexfalkowski/go-service/releases/tag/v1.124.15) - 2024-02-06
 
 - [`94437fa`](https://github.com/alexfalkowski/go-service/commit/94437faaee2dfbc0d34dca4b73164050669fe7b8) fix(deps): bump github.com/klauspost/compress from 1.17.5 to 1.17.6 (#486)
