@@ -3,7 +3,6 @@ package transport
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
 
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -76,5 +75,5 @@ func (s *server) listener(port string) (net.Listener, error) {
 		return nil, ErrInvalidPort
 	}
 
-	return net.Listen("tcp", fmt.Sprintf(":%s", port))
+	return net.Listen("tcp", ":"+port)
 }

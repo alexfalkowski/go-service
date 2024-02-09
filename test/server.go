@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -39,7 +38,7 @@ func (s *Server) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.Say
 		return nil, ErrInvalidToken
 	}
 
-	return &v1.SayHelloResponse{Message: fmt.Sprintf("Hello %s", req.GetName())}, nil
+	return &v1.SayHelloResponse{Message: "Hello " + req.GetName()}, nil
 }
 
 // SayStreamHello ...
@@ -53,7 +52,7 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 		return err
 	}
 
-	return stream.Send(&v1.SayStreamHelloResponse{Message: fmt.Sprintf("Hello %s", req.GetName())})
+	return stream.Send(&v1.SayStreamHelloResponse{Message: "Hello " + req.GetName()})
 }
 
 // NewHTTPServer for test.

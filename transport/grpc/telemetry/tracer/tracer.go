@@ -2,7 +2,6 @@ package tracer
 
 import (
 	"context"
-	"fmt"
 	"path"
 
 	"github.com/alexfalkowski/go-service/env"
@@ -210,5 +209,5 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 }
 
 func operationName(fullMethod string) string {
-	return fmt.Sprintf("get %s", fullMethod)
+	return "get " + fullMethod
 }

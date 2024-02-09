@@ -31,7 +31,7 @@ func NewClient(params ClientParams) gr.Client {
 	client = rzap.NewClient(params.Logger, client)
 
 	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			return client.Close()
 		},
 	})

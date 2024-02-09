@@ -12,7 +12,7 @@ import (
 
 // UnaryServerInterceptor for gRPC.
 func UnaryServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		context, err := limiter.Get(ctx, key(ctx))
 		if err != nil {
 			return nil, err
@@ -28,7 +28,7 @@ func UnaryServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.UnaryS
 
 // StreamServerInterceptor for gRPC.
 func StreamServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 
 		context, err := limiter.Get(ctx, key(ctx))

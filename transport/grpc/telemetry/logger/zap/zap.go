@@ -2,7 +2,6 @@ package zap
 
 import (
 	"context"
-	"fmt"
 	"path"
 	"time"
 
@@ -27,6 +26,7 @@ const (
 	grpcKind      = "grpc"
 	client        = "client"
 	server        = "server"
+	finished      = "finished call with code "
 )
 
 // UnaryServerInterceptor for zap.
@@ -58,7 +58,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		code := status.Code(err)
-		message := fmt.Sprintf("finished call with code %s", code.String())
+		message := finished + code.String()
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -103,7 +103,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		}
 
 		code := status.Code(err)
-		message := fmt.Sprintf("finished call with code %s", code.String())
+		message := finished + code.String()
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -147,7 +147,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		}
 
 		code := status.Code(err)
-		message := fmt.Sprintf("finished call with code %s", code.String())
+		message := finished + code.String()
 
 		fields = append(fields, zap.Any(grpcCode, code))
 
@@ -191,7 +191,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		}
 
 		code := status.Code(err)
-		message := fmt.Sprintf("finished call with code %s", code.String())
+		message := finished + code.String()
 
 		fields = append(fields, zap.Any(grpcCode, code))
 

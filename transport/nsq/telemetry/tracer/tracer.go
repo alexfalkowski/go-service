@@ -89,7 +89,7 @@ type Producer struct {
 }
 
 func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Message) error {
-	operationName := fmt.Sprintf("publish %s", topic)
+	operationName := "publish " + topic
 	attrs := []attribute.KeyValue{
 		semconv.MessagingSystem("nsq"),
 		semconv.MessagingDestinationName(topic),
