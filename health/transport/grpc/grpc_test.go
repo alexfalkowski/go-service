@@ -49,6 +49,7 @@ func TestUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -88,6 +89,7 @@ func TestInvalidUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -130,6 +132,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -169,6 +172,7 @@ func TestStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -211,6 +215,7 @@ func TestInvalidStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -256,6 +261,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)

@@ -160,6 +160,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -217,6 +218,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -274,6 +276,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -329,6 +332,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -379,6 +383,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -434,6 +439,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -482,7 +488,7 @@ func TestGet(t *testing.T) {
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
 
-		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
 			w.Write([]byte("hello!"))
 		})
 		So(err, ShouldBeNil)
@@ -532,7 +538,7 @@ func TestLimiter(t *testing.T) {
 		test.RegisterTransport(lc, cfg, gs, hs)
 		lc.RequireStart()
 
-		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
 			w.Write([]byte("hello!"))
 		})
 		So(err, ShouldBeNil)

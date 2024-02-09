@@ -37,7 +37,7 @@ func Register(params RegisterParams) error {
 }
 
 func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, version version.Version, withErrors bool) {
-	mux.HandlePath("GET", path, func(w http.ResponseWriter, r *http.Request, p map[string]string) {
+	mux.HandlePath("GET", path, func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Version", string(version))
 
@@ -57,8 +57,10 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, versi
 		w.WriteHeader(status)
 
 		data := map[string]any{"status": response}
+
 		if withErrors {
 			errors := map[string]any{}
+
 			for n, e := range ob.Errors() {
 				if e == nil {
 					continue

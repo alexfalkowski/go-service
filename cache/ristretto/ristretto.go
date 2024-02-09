@@ -32,7 +32,7 @@ func NewCache(params CacheParams) (*ristretto.Cache, error) {
 	}
 
 	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			cache.Close()
 
 			return nil

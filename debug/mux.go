@@ -3,7 +3,6 @@ package debug
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/time"
@@ -14,7 +13,7 @@ import (
 func mux(lc fx.Lifecycle, cfg *Config, logger *zap.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
 	server := &http.Server{
-		Addr:              fmt.Sprintf("localhost:%s", cfg.Port),
+		Addr:              "localhost:" + cfg.Port,
 		Handler:           mux,
 		ReadHeaderTimeout: time.Timeout,
 	}

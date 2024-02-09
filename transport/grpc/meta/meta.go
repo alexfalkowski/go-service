@@ -13,7 +13,7 @@ import (
 
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md := ExtractIncoming(ctx)
 
 		userAgent := extractUserAgent(ctx, md)
@@ -32,7 +32,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor for meta.
 func StreamServerInterceptor() grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
 
