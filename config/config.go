@@ -63,10 +63,6 @@ func (cfg *Config) LoggerConfig() *zap.Config {
 	return &cfg.Telemetry.Logger
 }
 
-func (cfg *Config) TransportConfig() *transport.Config {
-	return &cfg.Transport
-}
-
 func (cfg *Config) TokenConfig() *token.Config {
 	return &cfg.Token
 }

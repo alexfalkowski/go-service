@@ -48,7 +48,7 @@ func TestInsecureHTTP(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 
 		err = metrics.Register(hs)
 		So(err, ShouldBeNil)
@@ -108,7 +108,7 @@ func TestSecureHTTP(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 
 		err = metrics.Register(hs)
 		So(err, ShouldBeNil)

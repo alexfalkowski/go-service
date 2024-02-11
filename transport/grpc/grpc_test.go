@@ -37,7 +37,7 @@ func TestInsecureUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -73,7 +73,7 @@ func TestSecureUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -113,7 +113,7 @@ func TestValidAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for an authenticated greet", func() {
@@ -154,7 +154,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -194,7 +194,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -233,7 +233,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -272,7 +272,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -311,7 +311,7 @@ func TestBreakerUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
@@ -355,7 +355,7 @@ func TestLimiterUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query repeatedly", func() {
@@ -391,7 +391,7 @@ func TestStream(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -439,7 +439,7 @@ func TestValidAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -484,7 +484,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -528,7 +528,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -566,7 +566,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
@@ -610,7 +610,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet that will generate a token error", func() {
@@ -651,7 +651,7 @@ func TestLimiterStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I stream repeatedly", func() {

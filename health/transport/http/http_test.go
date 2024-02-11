@@ -43,7 +43,7 @@ func TestHealth(t *testing.T) {
 			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-			test.RegisterTransport(lc, cfg, gs, hs)
+			test.RegisterTransport(lc, gs, hs)
 
 			params := hhttp.RegisterParams{
 				Server: hs, Health: &hhttp.HealthObserver{Observer: o},
@@ -96,7 +96,7 @@ func TestReadinessNoop(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 
 		params := hhttp.RegisterParams{
 			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
@@ -147,7 +147,7 @@ func TestInvalidHealth(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 
 		params := hhttp.RegisterParams{
 			Server: hs, Health: &hhttp.HealthObserver{Observer: o},

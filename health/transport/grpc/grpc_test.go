@@ -40,7 +40,7 @@ func TestUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
@@ -81,7 +81,7 @@ func TestInvalidUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
@@ -124,7 +124,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
@@ -164,7 +164,7 @@ func TestStream(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
@@ -207,7 +207,7 @@ func TestInvalidStream(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
@@ -253,7 +253,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
