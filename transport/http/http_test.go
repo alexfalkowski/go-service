@@ -42,7 +42,7 @@ func TestUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
@@ -97,7 +97,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
@@ -155,7 +155,7 @@ func TestValidAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -213,7 +213,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -271,7 +271,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -327,7 +327,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -378,7 +378,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -434,7 +434,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			[]grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
 		)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		ctx := context.Background()
@@ -485,7 +485,7 @@ func TestGet(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
@@ -535,7 +535,7 @@ func TestLimiter(t *testing.T) {
 		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, cfg, gs, hs)
+		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {

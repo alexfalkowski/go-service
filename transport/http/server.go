@@ -21,6 +21,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+// ErrInvalidPort for HTTP.
+var ErrInvalidPort = errors.New("invalid port")
+
 // ServerParams for HTTP.
 type ServerParams struct {
 	fx.In
@@ -101,11 +104,36 @@ func NewServer(params ServerParams) (*Server, error) {
 }
 
 // Start the server.
-func (s *Server) Start(listener net.Listener) {
-	s.logger.Info("starting http server", zap.String("addr", listener.Addr().String()))
+func (s *Server) Start() error {
+	l, err := s.listener(s.config.Port)
+	if err != nil {
+		return err
+	}
 
-	if err := s.serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
+	go s.start(l)
+
+	return nil
+}
+
+// Stop the server.
+func (s *Server) Stop(ctx context.Context) error {
+	message := "stopping http server"
+	err := s.server.Shutdown(ctx)
+
+	if err != nil {
+		s.logger.Error(message, zap.Error(err))
+	} else {
+		s.logger.Info(message)
+	}
+
+	return err
+}
+
+func (s *Server) start(l net.Listener) {
+	s.logger.Info("starting http server", zap.String("addr", l.Addr().String()))
+
+	if err := s.serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err)}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
@@ -115,24 +143,20 @@ func (s *Server) Start(listener net.Listener) {
 	}
 }
 
-// Stop the server.
-func (s *Server) Stop(ctx context.Context) {
-	message := "stopping http server"
-	err := s.server.Shutdown(ctx)
-
-	if err != nil {
-		s.logger.Error(message, zap.Error(err))
-	} else {
-		s.logger.Info(message)
-	}
-}
-
 func (s *Server) serve(l net.Listener) error {
 	if s.config.Security.IsEnabled() {
 		return s.server.ServeTLS(l, s.config.Security.CertFile, s.config.Security.KeyFile)
 	}
 
 	return s.server.Serve(l)
+}
+
+func (s *Server) listener(port string) (net.Listener, error) {
+	if port == "" {
+		return nil, ErrInvalidPort
+	}
+
+	return net.Listen("tcp", ":"+port)
 }
 
 func customMatcher(key string) (string, bool) {

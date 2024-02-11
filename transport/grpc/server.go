@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"net"
 
 	"github.com/alexfalkowski/go-service/security"
@@ -20,6 +21,9 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 )
+
+// ErrInvalidPort for gRPC.
+var ErrInvalidPort = errors.New("invalid port")
 
 // ServerParams for gRPC.
 type ServerParams struct {
@@ -98,17 +102,26 @@ func NewServer(params ServerParams) (*Server, error) {
 }
 
 // Start the server.
-func (s *Server) Start(listener net.Listener) {
+func (s *Server) Start() error {
 	if !s.config.Enabled {
-		listener.Close()
-
-		return
+		return nil
 	}
 
-	s.logger.Info("starting grpc server", zap.String("addr", listener.Addr().String()))
+	l, err := s.listener(s.config.Port)
+	if err != nil {
+		return err
+	}
 
-	if err := s.Server.Serve(listener); err != nil {
-		fields := []zapcore.Field{zap.String("addr", listener.Addr().String()), zap.Error(err)}
+	go s.start(l)
+
+	return nil
+}
+
+func (s *Server) start(l net.Listener) {
+	s.logger.Info("starting grpc server", zap.String("addr", l.Addr().String()))
+
+	if err := s.Server.Serve(l); err != nil {
+		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err)}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
@@ -119,14 +132,24 @@ func (s *Server) Start(listener net.Listener) {
 }
 
 // Stop the server.
-func (s *Server) Stop(_ context.Context) {
+func (s *Server) Stop(_ context.Context) error {
 	if !s.config.Enabled {
-		return
+		return nil
 	}
 
 	s.logger.Info("stopping grpc server")
 
 	s.Server.GracefulStop()
+
+	return nil
+}
+
+func (s *Server) listener(port string) (net.Listener, error) {
+	if port == "" {
+		return nil, ErrInvalidPort
+	}
+
+	return net.Listen("tcp", ":"+port)
 }
 
 func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {

@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/nsq"
@@ -35,7 +34,6 @@ type Configurator interface {
 	LoggerConfig() *zap.Config
 	TokenConfig() *token.Config
 	TracerConfig() *tracer.Config
-	TransportConfig() *transport.Config
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
 	NSQConfig() *nsq.Config
@@ -75,10 +73,6 @@ func tokenConfig(cfg Configurator) *token.Config {
 
 func tracerConfig(cfg Configurator) *tracer.Config {
 	return cfg.TracerConfig()
-}
-
-func transportConfig(cfg Configurator) *transport.Config {
-	return cfg.TransportConfig()
 }
 
 func grpcConfig(cfg Configurator) *grpc.Config {
