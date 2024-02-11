@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -50,7 +49,7 @@ func NewGRPCClient(
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(cred))
 	}
 
-	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("127.0.0.1:%s", tcfg.GRPC.Port),
+	conn, _ := tgrpc.NewClient(ctx, "127.0.0.1:"+tcfg.GRPC.Port,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&tcfg.GRPC.Retry),
 		tgrpc.WithClientDialOption(dialOpts...), tgrpc.WithClientMetrics(meter),
@@ -69,7 +68,7 @@ func NewSecureGRPCClient(
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
 	sec, _ := tgrpc.WithClientSecure(tcfg.GRPC.Security)
 
-	conn, _ := tgrpc.NewClient(ctx, fmt.Sprintf("localhost:%s", tcfg.GRPC.Port),
+	conn, _ := tgrpc.NewClient(ctx, "localhost:"+tcfg.GRPC.Port,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&tcfg.GRPC.Retry),
 		tgrpc.WithClientMetrics(meter), tgrpc.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,

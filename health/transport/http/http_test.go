@@ -55,7 +55,7 @@ func TestHealth(t *testing.T) {
 
 			lc.RequireStart()
 
-			Convey(fmt.Sprintf("When I query %s", check), func() {
+			Convey("When I query "+check, func() {
 				client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
 
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.HTTP.Port, check), nil)

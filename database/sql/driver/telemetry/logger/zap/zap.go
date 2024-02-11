@@ -19,6 +19,7 @@ const (
 	deadline  = "%s.deadline"
 	kind      = "kind"
 	client    = "client"
+	query     = ".query"
 )
 
 // NewInterceptor for zap.
@@ -52,7 +53,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
-		zap.String(fmt.Sprintf("%s.query", i.name), query),
+		zap.String(i.name+query, query),
 	}
 
 	if d, ok := ctx.Deadline(); ok {
@@ -85,7 +86,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
-		zap.String(fmt.Sprintf("%s.query", i.name), query),
+		zap.String(i.name+query, query),
 	}
 
 	if d, ok := ctx.Deadline(); ok {
@@ -140,7 +141,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
-		zap.String(fmt.Sprintf("%s.query", i.name), query),
+		zap.String(i.name+query, query),
 	}
 
 	if d, ok := ctx.Deadline(); ok {
@@ -173,7 +174,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		zap.String(fmt.Sprintf(startTime, i.name), start.Format(time.RFC3339)),
 		zap.String("sql.kind", client),
 		zap.String(kind, i.name),
-		zap.String(fmt.Sprintf("%s.query", i.name), query),
+		zap.String(i.name+query, query),
 	}
 
 	if d, ok := ctx.Deadline(); ok {

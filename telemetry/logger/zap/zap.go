@@ -34,7 +34,7 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 	}
 
 	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			_ = logger.Sync()
 
 			return nil

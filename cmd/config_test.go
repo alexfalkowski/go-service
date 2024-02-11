@@ -2,7 +2,6 @@ package cmd_test
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 	"testing"
 
@@ -69,7 +68,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 		So(os.WriteFile(file, []byte("environment: development"), os.ModePerm), ShouldBeNil)
 
 		Convey("When I write the config", func() {
-			c, err := test.NewCmdConfig(fmt.Sprintf("file:%s", file))
+			c, err := test.NewCmdConfig("file:" + file)
 			So(err, ShouldBeNil)
 
 			err = c.Write([]byte("test"), os.ModeAppend)

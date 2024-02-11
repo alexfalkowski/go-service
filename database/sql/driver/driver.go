@@ -43,7 +43,7 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) 
 	}
 
 	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			return destroy(db)
 		},
 	})

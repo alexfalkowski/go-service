@@ -1,7 +1,6 @@
 package zap
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -72,7 +71,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	fields = append(fields, zap.Int(httpStatusCode, res.StatusCode))
 
 	loggerLevel := codeToLevel(res.StatusCode, h.logger)
-	loggerLevel(fmt.Sprintf("finished call with code %s", res.Status()), fields...)
+	loggerLevel("finished call with code "+res.Status(), fields...)
 }
 
 // NewRoundTripper for zap.
@@ -124,7 +123,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode))
 
 	loggerLevel := codeToLevel(resp.StatusCode, r.logger)
-	loggerLevel(fmt.Sprintf("finished call with code %s", resp.Status), fields...)
+	loggerLevel("finished call with code "+resp.Status, fields...)
 
 	return resp, nil
 }

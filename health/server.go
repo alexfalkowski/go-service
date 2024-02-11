@@ -19,7 +19,7 @@ func NewServer(lc fx.Lifecycle, regs Registrations) *server.Server {
 
 			return nil
 		},
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			s.Stop()
 
 			return nil
