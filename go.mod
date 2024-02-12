@@ -20,7 +20,7 @@ require (
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/nsqio/go-nsq v1.1.0
-	github.com/open-feature/go-sdk v1.9.0
+	github.com/open-feature/go-sdk v1.10.0
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.18.0
 	github.com/rs/cors v1.10.1
@@ -105,12 +105,11 @@ require (
 	go.opentelemetry.io/proto/otlp v1.1.0 // indirect
 	go.uber.org/dig v1.17.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20230811145659-89c5cff77bcb // indirect
+	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3 // indirect
 	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.9.1 // indirect
 	google.golang.org/genproto v0.0.0-20240116215550-a9fa1716bcac // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe // indirect
 )
