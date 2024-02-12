@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.125.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.125.2) - 2024-02-12
+
+- [`b0d4f3b`](https://github.com/alexfalkowski/go-service/commit/b0d4f3b0c22696aedeab3014c3c4908128f6eff0) fix(deps): bump github.com/open-feature/go-sdk from 1.9.0 to 1.10.0 (#493)
+
 ## [v1.125.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.125.1) - 2024-02-11
 
 - [`2ffd225`](https://github.com/alexfalkowski/go-service/commit/2ffd2259c6a9f02ea26833936f55a444fdd9219a) fix(deps): use go.opentelemetry.io/otel/semconv/v1.23.0 (#492)
