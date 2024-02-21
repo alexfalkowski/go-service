@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.126.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.126.4) - 2024-02-21
+
+- [`5325e4e`](https://github.com/alexfalkowski/go-service/commit/5325e4e9458523159558ea11626f3ba86078802f) fix(deps): bump go.uber.org/zap from 1.26.0 to 1.27.0 (#502)
+- [`4b4ec39`](https://github.com/alexfalkowski/go-service/commit/4b4ec39df2b9c2ba9cb22b35f7f3f33a89f7c07a) test: verify invalid limiter (#501)
+
 ## [v1.126.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.126.3) - 2024-02-19
 
 - [`862046e`](https://github.com/alexfalkowski/go-service/commit/862046e87f75e6544608d9dedb0adc3c5fe8b559) fix(deps): bump github.com/urfave/negroni/v3 from 3.0.0 to 3.1.0 (#499)
