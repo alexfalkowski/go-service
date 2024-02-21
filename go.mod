@@ -42,7 +42,7 @@ require (
 	go.uber.org/automaxprocs v1.5.3
 	go.uber.org/fx v1.20.1
 	go.uber.org/multierr v1.11.0
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.1
 	google.golang.org/protobuf v1.32.0
