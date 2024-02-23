@@ -27,9 +27,11 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
 [telemetry.logger]
+enabled = true
 level = "info"
 
 [telemetry.tracer]
+enabled = true
 host = "localhost:4318"
 
 [token]

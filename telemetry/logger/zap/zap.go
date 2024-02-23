@@ -15,20 +15,25 @@ type LoggerParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
-	Config      zap.Config
+	Config      *Config
+	ZapConfig   zap.Config
 	Environment env.Environment
 	Version     version.Version
 }
 
 // NewLogger using zap.
 func NewLogger(params LoggerParams) (*zap.Logger, error) {
+	if !params.Config.Enabled {
+		return zap.NewNop(), nil
+	}
+
 	fields := zap.Fields(
 		zap.String("name", os.ExecutableName()),
 		zap.String("environment", string(params.Environment)),
 		zap.String("version", string(params.Version)),
 	)
 
-	logger, err := params.Config.Build(fields)
+	logger, err := params.ZapConfig.Build(fields)
 	if err != nil {
 		return nil, err
 	}

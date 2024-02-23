@@ -92,6 +92,14 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = transport()
 	}
 
+	if os.retry != nil {
+		hrt = retry.NewRoundTripper(os.retry, hrt)
+	}
+
+	if os.breaker {
+		hrt = breaker.NewRoundTripper(hrt)
+	}
+
 	if os.logger != nil {
 		hrt = lzap.NewRoundTripper(os.logger, hrt)
 	}
@@ -106,15 +114,6 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	hrt = htracer.NewRoundTripper(os.tracer, hrt)
-
-	if os.retry != nil {
-		hrt = retry.NewRoundTripper(os.retry, hrt)
-	}
-
-	if os.breaker {
-		hrt = breaker.NewRoundTripper(hrt)
-	}
-
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
 	return hrt, nil

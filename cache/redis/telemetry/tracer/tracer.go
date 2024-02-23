@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/attribute"
@@ -63,6 +64,8 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	cmd := c.client.Set(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -92,6 +95,8 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -123,6 +128,8 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -136,6 +143,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	return cmd
 }
 
+//nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	operationName := "client get"
 	attrs := []attribute.KeyValue{
@@ -150,6 +158,8 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	cmd := c.client.Get(ctx, key)
 	if err := cmd.Err(); err != nil {
@@ -179,6 +189,8 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	cmd := c.client.Del(ctx, keys...)
 	if err := cmd.Err(); err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -192,6 +204,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	return cmd
 }
 
+//nolint:dupl
 func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	operationName := "client incr"
 	attrs := []attribute.KeyValue{
@@ -206,6 +219,8 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	cmd := c.client.Incr(ctx, key)
 	if err := cmd.Err(); err != nil {

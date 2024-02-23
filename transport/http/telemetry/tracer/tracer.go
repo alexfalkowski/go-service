@@ -10,6 +10,7 @@ import (
 	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
@@ -50,8 +51,8 @@ func NewHandler(tracer Tracer) *Handler {
 
 // ServeHTTP for tracer.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if tstrings.IsHealth(service) {
+	path, method := req.URL.Path, strings.ToLower(req.Method)
+	if tstrings.IsHealth(path) {
 		next(resp, req)
 
 		return
@@ -59,11 +60,11 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	ctx := extract(req.Context(), req)
 	attrs := []attribute.KeyValue{
-		semconv.HTTPRoute(service),
-		semconv.HTTPMethod(method),
+		semconv.HTTPRoute(path),
+		semconv.HTTPRequestMethodKey.String(method),
 	}
 	attrs = append(attrs, httpconv.ServerRequest("", req)...)
-	operationName := fmt.Sprintf("%s %s", method, service)
+	operationName := fmt.Sprintf("%s %s", method, path)
 
 	ctx, span := h.tracer.Start(
 		trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
@@ -73,6 +74,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req.WithContext(ctx))
 
@@ -80,7 +83,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
-	span.SetAttributes(semconv.HTTPStatusCode(res.StatusCode))
+	span.SetAttributes(semconv.HTTPResponseStatusCode(res.StatusCode))
 }
 
 // NewRoundTripper for tracer.
@@ -105,7 +108,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	operationName := fmt.Sprintf("%s %s", method, service)
 	attrs := []attribute.KeyValue{
 		semconv.HTTPRoute(service),
-		semconv.HTTPMethod(method),
+		semconv.HTTPRequestMethodKey.String(method),
 	}
 	attrs = append(attrs, httpconv.ClientRequest(req)...)
 
@@ -116,6 +119,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	inject(ctx, req)
 
@@ -132,7 +137,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	span.SetAttributes(semconv.HTTPStatusCode(resp.StatusCode))
+	span.SetAttributes(semconv.HTTPResponseStatusCode(resp.StatusCode))
 	span.SetAttributes(httpconv.ClientResponse(resp)...)
 
 	return resp, nil

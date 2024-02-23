@@ -13,10 +13,12 @@ import (
 func TestLogger(t *testing.T) {
 	Convey("Given I have an invalid zap config", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		cfg := zap.Config{}
+		cfg := lzap.Config{Enabled: true}
+		c := zap.Config{}
 
 		Convey("When I try to get a logger", func() {
-			_, err := lzap.NewLogger(lzap.LoggerParams{Lifecycle: lc, Config: cfg, Environment: test.Environment, Version: test.Version})
+			p := lzap.LoggerParams{Lifecycle: lc, Config: &cfg, ZapConfig: c, Environment: test.Environment, Version: test.Version}
+			_, err := lzap.NewLogger(p)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

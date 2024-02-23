@@ -52,7 +52,7 @@ func TestSQL(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			pg.Register(tracer, logger)
@@ -77,7 +77,7 @@ func TestDBQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -124,7 +124,7 @@ func TestDBExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -168,7 +168,7 @@ func TestDBCommitTransExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -220,7 +220,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -270,7 +270,7 @@ func TestStatementQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -324,7 +324,7 @@ func TestStatementExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -373,7 +373,7 @@ func TestTransStatementExec(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -430,7 +430,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -483,7 +483,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			pg.Register(tracer, logger)

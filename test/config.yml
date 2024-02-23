@@ -23,8 +23,10 @@ sql:
     conn_max_lifetime: 1h
 telemetry:
   logger:
+    enabled: true
     level: info
   tracer:
+    enabled: true
     host: localhost:4318
 token:
   kind: none

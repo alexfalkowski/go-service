@@ -39,9 +39,9 @@ func TestHealth(t *testing.T) {
 			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
-			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
-			hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-			gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")
+			hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+			gs := test.NewGRPCServer(lc, logger, test.NewBaselimeTracerConfig(), cfg, false, m, nil, nil)
 
 			test.RegisterTransport(lc, gs, hs)
 
@@ -56,7 +56,7 @@ func TestHealth(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I query "+check, func() {
-				client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+				client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.HTTP.Port, check), nil)
 				So(err, ShouldBeNil)
@@ -91,10 +91,10 @@ func TestReadinessNoop(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger)
+		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger)
 		o := server.Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -109,7 +109,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
@@ -143,9 +143,9 @@ func TestInvalidHealth(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m), logger).Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -160,7 +160,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/healthz", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)

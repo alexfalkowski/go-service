@@ -11,6 +11,7 @@ import (
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -118,16 +119,16 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) start(l net.Listener) {
-	s.logger.Info("starting grpc server", zap.String("addr", l.Addr().String()))
+	s.logger.Info("starting server", zap.String("addr", l.Addr().String()), zap.String(tm.ServiceKey, "grpc"))
 
 	if err := s.Server.Serve(l); err != nil {
-		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err)}
+		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "grpc")}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		s.logger.Error("could not start grpc server", fields...)
+		s.logger.Error("could not start server", fields...)
 	}
 }
 
@@ -137,7 +138,7 @@ func (s *Server) Stop(_ context.Context) error {
 		return nil
 	}
 
-	s.logger.Info("stopping grpc server")
+	s.logger.Info("stopping grpc server", zap.String(tm.ServiceKey, "grpc"))
 
 	s.Server.GracefulStop()
 
@@ -155,8 +156,8 @@ func (s *Server) listener(port string) (net.Listener, error) {
 func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(),
-		szap.UnaryServerInterceptor(l),
 		tracer.UnaryServerInterceptor(t),
+		szap.UnaryServerInterceptor(l),
 		m.UnaryInterceptor(),
 	}
 
@@ -168,8 +169,8 @@ func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interc
 func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(),
-		szap.StreamServerInterceptor(l),
 		tracer.StreamServerInterceptor(t),
+		szap.StreamServerInterceptor(l),
 		m.StreamInterceptor(),
 	}
 

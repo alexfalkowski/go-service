@@ -96,6 +96,14 @@ func NewProducer(lc fx.Lifecycle, host string, m gn.Marshaller, opts ...Producer
 
 	var pr gn.Producer = &nsqProducer{marshaller: m, Producer: p}
 
+	if os.retry != nil {
+		pr = retry.NewProducer(os.retry, pr)
+	}
+
+	if os.breaker {
+		pr = breaker.NewProducer(pr)
+	}
+
 	if os.logger != nil {
 		pr = lzap.NewProducer(os.logger, pr)
 	}
@@ -110,15 +118,6 @@ func NewProducer(lc fx.Lifecycle, host string, m gn.Marshaller, opts ...Producer
 	}
 
 	pr = ntracer.NewProducer(os.tracer, pr)
-
-	if os.retry != nil {
-		pr = retry.NewProducer(os.retry, pr)
-	}
-
-	if os.breaker {
-		pr = breaker.NewProducer(pr)
-	}
-
 	pr = meta.NewProducer(os.userAgent, pr)
 
 	return pr, nil
