@@ -29,7 +29,7 @@ func TestInsecureHTTP(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -45,8 +45,8 @@ func TestInsecureHTTP(t *testing.T) {
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewInsecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -56,7 +56,7 @@ func TestInsecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
@@ -89,7 +89,7 @@ func TestSecureHTTP(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -105,8 +105,8 @@ func TestSecureHTTP(t *testing.T) {
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewSecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -116,7 +116,7 @@ func TestSecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("https://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)

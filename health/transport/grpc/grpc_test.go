@@ -36,9 +36,9 @@ func TestUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewBaselimeTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -48,7 +48,7 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -77,9 +77,9 @@ func TestInvalidUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -88,7 +88,7 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -116,10 +116,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -131,7 +131,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -160,9 +160,9 @@ func TestStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -171,7 +171,7 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -203,9 +203,9 @@ func TestInvalidStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m, nil, nil)
+		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
@@ -214,7 +214,7 @@ func TestInvalidStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -245,10 +245,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m))
+		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewTracerConfig(), cfg, false, m,
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -260,7 +260,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 

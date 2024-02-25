@@ -25,7 +25,7 @@ func TestProducer(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewTracerConfig(), Version: test.Version})
+			tracer, err := ntracer.NewTracer(ntracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 			So(err, ShouldBeNil)
 
 			m, err := metrics.NewMeter(lc, test.Environment, test.Version)

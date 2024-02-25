@@ -37,7 +37,7 @@ func TestDebug(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("Then all the debug URLs are valid", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 			urls := []string{
 				url(port, "debug/statsviz"),
 				url(port, "debug/pprof/"),

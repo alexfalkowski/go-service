@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/alexfalkowski/go-service/version"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -62,6 +63,8 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 		)
 		defer span.End()
 
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 		resp, err := handler(ctx, req)
 		if err != nil {
 			s, _ := status.FromError(err)
@@ -103,6 +106,8 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 			trace.WithAttributes(attrs...),
 		)
 		defer span.End()
+
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -147,6 +152,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 		)
 		defer span.End()
 
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -189,6 +195,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 		)
 		defer span.End()
 
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)

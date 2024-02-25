@@ -7,24 +7,13 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/nsq"
 	stime "github.com/alexfalkowski/go-service/time"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 const (
-	nsqID        = "nsq.id"
-	nsqBody      = "nsq.body"
-	nsqTimestamp = "nsq.timestamp"
-	nsqAttempts  = "nsq.attempts"
-	nsqAddress   = "nsq.address"
-	nsqDuration  = "nsq.duration_ms"
-	nsqStartTime = "nsq.start_time"
-	nsqTopic     = "nsq.topic"
-	nsqChannel   = "nsq.channel"
-	kind         = "kind"
-	nsqKind      = "nsq"
-	consumerKind = "consumer"
-	producerKind = "producer"
+	service = "nsq"
 )
 
 // NewConsumer for zap.
@@ -44,17 +33,10 @@ func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	start := time.Now()
 	err := h.Consumer.Consume(ctx, message)
 	fields := []zapcore.Field{
-		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
-		zap.String(nsqStartTime, start.Format(time.RFC3339)),
-		zap.String(nsqTopic, h.topic),
-		zap.String(nsqChannel, h.channel),
-		zap.ByteString(nsqID, message.ID[:]),
-		zap.ByteString(nsqBody, message.Body),
-		zap.Int64(nsqTimestamp, message.Timestamp),
-		zap.Uint16(nsqAttempts, message.Attempts),
-		zap.String(nsqAddress, message.NSQDAddress),
-		zap.String("nsq.kind", consumerKind),
-		zap.String(kind, nsqKind),
+		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.String(tm.ServiceKey, service),
+		zap.String(tm.PathKey, h.topic+":"+h.channel),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -89,12 +71,10 @@ func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Messa
 	start := time.Now()
 	err := p.Producer.Produce(ctx, topic, message)
 	fields := []zapcore.Field{
-		zap.Int64(nsqDuration, stime.ToMilliseconds(time.Since(start))),
-		zap.String(nsqStartTime, start.Format(time.RFC3339)),
-		zap.String(nsqTopic, topic),
-		zap.ByteString(nsqBody, message.Body),
-		zap.String("nsq.kind", producerKind),
-		zap.String(kind, nsqKind),
+		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.String(tm.ServiceKey, service),
+		zap.String(tm.PathKey, topic),
 	}
 
 	for k, v := range meta.Attributes(ctx) {

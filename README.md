@@ -180,11 +180,13 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   logger:
+    enabled: true
     level: info
 ```
 
 ```toml
 [telemetry.logger]
+enabled = true
 level = "info"
 ```
 
@@ -196,20 +198,46 @@ For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
 
 For distributed tracing we support the following:
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
+- [Baselime](https://github.com/baselime/go-opentelemetry)
 
 #### Configuration
+
+Below is the configuration for each system.
+
+##### Baselime
 
 To configure, please specify the following:
 
 ```yaml
 telemetry:
   tracer:
+    enabled: true
+    kind: baseline
+    key: api-key
+```
+
+```toml
+[telemetry.tracer]
+enabled = true
+kind = "baseline"
+key = "api-key"
+```
+
+##### Default
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  tracer:
+    enabled: true
     host: localhost:4318
     secure: false
 ```
 
 ```toml
 [telemetry.tracer]
+enabled = true
 host = "localhost:4318"
 secure = false
 ```

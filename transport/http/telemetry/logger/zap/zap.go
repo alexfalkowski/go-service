@@ -8,22 +8,14 @@ import (
 	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
 	stime "github.com/alexfalkowski/go-service/time"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 const (
-	httpURL        = "http.url"
-	httpMethod     = "http.method"
-	httpDuration   = "http.duration_ms"
-	httpStartTime  = "http.start_time"
-	httpDeadline   = "http.deadline"
-	httpStatusCode = "http.status_code"
-	kind           = "kind"
-	httpKind       = "http"
-	client         = "client"
-	server         = "server"
+	service = "http"
 )
 
 // NewHandler for zap.
@@ -38,8 +30,8 @@ type Handler struct {
 
 // ServeHTTP or zap.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if tstrings.IsHealth(service) {
+	path, method := req.URL.Path, strings.ToLower(req.Method)
+	if tstrings.IsHealth(path) {
 		next(resp, req)
 
 		return
@@ -52,12 +44,11 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	next(res, req)
 
 	fields := []zapcore.Field{
-		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
-		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, service),
-		zap.String(httpMethod, method),
-		zap.String("http.kind", server),
-		zap.String(kind, httpKind),
+		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.String(tm.ServiceKey, service),
+		zap.String(tm.PathKey, path),
+		zap.String(tm.MethodKey, method),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -65,10 +56,10 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpDeadline, d.Format(time.RFC3339)))
+		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	fields = append(fields, zap.Int(httpStatusCode, res.StatusCode))
+	fields = append(fields, zap.Int(tm.CodeKey, res.StatusCode))
 
 	loggerLevel := codeToLevel(res.StatusCode, h.logger)
 	loggerLevel("finished call with code "+res.Status(), fields...)
@@ -92,17 +83,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
+	path, method := req.URL.Path, strings.ToLower(req.Method)
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.Int64(httpDuration, stime.ToMilliseconds(time.Since(start))),
-		zap.String(httpStartTime, start.Format(time.RFC3339)),
-		zap.String(httpURL, service),
-		zap.String(httpMethod, method),
-		zap.String("http.kind", client),
-		zap.String(kind, httpKind),
+		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.String(tm.ServiceKey, service),
+		zap.String(tm.PathKey, path),
+		zap.String(tm.MethodKey, method),
 	}
 
 	for k, v := range meta.Attributes(ctx) {
@@ -110,7 +100,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(httpDeadline, d.Format(time.RFC3339)))
+		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
 	if err != nil {
@@ -120,7 +110,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	fields = append(fields, zap.Int(httpStatusCode, resp.StatusCode))
+	fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
 
 	loggerLevel := codeToLevel(resp.StatusCode, r.logger)
 	loggerLevel("finished call with code "+resp.Status, fields...)

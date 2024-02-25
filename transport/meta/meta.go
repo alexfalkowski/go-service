@@ -8,10 +8,31 @@ import (
 
 const (
 	// RequestIDKey for meta.
-	RequestIDKey = "transport.request_id"
+	RequestIDKey = "requestId"
 
 	// UserAgentKey for meta.
-	UserAgentKey = "transport.user_agent"
+	UserAgentKey = "userAgent"
+
+	// ServiceKey for meta.
+	ServiceKey = "service"
+
+	// PathKey for meta.
+	PathKey = "path"
+
+	// MethodKey for meta.
+	MethodKey = "method"
+
+	// CodeKey for meta.
+	CodeKey = "code"
+
+	// DurationKey for meta.
+	DurationKey = "duration"
+
+	// StartTimeKey for meta.
+	StartTimeKey = "startTime"
+
+	// DeadlineKey for meta.
+	DeadlineKey = "deadline"
 )
 
 // WithRequestID for transport.
@@ -32,4 +53,9 @@ func WithUserAgent(ctx context.Context, userAgent string) context.Context {
 // UserAgent for transport.
 func UserAgent(ctx context.Context) string {
 	return meta.Attribute(ctx, UserAgentKey)
+}
+
+// WithTraceID for transport.
+func WithTraceID(ctx context.Context, id string) context.Context {
+	return meta.WithAttribute(ctx, "traceId", id)
 }

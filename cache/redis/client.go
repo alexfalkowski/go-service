@@ -27,8 +27,8 @@ func NewClient(params ClientParams) gr.Client {
 	redis.SetLogger(logger.NewLogger())
 
 	var client gr.Client = redis.NewRing(params.RingOptions)
-	client = tracer.NewClient(params.Tracer, client)
 	client = rzap.NewClient(params.Logger, client)
+	client = tracer.NewClient(params.Tracer, client)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {

@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/meta"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -35,6 +36,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 	return i.interceptor.ConnPing(ctx, conn)
 }
 
+//nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	operationName := "connection exec"
 	attrs := []attribute.KeyValue{
@@ -49,6 +51,8 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -62,7 +66,6 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	return res, err
 }
 
-//nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	operationName := "connection query"
 	attrs := []attribute.KeyValue{
@@ -76,6 +79,8 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 	if err != nil {
@@ -111,6 +116,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return i.interceptor.RowsClose(ctx, rows)
 }
 
+//nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	operationName := "statement exec"
 	attrs := []attribute.KeyValue{
@@ -125,6 +131,8 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -138,7 +146,6 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	return res, err
 }
 
-//nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	operationName := "statement query"
 	attrs := []attribute.KeyValue{
@@ -152,6 +159,8 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 	if err != nil {

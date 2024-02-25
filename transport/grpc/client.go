@@ -174,6 +174,8 @@ func NewClient(ctx context.Context, host string, opts ...ClientOption) (*grpc.Cl
 func unaryDialOption(opts *clientOptions) (grpc.DialOption, error) {
 	unary := []grpc.UnaryClientInterceptor{}
 
+	unary = append(unary, opts.unary...)
+
 	if opts.retry != nil {
 		unary = append(unary,
 			r.UnaryClientInterceptor(
@@ -189,8 +191,6 @@ func unaryDialOption(opts *clientOptions) (grpc.DialOption, error) {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(opts.userAgent))
-
 	if opts.logger != nil {
 		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
 	}
@@ -205,13 +205,15 @@ func unaryDialOption(opts *clientOptions) (grpc.DialOption, error) {
 	}
 
 	unary = append(unary, gtracer.UnaryClientInterceptor(opts.tracer))
-	unary = append(unary, opts.unary...)
+	unary = append(unary, meta.UnaryClientInterceptor(opts.userAgent))
 
 	return grpc.WithChainUnaryInterceptor(unary...), nil
 }
 
 func streamDialOption(opts *clientOptions) (grpc.DialOption, error) {
-	stream := []grpc.StreamClientInterceptor{meta.StreamClientInterceptor(opts.userAgent)}
+	stream := []grpc.StreamClientInterceptor{}
+
+	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
 		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
@@ -227,7 +229,7 @@ func streamDialOption(opts *clientOptions) (grpc.DialOption, error) {
 	}
 
 	stream = append(stream, gtracer.StreamClientInterceptor(opts.tracer))
-	stream = append(stream, opts.stream...)
+	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
 
 	return grpc.WithChainStreamInterceptor(stream...), nil
 }

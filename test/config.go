@@ -1,6 +1,7 @@
 package test
 
 import (
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -133,10 +134,20 @@ func NewSecureTransportConfig() *transport.Config {
 	}
 }
 
-// NewTracerConfig for test.
-func NewTracerConfig() *tracer.Config {
+// NewDefaultTracerConfig for test.
+func NewDefaultTracerConfig() *tracer.Config {
 	return &tracer.Config{
-		Host: "localhost:4318",
+		Enabled: true,
+		Host:    "localhost:4318",
+	}
+}
+
+// NewBaselimeTracerConfig for test.
+func NewBaselimeTracerConfig() *tracer.Config {
+	return &tracer.Config{
+		Enabled: true,
+		Kind:    "baselime",
+		Key:     os.Getenv("BASELIME_API_KEY"),
 	}
 }
 

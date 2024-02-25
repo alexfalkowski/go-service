@@ -12,6 +12,7 @@ import (
 	szap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
@@ -71,8 +72,8 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	n := negroni.New()
 	n.Use(meta.NewHandler())
-	n.Use(szap.NewHandler(params.Logger))
 	n.Use(tracer.NewHandler(params.Tracer))
+	n.Use(szap.NewHandler(params.Logger))
 	n.Use(m)
 
 	for _, hd := range params.Handlers {
@@ -121,25 +122,25 @@ func (s *Server) Stop(ctx context.Context) error {
 	err := s.server.Shutdown(ctx)
 
 	if err != nil {
-		s.logger.Error(message, zap.Error(err))
+		s.logger.Error(message, zap.Error(err), zap.String(tm.ServiceKey, "http"))
 	} else {
-		s.logger.Info(message)
+		s.logger.Info(message, zap.String(tm.ServiceKey, "http"))
 	}
 
 	return err
 }
 
 func (s *Server) start(l net.Listener) {
-	s.logger.Info("starting http server", zap.String("addr", l.Addr().String()))
+	s.logger.Info("starting server", zap.String("addr", l.Addr().String()), zap.String(tm.ServiceKey, "http"))
 
 	if err := s.serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err)}
+		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "http")}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
 		}
 
-		s.logger.Error("could not start http server", fields...)
+		s.logger.Error("could not start server", fields...)
 	}
 }
 

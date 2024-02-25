@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/nsq"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -64,6 +65,8 @@ func (h *Consumer) Consume(ctx context.Context, message *nsq.Message) error {
 	)
 	defer span.End()
 
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+
 	err := h.Consumer.Consume(ctx, message)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
@@ -102,6 +105,8 @@ func (p *Producer) Produce(ctx context.Context, topic string, message *nsq.Messa
 		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
+
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
 
 	inject(ctx, message.Headers)
 
