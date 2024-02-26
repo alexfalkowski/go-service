@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.128.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.128.1) - 2024-02-26
+
+- [`a62548d`](https://github.com/alexfalkowski/go-service/commit/a62548d30fefb137aa31cccf94af5496a7035a68) fix(deps): bump the otel group with 1 update (#507)
+
 ## [v1.128.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.128.0) - 2024-02-25
 
 - [`d82ccb2`](https://github.com/alexfalkowski/go-service/commit/d82ccb24b60a33e79b530d4cda5652eee89e06c7) feat(telemetry): add baselime (#506)
