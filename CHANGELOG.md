@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.128.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.128.2) - 2024-02-28
+
+- [`70fddb5`](https://github.com/alexfalkowski/go-service/commit/70fddb531a2197a375016ec1dc2c61a5e9c132be) fix(deps): bump github.com/prometheus/client_golang from 1.18.0 to 1.19.0 (#508)
+
 ## [v1.128.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.128.1) - 2024-02-26
 
 - [`a62548d`](https://github.com/alexfalkowski/go-service/commit/a62548d30fefb137aa31cccf94af5496a7035a68) fix(deps): bump the otel group with 1 update (#507)
