@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.129.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.129.0) - 2024-03-02
+
+- [`ee73b8b`](https://github.com/alexfalkowski/go-service/commit/ee73b8bae77b0c516b9c081c8655188f238a51bb) feat(runtime): add github.com/KimMachineGun/automemlimit v0.5.0 (#509)
+
 ## [v1.128.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.128.2) - 2024-02-28
 
 - [`70fddb5`](https://github.com/alexfalkowski/go-service/commit/70fddb531a2197a375016ec1dc2c61a5e9c132be) fix(deps): bump github.com/prometheus/client_golang from 1.18.0 to 1.19.0 (#508)
