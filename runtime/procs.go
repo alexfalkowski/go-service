@@ -4,7 +4,7 @@ import (
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
-// Register runtime.
-func Register() {
+// RegisterMaxProcs for runtime.
+func RegisterMaxProcs() {
 	maxprocs.Set()
 }

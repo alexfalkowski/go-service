@@ -5,4 +5,7 @@ import (
 )
 
 // Module for fx.
-var Module = fx.Options(fx.Invoke(Register))
+var Module = fx.Options(
+	fx.Invoke(RegisterMaxProcs),
+	fx.Invoke(RegisterMemLimit),
+)
