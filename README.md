@@ -116,6 +116,7 @@ host = "localhost:9000"
 
 We enhance the runtime with the following:
 - [Automaxprocs](https://github.com/uber-go/automaxprocs)
+- [Automemlimit](https://github.com/KimMachineGun/automemlimit)
 
 ## SQL
 
