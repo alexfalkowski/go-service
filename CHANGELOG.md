@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.129.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.129.1) - 2024-03-02
+
+- [`4eb523f`](https://github.com/alexfalkowski/go-service/commit/4eb523f029d217cd2de81b2dd1ecb596c48675f6) fix(deps): bump the otel group with 1 update (#510)
+
 ## [v1.129.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.129.0) - 2024-03-02
 
 - [`ee73b8b`](https://github.com/alexfalkowski/go-service/commit/ee73b8bae77b0c516b9c081c8655188f238a51bb) feat(runtime): add github.com/KimMachineGun/automemlimit v0.5.0 (#509)
