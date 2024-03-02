@@ -150,8 +150,8 @@ github.com/hashicorp/go-multierror v1.1.1 h1:H5DkEtf6CXdFp0N0Em5UCwQpXMWke8IA0+l
 github.com/hashicorp/go-multierror v1.1.1/go.mod h1:iw975J/qwKPdAO1clOe2L8331t/9/fmwbPZ6JB6eMoM=
 github.com/hashicorp/go-retryablehttp v0.7.5 h1:bJj+Pj19UZMIweq/iie+1u5YCdGrnxCT9yvm0e+Nd5M=
 github.com/hashicorp/go-retryablehttp v0.7.5/go.mod h1:Jy/gPYAdjqffZ/yFGCFV2doI5wjtH1ewM9u8iYVjtX8=
-github.com/honeycombio/otel-config-go v1.13.1 h1:JYERH81ChVB4vH3Jmo8ifAkeKhVRD85uaaLLpm4MzY0=
-github.com/honeycombio/otel-config-go v1.13.1/go.mod h1:5hRpKBVO2cMXBaonDmr6KHYB2N/Q5AD3hr7+PVJQOx0=
+github.com/honeycombio/otel-config-go v1.14.0 h1:Na1ERKYXKrnviORrFF3csdcIJhMVHu1kKUZwhhWMLjs=
+github.com/honeycombio/otel-config-go v1.14.0/go.mod h1:Wm3qyqj1Rc9mkSdRxVxhsWdlqOIMNi/46l5/bZEojb4=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
