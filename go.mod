@@ -26,7 +26,7 @@ require (
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rs/cors v1.10.1
-	github.com/shirou/gopsutil/v3 v3.24.1
+	github.com/shirou/gopsutil/v3 v3.24.2
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.8.0
@@ -107,7 +107,7 @@ require (
 	github.com/tklauser/numcpus v0.7.0 // indirect
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/yusufpapurcu/wmi v1.2.3 // indirect
+	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.flipt.io/flipt/errors v1.19.3 // indirect
 	go.flipt.io/flipt/rpc/flipt v1.30.0 // indirect
 	go.flipt.io/flipt/sdk/go v0.7.0 // indirect
