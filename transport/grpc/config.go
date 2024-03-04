@@ -1,8 +1,8 @@
 package grpc
 
 import (
+	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/transport/grpc/retry"
 )
 
 // Config for gRPC.

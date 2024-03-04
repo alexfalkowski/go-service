@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -21,7 +22,7 @@ type clientOptions struct {
 	logger       *zap.Logger
 	tracer       htracer.Tracer
 	meter        metric.Meter
-	retry        *retry.Config
+	retry        *r.Config
 	userAgent    string
 	breaker      bool
 	roundTripper http.RoundTripper
@@ -39,7 +40,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientRetry for HTTP.
-func WithClientRetry(cfg *retry.Config) ClientOption {
+func WithClientRetry(cfg *r.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.retry = cfg
 	})

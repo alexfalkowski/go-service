@@ -13,15 +13,13 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	gretry "github.com/alexfalkowski/go-service/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/transport/http"
-	hretry "github.com/alexfalkowski/go-service/transport/http/retry"
 	"github.com/alexfalkowski/go-service/transport/nsq"
-	nretry "github.com/alexfalkowski/go-service/transport/nsq/retry"
 )
 
 const timeout = 2 * time.Second
@@ -63,7 +61,7 @@ func NewInsecureTransportConfig() *transport.Config {
 		HTTP: http.Config{
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
-			Retry: hretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},
@@ -72,7 +70,7 @@ func NewInsecureTransportConfig() *transport.Config {
 			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
-			Retry: gretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},
@@ -81,7 +79,7 @@ func NewInsecureTransportConfig() *transport.Config {
 			LookupHost: "localhost:4161",
 			Host:       "localhost:4150",
 			UserAgent:  "TestNSQ/1.0",
-			Retry: nretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},
@@ -107,7 +105,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
-			Retry: hretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},
@@ -117,7 +115,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
-			Retry: gretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},
@@ -126,7 +124,7 @@ func NewSecureTransportConfig() *transport.Config {
 			LookupHost: "localhost:4161",
 			Host:       "localhost:4150",
 			UserAgent:  "TestNSQ/1.0",
-			Retry: nretry.Config{
+			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
 			},

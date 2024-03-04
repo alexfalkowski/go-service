@@ -4,6 +4,7 @@ import (
 	"context"
 
 	gn "github.com/alexfalkowski/go-service/nsq"
+	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/nsq/breaker"
 	"github.com/alexfalkowski/go-service/transport/nsq/meta"
@@ -25,7 +26,7 @@ type producerOptions struct {
 	logger    *zap.Logger
 	tracer    ntracer.Tracer
 	meter     metric.Meter
-	retry     *retry.Config
+	retry     *r.Config
 	userAgent string
 	breaker   bool
 }
@@ -35,7 +36,7 @@ type producerOptionFunc func(*producerOptions)
 func (f producerOptionFunc) apply(o *producerOptions) { f(o) }
 
 // WithProducerRetry for NSQ.
-func WithProducerRetry(cfg *retry.Config) ProducerOption {
+func WithProducerRetry(cfg *r.Config) ProducerOption {
 	return producerOptionFunc(func(o *producerOptions) {
 		o.retry = cfg
 	})
