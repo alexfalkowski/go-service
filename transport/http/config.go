@@ -1,8 +1,8 @@
 package http
 
 import (
+	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/transport/http/retry"
 )
 
 // Config for HTTP.

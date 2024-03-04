@@ -1,7 +1,7 @@
 package nsq
 
 import (
-	"github.com/alexfalkowski/go-service/transport/nsq/retry"
+	"github.com/alexfalkowski/go-service/retry"
 )
 
 type Config struct {

@@ -3,12 +3,12 @@ package grpc
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	"github.com/alexfalkowski/go-service/transport/grpc/retry"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
