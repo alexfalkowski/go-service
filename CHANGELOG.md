@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.131.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.131.0) - 2024-03-04
+
+- [`5412e8a`](https://github.com/alexfalkowski/go-service/commit/5412e8a3fde2aed0fd4783ef33233ed37022d522) feat(security): have one cert_file and key_file (#513)
+
 ## [v1.130.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.130.0) - 2024-03-04
 
 - [`ec5f734`](https://github.com/alexfalkowski/go-service/commit/ec5f734db79e6bb41935a3224c1e5a8d450a5162) feat(retry): move to reusable config (#512)
