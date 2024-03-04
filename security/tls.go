@@ -22,7 +22,7 @@ func NewTLSConfig(sec Config) (*tls.Config, error) {
 
 // NewClientTLSConfig for security.
 func NewClientTLSConfig(sec Config) (*tls.Config, error) {
-	cert, err := tls.LoadX509KeyPair(sec.ClientCertFile, sec.ClientKeyFile)
+	cert, err := tls.LoadX509KeyPair(sec.CertFile, sec.KeyFile)
 	if err != nil {
 		return nil, err
 	}

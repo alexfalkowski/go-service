@@ -87,17 +87,31 @@ func NewInsecureTransportConfig() *transport.Config {
 	}
 }
 
+// NewSecureClientConfig for test.
+func NewSecureClientConfig() security.Config {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	return security.Config{
+		Enabled:  true,
+		CertFile: filepath.Join(dir, "certs/client-cert.pem"),
+		KeyFile:  filepath.Join(dir, "certs/client-key.pem"),
+	}
+}
+
 // NewSecureTransportConfig for test.
 func NewSecureTransportConfig() *transport.Config {
 	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
 	dir := filepath.Dir(b)
 
 	s := security.Config{
-		Enabled:        true,
-		CertFile:       filepath.Join(dir, "certs/cert.pem"),
-		KeyFile:        filepath.Join(dir, "certs/key.pem"),
-		ClientCertFile: filepath.Join(dir, "certs/client-cert.pem"),
-		ClientKeyFile:  filepath.Join(dir, "certs/client-key.pem"),
+		Enabled:  true,
+		CertFile: filepath.Join(dir, "certs/cert.pem"),
+		KeyFile:  filepath.Join(dir, "certs/key.pem"),
+	}
+	r := retry.Config{
+		Timeout:  timeout,
+		Attempts: 1,
 	}
 
 	return &transport.Config{
@@ -105,29 +119,20 @@ func NewSecureTransportConfig() *transport.Config {
 			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
+			Retry:     r,
 		},
 		GRPC: grpc.Config{
 			Enabled:   true,
 			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
+			Retry:     r,
 		},
 		NSQ: nsq.Config{
 			LookupHost: "localhost:4161",
 			Host:       "localhost:4150",
 			UserAgent:  "TestNSQ/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
+			Retry:      r,
 		},
 	}
 }

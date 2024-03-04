@@ -66,7 +66,7 @@ func NewSecureGRPCClient(
 	meter metric.Meter,
 ) *grpc.ClientConn {
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
-	sec, _ := tgrpc.WithClientSecure(tcfg.GRPC.Security)
+	sec, _ := tgrpc.WithClientSecure(NewSecureClientConfig())
 
 	conn, _ := tgrpc.NewClient(ctx, "localhost:"+tcfg.GRPC.Port,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),

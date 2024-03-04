@@ -338,15 +338,11 @@ transport:
       enabled: true
       cert_file: certs/cert.pem
       key_file: certs/key.pem
-      client_cert_file: certs/client-cert.pem
-      client_key_file: certs/client-key.pem
   grpc:
     security:
       enabled: true
       cert_file: certs/cert.pem
       key_file: certs/key.pem
-      client_cert_file: certs/client-cert.pem
-      client_key_file: certs/client-key.pem
 ```
 
 ```toml
@@ -354,15 +350,11 @@ transport:
 enabled = true
 cert_file = "certs/cert.pem"
 key_file = "certs/key.pem"
-client_cert_file = "certs/client-cert.pem"
-client_key_file = "certs/client-key.pem"
 
 [transport.grpc.security]
 enabled = true
 cert_file = "certs/cert.pem"
 key_file = "certs/key.pem"
-client_cert_file = "certs/client-cert.pem"
-client_key_file = "certs/client-key.pem"
 ```
 
 ## Debug
