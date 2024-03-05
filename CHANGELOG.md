@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.131.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.131.1) - 2024-03-05
+
+- [`8ccc1d9`](https://github.com/alexfalkowski/go-service/commit/8ccc1d9c7dd92cca88ba2004f3e744b90f8db5d5) fix(deps): bump github.com/jackc/pgx/v5 from 5.5.3 to 5.5.4 (#514)
+
 ## [v1.131.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.131.0) - 2024-03-04
 
 - [`5412e8a`](https://github.com/alexfalkowski/go-service/commit/5412e8a3fde2aed0fd4783ef33233ed37022d522) feat(security): have one cert_file and key_file (#513)
