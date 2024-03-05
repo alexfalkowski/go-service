@@ -44,6 +44,7 @@ type Server struct {
 	sh     fx.Shutdowner
 	config *Config
 	logger *zap.Logger
+	list   net.Listener
 }
 
 // ServerHandlers for HTTP.
@@ -54,6 +55,11 @@ func ServerHandlers() []negroni.Handler {
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
 	m, err := metrics.NewHandler(params.Meter)
+	if err != nil {
+		return nil, err
+	}
+
+	l, err := listener(params.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +105,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		sh:     params.Shutdowner,
 		config: params.Config,
 		logger: params.Logger,
+		list:   l,
 	}
 
 	return server, nil
@@ -106,12 +113,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Start the server.
 func (s *Server) Start() error {
-	l, err := s.listener(s.config.Port)
-	if err != nil {
-		return err
-	}
-
-	go s.start(l)
+	go s.start()
 
 	return nil
 }
@@ -130,11 +132,11 @@ func (s *Server) Stop(ctx context.Context) error {
 	return err
 }
 
-func (s *Server) start(l net.Listener) {
-	s.logger.Info("starting server", zap.String("addr", l.Addr().String()), zap.String(tm.ServiceKey, "http"))
+func (s *Server) start() {
+	s.logger.Info("starting server", zap.String("addr", s.list.Addr().String()), zap.String(tm.ServiceKey, "http"))
 
-	if err := s.serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("addr", l.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "http")}
+	if err := s.serve(s.list); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		fields := []zapcore.Field{zap.String("addr", s.list.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "http")}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
@@ -152,12 +154,12 @@ func (s *Server) serve(l net.Listener) error {
 	return s.server.Serve(l)
 }
 
-func (s *Server) listener(port string) (net.Listener, error) {
-	if port == "" {
+func listener(cfg *Config) (net.Listener, error) {
+	if cfg.Port == "" {
 		return nil, ErrInvalidPort
 	}
 
-	return net.Listen("tcp", ":"+port)
+	return net.Listen("tcp", ":"+cfg.Port)
 }
 
 func customMatcher(key string) (string, bool) {
