@@ -104,9 +104,4 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)
 	So(cfg.HTTPConfig().UserAgent, ShouldEqual, "Service http/1.0")
 	So(cfg.HTTPConfig().Security.IsEnabled(), ShouldEqual, false)
-	So(cfg.NSQConfig().Host, ShouldEqual, "localhost:4150")
-	So(cfg.NSQConfig().LookupHost, ShouldEqual, "localhost:4161")
-	So(cfg.NSQConfig().Retry.Attempts, ShouldEqual, 3)
-	So(cfg.NSQConfig().Retry.Timeout, ShouldEqual, time.Second)
-	So(cfg.NSQConfig().UserAgent, ShouldEqual, "Service nsq/1.0")
 }

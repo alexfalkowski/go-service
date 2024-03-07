@@ -29,7 +29,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/transport/nsq"
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
 	"github.com/open-feature/go-sdk/openfeature"
@@ -161,7 +160,7 @@ func redisCache(c *rcache.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *nsq.Config, _ *token.Config) {
+func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *token.Config) {
 }
 
 func meter(_ metric.Meter) {

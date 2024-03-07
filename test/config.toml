@@ -59,12 +59,3 @@ enabled = false
 [transport.grpc.retry]
 timeout = "1s"
 attempts = 3
-
-[transport.nsq]
-lookup_host = "localhost:4161"
-host = "localhost:4150"
-user_agent = "Service nsq/1.0"
-
-[transport.nsq.retry]
-timeout = "1s"
-attempts = 3
