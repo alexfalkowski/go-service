@@ -1,4 +1,4 @@
-package config
+package client
 
 import (
 	"time"
@@ -7,8 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 )
 
-// Client config.
-type Client struct {
+// Config for client.
+type Config struct {
 	Host      string          `yaml:"host" json:"host" toml:"host"`
 	Security  security.Config `yaml:"security" json:"security" toml:"security"`
 	Timeout   time.Duration   `yaml:"timeout" json:"timeout" toml:"timeout"`

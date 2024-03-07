@@ -23,9 +23,9 @@ import (
 )
 
 // ClientOption for HTTP.
-type ClientOption interface{ apply(opts *clientOptions) }
+type ClientOption interface{ apply(opts *clientOpts) }
 
-type clientOptions struct {
+type clientOpts struct {
 	logger    *zap.Logger
 	tracer    gtracer.Tracer
 	meter     metric.Meter
@@ -38,20 +38,20 @@ type clientOptions struct {
 	security  grpc.DialOption
 }
 
-type clientOptionFunc func(*clientOptions)
+type clientOptionFunc func(*clientOpts)
 
-func (f clientOptionFunc) apply(o *clientOptions) { f(o) }
+func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
 
 // WithClientRetry for gRPC.
 func WithClientRetry(cfg *retry.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
 	})
 }
 
 // WithClientBreaker for gRPC.
 func WithClientBreaker() ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
 	})
 }
@@ -71,7 +71,7 @@ func WithClientSecure(sec security.Config) (ClientOption, error) {
 		creds = credentials.NewClientTLSFromCert(nil, "")
 	}
 
-	opt := clientOptionFunc(func(o *clientOptions) {
+	opt := clientOptionFunc(func(o *clientOpts) {
 		o.security = grpc.WithTransportCredentials(creds)
 	})
 
@@ -80,67 +80,61 @@ func WithClientSecure(sec security.Config) (ClientOption, error) {
 
 // WithClientDialOption for gRPC.
 func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.opts = opts
 	})
 }
 
 // WithClientUnaryInterceptors for gRPC.
 func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.unary = unary
 	})
 }
 
 // WithClientUnaryInterceptors for gRPC.
 func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.stream = stream
 	})
 }
 
 // WithClientLogger for gRPC.
 func WithClientLogger(logger *zap.Logger) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.logger = logger
 	})
 }
 
 // WithClientTracer for gRPC.
 func WithClientTracer(tracer gtracer.Tracer) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.tracer = tracer
 	})
 }
 
 // WithClientMetrics for gRPC.
 func WithClientMetrics(meter metric.Meter) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.meter = meter
 	})
 }
 
 // WithUserAgent for gRPC.
 func WithClientUserAgent(userAgent string) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
 	})
 }
 
 // NewDialOptions for gRPC.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
-	os := &clientOptions{
-		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
-		tracer:   tracer.NewNoopTracer("grpc"),
-	}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
-	udo, err := unaryDialOption(os)
+	cis, err := UnaryClientInterceptors(opts...)
 	if err != nil {
 		return nil, err
 	}
+
+	os := clientOptions(opts...)
 
 	sto, err := streamDialOption(os)
 	if err != nil {
@@ -155,7 +149,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 			PermitWithoutStream: true,
 		}),
 	}
-	grpcOpts = append(grpcOpts, udo, sto, os.security)
+	grpcOpts = append(grpcOpts, grpc.WithChainUnaryInterceptor(cis...), sto, os.security)
 	grpcOpts = append(grpcOpts, os.opts...)
 
 	return grpcOpts, nil
@@ -171,32 +165,34 @@ func NewClient(ctx context.Context, host string, opts ...ClientOption) (*grpc.Cl
 	return grpc.DialContext(ctx, host, os...)
 }
 
-func unaryDialOption(opts *clientOptions) (grpc.DialOption, error) {
+// UnaryClientInterceptors for gRPC.
+func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientInterceptor, error) {
+	os := clientOptions(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
-	unary = append(unary, opts.unary...)
+	unary = append(unary, os.unary...)
 
-	if opts.retry != nil {
+	if os.retry != nil {
 		unary = append(unary,
 			r.UnaryClientInterceptor(
 				r.WithCodes(codes.Unavailable, codes.DataLoss),
-				r.WithMax(opts.retry.Attempts),
+				r.WithMax(os.retry.Attempts),
 				r.WithBackoff(r.BackoffLinear(time.Backoff)),
-				r.WithPerRetryTimeout(opts.retry.Timeout),
+				r.WithPerRetryTimeout(os.retry.Timeout),
 			),
 		)
 	}
 
-	if opts.breaker {
+	if os.breaker {
 		unary = append(unary, breaker.UnaryClientInterceptor())
 	}
 
-	if opts.logger != nil {
-		unary = append(unary, szap.UnaryClientInterceptor(opts.logger))
+	if os.logger != nil {
+		unary = append(unary, szap.UnaryClientInterceptor(os.logger))
 	}
 
-	if opts.meter != nil {
-		client, err := metrics.NewClient(opts.meter)
+	if os.meter != nil {
+		client, err := metrics.NewClient(os.meter)
 		if err != nil {
 			return nil, err
 		}
@@ -204,13 +200,13 @@ func unaryDialOption(opts *clientOptions) (grpc.DialOption, error) {
 		unary = append(unary, client.UnaryInterceptor())
 	}
 
-	unary = append(unary, gtracer.UnaryClientInterceptor(opts.tracer))
-	unary = append(unary, meta.UnaryClientInterceptor(opts.userAgent))
+	unary = append(unary, gtracer.UnaryClientInterceptor(os.tracer))
+	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
 
-	return grpc.WithChainUnaryInterceptor(unary...), nil
+	return unary, nil
 }
 
-func streamDialOption(opts *clientOptions) (grpc.DialOption, error) {
+func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
 	stream := []grpc.StreamClientInterceptor{}
 
 	stream = append(stream, opts.stream...)
@@ -232,4 +228,16 @@ func streamDialOption(opts *clientOptions) (grpc.DialOption, error) {
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
 
 	return grpc.WithChainStreamInterceptor(stream...), nil
+}
+
+func clientOptions(opts ...ClientOption) *clientOpts {
+	os := &clientOpts{
+		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
+		tracer:   tracer.NewNoopTracer("grpc"),
+	}
+	for _, o := range opts {
+		o.apply(os)
+	}
+
+	return os
 }

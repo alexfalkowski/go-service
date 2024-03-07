@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
@@ -50,7 +50,7 @@ func NewGRPCClient(
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(cred))
 	}
 
-	cl := &config.Client{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
+	cl := &client.Config{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
 	conn, _ := tgrpc.NewClient(ctx, cl.Host,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&cl.Retry),
