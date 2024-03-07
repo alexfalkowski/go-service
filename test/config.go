@@ -19,7 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/transport/nsq"
 )
 
 const timeout = 2 * time.Second
@@ -51,10 +50,6 @@ func (cfg *Config) HTTPConfig() *http.Config {
 	return nil
 }
 
-func (cfg *Config) NSQConfig() *nsq.Config {
-	return nil
-}
-
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
@@ -70,15 +65,6 @@ func NewInsecureTransportConfig() *transport.Config {
 			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
-		},
-		NSQ: nsq.Config{
-			LookupHost: "localhost:4161",
-			Host:       "localhost:4150",
-			UserAgent:  "TestNSQ/1.0",
 			Retry: retry.Config{
 				Timeout:  timeout,
 				Attempts: 1,
@@ -127,12 +113,6 @@ func NewSecureTransportConfig() *transport.Config {
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
 			Retry:     r,
-		},
-		NSQ: nsq.Config{
-			LookupHost: "localhost:4161",
-			Host:       "localhost:4150",
-			UserAgent:  "TestNSQ/1.0",
-			Retry:      r,
 		},
 	}
 }

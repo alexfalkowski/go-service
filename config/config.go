@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/transport/nsq"
 )
 
 // Config for the service.
@@ -73,8 +72,4 @@ func (cfg *Config) GRPCConfig() *grpc.Config {
 
 func (cfg *Config) HTTPConfig() *http.Config {
 	return &cfg.Transport.HTTP
-}
-
-func (cfg *Config) NSQConfig() *nsq.Config {
-	return &cfg.Transport.NSQ
 }

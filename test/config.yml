@@ -46,12 +46,3 @@ transport:
       timeout: 1s
       attempts: 3
     user_agent: Service grpc/1.0
-  nsq:
-    lookup_host: localhost:4161
-    host: localhost:4150
-    security:
-      enabled: false
-    retry:
-      timeout: 1s
-      attempts: 3
-    user_agent: Service nsq/1.0

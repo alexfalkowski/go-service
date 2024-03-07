@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/transport/nsq"
 )
 
 // NewConfigurator for config.
@@ -36,7 +35,6 @@ type Configurator interface {
 	TracerConfig() *tracer.Config
 	GRPCConfig() *grpc.Config
 	HTTPConfig() *http.Config
-	NSQConfig() *nsq.Config
 }
 
 func environmentConfig(cfg Configurator) env.Environment {
@@ -81,8 +79,4 @@ func grpcConfig(cfg Configurator) *grpc.Config {
 
 func httpConfig(cfg Configurator) *http.Config {
 	return cfg.HTTPConfig()
-}
-
-func nsqConfig(cfg Configurator) *nsq.Config {
-	return cfg.NSQConfig()
 }

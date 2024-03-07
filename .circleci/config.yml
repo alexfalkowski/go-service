@@ -10,10 +10,6 @@ jobs:
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
       - image: redis:7.2-alpine
-      - image: nsqio/nsq:v1.2.1
-        command: /nsqlookupd
-      - image: nsqio/nsq:v1.2.1
-        command: /nsqd --lookupd-tcp-address=localhost:4160
       - image: alexfalkowski/status:latest
         command: server
         environment:
@@ -27,11 +23,10 @@ jobs:
       - run: git submodule update --init
       - run: mkcert -install
       - run: make create-certs
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:4161 -wait tcp://localhost:4150 -wait tcp://localhost:6000 -wait tcp://localhost:9000 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9000 -timeout 1m
       - run: make dep
       - run: make lint
       - run: make sec
-      - run: make setup-nsq
       - run: make specs
       - run: make goveralls
       - store_artifacts:

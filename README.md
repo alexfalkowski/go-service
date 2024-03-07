@@ -266,7 +266,6 @@ kind = "none"
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
 - [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway).
-- [NSQ](https://github.com/nsqio/go-nsq)
 
 ### gRPC
 
@@ -296,12 +295,6 @@ transport:
     retry:
       timeout: 1s
       attempts: 3
-  nsq:
-    lookup_host: localhost:4161
-    host: localhost:4150
-    retry:
-      timeout: 1s
-      attempts: 3
 ```
 
 ```toml
@@ -317,14 +310,6 @@ enabled = true
 port = "9000"
 
 [transport.grpc.retry]
-timeout = "1s"
-attempts = 3
-
-[transport.nsq]
-lookup_host = "localhost:4161"
-host = "localhost:4150"
-
-[transport.nsq.retry]
 timeout = "1s"
 attempts = 3
 ```
