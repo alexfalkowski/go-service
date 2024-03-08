@@ -113,6 +113,10 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Start the server.
 func (s *Server) Start() error {
+	if s.list == nil {
+		return nil
+	}
+
 	go s.start()
 
 	return nil
@@ -120,6 +124,10 @@ func (s *Server) Start() error {
 
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) error {
+	if s.list == nil {
+		return nil
+	}
+
 	message := "stopping http server"
 	err := s.server.Shutdown(ctx)
 
@@ -155,6 +163,10 @@ func (s *Server) serve(l net.Listener) error {
 }
 
 func listener(cfg *Config) (net.Listener, error) {
+	if !cfg.Enabled {
+		return nil, nil
+	}
+
 	if cfg.Port == "" {
 		return nil, ErrInvalidPort
 	}

@@ -73,6 +73,21 @@ func TestRun(t *testing.T) {
 }
 
 func TestInvalid(t *testing.T) {
+	Convey("Given I have disabled HTTP server", t, func() {
+		Convey("When I try to run an application", func() {
+			c := cmd.New("1.0.0")
+			c.AddServer(opts()...)
+
+			Convey("Then I should not see an error", func() {
+				err := c.RunWithArgs([]string{"server", "--input", "file:../test/disabled.config.yml"})
+
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+}
+
+func TestDisabled(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		Convey("When I try to run an application", func() {
 			c := cmd.New("1.0.0")

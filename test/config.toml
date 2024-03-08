@@ -38,6 +38,7 @@ host = "localhost:4318"
 kind = "none"
 
 [transport.http]
+enabled = true
 port = "8000"
 user_agent = "Service http/1.0"
 

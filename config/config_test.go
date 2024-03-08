@@ -99,6 +99,7 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)
 	So(cfg.GRPCConfig().UserAgent, ShouldEqual, "Service grpc/1.0")
 	So(cfg.GRPCConfig().Security.IsEnabled(), ShouldEqual, false)
+	So(cfg.HTTPConfig().Enabled, ShouldEqual, true)
 	So(cfg.HTTPConfig().Port, ShouldEqual, "8000")
 	So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)

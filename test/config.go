@@ -58,10 +58,23 @@ func NewRetry() retry.Config {
 	}
 }
 
+// NewSecureClientConfig for test.
+func NewSecureClientConfig() security.Config {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	return security.Config{
+		Enabled:  true,
+		CertFile: filepath.Join(dir, "certs/client-cert.pem"),
+		KeyFile:  filepath.Join(dir, "certs/client-key.pem"),
+	}
+}
+
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: http.Config{
+			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
 			Retry:     NewRetry(),
@@ -72,18 +85,6 @@ func NewInsecureTransportConfig() *transport.Config {
 			UserAgent: "TestGRPC/1.0",
 			Retry:     NewRetry(),
 		},
-	}
-}
-
-// NewSecureClientConfig for test.
-func NewSecureClientConfig() security.Config {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	return security.Config{
-		Enabled:  true,
-		CertFile: filepath.Join(dir, "certs/client-cert.pem"),
-		KeyFile:  filepath.Join(dir, "certs/client-key.pem"),
 	}
 }
 
@@ -101,6 +102,7 @@ func NewSecureTransportConfig() *transport.Config {
 
 	return &transport.Config{
 		HTTP: http.Config{
+			Enabled:   true,
 			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",

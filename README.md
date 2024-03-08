@@ -291,6 +291,7 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
+    enabled: true
     port: 8000
     retry:
       timeout: 1s
@@ -305,6 +306,7 @@ transport:
 
 ```toml
 [transport.http]
+enabled = true
 port = "8000"
 
 [transport.http.retry]
