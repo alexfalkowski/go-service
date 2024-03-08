@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.134.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.134.1) - 2024-03-08
+
+- [`409629a`](https://github.com/alexfalkowski/go-service/commit/409629ae3f3c7c1ea3f0aaf24b203bd746dcb1df) fix(server): reuse config (#525)
+
 ## [v1.134.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.134.0) - 2024-03-08
 
 - [`ea35aca`](https://github.com/alexfalkowski/go-service/commit/ea35acaa63cfeb89692e2f163d9ba9ed26094bf2) feat(feature): add unary client interceptors (#524)
