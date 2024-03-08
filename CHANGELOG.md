@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.134.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.134.0) - 2024-03-08
+
+- [`ea35aca`](https://github.com/alexfalkowski/go-service/commit/ea35acaa63cfeb89692e2f163d9ba9ed26094bf2) feat(feature): add unary client interceptors (#524)
+
 ## [v1.133.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.133.0) - 2024-03-07
 
 - [`2fc68ee`](https://github.com/alexfalkowski/go-service/commit/2fc68ee234cd0408bb3c98d3a3731a5c3edf108c) feat(transport): remove NSQ (#523)
