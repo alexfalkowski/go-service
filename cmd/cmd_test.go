@@ -44,10 +44,10 @@ func TestShutdown(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			c := cmd.New("1.0.0")
-			c.AddWorker(opts()...)
+			c.AddServer(opts()...)
 
 			Convey("Then I should not see an error", func() {
-				So(c.RunWithArgs([]string{"worker"}), ShouldBeNil)
+				So(c.RunWithArgs([]string{"server"}), ShouldBeNil)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
@@ -61,7 +61,7 @@ func TestRun(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			c := cmd.New("1.0.0")
-			c.AddWorker(opts()...)
+			c.AddServer(opts()...)
 
 			Convey("Then I should not see an error", func() {
 				So(c.Run(), ShouldBeNil)

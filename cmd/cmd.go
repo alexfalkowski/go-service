@@ -36,11 +36,6 @@ func (c *Command) AddServer(opts ...fx.Option) *cobra.Command {
 	return c.AddServerCommand("server", "Start the server.", opts...)
 }
 
-// AddWorker to the command.
-func (c *Command) AddWorker(opts ...fx.Option) *cobra.Command {
-	return c.AddServerCommand("worker", "Start the worker.", opts...)
-}
-
 // AddClient to the command.
 func (c *Command) AddClient(opts ...fx.Option) *cobra.Command {
 	return c.AddClientCommand("client", "Start the client.", opts...)
