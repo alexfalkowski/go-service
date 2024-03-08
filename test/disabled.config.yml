@@ -11,6 +11,3 @@ sql:
     url: postgres://test:test@localhost:5432/test?sslmode=disable
 token:
   kind: none
-transport:
-  http:
-    enabled: true
