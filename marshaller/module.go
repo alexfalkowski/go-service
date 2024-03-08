@@ -6,7 +6,6 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(NewMsgPack),
 	fx.Provide(NewProto),
 	fx.Provide(NewYAML),
 	fx.Provide(NewTOML),

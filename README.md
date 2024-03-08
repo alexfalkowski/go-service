@@ -104,12 +104,19 @@ To configure, please specify the following:
 feature:
   kind: flipt
   host: localhost:9000
+  retry:
+      timeout: 1s
+      attempts: 3
 ```
 
 ```toml
 [feature]
 kind = "flipt"
 host = "localhost:9000"
+
+[feature.retry]
+timeout = "1s"
+attempts = 3
 ```
 
 ## Runtime

@@ -4,14 +4,34 @@ import (
 	"context"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/feature"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"go.uber.org/fx/fxtest"
 )
 
 func TestFlipt(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
-		c := feature.NewClient(&feature.Config{Kind: "flipt", Host: "localhost:9000"})
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+
+		t, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
+		So(err, ShouldBeNil)
+
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		So(err, ShouldBeNil)
+
+		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
+		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: t, Meter: m}
+
+		c, err := feature.NewClient(p)
+		So(err, ShouldBeNil)
+
+		lc.RequireStart()
 
 		Convey("When I get a missing flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}
@@ -21,12 +41,17 @@ func TestFlipt(t *testing.T) {
 				So(err, ShouldBeError)
 			})
 		})
+
+		lc.RequireStop()
 	})
 }
 
 func TestNoop(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
-		c := feature.NewClient(&feature.Config{})
+		p := feature.ClientParams{Config: &feature.Config{}}
+
+		c, err := feature.NewClient(p)
+		So(err, ShouldBeNil)
 
 		Convey("When I get a flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}

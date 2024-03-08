@@ -50,25 +50,27 @@ func (cfg *Config) HTTPConfig() *http.Config {
 	return nil
 }
 
+// NewRetry for test.
+func NewRetry() retry.Config {
+	return retry.Config{
+		Timeout:  timeout,
+		Attempts: 1,
+	}
+}
+
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: http.Config{
 			Port:      Port(),
 			UserAgent: "TestHTTP/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
+			Retry:     NewRetry(),
 		},
 		GRPC: grpc.Config{
 			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestGRPC/1.0",
-			Retry: retry.Config{
-				Timeout:  timeout,
-				Attempts: 1,
-			},
+			Retry:     NewRetry(),
 		},
 	}
 }
@@ -95,10 +97,7 @@ func NewSecureTransportConfig() *transport.Config {
 		CertFile: filepath.Join(dir, "certs/cert.pem"),
 		KeyFile:  filepath.Join(dir, "certs/key.pem"),
 	}
-	r := retry.Config{
-		Timeout:  timeout,
-		Attempts: 1,
-	}
+	r := NewRetry()
 
 	return &transport.Config{
 		HTTP: http.Config{
