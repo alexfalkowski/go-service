@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-// ClientOption for HTTP.
+// ClientOption for gRPC.
 type ClientOption interface{ apply(opts *clientOpts) }
 
 type clientOpts struct {
