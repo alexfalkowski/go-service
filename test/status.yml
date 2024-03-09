@@ -10,6 +10,7 @@ telemetry:
     secure: false
 transport:
   http:
+    enabled: true
     port: 6000
     user_agent: "Status-server/1.0 http/1.0"
     retry:

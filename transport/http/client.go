@@ -90,7 +90,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 
 	hrt := os.roundTripper
 	if hrt == nil {
-		hrt = transport()
+		hrt = Transport()
 	}
 
 	if os.retry != nil {
@@ -137,7 +137,8 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 	return client, nil
 }
 
-func transport() *http.Transport {
+// Transport for HTTP.
+func Transport() *http.Transport {
 	t := http.DefaultTransport.(*http.Transport).Clone()
 	t.MaxIdleConns = 100
 	t.MaxConnsPerHost = 100

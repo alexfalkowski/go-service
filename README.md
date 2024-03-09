@@ -272,6 +272,7 @@ kind = "none"
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
 - [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway).
+- [CloudEvents](https://github.com/cloudevents/sdk-go) - A specification for describing event data in a common way.
 
 ### gRPC
 
