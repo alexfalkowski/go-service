@@ -186,7 +186,7 @@ func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, inter
 }
 
 func creds(params ServerParams) (grpc.ServerOption, error) {
-	if !params.Config.Security.IsEnabled() {
+	if !params.Config.Security.Enabled {
 		return nil, nil
 	}
 

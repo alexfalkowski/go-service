@@ -2,6 +2,7 @@ package header
 
 import (
 	"errors"
+	"slices"
 	"strings"
 )
 
@@ -40,11 +41,5 @@ func ParseAuthorization(header string) (string, string, error) {
 }
 
 func containsAuthorization(scheme string) bool {
-	for _, v := range AllAuthorizations {
-		if v == scheme {
-			return true
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(AllAuthorizations, func(s string) bool { return s == scheme })
 }

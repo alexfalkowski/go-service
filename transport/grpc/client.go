@@ -60,7 +60,7 @@ func WithClientBreaker() ClientOption {
 func WithClientSecure(sec security.Config) (ClientOption, error) {
 	var creds credentials.TransportCredentials
 
-	if sec.IsEnabled() {
+	if sec.Enabled {
 		conf, err := security.NewClientTLSConfig(sec)
 		if err != nil {
 			return nil, err
