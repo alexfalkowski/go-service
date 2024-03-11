@@ -15,6 +15,9 @@ buffer_items = 64
 kind = "flipt"
 host = "localhost:9000"
 
+[hooks]
+secret = "YWJjZGUxMjM0NQ=="
+
 [sql.pg]
 max_open_conns = 5
 max_idle_conns = 5

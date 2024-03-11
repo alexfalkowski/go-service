@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -37,9 +38,12 @@ func TestSendReceive(t *testing.T) {
 
 		test.RegisterTransport(lc, gs, hs)
 
+		h, err := hooks.New(test.NewHook())
+		So(err, ShouldBeNil)
+
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), "/events", hs.Mux, func(_ context.Context, e events.Event) { event = &e })
+		err = eh.RegisterReceiver(context.Background(), hs.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -48,7 +52,7 @@ func TestSendReceive(t *testing.T) {
 			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(t), sh.WithClientMetrics(m))
 			So(err, ShouldBeNil)
 
-			c, err := eh.NewSender(eh.WithRoundTripper(rt))
+			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), "http://localhost:"+cfg.HTTP.Port+"/events")

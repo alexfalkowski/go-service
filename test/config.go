@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
@@ -48,6 +49,13 @@ func (cfg *Config) GRPCConfig() *grpc.Config {
 
 func (cfg *Config) HTTPConfig() *http.Config {
 	return nil
+}
+
+// NewHook for test.
+func NewHook() *hooks.Config {
+	return &hooks.Config{
+		Secret: "YWJjZGUxMjM0NQ==",
+	}
 }
 
 // NewRetry for test.

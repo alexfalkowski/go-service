@@ -12,6 +12,8 @@ cache:
 feature:
   kind: flipt
   host: localhost:9000
+hooks:
+  secret: YWJjZGUxMjM0NQ==
 sql:
   pg:
     masters:

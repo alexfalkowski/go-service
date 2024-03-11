@@ -30,6 +30,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.8.0
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240307173632-a6f22495dec6
 	github.com/ulule/limiter/v3 v3.11.2
 	github.com/urfave/negroni/v3 v3.1.0
 	go.opentelemetry.io/otel v1.24.0

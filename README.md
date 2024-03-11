@@ -118,6 +118,24 @@ timeout = "1s"
 attempts = 3
 ```
 
+## Hooks
+
+The framework supports [Standard Webhooks](https://www.standardwebhooks.com/).
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+hooks:
+  secret: Base64 encoded secret
+```
+
+```toml
+[hooks]
+secret = "Base64 encoded secret"
+```
+
 ## Runtime
 
 We enhance the runtime with the following:

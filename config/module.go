@@ -18,7 +18,8 @@ var (
 
 	// ConfigModule for fx.
 	ConfigModule = fx.Options(
-		fx.Provide(environmentConfig), fx.Provide(debugConfig), fx.Provide(featureConfig),
+		fx.Provide(environmentConfig), fx.Provide(debugConfig),
+		fx.Provide(featureConfig), fx.Provide(hooksConfig),
 		fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 		fx.Provide(pgConfig), fx.Provide(tokenConfig),
 		fx.Provide(loggerConfig), fx.Provide(tracerConfig),
