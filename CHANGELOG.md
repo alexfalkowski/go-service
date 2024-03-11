@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.138.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.138.0) - 2024-03-11
+
+- [`34da194`](https://github.com/alexfalkowski/go-service/commit/34da1947132a8ea6fb7d0fe500c8c04f874c9b3b) feat(hooks): add standard webhooks (#532)
+
 ## [v1.137.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.137.2) - 2024-03-11
 
 - [`205b9d3`](https://github.com/alexfalkowski/go-service/commit/205b9d3c414a182ceb970459e28c5c08dc45cdd4) fix(deps): bump github.com/jackc/pgx/v5 from 5.5.4 to 5.5.5 (#531)
