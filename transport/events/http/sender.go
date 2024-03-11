@@ -53,10 +53,5 @@ func NewSender(opts ...SenderOption) (client.Client, error) {
 		rt = h.NewRoundTripper(os.hook, rt)
 	}
 
-	c, err := events.NewClientHTTP(eh.WithRoundTripper(rt))
-	if err != nil {
-		return nil, err
-	}
-
-	return c, err
+	return events.NewClientHTTP(eh.WithRoundTripper(rt))
 }
