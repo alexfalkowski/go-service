@@ -6,8 +6,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -18,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
+	"github.com/alexfalkowski/go-service/transport/events"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 )
@@ -25,30 +24,9 @@ import (
 const timeout = 2 * time.Second
 
 // Config for test.
-type Config struct{}
-
-func (cfg *Config) RedisConfig() *redis.Config {
-	return nil
-}
-
-func (cfg *Config) RistrettoConfig() *ristretto.Config {
-	return nil
-}
-
-func (cfg *Config) PGConfig() *pg.Config {
-	return nil
-}
-
-func (cfg *Config) TransportConfig() *transport.Config {
-	return nil
-}
-
-func (cfg *Config) GRPCConfig() *grpc.Config {
-	return nil
-}
-
-func (cfg *Config) HTTPConfig() *http.Config {
-	return nil
+type Config struct {
+	Events        events.Config `yaml:"events" json:"events" toml:"events"`
+	config.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 
 // NewHook for test.
