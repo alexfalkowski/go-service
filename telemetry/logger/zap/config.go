@@ -24,7 +24,6 @@ func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 	cfg := zap.NewProductionConfig()
 
 	if env.IsDevelopment() {
-		cfg.Encoding = "json"
 		cfg.Sampling = nil
 		cfg.Development = true
 	}
