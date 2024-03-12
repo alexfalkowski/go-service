@@ -93,17 +93,7 @@ func defaultTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.En
 		attribute.String("name", os.ExecutableName()),
 	)
 
-	tracerOpts := []sdktrace.TracerProviderOption{
-		sdktrace.WithResource(attrs),
-	}
-
-	if env.IsDevelopment() {
-		tracerOpts = append(tracerOpts, sdktrace.WithSyncer(exporter))
-	} else {
-		tracerOpts = append(tracerOpts, sdktrace.WithBatcher(exporter))
-	}
-
-	p := sdktrace.NewTracerProvider(tracerOpts...)
+	p := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(p)
 	otel.SetErrorHandler(&errorHandler{})
