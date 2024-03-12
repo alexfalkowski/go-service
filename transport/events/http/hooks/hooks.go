@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alexfalkowski/go-service/meta"
 	"github.com/google/uuid"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
@@ -26,11 +25,9 @@ func NewHandler(hook *hooks.Webhook, handler http.Handler) *Handler {
 
 // ServeHTTP for hooks.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	ctx := req.Context()
-
 	payload, err := io.ReadAll(req.Body)
 	if err != nil {
-		meta.WithAttribute(ctx, "hooksError", err.Error())
+		http.Error(resp, err.Error(), http.StatusInternalServerError)
 
 		return
 	}
@@ -38,7 +35,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	req.Body = io.NopCloser(bytes.NewReader(payload))
 
 	if err := h.hook.Verify(payload, req.Header); err != nil {
-		meta.WithAttribute(ctx, "hooksError", err.Error())
+		http.Error(resp, err.Error(), http.StatusBadRequest)
 
 		return
 	}
@@ -47,8 +44,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 }
 
 // NewRoundTripper for hooks.
-func NewRoundTripper(hook *hooks.Webhook, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{hook: hook, RoundTripper: hrt}
+func NewRoundTripper(hook *hooks.Webhook, rt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{hook: hook, RoundTripper: rt}
 }
 
 // RoundTripper for hooks.
