@@ -52,6 +52,11 @@ func NewConfig(flag string, factory *marshaller.Factory) (*Config, error) {
 	return &Config{rw: rw, m: m}, nil
 }
 
+// Kind of config.
+func (c *Config) Kind() string {
+	return c.rw.Kind()
+}
+
 // Unmarshal for config.
 func (c *Config) Unmarshal(data any) error {
 	d, err := c.rw.Read()

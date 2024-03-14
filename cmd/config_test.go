@@ -15,10 +15,11 @@ func TestReadValidConfigFile(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", "../test/config.yml"), ShouldBeNil)
 
 		Convey("When I read the config", func() {
-			_, err := test.NewCmdConfig("")
+			c, err := test.NewCmdConfig("")
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeNil)
+				So(c.Kind(), ShouldEqual, "yml")
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
