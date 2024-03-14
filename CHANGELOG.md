@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.139.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.139.0) - 2024-03-14
+
+- [`b2135e4`](https://github.com/alexfalkowski/go-service/commit/b2135e43b8a4cfb6f5e7d4c4be983d4a5867525d) feat: change license to MIT (#538)
+
 ## [v1.138.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.138.5) - 2024-03-14
 
 - [`015b761`](https://github.com/alexfalkowski/go-service/commit/015b7617c4508ed95d7d8cba1bfe94d4b88d1723) fix(cmd): add kind to config (#537)
