@@ -9,9 +9,9 @@ import (
 
 // Config for client.
 type Config struct {
-	Host      string          `yaml:"host" json:"host" toml:"host"`
-	Security  security.Config `yaml:"security" json:"security" toml:"security"`
-	Timeout   time.Duration   `yaml:"timeout" json:"timeout" toml:"timeout"`
-	Retry     retry.Config    `yaml:"retry" json:"retry" toml:"retry"`
-	UserAgent string          `yaml:"user_agent" json:"user_agent" toml:"user_agent"`
+	Host      string          `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+	Security  security.Config `yaml:"security,omitempty" json:"security,omitempty" toml:"security,omitempty"`
+	Timeout   time.Duration   `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	Retry     retry.Config    `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
+	UserAgent string          `yaml:"user_agent,omitempty" json:"user_agent,omitempty" toml:"user_agent,omitempty"`
 }

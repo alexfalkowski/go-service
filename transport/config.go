@@ -7,6 +7,6 @@ import (
 
 // Config for transport.
 type Config struct {
-	GRPC grpc.Config `yaml:"grpc" json:"grpc" toml:"grpc"`
-	HTTP http.Config `yaml:"http" json:"http" toml:"http"`
+	GRPC grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
+	HTTP http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }

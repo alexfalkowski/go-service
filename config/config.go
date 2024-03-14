@@ -21,15 +21,15 @@ import (
 
 // Config for the service.
 type Config struct {
-	Environment env.Environment  `yaml:"environment" json:"environment" toml:"environment"`
-	Debug       debug.Config     `yaml:"debug" json:"debug" toml:"debug"`
-	Cache       cache.Config     `yaml:"cache" json:"cache" toml:"cache"`
-	Feature     feature.Config   `yaml:"feature" json:"feature" toml:"feature"`
-	Hooks       hooks.Config     `yaml:"hooks" json:"hooks" toml:"hooks"`
-	SQL         sql.Config       `yaml:"sql" json:"sql" toml:"sql"`
-	Telemetry   telemetry.Config `yaml:"telemetry" json:"telemetry" toml:"telemetry"`
-	Token       token.Config     `yaml:"token" json:"token" toml:"token"`
-	Transport   transport.Config `yaml:"transport" json:"transport" toml:"transport"`
+	Environment env.Environment  `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
+	Debug       debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
+	Cache       cache.Config     `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
+	Feature     feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
+	Hooks       hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
+	SQL         sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
+	Telemetry   telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
+	Token       token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
+	Transport   transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 }
 
 func (cfg *Config) EnvironmentConfig() env.Environment {

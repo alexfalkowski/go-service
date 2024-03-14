@@ -2,8 +2,8 @@ package redis
 
 // Config for redis.
 type Config struct {
-	Addresses map[string]string `yaml:"addresses" json:"addresses" toml:"addresses"`
-	Username  string            `yaml:"username" json:"username" toml:"username"`
-	Password  string            `yaml:"password" json:"password" toml:"password"`
-	DB        int               `yaml:"db" json:"db" toml:"db"`
+	Addresses map[string]string `yaml:"addresses,omitempty" json:"addresses,omitempty" toml:"addresses,omitempty"`
+	Username  string            `yaml:"username,omitempty" json:"username,omitempty" toml:"username,omitempty"`
+	Password  string            `yaml:"password,omitempty" json:"password,omitempty" toml:"password,omitempty"`
+	DB        int               `yaml:"db,omitempty" json:"db,omitempty" toml:"db,omitempty"`
 }

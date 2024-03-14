@@ -6,5 +6,5 @@ import (
 
 // Config for sql.
 type Config struct {
-	PG pg.Config `yaml:"pg" json:"pg" toml:"pg"`
+	PG pg.Config `yaml:"pg,omitempty" json:"pg,omitempty" toml:"pg,omitempty"`
 }
