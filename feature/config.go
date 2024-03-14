@@ -6,6 +6,6 @@ import (
 
 // Config for feature.
 type Config struct {
-	Kind          string `yaml:"kind" json:"kind" toml:"kind"`
+	Kind          string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 	client.Config `yaml:",inline" json:",inline" toml:",inline"`
 }

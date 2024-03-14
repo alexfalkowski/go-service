@@ -2,11 +2,11 @@ package tracer
 
 // Config for tracer.
 type Config struct {
-	Enabled bool   `yaml:"enabled" json:"enabled" toml:"enabled"`
-	Kind    string `yaml:"kind" json:"kind" toml:"kind"`
-	Host    string `yaml:"host" json:"host" toml:"host"`
-	Key     string `yaml:"key" json:"key" toml:"key"`
-	Secure  bool   `yaml:"secure" json:"secure" toml:"secure"`
+	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`
+	Kind    string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Host    string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+	Key     string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+	Secure  bool   `yaml:"secure,omitempty" json:"secure,omitempty" toml:"secure,omitempty"`
 }
 
 // IsBaselime configuration.

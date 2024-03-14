@@ -10,8 +10,8 @@ import (
 
 // Config for zap.
 type Config struct {
-	Enabled bool   `yaml:"enabled" json:"enabled" toml:"enabled"`
-	Level   string `yaml:"level" json:"level" toml:"level"`
+	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`
+	Level   string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 
 // NewConfig for zap.
