@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
-	h "github.com/alexfalkowski/go-service/transport/events/http/hooks"
 	sh "github.com/alexfalkowski/go-service/transport/http"
+	h "github.com/alexfalkowski/go-service/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	eh "github.com/cloudevents/sdk-go/v2/protocol/http"
