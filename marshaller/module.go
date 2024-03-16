@@ -7,6 +7,7 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(NewProto),
+	fx.Provide(NewJSON),
 	fx.Provide(NewTOML),
 	fx.Provide(NewYAML),
 	fx.Provide(NewFactory),

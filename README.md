@@ -22,8 +22,9 @@ These are configured in the main function.
 ## Configuration
 
 The supported configuration kinds are as follows:
-- [YAML](https://github.com/go-yaml/yaml)
+- [JSON](https://pkg.go.dev/encoding/json)
 - [TOML](https://github.com/BurntSushi/toml)
+- [YAML](https://github.com/go-yaml/yaml)
 
 The configuration can be read from multiple sources by specifying a flag called `--input`. As per the following:
 - `env:CONFIG_FILE` - Read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed. The env variable can be file path or the configuration. If it is the config, we expect the format of `extension:ENV_VARIABLE`, where extension is the supported kinds and `ENV_VARIABLE` contains the contents of the config that are *base64 encoded*.

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
@@ -13,7 +12,7 @@ import (
 )
 
 func TestValidEnvConfig(t *testing.T) {
-	for _, f := range []string{"../test/config.toml", "../test/config.yml"} {
+	for _, f := range []string{"../test/config.json", "../test/config.toml", "../test/config.yml"} {
 		Convey("Given I have configuration file", t, func() {
 			So(os.Setenv("CONFIG_FILE", f), ShouldBeNil)
 
@@ -91,19 +90,19 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.PGConfig().Slaves[0].URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
 	So(cfg.PGConfig().MaxIdleConns, ShouldEqual, 5)
 	So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
-	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, time.Hour)
+	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, "1h")
 	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
 	So(cfg.TracerConfig().Host, ShouldEqual, "localhost:4318")
 	So(cfg.GRPCConfig().Enabled, ShouldEqual, true)
 	So(cfg.GRPCConfig().Port, ShouldEqual, "9090")
 	So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
-	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, time.Second)
+	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.GRPCConfig().UserAgent, ShouldEqual, "Service grpc/1.0")
 	So(cfg.GRPCConfig().Security.Enabled, ShouldEqual, false)
 	So(cfg.HTTPConfig().Enabled, ShouldEqual, true)
 	So(cfg.HTTPConfig().Port, ShouldEqual, "8000")
 	So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
-	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, time.Second)
+	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.HTTPConfig().UserAgent, ShouldEqual, "Service http/1.0")
 	So(cfg.HTTPConfig().Security.Enabled, ShouldEqual, false)
 }

@@ -11,6 +11,7 @@ func TestValidFactory(t *testing.T) {
 	for _, k := range []string{"yaml", "yml", "toml"} {
 		Convey("Given I have factory", t, func() {
 			p := marshaller.FactoryParams{
+				JSON: marshaller.NewJSON(),
 				TOML: marshaller.NewTOML(),
 				YAML: marshaller.NewYAML(),
 			}
@@ -31,11 +32,7 @@ func TestValidFactory(t *testing.T) {
 func TestInvalidFactory(t *testing.T) {
 	for _, k := range []string{"test", "bob"} {
 		Convey("Given I have factory", t, func() {
-			p := marshaller.FactoryParams{
-				TOML: marshaller.NewTOML(),
-				YAML: marshaller.NewYAML(),
-			}
-			f := marshaller.NewFactory(p)
+			f := marshaller.NewFactory(marshaller.FactoryParams{})
 
 			Convey("When I create marshaller", func() {
 				m, err := f.Create(k)

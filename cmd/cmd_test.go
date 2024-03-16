@@ -81,9 +81,10 @@ func TestInvalid(t *testing.T) {
 			c.AddServer(opts()...)
 
 			Convey("Then I should not see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--input", "file:../test/disabled.config.yml"})
+				err := c.RunWithArgs([]string{"server", "--input", "file:../test/invalid.config.yml"})
 
-				So(err, ShouldBeNil)
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldContainSubstring, "invalid port")
 			})
 		})
 	})
@@ -96,10 +97,9 @@ func TestDisabled(t *testing.T) {
 			c.AddServer(opts()...)
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--input", "file:../test/invalid.config.yml"})
+				err := c.RunWithArgs([]string{"server", "--input", "file:../test/disabled.config.yml"})
 
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "invalid port")
+				So(err, ShouldBeNil)
 			})
 		})
 	})

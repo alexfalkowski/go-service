@@ -2,11 +2,12 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
@@ -144,8 +145,8 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	grpcOpts := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                time.Timeout,
-			Timeout:             time.Timeout,
+			Time:                t.Timeout,
+			Timeout:             t.Timeout,
 			PermitWithoutStream: true,
 		}),
 	}
@@ -173,12 +174,17 @@ func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientIntercepto
 	unary = append(unary, os.unary...)
 
 	if os.retry != nil {
+		d, err := time.ParseDuration(os.retry.Timeout)
+		if err != nil {
+			return nil, err
+		}
+
 		unary = append(unary,
 			r.UnaryClientInterceptor(
 				r.WithCodes(codes.Unavailable, codes.DataLoss),
 				r.WithMax(os.retry.Attempts),
-				r.WithBackoff(r.BackoffLinear(time.Backoff)),
-				r.WithPerRetryTimeout(os.retry.Timeout),
+				r.WithBackoff(r.BackoffLinear(t.Backoff)),
+				r.WithPerRetryTimeout(d),
 			),
 		)
 	}

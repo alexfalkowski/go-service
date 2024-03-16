@@ -39,7 +39,7 @@ func NewHook() *hooks.Config {
 // NewRetry for test.
 func NewRetry() retry.Config {
 	return retry.Config{
-		Timeout:  timeout,
+		Timeout:  timeout.String(),
 		Attempts: 1,
 	}
 }
@@ -128,7 +128,7 @@ func NewPGConfig() *pg.Config {
 		Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},
 		MaxOpenConns:    5,
 		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour,
+		ConnMaxLifetime: time.Hour.String(),
 	}}
 }
 
