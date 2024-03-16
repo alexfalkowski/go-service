@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.141.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.141.0) - 2024-03-16
+
+- [`931500e`](https://github.com/alexfalkowski/go-service/commit/931500e65f3192cf15edebf82f9c6b5a8c627582) feat(marshaller): add JSON (#544)
+
 ## [v1.140.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.140.1) - 2024-03-16
 
 - [`b747b19`](https://github.com/alexfalkowski/go-service/commit/b747b19593084f82485002926a0e82da794c73e0) fix(marshaller): factory missing type (#543)
