@@ -20,7 +20,7 @@ func TestJSON(t *testing.T) {
 			s := strings.TrimSpace(string(b))
 
 			Convey("Then I should have valid JSON", func() {
-				So(s, ShouldEqual, `{"test":"test"}`)
+				So(s, ShouldEqual, "{\n    \"test\": \"test\"\n}")
 			})
 		})
 	})

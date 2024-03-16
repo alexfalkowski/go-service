@@ -13,7 +13,7 @@ func NewJSON() *JSON {
 }
 
 func (m *JSON) Marshal(v any) ([]byte, error) {
-	return json.Marshal(v)
+	return json.MarshalIndent(v, "", "    ")
 }
 
 func (m *JSON) Unmarshal(data []byte, v any) error {
