@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.141.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.141.1) - 2024-03-16
+
+- [`2e638b4`](https://github.com/alexfalkowski/go-service/commit/2e638b407835389ef5b61a3939a001322fa13218) fix(marshaller): indent JSON marshalling (#546)
+- [`c603260`](https://github.com/alexfalkowski/go-service/commit/c6032603c3bd9686f5e7682b12bfa270fa25be63) docs: remove TOML (#545)
+
 ## [v1.141.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.141.0) - 2024-03-16
 
 - [`931500e`](https://github.com/alexfalkowski/go-service/commit/931500e65f3192cf15edebf82f9c6b5a8c627582) feat(marshaller): add JSON (#544)
