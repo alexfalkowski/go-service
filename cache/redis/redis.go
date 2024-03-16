@@ -19,7 +19,5 @@ type CacheParams struct {
 // NewCache from config.
 // The cache is based on https://github.com/go-redis/cache
 func NewCache(params CacheParams) *cache.Cache {
-	cache := cache.New(params.Options)
-
-	return cache
+	return cache.New(params.Options)
 }

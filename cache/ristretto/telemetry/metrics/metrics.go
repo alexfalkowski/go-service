@@ -3,15 +3,15 @@ package metrics
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
-	"github.com/dgraph-io/ristretto"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
 // Register for metrics.
-func Register(cache *ristretto.Cache, version version.Version, meter metric.Meter) error {
+func Register(cache ristretto.Cache, version version.Version, meter metric.Meter) error {
 	opts := metric.WithAttributes(
 		attribute.Key("name").String(os.ExecutableName()),
 		attribute.Key("version").String(string(version)),
@@ -35,7 +35,7 @@ func Register(cache *ristretto.Cache, version version.Version, meter metric.Mete
 }
 
 type metrics struct {
-	cache *ristretto.Cache
+	cache ristretto.Cache
 	opts  metric.MeasurementOption
 
 	hit  metric.Int64ObservableCounter
@@ -43,10 +43,8 @@ type metrics struct {
 }
 
 func (m *metrics) callback(_ context.Context, o metric.Observer) error {
-	stats := m.cache.Metrics
-
-	o.ObserveInt64(m.hit, int64(stats.Hits()), m.opts)
-	o.ObserveInt64(m.miss, int64(stats.Misses()), m.opts)
+	o.ObserveInt64(m.hit, int64(m.cache.Hits()), m.opts)
+	o.ObserveInt64(m.miss, int64(m.cache.Misses()), m.opts)
 
 	return nil
 }

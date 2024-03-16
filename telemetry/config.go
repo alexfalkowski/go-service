@@ -7,6 +7,6 @@ import (
 
 // Config for telemetry.
 type Config struct {
-	Logger zap.Config    `yaml:"logger,omitempty" json:"logger,omitempty" toml:"logger,omitempty"`
-	Tracer tracer.Config `yaml:"tracer,omitempty" json:"tracer,omitempty" toml:"tracer,omitempty"`
+	Logger *zap.Config    `yaml:"logger,omitempty" json:"logger,omitempty" toml:"logger,omitempty"`
+	Tracer *tracer.Config `yaml:"tracer,omitempty" json:"tracer,omitempty" toml:"tracer,omitempty"`
 }

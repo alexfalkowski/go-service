@@ -27,7 +27,7 @@ func (s *server) psutil(resp http.ResponseWriter, req *http.Request) {
 
 	resp.Header().Add("Content-Type", "application/json")
 
-	b, _ := s.json.Marshal(resp)
+	b, _ := s.json.Marshal(r)
 
 	resp.Write(b)
 }

@@ -21,15 +21,15 @@ import (
 
 // Config for the service.
 type Config struct {
-	Environment env.Environment  `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
-	Debug       debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
-	Cache       cache.Config     `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
-	Feature     feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
-	Hooks       hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
-	SQL         sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
-	Telemetry   telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
-	Token       token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
-	Transport   transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
+	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
+	Debug       *debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
+	Cache       *cache.Config     `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
+	Feature     *feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
+	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
+	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
+	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
+	Token       *token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
+	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 }
 
 func (cfg *Config) EnvironmentConfig() env.Environment {
@@ -37,45 +37,73 @@ func (cfg *Config) EnvironmentConfig() env.Environment {
 }
 
 func (cfg *Config) DebugConfig() *debug.Config {
-	return &cfg.Debug
+	return cfg.Debug
 }
 
 func (cfg *Config) RedisConfig() *redis.Config {
-	return &cfg.Cache.Redis
+	if cfg.Cache == nil {
+		return nil
+	}
+
+	return cfg.Cache.Redis
 }
 
 func (cfg *Config) RistrettoConfig() *ristretto.Config {
-	return &cfg.Cache.Ristretto
+	if cfg.Cache == nil {
+		return nil
+	}
+
+	return cfg.Cache.Ristretto
 }
 
 func (cfg *Config) PGConfig() *pg.Config {
-	return &cfg.SQL.PG
+	if cfg.SQL == nil {
+		return nil
+	}
+
+	return cfg.SQL.PG
 }
 
 func (cfg *Config) FeatureConfig() *feature.Config {
-	return &cfg.Feature
+	return cfg.Feature
 }
 
 func (cfg *Config) HooksConfig() *hooks.Config {
-	return &cfg.Hooks
+	return cfg.Hooks
 }
 
 func (cfg *Config) TracerConfig() *tracer.Config {
-	return &cfg.Telemetry.Tracer
+	if cfg.Telemetry == nil {
+		return nil
+	}
+
+	return cfg.Telemetry.Tracer
 }
 
 func (cfg *Config) LoggerConfig() *zap.Config {
-	return &cfg.Telemetry.Logger
+	if cfg.Telemetry == nil {
+		return nil
+	}
+
+	return cfg.Telemetry.Logger
 }
 
 func (cfg *Config) TokenConfig() *token.Config {
-	return &cfg.Token
+	return cfg.Token
 }
 
 func (cfg *Config) GRPCConfig() *grpc.Config {
-	return &cfg.Transport.GRPC
+	if cfg.Transport == nil {
+		return nil
+	}
+
+	return cfg.Transport.GRPC
 }
 
 func (cfg *Config) HTTPConfig() *http.Config {
-	return &cfg.Transport.HTTP
+	if cfg.Transport == nil {
+		return nil
+	}
+
+	return cfg.Transport.HTTP
 }

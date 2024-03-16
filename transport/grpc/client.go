@@ -58,10 +58,10 @@ func WithClientBreaker() ClientOption {
 }
 
 // WithClientSecure for gRPC.
-func WithClientSecure(sec security.Config) (ClientOption, error) {
+func WithClientSecure(sec *security.Config) (ClientOption, error) {
 	var creds credentials.TransportCredentials
 
-	if sec.Enabled {
+	if sec != nil && sec.Enabled {
 		conf, err := security.NewClientTLSConfig(sec)
 		if err != nil {
 			return nil, err

@@ -5,4 +5,6 @@ import (
 )
 
 // Config for HTTP.
-type Config server.Config
+type Config struct {
+	server.Config `yaml:",inline" json:",inline" toml:",inline"`
+}

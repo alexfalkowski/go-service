@@ -32,7 +32,7 @@ func NewNoopTracer(name string) trace.Tracer {
 
 // NewTracer for tracer.
 func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
-	if !cfg.Enabled {
+	if cfg == nil || !cfg.Enabled {
 		return NewNoopTracer(name), nil
 	}
 

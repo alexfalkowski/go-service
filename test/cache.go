@@ -4,12 +4,11 @@ import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	rem "github.com/alexfalkowski/go-service/cache/redis/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
-	cristretto "github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/cache/ristretto"
 	rim "github.com/alexfalkowski/go-service/cache/ristretto/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/marshaller"
 	gr "github.com/alexfalkowski/go-service/redis"
-	"github.com/dgraph-io/ristretto"
 	"github.com/go-redis/cache/v8"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -41,9 +40,9 @@ func NewRedisConfig(host string) *redis.Config {
 }
 
 // NewRistrettoCache for test.
-func NewRistrettoCache(lc fx.Lifecycle, meter metric.Meter) *ristretto.Cache {
-	cfg := &cristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
-	c, _ := cristretto.NewCache(cristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
+func NewRistrettoCache(lc fx.Lifecycle, meter metric.Meter) ristretto.Cache {
+	cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
+	c, _ := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
 
 	rim.Register(c, Version, meter)
 

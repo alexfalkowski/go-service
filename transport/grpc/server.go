@@ -65,7 +65,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	l, err := listener(params.Config)
+	c := params.Config
+
+	l, err := listener(c)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +88,15 @@ func NewServer(params ServerParams) (*Server, error) {
 		streamServerOption(params.Logger, metrics, params.Tracer, params.Stream...),
 	}
 
-	opt, err := creds(params)
-	if err != nil {
-		return nil, err
-	}
+	if c != nil {
+		opt, err := creds(params.Config.Security)
+		if err != nil {
+			return nil, err
+		}
 
-	if opt != nil {
-		opts = append(opts, opt)
+		if opt != nil {
+			opts = append(opts, opt)
+		}
 	}
 
 	s := grpc.NewServer(opts...)
@@ -101,7 +105,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	server := &Server{
 		Server: s,
 		sh:     params.Shutdowner,
-		config: params.Config,
+		config: c,
 		logger: params.Logger,
 		list:   l,
 	}
@@ -148,7 +152,7 @@ func (s *Server) Stop(_ context.Context) error {
 }
 
 func listener(cfg *Config) (net.Listener, error) {
-	if !cfg.Enabled {
+	if cfg == nil || !cfg.Enabled {
 		return nil, nil
 	}
 
@@ -185,12 +189,12 @@ func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, inter
 	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
 }
 
-func creds(params ServerParams) (grpc.ServerOption, error) {
-	if !params.Config.Security.Enabled {
+func creds(s *security.Config) (grpc.ServerOption, error) {
+	if s == nil || !s.Enabled {
 		return nil, nil
 	}
 
-	conf, err := security.NewTLSConfig(params.Config.Security)
+	conf, err := security.NewTLSConfig(s)
 	if err != nil {
 		return nil, err
 	}

@@ -29,7 +29,7 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tra
 	client, _ := shttp.NewClient(
 		shttp.WithClientLogger(logger),
 		shttp.WithClientRoundTripper(rt), shttp.WithClientBreaker(),
-		shttp.WithClientTracer(tracer), shttp.WithClientRetry(&tcfg.HTTP.Retry),
+		shttp.WithClientTracer(tracer), shttp.WithClientRetry(tcfg.HTTP.Retry),
 		shttp.WithClientMetrics(meter), shttp.WithClientUserAgent(tcfg.HTTP.UserAgent),
 	)
 
@@ -53,7 +53,7 @@ func NewGRPCClient(
 	cl := &client.Config{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
 	conn, _ := tgrpc.NewClient(ctx, cl.Host,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&cl.Retry),
+		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(cl.Retry),
 		tgrpc.WithClientDialOption(dialOpts...), tgrpc.WithClientMetrics(meter),
 		tgrpc.WithClientUserAgent(cl.UserAgent),
 	)
@@ -72,7 +72,7 @@ func NewSecureGRPCClient(
 
 	conn, _ := tgrpc.NewClient(ctx, "localhost:"+tcfg.GRPC.Port,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
-		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(&tcfg.GRPC.Retry),
+		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(tcfg.GRPC.Retry),
 		tgrpc.WithClientMetrics(meter), tgrpc.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,
 	)
 

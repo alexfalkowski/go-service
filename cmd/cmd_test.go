@@ -141,6 +141,10 @@ func TestInvalidClient(t *testing.T) {
 }
 
 func registrations(logger *zap.Logger, cfg *http.Config, tracer htracer.Tracer, _ version.Version) (health.Registrations, error) {
+	if cfg == nil {
+		return nil, nil
+	}
+
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
@@ -175,6 +179,10 @@ func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
 
 func redisCache(c *rcache.Cache) error {
 	return c.Delete(context.Background(), "test")
+}
+
+func ristrettoCache(c ristretto.Cache) {
+	c.Del("test")
 }
 
 func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *token.Config) {
@@ -216,7 +224,8 @@ func opts() []fx.Option {
 		cache.RedisModule, cache.RistrettoModule, cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
-		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs), fx.Invoke(redisCache),
+		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
+		fx.Invoke(redisCache), fx.Invoke(ristrettoCache),
 		fx.Provide(ver), fx.Invoke(meter),
 	}
 }
