@@ -12,6 +12,9 @@ cache:
 feature:
   kind: flipt
   host: localhost:9000
+  retry:
+      timeout: 1s
+      attempts: 3
 hooks:
   secret: YWJjZGUxMjM0NQ==
 sql:

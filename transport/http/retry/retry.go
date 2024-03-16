@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/alexfalkowski/go-service/retry"
 	rth "github.com/hashicorp/go-retryablehttp"
@@ -24,15 +25,16 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	var (
-		res *http.Response
-		err error
-	)
+	d, err := time.ParseDuration(r.cfg.Timeout)
+	if err != nil {
+		return nil, err
+	}
+
+	var res *http.Response
 
 	ctx := req.Context()
-
 	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, r.cfg.Timeout)
+		tctx, cancel := context.WithTimeout(ctx, d)
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx))

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"time"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	dzap "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
@@ -49,7 +50,12 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) 
 		},
 	})
 
-	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
+	d, err := time.ParseDuration(cfg.ConnMaxLifetime)
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetConnMaxLifetime(d)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 

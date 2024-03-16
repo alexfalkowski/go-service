@@ -15,6 +15,10 @@ buffer_items = 64
 kind = "flipt"
 host = "localhost:9000"
 
+[feature.retry]
+timeout = "1s"
+attempts = 3
+
 [hooks]
 secret = "YWJjZGUxMjM0NQ=="
 

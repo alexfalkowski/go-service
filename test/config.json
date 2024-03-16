@@ -1,0 +1,82 @@
+{
+    "environment": "development",
+    "debug": {
+      "port": "6060"
+    },
+    "cache": {
+      "redis": {
+        "addresses": {
+          "server": "localhost:6379"
+        }
+      },
+      "ristretto": {
+        "num_counters": 10000000,
+        "max_cost": 100000000,
+        "buffer_items": 64
+      }
+    },
+    "feature": {
+      "kind": "flipt",
+      "host": "localhost:9000",
+      "retry": {
+        "timeout": "1s",
+        "attempts": 3
+      }
+    },
+    "hooks": {
+      "secret": "YWJjZGUxMjM0NQ=="
+    },
+    "sql": {
+      "pg": {
+        "masters": [
+          {
+            "url": "postgres://test:test@localhost:5432/test?sslmode=disable"
+          }
+        ],
+        "slaves": [
+          {
+            "url": "postgres://test:test@localhost:5432/test?sslmode=disable"
+          }
+        ],
+        "max_open_conns": 5,
+        "max_idle_conns": 5,
+        "conn_max_lifetime": "1h"
+      }
+    },
+    "telemetry": {
+      "logger": {
+        "enabled": true,
+        "level": "info"
+      },
+      "tracer": {
+        "enabled": true,
+        "host": "localhost:4318"
+      }
+    },
+    "token": {
+      "kind": "none"
+    },
+    "transport": {
+      "http": {
+        "enabled": true,
+        "port": "8000",
+        "retry": {
+          "timeout": "1s",
+          "attempts": 3
+        },
+        "user_agent": "Service http/1.0"
+      },
+      "grpc": {
+        "enabled": true,
+        "port": "9090",
+        "security": {
+          "enabled": false
+        },
+        "retry": {
+          "timeout": "1s",
+          "attempts": 3
+        },
+        "user_agent": "Service grpc/1.0"
+      }
+    }
+  }

@@ -476,7 +476,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
-			ConnMaxLifetime: time.Hour,
+			ConnMaxLifetime: time.Hour.String(),
 		}}
 
 		Convey("When I try to get a database", func() {
