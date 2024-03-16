@@ -1,33 +1,33 @@
 package debug
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
-func psutil(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	resp := make(map[string]any)
+func (s *server) psutil(resp http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+	r := make(map[string]any)
 
 	i, _ := cpu.InfoWithContext(ctx)
 	t, _ := cpu.TimesWithContext(ctx, true)
-	resp["cpu"] = map[string]any{
+	r["cpu"] = map[string]any{
 		"info":  i,
 		"times": t,
 	}
 
-	s, _ := mem.SwapMemoryWithContext(ctx)
-	v, _ := mem.VirtualMemoryWithContext(ctx)
-	resp["mem"] = map[string]any{
-		"swap":    s,
-		"virtual": v,
+	sw, _ := mem.SwapMemoryWithContext(ctx)
+	vi, _ := mem.VirtualMemoryWithContext(ctx)
+	r["mem"] = map[string]any{
+		"swap":    sw,
+		"virtual": vi,
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	resp.Header().Add("Content-Type", "application/json")
 
-	b, _ := json.Marshal(resp) //nolint:errchkjson
-	w.Write(b)
+	b, _ := s.json.Marshal(resp)
+
+	resp.Write(b)
 }

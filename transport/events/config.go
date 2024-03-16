@@ -6,5 +6,5 @@ import (
 
 // Config for events.
 type Config struct {
-	HTTP http.Config `yaml:"http" json:"http" toml:"http"`
+	HTTP http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }

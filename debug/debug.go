@@ -4,6 +4,7 @@ import (
 	"net/http/pprof"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/arl/statsviz"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -16,6 +17,7 @@ type RegisterParams struct {
 	Lifecycle fx.Lifecycle
 	Config    *Config
 	Env       env.Environment
+	JSON      *marshaller.JSON
 	Logger    *zap.Logger
 }
 
@@ -25,18 +27,18 @@ func Register(params RegisterParams) {
 		return
 	}
 
-	m := mux(params.Lifecycle, params.Config, params.Logger)
+	s := newServer(params.Lifecycle, params.Config, params.JSON, params.Logger)
 
 	// Register statsviz.
-	statsviz.Register(m)
+	statsviz.Register(s.mux)
 
 	// Register pprof.
-	m.HandleFunc("/debug/pprof/", pprof.Index)
-	m.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	m.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	m.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	m.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	s.mux.HandleFunc("/debug/pprof/", pprof.Index)
+	s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	// Register psutil.
-	m.HandleFunc("/debug/psutil", psutil)
+	s.mux.HandleFunc("/debug/psutil", s.psutil)
 }
