@@ -32,7 +32,7 @@ The configuration can be read from multiple sources by specifying a flag called 
 
 The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
 
-This is the [configuration](config/config.go). We will outline the config required in each section.
+This is the [configuration](config/config.go). We will outline the config required in each section. The following configuration examples will use YAML.
 
 ## Environment
 
@@ -44,10 +44,6 @@ To configure, please specify the following:
 
 ```yaml
 environment: development
-```
-
-```toml
-environment = "development"
 ```
 
 ## Caching
@@ -77,21 +73,6 @@ cache:
     buffer_items: 64
 ```
 
-```toml
-[cache.redis]
-username = "test"
-password = "test"
-db = 0
-
-[cache.redis.addresses]
-server = "localhost:6379"
-
-[cache.ristretto]
-num_counters = 10_000_000
-max_cost = 100_000_000
-buffer_items = 64
-```
-
 ## Feature
 
 The framework supports [OpenFeature](https://openfeature.dev/).
@@ -109,16 +90,6 @@ feature:
       attempts: 3
 ```
 
-```toml
-[feature]
-kind = "flipt"
-host = "localhost:9000"
-
-[feature.retry]
-timeout = "1s"
-attempts = 3
-```
-
 ## Hooks
 
 The framework supports [Standard Webhooks](https://www.standardwebhooks.com/).
@@ -130,11 +101,6 @@ To configure, please specify the following:
 ```yaml
 hooks:
   secret: Base64 encoded secret
-```
-
-```toml
-[hooks]
-secret = "Base64 encoded secret"
 ```
 
 ## Runtime
@@ -168,18 +134,6 @@ sql:
     conn_max_lifetime: 1h
 ```
 
-```toml
-[sql.pg]
-max_open_conns = 5
-max_idle_conns = 5
-conn_max_lifetime = "1h"
-
-[[sql.pg.masters]]
-url = "postgres://test:test@localhost:5432/test?sslmode=disable"
-
-[[sql.pg.slaves]]
-url = "postgres://test:test@localhost:5432/test?sslmode=disable"
-```
 ## Health
 
 The health package is based on [go-health](https://github.com/alexfalkowski/go-health). This package allows us to create all sorts of ways to check external and internal systems.
@@ -210,12 +164,6 @@ telemetry:
     level: info
 ```
 
-```toml
-[telemetry.logger]
-enabled = true
-level = "info"
-```
-
 ### Metrics
 
 For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
@@ -242,13 +190,6 @@ telemetry:
     key: api-key
 ```
 
-```toml
-[telemetry.tracer]
-enabled = true
-kind = "baseline"
-key = "api-key"
-```
-
 ##### Default
 
 To configure, please specify the following:
@@ -259,13 +200,6 @@ telemetry:
     enabled: true
     host: localhost:4318
     secure: false
-```
-
-```toml
-[telemetry.tracer]
-enabled = true
-host = "localhost:4318"
-secure = false
 ```
 
 ## Token
@@ -279,11 +213,6 @@ To configure, please specify the following:
 ```yaml
 token:
   Kind: none
-```
-
-```toml
-[token]
-kind = "none"
 ```
 
 ## Transport
@@ -324,24 +253,6 @@ transport:
       attempts: 3
 ```
 
-```toml
-[transport.http]
-enabled = true
-port = "8000"
-
-[transport.http.retry]
-timeout = "1s"
-attempts = 3
-
-[transport.grpc]
-enabled = true
-port = "9000"
-
-[transport.grpc.retry]
-timeout = "1s"
-attempts = 3
-```
-
 If you would like to enable TLS, do the following:
 
 ```yaml
@@ -356,18 +267,6 @@ transport:
       enabled: true
       cert_file: certs/cert.pem
       key_file: certs/key.pem
-```
-
-```toml
-[transport.http.security]
-enabled = true
-cert_file = "certs/cert.pem"
-key_file = "certs/key.pem"
-
-[transport.grpc.security]
-enabled = true
-cert_file = "certs/cert.pem"
-key_file = "certs/key.pem"
 ```
 
 ## Debug
@@ -409,11 +308,6 @@ To configure, please specify the following:
 ```yaml
 debug:
   port: 6060
-```
-
-```toml
-[debug]
-port = "6060"
 ```
 
 ## Development
