@@ -22,7 +22,7 @@ These are configured in the main function.
 ## Configuration
 
 The supported configuration kinds are as follows:
-- [JSON](https://pkg.go.dev/encoding/json)
+- [JSON](https://github.com/goccy/go-json)
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://github.com/go-yaml/yaml)
 

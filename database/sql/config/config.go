@@ -2,14 +2,14 @@ package config
 
 // Config for SQL DB.
 type Config struct {
-	Masters         []DSN  `yaml:"masters" json:"masters" toml:"masters"`
-	Slaves          []DSN  `yaml:"slaves" json:"slaves" toml:"slaves"`
-	MaxOpenConns    int    `yaml:"max_open_conns" json:"max_open_conns" toml:"max_open_conns"`
-	MaxIdleConns    int    `yaml:"max_idle_conns" json:"max_idle_conns" toml:"max_idle_conns"`
-	ConnMaxLifetime string `yaml:"conn_max_lifetime" json:"conn_max_lifetime" toml:"conn_max_lifetime"`
+	Masters         []DSN  `yaml:"masters,omitempty" json:"masters,omitempty" toml:"masters,omitempty"`
+	Slaves          []DSN  `yaml:"slaves,omitempty" json:"slaves,omitempty" toml:"slaves,omitempty"`
+	MaxOpenConns    int    `yaml:"max_open_conns,omitempty" json:"max_open_conns,omitempty" toml:"max_open_conns,omitempty"`
+	MaxIdleConns    int    `yaml:"max_idle_conns,omitempty" json:"max_idle_conns,omitempty" toml:"max_idle_conns,omitempty"`
+	ConnMaxLifetime string `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty"`
 }
 
 // DSN for SQL DB.
 type DSN struct {
-	URL string `yaml:"url" json:"url" toml:"url"`
+	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }

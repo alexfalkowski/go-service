@@ -74,7 +74,7 @@ func TestHealth(t *testing.T) {
 				lc.RequireStop()
 
 				Convey("Then I should have a healthy response", func() {
-					So(actual, ShouldEqual, `{"status":"SERVING"}`)
+					So(actual, ShouldEqual, "{\n    \"status\": \"SERVING\"\n}")
 					So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 				})
 			})
@@ -127,7 +127,7 @@ func TestReadinessNoop(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have a healthy response", func() {
-				So(actual, ShouldEqual, `{"status":"SERVING"}`)
+				So(actual, ShouldEqual, "{\n    \"status\": \"SERVING\"\n}")
 				So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 			})
 		})
@@ -178,7 +178,7 @@ func TestInvalidHealth(t *testing.T) {
 			lc.RequireStop()
 
 			Convey("Then I should have an unhealthy response", func() {
-				So(actual, ShouldEqual, `{"errors":{"http":"invalid status code"},"status":"NOT_SERVING"}`)
+				So(actual, ShouldEqual, "{\n    \"errors\": {\n        \"http\": \"invalid status code\"\n    },\n    \"status\": \"NOT_SERVING\"\n}")
 				So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 			})
 		})

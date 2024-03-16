@@ -25,7 +25,7 @@ const timeout = 2 * time.Second
 
 // Config for test.
 type Config struct {
-	Events        events.Config `yaml:"events" json:"events" toml:"events"`
+	Events        events.Config `yaml:"events,omitempty" json:"events,omitempty" toml:"events,omitempty"`
 	config.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 

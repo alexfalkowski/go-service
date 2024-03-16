@@ -1,11 +1,11 @@
 package http
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/marshaller"
+	h "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
@@ -20,26 +20,27 @@ const (
 type RegisterParams struct {
 	fx.In
 
-	Server    *shttp.Server
+	Server    *h.Server
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
 	Version   version.Version
+	JSON      *marshaller.JSON
 }
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
-	resister("/healthz", params.Server.Mux, params.Health.Observer, params.Version, true)
-	resister("/livez", params.Server.Mux, params.Liveness.Observer, params.Version, false)
-	resister("/readyz", params.Server.Mux, params.Readiness.Observer, params.Version, false)
+	resister("/healthz", params.Server.Mux, params.Health.Observer, params.Version, params.JSON, true)
+	resister("/livez", params.Server.Mux, params.Liveness.Observer, params.Version, params.JSON, false)
+	resister("/readyz", params.Server.Mux, params.Readiness.Observer, params.Version, params.JSON, false)
 
 	return nil
 }
 
-func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, version version.Version, withErrors bool) {
-	mux.HandlePath("GET", path, func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Version", string(version))
+func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, version version.Version, json *marshaller.JSON, withErrors bool) {
+	mux.HandlePath("GET", path, func(resp http.ResponseWriter, _ *http.Request, _ map[string]string) {
+		resp.Header().Set("Content-Type", "application/json")
+		resp.Header().Set("Version", string(version))
 
 		var (
 			status   int
@@ -54,7 +55,7 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, versi
 			response = serving
 		}
 
-		w.WriteHeader(status)
+		resp.WriteHeader(status)
 
 		data := map[string]any{"status": response}
 
@@ -74,6 +75,8 @@ func resister(path string, mux *runtime.ServeMux, ob *subscriber.Observer, versi
 			}
 		}
 
-		_ = json.NewEncoder(w).Encode(data)
+		b, _ := json.Marshal(data)
+
+		resp.Write(b)
 	})
 }
