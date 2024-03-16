@@ -11,26 +11,30 @@ var ErrInvalidKind = errors.New("invalid kind")
 
 // Factory of marshaller.
 type Factory struct {
-	yaml *YAML
+	json *JSON
 	toml *TOML
+	yaml *YAML
 }
 
 // FactoryParams for marshaller.
 type FactoryParams struct {
 	fx.In
 
-	YAML *YAML
+	JSON *JSON
 	TOML *TOML
+	YAML *YAML
 }
 
 // NewFactory for marshaller.
 func NewFactory(params FactoryParams) *Factory {
-	return &Factory{yaml: params.YAML}
+	return &Factory{json: params.JSON, toml: params.TOML, yaml: params.YAML}
 }
 
 // Create from kind.
 func (f *Factory) Create(kind string) (Marshaller, error) {
 	switch kind {
+	case "json":
+		return f.json, nil
 	case "yaml", "yml":
 		return f.yaml, nil
 	case "toml":
