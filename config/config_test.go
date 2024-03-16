@@ -13,7 +13,7 @@ import (
 )
 
 func TestValidEnvConfig(t *testing.T) {
-	for _, f := range []string{"../test/config.yml", "../test/config.toml"} {
+	for _, f := range []string{"../test/config.toml", "../test/config.yml"} {
 		Convey("Given I have configuration file", t, func() {
 			So(os.Setenv("CONFIG_FILE", f), ShouldBeNil)
 
