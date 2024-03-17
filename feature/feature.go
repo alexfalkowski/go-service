@@ -35,11 +35,13 @@ func NewClient(params ClientParams) (*openfeature.Client, error) {
 }
 
 func provider(params ClientParams) (openfeature.FeatureProvider, error) {
-	if params.Config.Kind == "flipt" {
+	c := params.Config
+
+	if c != nil && c.Kind == "flipt" {
 		opts := []grpc.ClientOption{
 			grpc.WithClientLogger(params.Logger), grpc.WithClientTracer(params.Tracer),
-			grpc.WithClientMetrics(params.Meter), grpc.WithClientRetry(&params.Config.Retry),
-			grpc.WithClientUserAgent(params.Config.UserAgent),
+			grpc.WithClientMetrics(params.Meter), grpc.WithClientRetry(c.Retry),
+			grpc.WithClientUserAgent(c.UserAgent),
 		}
 
 		is, err := grpc.UnaryClientInterceptors(opts...)
@@ -47,9 +49,9 @@ func provider(params ClientParams) (openfeature.FeatureProvider, error) {
 			return nil, err
 		}
 
-		svc := transport.New(transport.WithAddress(params.Config.Host), transport.WithUnaryClientInterceptor(is...))
+		svc := transport.New(transport.WithAddress(c.Host), transport.WithUnaryClientInterceptor(is...))
 
-		return flipt.NewProvider(flipt.WithAddress(params.Config.Host), flipt.WithService(svc)), nil
+		return flipt.NewProvider(flipt.WithAddress(c.Host), flipt.WithService(svc)), nil
 	}
 
 	return openfeature.NoopProvider{}, nil

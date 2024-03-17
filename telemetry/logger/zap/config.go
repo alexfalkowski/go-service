@@ -16,6 +16,10 @@ type Config struct {
 
 // NewConfig for zap.
 func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
+	if config == nil {
+		return zap.Config{}, nil
+	}
+
 	l, err := zap.ParseAtomicLevel(config.Level)
 	if err != nil {
 		return zap.Config{}, err

@@ -60,6 +60,9 @@
       "http": {
         "enabled": true,
         "port": "8000",
+        "security": {
+          "enabled": false
+        },
         "retry": {
           "timeout": "1s",
           "attempts": 3

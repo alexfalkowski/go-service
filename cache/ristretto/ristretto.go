@@ -18,26 +18,43 @@ type CacheParams struct {
 }
 
 // NewCache for ristretto.
-func NewCache(params CacheParams) (*ristretto.Cache, error) {
-	rcfg := &ristretto.Config{
-		NumCounters: params.Config.NumCounters,
-		MaxCost:     params.Config.MaxCost,
-		BufferItems: params.Config.BufferItems,
+func NewCache(params CacheParams) (Cache, error) {
+	c := params.Config
+	if c == nil {
+		return NewNoopCache(), nil
+	}
+
+	cfg := &ristretto.Config{
+		NumCounters: c.NumCounters,
+		MaxCost:     c.MaxCost,
+		BufferItems: c.BufferItems,
 		Metrics:     true,
 	}
 
-	cache, err := ristretto.NewCache(rcfg)
+	ca, err := ristretto.NewCache(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
-			cache.Close()
+			ca.Close()
 
 			return nil
 		},
 	})
 
-	return cache, nil
+	return &cache{Cache: ca}, nil
+}
+
+type cache struct {
+	*ristretto.Cache
+}
+
+func (c *cache) Hits() uint64 {
+	return c.Cache.Metrics.Hits()
+}
+
+func (c *cache) Misses() uint64 {
+	return c.Cache.Metrics.Misses()
 }

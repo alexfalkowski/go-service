@@ -21,8 +21,13 @@ import (
 func Register(name string, driver driver.Driver, tracer trace.Tracer, logger *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
 
-	interceptor = dzap.NewInterceptor(name, logger, interceptor)
-	interceptor = stracer.NewInterceptor(name, tracer, interceptor)
+	if tracer != nil {
+		interceptor = stracer.NewInterceptor(name, tracer, interceptor)
+	}
+
+	if logger != nil {
+		interceptor = dzap.NewInterceptor(name, logger, interceptor)
+	}
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
 }

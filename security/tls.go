@@ -5,7 +5,13 @@ import (
 )
 
 // NewTLSConfig for security.
-func NewTLSConfig(sec Config) (*tls.Config, error) {
+//
+//nolint:nilnil
+func NewTLSConfig(sec *Config) (*tls.Config, error) {
+	if sec == nil {
+		return nil, nil
+	}
+
 	cert, err := tls.LoadX509KeyPair(sec.CertFile, sec.KeyFile)
 	if err != nil {
 		return nil, err
@@ -21,7 +27,13 @@ func NewTLSConfig(sec Config) (*tls.Config, error) {
 }
 
 // NewClientTLSConfig for security.
-func NewClientTLSConfig(sec Config) (*tls.Config, error) {
+//
+//nolint:nilnil
+func NewClientTLSConfig(sec *Config) (*tls.Config, error) {
+	if sec == nil {
+		return nil, nil
+	}
+
 	cert, err := tls.LoadX509KeyPair(sec.CertFile, sec.KeyFile)
 	if err != nil {
 		return nil, err

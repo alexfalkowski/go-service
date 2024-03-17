@@ -14,8 +14,12 @@ import (
 
 // Register for metrics.
 //
-//nolint:funlen
+//nolint:funlen,cyclop
 func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) error {
+	if dbs == nil {
+		return nil
+	}
+
 	opts := metric.WithAttributes(
 		attribute.Key("name").String(os.ExecutableName()),
 		attribute.Key("version").String(string(version)),

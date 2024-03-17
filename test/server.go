@@ -60,7 +60,7 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
 
 	server, _ := shttp.NewServer(shttp.ServerParams{
-		Shutdowner: NewShutdowner(), Config: &tcfg.HTTP, Logger: logger,
+		Shutdowner: NewShutdowner(), Config: tcfg.HTTP, Logger: logger,
 		Tracer: tracer, Meter: meter, Handlers: handlers,
 	})
 
@@ -76,7 +76,7 @@ func NewGRPCServer(
 	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
 
 	server, _ := tgrpc.NewServer(tgrpc.ServerParams{
-		Shutdowner: NewShutdowner(), Config: &tcfg.GRPC, Logger: logger,
+		Shutdowner: NewShutdowner(), Config: tcfg.GRPC, Logger: logger,
 		Tracer: tracer, Meter: meter,
 		Unary: unary, Stream: stream,
 	})

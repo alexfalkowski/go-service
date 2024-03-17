@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/events"
@@ -37,19 +38,19 @@ func NewHook() *hooks.Config {
 }
 
 // NewRetry for test.
-func NewRetry() retry.Config {
-	return retry.Config{
+func NewRetry() *retry.Config {
+	return &retry.Config{
 		Timeout:  timeout.String(),
 		Attempts: 1,
 	}
 }
 
 // NewSecureClientConfig for test.
-func NewSecureClientConfig() security.Config {
+func NewSecureClientConfig() *security.Config {
 	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
 	dir := filepath.Dir(b)
 
-	return security.Config{
+	return &security.Config{
 		Enabled:  true,
 		CertFile: filepath.Join(dir, "certs/client-cert.pem"),
 		KeyFile:  filepath.Join(dir, "certs/client-key.pem"),
@@ -59,17 +60,21 @@ func NewSecureClientConfig() security.Config {
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
-		HTTP: http.Config{
-			Enabled:   true,
-			Port:      Port(),
-			UserAgent: "TestHTTP/1.0",
-			Retry:     NewRetry(),
+		HTTP: &http.Config{
+			Config: server.Config{
+				Enabled:   true,
+				Port:      Port(),
+				UserAgent: "TestHTTP/1.0",
+				Retry:     NewRetry(),
+			},
 		},
-		GRPC: grpc.Config{
-			Enabled:   true,
-			Port:      Port(),
-			UserAgent: "TestGRPC/1.0",
-			Retry:     NewRetry(),
+		GRPC: &grpc.Config{
+			Config: server.Config{
+				Enabled:   true,
+				Port:      Port(),
+				UserAgent: "TestGRPC/1.0",
+				Retry:     NewRetry(),
+			},
 		},
 	}
 }
@@ -79,7 +84,7 @@ func NewSecureTransportConfig() *transport.Config {
 	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
 	dir := filepath.Dir(b)
 
-	s := security.Config{
+	s := &security.Config{
 		Enabled:  true,
 		CertFile: filepath.Join(dir, "certs/cert.pem"),
 		KeyFile:  filepath.Join(dir, "certs/key.pem"),
@@ -87,19 +92,23 @@ func NewSecureTransportConfig() *transport.Config {
 	r := NewRetry()
 
 	return &transport.Config{
-		HTTP: http.Config{
-			Enabled:   true,
-			Security:  s,
-			Port:      Port(),
-			UserAgent: "TestHTTP/1.0",
-			Retry:     r,
+		HTTP: &http.Config{
+			Config: server.Config{
+				Enabled:   true,
+				Security:  s,
+				Port:      Port(),
+				UserAgent: "TestHTTP/1.0",
+				Retry:     r,
+			},
 		},
-		GRPC: grpc.Config{
-			Enabled:   true,
-			Security:  s,
-			Port:      Port(),
-			UserAgent: "TestGRPC/1.0",
-			Retry:     r,
+		GRPC: &grpc.Config{
+			Config: server.Config{
+				Enabled:   true,
+				Security:  s,
+				Port:      Port(),
+				UserAgent: "TestGRPC/1.0",
+				Retry:     r,
+			},
 		},
 	}
 }
