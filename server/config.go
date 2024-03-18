@@ -5,6 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 )
 
+// IsEnabled for server.
+func IsEnabled(c *Config) bool {
+	return c != nil && c.Enabled
+}
+
 // Config for server.
 type Config struct {
 	Enabled   bool             `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`

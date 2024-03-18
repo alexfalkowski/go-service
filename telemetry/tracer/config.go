@@ -1,5 +1,10 @@
 package tracer
 
+// IsEnabled for tracer.
+func IsEnabled(c *Config) bool {
+	return c != nil && c.Enabled
+}
+
 // Config for tracer.
 type Config struct {
 	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`

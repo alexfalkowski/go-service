@@ -65,9 +65,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	c := params.Config
-
-	l, err := listener(c)
+	l, err := listener(params.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +86,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		streamServerOption(params.Logger, metrics, params.Tracer, params.Stream...),
 	}
 
-	if c != nil {
+	if params.Config != nil {
 		opt, err := creds(params.Config.Security)
 		if err != nil {
 			return nil, err
@@ -105,7 +103,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	server := &Server{
 		Server: s,
 		sh:     params.Shutdowner,
-		config: c,
+		config: params.Config,
 		logger: params.Logger,
 		list:   l,
 	}
@@ -152,7 +150,7 @@ func (s *Server) Stop(_ context.Context) error {
 }
 
 func listener(cfg *Config) (net.Listener, error) {
-	if cfg == nil || !cfg.Enabled {
+	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
@@ -190,7 +188,7 @@ func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, inter
 }
 
 func creds(s *security.Config) (grpc.ServerOption, error) {
-	if s == nil || !s.Enabled {
+	if !security.IsEnabled(s) {
 		return nil, nil
 	}
 

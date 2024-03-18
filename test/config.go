@@ -61,7 +61,7 @@ func NewSecureClientConfig() *security.Config {
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
-			Config: server.Config{
+			Config: &server.Config{
 				Enabled:   true,
 				Port:      Port(),
 				UserAgent: "TestHTTP/1.0",
@@ -69,7 +69,7 @@ func NewInsecureTransportConfig() *transport.Config {
 			},
 		},
 		GRPC: &grpc.Config{
-			Config: server.Config{
+			Config: &server.Config{
 				Enabled:   true,
 				Port:      Port(),
 				UserAgent: "TestGRPC/1.0",
@@ -93,7 +93,7 @@ func NewSecureTransportConfig() *transport.Config {
 
 	return &transport.Config{
 		HTTP: &http.Config{
-			Config: server.Config{
+			Config: &server.Config{
 				Enabled:   true,
 				Security:  s,
 				Port:      Port(),
@@ -102,7 +102,7 @@ func NewSecureTransportConfig() *transport.Config {
 			},
 		},
 		GRPC: &grpc.Config{
-			Config: server.Config{
+			Config: &server.Config{
 				Enabled:   true,
 				Security:  s,
 				Port:      Port(),
