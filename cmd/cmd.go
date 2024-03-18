@@ -26,7 +26,7 @@ func New(version string) *Command {
 		Version:      version,
 	}
 
-	root.PersistentFlags().StringVar(&inputFlag, "input", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
+	root.PersistentFlags().StringVarP(&inputFlag, "input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
 
 	return &Command{root: root}
 }
