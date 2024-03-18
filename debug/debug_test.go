@@ -3,11 +3,12 @@ package debug_test
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
@@ -17,27 +18,28 @@ func TestDebug(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		p := debug.RegisterParams{
-			Lifecycle: lc,
-			Config:    test.NewDebugConfig(),
-			Env:       test.Environment,
-			Logger:    logger,
-		}
-
-		port := p.Config.Port
-
-		debug.Register(p)
-
-		cfg := test.NewInsecureTransportConfig()
-
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
+		p := debug.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Config:     test.NewDebugConfig(),
+			Logger:     logger,
+		}
+
+		server, err := debug.NewServer(p)
+		So(err, ShouldBeNil)
+
+		debug.RegisterPprof(server)
+		debug.RegisterPsutil(server, marshaller.NewJSON())
+		debug.RegisterStatsviz(server)
+
+		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
 		lc.RequireStart()
-		time.Sleep(1 * time.Second)
 
 		Convey("Then all the debug URLs are valid", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
+			port := p.Config.Port
+			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), test.NewInsecureTransportConfig(), m)
 			urls := []string{
 				url(port, "debug/statsviz"),
 				url(port, "debug/pprof/"),

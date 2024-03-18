@@ -1,5 +1,6 @@
 environment: development
 debug:
+  enabled: true
   port: 6060
 cache:
   redis:

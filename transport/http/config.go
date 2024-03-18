@@ -4,7 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/server"
 )
 
-// IsEnabled for http.
+// IsEnabled for HTTP.
 func IsEnabled(c *Config) bool {
 	return c != nil && server.IsEnabled(c.Config)
 }

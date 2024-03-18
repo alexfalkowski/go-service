@@ -129,7 +129,7 @@ func (s *Server) Stop(ctx context.Context) error {
 		return nil
 	}
 
-	message := "stopping http server"
+	message := "stopping server"
 	err := s.server.Shutdown(ctx)
 
 	if err != nil {
