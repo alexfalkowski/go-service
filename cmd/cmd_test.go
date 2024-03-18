@@ -97,7 +97,7 @@ func TestDisabled(t *testing.T) {
 			c.AddServer(opts()...)
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--input", "file:../test/disabled.config.yml"})
+				err := c.RunWithArgs([]string{"server", "-i", "file:../test/disabled.config.yml"})
 
 				So(err, ShouldBeNil)
 			})
