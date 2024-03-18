@@ -23,8 +23,7 @@ type LoggerParams struct {
 
 // NewLogger using zap.
 func NewLogger(params LoggerParams) (*zap.Logger, error) {
-	c := params.Config
-	if c == nil || !c.Enabled {
+	if !IsEnabled(params.Config) {
 		return zap.NewNop(), nil
 	}
 

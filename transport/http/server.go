@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -156,7 +157,7 @@ func (s *Server) start() {
 
 func (s *Server) serve(l net.Listener) error {
 	se := s.config.Security
-	if se != nil && se.Enabled {
+	if security.IsEnabled(se) {
 		return s.server.ServeTLS(l, se.CertFile, se.KeyFile)
 	}
 
@@ -164,7 +165,7 @@ func (s *Server) serve(l net.Listener) error {
 }
 
 func listener(cfg *Config) (net.Listener, error) {
-	if cfg == nil || !cfg.Enabled {
+	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 

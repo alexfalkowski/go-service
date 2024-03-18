@@ -1,5 +1,10 @@
 package security
 
+// IsEnabled for security.
+func IsEnabled(c *Config) bool {
+	return c != nil && c.Enabled
+}
+
 // Config for security.
 type Config struct {
 	Enabled  bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`

@@ -8,6 +8,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// IsEnabled for zap.
+func IsEnabled(c *Config) bool {
+	return c != nil && c.Enabled
+}
+
 // Config for zap.
 type Config struct {
 	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`

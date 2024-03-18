@@ -7,6 +7,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
@@ -93,16 +95,16 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, "1h")
 	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
 	So(cfg.TracerConfig().Host, ShouldEqual, "localhost:4318")
-	So(cfg.GRPCConfig().Enabled, ShouldEqual, true)
+	So(server.IsEnabled(cfg.GRPCConfig().Config), ShouldEqual, true)
 	So(cfg.GRPCConfig().Port, ShouldEqual, "9090")
 	So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.GRPCConfig().UserAgent, ShouldEqual, "Service grpc/1.0")
-	So(cfg.GRPCConfig().Security.Enabled, ShouldEqual, false)
-	So(cfg.HTTPConfig().Enabled, ShouldEqual, true)
+	So(security.IsEnabled(cfg.GRPCConfig().Config.Security), ShouldEqual, false)
+	So(server.IsEnabled(cfg.HTTPConfig().Config), ShouldEqual, true)
 	So(cfg.HTTPConfig().Port, ShouldEqual, "8000")
 	So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
 	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.HTTPConfig().UserAgent, ShouldEqual, "Service http/1.0")
-	So(cfg.HTTPConfig().Security.Enabled, ShouldEqual, false)
+	So(security.IsEnabled(cfg.HTTPConfig().Config.Security), ShouldEqual, false)
 }
