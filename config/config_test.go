@@ -78,7 +78,9 @@ func TestValidMemConfig(t *testing.T) {
 
 func verifyConfig(cfg config.Configurator) {
 	So(string(cfg.EnvironmentConfig()), ShouldEqual, "development")
+	So(server.IsEnabled(cfg.DebugConfig().Config), ShouldEqual, true)
 	So(cfg.DebugConfig().Port, ShouldEqual, "6060")
+	So(security.IsEnabled(cfg.DebugConfig().Config.Security), ShouldEqual, false)
 	So(cfg.FeatureConfig().Kind, ShouldEqual, "flipt")
 	So(cfg.FeatureConfig().Host, ShouldEqual, "localhost:9000")
 	So(cfg.HooksConfig().Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")

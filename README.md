@@ -307,7 +307,18 @@ To configure, please specify the following:
 
 ```yaml
 debug:
+  enabled: true
   port: 6060
+```
+
+If you would like to enable TLS, do the following:
+
+```yaml
+debug:
+  security:
+    enabled: true
+    cert_file: certs/cert.pem
+    key_file: certs/key.pem
 ```
 
 ## Development

@@ -142,7 +142,7 @@ func (s *Server) Stop(_ context.Context) error {
 		return nil
 	}
 
-	s.logger.Info("stopping grpc server", zap.String(tm.ServiceKey, "grpc"))
+	s.logger.Info("stopping server", zap.String(tm.ServiceKey, "grpc"))
 
 	s.Server.GracefulStop()
 

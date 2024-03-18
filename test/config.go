@@ -151,6 +151,11 @@ func NewCmdConfig(flag string) (*cmd.Config, error) {
 // NewDebugConfig for test.
 func NewDebugConfig() *debug.Config {
 	return &debug.Config{
-		Port: Port(),
+		Config: &server.Config{
+			Enabled:   true,
+			Port:      Port(),
+			UserAgent: "TestHTTPDebug/1.0",
+			Retry:     NewRetry(),
+		},
 	}
 }

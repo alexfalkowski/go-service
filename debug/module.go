@@ -6,5 +6,8 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Invoke(Register),
+	fx.Provide(NewServer),
+	fx.Invoke(RegisterStatsviz),
+	fx.Invoke(RegisterPprof),
+	fx.Invoke(RegisterPsutil),
 )
