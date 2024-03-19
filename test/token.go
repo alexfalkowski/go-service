@@ -37,5 +37,5 @@ func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, e
 		return ctx, errors.New("invalid token")
 	}
 
-	return WithTest(ctx, meta.Value("auth")), nil
+	return WithTest(ctx, meta.String("auth")), nil
 }

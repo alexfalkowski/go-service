@@ -25,19 +25,28 @@ func IsEqual(actual fmt.Stringer, expected string) bool {
 	return StringOrBlank(actual) == expected
 }
 
-// Value for meta.
-type Value string
+// Error for meta.
+func Error(err error) fmt.Stringer {
+	if err != nil {
+		return String(err.Error())
+	}
+
+	return String("")
+}
+
+// String for meta.
+type String string
 
 // String to satisfy fmt.Stringer.
-func (v Value) String() string {
+func (v String) String() string {
 	return string(v)
 }
 
-// SafeValue for meta.
-type SafeValue string
+// Redacted for meta.
+type Redacted string
 
 // String to satisfy fmt.Stringer.
-func (v SafeValue) String() string {
+func (v Redacted) String() string {
 	return strings.Repeat("*", len(string(v)))
 }
 

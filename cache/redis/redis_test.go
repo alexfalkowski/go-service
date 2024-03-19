@@ -35,7 +35,7 @@ func TestSetCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
+		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
 		lc.RequireStart()
 
@@ -73,7 +73,7 @@ func TestSetXXCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
+		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
 		lc.RequireStart()
 
@@ -107,7 +107,7 @@ func TestSetNXCache(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
+		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
 		lc.RequireStart()
 

@@ -86,15 +86,13 @@ func NewServer(params ServerParams) (*Server, error) {
 		streamServerOption(params, metrics, params.Stream...),
 	}
 
-	if params.Config != nil {
-		opt, err := creds(params.Config.Security)
-		if err != nil {
-			return nil, err
-		}
+	opt, err := creds(params.Config)
+	if err != nil {
+		return nil, err
+	}
 
-		if opt != nil {
-			opts = append(opts, opt)
-		}
+	if opt != nil {
+		opts = append(opts, opt)
 	}
 
 	s := grpc.NewServer(opts...)
@@ -187,12 +185,12 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
 }
 
-func creds(s *security.Config) (grpc.ServerOption, error) {
-	if !security.IsEnabled(s) {
+func creds(cfg *Config) (grpc.ServerOption, error) {
+	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
 		return nil, nil
 	}
 
-	conf, err := security.NewTLSConfig(s)
+	conf, err := security.NewTLSConfig(cfg.Security)
 	if err != nil {
 		return nil, err
 	}

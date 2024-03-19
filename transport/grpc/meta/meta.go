@@ -62,7 +62,7 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 
 		ua := extractUserAgent(ctx, md, userAgent)
 		if meta.IsBlank(ua) {
-			ua = meta.Value(userAgent)
+			ua = meta.String(userAgent)
 		}
 
 		ctx = m.WithUserAgent(ctx, ua)
@@ -85,7 +85,7 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 
 		ua := extractUserAgent(ctx, md, userAgent)
 		if meta.IsBlank(ua) {
-			ua = meta.Value(userAgent)
+			ua = meta.String(userAgent)
 		}
 
 		ctx = m.WithUserAgent(ctx, ua)
@@ -103,23 +103,23 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) fmt.Stringer {
 	if ua := md.Get(runtime.MetadataPrefix + "user-agent"); len(ua) > 0 {
-		return meta.Value(ua[0])
+		return meta.String(ua[0])
 	}
 
 	if ua := md.Get("user-agent"); len(ua) > 0 {
-		return meta.Value(ua[0])
+		return meta.String(ua[0])
 	}
 
 	if u := m.UserAgent(ctx); u != nil {
 		return u
 	}
 
-	return meta.Value(userAgent)
+	return meta.String(userAgent)
 }
 
 func extractRequestID(ctx context.Context, md metadata.MD) fmt.Stringer {
 	if id := md.Get("request-id"); len(id) > 0 {
-		return meta.Value(id[0])
+		return meta.String(id[0])
 	}
 
 	return m.RequestID(ctx)
