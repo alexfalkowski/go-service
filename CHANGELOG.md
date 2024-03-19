@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.145.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.145.0) - 2024-03-19
+
+- [`eed21f7`](https://github.com/alexfalkowski/go-service/commit/eed21f74b842d9a5c5a11f7b6ea766dfddc7ba92) feat(meta): use fmt.Stringer (#554)
+
 ## [v1.144.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.144.1) - 2024-03-18
 
 - [`abbff63`](https://github.com/alexfalkowski/go-service/commit/abbff63529abee52cfc333811336bda9aeaf18d2) fix(cmd): allow shortform flag (#553)
