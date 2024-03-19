@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -19,7 +20,7 @@ import (
 	gt "github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"github.com/urfave/negroni/v3"
 	"go.uber.org/fx/fxtest"
@@ -45,7 +46,9 @@ func TestUnary(t *testing.T) {
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+		ctx := meta.WithAttribute(context.Background(), "error", meta.Error(http.ErrBodyNotAllowed))
+
+		ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
 		defer cancel()
 
 		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
@@ -482,7 +485,7 @@ func TestGet(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
@@ -532,7 +535,7 @@ func TestLimiter(t *testing.T) {
 		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, meta.UserAgent)})
+		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)

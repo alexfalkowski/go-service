@@ -42,7 +42,7 @@ func TestInsecureUnary(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "test", meta.SafeValue("test"))
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
@@ -396,7 +396,7 @@ func TestStream(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "test", meta.SafeValue("test"))
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()

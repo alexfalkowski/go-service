@@ -156,9 +156,8 @@ func (s *Server) start() {
 }
 
 func (s *Server) serve(l net.Listener) error {
-	se := s.config.Security
-	if security.IsEnabled(se) {
-		return s.server.ServeTLS(l, se.CertFile, se.KeyFile)
+	if IsEnabled(s.config) && security.IsEnabled(s.config.Security) {
+		return s.server.ServeTLS(l, s.config.Security.CertFile, s.config.Security.KeyFile)
 	}
 
 	return s.server.Serve(l)
