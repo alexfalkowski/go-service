@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/meta"
 	l "github.com/ulule/limiter/v3"
 )
 
@@ -23,7 +24,7 @@ type Handler struct {
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	ctx := req.Context()
 
-	context, err := h.limiter.Get(ctx, h.key(ctx))
+	context, err := h.limiter.Get(ctx, meta.StringOrBlank(h.key(ctx)))
 	if err != nil {
 		next(res, req)
 

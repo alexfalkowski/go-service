@@ -51,7 +51,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		zap.String(tm.MethodKey, method),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -95,7 +95,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String(tm.MethodKey, method),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 

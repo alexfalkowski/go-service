@@ -3,6 +3,8 @@ package test
 import (
 	"context"
 	"errors"
+
+	"github.com/alexfalkowski/go-service/meta"
 )
 
 // NewGenerator for test.
@@ -35,5 +37,5 @@ func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, e
 		return ctx, errors.New("invalid token")
 	}
 
-	return WithTest(ctx, "auth"), nil
+	return WithTest(ctx, meta.Value("auth")), nil
 }

@@ -10,6 +10,15 @@ func IsEnabled(c *Config) bool {
 	return c != nil && c.Enabled
 }
 
+// UserAgent for server.
+func UserAgent(c *Config) string {
+	if IsEnabled(c) {
+		return c.UserAgent
+	}
+
+	return ""
+}
+
 // Config for server.
 type Config struct {
 	Enabled   bool             `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`

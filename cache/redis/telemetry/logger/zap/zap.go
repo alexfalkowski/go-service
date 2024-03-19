@@ -39,7 +39,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -68,7 +68,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -97,7 +97,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -126,7 +126,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -155,7 +155,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 		zap.Strings(tm.PathKey, keys),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 
@@ -184,7 +184,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		fields = append(fields, zap.String(k, v))
 	}
 

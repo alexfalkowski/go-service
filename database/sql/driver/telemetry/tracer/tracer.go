@@ -51,7 +51,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 	if err != nil {
@@ -59,7 +59,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -80,7 +80,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 	if err != nil {
@@ -88,7 +88,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -131,7 +131,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 	if err != nil {
@@ -139,7 +139,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -160,7 +160,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 	if err != nil {
@@ -168,7 +168,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 

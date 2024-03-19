@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/meta"
 	l "github.com/ulule/limiter/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,7 +14,7 @@ import (
 // UnaryServerInterceptor for gRPC.
 func UnaryServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		context, err := limiter.Get(ctx, key(ctx))
+		context, err := limiter.Get(ctx, meta.StringOrBlank(key(ctx)))
 		if err != nil {
 			return nil, err
 		}
@@ -31,7 +32,7 @@ func StreamServerInterceptor(limiter *l.Limiter, key limiter.KeyFunc) grpc.Strea
 	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 
-		context, err := limiter.Get(ctx, key(ctx))
+		context, err := limiter.Get(ctx, meta.StringOrBlank(key(ctx)))
 		if err != nil {
 			return err
 		}

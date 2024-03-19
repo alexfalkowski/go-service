@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -41,7 +42,7 @@ func TestInsecureUnary(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := meta.WithAttribute(context.Background(), "test", meta.SafeValue("test"))
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
@@ -49,7 +50,7 @@ func TestInsecureUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			resp, err := client.SayHello(context.Background(), req)
+			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -85,7 +86,7 @@ func TestSecureUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			resp, err := client.SayHello(context.Background(), req)
+			resp, err := client.SayHello(ctx, req)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -351,8 +352,8 @@ func TestLimiterUnary(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
-			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, meta.UserAgent)},
-			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
+			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
+			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
 		)
 
 		test.RegisterTransport(lc, gs, hs)
@@ -395,14 +396,14 @@ func TestStream(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := meta.WithAttribute(context.Background(), "test", meta.SafeValue("test"))
 			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
 			defer cancel()
 
 			stream, err := client.SayStreamHello(ctx)
@@ -647,8 +648,8 @@ func TestLimiterStream(t *testing.T) {
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
-			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, meta.UserAgent)},
-			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, meta.UserAgent)},
+			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
+			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
 		)
 
 		test.RegisterTransport(lc, gs, hs)

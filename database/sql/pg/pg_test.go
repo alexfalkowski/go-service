@@ -94,7 +94,7 @@ func TestDBQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 			rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
 
 			Convey("Then I should have valid data", func() {
@@ -141,7 +141,7 @@ func TestDBExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			result, err := db.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
 			So(err, ShouldBeNil)
@@ -185,7 +185,7 @@ func TestDBCommitTransExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			tx, err := db.BeginTx(ctx, nil)
 			So(err, ShouldBeNil)
@@ -237,7 +237,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			tx, err := db.BeginTx(ctx, nil)
 			So(err, ShouldBeNil)
@@ -287,7 +287,7 @@ func TestStatementQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
@@ -341,7 +341,7 @@ func TestStatementExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 			So(err, ShouldBeNil)
@@ -390,7 +390,7 @@ func TestTransStatementExec(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			tx, err := db.Begin()
 			So(err, ShouldBeNil)
@@ -447,7 +447,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
-			ctx = meta.WithAttribute(ctx, "test", "test")
+			ctx = meta.WithAttribute(ctx, "test", meta.Value("test"))
 
 			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 			So(err, ShouldBeNil)
