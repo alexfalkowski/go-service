@@ -142,10 +142,10 @@ func (s *Server) Stop(ctx context.Context) error {
 }
 
 func (s *Server) start() {
-	s.logger.Info("starting server", zap.String("addr", s.list.Addr().String()), zap.String(tm.ServiceKey, "http"))
+	s.logger.Info("starting server", zap.Stringer("addr", s.list.Addr()), zap.String(tm.ServiceKey, "http"))
 
 	if err := s.serve(s.list); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.String("addr", s.list.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "http")}
+		fields := []zapcore.Field{zap.Stringer("addr", s.list.Addr()), zap.Error(err), zap.String(tm.ServiceKey, "http")}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))

@@ -123,10 +123,10 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) start() {
-	s.logger.Info("starting server", zap.String("addr", s.list.Addr().String()), zap.String(tm.ServiceKey, "grpc"))
+	s.logger.Info("starting server", zap.Stringer("addr", s.list.Addr()), zap.String(tm.ServiceKey, "grpc"))
 
 	if err := s.Server.Serve(s.list); err != nil {
-		fields := []zapcore.Field{zap.String("addr", s.list.Addr().String()), zap.Error(err), zap.String(tm.ServiceKey, "grpc")}
+		fields := []zapcore.Field{zap.Stringer("addr", s.list.Addr()), zap.Error(err), zap.String(tm.ServiceKey, "grpc")}
 
 		if err := s.sh.Shutdown(); err != nil {
 			fields = append(fields, zap.NamedError("shutdown_error", err))
