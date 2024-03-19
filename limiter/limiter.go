@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
@@ -20,4 +21,4 @@ func New(formatted string) (*limiter.Limiter, error) {
 }
 
 // KeyFunc for the limiter.
-type KeyFunc func(context.Context) string
+type KeyFunc func(context.Context) fmt.Stringer

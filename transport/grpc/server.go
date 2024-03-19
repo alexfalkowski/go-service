@@ -82,8 +82,8 @@ func NewServer(params ServerParams) (*Server, error) {
 			Time:                  time.Timeout,
 			Timeout:               time.Timeout,
 		}),
-		unaryServerOption(params.Logger, metrics, params.Tracer, params.Unary...),
-		streamServerOption(params.Logger, metrics, params.Tracer, params.Stream...),
+		unaryServerOption(params, metrics, params.Unary...),
+		streamServerOption(params, metrics, params.Stream...),
 	}
 
 	if params.Config != nil {
@@ -161,11 +161,11 @@ func listener(cfg *Config) (net.Listener, error) {
 	return net.Listen("tcp", ":"+cfg.Port)
 }
 
-func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(),
-		tracer.UnaryServerInterceptor(t),
-		szap.UnaryServerInterceptor(l),
+		meta.UnaryServerInterceptor(UserAgent(params.Config)),
+		tracer.UnaryServerInterceptor(params.Tracer),
+		szap.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
 	}
 
@@ -174,11 +174,11 @@ func unaryServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interc
 	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
 }
 
-func streamServerOption(l *zap.Logger, m *metrics.Server, t tracer.Tracer, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
-		meta.StreamServerInterceptor(),
-		tracer.StreamServerInterceptor(t),
-		szap.StreamServerInterceptor(l),
+		meta.StreamServerInterceptor(UserAgent(params.Config)),
+		tracer.StreamServerInterceptor(params.Tracer),
+		szap.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),
 	}
 

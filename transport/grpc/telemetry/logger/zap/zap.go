@@ -38,7 +38,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			zap.String(tm.PathKey, info.FullMethod),
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			fields = append(fields, zap.String(k, v))
 		}
 
@@ -80,7 +80,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			zap.String(tm.PathKey, info.FullMethod),
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			fields = append(fields, zap.String(k, v))
 		}
 
@@ -121,7 +121,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			zap.String(tm.PathKey, fullMethod),
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			fields = append(fields, zap.String(k, v))
 		}
 
@@ -162,7 +162,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			zap.String(tm.PathKey, fullMethod),
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			fields = append(fields, zap.String(k, v))
 		}
 

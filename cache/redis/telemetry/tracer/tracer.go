@@ -64,7 +64,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.Set(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -72,7 +72,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -96,7 +96,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -104,7 +104,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -128,7 +128,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -136,7 +136,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -159,7 +159,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.Get(ctx, key)
 	if err := cmd.Err(); err != nil {
@@ -167,7 +167,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -189,7 +189,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.Del(ctx, keys...)
 	if err := cmd.Err(); err != nil {
@@ -197,7 +197,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 
@@ -220,7 +220,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 	cmd := c.client.Incr(ctx, key)
 	if err := cmd.Err(); err != nil {
@@ -228,7 +228,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Attributes(ctx) {
+	for k, v := range meta.Strings(ctx) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 

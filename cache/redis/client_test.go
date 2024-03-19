@@ -25,7 +25,7 @@ func TestClientIncr(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		ctx = meta.WithAttribute(ctx, "test", "test")
+		ctx = meta.WithAttribute(ctx, "password", meta.SafeValue("test-1234"))
 
 		lc.RequireStart()
 

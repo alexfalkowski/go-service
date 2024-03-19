@@ -78,7 +78,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n := negroni.New()
-	n.Use(meta.NewHandler())
+	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
 	n.Use(szap.NewHandler(params.Logger))
 	n.Use(m)

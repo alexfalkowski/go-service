@@ -63,7 +63,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 		resp, err := handler(ctx, req)
 		if err != nil {
@@ -72,7 +72,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			span.SetAttributes(attribute.Key(k).String(v))
 		}
 
@@ -107,7 +107,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -119,7 +119,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			span.SetAttributes(attribute.Key(k).String(v))
 		}
 
@@ -152,7 +152,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -162,7 +162,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			span.SetAttributes(attribute.Key(k).String(v))
 		}
 
@@ -195,7 +195,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID().String())
+		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
@@ -205,7 +205,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Attributes(ctx) {
+		for k, v := range meta.Strings(ctx) {
 			span.SetAttributes(attribute.Key(k).String(v))
 		}
 
