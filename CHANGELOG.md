@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.145.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.145.2) - 2024-03-19
+
+- [`9aa1d44`](https://github.com/alexfalkowski/go-service/commit/9aa1d44db8d9d9af4eb2cd08e6a2b6b96ff2d563) fix(meta): handler error (#556)
+
 ## [v1.145.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.145.1) - 2024-03-19
 
 - [`ea2e1f6`](https://github.com/alexfalkowski/go-service/commit/ea2e1f60186ca4aafd812f6fe30e99a69c6f05bf) fix(logger): use stringer (#555)
