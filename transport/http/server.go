@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -22,9 +23,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/protobuf/encoding/protojson"
 )
-
-// ErrInvalidPort for HTTP.
-var ErrInvalidPort = errors.New("invalid port")
 
 // ServerParams for HTTP.
 type ServerParams struct {
@@ -168,11 +166,7 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	if cfg.Port == "" {
-		return nil, ErrInvalidPort
-	}
-
-	return net.Listen("tcp", ":"+cfg.Port)
+	return server.Listener(cfg.Port)
 }
 
 func customMatcher(key string) (string, bool) {

@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	"net"
 
 	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
@@ -22,9 +22,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 )
-
-// ErrInvalidPort for gRPC.
-var ErrInvalidPort = errors.New("invalid port")
 
 // ServerParams for gRPC.
 type ServerParams struct {
@@ -152,11 +149,7 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	if cfg.Port == "" {
-		return nil, ErrInvalidPort
-	}
-
-	return net.Listen("tcp", ":"+cfg.Port)
+	return server.Listener(cfg.Port)
 }
 
 func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
