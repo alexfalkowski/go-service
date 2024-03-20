@@ -36,7 +36,7 @@ func TestHealth(t *testing.T) {
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
 
-			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+			m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 			So(err, ShouldBeNil)
 
 			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")
@@ -88,7 +88,7 @@ func TestReadinessNoop(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger)
@@ -140,7 +140,7 @@ func TestInvalidHealth(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")

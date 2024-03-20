@@ -32,7 +32,7 @@ func TestInsecureUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -68,7 +68,7 @@ func TestSecureUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewSecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -105,7 +105,7 @@ func TestValidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -146,7 +146,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -186,7 +186,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -225,7 +225,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -264,7 +264,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -303,7 +303,7 @@ func TestBreakerUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -347,7 +347,7 @@ func TestLimiterUnary(t *testing.T) {
 
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -386,7 +386,7 @@ func TestStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -431,7 +431,7 @@ func TestValidAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -476,7 +476,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -520,7 +520,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -558,7 +558,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -602,7 +602,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -643,7 +643,7 @@ func TestLimiterStream(t *testing.T) {
 
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)

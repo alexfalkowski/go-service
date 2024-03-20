@@ -37,7 +37,7 @@ func TestUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -94,7 +94,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -149,7 +149,7 @@ func TestValidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -207,7 +207,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -265,7 +265,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -321,7 +321,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -372,7 +372,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -428,7 +428,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
@@ -482,7 +482,7 @@ func TestGet(t *testing.T) {
 		cfg := test.NewInsecureTransportConfig()
 		cfg.GRPC.Enabled = false
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})
@@ -532,7 +532,7 @@ func TestLimiter(t *testing.T) {
 		cfg := test.NewInsecureTransportConfig()
 		cfg.GRPC.Enabled = false
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})

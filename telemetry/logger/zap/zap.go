@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
+	pretty "github.com/thessem/zap-prettyconsole"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -33,9 +34,17 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 		zap.String("version", string(params.Version)),
 	)
 
-	logger, err := params.ZapConfig.Build(fields)
-	if err != nil {
-		return nil, err
+	var logger *zap.Logger
+
+	if params.Environment.IsDevelopment() {
+		logger = pretty.NewLogger(zap.DebugLevel).WithOptions(fields)
+	} else {
+		l, err := params.ZapConfig.Build(fields)
+		if err != nil {
+			return nil, err
+		}
+
+		logger = l
 	}
 
 	params.Lifecycle.Append(fx.Hook{

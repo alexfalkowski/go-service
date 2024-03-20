@@ -18,7 +18,7 @@ func TestDebug(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		p := debug.ServerParams{
