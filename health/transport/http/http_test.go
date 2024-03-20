@@ -14,9 +14,11 @@ import (
 	"github.com/alexfalkowski/go-service/health"
 	hchecker "github.com/alexfalkowski/go-service/health/checker"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -36,7 +38,7 @@ func TestHealth(t *testing.T) {
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
 
-			m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+			m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 			So(err, ShouldBeNil)
 
 			o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")
@@ -58,7 +60,11 @@ func TestHealth(t *testing.T) {
 			Convey("When I query "+check, func() {
 				client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
 
-				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.HTTP.Port, check), nil)
+				ctx := context.Background()
+				ctx = tm.WithRequestID(ctx, meta.String("test-id"))
+				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
+
+				req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.HTTP.Port, check), nil)
 				So(err, ShouldBeNil)
 
 				resp, err := client.Do(req)
@@ -88,7 +94,7 @@ func TestReadinessNoop(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		server := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger)
@@ -113,6 +119,9 @@ func TestReadinessNoop(t *testing.T) {
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
+
+			req.Header.Add("Request-ID", "test-id")
+			req.Header.Add("User-Agent", "test-user-agent")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -140,7 +149,7 @@ func TestInvalidHealth(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m), logger).Observe("http")

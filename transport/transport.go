@@ -19,18 +19,14 @@ func Register(params RegisterParams) {
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range params.Servers {
-				if err := s.Start(); err != nil {
-					return err
-				}
+				s.Start()
 			}
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
 			for _, s := range params.Servers {
-				if err := s.Stop(ctx); err != nil {
-					return err
-				}
+				s.Stop(ctx)
 			}
 
 			return nil

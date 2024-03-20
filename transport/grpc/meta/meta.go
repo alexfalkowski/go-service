@@ -17,15 +17,8 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		md := ExtractIncoming(ctx)
 
-		userAgent := extractUserAgent(ctx, md, userAgent)
-		ctx = m.WithUserAgent(ctx, userAgent)
-
-		requestID := extractRequestID(ctx, md)
-		if meta.IsBlank(requestID) {
-			requestID = meta.ToValuer(uuid.New())
-		}
-
-		ctx = m.WithRequestID(ctx, requestID)
+		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
 
 		return handler(ctx, req)
 	}
@@ -37,15 +30,8 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
 
-		userAgent := extractUserAgent(ctx, md, userAgent)
-		ctx = m.WithUserAgent(ctx, userAgent)
-
-		requestID := extractRequestID(ctx, md)
-		if meta.IsBlank(requestID) {
-			requestID = meta.ToValuer(uuid.New())
-		}
-
-		ctx = m.WithRequestID(ctx, requestID)
+		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -60,18 +46,14 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		if meta.IsBlank(ua) {
-			ua = meta.String(userAgent)
-		}
-
 		ctx = m.WithUserAgent(ctx, ua)
+		md.Append("user-agent", ua.Value())
 
-		requestID := extractRequestID(ctx, md)
-		if meta.IsBlank(requestID) {
-			requestID = meta.ToValuer(uuid.New())
-		}
+		id := extractRequestID(ctx, md)
+		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+		md.Append("request-id", id.Value())
 
-		ctx = m.WithRequestID(ctx, requestID)
+		ctx = metadata.NewOutgoingContext(ctx, md)
 
 		return invoker(ctx, fullMethod, req, resp, cc, opts...)
 	}
@@ -83,18 +65,14 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		if meta.IsBlank(ua) {
-			ua = meta.String(userAgent)
-		}
-
 		ctx = m.WithUserAgent(ctx, ua)
+		md.Append("user-agent", ua.Value())
 
-		requestID := extractRequestID(ctx, md)
-		if meta.IsBlank(requestID) {
-			requestID = meta.ToValuer(uuid.New())
-		}
+		id := extractRequestID(ctx, md)
+		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+		md.Append("request-id", id.Value())
 
-		ctx = m.WithRequestID(ctx, requestID)
+		ctx = metadata.NewOutgoingContext(ctx, md)
 
 		return streamer(ctx, desc, cc, fullMethod, opts...)
 	}
@@ -109,8 +87,8 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) met
 		return meta.String(ua[0])
 	}
 
-	if u := m.UserAgent(ctx); u != nil {
-		return u
+	if ua := m.UserAgent(ctx); ua != nil {
+		return ua
 	}
 
 	return meta.String(userAgent)
@@ -121,5 +99,9 @@ func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
 		return meta.String(id[0])
 	}
 
-	return m.RequestID(ctx)
+	if id := m.RequestID(ctx); id != nil {
+		return id
+	}
+
+	return meta.ToValuer(uuid.New())
 }

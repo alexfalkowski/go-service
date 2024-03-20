@@ -16,7 +16,7 @@ func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRistrettoCache(lc, m)

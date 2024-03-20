@@ -22,13 +22,7 @@ func NewHandler(userAgent string) *Handler {
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
-
-	requestID := extractRequestID(ctx, req)
-	if meta.IsBlank(requestID) {
-		requestID = meta.ToValuer(uuid.New())
-	}
-
-	ctx = m.WithRequestID(ctx, requestID)
+	ctx = m.WithRequestID(ctx, extractRequestID(ctx, req))
 
 	next(resp, req.WithContext(ctx))
 }
@@ -41,24 +35,19 @@ func NewRoundTripper(userAgent string, hrt http.RoundTripper) *RoundTripper {
 // RoundTripper for meta.
 type RoundTripper struct {
 	userAgent string
+
 	http.RoundTripper
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
-	userAgent := m.UserAgent(ctx)
-	if meta.IsBlank(userAgent) {
-		userAgent = meta.String(r.userAgent)
-	}
+	userAgent := extractUserAgent(ctx, req, r.userAgent)
 
 	req.Header.Set("User-Agent", userAgent.Value())
 	ctx = m.WithUserAgent(ctx, userAgent)
 
-	requestID := m.RequestID(ctx)
-	if meta.IsBlank(requestID) {
-		requestID = meta.ToValuer(uuid.New())
-	}
+	requestID := extractRequestID(ctx, req)
 
 	req.Header.Set("Request-ID", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
@@ -67,21 +56,25 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func extractUserAgent(ctx context.Context, req *http.Request, userAgent string) meta.Valuer {
-	if userAgent := req.Header.Get("User-Agent"); userAgent != "" {
-		return meta.String(userAgent)
+	if ua := req.Header.Get("User-Agent"); ua != "" {
+		return meta.String(ua)
 	}
 
-	if u := m.UserAgent(ctx); u != nil {
-		return u
+	if ua := m.UserAgent(ctx); ua != nil {
+		return ua
 	}
 
 	return meta.String(userAgent)
 }
 
 func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
-	if requestID := req.Header.Get("Request-ID"); requestID != "" {
-		return meta.String(requestID)
+	if id := req.Header.Get("Request-ID"); id != "" {
+		return meta.String(id)
 	}
 
-	return m.RequestID(ctx)
+	if id := m.RequestID(ctx); id != nil {
+		return id
+	}
+
+	return meta.ToValuer(uuid.New())
 }

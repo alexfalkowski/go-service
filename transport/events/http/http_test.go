@@ -39,7 +39,7 @@ func TestSendReceive(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		tcfg := test.NewDefaultTracerConfig()
@@ -94,7 +94,7 @@ func TestSendNotReceive(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		tcfg := test.NewDefaultTracerConfig()

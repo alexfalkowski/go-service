@@ -11,29 +11,31 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 )
 
 func init() {
 	tracer.Register()
 }
 
-//nolint:dupl
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -48,8 +50,10 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
+			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -67,14 +71,13 @@ func TestUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -88,12 +91,15 @@ func TestInvalidUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
 			req := &grpc_health_v1.HealthCheckRequest{}
+
+			md := metadata.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
+			ctx = metadata.NewOutgoingContext(ctx, md)
 
 			resp, err := client.Check(ctx, req)
 			So(err, ShouldBeNil)
@@ -113,7 +119,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -131,8 +137,8 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -157,7 +163,7 @@ func TestStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -171,8 +177,8 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -200,7 +206,7 @@ func TestInvalidStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -214,8 +220,8 @@ func TestInvalidStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -242,7 +248,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m))
@@ -260,8 +266,8 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
+			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
