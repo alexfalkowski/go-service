@@ -4,5 +4,10 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 )
 
-// Environment for test.
-var Environment = env.Environment("dev")
+var (
+	// DevEnvironment for test.
+	DevEnvironment = env.Environment("dev")
+
+	// ProdEnvironment for test.
+	ProdEnvironment = env.Environment("prod")
+)

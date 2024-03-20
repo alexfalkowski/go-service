@@ -27,7 +27,7 @@ func TestSetCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
@@ -65,7 +65,7 @@ func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
@@ -99,7 +99,7 @@ func TestSetNXCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
@@ -138,7 +138,7 @@ func TestInvalidHostCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "invalid_host", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
@@ -164,7 +164,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")), m)
@@ -191,7 +191,7 @@ func TestInvalidCompressorCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
+		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
 		So(err, ShouldBeNil)
 
 		c := test.NewRedisCache(lc, "localhost:6379", logger, test.NewCompressor(errors.New("failed")), marshaller.NewProto(), m)
