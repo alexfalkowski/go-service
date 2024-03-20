@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.146.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.146.0) - 2024-03-20
+
+- [`f82c170`](https://github.com/alexfalkowski/go-service/commit/f82c1702c452932b43b7f7ef2c1b61cd6082fdd3) feat(meta): introduce Valuer (#559)
+- [`feaa01e`](https://github.com/alexfalkowski/go-service/commit/feaa01e4615f24295e8eeca537d0ed73990216f9) ci: remove depracation (#558)
+
 ## [v1.145.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.145.3) - 2024-03-20
 
 - [`605119f`](https://github.com/alexfalkowski/go-service/commit/605119f908d87588e33c482213120782b4c44823) fix(deps): update google.golang.org/genproto/googleapis/api to v0.0.0… (#557)
