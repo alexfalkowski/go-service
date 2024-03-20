@@ -7,15 +7,13 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
-
-// ErrInvalidPort for HTTP.
-var ErrInvalidPort = errors.New("invalid port")
 
 // ServerParams for HTTP.
 type ServerParams struct {
@@ -109,9 +107,8 @@ func (s *Server) start() {
 }
 
 func (s *Server) serve(l net.Listener) error {
-	se := s.config.Security
-	if security.IsEnabled(se) {
-		return s.server.ServeTLS(l, se.CertFile, se.KeyFile)
+	if IsEnabled(s.config) && security.IsEnabled(s.config.Security) {
+		return s.server.ServeTLS(l, s.config.Security.CertFile, s.config.Security.KeyFile)
 	}
 
 	return s.server.Serve(l)
@@ -122,9 +119,5 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	if cfg.Port == "" {
-		return nil, ErrInvalidPort
-	}
-
-	return net.Listen("tcp", ":"+cfg.Port)
+	return server.Listener(cfg.Port)
 }
