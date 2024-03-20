@@ -2,8 +2,8 @@ package limiter
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 )
@@ -21,4 +21,4 @@ func New(formatted string) (*limiter.Limiter, error) {
 }
 
 // KeyFunc for the limiter.
-type KeyFunc func(context.Context) fmt.Stringer
+type KeyFunc func(context.Context) meta.Valuer

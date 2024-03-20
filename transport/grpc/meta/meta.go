@@ -2,7 +2,6 @@ package meta
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/alexfalkowski/go-service/meta"
 	m "github.com/alexfalkowski/go-service/transport/meta"
@@ -23,7 +22,7 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 		requestID := extractRequestID(ctx, md)
 		if meta.IsBlank(requestID) {
-			requestID = uuid.New()
+			requestID = meta.ToValuer(uuid.New())
 		}
 
 		ctx = m.WithRequestID(ctx, requestID)
@@ -43,7 +42,7 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 
 		requestID := extractRequestID(ctx, md)
 		if meta.IsBlank(requestID) {
-			requestID = uuid.New()
+			requestID = meta.ToValuer(uuid.New())
 		}
 
 		ctx = m.WithRequestID(ctx, requestID)
@@ -69,7 +68,7 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 
 		requestID := extractRequestID(ctx, md)
 		if meta.IsBlank(requestID) {
-			requestID = uuid.New()
+			requestID = meta.ToValuer(uuid.New())
 		}
 
 		ctx = m.WithRequestID(ctx, requestID)
@@ -92,7 +91,7 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 
 		requestID := extractRequestID(ctx, md)
 		if meta.IsBlank(requestID) {
-			requestID = uuid.New()
+			requestID = meta.ToValuer(uuid.New())
 		}
 
 		ctx = m.WithRequestID(ctx, requestID)
@@ -101,7 +100,7 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	}
 }
 
-func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) fmt.Stringer {
+func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) meta.Valuer {
 	if ua := md.Get(runtime.MetadataPrefix + "user-agent"); len(ua) > 0 {
 		return meta.String(ua[0])
 	}
@@ -117,7 +116,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) fmt
 	return meta.String(userAgent)
 }
 
-func extractRequestID(ctx context.Context, md metadata.MD) fmt.Stringer {
+func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
 	if id := md.Get("request-id"); len(id) > 0 {
 		return meta.String(id[0])
 	}

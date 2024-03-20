@@ -24,7 +24,7 @@ type Handler struct {
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	ctx := req.Context()
 
-	context, err := h.limiter.Get(ctx, meta.StringOrBlank(h.key(ctx)))
+	context, err := h.limiter.Get(ctx, meta.ValueOrBlank(h.key(ctx)))
 	if err != nil {
 		next(res, req)
 
