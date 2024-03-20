@@ -63,7 +63,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 		resp, err := handler(ctx, req)
 		if err != nil {
@@ -107,7 +107,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -152,7 +152,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -195,7 +195,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 		)
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)

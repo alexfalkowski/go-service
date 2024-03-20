@@ -2,7 +2,6 @@ package meta
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -26,7 +25,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	requestID := extractRequestID(ctx, req)
 	if meta.IsBlank(requestID) {
-		requestID = uuid.New()
+		requestID = meta.ToValuer(uuid.New())
 	}
 
 	ctx = m.WithRequestID(ctx, requestID)
@@ -53,21 +52,21 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		userAgent = meta.String(r.userAgent)
 	}
 
-	req.Header.Set("User-Agent", userAgent.String())
+	req.Header.Set("User-Agent", userAgent.Value())
 	ctx = m.WithUserAgent(ctx, userAgent)
 
 	requestID := m.RequestID(ctx)
 	if meta.IsBlank(requestID) {
-		requestID = uuid.New()
+		requestID = meta.ToValuer(uuid.New())
 	}
 
-	req.Header.Set("Request-ID", requestID.String())
+	req.Header.Set("Request-ID", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
-func extractUserAgent(ctx context.Context, req *http.Request, userAgent string) fmt.Stringer {
+func extractUserAgent(ctx context.Context, req *http.Request, userAgent string) meta.Valuer {
 	if userAgent := req.Header.Get("User-Agent"); userAgent != "" {
 		return meta.String(userAgent)
 	}
@@ -79,7 +78,7 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent string) 
 	return meta.String(userAgent)
 }
 
-func extractRequestID(ctx context.Context, req *http.Request) fmt.Stringer {
+func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 	if requestID := req.Header.Get("Request-ID"); requestID != "" {
 		return meta.String(requestID)
 	}

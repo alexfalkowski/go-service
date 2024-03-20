@@ -74,7 +74,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req.WithContext(ctx))
@@ -120,7 +120,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	inject(ctx, req)
 

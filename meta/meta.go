@@ -6,27 +6,43 @@ import (
 	"strings"
 )
 
-// StringOrBlank for meta.
-func StringOrBlank(s fmt.Stringer) string {
+// ToValuer for meta.
+func ToValuer(st fmt.Stringer) Valuer {
+	if st != nil {
+		return String(st.String())
+	}
+
+	return nil
+}
+
+// Valuer for meta.
+type Valuer interface {
+	Value() string
+
+	fmt.Stringer
+}
+
+// ValueOrBlank for meta.
+func ValueOrBlank(s Valuer) string {
 	if s != nil {
-		return s.String()
+		return s.Value()
 	}
 
 	return ""
 }
 
 // IsBlank checks for an empty string.
-func IsBlank(actual fmt.Stringer) bool {
+func IsBlank(actual Valuer) bool {
 	return IsEqual(actual, "")
 }
 
 // IsEqual checks if actual is expected.
-func IsEqual(actual fmt.Stringer, expected string) bool {
-	return StringOrBlank(actual) == expected
+func IsEqual(actual Valuer, expected string) bool {
+	return ValueOrBlank(actual) == expected
 }
 
 // Error for meta.
-func Error(err error) fmt.Stringer {
+func Error(err error) Valuer {
 	if err != nil {
 		return String(err.Error())
 	}
@@ -37,17 +53,27 @@ func Error(err error) fmt.Stringer {
 // String for meta.
 type String string
 
+// Value of the string.
+func (v String) Value() string {
+	return string(v)
+}
+
 // String to satisfy fmt.Stringer.
 func (v String) String() string {
-	return string(v)
+	return v.Value()
 }
 
 // Redacted for meta.
 type Redacted string
 
+// Value of the string.
+func (v Redacted) Value() string {
+	return string(v)
+}
+
 // String to satisfy fmt.Stringer.
 func (v Redacted) String() string {
-	return strings.Repeat("*", len(string(v)))
+	return strings.Repeat("*", len(v.Value()))
 }
 
 type contextKey string
@@ -55,7 +81,7 @@ type contextKey string
 var meta = contextKey("meta")
 
 // WithAttribute to meta.
-func WithAttribute(ctx context.Context, key string, value fmt.Stringer) context.Context {
+func WithAttribute(ctx context.Context, key string, value Valuer) context.Context {
 	attr := attributes(ctx)
 	attr[key] = value
 
@@ -63,18 +89,13 @@ func WithAttribute(ctx context.Context, key string, value fmt.Stringer) context.
 }
 
 // Attribute of meta.
-func Attribute(ctx context.Context, key string) fmt.Stringer {
+func Attribute(ctx context.Context, key string) Valuer {
 	return attributes(ctx)[key]
-}
-
-// Attributes of meta.
-func Attributes(ctx context.Context) map[string]fmt.Stringer {
-	return attributes(ctx)
 }
 
 // Strings of meta.
 func Strings(ctx context.Context) map[string]string {
-	as := Attributes(ctx)
+	as := attributes(ctx)
 	ss := make(map[string]string, len(as))
 
 	for k, v := range as {
@@ -84,11 +105,11 @@ func Strings(ctx context.Context) map[string]string {
 	return ss
 }
 
-func attributes(ctx context.Context) map[string]fmt.Stringer {
+func attributes(ctx context.Context) map[string]Valuer {
 	m := ctx.Value(meta)
 	if m == nil {
-		return make(map[string]fmt.Stringer)
+		return make(map[string]Valuer)
 	}
 
-	return m.(map[string]fmt.Stringer)
+	return m.(map[string]Valuer)
 }

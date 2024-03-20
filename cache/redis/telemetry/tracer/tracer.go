@@ -64,7 +64,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.Set(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -96,7 +96,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -128,7 +128,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	if err := cmd.Err(); err != nil {
@@ -159,7 +159,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.Get(ctx, key)
 	if err := cmd.Err(); err != nil {
@@ -189,7 +189,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.Del(ctx, keys...)
 	if err := cmd.Err(); err != nil {
@@ -220,7 +220,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	)
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, span.SpanContext().TraceID())
+	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
 	cmd := c.client.Incr(ctx, key)
 	if err := cmd.Err(); err != nil {
