@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.147.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.147.2) - 2024-03-21
+
+- [`4f97e51`](https://github.com/alexfalkowski/go-service/commit/4f97e51c110aaa036f0a3d0279115fbfe48f5853) fix(meta): chaneg order to get from context first (#562)
+
 ## [v1.147.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.147.1) - 2024-03-21
 
 - [`de12ace`](https://github.com/alexfalkowski/go-service/commit/de12ace690fffe98f117b5778efdc28f434e3028) fix(meta): append info to correct transport (#561)
