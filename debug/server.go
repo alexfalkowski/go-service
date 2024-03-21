@@ -64,20 +64,18 @@ func NewServer(params ServerParams) (*Server, error) {
 }
 
 // Start the server.
-func (s *Server) Start() error {
+func (s *Server) Start() {
 	if s.list == nil {
-		return nil
+		return
 	}
 
 	go s.start()
-
-	return nil
 }
 
 // Stop the server.
-func (s *Server) Stop(ctx context.Context) error {
+func (s *Server) Stop(ctx context.Context) {
 	if s.list == nil {
-		return nil
+		return
 	}
 
 	message := "stopping server"
@@ -88,8 +86,6 @@ func (s *Server) Stop(ctx context.Context) error {
 	} else {
 		s.logger.Info(message, zap.String(tm.ServiceKey, "debug"))
 	}
-
-	return err
 }
 
 func (s *Server) start() {

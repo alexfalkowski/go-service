@@ -9,7 +9,7 @@ import (
 // NewLogger for test.
 func NewLogger(lc fx.Lifecycle) *zap.Logger {
 	c := &szap.Config{Enabled: true, Level: "info"}
-	cfg, _ := szap.NewConfig(DevEnvironment, c)
+	cfg, _ := szap.NewConfig(Environment, c)
 	logger, _ := szap.NewLogger(szap.LoggerParams{Lifecycle: lc, Config: c, ZapConfig: cfg, Version: Version})
 
 	return logger

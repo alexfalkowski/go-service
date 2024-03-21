@@ -34,7 +34,7 @@ func TestInsecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
@@ -94,7 +94,7 @@ func TestSecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})

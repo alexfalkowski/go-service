@@ -107,14 +107,12 @@ func NewServer(params ServerParams) (*Server, error) {
 }
 
 // Start the server.
-func (s *Server) Start() error {
+func (s *Server) Start() {
 	if s.list == nil {
-		return nil
+		return
 	}
 
 	go s.start()
-
-	return nil
 }
 
 func (s *Server) start() {
@@ -132,16 +130,13 @@ func (s *Server) start() {
 }
 
 // Stop the server.
-func (s *Server) Stop(_ context.Context) error {
+func (s *Server) Stop(_ context.Context) {
 	if s.list == nil {
-		return nil
+		return
 	}
 
 	s.logger.Info("stopping server", zap.String(tm.ServiceKey, "grpc"))
-
 	s.Server.GracefulStop()
-
-	return nil
 }
 
 func listener(cfg *Config) (net.Listener, error) {

@@ -21,7 +21,7 @@ type Config struct {
 
 // NewConfig for zap.
 func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
-	if config == nil {
+	if !IsEnabled(config) {
 		return zap.Config{}, nil
 	}
 
@@ -30,11 +30,12 @@ func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 		return zap.Config{}, err
 	}
 
-	cfg := zap.NewProductionConfig()
+	var cfg zap.Config
 
 	if env.IsDevelopment() {
-		cfg.Sampling = nil
-		cfg.Development = true
+		cfg = zap.NewDevelopmentConfig()
+	} else {
+		cfg = zap.NewProductionConfig()
 	}
 
 	cfg.Level = l

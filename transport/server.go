@@ -10,8 +10,8 @@ import (
 
 // Server for transport.
 type Server interface {
-	Start() error
-	Stop(ctx context.Context) error
+	Start()
+	Stop(ctx context.Context)
 }
 
 // NewServers for transport.

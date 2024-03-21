@@ -22,7 +22,7 @@ func TestFlipt(t *testing.T) {
 		t, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
-		m, err := metrics.NewMeter(lc, test.DevEnvironment, test.Version)
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
 		So(err, ShouldBeNil)
 
 		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
