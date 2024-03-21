@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.148.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.148.0) - 2024-03-21
+
+- [`c3f0984`](https://github.com/alexfalkowski/go-service/commit/c3f0984fdb37863596477c6a2fcf6a3270e34b28) feat(telemetry): conflict with schema url (#563)
+
 ## [v1.147.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.147.2) - 2024-03-21
 
 - [`4f97e51`](https://github.com/alexfalkowski/go-service/commit/4f97e51c110aaa036f0a3d0279115fbfe48f5853) fix(meta): chaneg order to get from context first (#562)
