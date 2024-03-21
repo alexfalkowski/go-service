@@ -39,7 +39,7 @@ token:
 transport:
   http:
     enabled: true
-    port: 8000
+    port: 11000
     security:
       enabled: false
     retry:
@@ -48,7 +48,7 @@ transport:
     user_agent: Service http/1.0
   grpc:
     enabled: true
-    port: 9090
+    port: 12000
     security:
       enabled: false
     retry:
