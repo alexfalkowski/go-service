@@ -15,8 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/semconv/v1.20.0/httpconv"
-	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.22.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
@@ -63,7 +62,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		semconv.HTTPRoute(path),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
-	attrs = append(attrs, httpconv.ServerRequest("", req)...)
+
 	operationName := fmt.Sprintf("%s %s", method, path)
 
 	ctx, span := h.tracer.Start(
@@ -110,7 +109,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		semconv.HTTPRoute(service),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
-	attrs = append(attrs, httpconv.ClientRequest(req)...)
 
 	ctx, span := r.tracer.Start(
 		ctx,
@@ -138,7 +136,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	span.SetAttributes(semconv.HTTPResponseStatusCode(resp.StatusCode))
-	span.SetAttributes(httpconv.ClientResponse(resp)...)
 
 	return resp, nil
 }

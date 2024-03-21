@@ -47,7 +47,7 @@ kind = "none"
 
 [transport.http]
 enabled = true
-port = "8000"
+port = "11000"
 user_agent = "Service http/1.0"
 
 [transport.http.security]
@@ -59,7 +59,7 @@ attempts = 3
 
 [transport.grpc]
 enabled = true
-port = "9090"
+port = "12000"
 user_agent = "Service grpc/1.0"
 
 [transport.grpc.security]

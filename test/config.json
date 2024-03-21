@@ -60,7 +60,7 @@
     "transport": {
       "http": {
         "enabled": true,
-        "port": "8000",
+        "port": "11000",
         "security": {
           "enabled": false
         },
@@ -72,7 +72,7 @@
       },
       "grpc": {
         "enabled": true,
-        "port": "9090",
+        "port": "12000",
         "security": {
           "enabled": false
         },

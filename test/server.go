@@ -58,12 +58,18 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 
 // NewHTTPServer for test.
 func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *shttp.Server {
-	tracer, _ := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
+	tracer, err := htracer.NewTracer(htracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
+	if err != nil {
+		panic(err)
+	}
 
-	server, _ := shttp.NewServer(shttp.ServerParams{
+	server, err := shttp.NewServer(shttp.ServerParams{
 		Shutdowner: NewShutdowner(), Config: tcfg.HTTP, Logger: logger,
 		Tracer: tracer, Meter: meter, Handlers: handlers,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	return server
 }
@@ -74,13 +80,19 @@ func NewGRPCServer(
 	verifyAuth bool, meter metric.Meter,
 	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tgrpc.Server {
-	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
+	tracer, err := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: cfg, Version: Version})
+	if err != nil {
+		panic(err)
+	}
 
-	server, _ := tgrpc.NewServer(tgrpc.ServerParams{
+	server, err := tgrpc.NewServer(tgrpc.ServerParams{
 		Shutdowner: NewShutdowner(), Config: tcfg.GRPC, Logger: logger,
 		Tracer: tracer, Meter: meter,
 		Unary: unary, Stream: stream,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	v1.RegisterGreeterServiceServer(server.Server, NewServer(verifyAuth))
 
