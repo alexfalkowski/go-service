@@ -79,6 +79,10 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) meta.Valuer {
+	if ua := m.UserAgent(ctx); ua != nil {
+		return ua
+	}
+
 	if ua := md.Get(runtime.MetadataPrefix + "user-agent"); len(ua) > 0 {
 		return meta.String(ua[0])
 	}
@@ -87,20 +91,16 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) met
 		return meta.String(ua[0])
 	}
 
-	if ua := m.UserAgent(ctx); ua != nil {
-		return ua
-	}
-
 	return meta.String(userAgent)
 }
 
 func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
-	if id := md.Get("request-id"); len(id) > 0 {
-		return meta.String(id[0])
-	}
-
 	if id := m.RequestID(ctx); id != nil {
 		return id
+	}
+
+	if id := md.Get("request-id"); len(id) > 0 {
+		return meta.String(id[0])
 	}
 
 	return meta.ToValuer(uuid.New())
