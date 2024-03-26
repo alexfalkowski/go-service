@@ -8,13 +8,13 @@ updates:
       prefix: "fix"
       prefix-development: "build"
       include: "scope"
-    groups:
-      otel:
-        patterns:
-        - "*otel*"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
     allow:
       - dependency-name: "bin"
