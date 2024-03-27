@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.149.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.149.0) - 2024-03-27
+
+- [`bbe0c9f`](https://github.com/alexfalkowski/go-service/commit/bbe0c9fcfe9b3df5ca187f9f0f91df26adb27a5d) feat(telemetry): remove otelconfig (#583)
+
 ## [v1.148.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.148.1) - 2024-03-27
 
 - [`468e82e`](https://github.com/alexfalkowski/go-service/commit/468e82e090d664a95b01e8bd4bc66354a7dd3669) fix(deps): bump bin from `60071ae` to `b9b6ae3` (#582)
