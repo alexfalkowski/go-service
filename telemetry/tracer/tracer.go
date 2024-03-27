@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
-	"github.com/honeycombio/otel-config-go/otelconfig"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -14,7 +13,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.22.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
@@ -36,48 +35,22 @@ func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Enviro
 		return NewNoopTracer(name), nil
 	}
 
+	opts := []otlptracehttp.Option{}
+
 	if cfg.IsBaselime() {
-		return baselimeTracer(lc, name, cfg)
+		opts = append(opts, otlptracehttp.WithEndpointURL("https://otel.baselime.io"), otlptracehttp.WithHeaders(map[string]string{"x-api-key": cfg.Key}))
+	} else {
+		opts = append(opts, otlptracehttp.WithEndpoint(cfg.Host))
+
+		if !cfg.Secure {
+			opts = append(opts, otlptracehttp.WithInsecure())
+		}
 	}
 
-	return defaultTracer(ctx, lc, name, env, ver, cfg)
+	return newTracer(ctx, lc, name, env, ver, opts)
 }
 
-func baselimeTracer(lc fx.Lifecycle, name string, cfg *Config) (trace.Tracer, error) {
-	e := cfg.Host
-	if e == "" {
-		e = "https://otel.baselime.io"
-	}
-
-	sh, err := otelconfig.ConfigureOpenTelemetry(
-		otelconfig.WithLogger(&logger{}),
-		otelconfig.WithExporterProtocol(otelconfig.ProtocolHTTPProto),
-		otelconfig.WithExporterEndpoint(e),
-		otelconfig.WithServiceName(name),
-		otelconfig.WithHeaders(map[string]string{"x-api-key": cfg.Key}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	lc.Append(fx.Hook{
-		OnStop: func(_ context.Context) error {
-			sh()
-
-			return nil
-		},
-	})
-
-	return otel.Tracer(name), nil
-}
-
-func defaultTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
-	opts := []otlptracehttp.Option{otlptracehttp.WithEndpoint(cfg.Host)}
-
-	if !cfg.Secure {
-		opts = append(opts, otlptracehttp.WithInsecure())
-	}
-
+func newTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, opts []otlptracehttp.Option) (trace.Tracer, error) {
 	client := otlptracehttp.NewClient(opts...)
 
 	exporter, err := otlptrace.New(ctx, client)
@@ -110,12 +83,4 @@ func defaultTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.En
 type errorHandler struct{}
 
 func (*errorHandler) Handle(_ error) {
-}
-
-type logger struct{}
-
-func (l *logger) Fatalf(_ string, _ ...interface{}) {
-}
-
-func (l *logger) Debugf(_ string, _ ...interface{}) {
 }
