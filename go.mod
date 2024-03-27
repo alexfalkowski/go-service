@@ -34,14 +34,14 @@ require (
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240311193959-ebea2bd69f4e
 	github.com/ulule/limiter/v3 v3.11.2
 	github.com/urfave/negroni/v3 v3.1.0
-	go.opentelemetry.io/otel v1.22.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.21.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0
+	go.opentelemetry.io/otel v1.24.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.24.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.24.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.44.0
-	go.opentelemetry.io/otel/metric v1.22.0
-	go.opentelemetry.io/otel/sdk v1.21.0
+	go.opentelemetry.io/otel/metric v1.24.0
+	go.opentelemetry.io/otel/sdk v1.24.0
 	go.opentelemetry.io/otel/sdk/metric v1.21.0
-	go.opentelemetry.io/otel/trace v1.22.0
+	go.opentelemetry.io/otel/trace v1.24.0
 	go.uber.org/automaxprocs v1.5.3
 	go.uber.org/fx v1.21.0
 	go.uber.org/multierr v1.11.0
