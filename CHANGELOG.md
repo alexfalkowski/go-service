@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.148.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.148.1) - 2024-03-27
+
+- [`468e82e`](https://github.com/alexfalkowski/go-service/commit/468e82e090d664a95b01e8bd4bc66354a7dd3669) fix(deps): bump bin from `60071ae` to `b9b6ae3` (#582)
+- [`839135a`](https://github.com/alexfalkowski/go-service/commit/839135abcecb81336aef2dfad6e8fe666b6a11b1) build(make): remove phony (#573)
+- [`f56d980`](https://github.com/alexfalkowski/go-service/commit/f56d9800d68d54b5899110ae147b2329b75989cb) build: add git tasks to makefile (#569)
+
 ## [v1.148.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.148.0) - 2024-03-21
 
 - [`c3f0984`](https://github.com/alexfalkowski/go-service/commit/c3f0984fdb37863596477c6a2fcf6a3270e34b28) feat(telemetry): conflict with schema url (#563)
