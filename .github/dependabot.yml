@@ -13,7 +13,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "fix"
+      prefix: "build"
       prefix-development: "build"
       include: "scope"
     allow:
