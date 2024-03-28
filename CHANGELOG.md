@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.149.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.149.2) - 2024-03-28
+
+- [`e7b40cb`](https://github.com/alexfalkowski/go-service/commit/e7b40cbc5d21d62b97324fbb97d1571bde0c6cf1) fix(deps): update undetected (#586)
+- [`62cef92`](https://github.com/alexfalkowski/go-service/commit/62cef92ee13135e5c7bcd0cb4424d6e6e2a38698) build(dependabot): change prefixes (#585)
+
 ## [v1.149.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.149.1) - 2024-03-28
 
 - [`11e3eb7`](https://github.com/alexfalkowski/go-service/commit/11e3eb74bdfa265cae04916ad8d592dbd40088e5) fix(deps): bump bin from `b9b6ae3` to `a19d7ca` (#584)
