@@ -30,7 +30,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v0.5.0
 	github.com/spf13/cobra v1.8.0
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240311193959-ebea2bd69f4e
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240326063454-14ec0876f23f
 	github.com/ulule/limiter/v3 v3.11.2
 	github.com/urfave/negroni/v3 v3.1.0
 	go.opentelemetry.io/otel v1.24.0
@@ -45,7 +45,7 @@ require (
 	go.uber.org/fx v1.21.0
 	go.uber.org/multierr v1.11.0
 	go.uber.org/zap v1.27.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240318140521-94a12d6c2237
+	google.golang.org/genproto/googleapis/api v0.0.0-20240325203815-454cdb8f5daa
 	google.golang.org/grpc v1.62.1
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -123,5 +123,5 @@ require (
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240314234333-6e1732d8331c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 )
