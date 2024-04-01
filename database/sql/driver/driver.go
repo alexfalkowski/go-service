@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"time"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	dzap "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
 	stracer "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/trace"
@@ -55,10 +55,7 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) 
 		},
 	})
 
-	d, err := time.ParseDuration(cfg.ConnMaxLifetime)
-	if err != nil {
-		return nil, err
-	}
+	d := time.MustParseDuration(cfg.ConnMaxLifetime)
 
 	db.SetConnMaxLifetime(d)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)

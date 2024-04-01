@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/time"
 	rth "github.com/hashicorp/go-retryablehttp"
 )
 
@@ -25,12 +25,12 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	d, err := time.ParseDuration(r.cfg.Timeout)
-	if err != nil {
-		return nil, err
-	}
+	d := time.MustParseDuration(r.cfg.Timeout)
 
-	var res *http.Response
+	var (
+		res *http.Response
+		err error
+	)
 
 	ctx := req.Context()
 	operation := func() error {
