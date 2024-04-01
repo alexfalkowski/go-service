@@ -16,3 +16,13 @@ const (
 func ToMilliseconds(duration time.Duration) int64 {
 	return duration.Nanoseconds() / 1e6
 }
+
+// MustParseDuration for time.
+func MustParseDuration(s string) time.Duration {
+	t, err := time.ParseDuration(s)
+	if err != nil {
+		panic(err)
+	}
+
+	return t
+}

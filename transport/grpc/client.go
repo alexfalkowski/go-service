@@ -2,12 +2,11 @@ package grpc
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	t "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
@@ -142,18 +141,18 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 		return nil, err
 	}
 
-	grpcOpts := []grpc.DialOption{
+	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                t.Timeout,
-			Timeout:             t.Timeout,
+			Time:                time.Timeout,
+			Timeout:             time.Timeout,
 			PermitWithoutStream: true,
 		}),
+		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
 	}
-	grpcOpts = append(grpcOpts, grpc.WithChainUnaryInterceptor(cis...), sto, os.security)
-	grpcOpts = append(grpcOpts, os.opts...)
+	ops = append(ops, os.opts...)
 
-	return grpcOpts, nil
+	return ops, nil
 }
 
 // NewClient to host for gRPC.
@@ -174,16 +173,13 @@ func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientIntercepto
 	unary = append(unary, os.unary...)
 
 	if os.retry != nil {
-		d, err := time.ParseDuration(os.retry.Timeout)
-		if err != nil {
-			return nil, err
-		}
+		d := time.MustParseDuration(os.retry.Timeout)
 
 		unary = append(unary,
 			r.UnaryClientInterceptor(
 				r.WithCodes(codes.Unavailable, codes.DataLoss),
 				r.WithMax(os.retry.Attempts),
-				r.WithBackoff(r.BackoffLinear(t.Backoff)),
+				r.WithBackoff(r.BackoffLinear(time.Backoff)),
 				r.WithPerRetryTimeout(d),
 			),
 		)
