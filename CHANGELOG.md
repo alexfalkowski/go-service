@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.149.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.149.4) - 2024-04-01
+
+- [`1da2349`](https://github.com/alexfalkowski/go-service/commit/1da234957e4c0f35fc9b023be7f3754037e6e327) fix(deps): bump github.com/shirou/gopsutil/v3 from 3.24.2 to 3.24.3 (#590)
+- [`ae29a70`](https://github.com/alexfalkowski/go-service/commit/ae29a706213867b0e465e3f6d9f36380e0ba52d9) build(deps): bump bin from `608889f` to `024be7f` (#589)
+- [`8b089f2`](https://github.com/alexfalkowski/go-service/commit/8b089f23b40d731ce9d8575541a7fcff5e9a2a08) build(deps): bump bin from `a19d7ca` to `608889f` (#588)
+
 ## [v1.149.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.149.3) - 2024-03-28
 
 - [`9e8e75a`](https://github.com/alexfalkowski/go-service/commit/9e8e75a3df77518f44e873136017202cf7f55511) fix(deps): update github.com/alexfalkowski/go-health to v1.16.0 (#587)
