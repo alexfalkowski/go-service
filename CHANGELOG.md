@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.150.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.150.1) - 2024-04-04
+
+- [`8b30d9d`](https://github.com/alexfalkowski/go-service/commit/8b30d9d777cca894a6c52e11deee3a5e9489f4df) fix(deps): upgraded golang.org/x/net v0.21.0 => v0.23.0 (#595)
+- [`beb432a`](https://github.com/alexfalkowski/go-service/commit/beb432ab48cdfcb705f5933c44a8602e75b9ea20) build(deps): bump bin from `ed17684` to `13a7302` (#593)
+- [`55666c1`](https://github.com/alexfalkowski/go-service/commit/55666c1eb406041acd373073d4b24f75baecc906) build(deps): bump bin from `024be7f` to `ed17684` (#592)
+
 ## [v1.150.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.150.0) - 2024-04-01
 
 - [`010cde8`](https://github.com/alexfalkowski/go-service/commit/010cde82e01a987929d69c229af2ca0a060d3049) feat(time): add must parse (#591)
