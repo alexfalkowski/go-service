@@ -53,7 +53,7 @@ func TestUnary(t *testing.T) {
 			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -92,7 +92,7 @@ func TestInvalidUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -138,7 +138,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -178,7 +178,7 @@ func TestStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -221,7 +221,7 @@ func TestInvalidStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -267,7 +267,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)

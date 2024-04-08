@@ -1,8 +1,6 @@
 package grpc
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -155,14 +153,14 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	return ops, nil
 }
 
-// NewClient to host for gRPC.
-func NewClient(ctx context.Context, host string, opts ...ClientOption) (*grpc.ClientConn, error) {
+// NewClient for gRPC.
+func NewClient(target string, opts ...ClientOption) (*grpc.ClientConn, error) {
 	os, err := NewDialOptions(opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	return grpc.DialContext(ctx, host, os...)
+	return grpc.NewClient(target, os...)
 }
 
 // UnaryClientInterceptors for gRPC.
