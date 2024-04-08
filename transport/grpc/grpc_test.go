@@ -43,7 +43,7 @@ func TestInsecureUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -79,7 +79,7 @@ func TestSecureUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewSecureGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), m)
+			conn := test.NewSecureGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), m)
 
 			defer conn.Close()
 
@@ -119,7 +119,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 
 			defer conn.Close()
 
@@ -160,7 +160,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			defer conn.Close()
 
@@ -200,7 +200,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 
 			defer conn.Close()
 
@@ -239,7 +239,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -278,7 +278,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
 
 			defer conn.Close()
 
@@ -317,7 +317,7 @@ func TestBreakerUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
@@ -361,7 +361,7 @@ func TestLimiterUnary(t *testing.T) {
 
 		Convey("When I query repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -397,7 +397,7 @@ func TestStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -445,7 +445,7 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 
 			defer conn.Close()
 
@@ -490,7 +490,7 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			defer conn.Close()
 
@@ -534,7 +534,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 
 			defer conn.Close()
 
@@ -572,7 +572,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -616,7 +616,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
 
 			defer conn.Close()
 
@@ -657,7 +657,7 @@ func TestLimiterStream(t *testing.T) {
 
 		Convey("When I stream repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 			defer conn.Close()
 

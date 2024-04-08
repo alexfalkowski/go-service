@@ -51,7 +51,7 @@ func TestUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -106,7 +106,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
 		defer cancel()
 
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 		defer conn.Close()
 
 		err = v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
@@ -162,7 +162,7 @@ func TestValidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 
@@ -220,7 +220,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 
@@ -278,7 +278,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 
@@ -334,7 +334,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 
@@ -385,7 +385,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 
@@ -441,7 +441,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		lc.RequireStart()
 
 		ctx := context.Background()
-		conn := test.NewGRPCClient(ctx, lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+		conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
 
 		defer conn.Close()
 

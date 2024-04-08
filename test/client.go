@@ -1,7 +1,6 @@
 package test
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/client"
@@ -38,12 +37,12 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tra
 
 // NewGRPCClient for test.
 func NewGRPCClient(
-	ctx context.Context, lc fx.Lifecycle, logger *zap.Logger,
+	lc fx.Lifecycle, logger *zap.Logger,
 	tcfg *transport.Config, ocfg *tracer.Config,
 	cred credentials.PerRPCCredentials,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
 
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 	if cred != nil {
@@ -51,7 +50,7 @@ func NewGRPCClient(
 	}
 
 	cl := &client.Config{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
-	conn, _ := tgrpc.NewClient(ctx, cl.Host,
+	conn, _ := tgrpc.NewClient(cl.Host,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(cl.Retry),
 		tgrpc.WithClientDialOption(dialOpts...), tgrpc.WithClientMetrics(meter),
@@ -63,14 +62,14 @@ func NewGRPCClient(
 
 // NewSecureGRPCClient for test.
 func NewSecureGRPCClient(
-	ctx context.Context, lc fx.Lifecycle, logger *zap.Logger,
+	lc fx.Lifecycle, logger *zap.Logger,
 	tcfg *transport.Config, ocfg *tracer.Config,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version}) //nolint:contextcheck
+	tracer, _ := gtracer.NewTracer(gtracer.Params{Lifecycle: lc, Config: ocfg, Version: Version})
 	sec, _ := tgrpc.WithClientSecure(NewSecureClientConfig())
 
-	conn, _ := tgrpc.NewClient(ctx, "localhost:"+tcfg.GRPC.Port,
+	conn, _ := tgrpc.NewClient("localhost:"+tcfg.GRPC.Port,
 		tgrpc.WithClientLogger(logger), tgrpc.WithClientTracer(tracer),
 		tgrpc.WithClientBreaker(), tgrpc.WithClientRetry(tcfg.GRPC.Retry),
 		tgrpc.WithClientMetrics(meter), tgrpc.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,
