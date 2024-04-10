@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -17,10 +16,7 @@ func TestDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
+		m := test.NewMeter(lc)
 		p := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     test.NewDebugConfig(),
@@ -39,7 +35,7 @@ func TestDebug(t *testing.T) {
 
 		Convey("Then all the debug URLs are valid", func() {
 			port := p.Config.Port
-			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), test.NewInsecureTransportConfig(), m)
+			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), test.NewInsecureTransportConfig(), m)
 			urls := []string{
 				url(port, "debug/statsviz"),
 				url(port, "debug/pprof/"),

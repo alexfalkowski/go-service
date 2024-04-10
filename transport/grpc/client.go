@@ -8,8 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
-	gtracer "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
+	gm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
+	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	r "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ type ClientOption interface{ apply(opts *clientOpts) }
 
 type clientOpts struct {
 	logger    *zap.Logger
-	tracer    gtracer.Tracer
+	tracer    gt.Tracer
 	meter     metric.Meter
 	retry     *retry.Config
 	breaker   bool
@@ -105,7 +105,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for gRPC.
-func WithClientTracer(tracer gtracer.Tracer) ClientOption {
+func WithClientTracer(tracer gt.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.tracer = tracer
 	})
@@ -192,7 +192,7 @@ func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientIntercepto
 	}
 
 	if os.meter != nil {
-		client, err := metrics.NewClient(os.meter)
+		client, err := gm.NewClient(os.meter)
 		if err != nil {
 			return nil, err
 		}
@@ -200,7 +200,7 @@ func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientIntercepto
 		unary = append(unary, client.UnaryInterceptor())
 	}
 
-	unary = append(unary, gtracer.UnaryClientInterceptor(os.tracer))
+	unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
 
 	return unary, nil
@@ -216,7 +216,7 @@ func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
 	}
 
 	if opts.meter != nil {
-		client, err := metrics.NewClient(opts.meter)
+		client, err := gm.NewClient(opts.meter)
 		if err != nil {
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
 		stream = append(stream, client.StreamInterceptor())
 	}
 
-	stream = append(stream, gtracer.StreamClientInterceptor(opts.tracer))
+	stream = append(stream, gt.StreamClientInterceptor(opts.tracer))
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
 
 	return grpc.WithChainStreamInterceptor(stream...), nil
@@ -233,7 +233,7 @@ func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
 func clientOptions(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{
 		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
-		tracer:   tracer.NewNoopTracer("grpc"),
+		tracer:   tracer.NewNoopTracer(),
 	}
 	for _, o := range opts {
 		o.apply(os)

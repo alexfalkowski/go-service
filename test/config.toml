@@ -38,9 +38,14 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 enabled = true
 level = "info"
 
+[telemetry.metrics]
+enabled = true
+kind = "prometheus"
+
 [telemetry.tracer]
 enabled = true
-host = "localhost:4318"
+kind = "otlp"
+host = "http://localhost:4318/v1/traces"
 
 [token]
 kind = "none"

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/hooks"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
@@ -39,10 +38,9 @@ func TestSendReceive(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
+		m := test.NewMeter(lc)
 
-		tcfg := test.NewDefaultTracerConfig()
+		tcfg := test.NewOTLPTracerConfig()
 		t, err := ht.NewTracer(ht.Params{Lifecycle: lc, Config: tcfg, Version: test.Version})
 		So(err, ShouldBeNil)
 
@@ -93,11 +91,9 @@ func TestSendNotReceive(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		m := test.NewMeter(lc)
+		tcfg := test.NewOTLPTracerConfig()
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		tcfg := test.NewDefaultTracerConfig()
 		t, err := ht.NewTracer(ht.Params{Lifecycle: lc, Config: tcfg, Version: test.Version})
 		So(err, ShouldBeNil)
 

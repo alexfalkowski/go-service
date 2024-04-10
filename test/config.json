@@ -49,9 +49,14 @@
         "enabled": true,
         "level": "info"
       },
+      "metrics": {
+        "enabled": true,
+        "kind": "prometheus"
+      },
       "tracer": {
         "enabled": true,
-        "host": "localhost:4318"
+        "kind": "otlp",
+        "host": "http://localhost:4318/v1/traces"
       }
     },
     "token": {

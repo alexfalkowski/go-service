@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -31,19 +30,16 @@ func TestInsecureUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -67,19 +63,16 @@ func TestSecureUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewSecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewSecureGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), m)
+			conn := test.NewSecureGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), m)
 
 			defer conn.Close()
 
@@ -104,12 +97,9 @@ func TestValidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -119,7 +109,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 
 			defer conn.Close()
 
@@ -145,12 +135,9 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -160,7 +147,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			defer conn.Close()
 
@@ -185,12 +172,9 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -200,7 +184,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 
 			defer conn.Close()
 
@@ -224,12 +208,9 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -239,7 +220,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -263,12 +244,9 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -278,7 +256,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", errors.New("token error"))), m)
 
 			defer conn.Close()
 
@@ -302,12 +280,9 @@ func TestBreakerUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -317,7 +292,7 @@ func TestBreakerUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
@@ -346,12 +321,9 @@ func TestLimiterUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
 		)
@@ -361,7 +333,7 @@ func TestLimiterUnary(t *testing.T) {
 
 		Convey("When I query repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -385,19 +357,16 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -430,12 +399,9 @@ func TestValidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -445,7 +411,7 @@ func TestValidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("test", nil)), m)
 
 			defer conn.Close()
 
@@ -475,12 +441,9 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -490,7 +453,7 @@ func TestInvalidAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("bob", nil)), m)
 
 			defer conn.Close()
 
@@ -519,12 +482,9 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -534,7 +494,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", nil)), m)
 
 			defer conn.Close()
 
@@ -557,12 +517,9 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -572,7 +529,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
@@ -601,12 +558,9 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, true, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
 		)
@@ -616,7 +570,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))), m)
 
 			defer conn.Close()
 
@@ -642,12 +596,9 @@ func TestLimiterStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
-
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m,
+		m := test.NewMeter(lc)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			[]grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
 		)
@@ -657,7 +608,7 @@ func TestLimiterStream(t *testing.T) {
 
 		Convey("When I stream repeatedly", func() {
 			ctx := context.Background()
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewDefaultTracerConfig(), nil, m)
+			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 
 			defer conn.Close()
 
