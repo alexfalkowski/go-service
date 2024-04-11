@@ -67,8 +67,7 @@ func UnaryServerInterceptor(tracer Tracer) grpc.UnaryServerInterceptor {
 
 		resp, err := handler(ctx, req)
 		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Error, s.Message())
+			span.SetStatus(codes.Error, status.Code(err).String())
 			span.RecordError(err)
 		}
 
@@ -114,8 +113,7 @@ func StreamServerInterceptor(tracer Tracer) grpc.StreamServerInterceptor {
 
 		err := handler(srv, wrappedStream)
 		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Error, s.Message())
+			span.SetStatus(codes.Error, status.Code(err).String())
 			span.RecordError(err)
 		}
 
@@ -157,8 +155,7 @@ func UnaryClientInterceptor(tracer Tracer) grpc.UnaryClientInterceptor {
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Error, s.Message())
+			span.SetStatus(codes.Error, status.Code(err).String())
 			span.RecordError(err)
 		}
 
@@ -200,8 +197,7 @@ func StreamClientInterceptor(tracer Tracer) grpc.StreamClientInterceptor {
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		if err != nil {
-			s, _ := status.FromError(err)
-			span.SetStatus(codes.Error, s.Message())
+			span.SetStatus(codes.Error, status.Code(err).String())
 			span.RecordError(err)
 		}
 

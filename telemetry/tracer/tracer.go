@@ -25,14 +25,14 @@ func Register() {
 }
 
 // NewNoopTracer for tracer.
-func NewNoopTracer(name string) trace.Tracer {
-	return noop.NewTracerProvider().Tracer(name)
+func NewNoopTracer() trace.Tracer {
+	return noop.Tracer{}
 }
 
 // NewTracer for tracer.
 func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
-		return NewNoopTracer(name), nil
+		return NewNoopTracer(), nil
 	}
 
 	opts := []otlptracehttp.Option{}
@@ -40,11 +40,7 @@ func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Enviro
 	if cfg.IsBaselime() {
 		opts = append(opts, otlptracehttp.WithEndpointURL("https://otel.baselime.io"), otlptracehttp.WithHeaders(map[string]string{"x-api-key": cfg.Key}))
 	} else {
-		opts = append(opts, otlptracehttp.WithEndpoint(cfg.Host))
-
-		if !cfg.Secure {
-			opts = append(opts, otlptracehttp.WithInsecure())
-		}
+		opts = append(opts, otlptracehttp.WithEndpointURL(cfg.Host))
 	}
 
 	return newTracer(ctx, lc, name, env, ver, opts)

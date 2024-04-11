@@ -166,7 +166,36 @@ telemetry:
 
 ### Metrics
 
-For metrics we use [Prometheus](https://github.com/prometheus/client_golang).
+For metrics we support the following:
+- [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
+- [Prometheus](https://github.com/prometheus/client_golang)
+
+#### Configuration
+
+Below is the configuration for each system.
+
+##### Prometheus
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  metrics:
+    enabled: true
+    kind: prometheus
+```
+
+##### OTLP
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  metrics:
+    enabled: true
+    kind: otlp
+    host: http://localhost:9009/otlp/v1/metrics
+```
 
 ### Trace
 
@@ -190,7 +219,7 @@ telemetry:
     key: api-key
 ```
 
-##### Default
+##### OTLP
 
 To configure, please specify the following:
 
@@ -198,6 +227,7 @@ To configure, please specify the following:
 telemetry:
   tracer:
     enabled: true
+    kind: otlp
     host: localhost:4318
     secure: false
 ```

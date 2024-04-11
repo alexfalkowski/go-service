@@ -10,8 +10,10 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/sdk/metric"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.uber.org/fx"
@@ -26,14 +28,23 @@ func Register(server *shttp.Server) error {
 	})
 }
 
-// NewMeter with otel.
-func NewMeter(fc fx.Lifecycle, env env.Environment, ver version.Version) (m.Meter, error) {
-	exporter, err := prometheus.New(prometheus.WithoutTargetInfo())
+// NewNoopMeter for metrics.
+func NewNoopMeter() m.Meter {
+	return noop.Meter{}
+}
+
+// NewMeter for metrics.
+func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config) (m.Meter, error) {
+	if !IsEnabled(cfg) {
+		return NewNoopMeter(), nil
+	}
+
+	r, err := reader(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	provider := metric.NewMeterProvider(metric.WithReader(exporter))
+	provider := metric.NewMeterProvider(metric.WithReader(r))
 	name := os.ExecutableName()
 	attrs := []attribute.KeyValue{
 		semconv.ServiceName(name),
@@ -42,14 +53,24 @@ func NewMeter(fc fx.Lifecycle, env env.Environment, ver version.Version) (m.Mete
 	}
 	meter := provider.Meter(os.ExecutableName(), m.WithInstrumentationVersion(string(ver)), m.WithInstrumentationAttributes(attrs...))
 
-	fc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			return provider.ForceFlush(ctx)
-		},
+	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			return provider.Shutdown(ctx)
 		},
 	})
 
 	return meter, nil
+}
+
+func reader(cfg *Config) (metric.Reader, error) {
+	if cfg.IsOTLP() {
+		r, err := otlpmetrichttp.New(context.Background(), otlpmetrichttp.WithEndpointURL(cfg.Host))
+		if err != nil {
+			return nil, err
+		}
+
+		return metric.NewPeriodicReader(r), nil
+	}
+
+	return prometheus.New(prometheus.WithoutTargetInfo())
 }

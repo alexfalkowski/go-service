@@ -2,8 +2,6 @@ package config
 
 import (
 	"github.com/alexfalkowski/go-service/cache"
-	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -12,8 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
-	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -40,22 +36,6 @@ func (cfg *Config) DebugConfig() *debug.Config {
 	return cfg.Debug
 }
 
-func (cfg *Config) RedisConfig() *redis.Config {
-	if cfg.Cache == nil {
-		return nil
-	}
-
-	return cfg.Cache.Redis
-}
-
-func (cfg *Config) RistrettoConfig() *ristretto.Config {
-	if cfg.Cache == nil {
-		return nil
-	}
-
-	return cfg.Cache.Ristretto
-}
-
 func (cfg *Config) PGConfig() *pg.Config {
 	if cfg.SQL == nil {
 		return nil
@@ -70,22 +50,6 @@ func (cfg *Config) FeatureConfig() *feature.Config {
 
 func (cfg *Config) HooksConfig() *hooks.Config {
 	return cfg.Hooks
-}
-
-func (cfg *Config) TracerConfig() *tracer.Config {
-	if cfg.Telemetry == nil {
-		return nil
-	}
-
-	return cfg.Telemetry.Tracer
-}
-
-func (cfg *Config) LoggerConfig() *zap.Config {
-	if cfg.Telemetry == nil {
-		return nil
-	}
-
-	return cfg.Telemetry.Logger
 }
 
 func (cfg *Config) TokenConfig() *token.Config {

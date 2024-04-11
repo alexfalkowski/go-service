@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -33,6 +34,7 @@ type Configurator interface {
 	HooksConfig() *hooks.Config
 	PGConfig() *pg.Config
 	LoggerConfig() *zap.Config
+	MetricsConfig() *metrics.Config
 	TokenConfig() *token.Config
 	TracerConfig() *tracer.Config
 	GRPCConfig() *grpc.Config
@@ -69,6 +71,10 @@ func pgConfig(cfg Configurator) *pg.Config {
 
 func loggerConfig(cfg Configurator) *zap.Config {
 	return cfg.LoggerConfig()
+}
+
+func metricsConfig(cfg Configurator) *metrics.Config {
+	return cfg.MetricsConfig()
 }
 
 func tokenConfig(cfg Configurator) *token.Config {

@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/events"
@@ -26,8 +27,8 @@ const timeout = 2 * time.Second
 
 // Config for test.
 type Config struct {
-	Events        events.Config `yaml:"events,omitempty" json:"events,omitempty" toml:"events,omitempty"`
-	config.Config `yaml:",inline" json:",inline" toml:",inline"`
+	Events         *events.Config `yaml:"events,omitempty" json:"events,omitempty" toml:"events,omitempty"`
+	*config.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 
 // NewHook for test.
@@ -113,10 +114,28 @@ func NewSecureTransportConfig() *transport.Config {
 	}
 }
 
-// NewDefaultTracerConfig for test.
-func NewDefaultTracerConfig() *tracer.Config {
+// NewPrometheusMetricsConfig for test.
+func NewPrometheusMetricsConfig() *metrics.Config {
+	return &metrics.Config{
+		Enabled: true,
+		Kind:    "prometheus",
+	}
+}
+
+// NewOTLPMetricsConfig for test.
+func NewOTLPMetricsConfig() *metrics.Config {
+	return &metrics.Config{
+		Enabled: true,
+		Kind:    "otlp",
+		Host:    "http://localhost:9009/otlp/v1/metrics",
+	}
+}
+
+// NewOTLPTracerConfig for test.
+func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Enabled: true,
+		Kind:    "otlp",
 		Host:    "localhost:4318",
 	}
 }

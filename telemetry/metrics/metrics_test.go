@@ -9,8 +9,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	ptracer "github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
-	smetrics "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
+	st "github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
+	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -24,29 +24,28 @@ func init() {
 }
 
 //nolint:dupl
-func TestInsecureHTTP(t *testing.T) {
+func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
+		tracer, err := st.NewTracer(st.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
+		m := test.NewMeter(lc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
-		smetrics.Register(dbs, test.Version, m)
+		sm.Register(dbs, test.Version, m)
 
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewInsecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -56,7 +55,7 @@ func TestInsecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
@@ -84,29 +83,28 @@ func TestInsecureHTTP(t *testing.T) {
 }
 
 //nolint:dupl
-func TestSecureHTTP(t *testing.T) {
+func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewDefaultTracerConfig(), Version: test.Version})
+		tracer, err := st.NewTracer(st.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version)
-		So(err, ShouldBeNil)
+		m := test.NewMeter(lc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
-		smetrics.Register(dbs, test.Version, m)
+		sm.Register(dbs, test.Version, m)
 
 		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewSecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewDefaultTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewDefaultTracerConfig(), cfg, false, m, nil, nil)
+		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
+		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
 		test.RegisterTransport(lc, gs, hs)
 
@@ -116,7 +114,7 @@ func TestSecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewDefaultTracerConfig(), cfg, m)
+			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("https://localhost:%s/metrics", cfg.HTTP.Port), nil)
 			So(err, ShouldBeNil)
@@ -140,5 +138,27 @@ func TestSecureHTTP(t *testing.T) {
 		})
 
 		lc.RequireStop()
+	})
+}
+
+func TestOTLP(t *testing.T) {
+	Convey("Given I register OTLP metrics", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		m, err := metrics.NewMeter(lc, test.Environment, test.Version, test.NewOTLPMetricsConfig())
+		So(err, ShouldBeNil)
+
+		Convey("When I create a metric", func() {
+			c, err := m.Int64Counter("test_otlp")
+			So(err, ShouldBeNil)
+
+			lc.RequireStart()
+			c.Add(context.Background(), 1)
+
+			Convey("Then I should have a metric", func() {
+				lc.RequireStop()
+				So(c, ShouldNotBeNil)
+			})
+		})
 	})
 }

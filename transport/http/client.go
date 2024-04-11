@@ -9,8 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	lzap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
-	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
+	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 )
@@ -20,7 +20,7 @@ type ClientOption interface{ apply(opts *clientOptions) }
 
 type clientOptions struct {
 	logger       *zap.Logger
-	tracer       htracer.Tracer
+	tracer       ht.Tracer
 	meter        metric.Meter
 	retry        *r.Config
 	userAgent    string
@@ -61,7 +61,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for HTTP.
-func WithClientTracer(tracer htracer.Tracer) ClientOption {
+func WithClientTracer(tracer ht.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})
@@ -83,7 +83,7 @@ func WithClientUserAgent(userAgent string) ClientOption {
 
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
-	os := &clientOptions{tracer: tracer.NewNoopTracer("http")}
+	os := &clientOptions{tracer: tracer.NewNoopTracer()}
 	for _, o := range opts {
 		o.apply(os)
 	}
@@ -106,7 +106,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.meter != nil {
-		rt, err := metrics.NewRoundTripper(os.meter, hrt)
+		rt, err := hm.NewRoundTripper(os.meter, hrt)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +114,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = rt
 	}
 
-	hrt = htracer.NewRoundTripper(os.tracer, hrt)
+	hrt = ht.NewRoundTripper(os.tracer, hrt)
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
 	return hrt, nil
@@ -122,7 +122,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 
 // NewClient for HTTP.
 func NewClient(opts ...ClientOption) (*http.Client, error) {
-	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer("http")}
+	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer()}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}
