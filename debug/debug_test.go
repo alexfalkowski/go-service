@@ -42,6 +42,7 @@ func TestDebug(t *testing.T) {
 				url(port, "debug/pprof/cmdline"),
 				url(port, "debug/pprof/symbol"),
 				url(port, "debug/pprof/trace"),
+				url(port, "debug/fgprof?seconds=1"),
 				url(port, "debug/psutil"),
 			}
 

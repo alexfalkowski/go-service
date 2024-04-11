@@ -10,6 +10,7 @@ require (
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dgraph-io/ristretto v0.1.1
+	github.com/felixge/fgprof v0.9.4
 	github.com/go-redis/cache/v8 v8.4.4
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/goccy/go-json v0.10.2
@@ -72,6 +73,7 @@ require (
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/golang/glog v1.2.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
