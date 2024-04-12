@@ -7,13 +7,35 @@ import (
 	"path"
 	"time"
 
+	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+// Meter for metrics.
+type Meter metric.Meter
+
+// Params for metrics.
+type Params struct {
+	fx.In
+
+	Lifecycle   fx.Lifecycle
+	Config      *metrics.Config
+	Environment env.Environment
+	Version     version.Version
+}
+
+// NewMeter for metrics.
+func NewMeter(params Params) (Meter, error) {
+	return metrics.NewMeter(params.Lifecycle, "grpc", params.Environment, params.Version, params.Config)
+}
 
 type grpcType string
 
@@ -45,7 +67,7 @@ func clientStreamType(desc *grpc.StreamDesc) grpcType {
 }
 
 // NewServer for metrics.
-func NewServer(meter metric.Meter) (*Server, error) {
+func NewServer(meter Meter) (*Server, error) {
 	started, err := meter.Int64Counter("grpc_server_started_total", metric.WithDescription("Total number of RPCs started on the server."))
 	if err != nil {
 		return nil, err

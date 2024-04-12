@@ -4,14 +4,35 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
+	m "github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 )
 
+// Meter for metrics.
+type Meter metric.Meter
+
+// Params for metrics.
+type Params struct {
+	fx.In
+
+	Lifecycle   fx.Lifecycle
+	Config      *m.Config
+	Environment env.Environment
+	Version     version.Version
+}
+
+// NewMeter for metrics.
+func NewMeter(params Params) (Meter, error) {
+	return m.NewMeter(params.Lifecycle, "http", params.Environment, params.Version, params.Config)
+}
+
 // Register for metrics.
-func Register(cache ristretto.Cache, version version.Version, meter metric.Meter) error {
+func Register(cache ristretto.Cache, version version.Version, meter Meter) error {
 	opts := metric.WithAttributes(
 		attribute.Key("name").String(os.ExecutableName()),
 		attribute.Key("version").String(string(version)),

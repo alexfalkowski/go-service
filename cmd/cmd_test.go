@@ -24,7 +24,6 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -220,7 +219,7 @@ func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module,
-		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
+		telemetry.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
 		cache.RedisModule, cache.RistrettoModule, cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),

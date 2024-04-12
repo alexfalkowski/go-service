@@ -50,7 +50,7 @@ func TestUnary(t *testing.T) {
 		conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -102,7 +102,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -156,7 +156,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -211,7 +211,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -266,7 +266,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -319,7 +319,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -367,7 +367,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -420,7 +420,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, hs.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
@@ -464,7 +464,7 @@ func TestGet(t *testing.T) {
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
-		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
+		err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
 			w.Write([]byte("hello!"))
 		})
 		So(err, ShouldBeNil)
@@ -512,7 +512,7 @@ func TestLimiter(t *testing.T) {
 		test.RegisterTransport(lc, gs, hs)
 		lc.RequireStart()
 
-		err = hs.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
+		err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
 			w.Write([]byte("hello!"))
 		})
 		So(err, ShouldBeNil)

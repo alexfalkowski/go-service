@@ -12,8 +12,8 @@ import (
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/health"
-	hchecker "github.com/alexfalkowski/go-service/health/checker"
-	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
+	hc "github.com/alexfalkowski/go-service/health/checker"
+	hh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -43,12 +43,12 @@ func TestHealth(t *testing.T) {
 
 			test.RegisterTransport(lc, gs, hs)
 
-			params := hhttp.RegisterParams{
-				Server: hs, Health: &hhttp.HealthObserver{Observer: o},
-				Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
+			params := hh.RegisterParams{
+				Mux: test.Mux, Health: &hh.HealthObserver{Observer: o},
+				Liveness: &hh.LivenessObserver{Observer: o}, Readiness: &hh.ReadinessObserver{Observer: o},
 				Version: test.Version,
 			}
-			err := hhttp.Register(params)
+			err := hh.Register(params)
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -97,12 +97,12 @@ func TestReadinessNoop(t *testing.T) {
 
 		test.RegisterTransport(lc, gs, hs)
 
-		params := hhttp.RegisterParams{
-			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
-			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: server.Observe("noop")},
+		params := hh.RegisterParams{
+			Mux: test.Mux, Health: &hh.HealthObserver{Observer: o},
+			Liveness: &hh.LivenessObserver{Observer: o}, Readiness: &hh.ReadinessObserver{Observer: server.Observe("noop")},
 			Version: test.Version,
 		}
-		err := hhttp.Register(params)
+		err := hh.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -148,12 +148,12 @@ func TestInvalidHealth(t *testing.T) {
 
 		test.RegisterTransport(lc, gs, hs)
 
-		params := hhttp.RegisterParams{
-			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
-			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
+		params := hh.RegisterParams{
+			Mux: test.Mux, Health: &hh.HealthObserver{Observer: o},
+			Liveness: &hh.LivenessObserver{Observer: o}, Readiness: &hh.ReadinessObserver{Observer: o},
 			Version: test.Version,
 		}
-		err := hhttp.Register(params)
+		err := hh.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -186,7 +186,7 @@ func TestInvalidHealth(t *testing.T) {
 
 func observer(lc fx.Lifecycle, url string, client *http.Client, logger *zap.Logger) *server.Server {
 	r := test.NewRedisClient(lc, "localhost:6379", logger)
-	rc := hchecker.NewRedisChecker(r, 1*time.Second)
+	rc := hc.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
 	cc := checker.NewHTTPChecker(url, client)

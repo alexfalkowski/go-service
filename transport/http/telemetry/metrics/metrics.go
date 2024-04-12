@@ -5,14 +5,51 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexfalkowski/go-service/env"
 	shttp "github.com/alexfalkowski/go-service/http"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/version"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 )
 
+// Register metrics.
+func Register(mux *runtime.ServeMux, cfg *metrics.Config) error {
+	if !metrics.IsEnabled(cfg) {
+		return nil
+	}
+
+	handler := promhttp.Handler()
+
+	return mux.HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+		handler.ServeHTTP(w, r)
+	})
+}
+
+// Meter for metrics.
+type Meter metric.Meter
+
+// Params for metrics.
+type Params struct {
+	fx.In
+
+	Lifecycle   fx.Lifecycle
+	Config      *metrics.Config
+	Environment env.Environment
+	Version     version.Version
+}
+
+// NewMeter for metrics.
+func NewMeter(params Params) (Meter, error) {
+	return metrics.NewMeter(params.Lifecycle, "http", params.Environment, params.Version, params.Config)
+}
+
 // NewHandler for metrics.
-func NewHandler(meter metric.Meter) (*Handler, error) {
+func NewHandler(meter Meter) (*Handler, error) {
 	started, err := meter.Int64Counter("http_server_started_total", metric.WithDescription("Total number of RPCs started on the server."))
 	if err != nil {
 		return nil, err

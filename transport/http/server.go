@@ -17,12 +17,28 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/urfave/negroni/v3"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/protobuf/encoding/protojson"
 )
+
+// NewServeMux for HTTP.
+func NewServeMux() *runtime.ServeMux {
+	opts := []runtime.ServeMuxOption{
+		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	}
+
+	return runtime.NewServeMux(opts...)
+}
 
 // ServerParams for HTTP.
 type ServerParams struct {
@@ -32,13 +48,13 @@ type ServerParams struct {
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     tracer.Tracer
-	Meter      metric.Meter
+	Meter      metrics.Meter
 	Handlers   []negroni.Handler
+	Mux        *runtime.ServeMux
 }
 
 // Server for HTTP.
 type Server struct {
-	Mux    *runtime.ServeMux
 	server *http.Server
 	sh     fx.Shutdowner
 	config *Config
@@ -63,18 +79,6 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	opts := []runtime.ServeMuxOption{
-		runtime.WithIncomingHeaderMatcher(customMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: true,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
-	}
-
 	n := negroni.New()
 	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
@@ -86,9 +90,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n.Use(cors.New())
-
-	mux := runtime.NewServeMux(opts...)
-	n.UseHandler(mux)
+	n.UseHandler(params.Mux)
 
 	s := &http.Server{
 		Handler:           n,
@@ -99,7 +101,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		Mux:    mux,
 		server: s,
 		sh:     params.Shutdowner,
 		config: params.Config,

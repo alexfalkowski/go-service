@@ -8,7 +8,7 @@ import (
 
 // NewMeter for test.
 func NewMeter(lc fx.Lifecycle) metric.Meter {
-	m, err := metrics.NewMeter(lc, Environment, Version, NewPrometheusMetricsConfig())
+	m, err := metrics.NewMeter(lc, "test", Environment, Version, NewPrometheusMetricsConfig())
 	if err != nil {
 		panic(err)
 	}

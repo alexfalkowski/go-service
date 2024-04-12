@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
@@ -49,7 +50,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		test.RegisterTransport(lc, gs, hs)
 
-		err = metrics.Register(hs)
+		err = hm.Register(test.Mux, test.NewPrometheusMetricsConfig())
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -108,7 +109,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		test.RegisterTransport(lc, gs, hs)
 
-		err = metrics.Register(hs)
+		err = hm.Register(test.Mux, test.NewPrometheusMetricsConfig())
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -145,7 +146,7 @@ func TestOTLP(t *testing.T) {
 	Convey("Given I register OTLP metrics", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version, test.NewOTLPMetricsConfig())
+		m, err := metrics.NewMeter(lc, "test", test.Environment, test.Version, test.NewOTLPMetricsConfig())
 		So(err, ShouldBeNil)
 
 		Convey("When I create a metric", func() {

@@ -25,6 +25,7 @@ var (
 	// RistrettoModule for fx.
 	RistrettoModule = fx.Options(
 		fx.Provide(ristretto.NewCache),
+		fx.Provide(rim.NewMeter),
 		fx.Invoke(rim.Register),
 	)
 

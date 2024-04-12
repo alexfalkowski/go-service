@@ -14,7 +14,7 @@ import (
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
+	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -27,7 +27,7 @@ type delRoundTripper struct {
 }
 
 func (r *delRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Del(h.HeaderWebhookID)
+	req.Header.Del(webhooks.HeaderWebhookID)
 
 	return r.rt.RoundTrip(req)
 }
@@ -54,7 +54,7 @@ func TestSendReceive(t *testing.T) {
 
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), hs.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -107,7 +107,7 @@ func TestSendNotReceive(t *testing.T) {
 
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), hs.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
