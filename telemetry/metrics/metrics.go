@@ -15,6 +15,7 @@ import (
 	m "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.uber.org/fx"
 )
@@ -44,14 +45,17 @@ func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Co
 		return nil, err
 	}
 
-	provider := metric.NewMeterProvider(metric.WithReader(r))
 	name := os.ExecutableName()
-	attrs := []attribute.KeyValue{
+	attrs := resource.NewWithAttributes(
+		semconv.SchemaURL,
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(string(ver)),
 		semconv.DeploymentEnvironment(string(env)),
-	}
-	meter := provider.Meter(os.ExecutableName(), m.WithInstrumentationVersion(string(ver)), m.WithInstrumentationAttributes(attrs...))
+		attribute.String("name", name),
+	)
+
+	provider := metric.NewMeterProvider(metric.WithReader(r), metric.WithResource(attrs))
+	meter := provider.Meter(name)
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
