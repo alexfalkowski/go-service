@@ -472,7 +472,7 @@ func TestGet(t *testing.T) {
 		Convey("When I query for a greet", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -520,7 +520,7 @@ func TestLimiter(t *testing.T) {
 		Convey("When I query for a greet", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

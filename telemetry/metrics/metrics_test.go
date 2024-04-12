@@ -57,7 +57,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -116,7 +116,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("https://localhost:%s/metrics", cfg.HTTP.Port), nil)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("https://localhost:%s/metrics", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
