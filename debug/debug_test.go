@@ -27,6 +27,7 @@ func TestDebug(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		debug.RegisterPprof(server)
+		debug.RegisterFgprof(server)
 		debug.RegisterPsutil(server, marshaller.NewJSON())
 		debug.RegisterStatsviz(server)
 

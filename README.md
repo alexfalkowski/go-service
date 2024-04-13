@@ -323,6 +323,14 @@ GET http://localhost:6060/debug/pprof/trace
 
 Check out [pprof](https://pkg.go.dev/net/http/pprof).
 
+### fgprof
+
+```http
+GET http://localhost:6060/debug/fgprof?seconds=10
+```
+
+Check out [fgprof](https://pkg.go.dev/github.com/felixge/fgprof).
+
 ### gopsutil
 
 ```http
