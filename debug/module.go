@@ -9,5 +9,6 @@ var Module = fx.Options(
 	fx.Provide(NewServer),
 	fx.Invoke(RegisterStatsviz),
 	fx.Invoke(RegisterPprof),
+	fx.Invoke(RegisterFgprof),
 	fx.Invoke(RegisterPsutil),
 )
