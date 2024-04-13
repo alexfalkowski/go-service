@@ -14,6 +14,7 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -30,7 +31,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     tracer.Tracer
+	Tracer     trace.Tracer
 	Meter      metric.Meter
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor

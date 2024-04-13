@@ -1,50 +1,27 @@
 package tracer
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/env"
 	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
-	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/fx"
 )
-
-// Params for tracer.
-type Params struct {
-	fx.In
-
-	Lifecycle   fx.Lifecycle
-	Config      *tracer.Config
-	Environment env.Environment
-	Version     version.Version
-}
-
-// NewTracer for tracer.
-func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(context.Background(), params.Lifecycle, "http", params.Environment, params.Version, params.Config)
-}
-
-// Tracer for tracer.
-type Tracer trace.Tracer
 
 // Handler for tracer.
 type Handler struct {
-	tracer Tracer
+	tracer trace.Tracer
 }
 
 // NewHandler for tracer.
-func NewHandler(tracer Tracer) *Handler {
+func NewHandler(tracer trace.Tracer) *Handler {
 	return &Handler{tracer: tracer}
 }
 
@@ -86,13 +63,13 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 }
 
 // NewRoundTripper for tracer.
-func NewRoundTripper(tracer Tracer, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(tracer trace.Tracer, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for tracer.
 type RoundTripper struct {
-	tracer Tracer
+	tracer trace.Tracer
 	http.RoundTripper
 }
 

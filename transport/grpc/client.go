@@ -12,6 +12,7 @@ import (
 	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	r "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,7 +26,7 @@ type ClientOption interface{ apply(opts *clientOpts) }
 
 type clientOpts struct {
 	logger    *zap.Logger
-	tracer    gt.Tracer
+	tracer    trace.Tracer
 	meter     metric.Meter
 	retry     *retry.Config
 	breaker   bool
@@ -105,7 +106,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for gRPC.
-func WithClientTracer(tracer gt.Tracer) ClientOption {
+func WithClientTracer(tracer trace.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.tracer = tracer
 	})

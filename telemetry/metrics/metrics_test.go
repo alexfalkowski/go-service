@@ -9,7 +9,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	st "github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -28,9 +27,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := st.NewTracer(st.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -87,9 +84,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := st.NewTracer(st.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 

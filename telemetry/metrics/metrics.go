@@ -9,7 +9,6 @@ import (
 	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
@@ -51,7 +50,6 @@ func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Co
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(string(ver)),
 		semconv.DeploymentEnvironment(string(env)),
-		attribute.String("name", name),
 	)
 
 	provider := metric.NewMeterProvider(metric.WithReader(r), metric.WithResource(attrs))

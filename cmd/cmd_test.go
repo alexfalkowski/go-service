@@ -29,13 +29,13 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
-	htracer "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/version"
 	rcache "github.com/go-redis/cache/v8"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -140,7 +140,7 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *http.Config, tracer htracer.Tracer, _ version.Version) (health.Registrations, error) {
+func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ version.Version) (health.Registrations, error) {
 	if cfg == nil {
 		return nil, nil
 	}

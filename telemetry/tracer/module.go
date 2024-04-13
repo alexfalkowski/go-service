@@ -7,4 +7,5 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Invoke(Register),
+	fx.Provide(NewTracer),
 )

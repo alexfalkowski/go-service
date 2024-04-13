@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -17,13 +16,11 @@ func TestFlipt(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		t, err := tracer.NewTracer(tracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		m := test.NewMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
-		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: t, Meter: m}
+		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 
 		c, err := feature.NewClient(p)
 		So(err, ShouldBeNil)

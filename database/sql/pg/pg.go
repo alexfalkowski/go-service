@@ -4,9 +4,9 @@ import (
 	"sync"
 
 	"github.com/alexfalkowski/go-service/database/sql/driver"
-	"github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/linxGnu/mssqlx"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func Open(params OpenParams) (*mssqlx.DBs, error) {
 var once sync.Once
 
 // Register the driver for pg.
-func Register(tracer tracer.Tracer, logger *zap.Logger) {
+func Register(tracer trace.Tracer, logger *zap.Logger) {
 	once.Do(func() {
 		driver.Register("pg", stdlib.GetDefaultDriver(), tracer, logger)
 	})

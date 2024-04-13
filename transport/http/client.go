@@ -12,6 +12,7 @@ import (
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -20,7 +21,7 @@ type ClientOption interface{ apply(opts *clientOptions) }
 
 type clientOptions struct {
 	logger       *zap.Logger
-	tracer       ht.Tracer
+	tracer       trace.Tracer
 	meter        metric.Meter
 	retry        *r.Config
 	userAgent    string
@@ -61,7 +62,7 @@ func WithClientLogger(logger *zap.Logger) ClientOption {
 }
 
 // WithClientTracer for HTTP.
-func WithClientTracer(tracer ht.Tracer) ClientOption {
+func WithClientTracer(tracer trace.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOptions) {
 		o.tracer = tracer
 	})

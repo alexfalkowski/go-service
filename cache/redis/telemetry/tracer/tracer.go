@@ -4,46 +4,24 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	gr "github.com/alexfalkowski/go-service/redis"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/fx"
 )
 
-// Params for tracer.
-type Params struct {
-	fx.In
-
-	Lifecycle   fx.Lifecycle
-	Config      *tracer.Config
-	Environment env.Environment
-	Version     version.Version
-}
-
-// NewTracer for tracer.
-func NewTracer(params Params) (Tracer, error) {
-	return tracer.NewTracer(context.Background(), params.Lifecycle, "redis", params.Environment, params.Version, params.Config)
-}
-
-// Tracer for tracer.
-type Tracer trace.Tracer
-
 // NewClient for tracer.
-func NewClient(tracer Tracer, client gr.Client) *Client {
+func NewClient(tracer trace.Tracer, client gr.Client) *Client {
 	return &Client{tracer: tracer, client: client}
 }
 
 // Client for tracer.
 type Client struct {
-	tracer Tracer
+	tracer trace.Tracer
 	client gr.Client
 }
 

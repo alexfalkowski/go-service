@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
@@ -30,7 +29,7 @@ func NewNoopTracer() trace.Tracer {
 }
 
 // NewTracer for tracer.
-func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
 		return NewNoopTracer(), nil
 	}
@@ -43,10 +42,10 @@ func NewTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Enviro
 		opts = append(opts, otlptracehttp.WithEndpointURL(cfg.Host))
 	}
 
-	return newTracer(ctx, lc, name, env, ver, opts)
+	return newTracer(context.Background(), lc, env, ver, opts)
 }
 
-func newTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Environment, ver version.Version, opts []otlptracehttp.Option) (trace.Tracer, error) {
+func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver version.Version, opts []otlptracehttp.Option) (trace.Tracer, error) {
 	client := otlptracehttp.NewClient(opts...)
 
 	exporter, err := otlptrace.New(ctx, client)
@@ -54,12 +53,12 @@ func newTracer(ctx context.Context, lc fx.Lifecycle, name string, env env.Enviro
 		return nil, err
 	}
 
+	name := os.ExecutableName()
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(string(ver)),
 		semconv.DeploymentEnvironment(string(env)),
-		attribute.String("name", os.ExecutableName()),
 	)
 
 	p := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))

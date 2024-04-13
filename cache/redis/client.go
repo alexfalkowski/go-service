@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/redis/v8"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -18,7 +19,7 @@ type ClientParams struct {
 
 	Lifecycle   fx.Lifecycle
 	RingOptions *redis.RingOptions
-	Tracer      tracer.Tracer
+	Tracer      trace.Tracer
 	Logger      *zap.Logger
 }
 
