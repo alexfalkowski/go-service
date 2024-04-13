@@ -18,6 +18,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -31,7 +32,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Config     *Config
 	Logger     *zap.Logger
-	Tracer     tracer.Tracer
+	Tracer     trace.Tracer
 	Meter      metric.Meter
 	Handlers   []negroni.Handler
 }

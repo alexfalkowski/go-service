@@ -3,11 +3,11 @@ package feature
 import (
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	flipt "github.com/open-feature/go-sdk-contrib/providers/flipt/pkg/provider"
 	"github.com/open-feature/go-sdk-contrib/providers/flipt/pkg/service/transport"
 	"github.com/open-feature/go-sdk/openfeature"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -18,7 +18,7 @@ type ClientParams struct {
 
 	Config *Config
 	Logger *zap.Logger
-	Tracer tracer.Tracer
+	Tracer trace.Tracer
 	Meter  metric.Meter
 }
 

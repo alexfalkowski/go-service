@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	ptracer "github.com/alexfalkowski/go-service/database/sql/pg/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -51,9 +50,7 @@ func TestSQL(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-
-			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-			So(err, ShouldBeNil)
+			tracer := test.NewTracer(lc)
 
 			pg.Register(tracer, logger)
 
@@ -76,9 +73,7 @@ func TestDBQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -123,9 +118,7 @@ func TestDBExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -167,9 +160,7 @@ func TestDBCommitTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -219,9 +210,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -269,9 +258,7 @@ func TestStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -323,9 +310,7 @@ func TestStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -372,9 +357,7 @@ func TestTransStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -429,9 +412,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-
-		tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc)
 
 		pg.Register(tracer, logger)
 
@@ -482,9 +463,7 @@ func TestInvalidSQLPort(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-
-			tracer, err := ptracer.NewTracer(ptracer.Params{Lifecycle: lc, Config: test.NewOTLPTracerConfig(), Version: test.Version})
-			So(err, ShouldBeNil)
+			tracer := test.NewTracer(lc)
 
 			pg.Register(tracer, logger)
 

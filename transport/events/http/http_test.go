@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
 	sh "github.com/alexfalkowski/go-service/transport/http"
-	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -41,9 +40,6 @@ func TestSendReceive(t *testing.T) {
 		m := test.NewMeter(lc)
 
 		tcfg := test.NewOTLPTracerConfig()
-		t, err := ht.NewTracer(ht.Params{Lifecycle: lc, Config: tcfg, Version: test.Version})
-		So(err, ShouldBeNil)
-
 		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, tcfg, cfg, false, m, nil, nil)
 
@@ -60,7 +56,9 @@ func TestSendReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(t), sh.WithClientMetrics(m))
+			tracer := test.NewTracer(lc)
+
+			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			So(err, ShouldBeNil)
 
 			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
@@ -94,9 +92,6 @@ func TestSendNotReceive(t *testing.T) {
 		m := test.NewMeter(lc)
 		tcfg := test.NewOTLPTracerConfig()
 
-		t, err := ht.NewTracer(ht.Params{Lifecycle: lc, Config: tcfg, Version: test.Version})
-		So(err, ShouldBeNil)
-
 		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, tcfg, cfg, false, m, nil, nil)
 
@@ -113,7 +108,9 @@ func TestSendNotReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(t), sh.WithClientMetrics(m))
+			tracer := test.NewTracer(lc)
+
+			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			So(err, ShouldBeNil)
 
 			rt = &delRoundTripper{rt: rt}
