@@ -122,7 +122,7 @@ func UnaryClientInterceptor(tracer trace.Tracer) grpc.UnaryClientInterceptor {
 
 		ctx, span := tracer.Start(
 			ctx,
-			operationName(fullMethod),
+			operationName(cc.Target()+fullMethod),
 			trace.WithSpanKind(trace.SpanKindClient),
 			trace.WithAttributes(attrs...),
 		)
@@ -164,7 +164,7 @@ func StreamClientInterceptor(tracer trace.Tracer) grpc.StreamClientInterceptor {
 
 		ctx, span := tracer.Start(
 			ctx,
-			operationName(fullMethod),
+			operationName(cc.Target()+fullMethod),
 			trace.WithSpanKind(trace.SpanKindClient),
 			trace.WithAttributes(attrs...),
 		)
