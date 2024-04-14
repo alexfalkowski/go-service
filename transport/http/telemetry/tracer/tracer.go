@@ -8,7 +8,7 @@ import (
 	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	tstrings "github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -28,7 +28,7 @@ func NewHandler(tracer trace.Tracer) *Handler {
 // ServeHTTP for tracer.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if tstrings.IsHealth(path) {
+	if ts.IsHealth(path) {
 		next(resp, req)
 
 		return
@@ -75,15 +75,15 @@ type RoundTripper struct {
 
 // RoundTrip for tracer.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if tstrings.IsHealth(req.URL.String()) {
+	if ts.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
+	method := strings.ToLower(req.Method)
 	ctx := req.Context()
-	operationName := fmt.Sprintf("%s %s", method, service)
+	operationName := fmt.Sprintf("%s %s", method, req.URL.Redacted())
 	attrs := []attribute.KeyValue{
-		semconv.HTTPRoute(service),
+		semconv.HTTPRoute(req.URL.Path),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
