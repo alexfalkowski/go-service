@@ -7,7 +7,6 @@ import (
 
 	shttp "github.com/alexfalkowski/go-service/http"
 	tstrings "github.com/alexfalkowski/go-service/transport/strings"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
@@ -35,7 +34,8 @@ func NewHandler(meter metric.Meter) (*Handler, error) {
 	}
 
 	handledHist, err := meter.Float64Histogram("http_server_handling_seconds",
-		metric.WithDescription("Histogram of response latency (seconds) of HTTP that had been application-level handled by the server."))
+		metric.WithDescription("Histogram of response latency (seconds) of HTTP that had been application-level handled by the server."),
+		metric.WithUnit("s"))
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	}
 
 	opts := metric.WithAttributes(
-		attribute.Key("http_service").String(service),
-		attribute.Key("http_method").String(method),
+		serviceAttribute.String(service),
+		methodAttribute.String(method),
 	)
 
 	start := time.Now()
@@ -81,7 +81,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req)
 
-	h.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(res.StatusCode)))
+	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.Int(res.StatusCode)))
 	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	if res.StatusCode >= 200 && res.StatusCode <= 299 {
@@ -113,7 +113,8 @@ func NewRoundTripper(meter metric.Meter, r http.RoundTripper) (*RoundTripper, er
 	}
 
 	handledHist, err := meter.Float64Histogram("http_client_handling_seconds",
-		metric.WithDescription("Histogram of response latency (seconds) of HTTP that had been application-level handled by the client."))
+		metric.WithDescription("Histogram of response latency (seconds) of HTTP that had been application-level handled by the client."),
+		metric.WithUnit("s"))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +149,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	opts := metric.WithAttributes(
-		attribute.Key("http_service").String(service),
-		attribute.Key("http_method").String(method),
+		serviceAttribute.String(service),
+		methodAttribute.String(method),
 	)
 
 	r.started.Add(ctx, 1, opts)
@@ -161,7 +162,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	r.received.Add(ctx, 1, opts)
-	r.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("http_code").Int(resp.StatusCode)))
+	r.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.Int(resp.StatusCode)))
 	r.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return resp, nil

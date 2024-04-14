@@ -8,41 +8,11 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/transport/strings"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-type grpcType string
-
-const (
-	unary        grpcType = "unary"
-	clientStream grpcType = "client_stream"
-	serverStream grpcType = "server_stream"
-	bidiStream   grpcType = "bidi_stream"
-)
-
-func streamRPCType(info *grpc.StreamServerInfo) grpcType {
-	if info.IsClientStream && !info.IsServerStream {
-		return clientStream
-	} else if !info.IsClientStream && info.IsServerStream {
-		return serverStream
-	}
-
-	return bidiStream
-}
-
-func clientStreamType(desc *grpc.StreamDesc) grpcType {
-	if desc.ClientStreams && !desc.ServerStreams {
-		return clientStream
-	} else if !desc.ClientStreams && desc.ServerStreams {
-		return serverStream
-	}
-
-	return bidiStream
-}
 
 // NewServer for metrics.
 func NewServer(meter metric.Meter) (*Server, error) {
@@ -68,7 +38,8 @@ func NewServer(meter metric.Meter) (*Server, error) {
 	}
 
 	handledHist, err := meter.Float64Histogram("grpc_server_handling_seconds",
-		metric.WithDescription("Histogram of response latency (seconds) of gRPC that had been application-level handled by the server."))
+		metric.WithDescription("Histogram of response latency (seconds) of gRPC that had been application-level handled by the server."),
+		metric.WithUnit("s"))
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +72,9 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			attribute.Key("grpc_type").String(string(unary)),
-			attribute.Key("grpc_service").String(service),
-			attribute.Key("grpc_method").String(method),
+			kindAttribute.String(string(unary)),
+			serviceAttribute.String(service),
+			methodAttribute.String(method),
 		)
 
 		s.started.Add(ctx, 1, opts)
@@ -114,7 +85,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 			s.sent.Add(ctx, 1, opts)
 		}
 
-		s.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 		return resp, err
@@ -132,9 +103,9 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			attribute.Key("grpc_type").String(string(streamRPCType(info))),
-			attribute.Key("grpc_service").String(service),
-			attribute.Key("grpc_method").String(method),
+			kindAttribute.String(string(streamKind(info))),
+			serviceAttribute.String(service),
+			methodAttribute.String(method),
 		)
 
 		serverStream := &monitoredServerStream{
@@ -145,7 +116,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		err := handler(srv, serverStream)
 		ctx := stream.Context()
 
-		s.handled.Add(ctx, 1, opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 		return err
@@ -172,7 +143,7 @@ func (s *monitoredServerStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 	return err
@@ -186,13 +157,13 @@ func (s *monitoredServerStream) RecvMsg(m any) error {
 	err := s.ServerStream.RecvMsg(m)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(codes.OK.String())))
+			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(codes.OK.String())))
 			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 			return err
 		}
 
-		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 		return err
@@ -227,7 +198,8 @@ func NewClient(meter metric.Meter) (*Client, error) {
 	}
 
 	handledHist, err := meter.Float64Histogram("grpc_client_handling_seconds",
-		metric.WithDescription("Histogram of response latency (seconds) of gRPC that had been application-level handled by the client."))
+		metric.WithDescription("Histogram of response latency (seconds) of gRPC that had been application-level handled by the client."),
+		metric.WithUnit("s"))
 	if err != nil {
 		return nil, err
 	}
@@ -260,9 +232,9 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		o := metric.WithAttributes(
-			attribute.Key("grpc_type").String(string(unary)),
-			attribute.Key("grpc_service").String(service),
-			attribute.Key("grpc_method").String(method),
+			kindAttribute.String(string(unary)),
+			serviceAttribute.String(service),
+			methodAttribute.String(method),
 		)
 
 		c.started.Add(ctx, 1, o)
@@ -273,7 +245,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 			c.received.Add(ctx, 1, o)
 		}
 
-		c.handled.Add(ctx, 1, o, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+		c.handled.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
 
 		return err
@@ -291,14 +263,14 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		o := metric.WithAttributes(
-			attribute.Key("grpc_type").String(string(clientStreamType(desc))),
-			attribute.Key("grpc_service").String(service),
-			attribute.Key("grpc_method").String(method),
+			kindAttribute.String(string(clientStreamKind(desc))),
+			serviceAttribute.String(service),
+			methodAttribute.String(method),
 		)
 
 		clientStream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		if err != nil {
-			c.handled.Add(ctx, 1, o, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+			c.handled.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 			c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
 
 			return nil, err
@@ -334,7 +306,7 @@ func (s *monitoredClientStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 	return err
@@ -348,13 +320,13 @@ func (s *monitoredClientStream) RecvMsg(m any) error {
 	err := s.ClientStream.RecvMsg(m)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(codes.OK.String())))
+			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(codes.OK.String())))
 			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 			return err
 		}
 
-		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(attribute.Key("grpc_code").String(status.Code(err).String())))
+		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
 
 		return err
