@@ -35,5 +35,5 @@ func RegisterPsutil(server *Server, json *marshaller.JSON) {
 		resp.Write(b)
 	}
 
-	server.Mux.HandleFunc("/debug/psutil", psutil)
+	server.ServeMux().HandleFunc("/debug/psutil", psutil)
 }

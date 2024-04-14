@@ -30,9 +30,11 @@ type RegisterParams struct {
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
-	resister("/healthz", params.Server.Mux, params.Health.Observer, params.Version, params.JSON, true)
-	resister("/livez", params.Server.Mux, params.Liveness.Observer, params.Version, params.JSON, false)
-	resister("/readyz", params.Server.Mux, params.Readiness.Observer, params.Version, params.JSON, false)
+	mux := params.Server.ServeMux()
+
+	resister("/healthz", mux, params.Health.Observer, params.Version, params.JSON, true)
+	resister("/livez", mux, params.Liveness.Observer, params.Version, params.JSON, false)
+	resister("/readyz", mux, params.Readiness.Observer, params.Version, params.JSON, false)
 
 	return nil
 }
