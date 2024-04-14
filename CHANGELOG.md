@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.154.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.154.3) - 2024-04-14
+
+- [`de05902`](https://github.com/alexfalkowski/go-service/commit/de05902b040ab5af7a5a3004f59122a8ceb9d6b8) fix(http): move mux to func (#612)
+
 ## [v1.154.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.154.2) - 2024-04-14
 
 - [`2b1b2bb`](https://github.com/alexfalkowski/go-service/commit/2b1b2bbd2d6efb7c072ad00139f53485068ccf94) fix(metrics): standard labels (#611)
