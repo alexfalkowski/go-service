@@ -6,5 +6,5 @@ import (
 
 // RegisterStatsviz for debug.
 func RegisterStatsviz(server *Server) {
-	statsviz.Register(server.Mux)
+	statsviz.Register(server.ServeMux())
 }

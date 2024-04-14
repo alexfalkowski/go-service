@@ -39,7 +39,7 @@ type ServerParams struct {
 
 // Server for HTTP.
 type Server struct {
-	Mux    *runtime.ServeMux
+	mux    *runtime.ServeMux
 	server *http.Server
 	sh     fx.Shutdowner
 	config *Config
@@ -100,7 +100,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		Mux:    mux,
+		mux:    mux,
 		server: s,
 		sh:     params.Shutdowner,
 		config: params.Config,
@@ -109,6 +109,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
+}
+
+// ServeMux of the server.
+func (s *Server) ServeMux() *runtime.ServeMux {
+	return s.mux
 }
 
 // Start the server.
