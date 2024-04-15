@@ -36,9 +36,18 @@ jobs:
           key: go-service-cache-{{ checksum "go.sum" }}
           paths:
             - /home/circleci/go/pkg/mod
+      - restore_cache:
+          name: restore go build cache
+          keys:
+            - go-service-go-build-cache-{{ checksum "go.sum" }}
       - run: make lint
       - run: make sec
       - run: make specs
+      - save_cache:
+          name: save go build cache
+          key: go-service-go-build-cache-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/.cache/go-build
       - run: make goveralls
       - store_artifacts:
           path: test/reports
