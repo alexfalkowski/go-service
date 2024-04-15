@@ -26,7 +26,16 @@ jobs:
       - run: mkcert -install
       - run: make create-certs
       - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9000 -wait tcp://localhost:9009 -timeout 1m
+      - restore_cache:
+          name: restore deps
+          keys:
+            - go-service-cache-{{ checksum "go.sum" }}
       - run: make dep
+      - save_cache:
+          name: save deps
+          key: go-service-cache-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
       - run: make lint
       - run: make sec
       - run: make specs
