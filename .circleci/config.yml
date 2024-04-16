@@ -29,11 +29,11 @@ jobs:
       - restore_cache:
           name: restore deps
           keys:
-            - go-service-cache-{{ checksum "go.sum" }}
+            - go-service-go-cache-{{ checksum "go.sum" }}
       - run: make dep
       - save_cache:
           name: save deps
-          key: go-service-cache-{{ checksum "go.sum" }}
+          key: go-service-go-cache-{{ checksum "go.sum" }}
           paths:
             - /home/circleci/go/pkg/mod
       - restore_cache:
