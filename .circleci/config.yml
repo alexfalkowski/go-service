@@ -49,6 +49,8 @@ jobs:
           paths:
             - /home/circleci/.cache/go-build
       - run: make goveralls
+      - store_test_results:
+          path: test/reports
       - store_artifacts:
           path: test/reports
     resource_class: large

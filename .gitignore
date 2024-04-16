@@ -4,4 +4,5 @@ vendor
 *.cov
 *.out
 *.pem
+*.xml
 test/new_config.yml
