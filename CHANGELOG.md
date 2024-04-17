@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.154.6](https://github.com/alexfalkowski/go-service/releases/tag/v1.154.6) - 2024-04-17
+
+- [`77f0774`](https://github.com/alexfalkowski/go-service/commit/77f077458fc7ce365205b593b071baa87fc75268) fix(deps): bump github.com/KimMachineGun/automemlimit from 0.5.0 to 0.6.0 (#622)
+- [`1de5d13`](https://github.com/alexfalkowski/go-service/commit/1de5d13151d63c6fe9ad387c782b9a46728b2cea) build(ci): store tests (#621)
+- [`92f1b30`](https://github.com/alexfalkowski/go-service/commit/92f1b302582fdbfdec85d89e27a26dc33e535962) build(deps): bump bin from `51c6ece` to `d5f116d` (#620)
+- [`728eb93`](https://github.com/alexfalkowski/go-service/commit/728eb930b392311b770f1d91aea0b73b777415f5) build(ci): change cache key (#619)
+- [`c1d072c`](https://github.com/alexfalkowski/go-service/commit/c1d072ce15fc65e15bd9ab5fc180a54c7b823917) build(deps): bump bin from `c322696` to `51c6ece` (#618)
+- [`b5cdae0`](https://github.com/alexfalkowski/go-service/commit/b5cdae0af814dc01a93a18548c1f98157fcfe1b6) build(ci): cache go build (#617)
+- [`82bdc04`](https://github.com/alexfalkowski/go-service/commit/82bdc04f6f4ec7848b454745ae47056280cddc90) build(ci): cache deps (#616)
+- [`22a318f`](https://github.com/alexfalkowski/go-service/commit/22a318f2aede1317bb1fe293a55b04e78d87e573) build(deps): bump bin from `13a7302` to `c322696` (#615)
+
 ## [v1.154.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.154.5) - 2024-04-14
 
 - [`79f368a`](https://github.com/alexfalkowski/go-service/commit/79f368acbf78614e323e8100684fc531e7fa51f9) fix(tracer): pass target to grpc (#614)
