@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/KimMachineGun/automemlimit v0.5.0
+	github.com/KimMachineGun/automemlimit v0.6.0
 	github.com/alexfalkowski/go-health v1.16.1
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
