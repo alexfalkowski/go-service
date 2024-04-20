@@ -8,8 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport"
-	tgrpc "github.com/alexfalkowski/go-service/transport/grpc"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
+	tg "github.com/alexfalkowski/go-service/transport/grpc"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -18,7 +18,7 @@ import (
 )
 
 // Mux ...
-var Mux = shttp.NewServeMux()
+var Mux = th.NewServeMux()
 
 // ErrInvalidToken ...
 var ErrInvalidToken = errors.New("invalid token")
@@ -58,13 +58,13 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 }
 
 // NewHTTPServer for test.
-func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *shttp.Server {
+func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *th.Server {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	server, err := shttp.NewServer(shttp.ServerParams{
+	server, err := th.NewServer(th.ServerParams{
 		Shutdowner: NewShutdowner(), Mux: Mux,
 		Config: tcfg.HTTP, Logger: logger,
 		Tracer: tracer, Meter: meter, Handlers: handlers,
@@ -81,13 +81,13 @@ func NewGRPCServer(
 	lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config,
 	verifyAuth bool, meter metric.Meter,
 	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
-) *tgrpc.Server {
+) *tg.Server {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	server, err := tgrpc.NewServer(tgrpc.ServerParams{
+	server, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: NewShutdowner(), Config: tcfg.GRPC, Logger: logger,
 		Tracer: tracer, Meter: meter,
 		Unary: unary, Stream: stream,
@@ -96,12 +96,12 @@ func NewGRPCServer(
 		panic(err)
 	}
 
-	v1.RegisterGreeterServiceServer(server.Server, NewServer(verifyAuth))
+	v1.RegisterGreeterServiceServer(server.Server(), NewServer(verifyAuth))
 
 	return server
 }
 
 // RegisterTransport for test.
-func RegisterTransport(lc fx.Lifecycle, gs *tgrpc.Server, hs *shttp.Server) {
+func RegisterTransport(lc fx.Lifecycle, gs *tg.Server, hs *th.Server) {
 	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{gs, hs}})
 }

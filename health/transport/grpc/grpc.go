@@ -7,5 +7,5 @@ import (
 
 // Register health for gRPC.
 func Register(srv *grpc.Server, ob *Observer) {
-	health.RegisterHealthServer(srv.Server, &server{ob: ob})
+	health.RegisterHealthServer(srv.Server(), &server{ob: ob})
 }
