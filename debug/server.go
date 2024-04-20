@@ -15,18 +15,23 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// ServerParams for HTTP.
+// NewServeMux for debug.
+func NewServeMux() *http.ServeMux {
+	return http.NewServeMux()
+}
+
+// ServerParams for debug.
 type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
+	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 }
 
-// Server for HTTP.
+// Server for debug.
 type Server struct {
-	mux    *http.ServeMux
 	server *http.Server
 	sh     fx.Shutdowner
 	config *Config
@@ -34,17 +39,15 @@ type Server struct {
 	list   net.Listener
 }
 
-// NewServer for HTTP.
+// NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
 	l, err := listener(params.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	mux := http.NewServeMux()
-
 	s := &http.Server{
-		Handler:           mux,
+		Handler:           params.Mux,
 		ReadTimeout:       time.Timeout,
 		WriteTimeout:      time.Timeout,
 		IdleTimeout:       time.Timeout,
@@ -52,7 +55,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		mux:    mux,
 		server: s,
 		sh:     params.Shutdowner,
 		config: params.Config,
@@ -61,11 +63,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
-}
-
-// ServeMux of the server.
-func (s *Server) ServeMux() *http.ServeMux {
-	return s.mux
 }
 
 // Start the server.

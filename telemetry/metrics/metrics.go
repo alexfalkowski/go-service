@@ -2,13 +2,10 @@ package metrics
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
-	shttp "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
@@ -18,15 +15,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.uber.org/fx"
 )
-
-// Register metrics.
-func Register(server *shttp.Server) error {
-	handler := promhttp.Handler()
-
-	return server.ServeMux().HandlePath("GET", "/metrics", func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-		handler.ServeHTTP(w, r)
-	})
-}
 
 // NewNoopMeter for metrics.
 func NewNoopMeter() m.Meter {

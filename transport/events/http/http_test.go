@@ -50,7 +50,7 @@ func TestSendReceive(t *testing.T) {
 
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), hs.ServeMux(), "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -102,7 +102,7 @@ func TestSendNotReceive(t *testing.T) {
 
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), hs.ServeMux(), "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

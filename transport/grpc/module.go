@@ -1,4 +1,4 @@
-package metrics
+package grpc
 
 import (
 	"go.uber.org/fx"
@@ -6,5 +6,5 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(NewMeter),
+	fx.Provide(NewServer),
 )

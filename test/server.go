@@ -17,6 +17,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Mux ...
+var Mux = shttp.NewServeMux()
+
 // ErrInvalidToken ...
 var ErrInvalidToken = errors.New("invalid token")
 
@@ -62,7 +65,8 @@ func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 	}
 
 	server, err := shttp.NewServer(shttp.ServerParams{
-		Shutdowner: NewShutdowner(), Config: tcfg.HTTP, Logger: logger,
+		Shutdowner: NewShutdowner(), Mux: Mux,
+		Config: tcfg.HTTP, Logger: logger,
 		Tracer: tracer, Meter: meter, Handlers: handlers,
 	})
 	if err != nil {

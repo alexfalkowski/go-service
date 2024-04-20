@@ -25,11 +25,29 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+// NewServeMux for HTTP.
+func NewServeMux() *runtime.ServeMux {
+	opts := []runtime.ServeMuxOption{
+		runtime.WithIncomingHeaderMatcher(customMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+			MarshalOptions: protojson.MarshalOptions{
+				UseProtoNames: true,
+			},
+			UnmarshalOptions: protojson.UnmarshalOptions{
+				DiscardUnknown: true,
+			},
+		}),
+	}
+
+	return runtime.NewServeMux(opts...)
+}
+
 // ServerParams for HTTP.
 type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
+	Mux        *runtime.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
@@ -39,7 +57,6 @@ type ServerParams struct {
 
 // Server for HTTP.
 type Server struct {
-	mux    *runtime.ServeMux
 	server *http.Server
 	sh     fx.Shutdowner
 	config *Config
@@ -64,18 +81,6 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	opts := []runtime.ServeMuxOption{
-		runtime.WithIncomingHeaderMatcher(customMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: true,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
-	}
-
 	n := negroni.New()
 	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
@@ -87,9 +92,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n.Use(cors.New())
-
-	mux := runtime.NewServeMux(opts...)
-	n.UseHandler(mux)
+	n.UseHandler(params.Mux)
 
 	s := &http.Server{
 		Handler:           n,
@@ -100,7 +103,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		mux:    mux,
 		server: s,
 		sh:     params.Shutdowner,
 		config: params.Config,
@@ -109,11 +111,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
-}
-
-// ServeMux of the server.
-func (s *Server) ServeMux() *runtime.ServeMux {
-	return s.mux
 }
 
 // Start the server.
