@@ -49,7 +49,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 
 // Server for gRPC.
 type Server struct {
-	Server *grpc.Server
+	server *grpc.Server
 	sh     fx.Shutdowner
 	config *Config
 	logger *zap.Logger
@@ -97,7 +97,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	reflection.Register(s)
 
 	server := &Server{
-		Server: s,
+		server: s,
 		sh:     params.Shutdowner,
 		config: params.Config,
 		logger: params.Logger,
@@ -105,6 +105,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
+}
+
+// Server for gRPC.
+func (s *Server) Server() *grpc.Server {
+	return s.server
 }
 
 // Start the server.
@@ -119,7 +124,7 @@ func (s *Server) Start() {
 func (s *Server) start() {
 	s.logger.Info("starting server", zap.Stringer("addr", s.list.Addr()), zap.String(tm.ServiceKey, "grpc"))
 
-	if err := s.Server.Serve(s.list); err != nil {
+	if err := s.server.Serve(s.list); err != nil {
 		fields := []zapcore.Field{zap.Stringer("addr", s.list.Addr()), zap.Error(err), zap.String(tm.ServiceKey, "grpc")}
 
 		if err := s.sh.Shutdown(); err != nil {
@@ -137,7 +142,7 @@ func (s *Server) Stop(_ context.Context) {
 	}
 
 	s.logger.Info("stopping server", zap.String(tm.ServiceKey, "grpc"))
-	s.Server.GracefulStop()
+	s.server.GracefulStop()
 }
 
 func listener(cfg *Config) (net.Listener, error) {
