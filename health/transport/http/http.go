@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/marshaller"
-	h "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/fx"
@@ -20,7 +19,7 @@ const (
 type RegisterParams struct {
 	fx.In
 
-	Server    *h.Server
+	Mux       *runtime.ServeMux
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
@@ -30,7 +29,7 @@ type RegisterParams struct {
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
-	mux := params.Server.ServeMux()
+	mux := params.Mux
 
 	resister("/healthz", mux, params.Health.Observer, params.Version, params.JSON, true)
 	resister("/livez", mux, params.Liveness.Observer, params.Version, params.JSON, false)

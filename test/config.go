@@ -167,11 +167,33 @@ func NewCmdConfig(flag string) (*cmd.Config, error) {
 	return cmd.NewConfig(flag, marshaller.NewFactory(p))
 }
 
-// NewDebugConfig for test.
-func NewDebugConfig() *debug.Config {
+// NewInsecureDebugConfig for test.
+func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
 			Enabled:   true,
+			Port:      Port(),
+			UserAgent: "TestHTTPDebug/1.0",
+			Retry:     NewRetry(),
+		},
+	}
+}
+
+// NewInsecureDebugConfig for test.
+func NewSecureDebugConfig() *debug.Config {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	s := &security.Config{
+		Enabled:  true,
+		CertFile: filepath.Join(dir, "certs/cert.pem"),
+		KeyFile:  filepath.Join(dir, "certs/key.pem"),
+	}
+
+	return &debug.Config{
+		Config: &server.Config{
+			Enabled:   true,
+			Security:  s,
 			Port:      Port(),
 			UserAgent: "TestHTTPDebug/1.0",
 			Retry:     NewRetry(),

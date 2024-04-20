@@ -44,7 +44,7 @@ func TestHealth(t *testing.T) {
 			test.RegisterTransport(lc, gs, hs)
 
 			params := hhttp.RegisterParams{
-				Server: hs, Health: &hhttp.HealthObserver{Observer: o},
+				Mux: test.Mux, Health: &hhttp.HealthObserver{Observer: o},
 				Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
 				Version: test.Version,
 			}
@@ -98,7 +98,7 @@ func TestReadinessNoop(t *testing.T) {
 		test.RegisterTransport(lc, gs, hs)
 
 		params := hhttp.RegisterParams{
-			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
+			Mux: test.Mux, Health: &hhttp.HealthObserver{Observer: o},
 			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: server.Observe("noop")},
 			Version: test.Version,
 		}
@@ -149,7 +149,7 @@ func TestInvalidHealth(t *testing.T) {
 		test.RegisterTransport(lc, gs, hs)
 
 		params := hhttp.RegisterParams{
-			Server: hs, Health: &hhttp.HealthObserver{Observer: o},
+			Mux: test.Mux, Health: &hhttp.HealthObserver{Observer: o},
 			Liveness: &hhttp.LivenessObserver{Observer: o}, Readiness: &hhttp.ReadinessObserver{Observer: o},
 			Version: test.Version,
 		}
