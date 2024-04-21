@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.156.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.156.0) - 2024-04-21
+
+- [`f22cb73`](https://github.com/alexfalkowski/go-service/commit/f22cb7380bc7edceca18e05e217c3f503345b4f9) feat(redis): make sure marshaller and compressor can be configured (#626)
+
 ## [v1.155.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.155.0) - 2024-04-20
 
 - [`ad05af0`](https://github.com/alexfalkowski/go-service/commit/ad05af01dd63f7bd6247ac26f1686ecb273d26fd) feat(transport): expose server for gRPC (#625)
