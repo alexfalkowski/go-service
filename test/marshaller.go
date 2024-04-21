@@ -4,6 +4,9 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
+// Marshaller for tests.
+var Marshaller = marshaller.NewFactory()
+
 // NewMarshaller for test.
 func NewMarshaller(err error) marshaller.Marshaller {
 	return &mar{err: err}

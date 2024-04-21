@@ -1,8 +1,10 @@
 package redis
 
 import (
-	"github.com/alexfalkowski/go-service/cache/compressor"
-	"github.com/alexfalkowski/go-service/cache/marshaller"
+	"time"
+
+	"github.com/alexfalkowski/go-service/compressor"
+	"github.com/alexfalkowski/go-service/marshaller"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/cache/v8"
 	"github.com/go-redis/redis/v8"
@@ -14,34 +16,49 @@ type OptionsParams struct {
 	fx.In
 
 	Client     gr.Client
-	Marshaller marshaller.Marshaller
-	Compressor compressor.Compressor
+	Config     *Config
+	Marshaller *marshaller.Factory
+	Compressor *compressor.Factory
 }
 
 // NewOptions for redis.
-func NewOptions(params OptionsParams) *cache.Options {
+func NewOptions(params OptionsParams) (*cache.Options, error) {
+	if !IsEnabled(params.Config) {
+		return &cache.Options{LocalCache: cache.NewTinyLFU(1, time.Minute)}, nil
+	}
+
+	fm, err := params.Marshaller.Create(params.Config.Marshaller)
+	if err != nil {
+		return nil, err
+	}
+
+	cm, err := params.Compressor.Create(params.Config.Compressor)
+	if err != nil {
+		return nil, err
+	}
+
 	opts := &cache.Options{
 		Redis:        params.Client,
 		StatsEnabled: true,
 		Marshal: func(v any) ([]byte, error) {
-			d, err := params.Marshaller.Marshal(v)
+			d, err := fm.Marshal(v)
 			if err != nil {
 				return nil, err
 			}
 
-			return params.Compressor.Compress(d), nil
+			return cm.Compress(d), nil
 		},
 		Unmarshal: func(b []byte, v any) error {
-			d, err := params.Compressor.Decompress(b)
+			d, err := cm.Decompress(b)
 			if err != nil {
 				return err
 			}
 
-			return params.Marshaller.Unmarshal(d, v)
+			return fm.Unmarshal(d, v)
 		},
 	}
 
-	return opts
+	return opts, nil
 }
 
 // NewRingOptions for redis.

@@ -1,4 +1,4 @@
-package marshaller_test
+package compressor_test
 
 import (
 	"testing"
@@ -8,10 +8,10 @@ import (
 )
 
 func TestValidFactory(t *testing.T) {
-	for _, k := range []string{"yaml", "yml", "toml"} {
+	for _, k := range []string{"snappy"} {
 		Convey("Given I have factory", t, func() {
-			Convey("When I create marshaller", func() {
-				m, err := test.Marshaller.Create(k)
+			Convey("When I create compressor", func() {
+				m, err := test.Compressor.Create(k)
 
 				Convey("Then I should have valid marshaller", func() {
 					So(err, ShouldBeNil)
@@ -25,8 +25,8 @@ func TestValidFactory(t *testing.T) {
 func TestInvalidFactory(t *testing.T) {
 	for _, k := range []string{"test", "bob"} {
 		Convey("Given I have factory", t, func() {
-			Convey("When I create marshaller", func() {
-				m, err := test.Marshaller.Create(k)
+			Convey("When I create compressor", func() {
+				m, err := test.Compressor.Create(k)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)

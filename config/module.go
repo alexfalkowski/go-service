@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/marshaller"
 	"go.uber.org/fx"
 )
 
@@ -10,7 +9,6 @@ var (
 	Module = fx.Options(
 		ConfiguratorModule,
 		ConfigModule,
-		marshaller.Module,
 	)
 
 	// ConfiguratorModule for fx.

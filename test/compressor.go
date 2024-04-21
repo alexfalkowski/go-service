@@ -4,6 +4,9 @@ import (
 	"github.com/alexfalkowski/go-service/compressor"
 )
 
+// Compressor for tests.
+var Compressor = compressor.NewFactory()
+
 // NewCompressor for test.
 func NewCompressor(err error) compressor.Compressor {
 	return &cmp{err: err}

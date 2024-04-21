@@ -4,6 +4,10 @@ environment = "development"
 enabled = true
 port = "6060"
 
+[cache.redis]
+marshaller = "proto"
+compressor = "snappy"
+
 [cache.redis.addresses]
 server = "localhost:6379"
 

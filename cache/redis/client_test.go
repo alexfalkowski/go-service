@@ -20,7 +20,7 @@ func TestClientIncr(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		c := test.NewRedisClient(lc, "localhost:6379", logger)
+		c := test.NewRedisClient(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

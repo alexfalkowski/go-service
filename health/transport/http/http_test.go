@@ -185,7 +185,7 @@ func TestInvalidHealth(t *testing.T) {
 }
 
 func observer(lc fx.Lifecycle, url string, client *http.Client, logger *zap.Logger) *server.Server {
-	r := test.NewRedisClient(lc, "localhost:6379", logger)
+	r := test.NewRedisClient(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger)
 	rc := hchecker.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
