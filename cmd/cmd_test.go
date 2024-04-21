@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -21,6 +22,7 @@ import (
 	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
 	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
@@ -221,7 +223,7 @@ func opts() []fx.Option {
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
-		cache.RedisModule, cache.RistrettoModule, cache.ProtoMarshallerModule, cache.SnappyCompressorModule,
+		cache.RedisModule, cache.RistrettoModule, compressor.Module, marshaller.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),

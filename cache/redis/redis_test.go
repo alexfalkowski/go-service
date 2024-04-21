@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/compressor"
-	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -19,6 +17,8 @@ import (
 
 func init() {
 	tracer.Register()
+	test.Marshaller.Register("error", test.NewMarshaller(errors.New("failed")))
+	test.Compressor.Register("error", test.NewCompressor(errors.New("failed")))
 }
 
 func TestSetCache(t *testing.T) {
@@ -26,7 +26,7 @@ func TestSetCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -62,7 +62,7 @@ func TestSetXXCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -93,7 +93,7 @@ func TestSetNXCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -129,7 +129,7 @@ func TestInvalidHostCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "invalid_host", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("invalid_host", "snappy", "proto"), logger, m)
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -152,7 +152,8 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), test.NewMarshaller(errors.New("failed")), m)
+
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "error"), logger, m)
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -171,12 +172,31 @@ func TestInvalidMarshallerCache(t *testing.T) {
 	})
 }
 
+func TestMissingMarshallerCache(t *testing.T) {
+	Convey("When I try to create a cache", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		m := test.NewMeter(lc)
+
+		_, err := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "test"), logger, m)
+
+		lc.RequireStart()
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldEqual, "invalid kind")
+		})
+
+		lc.RequireStop()
+	})
+}
+
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewMeter(lc)
-		c := test.NewRedisCache(lc, "localhost:6379", logger, test.NewCompressor(errors.New("failed")), marshaller.NewProto(), m)
+		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "error", "proto"), logger, m)
 		ctx := context.Background()
 
 		lc.RequireStart()
@@ -193,6 +213,25 @@ func TestInvalidCompressorCache(t *testing.T) {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "failed")
 			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestMissingCompressorCache(t *testing.T) {
+	Convey("When I try to create a cache", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		m := test.NewMeter(lc)
+
+		_, err := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "test", "proto"), logger, m)
+
+		lc.RequireStart()
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldNotBeNil)
+			So(err.Error(), ShouldEqual, "invalid kind")
 		})
 
 		lc.RequireStop()

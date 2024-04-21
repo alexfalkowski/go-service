@@ -4,6 +4,8 @@ debug:
   port: 6060
 cache:
   redis:
+    marshaller: proto
+    compressor: snappy
     addresses:
       server: localhost:6379
   ristretto:

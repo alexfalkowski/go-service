@@ -1,8 +1,6 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/cache/compressor"
-	"github.com/alexfalkowski/go-service/cache/marshaller"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	rem "github.com/alexfalkowski/go-service/cache/redis/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
@@ -25,10 +23,4 @@ var (
 		fx.Provide(ristretto.NewCache),
 		fx.Invoke(rim.Register),
 	)
-
-	// SnappyCompressorModule for fx.
-	SnappyCompressorModule = fx.Provide(compressor.NewSnappy)
-
-	// ProtoMarshallerModule for fx.
-	ProtoMarshallerModule = fx.Provide(marshaller.NewProto)
 )

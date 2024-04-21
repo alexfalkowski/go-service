@@ -6,12 +6,12 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
@@ -162,9 +162,7 @@ func NewPGConfig() *pg.Config {
 
 // NewCmdConfig for test.
 func NewCmdConfig(flag string) (*cmd.Config, error) {
-	p := marshaller.FactoryParams{YAML: marshaller.NewYAML(), TOML: marshaller.NewTOML()}
-
-	return cmd.NewConfig(flag, marshaller.NewFactory(p))
+	return cmd.NewConfig(flag, Marshaller)
 }
 
 // NewInsecureDebugConfig for test.
@@ -199,4 +197,9 @@ func NewSecureDebugConfig() *debug.Config {
 			Retry:     NewRetry(),
 		},
 	}
+}
+
+// NewRedisConfig for test.
+func NewRedisConfig(host, compressor, marshaller string) *redis.Config {
+	return &redis.Config{Addresses: map[string]string{"server": host}, Compressor: compressor, Marshaller: marshaller}
 }

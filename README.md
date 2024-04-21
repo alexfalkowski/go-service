@@ -46,14 +46,24 @@ To configure, please specify the following:
 environment: development
 ```
 
+## Compression
+
+We support the following:
+- [Snappy](https://github.com/golang/snappy)
+
+## Marshalling
+
+We support the following:
+- [JSON](https://github.com/goccy/go-json)
+- [TOML](https://github.com/BurntSushi/toml)
+- [YAML](https://gopkg.in/yaml.v3)
+- [Proto](https://google.golang.org/protobuf/proto)
+
 ## Caching
 
 The framework currently supports the following caching solutions:
 - [Redis Cache](https://github.com/go-redis/cache)
 - [Ristretto](https://github.com/dgraph-io/ristretto)
-
-We also support the following compressions to optimize cache size:
-- [Snappy](https://github.com/golang/snappy)
 
 ### Configuration
 
@@ -62,6 +72,8 @@ To configure, please specify the following:
 ```yaml
 cache:
   redis:
+    compressor: snappy
+    marshaller: proto
     addresses:
       server: localhost:6379
     username: test

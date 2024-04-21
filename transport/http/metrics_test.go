@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	ht "github.com/alexfalkowski/go-service/transport/http"
@@ -38,7 +36,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, test.Version, m)
 
-		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		_, _ = test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewInsecureTransportConfig()
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
@@ -95,7 +93,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, test.Version, m)
 
-		_ = test.NewRedisCache(lc, "localhost:6379", logger, compressor.NewSnappy(), marshaller.NewProto(), m)
+		_, _ = test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 		_ = test.NewRistrettoCache(lc, m)
 		cfg := test.NewSecureTransportConfig()
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)

@@ -84,6 +84,8 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.FeatureConfig().Kind, ShouldEqual, "flipt")
 	So(cfg.FeatureConfig().Host, ShouldEqual, "localhost:9000")
 	So(cfg.HooksConfig().Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")
+	So(cfg.RedisConfig().Compressor, ShouldEqual, "snappy")
+	So(cfg.RedisConfig().Marshaller, ShouldEqual, "proto")
 	So(cfg.RedisConfig().Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
 	So(cfg.RistrettoConfig().BufferItems, ShouldEqual, 64)
 	So(cfg.RistrettoConfig().MaxCost, ShouldEqual, 100000000)
