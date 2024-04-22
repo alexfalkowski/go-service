@@ -49,6 +49,7 @@ environment: development
 ## Compression
 
 We support the following:
+- None
 - [Snappy](https://github.com/golang/snappy)
 
 ## Marshalling

@@ -8,7 +8,7 @@ import (
 )
 
 func TestValidFactory(t *testing.T) {
-	for _, k := range []string{"snappy"} {
+	for _, k := range []string{"snappy", "none"} {
 		Convey("Given I have factory", t, func() {
 			Convey("When I create compressor", func() {
 				m, err := test.Compressor.Create(k)
