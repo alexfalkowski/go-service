@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	ht "github.com/alexfalkowski/go-service/http"
-	ts "github.com/alexfalkowski/go-service/transport/strings"
+	sh "github.com/alexfalkowski/go-service/net/http"
+	ss "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/metric"
 )
 
@@ -61,7 +61,7 @@ type Handler struct {
 // ServeHTTP for metrics.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if ts.IsHealth(service) {
+	if ss.IsHealth(service) {
 		next(resp, req)
 
 		return
@@ -78,7 +78,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	h.started.Add(ctx, 1, opts)
 	h.received.Add(ctx, 1, opts)
 
-	res := &ht.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
+	res := &sh.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req)
 
 	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.Int(res.StatusCode)))
@@ -140,7 +140,7 @@ type RoundTripper struct {
 
 // RoundTrip for metrics.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ts.IsHealth(req.URL.String()) {
+	if ss.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
-	stime "github.com/alexfalkowski/go-service/time"
+	sh "github.com/alexfalkowski/go-service/net/http"
+	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	tstrings "github.com/alexfalkowski/go-service/transport/strings"
+	ss "github.com/alexfalkowski/go-service/transport/strings"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,7 +31,7 @@ type Handler struct {
 // ServeHTTP or zap.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if tstrings.IsHealth(path) {
+	if ss.IsHealth(path) {
 		next(resp, req)
 
 		return
@@ -40,11 +40,11 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	start := time.Now()
 	ctx := req.Context()
 
-	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
+	res := &sh.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req)
 
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, path),
@@ -79,7 +79,7 @@ type RoundTripper struct {
 
 // RoundTrip for zap.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if tstrings.IsHealth(req.URL.String()) {
+	if ss.IsHealth(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
@@ -88,7 +88,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, path),
