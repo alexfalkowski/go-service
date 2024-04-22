@@ -59,6 +59,7 @@ We support the following:
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://gopkg.in/yaml.v3)
 - [Proto](https://google.golang.org/protobuf/proto)
+- [GOB](https://pkg.go.dev/encoding/gob)
 
 ## Caching
 

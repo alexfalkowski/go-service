@@ -8,7 +8,7 @@ import (
 )
 
 func TestValidFactory(t *testing.T) {
-	for _, k := range []string{"yaml", "yml", "toml"} {
+	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
 		Convey("Given I have factory", t, func() {
 			Convey("When I create marshaller", func() {
 				m, err := test.Marshaller.Create(k)
