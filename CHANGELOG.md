@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.157.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.157.0) - 2024-04-22
+
+- [`a64abfe`](https://github.com/alexfalkowski/go-service/commit/a64abfefaaca22722e0ca03d51f49829f0aa41b8) feat(compressor): add none (#628)
+- [`c666507`](https://github.com/alexfalkowski/go-service/commit/c6665071dfc59ef16b4cfd2baa9c9b87291b6b3a) build(deps): bump bin from `d5f116d` to `c06391c` (#627)
+
 ## [v1.156.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.156.0) - 2024-04-21
 
 - [`f22cb73`](https://github.com/alexfalkowski/go-service/commit/f22cb7380bc7edceca18e05e217c3f503345b4f9) feat(redis): make sure marshaller and compressor can be configured (#626)
