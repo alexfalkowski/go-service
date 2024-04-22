@@ -3,8 +3,10 @@ package http
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
@@ -133,7 +135,10 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 		return nil, err
 	}
 
-	client := &http.Client{Transport: rt}
+	client := &http.Client{
+		Transport: rt,
+		Timeout:   time.Timeout,
+	}
 
 	return client, nil
 }
@@ -144,6 +149,7 @@ func Transport() *http.Transport {
 	t.MaxIdleConns = 100
 	t.MaxConnsPerHost = 100
 	t.MaxIdleConnsPerHost = 100
+	t.DialContext = net.DialContext
 
 	return t
 }

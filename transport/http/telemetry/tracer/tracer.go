@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	shttp "github.com/alexfalkowski/go-service/http"
 	"github.com/alexfalkowski/go-service/meta"
+	sh "github.com/alexfalkowski/go-service/net/http"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/attribute"
@@ -52,7 +52,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
 
-	res := &shttp.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
+	res := &sh.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req.WithContext(ctx))
 
 	for k, v := range meta.Strings(ctx) {
