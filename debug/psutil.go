@@ -21,11 +21,13 @@ func RegisterPsutil(mux *http.ServeMux, json *marshaller.JSON) {
 			"times": t,
 		}
 
-		sw, _ := mem.SwapMemoryWithContext(ctx)
-		vi, _ := mem.VirtualMemoryWithContext(ctx)
+		sm, _ := mem.SwapMemoryWithContext(ctx)
+		sd, _ := mem.SwapDevicesWithContext(ctx)
+		vm, _ := mem.VirtualMemoryWithContext(ctx)
 		r["mem"] = map[string]any{
-			"swap":    sw,
-			"virtual": vi,
+			"swap":    sm,
+			"devices": sd,
+			"virtual": vm,
 		}
 
 		resp.Header().Add("Content-Type", "application/json")
