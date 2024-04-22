@@ -23,6 +23,7 @@ func NewFactory() *Factory {
 			"yml":   NewYAML(),
 			"toml":  NewTOML(),
 			"proto": NewProto(),
+			"gob":   NewGOB(),
 		},
 	}
 
