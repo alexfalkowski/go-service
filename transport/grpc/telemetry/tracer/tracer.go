@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -17,7 +18,7 @@ import (
 )
 
 // UnaryServerInterceptor for tracer.
-func UnaryServerInterceptor(tracer trace.Tracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -33,7 +34,7 @@ func UnaryServerInterceptor(tracer trace.Tracer) grpc.UnaryServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tracer.Start(
+		ctx, span := t.Start(
 			trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
 			operationName(info.FullMethod),
 			trace.WithSpanKind(trace.SpanKindServer),
@@ -49,10 +50,7 @@ func UnaryServerInterceptor(tracer trace.Tracer) grpc.UnaryServerInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			span.SetAttributes(attribute.Key(k).String(v))
-		}
-
+		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
 		return resp, err
@@ -60,7 +58,7 @@ func UnaryServerInterceptor(tracer trace.Tracer) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for tracer.
-func StreamServerInterceptor(tracer trace.Tracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -76,7 +74,7 @@ func StreamServerInterceptor(tracer trace.Tracer) grpc.StreamServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tracer.Start(
+		ctx, span := t.Start(
 			trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
 			operationName(info.FullMethod),
 			trace.WithSpanKind(trace.SpanKindServer),
@@ -95,10 +93,7 @@ func StreamServerInterceptor(tracer trace.Tracer) grpc.StreamServerInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			span.SetAttributes(attribute.Key(k).String(v))
-		}
-
+		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
 		return err
@@ -106,7 +101,7 @@ func StreamServerInterceptor(tracer trace.Tracer) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for tracer.
-func UnaryClientInterceptor(tracer trace.Tracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -120,7 +115,7 @@ func UnaryClientInterceptor(tracer trace.Tracer) grpc.UnaryClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tracer.Start(
+		ctx, span := t.Start(
 			ctx,
 			operationName(cc.Target()+fullMethod),
 			trace.WithSpanKind(trace.SpanKindClient),
@@ -137,10 +132,7 @@ func UnaryClientInterceptor(tracer trace.Tracer) grpc.UnaryClientInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			span.SetAttributes(attribute.Key(k).String(v))
-		}
-
+		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
 		return err
@@ -148,7 +140,7 @@ func UnaryClientInterceptor(tracer trace.Tracer) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for tracer.
-func StreamClientInterceptor(tracer trace.Tracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsHealth(service) {
@@ -162,7 +154,7 @@ func StreamClientInterceptor(tracer trace.Tracer) grpc.StreamClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tracer.Start(
+		ctx, span := t.Start(
 			ctx,
 			operationName(cc.Target()+fullMethod),
 			trace.WithSpanKind(trace.SpanKindClient),
@@ -179,10 +171,7 @@ func StreamClientInterceptor(tracer trace.Tracer) grpc.StreamClientInterceptor {
 			span.RecordError(err)
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			span.SetAttributes(attribute.Key(k).String(v))
-		}
-
+		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
 		return stream, err

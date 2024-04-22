@@ -2,79 +2,15 @@ package meta
 
 import (
 	"context"
-	"fmt"
-	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
-// ToValuer for meta.
-func ToValuer(st fmt.Stringer) Valuer {
-	if st != nil {
-		return String(st.String())
-	}
+// Converter for meta.
+type Converter func(string) string
 
-	return nil
-}
-
-// Valuer for meta.
-type Valuer interface {
-	Value() string
-
-	fmt.Stringer
-}
-
-// ValueOrBlank for meta.
-func ValueOrBlank(s Valuer) string {
-	if s != nil {
-		return s.Value()
-	}
-
-	return ""
-}
-
-// IsBlank checks for an empty string.
-func IsBlank(actual Valuer) bool {
-	return IsEqual(actual, "")
-}
-
-// IsEqual checks if actual is expected.
-func IsEqual(actual Valuer, expected string) bool {
-	return ValueOrBlank(actual) == expected
-}
-
-// Error for meta.
-func Error(err error) Valuer {
-	if err != nil {
-		return String(err.Error())
-	}
-
-	return String("")
-}
-
-// String for meta.
-type String string
-
-// Value of the string.
-func (v String) Value() string {
-	return string(v)
-}
-
-// String to satisfy fmt.Stringer.
-func (v String) String() string {
-	return v.Value()
-}
-
-// Redacted for meta.
-type Redacted string
-
-// Value of the string.
-func (v Redacted) Value() string {
-	return string(v)
-}
-
-// String to satisfy fmt.Stringer.
-func (v Redacted) String() string {
-	return strings.Repeat("*", len(v.Value()))
-}
+// NoneConverter for meta.
+var NoneConverter = func(s string) string { return s }
 
 type contextKey string
 
@@ -93,13 +29,23 @@ func Attribute(ctx context.Context, key string) Valuer {
 	return attributes(ctx)[key]
 }
 
-// Strings of meta.
-func Strings(ctx context.Context) map[string]string {
+// SnakeStrings for meta.
+func SnakeStrings(ctx context.Context, prefix string) map[string]string {
+	return Strings(ctx, prefix, strcase.ToSnake)
+}
+
+// CamelStrings for meta.
+func CamelStrings(ctx context.Context, prefix string) map[string]string {
+	return Strings(ctx, prefix, strcase.ToLowerCamel)
+}
+
+// Strings for meta.
+func Strings(ctx context.Context, prefix string, converter Converter) map[string]string {
 	as := attributes(ctx)
 	ss := make(map[string]string, len(as))
 
 	for k, v := range as {
-		ss[k] = v.String()
+		ss[prefix+converter(k)] = v.String()
 	}
 
 	return ss

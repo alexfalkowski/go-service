@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	gr "github.com/alexfalkowski/go-service/redis"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/attribute"
@@ -50,9 +51,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }
@@ -82,9 +81,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }
@@ -114,14 +111,11 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	operationName := "client get"
 	attrs := []attribute.KeyValue{
@@ -145,9 +139,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }
@@ -175,14 +167,11 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	operationName := "client incr"
 	attrs := []attribute.KeyValue{
@@ -206,9 +195,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return cmd
 }

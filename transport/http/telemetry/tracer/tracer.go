@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/attribute"
@@ -55,10 +56,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	res := &sh.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
 	next(res, req.WithContext(ctx))
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
-
+	tracer.Meta(ctx, span)
 	span.SetAttributes(semconv.HTTPResponseStatusCode(res.StatusCode))
 }
 
@@ -101,9 +99,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	resp, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
