@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.159.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.159.0) - 2024-04-22
+
+- [`146e4aa`](https://github.com/alexfalkowski/go-service/commit/146e4aa230e91f8806c95ed5ebdd10db2ae21647) feat(debug): add devices from psutil (#631)
+
 ## [v1.158.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.158.1) - 2024-04-22
 
 - [`703f806`](https://github.com/alexfalkowski/go-service/commit/703f806ca8052c1676ed10bc0bdec03311ddbe59) fix(transport): add http timeouts (#630)
