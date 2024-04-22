@@ -24,4 +24,19 @@ func TestTOML(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have TOML marshaller", t, func() {
+		m := marshaller.NewTOML()
+
+		Convey("When I unmarshall the TOML", func() {
+			var msg map[string]string
+
+			err := m.Unmarshal([]byte(`test = "test"`), &msg)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid map", func() {
+				So(msg, ShouldEqual, map[string]string{"test": "test"})
+			})
+		})
+	})
 }

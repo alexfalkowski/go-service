@@ -24,4 +24,19 @@ func TestJSON(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have JSON marshaller", t, func() {
+		m := marshaller.NewJSON()
+
+		Convey("When I unmarshall the JSON", func() {
+			var msg map[string]string
+
+			err := m.Unmarshal([]byte("{\n    \"test\": \"test\"\n}"), &msg)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid map", func() {
+				So(msg, ShouldEqual, map[string]string{"test": "test"})
+			})
+		})
+	})
 }

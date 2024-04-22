@@ -19,6 +19,7 @@ func NewFactory() *Factory {
 	f := &Factory{
 		configs: configs{
 			"snappy": NewSnappy(),
+			"none":   NewNone(),
 		},
 	}
 
