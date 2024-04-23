@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.160.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.160.0) - 2024-04-23
+
+- [`5886df1`](https://github.com/alexfalkowski/go-service/commit/5886df13d61edf93df919245e1840813060fdc2a) feat(meta): follow case conventions (#632)
+
 ## [v1.159.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.159.0) - 2024-04-22
 
 - [`146e4aa`](https://github.com/alexfalkowski/go-service/commit/146e4aa230e91f8806c95ed5ebdd10db2ae21647) feat(debug): add devices from psutil (#631)
