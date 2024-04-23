@@ -142,25 +142,19 @@ func TestInvalidClient(t *testing.T) {
 	})
 }
 
-func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ version.Version) (health.Registrations, error) {
+func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ version.Version) health.Registrations {
 	if cfg == nil {
-		return nil, nil
+		return nil
 	}
 
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	client, err := http.NewClient(
-		http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(cfg.UserAgent),
-	)
-	if err != nil {
-		return nil, err
-	}
-
+	client := http.NewClient(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(cfg.UserAgent))
 	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
-	return health.Registrations{nr, hr}, nil
+	return health.Registrations{nr, hr}
 }
 
 func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {

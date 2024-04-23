@@ -27,15 +27,12 @@ func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tra
 		panic(err)
 	}
 
-	client, err := h.NewClient(
+	client := h.NewClient(
 		h.WithClientLogger(logger),
 		h.WithClientRoundTripper(rt), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(tcfg.HTTP.Retry),
 		h.WithClientMetrics(meter), h.WithClientUserAgent(tcfg.HTTP.UserAgent),
 	)
-	if err != nil {
-		panic(err)
-	}
 
 	return client
 }

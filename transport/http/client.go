@@ -121,7 +121,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 }
 
 // NewClient for HTTP.
-func NewClient(opts ...ClientOption) (*http.Client, error) {
+func NewClient(opts ...ClientOption) *http.Client {
 	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer()}
 	for _, o := range opts {
 		o.apply(defaultOptions)
@@ -132,7 +132,7 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 		Timeout:   time.Timeout,
 	}
 
-	return client, nil
+	return client
 }
 
 // Transport for HTTP.
