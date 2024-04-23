@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/alexfalkowski/go-service/meta"
 	gr "github.com/alexfalkowski/go-service/redis"
-	stime "github.com/alexfalkowski/go-service/time"
+	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -33,15 +33,13 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	start := time.Now()
 	cmd := c.client.Set(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -62,15 +60,13 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	start := time.Now()
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -91,15 +87,13 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	start := time.Now()
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -120,15 +114,13 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	start := time.Now()
 	cmd := c.client.Get(ctx, key)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -149,15 +141,13 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Del(ctx, keys...)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.Strings(tm.PathKey, keys),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -178,15 +168,13 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Incr(ctx, key)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))

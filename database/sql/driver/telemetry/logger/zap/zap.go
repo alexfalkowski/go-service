@@ -5,8 +5,8 @@ import (
 	"database/sql/driver"
 	"time"
 
-	"github.com/alexfalkowski/go-service/meta"
-	stime "github.com/alexfalkowski/go-service/time"
+	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
 	"go.uber.org/zap"
@@ -51,11 +51,9 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
-	fields = append(fields, zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -82,11 +80,9 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
-	fields = append(fields, zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -135,11 +131,8 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
-
-	fields = append(fields, zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))
@@ -166,11 +159,8 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
-
-	fields = append(fields, zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))))
+	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
 	if err != nil {
 		fields = append(fields, zap.Error(err))

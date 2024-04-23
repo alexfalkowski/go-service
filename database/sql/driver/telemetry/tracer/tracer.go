@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/attribute"
@@ -36,7 +37,6 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 	return i.interceptor.ConnPing(ctx, conn)
 }
 
-//nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	operationName := "connection exec"
 	attrs := []attribute.KeyValue{
@@ -59,13 +59,12 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return res, err
 }
 
+//nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	operationName := "connection query"
 	attrs := []attribute.KeyValue{
@@ -88,9 +87,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return ctx, res, err
 }
@@ -116,7 +113,6 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return i.interceptor.RowsClose(ctx, rows)
 }
 
-//nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	operationName := "statement exec"
 	attrs := []attribute.KeyValue{
@@ -139,13 +135,12 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return res, err
 }
 
+//nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	operationName := "statement query"
 	attrs := []attribute.KeyValue{
@@ -168,9 +163,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		span.RecordError(err)
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		span.SetAttributes(attribute.Key(k).String(v))
-	}
+	tracer.Meta(ctx, span)
 
 	return ctx, res, err
 }

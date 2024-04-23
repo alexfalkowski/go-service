@@ -5,8 +5,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/alexfalkowski/go-service/meta"
-	stime "github.com/alexfalkowski/go-service/time"
+	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	"go.uber.org/zap"
@@ -32,15 +32,13 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		start := time.Now()
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, info.FullMethod),
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			fields = append(fields, zap.String(k, v))
-		}
+		fields = append(fields, tz.Meta(ctx)...)
 
 		if d, ok := ctx.Deadline(); ok {
 			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -74,15 +72,13 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		err := handler(srv, stream)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, info.FullMethod),
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			fields = append(fields, zap.String(k, v))
-		}
+		fields = append(fields, tz.Meta(ctx)...)
 
 		if d, ok := ctx.Deadline(); ok {
 			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -115,15 +111,13 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, fullMethod),
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			fields = append(fields, zap.String(k, v))
-		}
+		fields = append(fields, tz.Meta(ctx)...)
 
 		if d, ok := ctx.Deadline(); ok {
 			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -156,15 +150,13 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		start := time.Now()
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, stime.ToMilliseconds(time.Since(start))),
+			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
 			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, fullMethod),
 		}
 
-		for k, v := range meta.Strings(ctx) {
-			fields = append(fields, zap.String(k, v))
-		}
+		fields = append(fields, tz.Meta(ctx)...)
 
 		if d, ok := ctx.Deadline(); ok {
 			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))

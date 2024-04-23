@@ -60,7 +60,7 @@ func WithClientSecure(sec *security.Config) (ClientOption, error) {
 	var creds credentials.TransportCredentials
 
 	if security.IsEnabled(sec) {
-		conf, err := security.NewClientTLSConfig(sec)
+		conf, err := security.NewTLSConfig(sec)
 		if err != nil {
 			return nil, err
 		}

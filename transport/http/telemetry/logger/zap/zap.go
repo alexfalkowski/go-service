@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alexfalkowski/go-service/meta"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ss "github.com/alexfalkowski/go-service/transport/strings"
@@ -51,9 +51,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		zap.String(tm.MethodKey, method),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
@@ -95,9 +93,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		zap.String(tm.MethodKey, method),
 	}
 
-	for k, v := range meta.Strings(ctx) {
-		fields = append(fields, zap.String(k, v))
-	}
+	fields = append(fields, tz.Meta(ctx)...)
 
 	if d, ok := ctx.Deadline(); ok {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
