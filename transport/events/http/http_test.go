@@ -57,9 +57,7 @@ func TestSendReceive(t *testing.T) {
 
 		Convey("When I send an event", func() {
 			tracer := test.NewTracer(lc)
-
-			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
-			So(err, ShouldBeNil)
+			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 
 			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
 			So(err, ShouldBeNil)
@@ -109,10 +107,7 @@ func TestSendNotReceive(t *testing.T) {
 
 		Convey("When I send an event", func() {
 			tracer := test.NewTracer(lc)
-
-			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
-			So(err, ShouldBeNil)
-
+			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			rt = &delRoundTripper{rt: rt}
 
 			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))

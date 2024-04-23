@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/go-redis/cache/v8"
 	"go.opentelemetry.io/otel/attribute"
@@ -11,30 +12,20 @@ import (
 )
 
 // Register for metrics.
-func Register(cache *cache.Cache, version version.Version, meter metric.Meter) error {
+func Register(cache *cache.Cache, version version.Version, meter metric.Meter) {
 	opts := metric.WithAttributes(
 		attribute.Key("name").String(os.ExecutableName()),
 		attribute.Key("version").String(string(version)),
 	)
 
-	hits, err := meter.Int64ObservableCounter("redis_hits_total", metric.WithDescription("The number of hits in the cache."))
-	if err != nil {
-		return err
-	}
-
-	misses, err := meter.Int64ObservableCounter("redis_misses_total", metric.WithDescription("The number of misses in the cache."))
-	if err != nil {
-		return err
-	}
-
-	m := &metrics{cache: cache, opts: opts, hit: hits, miss: misses}
+	hits := metrics.MustInt64ObservableCounter(meter, "redis_hits_total", "The number of hits in the cache.")
+	misses := metrics.MustInt64ObservableCounter(meter, "redis_misses_total", "The number of misses in the cache.")
+	m := &ms{cache: cache, opts: opts, hit: hits, miss: misses}
 
 	meter.RegisterCallback(m.callback, hits, misses)
-
-	return nil
 }
 
-type metrics struct {
+type ms struct {
 	cache *cache.Cache
 	opts  metric.MeasurementOption
 
@@ -42,7 +33,7 @@ type metrics struct {
 	miss metric.Int64ObservableCounter
 }
 
-func (m *metrics) callback(_ context.Context, o metric.Observer) error {
+func (m *ms) callback(_ context.Context, o metric.Observer) error {
 	stats := m.cache.Stats()
 
 	o.ObserveInt64(m.hit, int64(stats.Hits), m.opts)

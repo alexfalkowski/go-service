@@ -23,18 +23,13 @@ type ClientParams struct {
 }
 
 // NewClient for feature.
-func NewClient(params ClientParams) (*openfeature.Client, error) {
-	p, err := provider(params)
-	if err != nil {
-		return nil, err
-	}
+func NewClient(params ClientParams) *openfeature.Client {
+	openfeature.SetProvider(provider(params))
 
-	openfeature.SetProvider(p)
-
-	return openfeature.NewClient(os.ExecutableName()), nil
+	return openfeature.NewClient(os.ExecutableName())
 }
 
-func provider(params ClientParams) (openfeature.FeatureProvider, error) {
+func provider(params ClientParams) openfeature.FeatureProvider {
 	c := params.Config
 
 	if c != nil && c.Kind == "flipt" {
@@ -44,15 +39,12 @@ func provider(params ClientParams) (openfeature.FeatureProvider, error) {
 			grpc.WithClientUserAgent(c.UserAgent),
 		}
 
-		is, err := grpc.UnaryClientInterceptors(opts...)
-		if err != nil {
-			return nil, err
-		}
+		is := grpc.UnaryClientInterceptors(opts...)
 
 		svc := transport.New(transport.WithAddress(c.Host), transport.WithUnaryClientInterceptor(is...))
 
-		return flipt.NewProvider(flipt.WithAddress(c.Host), flipt.WithService(svc)), nil
+		return flipt.NewProvider(flipt.WithAddress(c.Host), flipt.WithService(svc))
 	}
 
-	return openfeature.NoopProvider{}, nil
+	return openfeature.NoopProvider{}
 }
