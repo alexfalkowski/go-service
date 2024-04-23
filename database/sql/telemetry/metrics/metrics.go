@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
@@ -13,11 +14,9 @@ import (
 )
 
 // Register for metrics.
-//
-//nolint:funlen,cyclop
-func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) error {
+func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) {
 	if dbs == nil {
-		return nil
+		return
 	}
 
 	opts := metric.WithAttributes(
@@ -26,54 +25,17 @@ func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) erro
 		attribute.Key("db_driver").String(dbs.DriverName()),
 	)
 
-	maxOpen, err := meter.Int64ObservableGauge("sql_max_open_total", metric.WithDescription("Maximum number of open connections to the database."))
-	if err != nil {
-		return err
-	}
+	maxOpen := metrics.MustInt64ObservableGauge(meter, "sql_max_open_total", "Maximum number of open connections to the database.")
+	open := metrics.MustInt64ObservableGauge(meter, "sql_open_total", "The number of established connections both in use and idle.")
+	inUse := metrics.MustInt64ObservableGauge(meter, "sql_in_use_total", "The number of connections currently in use.")
+	idle := metrics.MustInt64ObservableGauge(meter, "sql_idle_total", "The number of idle connections.")
+	waited := metrics.MustInt64ObservableCounter(meter, "sql_waited_for_total", "The total number of connections waited for.")
+	blocked := metrics.MustFloat64ObservableCounter(meter, "sql_blocked_seconds_total", "The total time blocked waiting for a new connection.")
+	maxIdleClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_idle_total", "The total number of connections closed due to SetMaxIdleConns.")
+	maxIdleTimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
+	maxLifetimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
 
-	open, err := meter.Int64ObservableGauge("sql_open_total", metric.WithDescription("The number of established connections both in use and idle."))
-	if err != nil {
-		return err
-	}
-
-	inUse, err := meter.Int64ObservableGauge("sql_in_use_total", metric.WithDescription("The number of connections currently in use."))
-	if err != nil {
-		return err
-	}
-
-	idle, err := meter.Int64ObservableGauge("sql_idle_total", metric.WithDescription("The number of idle connections."))
-	if err != nil {
-		return err
-	}
-
-	waited, err := meter.Int64ObservableCounter("sql_waited_for_total", metric.WithDescription("The total number of connections waited for."))
-	if err != nil {
-		return err
-	}
-
-	blocked, err := meter.Float64ObservableCounter("sql_blocked_seconds_total", metric.WithDescription("The total time blocked waiting for a new connection."))
-	if err != nil {
-		return err
-	}
-
-	maxIdleClosed, err := meter.Int64ObservableCounter("sql_closed_max_idle_total", metric.WithDescription("The total number of connections closed due to SetMaxIdleConns."))
-	if err != nil {
-		return err
-	}
-
-	maxIdleTimeClosed, err := meter.Int64ObservableCounter("sql_closed_max_lifetime_total",
-		metric.WithDescription("The total number of connections closed due to SetConnMaxIdleTime."))
-	if err != nil {
-		return err
-	}
-
-	maxLifetimeClosed, err := meter.Int64ObservableCounter("sql_closed_max_idle_time_total",
-		metric.WithDescription("The total number of connections closed due to SetConnMaxLifetime."))
-	if err != nil {
-		return err
-	}
-
-	m := &metrics{
+	m := &ms{
 		dbs: dbs, opts: opts,
 		mo: maxOpen, o: open, iu: inUse,
 		i: idle, w: waited, b: blocked,
@@ -81,11 +43,9 @@ func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) erro
 	}
 
 	meter.RegisterCallback(m.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
-
-	return nil
 }
 
-type metrics struct {
+type ms struct {
 	dbs  *mssqlx.DBs
 	opts metric.MeasurementOption
 
@@ -100,7 +60,7 @@ type metrics struct {
 	mlc  metric.Int64ObservableCounter
 }
 
-func (m *metrics) callback(_ context.Context, o metric.Observer) error {
+func (m *ms) callback(_ context.Context, o metric.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
 		opts := metric.WithAttributes(
@@ -122,7 +82,7 @@ func (m *metrics) callback(_ context.Context, o metric.Observer) error {
 	return nil
 }
 
-func (m *metrics) collect(db *sqlx.DB, o metric.Observer, opts metric.MeasurementOption) {
+func (m *ms) collect(db *sqlx.DB, o metric.Observer, opts metric.MeasurementOption) {
 	stats := db.Stats()
 
 	o.ObserveInt64(m.mo, int64(stats.MaxOpenConnections), m.opts, opts)

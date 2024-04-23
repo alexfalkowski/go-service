@@ -71,11 +71,6 @@ func ServerHandlers() []negroni.Handler {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
-	m, err := metrics.NewHandler(params.Meter)
-	if err != nil {
-		return nil, err
-	}
-
 	l, err := listener(params.Config)
 	if err != nil {
 		return nil, err
@@ -85,7 +80,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
 	n.Use(szap.NewHandler(params.Logger))
-	n.Use(m)
+	n.Use(metrics.NewHandler(params.Meter))
 
 	for _, hd := range params.Handlers {
 		n.Use(hd)

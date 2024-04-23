@@ -22,8 +22,7 @@ func TestFlipt(t *testing.T) {
 		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 
-		c, err := feature.NewClient(p)
-		So(err, ShouldBeNil)
+		c := feature.NewClient(p)
 
 		lc.RequireStart()
 
@@ -44,8 +43,7 @@ func TestNoop(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		p := feature.ClientParams{Config: &feature.Config{}}
 
-		c, err := feature.NewClient(p)
-		So(err, ShouldBeNil)
+		c := feature.NewClient(p)
 
 		Convey("When I get a flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}

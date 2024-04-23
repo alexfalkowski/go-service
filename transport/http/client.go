@@ -85,7 +85,7 @@ func WithClientUserAgent(userAgent string) ClientOption {
 }
 
 // NewRoundTripper for HTTP.
-func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
+func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	os := &clientOptions{tracer: tracer.NewNoopTracer()}
 	for _, o := range opts {
 		o.apply(os)
@@ -109,10 +109,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.meter != nil {
-		rt, err := hm.NewRoundTripper(os.meter, hrt)
-		if err != nil {
-			return nil, err
-		}
+		rt := hm.NewRoundTripper(os.meter, hrt)
 
 		hrt = rt
 	}
@@ -120,7 +117,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	hrt = ht.NewRoundTripper(os.tracer, hrt)
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
-	return hrt, nil
+	return hrt
 }
 
 // NewClient for HTTP.
@@ -130,13 +127,8 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 		o.apply(defaultOptions)
 	}
 
-	rt, err := NewRoundTripper(opts...)
-	if err != nil {
-		return nil, err
-	}
-
 	client := &http.Client{
-		Transport: rt,
+		Transport: NewRoundTripper(opts...),
 		Timeout:   time.Timeout,
 	}
 

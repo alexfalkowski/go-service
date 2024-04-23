@@ -58,15 +58,12 @@ type Server struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
-	metrics, err := metrics.NewServer(params.Meter)
-	if err != nil {
-		return nil, err
-	}
-
 	l, err := listener(params.Config)
 	if err != nil {
 		return nil, err
 	}
+
+	metrics := metrics.NewServer(params.Meter)
 
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{

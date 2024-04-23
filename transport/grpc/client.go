@@ -127,19 +127,10 @@ func WithClientUserAgent(userAgent string) ClientOption {
 }
 
 // NewDialOptions for gRPC.
-func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
-	cis, err := UnaryClientInterceptors(opts...)
-	if err != nil {
-		return nil, err
-	}
-
+func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
+	cis := UnaryClientInterceptors(opts...)
 	os := clientOptions(opts...)
-
-	sto, err := streamDialOption(os)
-	if err != nil {
-		return nil, err
-	}
-
+	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
@@ -149,23 +140,21 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 		}),
 		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
 	}
+
 	ops = append(ops, os.opts...)
 
-	return ops, nil
+	return ops
 }
 
 // NewClient for gRPC.
 func NewClient(target string, opts ...ClientOption) (*grpc.ClientConn, error) {
-	os, err := NewDialOptions(opts...)
-	if err != nil {
-		return nil, err
-	}
+	os := NewDialOptions(opts...)
 
 	return grpc.NewClient(target, os...)
 }
 
 // UnaryClientInterceptors for gRPC.
-func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientInterceptor, error) {
+func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	os := clientOptions(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
@@ -193,21 +182,16 @@ func UnaryClientInterceptors(opts ...ClientOption) ([]grpc.UnaryClientIntercepto
 	}
 
 	if os.meter != nil {
-		client, err := gm.NewClient(os.meter)
-		if err != nil {
-			return nil, err
-		}
-
-		unary = append(unary, client.UnaryInterceptor())
+		unary = append(unary, gm.NewClient(os.meter).UnaryInterceptor())
 	}
 
 	unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
 
-	return unary, nil
+	return unary
 }
 
-func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
+func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{}
 
 	stream = append(stream, opts.stream...)
@@ -217,18 +201,13 @@ func streamDialOption(opts *clientOpts) (grpc.DialOption, error) {
 	}
 
 	if opts.meter != nil {
-		client, err := gm.NewClient(opts.meter)
-		if err != nil {
-			return nil, err
-		}
-
-		stream = append(stream, client.StreamInterceptor())
+		stream = append(stream, gm.NewClient(opts.meter).StreamInterceptor())
 	}
 
 	stream = append(stream, gt.StreamClientInterceptor(opts.tracer))
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
 
-	return grpc.WithChainStreamInterceptor(stream...), nil
+	return grpc.WithChainStreamInterceptor(stream...)
 }
 
 func clientOptions(opts ...ClientOption) *clientOpts {
