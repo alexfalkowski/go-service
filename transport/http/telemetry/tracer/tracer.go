@@ -11,7 +11,6 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -88,17 +87,13 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
 
 	tracer.Meta(ctx, span)
+	tracer.Error(err, span)
 
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-
-		return nil, err
+	if resp != nil {
+		span.SetAttributes(semconv.HTTPResponseStatusCode(resp.StatusCode))
 	}
 
-	span.SetAttributes(semconv.HTTPResponseStatusCode(resp.StatusCode))
-
-	return resp, nil
+	return resp, err
 }
 
 func operationName(name string) string {

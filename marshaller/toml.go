@@ -16,12 +16,9 @@ func NewTOML() *TOML {
 
 func (m *TOML) Marshal(v any) ([]byte, error) {
 	var b bytes.Buffer
+	err := toml.NewEncoder(&b).Encode(v)
 
-	if err := toml.NewEncoder(&b).Encode(v); err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
+	return b.Bytes(), err
 }
 
 func (m *TOML) Unmarshal(data []byte, v any) error {

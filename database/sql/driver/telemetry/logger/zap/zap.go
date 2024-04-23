@@ -50,21 +50,12 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-
 	fields = append(fields, tz.Meta(ctx)...)
-
 	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		i.logger.Error("finished call with error", fields...)
+	tz.LogWithLogger(message("exec conn"), err, i.logger, fields...)
 
-		return nil, err
-	}
-
-	i.logger.Info("finished call with success", fields...)
-
-	return res, nil
+	return res, err
 }
 
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
@@ -79,21 +70,12 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-
 	fields = append(fields, tz.Meta(ctx)...)
-
 	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		i.logger.Error("finished call with error", fields...)
+	tz.LogWithLogger(message("query conn"), err, i.logger, fields...)
 
-		return ctx, nil, err
-	}
-
-	i.logger.Info("finished call with success", fields...)
-
-	return ctx, res, nil
+	return ctx, res, err
 }
 
 func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Connector) (driver.Conn, error) {
@@ -134,16 +116,9 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	fields = append(fields, tz.Meta(ctx)...)
 	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		i.logger.Error("finished call with error", fields...)
+	tz.LogWithLogger(message("exec statement"), err, i.logger, fields...)
 
-		return nil, err
-	}
-
-	i.logger.Info("finished call with success", fields...)
-
-	return res, nil
+	return res, err
 }
 
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
@@ -158,20 +133,12 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-
 	fields = append(fields, tz.Meta(ctx)...)
 	fields = append(fields, zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))))
 
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		i.logger.Error("finished call with error", fields...)
+	tz.LogWithLogger(message("query statement"), err, i.logger, fields...)
 
-		return ctx, nil, err
-	}
-
-	i.logger.Info("finished call with success", fields...)
-
-	return ctx, res, nil
+	return ctx, res, err
 }
 
 func (i *Interceptor) StmtClose(ctx context.Context, stmt driver.Stmt) error {
@@ -184,4 +151,8 @@ func (i *Interceptor) TxCommit(ctx context.Context, tx driver.Tx) error {
 
 func (i *Interceptor) TxRollback(ctx context.Context, tx driver.Tx) error {
 	return i.interceptor.TxRollback(ctx, tx)
+}
+
+func message(msg string) string {
+	return "sql: " + msg
 }

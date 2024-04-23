@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	service  = "grpc"
-	finished = "finished call with code "
+	service = "grpc"
 )
 
 // UnaryServerInterceptor for zap.
@@ -45,16 +44,9 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		code := status.Code(err)
-		message := finished + code.String()
-
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		if err != nil {
-			fields = append(fields, zap.Error(err))
-		}
-
-		loggerLevel := codeToLevel(code, logger)
-		loggerLevel(message, fields...)
+		tz.LogWithFunc(message(info.FullMethod), err, codeToLevel(code, logger), fields...)
 
 		return resp, err
 	}
@@ -85,16 +77,9 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		}
 
 		code := status.Code(err)
-		message := finished + code.String()
-
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		if err != nil {
-			fields = append(fields, zap.Error(err))
-		}
-
-		loggerLevel := codeToLevel(code, logger)
-		loggerLevel(message, fields...)
+		tz.LogWithFunc(message(info.FullMethod), err, codeToLevel(code, logger), fields...)
 
 		return err
 	}
@@ -124,16 +109,9 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		}
 
 		code := status.Code(err)
-		message := finished + code.String()
-
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		if err != nil {
-			fields = append(fields, zap.Error(err))
-		}
-
-		loggerLevel := codeToLevel(code, logger)
-		loggerLevel(message, fields...)
+		tz.LogWithFunc(message(cc.Target()+fullMethod), err, codeToLevel(code, logger), fields...)
 
 		return err
 	}
@@ -163,16 +141,9 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		}
 
 		code := status.Code(err)
-		message := finished + code.String()
-
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		if err != nil {
-			fields = append(fields, zap.Error(err))
-		}
-
-		loggerLevel := codeToLevel(code, logger)
-		loggerLevel(message, fields...)
+		tz.LogWithFunc(message(cc.Target()+fullMethod), err, codeToLevel(code, logger), fields...)
 
 		return stream, err
 	}
@@ -190,4 +161,8 @@ func codeToLevel(code codes.Code, logger *zap.Logger) func(msg string, fields ..
 	default:
 		return logger.Error
 	}
+}
+
+func message(msg string) string {
+	return "grpc: get " + msg
 }

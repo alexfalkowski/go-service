@@ -67,9 +67,6 @@ func (e *ENV) isMem() bool {
 
 func (e *ENV) split() (string, string) {
 	s := strings.Split(e.name(), ":")
-	if len(s) != 2 {
-		return "yaml", e.name()
-	}
 
 	return s[0], s[1]
 }

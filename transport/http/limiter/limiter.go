@@ -24,12 +24,8 @@ type Handler struct {
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	ctx := req.Context()
 
-	context, err := h.limiter.Get(ctx, meta.ValueOrBlank(h.key(ctx)))
-	if err != nil {
-		next(res, req)
-
-		return
-	}
+	// Memory stores do not return error.
+	context, _ := h.limiter.Get(ctx, meta.ValueOrBlank(h.key(ctx)))
 
 	if context.Reached {
 		res.Header().Add("X-Rate-Limit-Limit", strconv.FormatInt(context.Limit, 10))

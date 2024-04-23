@@ -15,12 +15,9 @@ func NewGOB() *GOB {
 
 func (m *GOB) Marshal(v any) ([]byte, error) {
 	var b bytes.Buffer
+	err := gob.NewEncoder(&b).Encode(v)
 
-	if err := gob.NewEncoder(&b).Encode(v); err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
+	return b.Bytes(), err
 }
 
 func (m *GOB) Unmarshal(data []byte, v any) error {
