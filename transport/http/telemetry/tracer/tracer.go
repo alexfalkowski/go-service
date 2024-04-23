@@ -41,14 +41,8 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	operationName := fmt.Sprintf("%s %s", method, path)
-
-	ctx, span := h.tracer.Start(
-		trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
-		operationName,
-		trace.WithSpanKind(trace.SpanKindServer),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := h.tracer.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(fmt.Sprintf("%s %s", method, path)),
+		trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -79,18 +73,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	method := strings.ToLower(req.Method)
 	ctx := req.Context()
-	operationName := fmt.Sprintf("%s %s", method, req.URL.Redacted())
 	attrs := []attribute.KeyValue{
 		semconv.HTTPRoute(req.URL.Path),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	ctx, span := r.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := r.tracer.Start(ctx, operationName(fmt.Sprintf("%s %s", method, req.URL.Redacted())), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -111,4 +99,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	span.SetAttributes(semconv.HTTPResponseStatusCode(resp.StatusCode))
 
 	return resp, nil
+}
+
+func operationName(name string) string {
+	return tracer.OperationName("http", name)
 }

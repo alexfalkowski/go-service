@@ -38,17 +38,11 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 }
 
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	operationName := "connection exec"
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := i.tracer.Start(ctx, operationName("exec conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -66,17 +60,11 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 
 //nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	operationName := "connection query"
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := i.tracer.Start(ctx, operationName("query conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -114,17 +102,11 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 }
 
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	operationName := "statement exec"
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := i.tracer.Start(ctx, operationName("exec statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -142,17 +124,11 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 
 //nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	operationName := "statement query"
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := i.tracer.Start(ctx, operationName("query statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -178,4 +154,8 @@ func (i *Interceptor) TxCommit(ctx context.Context, tx driver.Tx) error {
 
 func (i *Interceptor) TxRollback(ctx context.Context, tx driver.Tx) error {
 	return i.interceptor.TxRollback(ctx, tx)
+}
+
+func operationName(name string) string {
+	return tracer.OperationName("sql", name)
 }
