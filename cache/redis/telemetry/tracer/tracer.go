@@ -28,19 +28,13 @@ type Client struct {
 
 //nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
-	operationName := "client set"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.key").String(key),
 		attribute.Key("db.redis.ttl").Int64(int64(ttl)),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client set"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -58,19 +52,13 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 
 //nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
-	operationName := "client setxx"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.key").String(key),
 		attribute.Key("db.redis.ttl").Int64(int64(ttl)),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client setxx"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -88,19 +76,13 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 
 //nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
-	operationName := "client setnx"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.key").String(key),
 		attribute.Key("db.redis.ttl").Int64(int64(ttl)),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client setnx"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -117,18 +99,12 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 }
 
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
-	operationName := "client get"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.key").String(key),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client get"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -145,18 +121,12 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 }
 
 func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
-	operationName := "client del"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.keys").StringSlice(keys),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client del"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -173,18 +143,12 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 }
 
 func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
-	operationName := "client incr"
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
 		attribute.Key("db.redis.key").String(key),
 	}
 
-	ctx, span := c.tracer.Start(
-		ctx,
-		operationName,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := c.tracer.Start(ctx, operationName("client incr"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -206,4 +170,8 @@ func (c *Client) Ping(ctx context.Context) *redis.StatusCmd {
 
 func (c *Client) Close() error {
 	return c.client.Close()
+}
+
+func operationName(name string) string {
+	return tracer.OperationName("redis", name)
 }

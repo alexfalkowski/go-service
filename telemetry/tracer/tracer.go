@@ -18,6 +18,11 @@ import (
 	"go.uber.org/fx"
 )
 
+// OperationName for tracer.
+func OperationName(area, name string) string {
+	return area + ": " + name
+}
+
 // Register for tracer.
 func Register() {
 	otel.SetTextMapPropagator(propagation.TraceContext{})

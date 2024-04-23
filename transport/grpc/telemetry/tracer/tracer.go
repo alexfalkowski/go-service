@@ -34,12 +34,8 @@ func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(
-			trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
-			operationName(info.FullMethod),
-			trace.WithSpanKind(trace.SpanKindServer),
-			trace.WithAttributes(attrs...),
-		)
+		ctx, span := t.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
+			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -74,12 +70,8 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(
-			trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)),
-			operationName(info.FullMethod),
-			trace.WithSpanKind(trace.SpanKindServer),
-			trace.WithAttributes(attrs...),
-		)
+		ctx, span := t.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
+			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -115,12 +107,7 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(
-			ctx,
-			operationName(cc.Target()+fullMethod),
-			trace.WithSpanKind(trace.SpanKindClient),
-			trace.WithAttributes(attrs...),
-		)
+		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -154,12 +141,7 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(
-			ctx,
-			operationName(cc.Target()+fullMethod),
-			trace.WithSpanKind(trace.SpanKindClient),
-			trace.WithAttributes(attrs...),
-		)
+		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
@@ -178,6 +160,6 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 	}
 }
 
-func operationName(fullMethod string) string {
-	return "get " + fullMethod
+func operationName(name string) string {
+	return tracer.OperationName("grpc", "get "+name)
 }
