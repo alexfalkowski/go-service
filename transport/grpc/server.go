@@ -4,6 +4,8 @@ import (
 	"context"
 	"net"
 
+	sn "github.com/alexfalkowski/go-service/net"
+	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
@@ -11,13 +13,11 @@ import (
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -50,10 +50,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 // Server for gRPC.
 type Server struct {
 	server *grpc.Server
-	sh     fx.Shutdowner
-	config *Config
-	logger *zap.Logger
-	list   net.Listener
+	srv    *sn.Server
 }
 
 // NewServer for gRPC.
@@ -93,53 +90,24 @@ func NewServer(params ServerParams) (*Server, error) {
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	server := &Server{
-		server: s,
-		sh:     params.Shutdowner,
-		config: params.Config,
-		logger: params.Logger,
-		list:   l,
-	}
+	svr := sn.NewServer("http", sg.NewServer(s, l), l, params.Logger, params.Shutdowner)
 
-	return server, nil
+	return &Server{srv: svr, server: s}, nil
+}
+
+// Start the server.
+func (s *Server) Start() {
+	s.srv.Start()
+}
+
+// Stop the server.
+func (s *Server) Stop(ctx context.Context) {
+	s.srv.Stop(ctx)
 }
 
 // Server for gRPC.
 func (s *Server) Server() *grpc.Server {
 	return s.server
-}
-
-// Start the server.
-func (s *Server) Start() {
-	if s.list == nil {
-		return
-	}
-
-	go s.start()
-}
-
-func (s *Server) start() {
-	s.logger.Info("starting server", zap.Stringer("addr", s.list.Addr()), zap.String(tm.ServiceKey, "grpc"))
-
-	if err := s.server.Serve(s.list); err != nil {
-		fields := []zapcore.Field{zap.Stringer("addr", s.list.Addr()), zap.Error(err), zap.String(tm.ServiceKey, "grpc")}
-
-		if err := s.sh.Shutdown(); err != nil {
-			fields = append(fields, zap.NamedError("shutdown_error", err))
-		}
-
-		s.logger.Error("could not start server", fields...)
-	}
-}
-
-// Stop the server.
-func (s *Server) Stop(_ context.Context) {
-	if s.list == nil {
-		return
-	}
-
-	s.logger.Info("stopping server", zap.String(tm.ServiceKey, "grpc"))
-	s.server.GracefulStop()
 }
 
 func listener(cfg *Config) (net.Listener, error) {
