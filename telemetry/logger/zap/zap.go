@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // LoggerParams for zap.
@@ -47,4 +48,29 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 	})
 
 	return logger, nil
+}
+
+// LogWithLogger for zap.
+func LogWithLogger(msg string, err error, logger *zap.Logger, fields ...zapcore.Field) {
+	var fn LogFunc
+
+	if err != nil {
+		fn = logger.Error
+	} else {
+		fn = logger.Info
+	}
+
+	LogWithFunc(msg, err, fn, fields...)
+}
+
+// LogFunc for zap.
+type LogFunc func(msg string, fields ...zapcore.Field)
+
+// LogWithFunc for zap.
+func LogWithFunc(msg string, err error, fn LogFunc, fields ...zapcore.Field) {
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+	}
+
+	fn(msg, fields...)
 }

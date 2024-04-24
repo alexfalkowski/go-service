@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -16,9 +15,4 @@ type ResponseWriter struct {
 func (r *ResponseWriter) WriteHeader(statusCode int) {
 	r.StatusCode = statusCode
 	r.ResponseWriter.WriteHeader(statusCode)
-}
-
-// Status of the response, e.g. "200 OK".
-func (r *ResponseWriter) Status() string {
-	return fmt.Sprintf("%d %s", r.StatusCode, http.StatusText(r.StatusCode))
 }

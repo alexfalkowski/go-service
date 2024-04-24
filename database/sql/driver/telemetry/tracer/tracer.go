@@ -9,7 +9,6 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -46,19 +45,14 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
 	return res, err
 }
 
-//nolint:dupl
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
@@ -68,13 +62,9 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
 	return ctx, res, err
@@ -110,19 +100,14 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
 	return res, err
 }
 
-//nolint:dupl
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	attrs := []attribute.KeyValue{
 		attribute.Key("db.sql.query").String(query),
@@ -132,13 +117,9 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
 	return ctx, res, err

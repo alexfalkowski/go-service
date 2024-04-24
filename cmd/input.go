@@ -12,9 +12,6 @@ type InputConfig struct {
 // NewInputConfig for cmd.
 func NewInputConfig(factory *marshaller.Factory) (*InputConfig, error) {
 	c, err := NewConfig(inputFlag, factory)
-	if err != nil {
-		return nil, err
-	}
 
-	return &InputConfig{Config: c}, nil
+	return &InputConfig{Config: c}, err
 }

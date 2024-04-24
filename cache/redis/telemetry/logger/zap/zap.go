@@ -45,12 +45,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client set"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
@@ -72,12 +67,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client setxx"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
@@ -99,12 +89,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client setnx"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
@@ -126,17 +111,11 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client get"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Del(ctx, keys...)
@@ -153,12 +132,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client del"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
@@ -180,12 +154,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err := cmd.Err(); err != nil {
-		fields = append(fields, zap.Error(err))
-		c.logger.Error("finished call with error", fields...)
-	} else {
-		c.logger.Info("finished call with success", fields...)
-	}
+	tz.LogWithLogger(message("client incr"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
@@ -196,4 +165,8 @@ func (c *Client) Ping(ctx context.Context) *redis.StatusCmd {
 
 func (c *Client) Close() error {
 	return c.client.Close()
+}
+
+func message(msg string) string {
+	return "redis: " + msg
 }

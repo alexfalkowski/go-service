@@ -10,7 +10,6 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/go-redis/redis/v8"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -26,7 +25,6 @@ type Client struct {
 	client gr.Client
 }
 
-//nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
@@ -38,19 +36,14 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.Set(ctx, key, value, ttl)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
@@ -62,19 +55,14 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.SetXX(ctx, key, value, ttl)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	attrs := []attribute.KeyValue{
 		semconv.DBSystemRedis,
@@ -86,13 +74,9 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.SetNX(ctx, key, value, ttl)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd
@@ -108,13 +92,9 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.Get(ctx, key)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd
@@ -130,13 +110,9 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.Del(ctx, keys...)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd
@@ -152,13 +128,9 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	defer span.End()
 
 	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 	cmd := c.client.Incr(ctx, key)
-	if err := cmd.Err(); err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.RecordError(err)
-	}
 
+	tracer.Error(cmd.Err(), span)
 	tracer.Meta(ctx, span)
 
 	return cmd

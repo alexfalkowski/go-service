@@ -38,12 +38,13 @@ func RegisterReceiver(ctx context.Context, mux *runtime.ServeMux, path string, r
 		o.apply(os)
 	}
 
-	p, err := events.NewHTTP()
-	if err != nil {
-		return err
-	}
+	// Error is only returned with options.
+	p, _ := events.NewHTTP()
 
-	var handler http.Handler
+	var (
+		handler http.Handler
+		err     error
+	)
 
 	handler, err = events.NewHTTPReceiveHandler(ctx, p, recv)
 	if err != nil {

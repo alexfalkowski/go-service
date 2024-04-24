@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
@@ -39,13 +38,9 @@ func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 		defer span.End()
 
 		ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
-
 		resp, err := handler(ctx, req)
-		if err != nil {
-			span.SetStatus(codes.Error, status.Code(err).String())
-			span.RecordError(err)
-		}
 
+		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
@@ -80,11 +75,8 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 		wrappedStream.WrappedContext = ctx
 
 		err := handler(srv, wrappedStream)
-		if err != nil {
-			span.SetStatus(codes.Error, status.Code(err).String())
-			span.RecordError(err)
-		}
 
+		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
@@ -114,11 +106,8 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
-		if err != nil {
-			span.SetStatus(codes.Error, status.Code(err).String())
-			span.RecordError(err)
-		}
 
+		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 
@@ -148,11 +137,8 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
-		if err != nil {
-			span.SetStatus(codes.Error, status.Code(err).String())
-			span.RecordError(err)
-		}
 
+		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
 

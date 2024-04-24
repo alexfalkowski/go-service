@@ -1,6 +1,7 @@
 package zap
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -59,8 +60,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	fields = append(fields, zap.Int(tm.CodeKey, res.StatusCode))
 
-	loggerLevel := codeToLevel(res.StatusCode, h.logger)
-	loggerLevel("finished call with code "+res.Status(), fields...)
+	tz.LogWithFunc(message(fmt.Sprintf("%s %s", method, path)), nil, codeToLevel(res.StatusCode, h.logger), fields...)
 }
 
 // NewRoundTripper for zap.
@@ -99,19 +99,25 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-		r.logger.Error("finished call with error", fields...)
-
-		return nil, err
+	if resp != nil {
+		fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
 	}
 
-	fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
+	tz.LogWithFunc(message(fmt.Sprintf("%s %s", method, req.URL.Redacted())), err, respToLevel(resp, r.logger), fields...)
 
-	loggerLevel := codeToLevel(resp.StatusCode, r.logger)
-	loggerLevel("finished call with code "+resp.Status, fields...)
+	return resp, err
+}
 
-	return resp, nil
+func respToLevel(resp *http.Response, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
+	var code int
+
+	if resp != nil {
+		code = resp.StatusCode
+	} else {
+		code = 500
+	}
+
+	return codeToLevel(code, logger)
 }
 
 func codeToLevel(code int, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
@@ -124,4 +130,8 @@ func codeToLevel(code int, logger *zap.Logger) func(msg string, fields ...zapcor
 	}
 
 	return logger.Info
+}
+
+func message(msg string) string {
+	return "http: " + msg
 }

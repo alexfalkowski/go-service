@@ -163,7 +163,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
 
 			Convey("Then I should have an error", func() {
-				So(err, ShouldNotBeNil)
+				So(err, ShouldBeError)
 				So(err.Error(), ShouldEqual, "failed")
 			})
 		})
