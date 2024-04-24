@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.164.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.164.1) - 2024-04-24
+
+- [`6812832`](https://github.com/alexfalkowski/go-service/commit/68128329c44bffbaffaf8e1d56197057b6ba9c72) fix(grpc): use correct name (#639)
+
 ## [v1.164.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.164.0) - 2024-04-24
 
 - [`25da1d3`](https://github.com/alexfalkowski/go-service/commit/25da1d3a98b7f1e21dbfb18680b56a673fd5e51a) feat(net): add server to be reused (#638)
