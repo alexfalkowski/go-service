@@ -22,7 +22,7 @@ func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg)
+	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func NewGRPCClient(
 	cred credentials.PerRPCCredentials,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg)
+	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func NewSecureGRPCClient(
 	tcfg *transport.Config, ocfg *tracer.Config,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg)
+	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
 	if err != nil {
 		panic(err)
 	}

@@ -16,6 +16,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 // OperationName for tracer.
@@ -34,7 +35,7 @@ func NewNoopTracer() trace.Tracer {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
 		return NewNoopTracer(), nil
 	}
@@ -47,10 +48,10 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *C
 		opts = append(opts, otlptracehttp.WithEndpointURL(cfg.Host))
 	}
 
-	return newTracer(context.Background(), lc, env, ver, opts)
+	return newTracer(context.Background(), lc, env, ver, logger, opts)
 }
 
-func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver version.Version, opts []otlptracehttp.Option) (trace.Tracer, error) {
+func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlptracehttp.Option) (trace.Tracer, error) {
 	client := otlptracehttp.NewClient(opts...)
 
 	exporter, err := otlptrace.New(ctx, client)
@@ -69,7 +70,7 @@ func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver ve
 	p := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(p)
-	otel.SetErrorHandler(&errorHandler{})
+	otel.SetErrorHandler(&errorHandler{logger: logger})
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
@@ -80,7 +81,10 @@ func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver ve
 	return p.Tracer(name), nil
 }
 
-type errorHandler struct{}
+type errorHandler struct {
+	logger *zap.Logger
+}
 
-func (*errorHandler) Handle(_ error) {
+func (e *errorHandler) Handle(err error) {
+	e.logger.Error("trace: global error", zap.Error(err))
 }

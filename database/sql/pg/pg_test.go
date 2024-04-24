@@ -50,7 +50,7 @@ func TestSQL(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-			tracer := test.NewTracer(lc)
+			tracer := test.NewTracer(lc, logger)
 
 			pg.Register(tracer, logger)
 
@@ -73,7 +73,7 @@ func TestDBQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -118,7 +118,7 @@ func TestDBExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -160,7 +160,7 @@ func TestDBCommitTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -210,7 +210,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -258,7 +258,7 @@ func TestStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -310,7 +310,7 @@ func TestStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -357,7 +357,7 @@ func TestTransStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -412,7 +412,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -463,7 +463,7 @@ func TestInvalidSQLPort(t *testing.T) {
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-			tracer := test.NewTracer(lc)
+			tracer := test.NewTracer(lc, logger)
 
 			pg.Register(tracer, logger)
 

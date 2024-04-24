@@ -29,7 +29,7 @@ func NewRedisCache(lc fx.Lifecycle, cfg *redis.Config, logger *zap.Logger, meter
 
 // NewRedisClient for test.
 func NewRedisClient(lc fx.Lifecycle, cfg *redis.Config, logger *zap.Logger) gr.Client {
-	tracer := NewTracer(lc)
+	tracer := NewTracer(lc, logger)
 	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(cfg), Tracer: tracer, Logger: logger})
 
 	return client

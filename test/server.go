@@ -59,7 +59,7 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 
 // NewHTTPServer for test.
 func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *th.Server {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg)
+	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +82,7 @@ func NewGRPCServer(
 	verifyAuth bool, meter metric.Meter,
 	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tg.Server {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg)
+	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	if err != nil {
 		panic(err)
 	}

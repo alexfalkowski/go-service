@@ -26,7 +26,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -86,7 +86,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		pg.Register(tracer, logger)
 
