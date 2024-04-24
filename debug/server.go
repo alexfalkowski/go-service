@@ -1,18 +1,16 @@
 package debug
 
 import (
-	"context"
-	"errors"
 	"net"
 	"net/http"
 
+	sn "github.com/alexfalkowski/go-service/net"
+	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // NewServeMux for debug.
@@ -32,11 +30,7 @@ type ServerParams struct {
 
 // Server for debug.
 type Server struct {
-	server *http.Server
-	sh     fx.Shutdowner
-	config *Config
-	logger *zap.Logger
-	list   net.Listener
+	*sn.Server
 }
 
 // NewServer for debug.
@@ -54,62 +48,18 @@ func NewServer(params ServerParams) (*Server, error) {
 		ReadHeaderTimeout: time.Timeout,
 	}
 
-	server := &Server{
-		server: s,
-		sh:     params.Shutdowner,
-		config: params.Config,
-		logger: params.Logger,
-		list:   l,
-	}
+	c, k := files(params.Config)
+	svr := sn.NewServer("debug", sh.NewServer(s, l, c, k), l, params.Logger, params.Shutdowner)
 
-	return server, nil
+	return &Server{Server: svr}, nil
 }
 
-// Start the server.
-func (s *Server) Start() {
-	if s.list == nil {
-		return
+func files(cfg *Config) (string, string) {
+	if IsEnabled(cfg) && security.IsEnabled(cfg.Security) {
+		return cfg.Security.CertFile, cfg.Security.KeyFile
 	}
 
-	go s.start()
-}
-
-// Stop the server.
-func (s *Server) Stop(ctx context.Context) {
-	if s.list == nil {
-		return
-	}
-
-	message := "stopping server"
-	err := s.server.Shutdown(ctx)
-
-	if err != nil {
-		s.logger.Error(message, zap.Error(err), zap.String(tm.ServiceKey, "debug"))
-	} else {
-		s.logger.Info(message, zap.String(tm.ServiceKey, "debug"))
-	}
-}
-
-func (s *Server) start() {
-	s.logger.Info("starting server", zap.Stringer("addr", s.list.Addr()), zap.String(tm.ServiceKey, "debug"))
-
-	if err := s.serve(s.list); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		fields := []zapcore.Field{zap.Stringer("addr", s.list.Addr()), zap.Error(err), zap.String(tm.ServiceKey, "debug")}
-
-		if err := s.sh.Shutdown(); err != nil {
-			fields = append(fields, zap.NamedError("shutdown_error", err))
-		}
-
-		s.logger.Error("could not start server", fields...)
-	}
-}
-
-func (s *Server) serve(l net.Listener) error {
-	if IsEnabled(s.config) && security.IsEnabled(s.config.Security) {
-		return s.server.ServeTLS(l, s.config.Security.CertFile, s.config.Security.KeyFile)
-	}
-
-	return s.server.Serve(l)
+	return "", ""
 }
 
 func listener(cfg *Config) (net.Listener, error) {
