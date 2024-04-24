@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.165.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.165.1) - 2024-04-24
+
+- [`35a756f`](https://github.com/alexfalkowski/go-service/commit/35a756fcfe4c6d027da4270d1ba163faa6770a6c) fix(otel): use semconv v1.25.0 (#641)
+
 ## [v1.165.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.165.0) - 2024-04-24
 
 - [`de24c8b`](https://github.com/alexfalkowski/go-service/commit/de24c8b5accc50ad88c08a5c4ff0b96484a832e1) feat(net): handle tls correctly (#640)
