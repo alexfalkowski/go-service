@@ -16,7 +16,7 @@ func TestFlipt(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc)
+		tracer := test.NewTracer(lc, logger)
 
 		m := test.NewMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
