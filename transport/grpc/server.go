@@ -90,7 +90,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	svr := sn.NewServer("http", sg.NewServer(s, l), l, params.Logger, params.Shutdowner)
+	svr := sn.NewServer("grpc", sg.NewServer(s, l), l, params.Logger, params.Shutdowner)
 
 	return &Server{srv: svr, server: s}, nil
 }
