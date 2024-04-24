@@ -62,5 +62,5 @@ func reader(cfg *Config) (metric.Reader, error) {
 		return metric.NewPeriodicReader(r), nil
 	}
 
-	return prometheus.New(prometheus.WithoutTargetInfo())
+	return prometheus.New()
 }
