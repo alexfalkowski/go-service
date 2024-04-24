@@ -60,6 +60,11 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
+	opt, err := creds(params.Config)
+	if err != nil {
+		return nil, err
+	}
+
 	metrics := metrics.NewServer(params.Meter)
 
 	opts := []grpc.ServerOption{
@@ -76,21 +81,13 @@ func NewServer(params ServerParams) (*Server, error) {
 		}),
 		unaryServerOption(params, metrics, params.Unary...),
 		streamServerOption(params, metrics, params.Stream...),
-	}
-
-	opt, err := creds(params.Config)
-	if err != nil {
-		return nil, err
-	}
-
-	if opt != nil {
-		opts = append(opts, opt)
+		opt,
 	}
 
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	svr := sn.NewServer("grpc", sg.NewServer(s, l), l, params.Logger, params.Shutdowner)
+	svr := sn.NewServer("grpc", sg.NewServer(s, l), params.Logger, params.Shutdowner)
 
 	return &Server{srv: svr, server: s}, nil
 }
@@ -146,13 +143,21 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 
 func creds(cfg *Config) (grpc.ServerOption, error) {
 	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
-		return nil, nil
+		return grpc.EmptyServerOption{}, nil
 	}
 
-	conf, err := security.NewTLSConfig(cfg.Security)
-	if err != nil {
-		return nil, err
+	var creds credentials.TransportCredentials
+
+	if cfg.Security.HasFiles() {
+		conf, err := security.NewTLSConfig(cfg.Security)
+		if err != nil {
+			return grpc.EmptyServerOption{}, err
+		}
+
+		creds = credentials.NewTLS(conf)
+	} else {
+		creds = credentials.NewClientTLSFromCert(nil, "")
 	}
 
-	return grpc.Creds(credentials.NewTLS(conf)), nil
+	return grpc.Creds(creds), nil
 }

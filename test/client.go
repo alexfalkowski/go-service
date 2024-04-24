@@ -54,13 +54,15 @@ func NewGRPCClient(
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(cred))
 	}
 
+	sec, _ := g.WithClientSecure(NewInsecureClientConfig())
 	cl := &client.Config{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
 
 	conn, err := g.NewClient(cl.Host,
+		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(meter),
-		g.WithClientUserAgent(cl.UserAgent),
+		g.WithClientUserAgent(cl.UserAgent), sec,
 	)
 	if err != nil {
 		panic(err)
@@ -86,6 +88,7 @@ func NewSecureGRPCClient(
 	}
 
 	conn, err := g.NewClient("localhost:"+tcfg.GRPC.Port,
+		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(tcfg.GRPC.Retry),
 		g.WithClientMetrics(meter), g.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,

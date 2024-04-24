@@ -11,3 +11,8 @@ type Config struct {
 	CertFile string `yaml:"cert_file,omitempty" json:"cert_file,omitempty" toml:"cert_file,omitempty"`
 	KeyFile  string `yaml:"key_file,omitempty" json:"key_file,omitempty" toml:"key_file,omitempty"`
 }
+
+// HasFiles for security.
+func (c *Config) HasFiles() bool {
+	return c.CertFile != "" && c.KeyFile != ""
+}
