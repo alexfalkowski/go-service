@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.163.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.163.1) - 2024-04-24
+
+- [`dba3abd`](https://github.com/alexfalkowski/go-service/commit/dba3abd8f4e6a24a56d3088c613de3453be6eabc) fix(deps): bump github.com/jmoiron/sqlx from 1.3.5 to 1.4.0 (#637)
+
 ## [v1.163.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.163.0) - 2024-04-23
 
 - [`e07e0cc`](https://github.com/alexfalkowski/go-service/commit/e07e0cc13021bca637bc5d0cc5635d9e423ef9d7) feat(http): remove error from client (#635)
