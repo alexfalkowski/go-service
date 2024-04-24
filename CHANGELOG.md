@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.165.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.165.2) - 2024-04-24
+
+- [`1bb9891`](https://github.com/alexfalkowski/go-service/commit/1bb9891a231fb5ba1075e97f9cae8cc21e95fc22) fix(tracer): log error (#642)
+
 ## [v1.165.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.165.1) - 2024-04-24
 
 - [`35a756f`](https://github.com/alexfalkowski/go-service/commit/35a756fcfe4c6d027da4270d1ba163faa6770a6c) fix(otel): use semconv v1.25.0 (#641)
