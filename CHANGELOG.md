@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.164.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.164.0) - 2024-04-24
+
+- [`25da1d3`](https://github.com/alexfalkowski/go-service/commit/25da1d3a98b7f1e21dbfb18680b56a673fd5e51a) feat(net): add server to be reused (#638)
+
 ## [v1.163.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.163.2) - 2024-04-24
 
 - [`565d233`](https://github.com/alexfalkowski/go-service/commit/565d233886cbd09631a0a294dda518fe11a2e6da) fix(logger): set for redis (#636)
