@@ -21,26 +21,56 @@ func (r *ResponseWriter) WriteHeader(statusCode int) {
 
 // Server for HTTP.
 type Server struct {
-	server            *http.Server
-	listener          net.Listener
-	certFile, keyFile string
+	server *http.Server
+	cfg    Config
+}
+
+// Config for HTTP.
+type Config struct {
+	Listener net.Listener
+	Security Security
+}
+
+// Security for HTTP.
+type Security struct {
+	Enabled           bool
+	CertFile, KeyFile string
 }
 
 // NewServer for HTTP.
-func NewServer(server *http.Server, listener net.Listener, certFile, keyFile string) *Server {
-	return &Server{server: server, listener: listener, certFile: certFile, keyFile: keyFile}
+func NewServer(server *http.Server, cfg Config) *Server {
+	return &Server{server: server, cfg: cfg}
 }
 
 // Serve the underlying server.
 func (s *Server) Serve() error {
-	if s.certFile != "" && s.keyFile != "" {
-		return s.server.ServeTLS(s.listener, s.certFile, s.keyFile)
+	l := s.cfg.Listener
+	if l == nil {
+		return nil
 	}
 
-	return s.server.Serve(s.listener)
+	tls := s.cfg.Security
+	if !tls.Enabled {
+		return s.server.Serve(l)
+	}
+
+	return s.server.ServeTLS(l, tls.CertFile, tls.KeyFile)
 }
 
 // Shutdown the underlying server.
 func (s *Server) Shutdown(ctx context.Context) error {
+	if s.cfg.Listener == nil {
+		return nil
+	}
+
 	return s.server.Shutdown(ctx)
+}
+
+func (s *Server) String() string {
+	l := s.cfg.Listener
+	if l != nil {
+		return l.Addr().String()
+	}
+
+	return ""
 }

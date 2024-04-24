@@ -58,6 +58,11 @@ func NewSecureClientConfig() *security.Config {
 	}
 }
 
+// NewSecureClientConfig for test.
+func NewInsecureClientConfig() *security.Config {
+	return &security.Config{}
+}
+
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{

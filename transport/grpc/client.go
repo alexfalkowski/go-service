@@ -24,6 +24,8 @@ import (
 // ClientOption for gRPC.
 type ClientOption interface{ apply(opts *clientOpts) }
 
+var none = clientOptionFunc(func(_ *clientOpts) {})
+
 type clientOpts struct {
 	logger    *zap.Logger
 	tracer    trace.Tracer
@@ -57,12 +59,16 @@ func WithClientBreaker() ClientOption {
 
 // WithClientSecure for gRPC.
 func WithClientSecure(sec *security.Config) (ClientOption, error) {
+	if !security.IsEnabled(sec) {
+		return none, nil
+	}
+
 	var creds credentials.TransportCredentials
 
-	if security.IsEnabled(sec) {
+	if sec.HasFiles() {
 		conf, err := security.NewTLSConfig(sec)
 		if err != nil {
-			return nil, err
+			return none, err
 		}
 
 		creds = credentials.NewTLS(conf)

@@ -1,9 +1,14 @@
 package net
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 // Serverer for net.
 type Serverer interface {
+	fmt.Stringer
+
 	// Serve the underlying server.
 	Serve() error
 

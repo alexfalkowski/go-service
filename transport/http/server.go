@@ -83,26 +83,27 @@ func NewServer(params ServerParams) (*Server, error) {
 	n.Use(cors.New())
 	n.UseHandler(params.Mux)
 
-	s := &http.Server{
-		Handler:           n,
-		ReadTimeout:       time.Timeout,
-		WriteTimeout:      time.Timeout,
-		IdleTimeout:       time.Timeout,
-		ReadHeaderTimeout: time.Timeout,
-	}
-
-	c, k := files(params.Config)
-	svr := sn.NewServer("http", sh.NewServer(s, l, c, k), l, params.Logger, params.Shutdowner)
+	s := &http.Server{Handler: n, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}
+	sv := sh.NewServer(s, config(params.Config, l))
+	svr := sn.NewServer("http", sv, params.Logger, params.Shutdowner)
 
 	return &Server{Server: svr}, nil
 }
 
-func files(cfg *Config) (string, string) {
-	if IsEnabled(cfg) && security.IsEnabled(cfg.Security) {
-		return cfg.Security.CertFile, cfg.Security.KeyFile
+func config(cfg *Config, l net.Listener) sh.Config {
+	c := sh.Config{
+		Listener: l,
 	}
 
-	return "", ""
+	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
+		return c
+	}
+
+	c.Security.Enabled = true
+	c.Security.CertFile = cfg.Security.CertFile
+	c.Security.KeyFile = cfg.Security.KeyFile
+
+	return c
 }
 
 func listener(cfg *Config) (net.Listener, error) {
