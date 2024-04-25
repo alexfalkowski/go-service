@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.168.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.168.1) - 2024-04-25
+
+- [`f8dfa6f`](https://github.com/alexfalkowski/go-service/commit/f8dfa6fd16e16c5233743b8ec68839b7423b5f44) fix(net): simplify server (#652)
+- [`5c76f4a`](https://github.com/alexfalkowski/go-service/commit/5c76f4abf874baf7a35fbd186cf9b7995810f8c9) docs(limiter): add kinds (#651)
+
 ## [v1.168.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.168.0) - 2024-04-25
 
 - [`2f75da7`](https://github.com/alexfalkowski/go-service/commit/2f75da7183c97db2a7e4564eb9762ef7d4a26d98) feat(limiter): limit by ip (#650)
