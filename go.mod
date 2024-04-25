@@ -27,7 +27,7 @@ require (
 	github.com/open-feature/go-sdk v1.11.0
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.19.0
-	github.com/rs/cors v1.10.1
+	github.com/rs/cors v1.11.0
 	github.com/shirou/gopsutil/v3 v3.24.3
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v0.5.0
