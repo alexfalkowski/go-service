@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport"
@@ -60,18 +61,14 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 // NewHTTPServer for test.
 func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *th.Server {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	server, err := th.NewServer(th.ServerParams{
 		Shutdowner: NewShutdowner(), Mux: Mux,
 		Config: tcfg.HTTP, Logger: logger,
 		Tracer: tracer, Meter: meter, Handlers: handlers,
 	})
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	return server
 }
@@ -83,18 +80,14 @@ func NewGRPCServer(
 	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tg.Server {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	server, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: NewShutdowner(), Config: tcfg.GRPC, Logger: logger,
 		Tracer: tracer, Meter: meter,
 		Unary: unary, Stream: stream,
 	})
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(server.Server(), NewServer(verifyAuth))
 

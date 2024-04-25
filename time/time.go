@@ -2,6 +2,8 @@ package time
 
 import (
 	"time"
+
+	"github.com/alexfalkowski/go-service/runtime"
 )
 
 const (
@@ -20,9 +22,7 @@ func ToMilliseconds(duration time.Duration) int64 {
 // MustParseDuration for time.
 func MustParseDuration(s string) time.Duration {
 	t, err := time.ParseDuration(s)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	return t
 }
