@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	rim "github.com/alexfalkowski/go-service/cache/ristretto/telemetry/metrics"
 	gr "github.com/alexfalkowski/go-service/redis"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/go-redis/cache/v8"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -40,9 +41,7 @@ func NewRistrettoCache(lc fx.Lifecycle, meter metric.Meter) ristretto.Cache {
 	cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
 	c, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	rim.Register(c, Version, meter)
 

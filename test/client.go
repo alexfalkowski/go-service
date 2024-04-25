@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/client"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	g "github.com/alexfalkowski/go-service/transport/grpc"
@@ -23,9 +24,7 @@ func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	client := h.NewClient(
 		h.WithClientLogger(logger),
@@ -45,9 +44,7 @@ func NewGRPCClient(
 	meter metric.Meter,
 ) *grpc.ClientConn {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 	if cred != nil {
@@ -64,9 +61,7 @@ func NewGRPCClient(
 		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(meter),
 		g.WithClientUserAgent(cl.UserAgent), sec,
 	)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	return conn
 }
@@ -78,14 +73,10 @@ func NewSecureGRPCClient(
 	meter metric.Meter,
 ) *grpc.ClientConn {
 	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	sec, err := g.WithClientSecure(NewSecureClientConfig())
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	conn, err := g.NewClient("localhost:"+tcfg.GRPC.Port,
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
@@ -93,9 +84,7 @@ func NewSecureGRPCClient(
 		g.WithClientBreaker(), g.WithClientRetry(tcfg.GRPC.Retry),
 		g.WithClientMetrics(meter), g.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,
 	)
-	if err != nil {
-		panic(err)
-	}
+	runtime.Must(err)
 
 	return conn
 }
