@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
+	"github.com/ulule/limiter/v3"
 )
 
 // Handler for meta.
@@ -23,6 +24,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 	ctx = m.WithRequestID(ctx, extractRequestID(ctx, req))
+	ctx = ip(ctx, req)
 
 	next(resp, req.WithContext(ctx))
 }
@@ -76,5 +78,9 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 		return meta.String(id)
 	}
 
-	return meta.ToValuer(uuid.New())
+	return meta.ToString(uuid.New())
+}
+
+func ip(ctx context.Context, req *http.Request) context.Context {
+	return m.WithIPAddr(ctx, meta.ToRedacted(limiter.GetIP(req, limiter.Options{TrustForwardHeader: true})))
 }

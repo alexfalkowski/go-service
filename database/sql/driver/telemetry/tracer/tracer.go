@@ -44,7 +44,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	ctx, span := i.tracer.Start(ctx, operationName("exec conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
 	tracer.Error(err, span)
@@ -61,7 +61,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	ctx, span := i.tracer.Start(ctx, operationName("query conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
 	tracer.Error(err, span)
@@ -99,7 +99,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	ctx, span := i.tracer.Start(ctx, operationName("exec statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
 	tracer.Error(err, span)
@@ -116,7 +116,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	ctx, span := i.tracer.Start(ctx, operationName("query statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
 	tracer.Error(err, span)

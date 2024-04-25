@@ -5,18 +5,6 @@ import (
 	"strings"
 )
 
-// Blank meta value.
-var Blank = String("")
-
-// ToValuer for meta.
-func ToValuer(st fmt.Stringer) Valuer {
-	if st == nil {
-		return Blank
-	}
-
-	return String(st.String())
-}
-
 // Valuer for meta.
 type Valuer interface {
 	Value() string
@@ -46,10 +34,19 @@ func IsEqual(actual Valuer, expected string) bool {
 // Error for meta.
 func Error(err error) Valuer {
 	if err == nil {
-		return Blank
+		return String("")
 	}
 
 	return String(err.Error())
+}
+
+// ToString for meta.
+func ToString(st fmt.Stringer) String {
+	if st == nil {
+		return String("")
+	}
+
+	return String(st.String())
 }
 
 // String for meta.
@@ -63,6 +60,15 @@ func (v String) Value() string {
 // String to satisfy fmt.Stringer.
 func (v String) String() string {
 	return v.Value()
+}
+
+// ToRedacted for meta.
+func ToRedacted(st fmt.Stringer) Redacted {
+	if st == nil {
+		return Redacted("")
+	}
+
+	return Redacted(st.String())
 }
 
 // Redacted for meta.
