@@ -263,6 +263,10 @@ token:
 
 The framework allows you to define a [limiter](https://github.com/ulule/limiter). This wull be applied to he different transports if enabled.
 
+The different kinds are:
+- user-agent
+- ip
+
 ### Configuration
 
 To configure, please specify the following:
