@@ -55,7 +55,7 @@ func StreamServerInterceptor() []grpc.StreamServerInterceptor {
 // Server for gRPC.
 type Server struct {
 	server *grpc.Server
-	srv    *sn.Server
+	srv    *server.Server
 }
 
 // NewServer for gRPC.
@@ -92,7 +92,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	svr := sn.NewServer("grpc", sg.NewServer(s, l), params.Logger, params.Shutdowner)
+	svr := server.NewServer("grpc", sg.NewServer(s, l), params.Logger, params.Shutdowner)
 
 	return &Server{srv: svr, server: s}, nil
 }
@@ -117,7 +117,7 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	return server.Listener(cfg.Port)
+	return sn.Listener(cfg.Port)
 }
 
 func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {

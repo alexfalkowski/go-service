@@ -30,7 +30,7 @@ type ServerParams struct {
 
 // Server for debug.
 type Server struct {
-	*sn.Server
+	*server.Server
 }
 
 // NewServer for debug.
@@ -42,7 +42,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	s := &http.Server{Handler: params.Mux, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}
 	sv := sh.NewServer(s, config(params.Config, l))
-	svr := sn.NewServer("debug", sv, params.Logger, params.Shutdowner)
+	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
 
 	return &Server{Server: svr}, nil
 }
@@ -68,5 +68,5 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	return server.Listener(cfg.Port)
+	return sn.Listener(cfg.Port)
 }

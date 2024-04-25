@@ -12,8 +12,8 @@ func Must(err error) {
 	}
 }
 
-// Convert from a recover.
-func Convert(r any) error {
+// ConvertRecover to an error.
+func ConvertRecover(r any) error {
 	switch x := r.(type) {
 	case string:
 		return errors.New(x)
