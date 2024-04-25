@@ -4,16 +4,19 @@ import (
 	"context"
 	"net"
 
+	"github.com/alexfalkowski/go-service/limiter"
 	sn "github.com/alexfalkowski/go-service/net"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
+	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	v3 "github.com/ulule/limiter/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
@@ -33,6 +36,8 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
 	Meter      metric.Meter
+	Limiter    *v3.Limiter
+	Key        limiter.KeyFunc
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
 }
@@ -121,6 +126,7 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 		tracer.UnaryServerInterceptor(params.Tracer),
 		szap.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
+		gl.UnaryServerInterceptor(params.Limiter, params.Key),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -134,6 +140,7 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 		tracer.StreamServerInterceptor(params.Tracer),
 		szap.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),
+		gl.StreamServerInterceptor(params.Limiter, params.Key),
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

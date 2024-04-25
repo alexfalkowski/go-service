@@ -259,6 +259,21 @@ token:
   Kind: none
 ```
 
+## Limiter
+
+The framework allows you to define a [limiter](https://github.com/ulule/limiter). This wull be applied to he different transports if enabled.
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+limiter:
+  enabled: true
+  kind: user-agent
+  pattern: 10-S
+```
+
 ## Transport
 
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:

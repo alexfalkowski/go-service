@@ -4,17 +4,20 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/limiter"
 	sn "github.com/alexfalkowski/go-service/net"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
+	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	szap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	v3 "github.com/ulule/limiter/v3"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -50,6 +53,8 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
 	Meter      metric.Meter
+	Limiter    *v3.Limiter
+	Key        limiter.KeyFunc
 	Handlers   []negroni.Handler
 }
 
@@ -81,6 +86,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n.Use(cors.New())
+	n.Use(hl.NewHandler(params.Limiter, params.Key))
 	n.UseHandler(params.Mux)
 
 	s := &http.Server{Handler: n, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}

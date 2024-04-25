@@ -21,7 +21,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New("0-S")
+		l, err := limiter.New(test.NewLimiterConfig("0-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -61,7 +61,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New("10-S")
+		l, err := limiter.New(test.NewLimiterConfig("10-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -100,7 +100,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New("0-S")
+		l, err := limiter.New(test.NewLimiterConfig("0-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -146,7 +146,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New("10-S")
+		l, err := limiter.New(test.NewLimiterConfig("10-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()

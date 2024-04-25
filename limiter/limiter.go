@@ -9,8 +9,14 @@ import (
 )
 
 // New limiter.
-func New(formatted string) (*limiter.Limiter, error) {
-	rate, err := limiter.NewRateFromFormatted(formatted)
+//
+//nolint:nilnil
+func New(cfg *Config) (*limiter.Limiter, error) {
+	if !IsEnabled(cfg) {
+		return nil, nil
+	}
+
+	rate, err := limiter.NewRateFromFormatted(cfg.Pattern)
 	if err != nil {
 		return nil, err
 	}
@@ -22,3 +28,8 @@ func New(formatted string) (*limiter.Limiter, error) {
 
 // KeyFunc for the limiter.
 type KeyFunc func(context.Context) meta.Valuer
+
+// NoKey for the limiter.
+var NoKey = func(context.Context) meta.Valuer {
+	return meta.Blank
+}
