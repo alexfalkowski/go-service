@@ -6,7 +6,6 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Server for net.
@@ -32,16 +31,13 @@ func (s *Server) Start() {
 }
 
 func (s *Server) start() {
-	s.logger.Info("starting server", zap.Stringer("addr", s.serverer), zap.String(tm.ServiceKey, s.svc))
+	addr := zap.Stringer("addr", s.serverer)
+	s.logger.Info("starting server", addr, zap.String(tm.ServiceKey, s.svc))
 
 	if err := s.serverer.Serve(); err != nil {
-		fields := []zapcore.Field{zap.Stringer("addr", s.serverer), zap.Error(err), zap.String(tm.ServiceKey, s.svc)}
-
-		if err := s.sh.Shutdown(); err != nil {
-			fields = append(fields, zap.NamedError("shutdown_error", err))
-		}
-
-		s.logger.Error("could not start server", fields...)
+		s.logger.Error("could not start server",
+			zap.String(tm.ServiceKey, s.svc), addr,
+			zap.Error(err), zap.NamedError("shutdown_error", s.sh.Shutdown()))
 	}
 }
 
@@ -51,6 +47,6 @@ func (s *Server) Stop(ctx context.Context) {
 		return
 	}
 
-	err := s.serverer.Shutdown(ctx)
-	s.logger.Info("stopping server", zap.String(tm.ServiceKey, s.svc), zap.Error(err))
+	s.logger.Info("stopping server",
+		zap.String(tm.ServiceKey, s.svc), zap.Error(s.serverer.Shutdown(ctx)))
 }
