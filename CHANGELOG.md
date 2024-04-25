@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.166.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.166.1) - 2024-04-25
+
+- [`4b554ad`](https://github.com/alexfalkowski/go-service/commit/4b554ad0d34b7ede1c652037ffebd49e1c76e9f8) fix(http): handle closed error (#646)
+
 ## [v1.166.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.166.0) - 2024-04-25
 
 - [`a126d3b`](https://github.com/alexfalkowski/go-service/commit/a126d3bfdc76d717068bfb12e90400bfb4a2fd13) feat(limiter): configure automatically when enabled (#645)
