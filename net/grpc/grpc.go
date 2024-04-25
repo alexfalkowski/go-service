@@ -20,19 +20,11 @@ func NewServer(server *grpc.Server, listener net.Listener) *Server {
 
 // Serve the underlying server.
 func (s *Server) Serve() error {
-	if s.listener == nil {
-		return nil
-	}
-
 	return s.server.Serve(s.listener)
 }
 
 // Shutdown the underlying server.
 func (s *Server) Shutdown(_ context.Context) error {
-	if s.listener == nil {
-		return nil
-	}
-
 	s.server.GracefulStop()
 
 	return nil
@@ -40,10 +32,10 @@ func (s *Server) Shutdown(_ context.Context) error {
 
 // String for server.
 func (s *Server) String() string {
-	l := s.listener
-	if l != nil {
-		return l.Addr().String()
-	}
+	return s.listener.Addr().String()
+}
 
-	return ""
+// IsEnabled for server.
+func (s *Server) IsEnabled() bool {
+	return s.listener != nil
 }

@@ -24,6 +24,10 @@ func NewServer(svc string, serverer Serverer, logger *zap.Logger, sh fx.Shutdown
 
 // Start the server.
 func (s *Server) Start() {
+	if !s.serverer.IsEnabled() {
+		return
+	}
+
 	go s.start()
 }
 
@@ -43,6 +47,10 @@ func (s *Server) start() {
 
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) {
+	if !s.serverer.IsEnabled() {
+		return
+	}
+
 	err := s.serverer.Shutdown(ctx)
 	s.logger.Info("stopping server", zap.String(tm.ServiceKey, s.svc), zap.Error(err))
 }
