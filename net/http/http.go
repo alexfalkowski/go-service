@@ -46,7 +46,6 @@ func NewServer(server *http.Server, cfg Config) *Server {
 // Serve the underlying server.
 func (s *Server) Serve() error {
 	err := s.serve()
-
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}
@@ -56,20 +55,16 @@ func (s *Server) Serve() error {
 
 // Shutdown the underlying server.
 func (s *Server) Shutdown(ctx context.Context) error {
-	if s.cfg.Listener == nil {
-		return nil
-	}
-
 	return s.server.Shutdown(ctx)
 }
 
 func (s *Server) String() string {
-	l := s.cfg.Listener
-	if l != nil {
-		return l.Addr().String()
-	}
+	return s.cfg.Listener.Addr().String()
+}
 
-	return ""
+// IsEnabled for server.
+func (s *Server) IsEnabled() bool {
+	return s.cfg.Listener != nil
 }
 
 func (s *Server) serve() error {
