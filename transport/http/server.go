@@ -60,7 +60,7 @@ type ServerParams struct {
 
 // Server for HTTP.
 type Server struct {
-	*sn.Server
+	*server.Server
 }
 
 // ServerHandlers for HTTP.
@@ -91,7 +91,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	s := &http.Server{Handler: n, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}
 	sv := sh.NewServer(s, config(params.Config, l))
-	svr := sn.NewServer("http", sv, params.Logger, params.Shutdowner)
+	svr := server.NewServer("http", sv, params.Logger, params.Shutdowner)
 
 	return &Server{Server: svr}, nil
 }
@@ -117,7 +117,7 @@ func listener(cfg *Config) (net.Listener, error) {
 		return nil, nil
 	}
 
-	return server.Listener(cfg.Port)
+	return sn.Listener(cfg.Port)
 }
 
 func customMatcher(key string) (string, bool) {

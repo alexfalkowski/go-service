@@ -32,7 +32,7 @@ func TestRecover(t *testing.T) {
 	errPanic := func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = runtime.Convert(r)
+				err = runtime.ConvertRecover(r)
 			}
 		}()
 
@@ -42,7 +42,7 @@ func TestRecover(t *testing.T) {
 	strPanic := func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = runtime.Convert(r)
+				err = runtime.ConvertRecover(r)
 			}
 		}()
 
@@ -52,7 +52,7 @@ func TestRecover(t *testing.T) {
 	intPanic := func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = runtime.Convert(r)
+				err = runtime.ConvertRecover(r)
 			}
 		}()
 
