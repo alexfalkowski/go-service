@@ -22,6 +22,12 @@ type Handler struct {
 
 // ServeHTTP for limiter.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if h.limiter == nil {
+		next(res, req)
+
+		return
+	}
+
 	ctx := req.Context()
 
 	// Memory stores do not return error.

@@ -27,6 +27,11 @@ attempts = 3
 [hooks]
 secret = "YWJjZGUxMjM0NQ=="
 
+[limiter]
+enabled = true
+kind = "user-agent"
+pattern = "10-S"
+
 [sql.pg]
 max_open_conns = 5
 max_idle_conns = 5

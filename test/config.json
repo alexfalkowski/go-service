@@ -29,6 +29,11 @@
     "hooks": {
       "secret": "YWJjZGUxMjM0NQ=="
     },
+    "limiter": {
+      "enabled": true,
+      "kind": "user-agent",
+      "pattern": "10-S"
+    },
     "sql": {
       "pg": {
         "masters": [

@@ -5,12 +5,13 @@ import (
 	"strings"
 )
 
-var blank = String("")
+// Blank meta value.
+var Blank = String("")
 
 // ToValuer for meta.
 func ToValuer(st fmt.Stringer) Valuer {
 	if st == nil {
-		return blank
+		return Blank
 	}
 
 	return String(st.String())
@@ -45,7 +46,7 @@ func IsEqual(actual Valuer, expected string) bool {
 // Error for meta.
 func Error(err error) Valuer {
 	if err == nil {
-		return blank
+		return Blank
 	}
 
 	return String(err.Error())

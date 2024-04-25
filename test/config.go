@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
@@ -206,5 +207,16 @@ func NewSecureDebugConfig() *debug.Config {
 
 // NewRedisConfig for test.
 func NewRedisConfig(host, compressor, marshaller string) *redis.Config {
-	return &redis.Config{Addresses: map[string]string{"server": host}, Compressor: compressor, Marshaller: marshaller}
+	return &redis.Config{
+		Addresses:  map[string]string{"server": host},
+		Compressor: compressor, Marshaller: marshaller,
+	}
+}
+
+// NewLimiterConfig for test.
+func NewLimiterConfig(pattern string) *limiter.Config {
+	return &limiter.Config{
+		Enabled: true,
+		Pattern: pattern,
+	}
 }
