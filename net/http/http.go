@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/http"
 )
@@ -44,17 +45,13 @@ func NewServer(server *http.Server, cfg Config) *Server {
 
 // Serve the underlying server.
 func (s *Server) Serve() error {
-	l := s.cfg.Listener
-	if l == nil {
+	err := s.serve()
+
+	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}
 
-	tls := s.cfg.Security
-	if !tls.Enabled {
-		return s.server.Serve(l)
-	}
-
-	return s.server.ServeTLS(l, tls.CertFile, tls.KeyFile)
+	return err
 }
 
 // Shutdown the underlying server.
@@ -73,4 +70,18 @@ func (s *Server) String() string {
 	}
 
 	return ""
+}
+
+func (s *Server) serve() error {
+	l := s.cfg.Listener
+	if l == nil {
+		return nil
+	}
+
+	tls := s.cfg.Security
+	if !tls.Enabled {
+		return s.server.Serve(l)
+	}
+
+	return s.server.ServeTLS(l, tls.CertFile, tls.KeyFile)
 }
