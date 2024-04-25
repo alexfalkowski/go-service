@@ -62,6 +62,14 @@ func TestBlank(t *testing.T) {
 		})
 	})
 
+	Convey("When I have a blank value", t, func() {
+		v := meta.Redacted("")
+
+		Convey("Then it should be blank", func() {
+			So(meta.IsBlank(v), ShouldBeTrue)
+		})
+	})
+
 	Convey("When I have a no value", t, func() {
 		s := meta.ValueOrBlank(nil)
 
@@ -71,7 +79,15 @@ func TestBlank(t *testing.T) {
 	})
 
 	Convey("When I have a no stringer", t, func() {
-		v := meta.ToValuer(nil)
+		v := meta.ToString(nil)
+
+		Convey("Then it should be blank", func() {
+			So(meta.IsBlank(v), ShouldBeTrue)
+		})
+	})
+
+	Convey("When I have a no stringer", t, func() {
+		v := meta.ToRedacted(nil)
 
 		Convey("Then it should be blank", func() {
 			So(meta.IsBlank(v), ShouldBeTrue)

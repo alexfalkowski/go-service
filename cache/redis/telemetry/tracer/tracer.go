@@ -35,7 +35,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	ctx, span := c.tracer.Start(ctx, operationName("client set"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.Set(ctx, key, value, ttl)
 
 	tracer.Error(cmd.Err(), span)
@@ -54,7 +54,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	ctx, span := c.tracer.Start(ctx, operationName("client setxx"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 
 	tracer.Error(cmd.Err(), span)
@@ -73,7 +73,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	ctx, span := c.tracer.Start(ctx, operationName("client setnx"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 
 	tracer.Error(cmd.Err(), span)
@@ -91,7 +91,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	ctx, span := c.tracer.Start(ctx, operationName("client get"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.Get(ctx, key)
 
 	tracer.Error(cmd.Err(), span)
@@ -109,7 +109,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	ctx, span := c.tracer.Start(ctx, operationName("client del"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.Del(ctx, keys...)
 
 	tracer.Error(cmd.Err(), span)
@@ -127,7 +127,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	ctx, span := c.tracer.Start(ctx, operationName("client incr"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToValuer(span.SpanContext().TraceID()))
+	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 	cmd := c.client.Incr(ctx, key)
 
 	tracer.Error(cmd.Err(), span)

@@ -2,6 +2,8 @@ package meta
 
 import (
 	"context"
+	"net"
+	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
 	m "github.com/alexfalkowski/go-service/transport/meta"
@@ -10,6 +12,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 // UnaryServerInterceptor for meta.
@@ -19,6 +22,7 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+		ctx = m.WithIPAddr(ctx, meta.Redacted((IPAddr(ctx, md))))
 
 		return handler(ctx, req)
 	}
@@ -32,6 +36,7 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+		ctx = m.WithIPAddr(ctx, meta.Redacted((IPAddr(ctx, md))))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -78,6 +83,27 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	}
 }
 
+// IPAddr for meta.
+func IPAddr(ctx context.Context, md metadata.MD) string {
+	if f := md.Get("x-forwarded-for"); len(f) > 0 {
+		return strings.Split(f[0], ",")[0]
+	}
+
+	p, ok := peer.FromContext(ctx)
+	if !ok {
+		return ""
+	}
+
+	addr := p.Addr.String()
+
+	host, _, err := net.SplitHostPort(p.Addr.String())
+	if err != nil {
+		return addr
+	}
+
+	return host
+}
+
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) meta.Valuer {
 	if ua := m.UserAgent(ctx); ua != nil {
 		return ua
@@ -103,5 +129,5 @@ func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
 		return meta.String(id[0])
 	}
 
-	return meta.ToValuer(uuid.New())
+	return meta.ToString(uuid.New())
 }
