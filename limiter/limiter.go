@@ -28,8 +28,3 @@ func New(cfg *Config) (*limiter.Limiter, error) {
 
 // KeyFunc for the limiter.
 type KeyFunc func(context.Context) meta.Valuer
-
-// NoKey for the limiter.
-var NoKey = func(context.Context) meta.Valuer {
-	return meta.Blank
-}
