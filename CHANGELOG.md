@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.170.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.170.0) - 2024-04-26
+
+- [`ae7266a`](https://github.com/alexfalkowski/go-service/commit/ae7266af46275ce224b4a77347c86c6943313cd9) feat(server): move listener to net (#656)
+- [`2ada426`](https://github.com/alexfalkowski/go-service/commit/2ada42657fa6f229f32f7a624753d487a7dfa922) docs(server): rename docs to suit the package (#655)
+- [`e2235db`](https://github.com/alexfalkowski/go-service/commit/e2235dbe2777542c2eaceedf3b4b660fde9de23b) build(deps): bump bin from `c06391c` to `62c9b8d` (#654)
+
 ## [v1.169.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.169.0) - 2024-04-25
 
 - [`556ff2d`](https://github.com/alexfalkowski/go-service/commit/556ff2d133c0dc0d5f9fe86ca0dac11f1c7a53dd) feat(server): move package (#653)
