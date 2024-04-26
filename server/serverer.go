@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Serverer for net.
+// Serverer allows transports to create their own.
 type Serverer interface {
 	fmt.Stringer
 

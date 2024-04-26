@@ -8,10 +8,10 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 )
 
-// ErrInvalidPort for server.
+// ErrInvalidPort for net.
 var ErrInvalidPort = errors.New("invalid port")
 
-// Listener for server.
+// Listener for net.
 func Listener(port string) (net.Listener, error) {
 	if port == "" {
 		return nil, ErrInvalidPort

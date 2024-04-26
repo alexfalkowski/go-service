@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// Server for net.
+// Server is a generic server.
 type Server struct {
 	svc    string
 	srv    Serverer
@@ -16,7 +16,7 @@ type Server struct {
 	sh     fx.Shutdowner
 }
 
-// NewServer for net.
+// NewServer that can start and stop an underlying server.
 func NewServer(svc string, srv Serverer, logger *zap.Logger, sh fx.Shutdowner) *Server {
 	return &Server{svc: svc, srv: srv, logger: logger, sh: sh}
 }
