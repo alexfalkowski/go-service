@@ -1,11 +1,9 @@
 package http
 
 import (
-	"net"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/limiter"
-	sn "github.com/alexfalkowski/go-service/net"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
@@ -13,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	szap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -70,15 +68,10 @@ func ServerHandlers() []negroni.Handler {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
-	l, err := listener(params.Config)
-	if err != nil {
-		return nil, err
-	}
-
 	n := negroni.New()
 	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
-	n.Use(szap.NewHandler(params.Logger))
+	n.Use(logger.NewHandler(params.Logger))
 	n.Use(metrics.NewHandler(params.Meter))
 
 	for _, hd := range params.Handlers {
@@ -89,19 +82,33 @@ func NewServer(params ServerParams) (*Server, error) {
 	n.Use(hl.NewHandler(params.Limiter, params.Key))
 	n.UseHandler(params.Mux)
 
-	s := &http.Server{Handler: n, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}
-	sv := sh.NewServer(s, config(params.Config, l))
+	s := &http.Server{
+		Handler:     n,
+		ReadTimeout: time.Timeout, WriteTimeout: time.Timeout,
+		IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout,
+	}
+
+	sv, err := sh.NewServer(s, config(params.Config))
+	if err != nil {
+		return nil, err
+	}
+
 	svr := server.NewServer("http", sv, params.Logger, params.Shutdowner)
 
 	return &Server{Server: svr}, nil
 }
 
-func config(cfg *Config, l net.Listener) sh.Config {
-	c := sh.Config{
-		Listener: l,
+func config(cfg *Config) sh.Config {
+	c := sh.Config{}
+
+	if !IsEnabled(cfg) {
+		return c
 	}
 
-	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
+	c.Enabled = true
+	c.Port = cfg.Port
+
+	if !security.IsEnabled(cfg.Security) {
 		return c
 	}
 
@@ -110,14 +117,6 @@ func config(cfg *Config, l net.Listener) sh.Config {
 	c.Security.KeyFile = cfg.Security.KeyFile
 
 	return c
-}
-
-func listener(cfg *Config) (net.Listener, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
-	return sn.Listener(cfg.Port)
 }
 
 func customMatcher(key string) (string, bool) {

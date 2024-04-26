@@ -2,17 +2,15 @@ package grpc
 
 import (
 	"context"
-	"net"
 
 	"github.com/alexfalkowski/go-service/limiter"
-	sn "github.com/alexfalkowski/go-service/net"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -60,11 +58,6 @@ type Server struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
-	l, err := listener(params.Config)
-	if err != nil {
-		return nil, err
-	}
-
 	opt, err := creds(params.Config)
 	if err != nil {
 		return nil, err
@@ -92,7 +85,12 @@ func NewServer(params ServerParams) (*Server, error) {
 	s := grpc.NewServer(opts...)
 	reflection.Register(s)
 
-	svr := server.NewServer("grpc", sg.NewServer(s, l), params.Logger, params.Shutdowner)
+	sv, err := sg.NewServer(s, config(params.Config))
+	if err != nil {
+		return nil, err
+	}
+
+	svr := server.NewServer("grpc", sv, params.Logger, params.Shutdowner)
 
 	return &Server{srv: svr, server: s}, nil
 }
@@ -112,19 +110,11 @@ func (s *Server) Server() *grpc.Server {
 	return s.server
 }
 
-func listener(cfg *Config) (net.Listener, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
-	return sn.Listener(cfg.Port)
-}
-
 func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
 		meta.UnaryServerInterceptor(UserAgent(params.Config)),
 		tracer.UnaryServerInterceptor(params.Tracer),
-		szap.UnaryServerInterceptor(params.Logger),
+		logger.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
 		gl.UnaryServerInterceptor(params.Limiter, params.Key),
 	}
@@ -138,7 +128,7 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 	defaultInterceptors := []grpc.StreamServerInterceptor{
 		meta.StreamServerInterceptor(UserAgent(params.Config)),
 		tracer.StreamServerInterceptor(params.Tracer),
-		szap.StreamServerInterceptor(params.Logger),
+		logger.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),
 		gl.StreamServerInterceptor(params.Limiter, params.Key),
 	}
@@ -167,4 +157,17 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 	}
 
 	return grpc.Creds(creds), nil
+}
+
+func config(cfg *Config) sg.Config {
+	c := sg.Config{}
+
+	if !IsEnabled(cfg) {
+		return c
+	}
+
+	c.Enabled = true
+	c.Port = cfg.Port
+
+	return c
 }

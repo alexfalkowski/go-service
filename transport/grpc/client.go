@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	szap "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	gm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	r "github.com/grpc-ecosystem/go-grpc-middleware/retry"
@@ -184,7 +184,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.logger != nil {
-		unary = append(unary, szap.UnaryClientInterceptor(os.logger))
+		unary = append(unary, logger.UnaryClientInterceptor(os.logger))
 	}
 
 	if os.meter != nil {
@@ -203,7 +203,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
-		stream = append(stream, szap.StreamClientInterceptor(opts.logger))
+		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
 	}
 
 	if opts.meter != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	sn "github.com/alexfalkowski/go-service/net"
 	"google.golang.org/grpc"
 )
 
@@ -13,9 +14,28 @@ type Server struct {
 	listener net.Listener
 }
 
+// Config for HTTP.
+type Config struct {
+	Enabled bool
+	Port    string
+}
+
 // NewServer for gRPC.
-func NewServer(server *grpc.Server, listener net.Listener) *Server {
-	return &Server{server: server, listener: listener}
+func NewServer(server *grpc.Server, cfg Config) (*Server, error) {
+	s := &Server{server: server}
+
+	if !cfg.Enabled {
+		return s, nil
+	}
+
+	l, err := sn.Listener(cfg.Port)
+	if err != nil {
+		return s, err
+	}
+
+	s.listener = l
+
+	return s, nil
 }
 
 // Serve the underlying server.

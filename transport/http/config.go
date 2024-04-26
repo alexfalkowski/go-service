@@ -11,11 +11,11 @@ func IsEnabled(c *Config) bool {
 
 // UserAgent for HTTP.
 func UserAgent(c *Config) string {
-	if IsEnabled(c) {
-		return server.UserAgent(c.Config)
+	if !IsEnabled(c) {
+		return ""
 	}
 
-	return ""
+	return server.UserAgent(c.Config)
 }
 
 // Config for HTTP.
