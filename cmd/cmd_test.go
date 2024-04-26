@@ -8,7 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-service/cache"
+	sc "github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
@@ -19,8 +19,8 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
-	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
-	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
+	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
+	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -32,7 +32,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
-	rcache "github.com/go-redis/cache/v8"
+	cache "github.com/go-redis/cache/v8"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -42,11 +42,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestShutdown(t *testing.T) {
+func TestRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
-		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
+		Convey("When I try to run an application", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
 
@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/config.yml")
 
-		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
+		Convey("When I try to run an application", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
 
@@ -161,23 +161,23 @@ func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ 
 	return health.Registrations{nr, hr}
 }
 
-func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
-	return &hhttp.HealthObserver{Observer: healthServer.Observe("noop")}, nil
+func healthObserver(healthServer *server.Server) (*shh.HealthObserver, error) {
+	return &shh.HealthObserver{Observer: healthServer.Observe("noop")}, nil
 }
 
-func livenessObserver(healthServer *server.Server) *hhttp.LivenessObserver {
-	return &hhttp.LivenessObserver{Observer: healthServer.Observe("noop")}
+func livenessObserver(healthServer *server.Server) *shh.LivenessObserver {
+	return &shh.LivenessObserver{Observer: healthServer.Observe("noop")}
 }
 
-func readinessObserver(healthServer *server.Server) *hhttp.ReadinessObserver {
-	return &hhttp.ReadinessObserver{Observer: healthServer.Observe("http")}
+func readinessObserver(healthServer *server.Server) *shh.ReadinessObserver {
+	return &shh.ReadinessObserver{Observer: healthServer.Observe("http")}
 }
 
-func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
-	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
+func grpcObserver(healthServer *server.Server) *shg.Observer {
+	return &shg.Observer{Observer: healthServer.Observe("http")}
 }
 
-func redisCache(c *rcache.Cache) error {
+func redisCache(c *cache.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
@@ -221,7 +221,7 @@ func opts() []fx.Option {
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
-		cache.RedisModule, cache.RistrettoModule, compressor.Module, marshaller.Module,
+		sc.RedisModule, sc.RistrettoModule, compressor.Module, marshaller.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
