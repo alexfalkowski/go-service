@@ -23,9 +23,7 @@ func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg
 
 // NewHTTPClientWithRoundTripper for test.
 func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	runtime.Must(err)
-
+	tracer := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	client := h.NewClient(
 		h.WithClientLogger(logger),
 		h.WithClientRoundTripper(rt), h.WithClientBreaker(),
@@ -43,8 +41,7 @@ func NewGRPCClient(
 	cred credentials.PerRPCCredentials,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
-	runtime.Must(err)
+	tracer := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
 
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 	if cred != nil {
@@ -72,8 +69,7 @@ func NewSecureGRPCClient(
 	tcfg *transport.Config, ocfg *tracer.Config,
 	meter metric.Meter,
 ) *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
-	runtime.Must(err)
+	tracer := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
 
 	sec, err := g.WithClientSecure(NewSecureClientConfig())
 	runtime.Must(err)

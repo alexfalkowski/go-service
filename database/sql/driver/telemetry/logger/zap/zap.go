@@ -37,16 +37,11 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 	return i.interceptor.ConnPing(ctx, conn)
 }
 
-//nolint:dupl
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, i.name),
-	}
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
@@ -63,10 +58,6 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	fields := []zapcore.Field{
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, i.name),
-	}
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
@@ -99,16 +90,11 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 	return i.interceptor.RowsClose(ctx, rows)
 }
 
-//nolint:dupl
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
 	fields := []zapcore.Field{
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, i.name),
-	}
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
@@ -126,10 +112,6 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	fields := []zapcore.Field{
 		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
 		zap.String(tm.ServiceKey, i.name),
-	}
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)

@@ -74,27 +74,27 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 
 // StreamInterceptor for metrics.
 func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, st grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsHealth(service) {
-			return handler(srv, stream)
+			return handler(srv, st)
 		}
 
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			kindAttribute.String(string(streamKind(info))),
+			kindAttribute.String(string(stream)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
 		serverStream := &monitoredServerStream{
 			opts: opts, received: s.received, sent: s.sent, handled: s.handled, handledHist: s.handledHist,
-			ServerStream: stream,
+			ServerStream: st,
 		}
 
 		err := handler(srv, serverStream)
-		ctx := stream.Context()
+		ctx := st.Context()
 
 		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
@@ -222,7 +222,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		o := metric.WithAttributes(
-			kindAttribute.String(string(clientStreamKind(desc))),
+			kindAttribute.String(string(stream)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)

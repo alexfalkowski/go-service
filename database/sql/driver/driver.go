@@ -6,8 +6,8 @@ import (
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	dzap "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
-	stracer "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	logger "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
@@ -18,15 +18,15 @@ import (
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, tracer trace.Tracer, logger *zap.Logger) {
+func Register(name string, driver driver.Driver, t trace.Tracer, l *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
 
-	if tracer != nil {
-		interceptor = stracer.NewInterceptor(name, tracer, interceptor)
+	if t != nil {
+		interceptor = tracer.NewInterceptor(name, t, interceptor)
 	}
 
-	if logger != nil {
-		interceptor = dzap.NewInterceptor(name, logger, interceptor)
+	if l != nil {
+		interceptor = logger.NewInterceptor(name, l, interceptor)
 	}
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
@@ -34,17 +34,17 @@ func Register(name string, driver driver.Driver, tracer trace.Tracer, logger *za
 
 // Open a DB pool.
 func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) {
-	masterDSNs := make([]string, len(cfg.Masters))
+	masters := make([]string, len(cfg.Masters))
 	for i, m := range cfg.Masters {
-		masterDSNs[i] = m.URL
+		masters[i] = m.URL
 	}
 
-	slaveDSNs := make([]string, len(cfg.Slaves))
+	slaves := make([]string, len(cfg.Slaves))
 	for i, s := range cfg.Slaves {
-		slaveDSNs[i] = s.URL
+		slaves[i] = s.URL
 	}
 
-	db, err := connect(name, masterDSNs, slaveDSNs)
+	db, err := connect(name, masters, slaves)
 	if err != nil {
 		return nil, err
 	}

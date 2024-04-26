@@ -15,10 +15,6 @@ import (
 
 // Register for metrics.
 func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) {
-	if dbs == nil {
-		return
-	}
-
 	opts := metric.WithAttributes(
 		attribute.Key("name").String(os.ExecutableName()),
 		attribute.Key("version").String(string(version)),

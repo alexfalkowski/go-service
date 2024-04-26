@@ -39,10 +39,6 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 
 		fields = append(fields, tz.Meta(ctx)...)
 
-		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-		}
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
@@ -72,10 +68,6 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 
 		fields = append(fields, tz.Meta(ctx)...)
 
-		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-		}
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
@@ -104,10 +96,6 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 
 		fields = append(fields, tz.Meta(ctx)...)
 
-		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-		}
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
@@ -135,10 +123,6 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		}
 
 		fields = append(fields, tz.Meta(ctx)...)
-
-		if d, ok := ctx.Deadline(); ok {
-			fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-		}
 
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
