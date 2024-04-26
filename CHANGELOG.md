@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.171.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.171.0) - 2024-04-26
+
+- [`10ada17`](https://github.com/alexfalkowski/go-service/commit/10ada17e632dda1c50698a07c61a47c000c9e2be) feat(tracer): move start to life cycle (#660)
+- [`9ea57bb`](https://github.com/alexfalkowski/go-service/commit/9ea57bb62a63234667a26d5a9637896a10e8cc45) test(server): verify grpc port (#657)
+
 ## [v1.170.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.170.0) - 2024-04-26
 
 - [`ae7266a`](https://github.com/alexfalkowski/go-service/commit/ae7266af46275ce224b4a77347c86c6943313cd9) feat(server): move listener to net (#656)
