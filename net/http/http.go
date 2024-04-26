@@ -85,10 +85,6 @@ func (s *Server) IsEnabled() bool {
 }
 
 func (s *Server) serve() error {
-	if s.listener == nil {
-		return nil
-	}
-
 	if !s.sec.Enabled {
 		return s.server.Serve(s.listener)
 	}

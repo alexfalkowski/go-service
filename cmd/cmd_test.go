@@ -77,19 +77,21 @@ func TestRun(t *testing.T) {
 }
 
 func TestInvalid(t *testing.T) {
-	Convey("Given I have disabled HTTP server", t, func() {
-		Convey("When I try to run an application", func() {
-			c := cmd.New("1.0.0")
-			c.AddServer(opts()...)
+	for _, i := range []string{"file:../test/invalid_http.config.yml", "file:../test/invalid_grpc.config.yml"} {
+		Convey("Given I have an invalid configuration", t, func() {
+			Convey("When I try to run an application", func() {
+				c := cmd.New("1.0.0")
+				c.AddServer(opts()...)
 
-			Convey("Then I should not see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--input", "file:../test/invalid.config.yml"})
+				Convey("Then I should not see an error", func() {
+					err := c.RunWithArgs([]string{"server", "--input", i})
 
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "invalid port")
+					So(err, ShouldBeError)
+					So(err.Error(), ShouldContainSubstring, "invalid port")
+				})
 			})
 		})
-	})
+	}
 }
 
 func TestDisabled(t *testing.T) {
@@ -123,23 +125,25 @@ func TestClient(t *testing.T) {
 }
 
 func TestInvalidClient(t *testing.T) {
-	Convey("Given I have invalid HTTP port set", t, func() {
-		os.Setenv("TEST_CONFIG_FILE", "../test/invalid.config.yml")
+	for _, i := range []string{"../test/invalid_http.config.yml", "../test/invalid_grpc.config.yml"} {
+		Convey("Given I have invalid configuration", t, func() {
+			os.Setenv("TEST_CONFIG_FILE", i)
 
-		Convey("When I try to run an application", func() {
-			c := cmd.New("1.0.0")
-			c.AddClient(opts()...)
+			Convey("When I try to run an application", func() {
+				c := cmd.New("1.0.0")
+				c.AddClient(opts()...)
 
-			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
+				Convey("Then I should see an error", func() {
+					err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
 
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "invalid port")
+					So(err, ShouldBeError)
+					So(err.Error(), ShouldContainSubstring, "invalid port")
+				})
+
+				So(os.Unsetenv("TEST_CONFIG_FILE"), ShouldBeNil)
 			})
-
-			So(os.Unsetenv("TEST_CONFIG_FILE"), ShouldBeNil)
 		})
-	})
+	}
 }
 
 func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ version.Version) health.Registrations {
