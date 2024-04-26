@@ -27,9 +27,6 @@ const (
 
 	// StartTimeKey for meta.
 	StartTimeKey = "startTime"
-
-	// DeadlineKey for meta.
-	DeadlineKey = "deadline"
 )
 
 // WithRequestID for transport.

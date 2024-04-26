@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
@@ -54,12 +54,9 @@ func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Co
 
 func reader(cfg *Config) (metric.Reader, error) {
 	if cfg.IsOTLP() {
-		r, err := otlpmetrichttp.New(context.Background(), otlpmetrichttp.WithEndpointURL(cfg.Host))
-		if err != nil {
-			return nil, err
-		}
+		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.Host))
 
-		return metric.NewPeriodicReader(r), nil
+		return metric.NewPeriodicReader(r), err
 	}
 
 	return prometheus.New()

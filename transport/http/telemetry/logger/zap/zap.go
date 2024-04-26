@@ -50,15 +50,9 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, path),
 		zap.String(tm.MethodKey, method),
+		zap.Int(tm.CodeKey, res.StatusCode),
 	}
-
 	fields = append(fields, tz.Meta(ctx)...)
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
-
-	fields = append(fields, zap.Int(tm.CodeKey, res.StatusCode))
 
 	tz.LogWithFunc(message(fmt.Sprintf("%s %s", method, path)), nil, codeToLevel(res.StatusCode, h.logger), fields...)
 }
@@ -94,10 +88,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	fields = append(fields, tz.Meta(ctx)...)
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
 
 	if resp != nil {
 		fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))

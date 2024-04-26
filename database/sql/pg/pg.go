@@ -20,12 +20,10 @@ type OpenParams struct {
 }
 
 // Open for pg.
-//
-//nolint:nilnil
 func Open(params OpenParams) (*mssqlx.DBs, error) {
 	c := params.Config
 	if c == nil {
-		return nil, nil
+		return &mssqlx.DBs{}, nil
 	}
 
 	return driver.Open(params.Lifecycle, "pg", c.Config)

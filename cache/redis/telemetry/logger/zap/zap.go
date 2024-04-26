@@ -28,7 +28,6 @@ type Client struct {
 	client gr.Client
 }
 
-//nolint:dupl
 func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Duration) *redis.StatusCmd {
 	start := time.Now()
 	cmd := c.client.Set(ctx, key, value, ttl)
@@ -41,16 +40,11 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 
 	fields = append(fields, tz.Meta(ctx)...)
 
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
-
 	tz.LogWithLogger(message("client set"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	start := time.Now()
 	cmd := c.client.SetXX(ctx, key, value, ttl)
@@ -63,16 +57,11 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 
 	fields = append(fields, tz.Meta(ctx)...)
 
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
-
 	tz.LogWithLogger(message("client setxx"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Duration) *redis.BoolCmd {
 	start := time.Now()
 	cmd := c.client.SetNX(ctx, key, value, ttl)
@@ -85,16 +74,11 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 
 	fields = append(fields, tz.Meta(ctx)...)
 
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
-
 	tz.LogWithLogger(message("client setnx"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	start := time.Now()
 	cmd := c.client.Get(ctx, key)
@@ -106,10 +90,6 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	}
 
 	fields = append(fields, tz.Meta(ctx)...)
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
 
 	tz.LogWithLogger(message("client get"), cmd.Err(), c.logger, fields...)
 
@@ -128,16 +108,11 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 
 	fields = append(fields, tz.Meta(ctx)...)
 
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
-
 	tz.LogWithLogger(message("client del"), cmd.Err(), c.logger, fields...)
 
 	return cmd
 }
 
-//nolint:dupl
 func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Incr(ctx, key)
@@ -149,10 +124,6 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	}
 
 	fields = append(fields, tz.Meta(ctx)...)
-
-	if d, ok := ctx.Deadline(); ok {
-		fields = append(fields, zap.String(tm.DeadlineKey, d.Format(time.RFC3339)))
-	}
 
 	tz.LogWithLogger(message("client incr"), cmd.Err(), c.logger, fields...)
 

@@ -35,9 +35,9 @@ func NewNoopTracer() trace.Tracer {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) trace.Tracer {
 	if !IsEnabled(cfg) {
-		return NewNoopTracer(), nil
+		return NewNoopTracer()
 	}
 
 	opts := []otlptracehttp.Option{}
@@ -48,16 +48,12 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *C
 		opts = append(opts, otlptracehttp.WithEndpointURL(cfg.Host))
 	}
 
-	return newTracer(context.Background(), lc, env, ver, logger, opts)
+	return newTracer(lc, env, ver, logger, opts)
 }
 
-func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlptracehttp.Option) (trace.Tracer, error) {
+func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlptracehttp.Option) trace.Tracer {
 	client := otlptracehttp.NewClient(opts...)
-
-	exporter, err := otlptrace.New(ctx, client)
-	if err != nil {
-		return nil, err
-	}
+	exporter := otlptrace.NewUnstarted(client)
 
 	name := os.ExecutableName()
 	attrs := resource.NewWithAttributes(
@@ -73,12 +69,15 @@ func newTracer(ctx context.Context, lc fx.Lifecycle, env env.Environment, ver ve
 	otel.SetErrorHandler(&errorHandler{logger: logger})
 
 	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return exporter.Start(ctx)
+		},
 		OnStop: func(ctx context.Context) error {
 			return p.Shutdown(ctx)
 		},
 	})
 
-	return p.Tracer(name), nil
+	return p.Tracer(name)
 }
 
 type errorHandler struct {

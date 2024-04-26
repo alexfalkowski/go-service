@@ -3,7 +3,7 @@ package zap_test
 import (
 	"testing"
 
-	lzap "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -13,12 +13,24 @@ import (
 func TestLogger(t *testing.T) {
 	Convey("Given I have an invalid zap config", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		cfg := lzap.Config{Enabled: true}
+		cfg := logger.Config{Enabled: true}
 		c := zap.Config{}
 
 		Convey("When I try to get a logger", func() {
-			p := lzap.LoggerParams{Lifecycle: lc, Config: &cfg, ZapConfig: c, Environment: test.Environment, Version: test.Version}
-			_, err := lzap.NewLogger(p)
+			p := logger.LoggerParams{Lifecycle: lc, Config: &cfg, ZapConfig: c, Environment: test.Environment, Version: test.Version}
+			_, err := logger.NewLogger(p)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
+	Convey("Given I have an invalid zap config", t, func() {
+		cfg := logger.Config{Enabled: true, Level: "bob"}
+
+		Convey("When I try to build a logger config", func() {
+			_, err := logger.NewConfig(test.Environment, &cfg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

@@ -60,9 +60,7 @@ func (s *Server) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) e
 
 // NewHTTPServer for test.
 func NewHTTPServer(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter, handlers []negroni.Handler) *th.Server {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	runtime.Must(err)
-
+	tracer := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	server, err := th.NewServer(th.ServerParams{
 		Shutdowner: NewShutdowner(), Mux: Mux,
 		Config: tcfg.HTTP, Logger: logger,
@@ -79,9 +77,7 @@ func NewGRPCServer(
 	verifyAuth bool, meter metric.Meter,
 	unary []grpc.UnaryServerInterceptor, stream []grpc.StreamServerInterceptor,
 ) *tg.Server {
-	tracer, err := tracer.NewTracer(lc, Environment, Version, cfg, logger)
-	runtime.Must(err)
-
+	tracer := tracer.NewTracer(lc, Environment, Version, cfg, logger)
 	server, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: NewShutdowner(), Config: tcfg.GRPC, Logger: logger,
 		Tracer: tracer, Meter: meter,
