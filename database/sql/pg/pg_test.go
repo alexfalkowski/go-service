@@ -45,6 +45,25 @@ func down(db *mssqlx.DBs) error {
 	return err
 }
 
+func TestOpen(t *testing.T) {
+	Convey("Given I have a configuration", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		c := test.NewPGConfig()
+
+		Convey("When I try open the database", func() {
+			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
+
+			lc.RequireStart()
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		Convey("When I try to get a database", func() {

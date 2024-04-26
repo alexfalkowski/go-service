@@ -2,6 +2,7 @@ package config_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"os"
 	"testing"
 
@@ -14,7 +15,13 @@ import (
 )
 
 func TestValidEnvConfig(t *testing.T) {
-	for _, f := range []string{"../test/config.json", "../test/config.toml", "../test/config.yml"} {
+	configs := []string{
+		"../test/configs/config.json",
+		"../test/configs/config.toml",
+		"../test/configs/config.yml",
+	}
+
+	for _, f := range configs {
 		Convey("Given I have configuration file", t, func() {
 			So(os.Setenv("CONFIG_FILE", f), ShouldBeNil)
 
@@ -37,7 +44,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestValidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		c, err := test.NewCmdConfig("file:../test/config.yml")
+		c, err := test.NewCmdConfig("file:../test/configs/config.yml")
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
@@ -51,9 +58,25 @@ func TestValidFileConfig(t *testing.T) {
 	})
 }
 
+func TestMissingFileConfig(t *testing.T) {
+	Convey("Given I have missing configuration file", t, func() {
+		c, err := test.NewCmdConfig("file:../test/configs/missing.yml")
+		So(err, ShouldBeNil)
+
+		Convey("When I try to parse the configuration file", func() {
+			_, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+				So(errors.Is(err, os.ErrNotExist), ShouldBeTrue)
+			})
+		})
+	})
+}
+
 func TestValidMemConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		d, err := os.ReadFile("../test/config.yml")
+		d, err := os.ReadFile("../test/configs/config.yml")
 		So(err, ShouldBeNil)
 
 		So(os.Setenv("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)

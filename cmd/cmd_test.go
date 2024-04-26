@@ -19,8 +19,8 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
-	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
-	hhttp "github.com/alexfalkowski/go-service/health/transport/http"
+	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
+	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -32,7 +32,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
-	rcache "github.com/go-redis/cache/v8"
+	v8 "github.com/go-redis/cache/v8"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -42,9 +42,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestShutdown(t *testing.T) {
+func TestRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/config.yml")
+		os.Setenv("CONFIG_FILE", "../test/configs/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			c := cmd.New("1.0.0")
@@ -61,7 +61,7 @@ func TestShutdown(t *testing.T) {
 
 func TestRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/config.yml")
+		os.Setenv("CONFIG_FILE", "../test/configs/config.yml")
 
 		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
 			c := cmd.New("1.0.0")
@@ -77,7 +77,13 @@ func TestRun(t *testing.T) {
 }
 
 func TestInvalid(t *testing.T) {
-	for _, i := range []string{"file:../test/invalid_http.config.yml", "file:../test/invalid_grpc.config.yml"} {
+	configs := []string{
+		"file:../test/configs/invalid_http.config.yml",
+		"file:../test/configs/invalid_grpc.config.yml",
+		"file:../test/configs/invalid_debug.config.yml",
+	}
+
+	for _, i := range configs {
 		Convey("Given I have an invalid configuration", t, func() {
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
@@ -101,7 +107,7 @@ func TestDisabled(t *testing.T) {
 			c.AddServer(opts()...)
 
 			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"server", "-i", "file:../test/disabled.config.yml"})
+				err := c.RunWithArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
 
 				So(err, ShouldBeNil)
 			})
@@ -125,7 +131,12 @@ func TestClient(t *testing.T) {
 }
 
 func TestInvalidClient(t *testing.T) {
-	for _, i := range []string{"../test/invalid_http.config.yml", "../test/invalid_grpc.config.yml"} {
+	configs := []string{
+		"../test/configs/invalid_http.config.yml",
+		"../test/configs/invalid_grpc.config.yml",
+	}
+
+	for _, i := range configs {
 		Convey("Given I have invalid configuration", t, func() {
 			os.Setenv("TEST_CONFIG_FILE", i)
 
@@ -161,23 +172,23 @@ func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ 
 	return health.Registrations{nr, hr}
 }
 
-func healthObserver(healthServer *server.Server) (*hhttp.HealthObserver, error) {
-	return &hhttp.HealthObserver{Observer: healthServer.Observe("noop")}, nil
+func healthObserver(healthServer *server.Server) (*shh.HealthObserver, error) {
+	return &shh.HealthObserver{Observer: healthServer.Observe("noop")}, nil
 }
 
-func livenessObserver(healthServer *server.Server) *hhttp.LivenessObserver {
-	return &hhttp.LivenessObserver{Observer: healthServer.Observe("noop")}
+func livenessObserver(healthServer *server.Server) *shh.LivenessObserver {
+	return &shh.LivenessObserver{Observer: healthServer.Observe("noop")}
 }
 
-func readinessObserver(healthServer *server.Server) *hhttp.ReadinessObserver {
-	return &hhttp.ReadinessObserver{Observer: healthServer.Observe("http")}
+func readinessObserver(healthServer *server.Server) *shh.ReadinessObserver {
+	return &shh.ReadinessObserver{Observer: healthServer.Observe("http")}
 }
 
-func grpcObserver(healthServer *server.Server) *hgrpc.Observer {
-	return &hgrpc.Observer{Observer: healthServer.Observe("http")}
+func grpcObserver(healthServer *server.Server) *shg.Observer {
+	return &shg.Observer{Observer: healthServer.Observe("http")}
 }
 
-func redisCache(c *rcache.Cache) error {
+func redisCache(c *v8.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 

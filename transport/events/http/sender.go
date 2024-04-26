@@ -39,15 +39,12 @@ func WithSenderHook(hook *hooks.Webhook) SenderOption {
 
 // NewSender for HTTP.
 func NewSender(opts ...SenderOption) (client.Client, error) {
-	os := &senderOptions{}
+	os := &senderOptions{roundTripper: sh.Transport()}
 	for _, o := range opts {
 		o.apply(os)
 	}
 
 	rt := os.roundTripper
-	if rt == nil {
-		rt = sh.Transport()
-	}
 
 	if os.hook != nil {
 		rt = h.NewRoundTripper(os.hook, rt)
