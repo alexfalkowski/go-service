@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net"
 	"net/http"
+
+	sn "github.com/alexfalkowski/go-service/net"
 )
 
 // ResponseWriter with status for http.
@@ -22,13 +24,15 @@ func (r *ResponseWriter) WriteHeader(statusCode int) {
 
 // Server for HTTP.
 type Server struct {
-	server *http.Server
-	cfg    Config
+	server   *http.Server
+	sec      Security
+	listener net.Listener
 }
 
 // Config for HTTP.
 type Config struct {
-	Listener net.Listener
+	Enabled  bool
+	Port     string
 	Security Security
 }
 
@@ -39,8 +43,21 @@ type Security struct {
 }
 
 // NewServer for HTTP.
-func NewServer(server *http.Server, cfg Config) *Server {
-	return &Server{server: server, cfg: cfg}
+func NewServer(server *http.Server, cfg Config) (*Server, error) {
+	s := &Server{server: server, sec: cfg.Security}
+
+	if !cfg.Enabled {
+		return s, nil
+	}
+
+	l, err := sn.Listener(cfg.Port)
+	if err != nil {
+		return s, err
+	}
+
+	s.listener = l
+
+	return s, nil
 }
 
 // Serve the underlying server.
@@ -59,24 +76,22 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) String() string {
-	return s.cfg.Listener.Addr().String()
+	return s.listener.Addr().String()
 }
 
 // IsEnabled for server.
 func (s *Server) IsEnabled() bool {
-	return s.cfg.Listener != nil
+	return s.listener != nil
 }
 
 func (s *Server) serve() error {
-	l := s.cfg.Listener
-	if l == nil {
+	if s.listener == nil {
 		return nil
 	}
 
-	tls := s.cfg.Security
-	if !tls.Enabled {
-		return s.server.Serve(l)
+	if !s.sec.Enabled {
+		return s.server.Serve(s.listener)
 	}
 
-	return s.server.ServeTLS(l, tls.CertFile, tls.KeyFile)
+	return s.server.ServeTLS(s.listener, s.sec.CertFile, s.sec.KeyFile)
 }

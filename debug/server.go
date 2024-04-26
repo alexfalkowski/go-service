@@ -1,10 +1,8 @@
 package debug
 
 import (
-	"net"
 	"net/http"
 
-	sn "github.com/alexfalkowski/go-service/net"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
@@ -35,24 +33,33 @@ type Server struct {
 
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
-	l, err := listener(params.Config)
+	s := &http.Server{
+		Handler:     params.Mux,
+		ReadTimeout: time.Timeout, WriteTimeout: time.Timeout,
+		IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout,
+	}
+
+	sv, err := sh.NewServer(s, config(params.Config))
 	if err != nil {
 		return nil, err
 	}
 
-	s := &http.Server{Handler: params.Mux, ReadTimeout: time.Timeout, WriteTimeout: time.Timeout, IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout}
-	sv := sh.NewServer(s, config(params.Config, l))
 	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
 
 	return &Server{Server: svr}, nil
 }
 
-func config(cfg *Config, l net.Listener) sh.Config {
-	c := sh.Config{
-		Listener: l,
+func config(cfg *Config) sh.Config {
+	c := sh.Config{}
+
+	if !IsEnabled(cfg) {
+		return c
 	}
 
-	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
+	c.Enabled = true
+	c.Port = cfg.Port
+
+	if !security.IsEnabled(cfg.Security) {
 		return c
 	}
 
@@ -61,12 +68,4 @@ func config(cfg *Config, l net.Listener) sh.Config {
 	c.Security.KeyFile = cfg.Security.KeyFile
 
 	return c
-}
-
-func listener(cfg *Config) (net.Listener, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
-	return sn.Listener(cfg.Port)
 }
