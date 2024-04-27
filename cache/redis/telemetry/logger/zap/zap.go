@@ -6,7 +6,6 @@ import (
 
 	gr "github.com/alexfalkowski/go-service/redis"
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
-	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
@@ -32,8 +31,7 @@ func (c *Client) Set(ctx context.Context, key string, value any, ttl time.Durati
 	start := time.Now()
 	cmd := c.client.Set(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
@@ -49,8 +47,7 @@ func (c *Client) SetXX(ctx context.Context, key string, value any, ttl time.Dura
 	start := time.Now()
 	cmd := c.client.SetXX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
@@ -66,8 +63,7 @@ func (c *Client) SetNX(ctx context.Context, key string, value any, ttl time.Dura
 	start := time.Now()
 	cmd := c.client.SetNX(ctx, key, value, ttl)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
@@ -83,8 +79,7 @@ func (c *Client) Get(ctx context.Context, key string) *redis.StringCmd {
 	start := time.Now()
 	cmd := c.client.Get(ctx, key)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
@@ -100,8 +95,7 @@ func (c *Client) Del(ctx context.Context, keys ...string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Del(ctx, keys...)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.Strings(tm.PathKey, keys),
 	}
@@ -117,8 +111,7 @@ func (c *Client) Incr(ctx context.Context, key string) *redis.IntCmd {
 	start := time.Now()
 	cmd := c.client.Incr(ctx, key)
 	fields := []zapcore.Field{
-		zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-		zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+		zap.Stringer(tm.DurationKey, time.Since(start)),
 		zap.String(tm.ServiceKey, service),
 		zap.String(tm.PathKey, key),
 	}
