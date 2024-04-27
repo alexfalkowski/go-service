@@ -9,7 +9,7 @@ import (
 )
 
 func TestSnakeCase(t *testing.T) {
-	Convey("Then I should have valid strings", t, func() {
+	Convey("Given I have some meta values", t, func() {
 		ctx := context.Background()
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
 
