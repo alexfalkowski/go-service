@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
-	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
+	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 	"go.opentelemetry.io/otel/trace"
@@ -46,11 +46,10 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
 
-	res := &sh.ResponseWriter{ResponseWriter: resp, StatusCode: http.StatusOK}
-	next(res, req.WithContext(ctx))
+	m := snoop.CaptureMetricsFn(resp, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
+	span.SetAttributes(semconv.HTTPResponseStatusCode(m.Code))
 	tracer.Meta(ctx, span)
-	span.SetAttributes(semconv.HTTPResponseStatusCode(res.StatusCode))
 }
 
 // NewRoundTripper for tracer.

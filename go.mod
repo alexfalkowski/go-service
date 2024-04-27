@@ -11,6 +11,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/felixge/fgprof v0.9.4
+	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-redis/cache/v8 v8.4.4
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/goccy/go-json v0.10.2

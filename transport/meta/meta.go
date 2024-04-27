@@ -24,9 +24,6 @@ const (
 
 	// DurationKey for meta.
 	DurationKey = "duration"
-
-	// StartTimeKey for meta.
-	StartTimeKey = "startTime"
 )
 
 // WithRequestID for transport.

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
-	st "github.com/alexfalkowski/go-service/time"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	"go.uber.org/zap"
@@ -31,8 +30,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		start := time.Now()
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, info.FullMethod),
 		}
@@ -60,8 +58,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		err := handler(srv, stream)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, info.FullMethod),
 		}
@@ -88,8 +85,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, fullMethod),
 		}
@@ -116,8 +112,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		start := time.Now()
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		fields := []zapcore.Field{
-			zap.Int64(tm.DurationKey, st.ToMilliseconds(time.Since(start))),
-			zap.String(tm.StartTimeKey, start.Format(time.RFC3339)),
+			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
 			zap.String(tm.PathKey, fullMethod),
 		}
@@ -133,6 +128,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 	}
 }
 
+//nolint:exhaustive
 func codeToLevel(code codes.Code, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
 	switch code {
 	case codes.OK:
@@ -140,8 +136,6 @@ func codeToLevel(code codes.Code, logger *zap.Logger) func(msg string, fields ..
 	case codes.Canceled, codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.Unauthenticated,
 		codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange:
 		return logger.Warn
-	case codes.Unknown, codes.DeadlineExceeded, codes.Unimplemented, codes.Internal, codes.Unavailable, codes.DataLoss:
-		return logger.Error
 	default:
 		return logger.Error
 	}
