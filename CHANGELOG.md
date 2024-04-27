@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.1) - 2024-04-27
+
+- [`ec259d8`](https://github.com/alexfalkowski/go-service/commit/ec259d8d8d5fb767f6c1367d234cc46955a4311a) fix(tracer): remove hardcoded host (#667)
+- [`c06bd98`](https://github.com/alexfalkowski/go-service/commit/c06bd98ab510ee30cc51a1ce9eefb09835aa739d) test(redis): use in memory redis (#666)
+- [`97dcb90`](https://github.com/alexfalkowski/go-service/commit/97dcb9083229ffe8568e4d17a28183ba70e7fc79) build(deps): bump bin from `62c9b8d` to `6fee1b8` (#665)
+
 ## [v1.172.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.0) - 2024-04-27
 
 - [`50531af`](https://github.com/alexfalkowski/go-service/commit/50531afcdc11ed384cb3869ee66d7f4dd3282bd2) feat(http): use httpsnoop (#662)
