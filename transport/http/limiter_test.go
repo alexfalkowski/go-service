@@ -28,7 +28,7 @@ func TestGet(t *testing.T) {
 		cfg := test.NewInsecureTransportConfig()
 		cfg.GRPC.Enabled = false
 
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
@@ -77,7 +77,7 @@ func TestLimiter(t *testing.T) {
 			cfg := test.NewInsecureTransportConfig()
 			cfg.GRPC.Enabled = false
 
-			m := test.NewMeter(lc)
+			m := test.NewOTLPMeter(lc)
 			hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, f)})
 			gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 

@@ -17,7 +17,7 @@ func TestInsecureDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		p := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        debug.NewServeMux(),
@@ -68,7 +68,7 @@ func TestSecureDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		p := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        debug.NewServeMux(),

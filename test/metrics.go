@@ -7,9 +7,29 @@ import (
 	"go.uber.org/fx"
 )
 
-// NewMeter for test.
-func NewMeter(lc fx.Lifecycle) metric.Meter {
-	m, err := metrics.NewMeter(lc, Environment, Version, NewPrometheusMetricsConfig())
+// NewOTLPMeter for test.
+func NewOTLPMeter(lc fx.Lifecycle) metric.Meter {
+	return newMeter(lc, NewOTLPMetricsConfig())
+}
+
+// NewPrometheusMeter for test.
+func NewPrometheusMeter(lc fx.Lifecycle) metric.Meter {
+	return newMeter(lc, NewPrometheusMetricsConfig())
+}
+
+func newMeter(lc fx.Lifecycle, c *metrics.Config) metric.Meter {
+	r, err := metrics.NewReader(c)
+	runtime.Must(err)
+
+	p := metrics.MeterParams{
+		Lifecycle:   lc,
+		Environment: Environment,
+		Version:     Version,
+		Config:      c,
+		Reader:      r,
+	}
+
+	m, err := metrics.NewMeter(p)
 	runtime.Must(err)
 
 	return m

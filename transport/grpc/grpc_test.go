@@ -27,7 +27,7 @@ func TestInsecureUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
@@ -60,7 +60,7 @@ func TestSecureUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewSecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
@@ -94,7 +94,7 @@ func TestValidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -132,7 +132,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -169,7 +169,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -205,7 +205,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -241,7 +241,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -277,7 +277,7 @@ func TestBreakerUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -314,7 +314,7 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
@@ -356,7 +356,7 @@ func TestValidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -398,7 +398,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -439,7 +439,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -474,7 +474,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
@@ -515,7 +515,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, true, m,
 			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},

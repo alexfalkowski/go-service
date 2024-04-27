@@ -30,7 +30,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m := test.NewMeter(lc)
+		m := test.NewPrometheusMeter(lc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
@@ -90,7 +90,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m := test.NewMeter(lc)
+		m := test.NewPrometheusMeter(lc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)

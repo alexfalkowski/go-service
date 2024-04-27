@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -13,9 +12,7 @@ import (
 func TestOTLP(t *testing.T) {
 	Convey("Given I register OTLP metrics", t, func() {
 		lc := fxtest.NewLifecycle(t)
-
-		m, err := metrics.NewMeter(lc, test.Environment, test.Version, test.NewOTLPMetricsConfig())
-		So(err, ShouldBeNil)
+		m := test.NewOTLPMeter(lc)
 
 		Convey("When I create a metric", func() {
 			c, err := m.Int64Counter("test_otlp")
