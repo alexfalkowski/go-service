@@ -40,12 +40,12 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *C
 		return NewNoopTracer()
 	}
 
-	opts := []otlptracehttp.Option{}
+	opts := []otlptracehttp.Option{
+		otlptracehttp.WithEndpointURL(cfg.Host),
+	}
 
 	if cfg.IsBaselime() {
-		opts = append(opts, otlptracehttp.WithEndpointURL("https://otel.baselime.io"), otlptracehttp.WithHeaders(map[string]string{"x-api-key": cfg.Key}))
-	} else {
-		opts = append(opts, otlptracehttp.WithEndpointURL(cfg.Host))
+		opts = append(opts, otlptracehttp.WithHeaders(map[string]string{"x-api-key": cfg.Key}))
 	}
 
 	return newTracer(lc, env, ver, logger, opts)
