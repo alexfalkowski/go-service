@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.0) - 2024-04-27
+
+- [`50531af`](https://github.com/alexfalkowski/go-service/commit/50531afcdc11ed384cb3869ee66d7f4dd3282bd2) feat(http): use httpsnoop (#662)
+- [`ddcccfc`](https://github.com/alexfalkowski/go-service/commit/ddcccfcb3cd1e2abf3d321e8504dc6b9b9c375b0) test(config): verify config (#661)
+
 ## [v1.171.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.171.0) - 2024-04-26
 
 - [`10ada17`](https://github.com/alexfalkowski/go-service/commit/10ada17e632dda1c50698a07c61a47c000c9e2be) feat(tracer): move start to life cycle (#660)
