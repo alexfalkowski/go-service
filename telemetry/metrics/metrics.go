@@ -21,29 +21,35 @@ func NewNoopMeter() m.Meter {
 	return noop.Meter{}
 }
 
-// NewMeter for metrics.
-func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config) (m.Meter, error) {
-	if !IsEnabled(cfg) {
-		return NewNoopMeter(), nil
-	}
+// MeterParams for metrics.
+type MeterParams struct {
+	fx.In
 
-	r, err := reader(cfg)
-	if err != nil {
-		return nil, err
+	Lifecycle   fx.Lifecycle
+	Environment env.Environment
+	Version     version.Version
+	Config      *Config
+	Reader      metric.Reader
+}
+
+// NewMeter for metrics.
+func NewMeter(params MeterParams) (m.Meter, error) {
+	if !IsEnabled(params.Config) {
+		return NewNoopMeter(), nil
 	}
 
 	name := os.ExecutableName()
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
-		semconv.ServiceVersion(string(ver)),
-		semconv.DeploymentEnvironment(string(env)),
+		semconv.ServiceVersion(string(params.Version)),
+		semconv.DeploymentEnvironment(string(params.Environment)),
 	)
 
-	provider := metric.NewMeterProvider(metric.WithReader(r), metric.WithResource(attrs))
+	provider := metric.NewMeterProvider(metric.WithReader(params.Reader), metric.WithResource(attrs))
 	meter := provider.Meter(name)
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			return provider.Shutdown(ctx)
 		},
@@ -52,7 +58,12 @@ func NewMeter(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Co
 	return meter, nil
 }
 
-func reader(cfg *Config) (metric.Reader, error) {
+// NewReader for metrics.
+func NewReader(cfg *Config) (metric.Reader, error) {
+	if !IsEnabled(cfg) {
+		return prometheus.New()
+	}
+
 	if cfg.IsOTLP() {
 		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.Host))
 

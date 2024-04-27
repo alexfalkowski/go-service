@@ -25,7 +25,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
@@ -65,7 +65,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
@@ -104,7 +104,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
@@ -150,7 +150,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
 		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
 			[]grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},

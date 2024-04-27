@@ -25,7 +25,7 @@ func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -61,7 +61,7 @@ func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -92,7 +92,7 @@ func TestSetNXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "proto"), logger, m)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -128,7 +128,7 @@ func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("invalid_host", "snappy", "proto"), logger, m)
 		ctx := context.Background()
 
@@ -151,7 +151,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "error"), logger, m)
 		ctx := context.Background()
@@ -176,7 +176,7 @@ func TestMissingMarshallerCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewPrometheusMeter(lc)
 
 		_, err := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "snappy", "test"), logger, m)
 
@@ -195,7 +195,7 @@ func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "error", "proto"), logger, m)
 		ctx := context.Background()
 
@@ -223,7 +223,7 @@ func TestMissingCompressorCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := test.NewMeter(lc)
+		m := test.NewPrometheusMeter(lc)
 
 		_, err := test.NewRedisCache(lc, test.NewRedisConfig("localhost:6379", "test", "proto"), logger, m)
 

@@ -14,7 +14,7 @@ import (
 func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		c := test.NewRistrettoCache(lc, m)
 
 		lc.RequireStart()

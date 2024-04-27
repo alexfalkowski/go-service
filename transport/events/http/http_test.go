@@ -37,7 +37,7 @@ func TestSendReceive(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 
 		tcfg := test.NewOTLPTracerConfig()
 		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
@@ -87,7 +87,7 @@ func TestSendNotReceive(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-		m := test.NewMeter(lc)
+		m := test.NewOTLPMeter(lc)
 		tcfg := test.NewOTLPTracerConfig()
 
 		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
