@@ -28,11 +28,17 @@ func TestGet(t *testing.T) {
 		cfg := test.NewInsecureTransportConfig()
 		cfg.GRPC.Enabled = false
 
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, tm.UserAgent)})
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Handlers: []negroni.Handler{hl.NewHandler(l, tm.UserAgent)},
+		}
+		s.Register()
+
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
 		lc.RequireStart()
 
 		err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
@@ -41,7 +47,7 @@ func TestGet(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
+			client := cl.NewHTTP()
 
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
@@ -77,11 +83,17 @@ func TestLimiter(t *testing.T) {
 			cfg := test.NewInsecureTransportConfig()
 			cfg.GRPC.Enabled = false
 
+			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
-			hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, []negroni.Handler{hl.NewHandler(l, f)})
-			gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
-			test.RegisterTransport(lc, gs, hs)
+			s := &test.Server{
+				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+				Handlers: []negroni.Handler{hl.NewHandler(l, f)},
+			}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
 			lc.RequireStart()
 
 			err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
@@ -90,7 +102,7 @@ func TestLimiter(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("When I query for a greet", func() {
-				client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
+				client := cl.NewHTTP()
 
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 				So(err, ShouldBeNil)

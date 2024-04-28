@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
-	hgrpc "github.com/alexfalkowski/go-service/health/transport/grpc"
+	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -33,14 +33,16 @@ func TestUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewBaselimeTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewBaselimeTracerConfig(), cfg, false, m, nil, nil)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
 
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -49,7 +51,7 @@ func TestUnary(t *testing.T) {
 			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -72,20 +74,23 @@ func TestInvalidUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/500", client)
 
-		test.RegisterTransport(lc, gs, hs)
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -111,24 +116,28 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
-			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-		)
 
-		test.RegisterTransport(lc, gs, hs)
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+		}
+		s.Register()
+
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -152,20 +161,23 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		test.RegisterTransport(lc, gs, hs)
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -192,20 +204,23 @@ func TestInvalidStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/500", client)
 
-		test.RegisterTransport(lc, gs, hs)
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -231,24 +246,28 @@ func TestIgnoreAuthStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
-		o := observer(lc, "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m))
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 		verifier := test.NewVerifier("test")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m,
-			[]grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			[]grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-		)
 
-		test.RegisterTransport(lc, gs, hs)
-		hgrpc.Register(gs, &hgrpc.Observer{Observer: o})
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+		}
+		s.Register()
+
+		shg.Register(s.GRPC, &shg.Observer{Observer: o})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := test.NewGRPCClient(lc, logger, cfg, test.NewOTLPTracerConfig(), nil, m)
+			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)

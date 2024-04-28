@@ -3,18 +3,16 @@ package test
 import (
 	"net"
 	"strconv"
+
+	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // Port for test.
 func Port() string {
 	l, err := net.Listen("tcp", "localhost:0")
-	if err != nil {
-		return ""
-	}
+	runtime.Must(err)
 
 	defer l.Close()
 
-	p := l.Addr().(*net.TCPAddr).Port
-
-	return strconv.Itoa(p)
+	return strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/feature"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -16,12 +17,11 @@ func TestFlipt(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc, logger)
-
+		tc := test.NewOTLPTracerConfig()
+		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 		m := test.NewOTLPMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
-
 		c := feature.NewClient(p)
 
 		lc.RequireStart()
@@ -42,7 +42,6 @@ func TestFlipt(t *testing.T) {
 func TestNoop(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		p := feature.ClientParams{Config: &feature.Config{}}
-
 		c := feature.NewClient(p)
 
 		Convey("When I get a flag", func() {

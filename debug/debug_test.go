@@ -38,7 +38,8 @@ func TestInsecureDebug(t *testing.T) {
 
 		Convey("Then all the debug URLs are valid", func() {
 			port := p.Config.Port
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), test.NewInsecureTransportConfig(), m)
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(), Transport: test.NewInsecureTransportConfig(), Meter: m}
+			client := cl.NewHTTP()
 			urls := []string{
 				url("http", port, "debug/statsviz"),
 				url("http", port, "debug/pprof/"),
@@ -89,7 +90,8 @@ func TestSecureDebug(t *testing.T) {
 
 		Convey("Then all the debug URLs are valid", func() {
 			port := p.Config.Port
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), test.NewSecureTransportConfig(), m)
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(), Transport: test.NewSecureTransportConfig(), Meter: m}
+			client := cl.NewHTTP()
 			urls := []string{
 				url("https", port, "debug/statsviz"),
 				url("https", port, "debug/pprof/"),

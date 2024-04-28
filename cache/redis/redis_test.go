@@ -31,7 +31,8 @@ func TestSetCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -42,18 +43,18 @@ func TestSetCache(t *testing.T) {
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a cached item", func() {
 				var v grpc_health_v1.HealthCheckResponse
 
-				err := c.Get(ctx, "test", &v)
+				err := ca.Get(ctx, "test", &v)
 				So(err, ShouldBeNil)
 
 				So(v.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 
-				err = c.Delete(ctx, "test")
+				err = ca.Delete(ctx, "test")
 				So(err, ShouldBeNil)
 			})
 		})
@@ -70,7 +71,8 @@ func TestSetXXCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -81,13 +83,13 @@ func TestSetXXCache(t *testing.T) {
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute, SetXX: true})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute, SetXX: true})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a cached item", func() {
 				var v grpc_health_v1.HealthCheckResponse
 
-				err := c.Get(ctx, "test", &v)
+				err := ca.Get(ctx, "test", &v)
 				So(err, ShouldBeError)
 			})
 		})
@@ -104,7 +106,8 @@ func TestSetNXCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -115,18 +118,18 @@ func TestSetNXCache(t *testing.T) {
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute, SetNX: true})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute, SetNX: true})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a cached item", func() {
 				var v grpc_health_v1.HealthCheckResponse
 
-				err := c.Get(ctx, "test", &v)
+				err := ca.Get(ctx, "test", &v)
 				So(err, ShouldBeNil)
 
 				So(v.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 
-				err = c.Delete(ctx, "test")
+				err = ca.Delete(ctx, "test")
 				So(err, ShouldBeNil)
 			})
 		})
@@ -140,14 +143,15 @@ func TestInvalidHostCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig("invalid_host", "snappy", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("invalid_host", "snappy", "proto"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldNotBeNil)
@@ -166,15 +170,15 @@ func TestInvalidMarshallerCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "error"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "error"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -194,8 +198,8 @@ func TestMissingMarshallerCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewPrometheusMeter(lc)
-
-		_, err := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "test"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "test"), Logger: logger, Meter: m}
+		_, err := c.NewRedisCache()
 
 		lc.RequireStart()
 
@@ -216,20 +220,21 @@ func TestInvalidCompressorCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c, _ := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "error", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "error", "proto"), Logger: logger, Meter: m}
+		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := c.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
 				var v grpc_health_v1.HealthCheckResponse
 
-				err := c.Get(ctx, "test", &v)
+				err := ca.Get(ctx, "test", &v)
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "failed")
 			})
@@ -247,8 +252,8 @@ func TestMissingCompressorCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewPrometheusMeter(lc)
-
-		_, err := test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "test", "proto"), logger, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "test", "proto"), Logger: logger, Meter: m}
+		_, err := c.NewRedisCache()
 
 		lc.RequireStart()
 

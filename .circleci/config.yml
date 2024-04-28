@@ -50,7 +50,7 @@ jobs:
           key: go-service-go-build-cache-{{ checksum "go.sum" }}
           paths:
             - /home/circleci/.cache/go-build
-      - run: make goveralls
+      - run: make func-coverage
       - store_test_results:
           path: test/reports
       - store_artifacts:
