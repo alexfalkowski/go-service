@@ -36,14 +36,11 @@ func TestSendReceive(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-
 		m := test.NewOTLPMeter(lc)
+		tc := test.NewOTLPTracerConfig()
 
-		tcfg := test.NewOTLPTracerConfig()
-		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, tcfg, cfg, false, m, nil, nil)
-
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
 
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
@@ -56,7 +53,7 @@ func TestSendReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer := test.NewTracer(lc, logger)
+			tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 
 			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
@@ -88,12 +85,10 @@ func TestSendNotReceive(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 		m := test.NewOTLPMeter(lc)
-		tcfg := test.NewOTLPTracerConfig()
+		tc := test.NewOTLPTracerConfig()
 
-		hs := test.NewHTTPServer(lc, logger, tcfg, cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, tcfg, cfg, false, m, nil, nil)
-
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
 
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
@@ -106,7 +101,7 @@ func TestSendNotReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer := test.NewTracer(lc, logger)
+			tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			rt = &delRoundTripper{rt: rt}
 

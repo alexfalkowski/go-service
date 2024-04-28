@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	g "github.com/alexfalkowski/go-service/transport/grpc"
@@ -16,69 +17,52 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// NewHTTPClient for test.
-func NewHTTPClient(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, meter metric.Meter) *http.Client {
-	return NewHTTPClientWithRoundTripper(lc, logger, cfg, tcfg, nil, meter)
+// Client for test.
+type Client struct {
+	Lifecycle    fx.Lifecycle
+	Logger       *zap.Logger
+	Tracer       *tracer.Config
+	Transport    *transport.Config
+	Security     *security.Config
+	Credentials  credentials.PerRPCCredentials
+	RoundTripper http.RoundTripper
+	Meter        metric.Meter
 }
 
-// NewHTTPClientWithRoundTripper for test.
-func NewHTTPClientWithRoundTripper(lc fx.Lifecycle, logger *zap.Logger, cfg *tracer.Config, tcfg *transport.Config, rt http.RoundTripper, meter metric.Meter) *http.Client {
-	tracer := tracer.NewTracer(lc, Environment, Version, cfg, logger)
+// NewHTTP client for test.
+func (c *Client) NewHTTP() *http.Client {
+	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
 	client := h.NewClient(
-		h.WithClientLogger(logger),
-		h.WithClientRoundTripper(rt), h.WithClientBreaker(),
-		h.WithClientTracer(tracer), h.WithClientRetry(tcfg.HTTP.Retry),
-		h.WithClientMetrics(meter), h.WithClientUserAgent(tcfg.HTTP.UserAgent),
+		h.WithClientLogger(c.Logger),
+		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
+		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
+		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(c.Transport.HTTP.UserAgent),
 	)
 
 	return client
 }
 
-// NewGRPCClient for test.
-func NewGRPCClient(
-	lc fx.Lifecycle, logger *zap.Logger,
-	tcfg *transport.Config, ocfg *tracer.Config,
-	cred credentials.PerRPCCredentials,
-	meter metric.Meter,
-) *grpc.ClientConn {
-	tracer := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
+func (c *Client) NewGRPC() *grpc.ClientConn {
+	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
 
-	dialOpts := []grpc.DialOption{grpc.WithBlock()}
-	if cred != nil {
-		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(cred))
+	dialOpts := []grpc.DialOption{}
+	if c.Credentials != nil {
+		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(c.Credentials))
 	}
 
-	sec, _ := g.WithClientSecure(NewInsecureClientConfig())
-	cl := &client.Config{Host: "127.0.0.1:" + tcfg.GRPC.Port, Retry: tcfg.GRPC.Retry, UserAgent: tcfg.GRPC.UserAgent}
+	sec, _ := g.WithClientSecure(c.Security)
+	cl := &client.Config{
+		Host:      "localhost:" + c.Transport.GRPC.Port,
+		Retry:     c.Transport.GRPC.Retry,
+		UserAgent: c.Transport.GRPC.UserAgent,
+	}
 
 	conn, err := g.NewClient(cl.Host,
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
-		g.WithClientLogger(logger), g.WithClientTracer(tracer),
+		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
-		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(meter),
+		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(c.Meter),
 		g.WithClientUserAgent(cl.UserAgent), sec,
-	)
-	runtime.Must(err)
-
-	return conn
-}
-
-// NewSecureGRPCClient for test.
-func NewSecureGRPCClient(
-	lc fx.Lifecycle, logger *zap.Logger,
-	tcfg *transport.Config, ocfg *tracer.Config,
-	meter metric.Meter,
-) *grpc.ClientConn {
-	tracer := tracer.NewTracer(lc, Environment, Version, ocfg, logger)
-
-	sec, err := g.WithClientSecure(NewSecureClientConfig())
-	runtime.Must(err)
-
-	conn, err := g.NewClient("localhost:"+tcfg.GRPC.Port,
-		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
-		g.WithClientLogger(logger), g.WithClientTracer(tracer),
-		g.WithClientBreaker(), g.WithClientRetry(tcfg.GRPC.Retry),
-		g.WithClientMetrics(meter), g.WithClientUserAgent(tcfg.GRPC.UserAgent), sec,
 	)
 	runtime.Must(err)
 

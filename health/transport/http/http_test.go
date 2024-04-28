@@ -41,12 +41,14 @@ func TestHealth(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewBaselimeTracerConfig()
 			m := metrics.NewNoopMeter()
-			o := observer(lc, s.Addr(), "http://localhost:6000/v1/status/200", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m), logger).Observe("http")
-			hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-			gs := test.NewGRPCServer(lc, logger, test.NewBaselimeTracerConfig(), cfg, false, m, nil, nil)
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			client := cl.NewHTTP()
+			o := observer(lc, s.Addr(), "http://localhost:6000/v1/status/200", client, logger).Observe("http")
 
-			test.RegisterTransport(lc, gs, hs)
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			s.Register()
 
 			params := shh.RegisterParams{
 				Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
@@ -59,8 +61,6 @@ func TestHealth(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I query "+check, func() {
-				client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
-
 				ctx := context.Background()
 				ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
@@ -91,19 +91,21 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
+		r := miniredis.RunT(t)
+		defer r.Close()
 
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := metrics.NewNoopMeter()
-		server := observer(lc, s.Addr(), "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m), logger)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		server := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
 		o := server.Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
 
 		params := shh.RegisterParams{
 			Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
@@ -116,8 +118,6 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
-
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
@@ -146,18 +146,20 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
+		r := miniredis.RunT(t)
+		defer r.Close()
 
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := metrics.NewNoopMeter()
-		o := observer(lc, s.Addr(), "http://localhost:6000/v1/status/500", test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m), logger).Observe("http")
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		client := cl.NewHTTP()
+		o := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger).Observe("http")
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
 
 		params := shh.RegisterParams{
 			Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
@@ -170,8 +172,6 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
-
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/healthz", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
@@ -196,7 +196,8 @@ func TestInvalidHealth(t *testing.T) {
 }
 
 func observer(lc fx.Lifecycle, host, url string, client *http.Client, logger *zap.Logger) *server.Server {
-	r := test.NewRedisClient(lc, test.NewRedisConfig(host, "snappy", "proto"), logger)
+	c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(host, "snappy", "proto"), Logger: logger}
+	r := c.NewRedisClient()
 	rc := shc.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 

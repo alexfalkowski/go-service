@@ -22,15 +22,16 @@ func init() {
 	tracer.Register()
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
+		r := miniredis.RunT(t)
+		defer r.Close()
 
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc, logger)
+		tc := test.NewOTLPTracerConfig()
+		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -41,13 +42,15 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, test.Version, m)
 
-		_, _ = test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger, m)
-		_ = test.NewRistrettoCache(lc, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		_, _ = c.NewRedisCache()
+		_ = c.NewRistrettoCache()
 		cfg := test.NewInsecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 		err = ht.RegisterMetrics(test.Mux)
 		So(err, ShouldBeNil)
@@ -55,7 +58,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
+			client := cl.NewHTTP()
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 			defer cancel()
@@ -85,15 +88,16 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	})
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
+		r := miniredis.RunT(t)
+		defer r.Close()
 
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		tracer := test.NewTracer(lc, logger)
+		tc := test.NewOTLPTracerConfig()
+		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -104,13 +108,15 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, test.Version, m)
 
-		_, _ = test.NewRedisCache(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger, m)
-		_ = test.NewRistrettoCache(lc, m)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		_, _ = c.NewRedisCache()
+		_ = c.NewRistrettoCache()
 		cfg := test.NewSecureTransportConfig()
-		hs := test.NewHTTPServer(lc, logger, test.NewOTLPTracerConfig(), cfg, m, nil)
-		gs := test.NewGRPCServer(lc, logger, test.NewOTLPTracerConfig(), cfg, false, m, nil, nil)
 
-		test.RegisterTransport(lc, gs, hs)
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 		err = ht.RegisterMetrics(test.Mux)
 		So(err, ShouldBeNil)
@@ -118,7 +124,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
-			client := test.NewHTTPClient(lc, logger, test.NewOTLPTracerConfig(), cfg, m)
+			client := cl.NewHTTP()
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Timeout)
 			defer cancel()

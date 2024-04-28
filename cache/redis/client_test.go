@@ -24,7 +24,8 @@ func TestClientIncr(t *testing.T) {
 
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		c := test.NewRedisClient(lc, test.NewRedisConfig(s.Addr(), "snappy", "proto"), logger)
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger}
+		client := c.NewRedisClient()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -34,11 +35,11 @@ func TestClientIncr(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
-			cmd := c.Set(ctx, "test-incr", 1, time.Hour)
+			cmd := client.Set(ctx, "test-incr", 1, time.Hour)
 			So(cmd.Err(), ShouldBeNil)
 
 			Convey("Then I should have a cached item", func() {
-				cmd := c.Incr(ctx, "test-incr")
+				cmd := client.Incr(ctx, "test-incr")
 				So(cmd.Err(), ShouldBeNil)
 
 				r, err := cmd.Result()
@@ -46,7 +47,7 @@ func TestClientIncr(t *testing.T) {
 
 				So(r, ShouldEqual, 2)
 
-				d := c.Del(ctx, "test-incr")
+				d := client.Del(ctx, "test-incr")
 				So(d.Err(), ShouldBeNil)
 			})
 		})

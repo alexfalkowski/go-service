@@ -7,15 +7,25 @@ import (
 	rim "github.com/alexfalkowski/go-service/cache/ristretto/telemetry/metrics"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/go-redis/cache/v8"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
+// Cache for test.
+type Cache struct {
+	Lifecycle fx.Lifecycle
+	Redis     *redis.Config
+	Logger    *zap.Logger
+	Tracer    *tracer.Config
+	Meter     metric.Meter
+}
+
 // NewRedisCache for test.
-func NewRedisCache(lc fx.Lifecycle, cfg *redis.Config, logger *zap.Logger, meter metric.Meter) (*cache.Cache, error) {
-	params := redis.OptionsParams{Client: NewRedisClient(lc, cfg, logger), Config: cfg, Marshaller: Marshaller, Compressor: Compressor}
+func (c *Cache) NewRedisCache() (*cache.Cache, error) {
+	params := redis.OptionsParams{Client: c.NewRedisClient(), Config: c.Redis, Marshaller: Marshaller, Compressor: Compressor}
 
 	opts, err := redis.NewOptions(params)
 	if err != nil {
@@ -23,27 +33,27 @@ func NewRedisCache(lc fx.Lifecycle, cfg *redis.Config, logger *zap.Logger, meter
 	}
 
 	cache := redis.NewCache(opts)
-	rem.Register(cache, Version, meter)
+	rem.Register(cache, Version, c.Meter)
 
 	return cache, nil
 }
 
 // NewRedisClient for test.
-func NewRedisClient(lc fx.Lifecycle, cfg *redis.Config, logger *zap.Logger) gr.Client {
-	tracer := NewTracer(lc, logger)
-	client := redis.NewClient(redis.ClientParams{Lifecycle: lc, RingOptions: redis.NewRingOptions(cfg), Tracer: tracer, Logger: logger})
+func (c *Cache) NewRedisClient() gr.Client {
+	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	client := redis.NewClient(redis.ClientParams{Lifecycle: c.Lifecycle, RingOptions: redis.NewRingOptions(c.Redis), Tracer: tracer, Logger: c.Logger})
 
 	return client
 }
 
 // NewRistrettoCache for test.
-func NewRistrettoCache(lc fx.Lifecycle, meter metric.Meter) ristretto.Cache {
+func (c *Cache) NewRistrettoCache() ristretto.Cache {
 	cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
-	c, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: Version})
+	ca, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: c.Lifecycle, Config: cfg, Version: Version})
 	runtime.Must(err)
 
-	rim.Register(c, Version, meter)
+	rim.Register(ca, Version, c.Meter)
 
-	return c
+	return ca
 }

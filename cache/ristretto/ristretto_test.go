@@ -15,20 +15,21 @@ func TestCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewOTLPMeter(lc)
-		c := test.NewRistrettoCache(lc, m)
+		c := &test.Cache{Lifecycle: lc, Meter: m}
+		ca := c.NewRistrettoCache()
 
 		lc.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
 
-			ok := c.SetWithTTL("test", value, 0, time.Minute)
+			ok := ca.SetWithTTL("test", value, 0, time.Minute)
 			So(ok, ShouldBeTrue)
 
 			time.Sleep(1 * time.Second)
 
 			Convey("Then I should have a cached item", func() {
-				v, ok := c.Get("test")
+				v, ok := ca.Get("test")
 				So(ok, ShouldBeTrue)
 
 				r := v.(*grpc_health_v1.HealthCheckResponse)
