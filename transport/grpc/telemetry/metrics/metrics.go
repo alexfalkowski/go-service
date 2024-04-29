@@ -88,12 +88,12 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 			methodAttribute.String(method),
 		)
 
-		serverStream := &monitoredServerStream{
+		stream := &serverStream{
 			opts: opts, received: s.received, sent: s.sent, handled: s.handled, handledHist: s.handledHist,
 			ServerStream: st,
 		}
 
-		err := handler(srv, serverStream)
+		err := handler(srv, stream)
 		ctx := st.Context()
 
 		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
@@ -103,8 +103,8 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	}
 }
 
-// monitoredStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
-type monitoredServerStream struct {
+// serverStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
+type serverStream struct {
 	opts        metric.MeasurementOption
 	received    metric.Int64Counter
 	sent        metric.Int64Counter
@@ -114,7 +114,7 @@ type monitoredServerStream struct {
 	grpc.ServerStream
 }
 
-func (s *monitoredServerStream) SendMsg(m any) error {
+func (s *serverStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
@@ -123,35 +123,30 @@ func (s *monitoredServerStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+	handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 	return err
 }
 
-//nolint:dupl
-func (s *monitoredServerStream) RecvMsg(m any) error {
+func (s *serverStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
-	err := s.ServerStream.RecvMsg(m)
-	if err != nil {
+	if err := s.ServerStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(codes.OK.String())))
-			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+			handleStream(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+		handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 		return err
 	}
 
 	s.received.Add(ctx, 1, s.opts)
 
-	return err
+	return nil
 }
 
 // NewClient for metrics.
@@ -227,7 +222,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			methodAttribute.String(method),
 		)
 
-		clientStream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		if err != nil {
 			c.handled.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
 			c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
@@ -235,18 +230,18 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
-		stream := &monitoredClientStream{
+		st := &clientStream{
 			opts:     o,
 			received: c.received, sent: c.sent, handled: c.handled, handledHist: c.handledHist,
-			ClientStream: clientStream,
+			ClientStream: stream,
 		}
 
-		return stream, nil
+		return st, nil
 	}
 }
 
-// monitoredClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
-type monitoredClientStream struct {
+// clientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
+type clientStream struct {
 	opts        metric.MeasurementOption
 	received    metric.Int64Counter
 	sent        metric.Int64Counter
@@ -256,7 +251,7 @@ type monitoredClientStream struct {
 	grpc.ClientStream
 }
 
-func (s *monitoredClientStream) SendMsg(m any) error {
+func (s *clientStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
@@ -265,28 +260,23 @@ func (s *monitoredClientStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-	s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+	handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 	return err
 }
 
-//nolint:dupl
-func (s *monitoredClientStream) RecvMsg(m any) error {
+func (s *clientStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
-	err := s.ClientStream.RecvMsg(m)
-	if err != nil {
+	if err := s.ClientStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(codes.OK.String())))
-			s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+			handleStream(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		s.handled.Add(ctx, 1, s.opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-		s.handledHist.Record(ctx, time.Since(start).Seconds(), s.opts)
+		handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 		return err
 	}
@@ -294,4 +284,9 @@ func (s *monitoredClientStream) RecvMsg(m any) error {
 	s.received.Add(ctx, 1, s.opts)
 
 	return nil
+}
+
+func handleStream(ctx context.Context, h metric.Int64Counter, hs metric.Float64Histogram, o metric.MeasurementOption, c codes.Code, s time.Time) {
+	h.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(c.String())))
+	hs.Record(ctx, time.Since(s).Seconds(), o)
 }
