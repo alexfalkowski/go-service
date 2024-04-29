@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.2) - 2024-04-29
+
+- [`ff356cb`](https://github.com/alexfalkowski/go-service/commit/ff356cbf4c1eb67668d9d0c79c24c2891d1373cf) fix(grpc): remove duplication (#674)
+- [`9eb49e4`](https://github.com/alexfalkowski/go-service/commit/9eb49e40b72cacf83143054feb674712c63a5088) build(ci): cover all (#673)
+- [`10a0a8a`](https://github.com/alexfalkowski/go-service/commit/10a0a8abc2b0fb19c57f2dde172e92dce695920a) build(deps): bump bin from `3976e45` to `e47704b` (#672)
+- [`f6d5e97`](https://github.com/alexfalkowski/go-service/commit/f6d5e9744ffece583bd124d69fae877ae771b2e7) build(ci): html coverage (#671)
+- [`6a84585`](https://github.com/alexfalkowski/go-service/commit/6a8458596d3c398cdf9e9dc479fc697badbe1cbb) build(deps): bump bin from `1755d45` to `3976e45` (#670)
+- [`9b00a49`](https://github.com/alexfalkowski/go-service/commit/9b00a497c9ecf11774608006accf3d57bca05f8e) build(deps): bump bin from `6fee1b8` to `1755d45` (#669)
+- [`91aa5df`](https://github.com/alexfalkowski/go-service/commit/91aa5df5e3df101005def3d5711c89d5ae6601bc) test(specs): cleanup (#668)
+
 ## [v1.172.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.1) - 2024-04-27
 
 - [`ec259d8`](https://github.com/alexfalkowski/go-service/commit/ec259d8d8d5fb767f6c1367d234cc46955a4311a) fix(tracer): remove hardcoded host (#667)
