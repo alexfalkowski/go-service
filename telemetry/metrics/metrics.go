@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
@@ -51,7 +52,12 @@ func NewMeter(params MeterParams) (m.Meter, error) {
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			return provider.Shutdown(ctx)
+			err := provider.Shutdown(ctx)
+			if net.IsConnectionRefused(err) {
+				return nil
+			}
+
+			return err
 		},
 	})
 

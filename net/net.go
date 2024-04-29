@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"syscall"
 
 	"github.com/alexfalkowski/go-service/time"
 )
@@ -23,4 +24,9 @@ func Listener(port string) (net.Listener, error) {
 // DialContext for net.
 func DialContext(_ context.Context, network, address string) (net.Conn, error) {
 	return net.DialTimeout(network, address, time.Timeout)
+}
+
+// IsConnectionRefused returns a boolean indicating whether the error is known to report connection is refused.
+func IsConnectionRefused(err error) bool {
+	return errors.Is(err, syscall.ECONNREFUSED)
 }
