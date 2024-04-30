@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ func New(version string) *Command {
 		Version:      version,
 	}
 
-	root.SetErrPrefix(prefix(name))
+	root.SetErrPrefix(name + ":")
 	root.PersistentFlags().StringVarP(&inputFlag, "input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
 
 	return &Command{root: root}
@@ -96,12 +96,12 @@ func RunServer(ctx context.Context, opts ...fx.Option) error {
 	done := app.Done()
 
 	if err := app.Start(ctx); err != nil {
-		return wrap("server", err)
+		return prefix("server", err)
 	}
 
 	<-done
 
-	return wrap("server", app.Stop(ctx))
+	return prefix("server", app.Stop(ctx))
 }
 
 // RunClient with args and a timeout.
@@ -109,24 +109,16 @@ func RunClient(ctx context.Context, opts ...fx.Option) error {
 	app := fx.New(options(opts)...)
 
 	if err := app.Start(ctx); err != nil {
-		return wrap("client", err)
+		return prefix("client", err)
 	}
 
-	return wrap("client", app.Stop(ctx))
+	return prefix("client", app.Stop(ctx))
 }
 
 func options(opts []fx.Option) []fx.Option {
 	return append(opts, fx.StartTimeout(time.Timeout), fx.StopTimeout(time.Timeout), fx.NopLogger)
 }
 
-func wrap(kind string, err error) error {
-	if err == nil {
-		return nil
-	}
-
-	return fmt.Errorf(prefix(kind)+" %w", dig.RootCause(err))
-}
-
-func prefix(p string) string {
-	return p + ":"
+func prefix(p string, err error) error {
+	return errors.Prefix(p, dig.RootCause(err))
 }

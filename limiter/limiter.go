@@ -3,6 +3,7 @@ package limiter
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/ulule/limiter/v3"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
@@ -18,7 +19,7 @@ func New(cfg *Config) (*limiter.Limiter, error) {
 
 	rate, err := limiter.NewRateFromFormatted(cfg.Pattern)
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new limiter", err)
 	}
 
 	store := memory.NewStore()

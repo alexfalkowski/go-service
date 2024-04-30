@@ -2,10 +2,11 @@ package cmd_test
 
 import (
 	"encoding/base64"
+	"errors"
 	"os"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
@@ -155,7 +156,7 @@ func TestInvalidKindConfig(t *testing.T) {
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)
-				So(err, ShouldEqual, cmd.ErrInvalidKind)
+				So(errors.Is(err, marshaller.ErrInvalidKind), ShouldBeTrue)
 			})
 		})
 	})

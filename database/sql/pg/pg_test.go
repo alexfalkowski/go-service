@@ -2,6 +2,7 @@ package pg_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/linxGnu/mssqlx"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
-	"go.uber.org/multierr"
 )
 
 func init() {
@@ -81,7 +81,7 @@ func TestSQL(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
-				So(multierr.Combine(db.Ping()...), ShouldBeNil)
+				So(errors.Join(db.Ping()...), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -503,7 +503,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("Then I should have an invalid database", func() {
-				So(multierr.Combine(db.Ping()...), ShouldBeError)
+				So(errors.Join(db.Ping()...), ShouldBeError)
 			})
 
 			lc.RequireStop()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	logger "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
@@ -13,7 +14,6 @@ import (
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -67,9 +67,9 @@ func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 
-	return db, multierr.Combine(errs...)
+	return db, errors.Join(errs...)
 }
 
 func destroy(db *mssqlx.DBs) error {
-	return multierr.Combine(db.Destroy()...)
+	return errors.Join(db.Destroy()...)
 }

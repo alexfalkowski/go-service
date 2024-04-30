@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/compressor"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/cache/v8"
@@ -29,12 +30,12 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 
 	fm, err := params.Marshaller.Create(params.Config.Marshaller)
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new redis options", err)
 	}
 
 	cm, err := params.Compressor.Create(params.Config.Compressor)
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new redis options", err)
 	}
 
 	opts := &cache.Options{

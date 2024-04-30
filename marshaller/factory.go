@@ -2,6 +2,8 @@ package marshaller
 
 import (
 	"errors"
+
+	se "github.com/alexfalkowski/go-service/errors"
 )
 
 type configs map[string]Marshaller
@@ -39,7 +41,7 @@ func (f *Factory) Register(kind string, m Marshaller) {
 func (f *Factory) Create(kind string) (Marshaller, error) {
 	c, ok := f.configs[kind]
 	if !ok {
-		return nil, ErrInvalidKind
+		return nil, se.Prefix("create marshaller", ErrInvalidKind)
 	}
 
 	return c, nil

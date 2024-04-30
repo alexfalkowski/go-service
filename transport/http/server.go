@@ -3,6 +3,7 @@ package http
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
@@ -90,7 +91,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	sv, err := sh.NewServer(s, config(params.Config))
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new http server", err)
 	}
 
 	svr := server.NewServer("http", sv, params.Logger, params.Shutdowner)

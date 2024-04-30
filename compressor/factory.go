@@ -2,6 +2,8 @@ package compressor
 
 import (
 	"errors"
+
+	se "github.com/alexfalkowski/go-service/errors"
 )
 
 type configs map[string]Compressor
@@ -35,7 +37,7 @@ func (f *Factory) Register(kind string, c Compressor) {
 func (f *Factory) Create(kind string) (Compressor, error) {
 	c, ok := f.configs[kind]
 	if !ok {
-		return nil, ErrInvalidKind
+		return nil, se.Prefix("create compressor", ErrInvalidKind)
 	}
 
 	return c, nil
