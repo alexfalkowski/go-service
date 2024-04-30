@@ -65,8 +65,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 			s.sent.Add(ctx, 1, opts)
 		}
 
-		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
+		handle(ctx, s.handled, s.handledHist, opts, status.Code(err), start)
 
 		return resp, err
 	}
@@ -96,8 +95,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		err := handler(srv, stream)
 		ctx := st.Context()
 
-		s.handled.Add(ctx, 1, opts, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-		s.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
+		handle(ctx, s.handled, s.handledHist, opts, status.Code(err), start)
 
 		return err
 	}
@@ -123,7 +121,7 @@ func (s *serverStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+	handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 	return err
 }
@@ -134,12 +132,12 @@ func (s *serverStream) RecvMsg(m any) error {
 
 	if err := s.ServerStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			handleStream(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
+			handle(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 		return err
 	}
@@ -199,8 +197,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 			c.received.Add(ctx, 1, o)
 		}
 
-		c.handled.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-		c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
+		handle(ctx, c.handled, c.handledHist, o, status.Code(err), start)
 
 		return err
 	}
@@ -224,8 +221,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		if err != nil {
-			c.handled.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(status.Code(err).String())))
-			c.handledHist.Record(ctx, time.Since(start).Seconds(), o)
+			handle(ctx, c.handled, c.handledHist, o, status.Code(err), start)
 
 			return nil, err
 		}
@@ -260,7 +256,7 @@ func (s *clientStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+	handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 	return err
 }
@@ -271,12 +267,12 @@ func (s *clientStream) RecvMsg(m any) error {
 
 	if err := s.ClientStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			handleStream(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
+			handle(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		handleStream(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
 
 		return err
 	}
@@ -286,7 +282,7 @@ func (s *clientStream) RecvMsg(m any) error {
 	return nil
 }
 
-func handleStream(ctx context.Context, h metric.Int64Counter, hs metric.Float64Histogram, o metric.MeasurementOption, c codes.Code, s time.Time) {
+func handle(ctx context.Context, h metric.Int64Counter, hs metric.Float64Histogram, o metric.MeasurementOption, c codes.Code, s time.Time) {
 	h.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(c.String())))
 	hs.Record(ctx, time.Since(s).Seconds(), o)
 }
