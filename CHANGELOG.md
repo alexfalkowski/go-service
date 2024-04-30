@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.3) - 2024-04-30
+
+- [`0aef4be`](https://github.com/alexfalkowski/go-service/commit/0aef4be4fff96d69878d9f49c8e0d2e9e4ec34c1) fix(net): handle connection refused (#675)
+
 ## [v1.172.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.2) - 2024-04-29
 
 - [`ff356cb`](https://github.com/alexfalkowski/go-service/commit/ff356cbf4c1eb67668d9d0c79c24c2891d1373cf) fix(grpc): remove duplication (#674)
