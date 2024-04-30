@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.6](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.6) - 2024-04-30
+
+- [`b186c2c`](https://github.com/alexfalkowski/go-service/commit/b186c2ce394d1f8b05979553156cdf8c2ec1d840) fix(deps): bump google.golang.org/protobuf from 1.33.0 to 1.34.0 (#679)
+- [`c062eb8`](https://github.com/alexfalkowski/go-service/commit/c062eb83a842b6fb417ec798a82e99551ec0a323) build(deps): bump bin from `e47704b` to `cf2a686` (#678)
+
 ## [v1.172.5](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.5) - 2024-04-30
 
 - [`46fa65f`](https://github.com/alexfalkowski/go-service/commit/46fa65f3f401a6f70da203f9c7c336e3ecb8d5e9) fix(errors): decorate the input error (#677)
