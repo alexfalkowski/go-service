@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
@@ -13,5 +14,5 @@ type InputConfig struct {
 func NewInputConfig(factory *marshaller.Factory) (*InputConfig, error) {
 	c, err := NewConfig(inputFlag, factory)
 
-	return &InputConfig{Config: c}, err
+	return &InputConfig{Config: c}, errors.Prefix("new input", err)
 }
