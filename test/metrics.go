@@ -29,8 +29,5 @@ func newMeter(lc fx.Lifecycle, c *metrics.Config) metric.Meter {
 		Reader:      r,
 	}
 
-	m, err := metrics.NewMeter(p)
-	runtime.Must(err)
-
-	return m
+	return metrics.NewMeter(p)
 }

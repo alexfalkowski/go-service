@@ -3,6 +3,7 @@ package debug
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
@@ -41,7 +42,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	sv, err := sh.NewServer(s, config(params.Config))
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new debug server", err)
 	}
 
 	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)

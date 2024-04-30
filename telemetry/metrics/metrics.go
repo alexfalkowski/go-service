@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
@@ -34,9 +35,9 @@ type MeterParams struct {
 }
 
 // NewMeter for metrics.
-func NewMeter(params MeterParams) (m.Meter, error) {
+func NewMeter(params MeterParams) m.Meter {
 	if !IsEnabled(params.Config) {
-		return NewNoopMeter(), nil
+		return NewNoopMeter()
 	}
 
 	name := os.ExecutableName()
@@ -57,11 +58,11 @@ func NewMeter(params MeterParams) (m.Meter, error) {
 				return nil
 			}
 
-			return err
+			return errors.Prefix("stop metrics", err)
 		},
 	})
 
-	return meter, nil
+	return meter
 }
 
 // NewReader for metrics.
@@ -73,8 +74,10 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 	if cfg.IsOTLP() {
 		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.Host))
 
-		return metric.NewPeriodicReader(r), err
+		return metric.NewPeriodicReader(r), errors.Prefix("new otlp", err)
 	}
 
-	return prometheus.New()
+	e, err := prometheus.New()
+
+	return e, errors.Prefix("new prometheus", err)
 }

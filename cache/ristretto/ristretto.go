@@ -3,6 +3,7 @@ package ristretto
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/fx"
@@ -33,7 +34,7 @@ func NewCache(params CacheParams) (Cache, error) {
 
 	ca, err := ristretto.NewCache(cfg)
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("new ristretto options", err)
 	}
 
 	params.Lifecycle.Append(fx.Hook{

@@ -1,18 +1,14 @@
 package cmd
 
 import (
-	"errors"
 	"io/fs"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
-var (
-	// ErrInvalidKind for cmd.
-	ErrInvalidKind = errors.New("invalid kind")
-	inputFlag      string
-)
+var inputFlag string
 
 // ReaderWriter for cmd.
 type ReaderWriter interface {
@@ -30,26 +26,10 @@ type Config struct {
 // NewConfig for cmd.
 func NewConfig(flag string, factory *marshaller.Factory) (*Config, error) {
 	k, l := splitFlag(flag)
-
-	var rw ReaderWriter
-
-	switch k {
-	case "env":
-		rw = NewENV(l)
-	case "file":
-		rw = NewFile(l)
-	}
-
-	if rw == nil {
-		return nil, ErrInvalidKind
-	}
-
+	rw := readWriter(k, l)
 	m, err := factory.Create(rw.Kind())
-	if err != nil {
-		return nil, err
-	}
 
-	return &Config{rw: rw, m: m}, nil
+	return &Config{rw: rw, m: m}, errors.Prefix("new config", err)
 }
 
 // Kind of config.
@@ -61,15 +41,15 @@ func (c *Config) Kind() string {
 func (c *Config) Unmarshal(data any) error {
 	d, err := c.rw.Read()
 	if err != nil {
-		return err
+		return errors.Prefix("unmarshal config", err)
 	}
 
-	return c.m.Unmarshal(d, data)
+	return errors.Prefix("unmarshal config", c.m.Unmarshal(d, data))
 }
 
 // Write for config.
 func (c *Config) Write(data []byte, mode fs.FileMode) error {
-	return c.rw.Write(data, mode)
+	return errors.Prefix("write config", c.rw.Write(data, mode))
 }
 
 func splitFlag(f string) (string, string) {
@@ -80,4 +60,12 @@ func splitFlag(f string) (string, string) {
 	}
 
 	return c[0], c[1]
+}
+
+func readWriter(k, l string) ReaderWriter {
+	if k == "file" {
+		return NewFile(l)
+	}
+
+	return NewENV(l)
 }

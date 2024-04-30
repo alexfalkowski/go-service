@@ -2,8 +2,10 @@ package tracer
 
 import (
 	"context"
+	"errors"
 
 	"github.com/alexfalkowski/go-service/env"
+	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
@@ -17,7 +19,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -72,10 +73,10 @@ func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			return exporter.Start(ctx)
+			return se.Prefix("start tracer", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
-			return multierr.Combine(p.Shutdown(ctx), exporter.Shutdown(ctx))
+			return se.Prefix("stop tracer", errors.Join(p.Shutdown(ctx), exporter.Shutdown(ctx)))
 		},
 	})
 
