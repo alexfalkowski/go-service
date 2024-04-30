@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.8](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.8) - 2024-04-30
+
+- [`1133fb9`](https://github.com/alexfalkowski/go-service/commit/1133fb99801c3380cbc53a7cafb9a17e42e8f17f) fix(grpc): verify metrics gRPC stream (#681)
+
 ## [v1.172.7](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.7) - 2024-04-30
 
 - [`bc2f585`](https://github.com/alexfalkowski/go-service/commit/bc2f585e7cc404c57ac4c9e09d86440e201a0931) fix(deps): bump github.com/sony/gobreaker from 0.5.0 to 1.0.0 (#680)
