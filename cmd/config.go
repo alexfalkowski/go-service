@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"io/fs"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
@@ -25,8 +24,8 @@ type Config struct {
 
 // NewConfig for cmd.
 func NewConfig(flag string, factory *marshaller.Factory) (*Config, error) {
-	k, l := splitFlag(flag)
-	rw := readWriter(k, l)
+	k, l := SplitFlag(flag)
+	rw := NewReadWriter(k, l)
 	m, err := factory.Create(rw.Kind())
 
 	return &Config{rw: rw, m: m}, errors.Prefix("new config", err)
@@ -50,22 +49,4 @@ func (c *Config) Unmarshal(data any) error {
 // Write for config.
 func (c *Config) Write(data []byte, mode fs.FileMode) error {
 	return errors.Prefix("write config", c.rw.Write(data, mode))
-}
-
-func splitFlag(f string) (string, string) {
-	c := strings.Split(f, ":")
-
-	if len(c) != 2 {
-		return "env", "CONFIG_FILE"
-	}
-
-	return c[0], c[1]
-}
-
-func readWriter(k, l string) ReaderWriter {
-	if k == "file" {
-		return NewFile(l)
-	}
-
-	return NewENV(l)
 }
