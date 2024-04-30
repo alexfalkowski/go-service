@@ -32,7 +32,7 @@ require (
 	github.com/rs/cors v1.11.0
 	github.com/shirou/gopsutil/v3 v3.24.3
 	github.com/smartystreets/goconvey v1.8.1
-	github.com/sony/gobreaker v0.5.0
+	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240423152038-0519ca272bb2
 	github.com/ulule/limiter/v3 v3.11.2
