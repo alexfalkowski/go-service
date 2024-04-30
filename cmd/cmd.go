@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
+	"go.uber.org/dig"
 	"go.uber.org/fx"
 )
 
@@ -26,6 +28,7 @@ func New(version string) *Command {
 		Version:      version,
 	}
 
+	root.SetErrPrefix(prefix(name))
 	root.PersistentFlags().StringVarP(&inputFlag, "input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
 
 	return &Command{root: root}
@@ -48,8 +51,8 @@ func (c *Command) AddServerCommand(name, description string, opts ...fx.Option) 
 		Short:        description,
 		Long:         description,
 		SilenceUsage: true,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return RunServer(opts...)
+		RunE: func(c *cobra.Command, _ []string) error {
+			return RunServer(c.Context(), opts...)
 		},
 	}
 
@@ -65,8 +68,8 @@ func (c *Command) AddClientCommand(name, description string, opts ...fx.Option) 
 		Short:        description,
 		Long:         description,
 		SilenceUsage: true,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return RunClient(opts...)
+		RunE: func(c *cobra.Command, _ []string) error {
+			return RunClient(c.Context(), opts...)
 		},
 	}
 
@@ -88,38 +91,42 @@ func (c *Command) Run() error {
 }
 
 // RunServer with args and a timeout.
-func RunServer(opts ...fx.Option) error {
-	app := fx.New(opts...)
+func RunServer(ctx context.Context, opts ...fx.Option) error {
+	app := fx.New(options(opts)...)
 	done := app.Done()
 
-	startCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
-	defer cancel()
-
-	if err := app.Start(startCtx); err != nil {
-		return err
+	if err := app.Start(ctx); err != nil {
+		return wrap("server", err)
 	}
 
 	<-done
 
-	stopCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
-	defer cancel()
-
-	return app.Stop(stopCtx)
+	return wrap("server", app.Stop(ctx))
 }
 
 // RunClient with args and a timeout.
-func RunClient(opts ...fx.Option) error {
-	app := fx.New(opts...)
+func RunClient(ctx context.Context, opts ...fx.Option) error {
+	app := fx.New(options(opts)...)
 
-	startCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
-	defer cancel()
-
-	if err := app.Start(startCtx); err != nil {
-		return err
+	if err := app.Start(ctx); err != nil {
+		return wrap("client", err)
 	}
 
-	stopCtx, cancel := context.WithTimeout(context.Background(), time.Timeout)
-	defer cancel()
+	return wrap("client", app.Stop(ctx))
+}
 
-	return app.Stop(stopCtx)
+func options(opts []fx.Option) []fx.Option {
+	return append(opts, fx.StartTimeout(time.Timeout), fx.StopTimeout(time.Timeout), fx.NopLogger)
+}
+
+func wrap(kind string, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	return fmt.Errorf(prefix(kind)+" %w", dig.RootCause(err))
+}
+
+func prefix(p string) string {
+	return p + ":"
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel"
@@ -16,6 +17,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
+	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
 
@@ -73,7 +75,7 @@ func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger
 			return exporter.Start(ctx)
 		},
 		OnStop: func(ctx context.Context) error {
-			return p.Shutdown(ctx)
+			return multierr.Combine(p.Shutdown(ctx), exporter.Shutdown(ctx))
 		},
 	})
 
@@ -85,5 +87,9 @@ type errorHandler struct {
 }
 
 func (e *errorHandler) Handle(err error) {
+	if net.IsConnectionRefused(err) {
+		return
+	}
+
 	e.logger.Error("trace: global error", zap.Error(err))
 }
