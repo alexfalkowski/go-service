@@ -16,7 +16,6 @@ type SenderOption interface{ apply(opts *senderOptions) }
 
 type senderOptions struct {
 	roundTripper http.RoundTripper
-	hook         *hooks.Webhook
 }
 
 type senderOptionFunc func(*senderOptions)
@@ -30,25 +29,15 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 	})
 }
 
-// WithSenderHook for HTTP.
-func WithSenderHook(hook *hooks.Webhook) SenderOption {
-	return senderOptionFunc(func(o *senderOptions) {
-		o.hook = hook
-	})
-}
-
 // NewSender for HTTP.
-func NewSender(opts ...SenderOption) (client.Client, error) {
+func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
 	os := &senderOptions{roundTripper: sh.Transport()}
 	for _, o := range opts {
 		o.apply(os)
 	}
 
 	rt := os.roundTripper
-
-	if os.hook != nil {
-		rt = h.NewRoundTripper(os.hook, rt)
-	}
+	rt = h.NewRoundTripper(hook, rt)
 
 	return events.NewClientHTTP(eh.WithRoundTripper(rt))
 }

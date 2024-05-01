@@ -29,6 +29,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
+	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
@@ -205,7 +206,7 @@ func meter(_ metric.Meter) {
 func featureClient(_ *openfeature.Client) {
 }
 
-func webHooks(_ *h.Webhook) {
+func webHooks(_ *h.Webhook, _ *geh.Receiver) {
 }
 
 func ver() version.Version {
