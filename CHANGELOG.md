@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.173.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.173.0) - 2024-05-01
+
+- [`e390e99`](https://github.com/alexfalkowski/go-service/commit/e390e994a6189217cefe7f71ecdd87170008f55d) feat(events): restructure receiver (#688)
+
 ## [v1.172.10](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.10) - 2024-05-01
 
 - [`6814853`](https://github.com/alexfalkowski/go-service/commit/681485381eb35c3761b001d8eab126f8322e2140) fix(grpc): move stream back to be an implementation detail (#687)
