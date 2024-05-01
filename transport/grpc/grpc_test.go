@@ -3,11 +3,11 @@ package grpc_test
 import (
 	"context"
 	"errors"
+	"io"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
@@ -17,10 +17,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-func init() {
-	tracer.Register()
-}
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
@@ -400,48 +396,37 @@ func TestStream(t *testing.T) {
 	})
 }
 
-func TestValidAuthStream(t *testing.T) {
+func TestCloseStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-		}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		s.Register()
 
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Credentials: token.NewPerRPCCredentials(test.NewGenerator("test", nil)),
-		}
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 
 			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
+
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+			defer cancel()
 
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
-			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-			So(err, ShouldBeNil)
-
-			resp, err := stream.Recv()
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have a valid reply", func() {
-				So(resp.GetMessage(), ShouldEqual, "Hello test")
+			Convey("Then I should not have an error", func() {
+				So(stream.CloseSend(), ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -449,109 +434,18 @@ func TestValidAuthStream(t *testing.T) {
 	})
 }
 
-func TestInvalidAuthStream(t *testing.T) {
+//nolint:dupl
+func TestServerCloseStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
 		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-		}
-		s.Register()
-
-		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Credentials: token.NewPerRPCCredentials(test.NewGenerator("bob", nil)),
-		}
-
-		lc.RequireStart()
-
-		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
-			conn := cl.NewGRPC()
-			defer conn.Close()
-
-			client := v1.NewGreeterServiceClient(conn)
-
-			stream, err := client.SayStreamHello(ctx)
-			So(err, ShouldBeNil)
-
-			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-			So(err, ShouldBeNil)
-
-			_, err = stream.Recv()
-
-			Convey("Then I should have a unauthenticated reply", func() {
-				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
-			})
-
-			lc.RequireStop()
-		})
-	})
-}
-
-func TestEmptyAuthStream(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Credentials: token.NewPerRPCCredentials(test.NewGenerator("", nil)),
-		}
-
-		lc.RequireStart()
-
-		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
-			conn := cl.NewGRPC()
-			defer conn.Close()
-
-			client := v1.NewGreeterServiceClient(conn)
-
-			_, err := client.SayStreamHello(ctx)
-
-			Convey("Then I should have an auth error", func() {
-				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
-			})
-
-			lc.RequireStop()
-		})
-	})
-}
-
-func TestMissingClientAuthStream(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Stream: []grpc.StreamServerInterceptor{closingServerStreamInterceptor()},
 		}
 		s.Register()
 
@@ -560,23 +454,25 @@ func TestMissingClientAuthStream(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 
 			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+			defer cancel()
+
 			stream, err := client.SayStreamHello(ctx)
 			So(err, ShouldBeNil)
 
+			defer stream.CloseSend()
+
 			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
-			So(err, ShouldBeNil)
 
-			_, err = stream.Recv()
-
-			Convey("Then I should have a unauthenticated reply", func() {
-				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
+			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
 			})
 
 			lc.RequireStop()
@@ -584,44 +480,192 @@ func TestMissingClientAuthStream(t *testing.T) {
 	})
 }
 
-func TestTokenErrorAuthStream(t *testing.T) {
+//nolint:dupl
+func TestServerErrorStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
 		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Stream: []grpc.StreamServerInterceptor{errorServerStreamInterceptor()},
 		}
 		s.Register()
 
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Credentials: token.NewPerRPCCredentials(test.NewGenerator("", errors.New("token error"))),
-		}
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 		lc.RequireStart()
 
-		Convey("When I query for a greet that will generate a token error", func() {
-			ctx := context.Background()
+		Convey("When I query for a greet", func() {
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 
 			conn := cl.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			_, err := client.SayStreamHello(ctx)
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+			defer cancel()
 
-			Convey("Then I should have an error", func() {
-				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
+
+			defer stream.CloseSend()
+
+			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
+
+			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
 			})
 
 			lc.RequireStop()
 		})
 	})
+}
+
+//nolint:dupl
+func TestClientCloseStream(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Stream: []grpc.StreamClientInterceptor{closingClientStreamInterceptor()},
+		}
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
+
+			conn := cl.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+			defer cancel()
+
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should not have an error", func() {
+				So(stream.CloseSend(), ShouldBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+//nolint:dupl
+func TestClientErrorStream(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Stream: []grpc.StreamClientInterceptor{errorClientStreamInterceptor()},
+		}
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
+
+			conn := cl.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+
+			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+			defer cancel()
+
+			stream, err := client.SayStreamHello(ctx)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should not have an error", func() {
+				So(stream.CloseSend(), ShouldBeNil)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func closingServerStreamInterceptor() grpc.StreamServerInterceptor {
+	return func(srv any, st grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		stream := &serverStream{err: io.EOF, ServerStream: st}
+
+		return handler(srv, stream)
+	}
+}
+
+func errorServerStreamInterceptor() grpc.StreamServerInterceptor {
+	return func(srv any, st grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		stream := &serverStream{err: errors.ErrUnsupported, ServerStream: st}
+
+		return handler(srv, stream)
+	}
+}
+
+func closingClientStreamInterceptor() grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		st := &clientStream{err: io.EOF, ClientStream: stream}
+
+		return st, err
+	}
+}
+
+func errorClientStreamInterceptor() grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		st := &clientStream{err: errors.ErrUnsupported, ClientStream: stream}
+
+		return st, err
+	}
+}
+
+type serverStream struct {
+	err error
+	grpc.ServerStream
+}
+
+func (s *serverStream) SendMsg(_ any) error {
+	return s.err
+}
+
+func (s *serverStream) RecvMsg(_ any) error {
+	return s.err
+}
+
+type clientStream struct {
+	err error
+	grpc.ClientStream
+}
+
+func (s *clientStream) SendMsg(_ any) error {
+	return s.err
+}
+
+func (s *clientStream) RecvMsg(_ any) error {
+	return s.err
 }

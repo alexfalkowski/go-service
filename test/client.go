@@ -27,6 +27,7 @@ type Client struct {
 	Credentials  credentials.PerRPCCredentials
 	RoundTripper http.RoundTripper
 	Meter        metric.Meter
+	Stream       []grpc.StreamClientInterceptor
 }
 
 // NewHTTP client for test.
@@ -58,7 +59,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 	}
 
 	conn, err := g.NewClient(cl.Host,
-		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
+		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(c.Stream...),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(c.Meter),

@@ -119,9 +119,9 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 		gl.UnaryServerInterceptor(params.Limiter, params.Key),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, interceptors...)
+	interceptors = append(interceptors, defaultInterceptors...)
 
-	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
+	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(interceptors...))
 }
 
 func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
@@ -133,9 +133,9 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 		gl.StreamServerInterceptor(params.Limiter, params.Key),
 	}
 
-	defaultInterceptors = append(defaultInterceptors, interceptors...)
+	interceptors = append(interceptors, defaultInterceptors...)
 
-	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
+	return grpc.StreamInterceptor(middleware.ChainStreamServer(interceptors...))
 }
 
 func creds(cfg *Config) (grpc.ServerOption, error) {

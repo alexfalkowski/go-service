@@ -164,8 +164,6 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	os := clientOptions(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
-	unary = append(unary, os.unary...)
-
 	if os.retry != nil {
 		d := time.MustParseDuration(os.retry.Timeout)
 
@@ -193,14 +191,13 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 	unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
+	unary = append(unary, os.unary...)
 
 	return unary
 }
 
 func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{}
-
-	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
 		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
@@ -212,6 +209,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 
 	stream = append(stream, gt.StreamClientInterceptor(opts.tracer))
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
+	stream = append(stream, opts.stream...)
 
 	return grpc.WithChainStreamInterceptor(stream...)
 }
