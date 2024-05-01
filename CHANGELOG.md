@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.172.10](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.10) - 2024-05-01
+
+- [`6814853`](https://github.com/alexfalkowski/go-service/commit/681485381eb35c3761b001d8eab126f8322e2140) fix(grpc): move stream back to be an implementation detail (#687)
+
 ## [v1.172.9](https://github.com/alexfalkowski/go-service/releases/tag/v1.172.9) - 2024-05-01
 
 - [`7ce611a`](https://github.com/alexfalkowski/go-service/commit/7ce611a4138199baaa4bf32d3bc7272a1fee0db7) fix(grpc): verify stream of metrics (#686)
