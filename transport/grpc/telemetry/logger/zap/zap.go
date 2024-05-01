@@ -40,7 +40,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(info.FullMethod), err, codeToLevel(code, logger), fields...)
+		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return resp, err
 	}
@@ -68,7 +68,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(info.FullMethod), err, codeToLevel(code, logger), fields...)
+		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return err
 	}
@@ -95,7 +95,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(cc.Target()+fullMethod), err, codeToLevel(code, logger), fields...)
+		tz.LogWithFunc(message(cc.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return err
 	}
@@ -122,14 +122,16 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(cc.Target()+fullMethod), err, codeToLevel(code, logger), fields...)
+		tz.LogWithFunc(message(cc.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return stream, err
 	}
 }
 
+// CodeToLogFunc for zap.
+//
 //nolint:exhaustive
-func codeToLevel(code codes.Code, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
+func CodeToLogFunc(code codes.Code, logger *zap.Logger) tz.LogFunc {
 	switch code {
 	case codes.OK:
 		return logger.Info

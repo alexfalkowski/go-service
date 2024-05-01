@@ -26,7 +26,7 @@ func NewServer(meter metric.Meter) *Server {
 
 	s := &Server{
 		started: started, received: received, sent: sent,
-		handled: handled, handledHist: handledHist,
+		handled: handled, handledHistogram: handledHist,
 	}
 
 	return s
@@ -34,11 +34,11 @@ func NewServer(meter metric.Meter) *Server {
 
 // Server for metrics.
 type Server struct {
-	started     metric.Int64Counter
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+	started          metric.Int64Counter
+	received         metric.Int64Counter
+	sent             metric.Int64Counter
+	handled          metric.Int64Counter
+	handledHistogram metric.Float64Histogram
 }
 
 // UnaryInterceptor for metrics.
@@ -65,7 +65,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 			s.sent.Add(ctx, 1, opts)
 		}
 
-		handle(ctx, s.handled, s.handledHist, opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHistogram, opts, status.Code(err), start)
 
 		return resp, err
 	}
@@ -86,33 +86,56 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
-
-		stream := &serverStream{
-			opts: opts, received: s.received, sent: s.sent, handled: s.handled, handledHist: s.handledHist,
+		params := ServerStreamParams{
+			Options: opts, Received: s.received, Sent: s.sent,
+			Handled: s.handled, HandledHistogram: s.handledHistogram,
 			ServerStream: st,
 		}
-
+		stream := NewServerStream(params)
 		err := handler(srv, stream)
 		ctx := st.Context()
 
-		handle(ctx, s.handled, s.handledHist, opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHistogram, opts, status.Code(err), start)
 
 		return err
 	}
 }
 
-// serverStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
-type serverStream struct {
-	opts        metric.MeasurementOption
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+// ServerStreamParams for metrics.
+type ServerStreamParams struct {
+	Options          metric.MeasurementOption
+	Received         metric.Int64Counter
+	Sent             metric.Int64Counter
+	Handled          metric.Int64Counter
+	HandledHistogram metric.Float64Histogram
 
 	grpc.ServerStream
 }
 
-func (s *serverStream) SendMsg(m any) error {
+// NewServerStream for metrics.
+func NewServerStream(params ServerStreamParams) *ServerStream {
+	return &ServerStream{
+		opts:             params.Options,
+		received:         params.Received,
+		sent:             params.Sent,
+		handled:          params.Handled,
+		handledHistogram: params.HandledHistogram,
+		ServerStream:     params.ServerStream,
+	}
+}
+
+// ServerStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
+type ServerStream struct {
+	opts             metric.MeasurementOption
+	received         metric.Int64Counter
+	sent             metric.Int64Counter
+	handled          metric.Int64Counter
+	handledHistogram metric.Float64Histogram
+
+	grpc.ServerStream
+}
+
+func (s *ServerStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
@@ -121,23 +144,23 @@ func (s *serverStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+	handle(ctx, s.handled, s.handledHistogram, s.opts, status.Code(err), start)
 
 	return err
 }
 
-func (s *serverStream) RecvMsg(m any) error {
+func (s *ServerStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
 	if err := s.ServerStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			handle(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
+			handle(ctx, s.handled, s.handledHistogram, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHistogram, s.opts, status.Code(err), start)
 
 		return err
 	}
@@ -158,7 +181,7 @@ func NewClient(meter metric.Meter) *Client {
 
 	c := &Client{
 		started: started, received: received, sent: sent,
-		handled: handled, handledHist: handledHist,
+		handled: handled, handledHistogram: handledHist,
 	}
 
 	return c
@@ -166,11 +189,11 @@ func NewClient(meter metric.Meter) *Client {
 
 // Client for metrics.
 type Client struct {
-	started     metric.Int64Counter
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+	started          metric.Int64Counter
+	received         metric.Int64Counter
+	sent             metric.Int64Counter
+	handled          metric.Int64Counter
+	handledHistogram metric.Float64Histogram
 }
 
 // UnaryInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
@@ -197,7 +220,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 			c.received.Add(ctx, 1, o)
 		}
 
-		handle(ctx, c.handled, c.handledHist, o, status.Code(err), start)
+		handle(ctx, c.handled, c.handledHistogram, o, status.Code(err), start)
 
 		return err
 	}
@@ -221,33 +244,57 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
 		if err != nil {
-			handle(ctx, c.handled, c.handledHist, o, status.Code(err), start)
+			handle(ctx, c.handled, c.handledHistogram, o, status.Code(err), start)
 
 			return nil, err
 		}
 
-		st := &clientStream{
-			opts:     o,
-			received: c.received, sent: c.sent, handled: c.handled, handledHist: c.handledHist,
+		params := ClientStreamParams{
+			Options: o, Received: c.received, Sent: c.sent,
+			Handled: c.handled, HandledHistogram: c.handledHistogram,
 			ClientStream: stream,
 		}
+		st := NewClientStream(params)
 
 		return st, nil
 	}
 }
 
-// clientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
-type clientStream struct {
-	opts        metric.MeasurementOption
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+// ClientStreamParams for metrics.
+type ClientStreamParams struct {
+	Options          metric.MeasurementOption
+	Received         metric.Int64Counter
+	Sent             metric.Int64Counter
+	Handled          metric.Int64Counter
+	HandledHistogram metric.Float64Histogram
 
 	grpc.ClientStream
 }
 
-func (s *clientStream) SendMsg(m any) error {
+// NewClientStream for metrics.
+func NewClientStream(params ClientStreamParams) *ClientStream {
+	return &ClientStream{
+		opts:             params.Options,
+		received:         params.Handled,
+		sent:             params.Sent,
+		handled:          params.Handled,
+		handledHistogram: params.HandledHistogram,
+		ClientStream:     params.ClientStream,
+	}
+}
+
+// ClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
+type ClientStream struct {
+	opts             metric.MeasurementOption
+	received         metric.Int64Counter
+	sent             metric.Int64Counter
+	handled          metric.Int64Counter
+	handledHistogram metric.Float64Histogram
+
+	grpc.ClientStream
+}
+
+func (s *ClientStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
@@ -256,23 +303,23 @@ func (s *clientStream) SendMsg(m any) error {
 		s.sent.Add(ctx, 1, s.opts)
 	}
 
-	handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+	handle(ctx, s.handled, s.handledHistogram, s.opts, status.Code(err), start)
 
 	return err
 }
 
-func (s *clientStream) RecvMsg(m any) error {
+func (s *ClientStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
 	if err := s.ClientStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			handle(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
+			handle(ctx, s.handled, s.handledHistogram, s.opts, codes.OK, start)
 
 			return err
 		}
 
-		handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+		handle(ctx, s.handled, s.handledHistogram, s.opts, status.Code(err), start)
 
 		return err
 	}
