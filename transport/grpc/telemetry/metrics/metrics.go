@@ -86,12 +86,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
-		params := ServerStreamParams{
-			Options: opts, Received: s.received, Sent: s.sent,
-			Handled: s.handled, HandledHistogram: s.handledHistogram,
-			ServerStream: st,
-		}
-		stream := NewServerStream(params)
+		stream := s.Stream(st, opts)
 		err := handler(srv, stream)
 		ctx := st.Context()
 
@@ -101,31 +96,20 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	}
 }
 
-// ServerStreamParams for metrics.
-type ServerStreamParams struct {
-	Options          metric.MeasurementOption
-	Received         metric.Int64Counter
-	Sent             metric.Int64Counter
-	Handled          metric.Int64Counter
-	HandledHistogram metric.Float64Histogram
-
-	grpc.ServerStream
-}
-
-// NewServerStream for metrics.
-func NewServerStream(params ServerStreamParams) *ServerStream {
-	return &ServerStream{
-		opts:             params.Options,
-		received:         params.Received,
-		sent:             params.Sent,
-		handled:          params.Handled,
-		handledHistogram: params.HandledHistogram,
-		ServerStream:     params.ServerStream,
+// Stream for the server.
+func (s *Server) Stream(st grpc.ServerStream, opts metric.MeasurementOption) grpc.ServerStream {
+	return &serverStream{
+		opts:             opts,
+		received:         s.received,
+		sent:             s.sent,
+		handled:          s.handled,
+		handledHistogram: s.handledHistogram,
+		ServerStream:     st,
 	}
 }
 
-// ServerStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
-type ServerStream struct {
+// serverStream wraps grpc.serverStream allowing each Sent/Recv of message to increment counters.
+type serverStream struct {
 	opts             metric.MeasurementOption
 	received         metric.Int64Counter
 	sent             metric.Int64Counter
@@ -135,7 +119,7 @@ type ServerStream struct {
 	grpc.ServerStream
 }
 
-func (s *ServerStream) SendMsg(m any) error {
+func (s *serverStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
@@ -149,7 +133,7 @@ func (s *ServerStream) SendMsg(m any) error {
 	return err
 }
 
-func (s *ServerStream) RecvMsg(m any) error {
+func (s *serverStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ServerStream.Context()
 
@@ -249,42 +233,24 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
-		params := ClientStreamParams{
-			Options: o, Received: c.received, Sent: c.sent,
-			Handled: c.handled, HandledHistogram: c.handledHistogram,
-			ClientStream: stream,
-		}
-		st := NewClientStream(params)
-
-		return st, nil
+		return c.Stream(stream, o), nil
 	}
 }
 
-// ClientStreamParams for metrics.
-type ClientStreamParams struct {
-	Options          metric.MeasurementOption
-	Received         metric.Int64Counter
-	Sent             metric.Int64Counter
-	Handled          metric.Int64Counter
-	HandledHistogram metric.Float64Histogram
-
-	grpc.ClientStream
-}
-
-// NewClientStream for metrics.
-func NewClientStream(params ClientStreamParams) *ClientStream {
-	return &ClientStream{
-		opts:             params.Options,
-		received:         params.Handled,
-		sent:             params.Sent,
-		handled:          params.Handled,
-		handledHistogram: params.HandledHistogram,
-		ClientStream:     params.ClientStream,
+// Stream fpr client.
+func (c *Client) Stream(st grpc.ClientStream, opts metric.MeasurementOption) grpc.ClientStream {
+	return &clientStream{
+		opts:             opts,
+		received:         c.received,
+		sent:             c.sent,
+		handled:          c.handled,
+		handledHistogram: c.handledHistogram,
+		ClientStream:     st,
 	}
 }
 
-// ClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
-type ClientStream struct {
+// clientStream wraps grpc.clientStream allowing each Sent/Recv of message to increment counters.
+type clientStream struct {
 	opts             metric.MeasurementOption
 	received         metric.Int64Counter
 	sent             metric.Int64Counter
@@ -294,7 +260,7 @@ type ClientStream struct {
 	grpc.ClientStream
 }
 
-func (s *ClientStream) SendMsg(m any) error {
+func (s *clientStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
@@ -308,7 +274,7 @@ func (s *ClientStream) SendMsg(m any) error {
 	return err
 }
 
-func (s *ClientStream) RecvMsg(m any) error {
+func (s *clientStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 

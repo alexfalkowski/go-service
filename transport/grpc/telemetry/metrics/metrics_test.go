@@ -6,7 +6,6 @@ import (
 	"io"
 	"testing"
 
-	me "github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -20,14 +19,8 @@ func TestClientStream(t *testing.T) {
 	Convey("Given I have a client stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		c := me.MustInt64Counter(m, "test_count", "test")
-		h := me.MustFloat64Histogram(m, "test_hist", "testing")
-		p := metrics.ClientStreamParams{
-			Options: metric.WithAttributes(), Received: c, Sent: c,
-			Handled: c, HandledHistogram: h,
-			ClientStream: &clientStream{err: io.EOF},
-		}
-		st := metrics.NewClientStream(p)
+		c := metrics.NewClient(m)
+		st := c.Stream(&clientStream{err: io.EOF}, metric.WithAttributes())
 
 		lc.RequireStart()
 
@@ -45,14 +38,8 @@ func TestClientStream(t *testing.T) {
 	Convey("Given I have a client stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		c := me.MustInt64Counter(m, "test_count", "test")
-		h := me.MustFloat64Histogram(m, "test_hist", "testing")
-		p := metrics.ClientStreamParams{
-			Options: metric.WithAttributes(), Received: c, Sent: c,
-			Handled: c, HandledHistogram: h,
-			ClientStream: &clientStream{err: errors.ErrUnsupported},
-		}
-		st := metrics.NewClientStream(p)
+		c := metrics.NewClient(m)
+		st := c.Stream(&clientStream{err: errors.ErrUnsupported}, metric.WithAttributes())
 
 		lc.RequireStart()
 
@@ -73,15 +60,8 @@ func TestServerStream(t *testing.T) {
 	Convey("Given I have a server stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		c := me.MustInt64Counter(m, "test_count", "test")
-		h := me.MustFloat64Histogram(m, "test_hist", "testing")
-
-		p := metrics.ServerStreamParams{
-			Options: metric.WithAttributes(), Received: c, Sent: c,
-			Handled: c, HandledHistogram: h,
-			ServerStream: &serverStream{err: io.EOF},
-		}
-		st := metrics.NewServerStream(p)
+		s := metrics.NewServer(m)
+		st := s.Stream(&serverStream{err: io.EOF}, metric.WithAttributes())
 
 		lc.RequireStart()
 
@@ -99,15 +79,8 @@ func TestServerStream(t *testing.T) {
 	Convey("Given I have a server stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		c := me.MustInt64Counter(m, "test_count", "test")
-		h := me.MustFloat64Histogram(m, "test_hist", "testing")
-
-		p := metrics.ServerStreamParams{
-			Options: metric.WithAttributes(), Received: c, Sent: c,
-			Handled: c, HandledHistogram: h,
-			ServerStream: &serverStream{err: errors.ErrUnsupported},
-		}
-		st := metrics.NewServerStream(p)
+		s := metrics.NewServer(m)
+		st := s.Stream(&serverStream{err: errors.ErrUnsupported}, metric.WithAttributes())
 
 		lc.RequireStart()
 
