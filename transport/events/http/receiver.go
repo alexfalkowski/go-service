@@ -10,34 +10,22 @@ import (
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
-// ReceiverOption for HTTP.
-type ReceiverOption interface{ apply(opts *receiverOptions) }
+// ReceiverFunc for HTTP.
+type ReceiverFunc func(ctx context.Context, e events.Event)
 
-type receiverOptions struct {
+// Receiver for HTTP.
+type Receiver struct {
+	mux  *runtime.ServeMux
 	hook *hooks.Webhook
 }
 
-type receiverOptionFunc func(*receiverOptions)
-
-func (f receiverOptionFunc) apply(o *receiverOptions) { f(o) }
-
-// WithReceiverHook for HTTP.
-func WithReceiverHook(hook *hooks.Webhook) ReceiverOption {
-	return receiverOptionFunc(func(o *receiverOptions) {
-		o.hook = hook
-	})
+// NewReceiver for HTTP.
+func NewReceiver(mux *runtime.ServeMux, hook *hooks.Webhook) *Receiver {
+	return &Receiver{mux: mux, hook: hook}
 }
 
-// Receiver for HTTP.
-type Receiver func(ctx context.Context, e events.Event)
-
-// RegisterReceiver for HTTP.
-func RegisterReceiver(ctx context.Context, mux *runtime.ServeMux, path string, recv Receiver, opts ...ReceiverOption) error {
-	os := &receiverOptions{}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
+// Register a fn under path.
+func (r *Receiver) Register(ctx context.Context, path string, fn ReceiverFunc) error {
 	// Error is only returned with options.
 	p, _ := events.NewHTTP()
 
@@ -46,16 +34,14 @@ func RegisterReceiver(ctx context.Context, mux *runtime.ServeMux, path string, r
 		err     error
 	)
 
-	handler, err = events.NewHTTPReceiveHandler(ctx, p, recv)
+	handler, err = events.NewHTTPReceiveHandler(ctx, p, fn)
 	if err != nil {
 		return err
 	}
 
-	if os.hook != nil {
-		handler = h.NewHandler(os.hook, handler)
-	}
+	handler = h.NewHandler(r.hook, handler)
 
-	return mux.HandlePath("POST", path, func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
+	return r.mux.HandlePath("POST", path, func(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 		handler.ServeHTTP(w, r)
 	})
 }

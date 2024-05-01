@@ -21,16 +21,6 @@ func init() {
 	tracer.Register()
 }
 
-type delRoundTripper struct {
-	rt http.RoundTripper
-}
-
-func (r *delRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Del(h.HeaderWebhookID)
-
-	return r.rt.RoundTrip(req)
-}
-
 func TestSendReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -45,9 +35,11 @@ func TestSendReceive(t *testing.T) {
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
+		r := eh.NewReceiver(test.Mux, h)
+
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -56,7 +48,7 @@ func TestSendReceive(t *testing.T) {
 			tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 
-			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
+			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), "http://localhost:"+cfg.HTTP.Port+"/events")
@@ -93,9 +85,11 @@ func TestSendNotReceive(t *testing.T) {
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
+		r := eh.NewReceiver(test.Mux, h)
+
 		var event *events.Event
 
-		err = eh.RegisterReceiver(context.Background(), test.Mux, "/events", func(_ context.Context, e events.Event) { event = &e }, eh.WithReceiverHook(h))
+		err = r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -105,7 +99,7 @@ func TestSendNotReceive(t *testing.T) {
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			rt = &delRoundTripper{rt: rt}
 
-			c, err := eh.NewSender(eh.WithSenderRoundTripper(rt), eh.WithSenderHook(h))
+			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), "http://localhost:"+cfg.HTTP.Port+"/events")
@@ -125,4 +119,14 @@ func TestSendNotReceive(t *testing.T) {
 			lc.RequireStop()
 		})
 	})
+}
+
+type delRoundTripper struct {
+	rt http.RoundTripper
+}
+
+func (r *delRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Del(h.HeaderWebhookID)
+
+	return r.rt.RoundTrip(req)
 }
