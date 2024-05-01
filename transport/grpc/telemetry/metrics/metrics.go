@@ -226,9 +226,9 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
-		st := &clientStream{
-			opts:     o,
-			received: c.received, sent: c.sent, handled: c.handled, handledHist: c.handledHist,
+		st := &ClientStream{
+			Options:  o,
+			Received: c.received, Sent: c.sent, Handled: c.handled, HandledHistogram: c.handledHist,
 			ClientStream: stream,
 		}
 
@@ -236,48 +236,48 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	}
 }
 
-// clientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
-type clientStream struct {
-	opts        metric.MeasurementOption
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+// ClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
+type ClientStream struct {
+	Options          metric.MeasurementOption
+	Received         metric.Int64Counter
+	Sent             metric.Int64Counter
+	Handled          metric.Int64Counter
+	HandledHistogram metric.Float64Histogram
 
 	grpc.ClientStream
 }
 
-func (s *clientStream) SendMsg(m any) error {
+func (s *ClientStream) SendMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
 	err := s.ClientStream.SendMsg(m)
 	if err == nil {
-		s.sent.Add(ctx, 1, s.opts)
+		s.Sent.Add(ctx, 1, s.Options)
 	}
 
-	handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+	handle(ctx, s.Handled, s.HandledHistogram, s.Options, status.Code(err), start)
 
 	return err
 }
 
-func (s *clientStream) RecvMsg(m any) error {
+func (s *ClientStream) RecvMsg(m any) error {
 	start := time.Now()
 	ctx := s.ClientStream.Context()
 
 	if err := s.ClientStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
-			handle(ctx, s.handled, s.handledHist, s.opts, codes.OK, start)
+			handle(ctx, s.Handled, s.HandledHistogram, s.Options, codes.OK, start)
 
 			return err
 		}
 
-		handle(ctx, s.handled, s.handledHist, s.opts, status.Code(err), start)
+		handle(ctx, s.Handled, s.HandledHistogram, s.Options, status.Code(err), start)
 
 		return err
 	}
 
-	s.received.Add(ctx, 1, s.opts)
+	s.Received.Add(ctx, 1, s.Options)
 
 	return nil
 }
