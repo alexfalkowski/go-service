@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"net"
 	"net/http"
@@ -12,26 +13,20 @@ import (
 // Server for HTTP.
 type Server struct {
 	server   *http.Server
-	sec      Security
+	tls      *tls.Config
 	listener net.Listener
 }
 
 // Config for HTTP.
 type Config struct {
-	Enabled  bool
-	Port     string
-	Security Security
-}
-
-// Security for HTTP.
-type Security struct {
-	Enabled           bool
-	CertFile, KeyFile string
+	Enabled bool
+	Port    string
+	TLS     *tls.Config
 }
 
 // NewServer for HTTP.
 func NewServer(server *http.Server, cfg Config) (*Server, error) {
-	s := &Server{server: server, sec: cfg.Security}
+	s := &Server{server: server, tls: cfg.TLS}
 
 	if !cfg.Enabled {
 		return s, nil
@@ -72,9 +67,11 @@ func (s *Server) IsEnabled() bool {
 }
 
 func (s *Server) serve() error {
-	if !s.sec.Enabled {
-		return s.server.Serve(s.listener)
+	if s.tls != nil {
+		s.server.TLSConfig = s.tls
+
+		return s.server.ServeTLS(s.listener, "", "")
 	}
 
-	return s.server.ServeTLS(s.listener, s.sec.CertFile, s.sec.KeyFile)
+	return s.server.Serve(s.listener)
 }

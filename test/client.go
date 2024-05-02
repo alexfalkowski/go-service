@@ -31,12 +31,16 @@ type Client struct {
 
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
+	sec, err := h.WithClientSecure(c.Security)
+	runtime.Must(err)
+
 	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
 	client := h.NewClient(
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(c.Transport.HTTP.UserAgent),
+		sec,
 	)
 
 	return client
@@ -50,7 +54,9 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(c.Credentials))
 	}
 
-	sec, _ := g.WithClientSecure(c.Security)
+	sec, err := g.WithClientSecure(c.Security)
+	runtime.Must(err)
+
 	cl := &client.Config{
 		Host:      "localhost:" + c.Transport.GRPC.Port,
 		Retry:     c.Transport.GRPC.Retry,

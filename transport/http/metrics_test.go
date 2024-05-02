@@ -18,7 +18,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:dupl,funlen
+//nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		r := miniredis.RunT(t)
@@ -84,7 +84,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	})
 }
 
-//nolint:dupl,funlen
+//nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		r := miniredis.RunT(t)
@@ -112,7 +112,10 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		s.Register()
 
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Security: test.NewSecureClientConfig(),
+		}
 
 		err = ht.RegisterMetrics(test.Mux)
 		So(err, ShouldBeNil)

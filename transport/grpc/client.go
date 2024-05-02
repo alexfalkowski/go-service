@@ -65,7 +65,7 @@ func WithClientSecure(sec *security.Config) (ClientOption, error) {
 
 	var creds credentials.TransportCredentials
 
-	if sec.HasFiles() {
+	if sec.HasKeyPair() {
 		conf, err := security.NewTLSConfig(sec)
 		if err != nil {
 			return none, err

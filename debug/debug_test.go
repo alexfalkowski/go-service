@@ -12,7 +12,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:dupl
 func TestInsecureDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -64,7 +63,6 @@ func TestInsecureDebug(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestSecureDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -90,7 +88,13 @@ func TestSecureDebug(t *testing.T) {
 
 		Convey("Then all the debug URLs are valid", func() {
 			port := p.Config.Port
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(), Transport: test.NewSecureTransportConfig(), Meter: m}
+			cl := &test.Client{
+				Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(),
+				Transport: test.NewSecureTransportConfig(),
+				Security:  test.NewSecureClientConfig(),
+				Meter:     m,
+			}
+
 			client := cl.NewHTTP()
 			urls := []string{
 				url("https", port, "debug/statsviz"),
