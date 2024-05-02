@@ -30,7 +30,7 @@ require (
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rs/cors v1.11.0
-	github.com/shirou/gopsutil/v3 v3.24.3
+	github.com/shirou/gopsutil/v3 v3.24.4
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.0
