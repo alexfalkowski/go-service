@@ -89,7 +89,12 @@ func NewServer(params ServerParams) (*Server, error) {
 		IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout,
 	}
 
-	sv, err := sh.NewServer(s, config(params.Config))
+	c, err := config(params.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	sv, err := sh.NewServer(s, c)
 	if err != nil {
 		return nil, errors.Prefix("new http server", err)
 	}
@@ -99,25 +104,28 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{Server: svr}, nil
 }
 
-func config(cfg *Config) sh.Config {
+func config(cfg *Config) (sh.Config, error) {
 	c := sh.Config{}
 
 	if !IsEnabled(cfg) {
-		return c
+		return c, nil
 	}
 
 	c.Enabled = true
 	c.Port = cfg.Port
 
 	if !security.IsEnabled(cfg.Security) {
-		return c
+		return c, nil
 	}
 
-	c.Security.Enabled = true
-	c.Security.CertFile = cfg.Security.CertFile
-	c.Security.KeyFile = cfg.Security.KeyFile
+	tls, err := security.NewTLSConfig(cfg.Security)
+	if err != nil {
+		return c, err
+	}
 
-	return c
+	c.TLS = tls
+
+	return c, nil
 }
 
 func customMatcher(key string) (string, bool) {

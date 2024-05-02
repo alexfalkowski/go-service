@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
+	sr "github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -49,19 +51,37 @@ func NewRetry() *retry.Config {
 
 // NewSecureClientConfig for test.
 func NewSecureClientConfig() *security.Config {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	return &security.Config{
-		Enabled:  true,
-		CertFile: filepath.Join(dir, "certs/client-cert.pem"),
-		KeyFile:  filepath.Join(dir, "certs/client-key.pem"),
-	}
+	return NewSecurityConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
 // NewSecureClientConfig for test.
-func NewInsecureClientConfig() *security.Config {
+func NewInsecureConfig() *security.Config {
 	return &security.Config{}
+}
+
+// NewSecureServerConfig for test.
+func NewSecureServerConfig() *security.Config {
+	return NewSecurityConfig("certs/cert.pem", "certs/key.pem")
+}
+
+// NewSecurityConfig for test.
+func NewSecurityConfig(c, k string) *security.Config {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	cert, err := os.ReadFile(filepath.Join(dir, c))
+	sr.Must(err)
+
+	key, err := os.ReadFile(filepath.Join(dir, k))
+	sr.Must(err)
+
+	s := &security.Config{
+		Enabled: true,
+		Cert:    base64.StdEncoding.EncodeToString(cert),
+		Key:     base64.StdEncoding.EncodeToString(key),
+	}
+
+	return s
 }
 
 // NewInsecureTransportConfig for test.
@@ -88,14 +108,7 @@ func NewInsecureTransportConfig() *transport.Config {
 
 // NewSecureTransportConfig for test.
 func NewSecureTransportConfig() *transport.Config {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	s := &security.Config{
-		Enabled:  true,
-		CertFile: filepath.Join(dir, "certs/cert.pem"),
-		KeyFile:  filepath.Join(dir, "certs/key.pem"),
-	}
+	s := NewSecureServerConfig()
 	r := NewRetry()
 
 	return &transport.Config{
@@ -185,19 +198,10 @@ func NewInsecureDebugConfig() *debug.Config {
 
 // NewInsecureDebugConfig for test.
 func NewSecureDebugConfig() *debug.Config {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	s := &security.Config{
-		Enabled:  true,
-		CertFile: filepath.Join(dir, "certs/cert.pem"),
-		KeyFile:  filepath.Join(dir, "certs/key.pem"),
-	}
-
 	return &debug.Config{
 		Config: &server.Config{
 			Enabled:   true,
-			Security:  s,
+			Security:  NewSecureServerConfig(),
 			Port:      Port(),
 			UserAgent: "TestHTTPDebug/1.0",
 			Retry:     NewRetry(),

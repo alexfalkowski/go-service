@@ -7,24 +7,32 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestTLSMissingConfig(t *testing.T) {
-	Convey("When I try to create with missing config", t, func() {
-		c, err := security.NewTLSConfig(nil)
+func TestTLS(t *testing.T) {
+	cs := []*security.Config{nil, {Enabled: true}}
 
-		Convey("Then I should have a default TLS config", func() {
-			So(c, ShouldNotBeNil)
-			So(err, ShouldBeNil)
+	for _, c := range cs {
+		Convey("When I try to create with missing config", t, func() {
+			c, err := security.NewTLSConfig(c)
+
+			Convey("Then I should have a default TLS config", func() {
+				So(c, ShouldNotBeNil)
+				So(err, ShouldBeNil)
+			})
 		})
-	})
-}
+	}
 
-func TestTLSInvalidPathConfig(t *testing.T) {
-	Convey("When I try to create with missing config", t, func() {
-		c, err := security.NewTLSConfig(&security.Config{Enabled: true})
+	type tuple [2]string
 
-		Convey("Then I should have a default TLS config", func() {
-			So(c, ShouldBeNil)
-			So(err, ShouldBeError)
+	tus := []tuple{{"test", "test"}, {"dGVzdAo=", "test"}, {"dGVzdAo=", "dGVzdAo="}}
+
+	for _, tu := range tus {
+		Convey("When I try to create with bad cert config", t, func() {
+			c, err := security.NewTLSConfig(&security.Config{Enabled: true, Cert: tu[0], Key: tu[1]})
+
+			Convey("Then I should have an error", func() {
+				So(c, ShouldBeNil)
+				So(err, ShouldBeError)
+			})
 		})
-	})
+	}
 }

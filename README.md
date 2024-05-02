@@ -322,13 +322,13 @@ transport:
   http:
     security:
       enabled: true
-      cert_file: certs/cert.pem
-      key_file: certs/key.pem
+      cert: PEM certificate base64 encoded
+      key: PEM certificate base64 encoded
   grpc:
     security:
       enabled: true
-      cert_file: certs/cert.pem
-      key_file: certs/key.pem
+      cert: PEM certificate base64 encoded
+      key: PEM certificate base64 encoded
 ```
 
 ## Debug
@@ -387,8 +387,8 @@ If you would like to enable TLS, do the following:
 debug:
   security:
     enabled: true
-    cert_file: certs/cert.pem
-    key_file: certs/key.pem
+    cert: PEM certificate base64 encoded
+    key: PEM certificate base64 encoded
 ```
 
 ## Development

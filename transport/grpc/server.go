@@ -145,7 +145,7 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 
 	var creds credentials.TransportCredentials
 
-	if cfg.Security.HasFiles() {
+	if cfg.Security.HasKeyPair() {
 		conf, err := security.NewTLSConfig(cfg.Security)
 		if err != nil {
 			return grpc.EmptyServerOption{}, err

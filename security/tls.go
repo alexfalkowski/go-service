@@ -2,6 +2,7 @@ package security
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 )
 
 // NewTLSConfig for security.
@@ -11,11 +12,21 @@ func NewTLSConfig(sec *Config) (*tls.Config, error) {
 		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 
-	if sec == nil {
+	if !IsEnabled(sec) || !sec.HasKeyPair() {
 		return c, nil
 	}
 
-	cert, err := tls.LoadX509KeyPair(sec.CertFile, sec.KeyFile)
+	dc, err := base64.StdEncoding.DecodeString(sec.GetCert())
+	if err != nil {
+		return nil, err
+	}
+
+	dk, err := base64.StdEncoding.DecodeString(sec.GetKey())
+	if err != nil {
+		return nil, err
+	}
+
+	cert, err := tls.X509KeyPair(dc, dk)
 	if err != nil {
 		return nil, err
 	}

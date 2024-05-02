@@ -1,16 +1,18 @@
 package http
 
 import (
+	"crypto/tls"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	lzap "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"go.opentelemetry.io/otel/metric"
@@ -21,6 +23,8 @@ import (
 // ClientOption for HTTP.
 type ClientOption interface{ apply(opts *clientOptions) }
 
+var none = clientOptionFunc(func(_ *clientOptions) {})
+
 type clientOptions struct {
 	logger       *zap.Logger
 	tracer       trace.Tracer
@@ -29,6 +33,7 @@ type clientOptions struct {
 	userAgent    string
 	breaker      bool
 	roundTripper http.RoundTripper
+	tls          *tls.Config
 }
 
 type clientOptionFunc func(*clientOptions)
@@ -84,6 +89,24 @@ func WithClientUserAgent(userAgent string) ClientOption {
 	})
 }
 
+// WithClientSecure for HTTP.
+func WithClientSecure(sec *security.Config) (ClientOption, error) {
+	if !security.IsEnabled(sec) {
+		return none, nil
+	}
+
+	conf, err := security.NewTLSConfig(sec)
+	if err != nil {
+		return none, err
+	}
+
+	opt := clientOptionFunc(func(o *clientOptions) {
+		o.tls = conf
+	})
+
+	return opt, nil
+}
+
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	os := &clientOptions{tracer: tracer.NewNoopTracer()}
@@ -93,7 +116,13 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 	hrt := os.roundTripper
 	if hrt == nil {
-		hrt = Transport()
+		t := Transport()
+
+		if os.tls != nil {
+			t.TLSClientConfig = os.tls
+		}
+
+		hrt = t
 	}
 
 	if os.retry != nil {
@@ -105,7 +134,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	}
 
 	if os.logger != nil {
-		hrt = lzap.NewRoundTripper(os.logger, hrt)
+		hrt = logger.NewRoundTripper(os.logger, hrt)
 	}
 
 	if os.meter != nil {

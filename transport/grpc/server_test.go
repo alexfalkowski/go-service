@@ -17,7 +17,7 @@ func TestServer(t *testing.T) {
 		c := &grpc.Config{
 			Config: &server.Config{
 				Enabled:  true,
-				Security: &security.Config{Enabled: true, CertFile: "bob", KeyFile: "bob"},
+				Security: &security.Config{Enabled: true, Cert: "bob", Key: "bob"},
 			},
 		}
 
