@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.174.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.174.0) - 2024-05-02
+
+- [`a4e92e1`](https://github.com/alexfalkowski/go-service/commit/a4e92e1cd28eee42a6384ebdcfaa656154d20406) feat(security): load key pair from memory (#692)
+- [`1733b58`](https://github.com/alexfalkowski/go-service/commit/1733b5843e35e85bd1033dae47d0f45da20855c9) build(deps): bump bin from `63b9d75` to `253f8fe` (#691)
+- [`4b85341`](https://github.com/alexfalkowski/go-service/commit/4b85341b6fbb83dbf202282597df98e1909f2729) test(transport): split to different files (#690)
+
 ## [v1.173.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.173.1) - 2024-05-02
 
 - [`0ae6a79`](https://github.com/alexfalkowski/go-service/commit/0ae6a79ea2c81c22c7d7207709fee3c39cbf3a80) fix(deps): bump github.com/shirou/gopsutil/v3 from 3.24.3 to 3.24.4 (#689)
