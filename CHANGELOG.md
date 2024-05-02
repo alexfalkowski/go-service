@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.173.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.173.1) - 2024-05-02
+
+- [`0ae6a79`](https://github.com/alexfalkowski/go-service/commit/0ae6a79ea2c81c22c7d7207709fee3c39cbf3a80) fix(deps): bump github.com/shirou/gopsutil/v3 from 3.24.3 to 3.24.4 (#689)
+
 ## [v1.173.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.173.0) - 2024-05-01
 
 - [`e390e99`](https://github.com/alexfalkowski/go-service/commit/e390e994a6189217cefe7f71ecdd87170008f55d) feat(events): restructure receiver (#688)
