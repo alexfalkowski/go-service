@@ -18,17 +18,17 @@ func NewTLSConfig(sec *Config) (*tls.Config, error) {
 
 	dc, err := base64.StdEncoding.DecodeString(sec.GetCert())
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 
 	dk, err := base64.StdEncoding.DecodeString(sec.GetKey())
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 
 	cert, err := tls.X509KeyPair(dc, dk)
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 
 	c.Certificates = []tls.Certificate{cert}
