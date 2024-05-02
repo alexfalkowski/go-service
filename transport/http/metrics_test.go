@@ -18,10 +18,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func init() {
-	tracer.Register()
-}
-
 //nolint:dupl,funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {

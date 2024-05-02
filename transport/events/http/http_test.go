@@ -17,10 +17,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func init() {
-	tracer.Register()
-}
-
 func TestSendReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
 		lc := fxtest.NewLifecycle(t)
