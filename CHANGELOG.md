@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.176.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.176.1) - 2024-05-03
+
+- [`fb7ca4c`](https://github.com/alexfalkowski/go-service/commit/fb7ca4c4d0b411548f7b1bc6aee1fa1a3da987c6) fix(redis): stats can be nil (#698)
+
 ## [v1.176.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.176.0) - 2024-05-03
 
 - [`d97884a`](https://github.com/alexfalkowski/go-service/commit/d97884a22ec4acb10e04e35cfeaa71d0a0b9755c) feat(time): add network time (#697)
