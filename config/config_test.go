@@ -99,6 +99,7 @@ func TestValidMemConfig(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func verifyConfig(cfg config.Configurator) {
 	So(string(cfg.EnvironmentConfig()), ShouldEqual, "development")
 	So(server.IsEnabled(cfg.DebugConfig().Config), ShouldBeTrue)
@@ -126,6 +127,8 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.LimiterConfig().Pattern, ShouldEqual, "10-S")
 	So(cfg.LoggerConfig().Level, ShouldEqual, "info")
 	So(cfg.MetricsConfig().Kind, ShouldEqual, "prometheus")
+	So(cfg.NTPConfig().Host, ShouldEqual, "0.beevik-ntp.pool.ntp.org")
+	So(cfg.NTSConfig().Host, ShouldEqual, "time.cloudflare.com")
 	So(cfg.TracerConfig().Host, ShouldEqual, "http://localhost:4318/v1/traces")
 	So(cfg.TracerConfig().Kind, ShouldEqual, "otlp")
 	So(server.IsEnabled(cfg.GRPCConfig().Config), ShouldBeTrue)

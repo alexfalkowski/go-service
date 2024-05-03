@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/errors"
+	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/fx"
@@ -19,10 +20,10 @@ type CacheParams struct {
 }
 
 // NewCache for ristretto.
-func NewCache(params CacheParams) (Cache, error) {
+func NewCache(params CacheParams) (sr.Cache, error) {
 	c := params.Config
 	if c == nil {
-		return NewNoopCache(), nil
+		return sr.NewNoopCache(), nil
 	}
 
 	cfg := &ristretto.Config{

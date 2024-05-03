@@ -5,6 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 )
 
+// IsEnabled for cache.
+func IsEnabled(c *Config) bool {
+	return c != nil
+}
+
 // Config for cache.
 type Config struct {
 	Redis     *redis.Config     `yaml:"redis,omitempty" json:"redis,omitempty" toml:"redis,omitempty"`

@@ -262,7 +262,7 @@ token:
 
 ## Limiter
 
-The framework allows you to define a [limiter](https://github.com/ulule/limiter). This wull be applied to he different transports if enabled.
+The framework allows you to define a [limiter](https://github.com/ulule/limiter). This will be applied to he different transports if enabled.
 
 The different kinds are:
 - user-agent
@@ -277,6 +277,24 @@ limiter:
   enabled: true
   kind: user-agent
   pattern: 10-S
+```
+
+## Time
+
+The framework allows you use network time services. We use:
+- [ntp](https://github.com/beevik/ntp)
+- [nts](https://github.com/beevik/nts)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+time:
+  ntp:
+    host: 0.beevik-ntp.pool.ntp.org
+  nts:
+    host: time.cloudflare.com
 ```
 
 ## Transport

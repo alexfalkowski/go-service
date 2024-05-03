@@ -1,12 +1,13 @@
 package config
 
 import (
+	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 )
 
 func (cfg *Config) RedisConfig() *redis.Config {
-	if cfg.Cache == nil {
+	if !cache.IsEnabled(cfg.Cache) {
 		return nil
 	}
 
@@ -14,7 +15,7 @@ func (cfg *Config) RedisConfig() *redis.Config {
 }
 
 func (cfg *Config) RistrettoConfig() *ristretto.Config {
-	if cfg.Cache == nil {
+	if !cache.IsEnabled(cfg.Cache) {
 		return nil
 	}
 

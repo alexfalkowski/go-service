@@ -66,6 +66,14 @@
         "host": "http://localhost:4318/v1/traces"
       }
     },
+    "time": {
+      "ntp": {
+        "host": "0.beevik-ntp.pool.ntp.org"
+      },
+      "nts": {
+        "host": "time.cloudflare.com"
+      }
+    },
     "token": {
       "kind": "none"
     },

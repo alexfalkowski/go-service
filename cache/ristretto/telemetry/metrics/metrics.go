@@ -3,8 +3,8 @@ package metrics
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel/attribute"
