@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.175.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.175.0) - 2024-05-03
+
+- [`1262d72`](https://github.com/alexfalkowski/go-service/commit/1262d726ee7a390179be6f2c0a81d0f2db0faffc) feat(compressor): add s2 and zstd compressor (#696)
+
 ## [v1.174.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.174.0) - 2024-05-02
 
 - [`a4e92e1`](https://github.com/alexfalkowski/go-service/commit/a4e92e1cd28eee42a6384ebdcfaa656154d20406) feat(security): load key pair from memory (#692)
