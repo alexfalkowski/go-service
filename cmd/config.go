@@ -11,8 +11,13 @@ var inputFlag string
 
 // ReaderWriter for cmd.
 type ReaderWriter interface {
+	// Read bytes.
 	Read() ([]byte, error)
+
+	// Write bytes with files's mode.
 	Write(data []byte, mode fs.FileMode) error
+
+	// Kind of read writer.
 	Kind() string
 }
 

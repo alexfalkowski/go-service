@@ -10,7 +10,7 @@ import (
 
 func TestKey(t *testing.T) {
 	Convey("When I try to get an non existent key", t, func() {
-		k := meta.NewKey(&limiter.Config{Enabled: true, Kind: "bob"})
+		k := meta.NewKey(&limiter.Config{Kind: "bob"})
 
 		Convey("Then I should not get a key back", func() {
 			So(k, ShouldBeNil)

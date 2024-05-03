@@ -1,7 +1,6 @@
 environment = "development"
 
 [debug]
-enabled = true
 port = "6060"
 
 [cache.redis]
@@ -28,7 +27,6 @@ attempts = 3
 secret = "YWJjZGUxMjM0NQ=="
 
 [limiter]
-enabled = true
 kind = "user-agent"
 pattern = "10-S"
 
@@ -44,15 +42,12 @@ url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 url = "postgres://test:test@localhost:5432/test?sslmode=disable"
 
 [telemetry.logger]
-enabled = true
 level = "info"
 
 [telemetry.metrics]
-enabled = true
 kind = "prometheus"
 
 [telemetry.tracer]
-enabled = true
 kind = "otlp"
 host = "http://localhost:4318/v1/traces"
 
@@ -66,24 +61,17 @@ host = "time.cloudflare.com"
 kind = "none"
 
 [transport.http]
-enabled = true
 port = "11000"
 user_agent = "Service http/1.0"
-
-[transport.http.security]
-enabled = false
 
 [transport.http.retry]
 timeout = "1s"
 attempts = 3
 
 [transport.grpc]
-enabled = true
 port = "12000"
 user_agent = "Service grpc/1.0"
 
-[transport.grpc.security]
-enabled = false
 
 [transport.grpc.retry]
 timeout = "1s"

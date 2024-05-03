@@ -76,9 +76,8 @@ func NewSecurityConfig(c, k string) *security.Config {
 	sr.Must(err)
 
 	s := &security.Config{
-		Enabled: true,
-		Cert:    base64.StdEncoding.EncodeToString(cert),
-		Key:     base64.StdEncoding.EncodeToString(key),
+		Cert: base64.StdEncoding.EncodeToString(cert),
+		Key:  base64.StdEncoding.EncodeToString(key),
 	}
 
 	return s
@@ -89,7 +88,6 @@ func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Enabled:   true,
 				Port:      Port(),
 				UserAgent: "TestHTTP/1.0",
 				Retry:     NewRetry(),
@@ -97,7 +95,6 @@ func NewInsecureTransportConfig() *transport.Config {
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Enabled:   true,
 				Port:      Port(),
 				UserAgent: "TestGRPC/1.0",
 				Retry:     NewRetry(),
@@ -114,7 +111,6 @@ func NewSecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Enabled:   true,
 				Security:  s,
 				Port:      Port(),
 				UserAgent: "TestHTTP/1.0",
@@ -123,7 +119,6 @@ func NewSecureTransportConfig() *transport.Config {
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Enabled:   true,
 				Security:  s,
 				Port:      Port(),
 				UserAgent: "TestGRPC/1.0",
@@ -136,35 +131,31 @@ func NewSecureTransportConfig() *transport.Config {
 // NewPrometheusMetricsConfig for test.
 func NewPrometheusMetricsConfig() *metrics.Config {
 	return &metrics.Config{
-		Enabled: true,
-		Kind:    "prometheus",
+		Kind: "prometheus",
 	}
 }
 
 // NewOTLPMetricsConfig for test.
 func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
-		Enabled: true,
-		Kind:    "otlp",
-		Host:    "http://localhost:9009/otlp/v1/metrics",
+		Kind: "otlp",
+		Host: "http://localhost:9009/otlp/v1/metrics",
 	}
 }
 
 // NewOTLPTracerConfig for test.
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
-		Enabled: true,
-		Kind:    "otlp",
-		Host:    "localhost:4318",
+		Kind: "otlp",
+		Host: "localhost:4318",
 	}
 }
 
 // NewBaselimeTracerConfig for test.
 func NewBaselimeTracerConfig() *tracer.Config {
 	return &tracer.Config{
-		Enabled: true,
-		Kind:    "baselime",
-		Key:     os.Getenv("BASELIME_API_KEY"),
+		Kind: "baselime",
+		Key:  os.Getenv("BASELIME_API_KEY"),
 	}
 }
 
@@ -188,7 +179,6 @@ func NewCmdConfig(flag string) (*cmd.Config, error) {
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Enabled:   true,
 			Port:      Port(),
 			UserAgent: "TestHTTPDebug/1.0",
 			Retry:     NewRetry(),
@@ -200,7 +190,6 @@ func NewInsecureDebugConfig() *debug.Config {
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Enabled:   true,
 			Security:  NewSecureServerConfig(),
 			Port:      Port(),
 			UserAgent: "TestHTTPDebug/1.0",
@@ -220,7 +209,6 @@ func NewRedisConfig(host, compressor, marshaller string) *redis.Config {
 // NewLimiterConfig for test.
 func NewLimiterConfig(pattern string) *limiter.Config {
 	return &limiter.Config{
-		Enabled: true,
 		Pattern: pattern,
 	}
 }

@@ -13,7 +13,7 @@ import (
 func TestLogger(t *testing.T) {
 	Convey("Given I have an invalid zap config", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		cfg := logger.Config{Enabled: true}
+		cfg := logger.Config{}
 		c := zap.Config{}
 
 		Convey("When I try to get a logger", func() {
@@ -27,7 +27,7 @@ func TestLogger(t *testing.T) {
 	})
 
 	Convey("Given I have an invalid zap config", t, func() {
-		cfg := logger.Config{Enabled: true, Level: "bob"}
+		cfg := logger.Config{Level: "bob"}
 
 		Convey("When I try to build a logger config", func() {
 			_, err := logger.NewConfig(test.Environment, &cfg)

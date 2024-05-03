@@ -19,18 +19,19 @@ type Server struct {
 
 // Config for HTTP.
 type Config struct {
-	Enabled bool
-	Port    string
-	TLS     *tls.Config
+	Port string
+	TLS  *tls.Config
 }
 
 // NewServer for HTTP.
-func NewServer(server *http.Server, cfg Config) (*Server, error) {
-	s := &Server{server: server, tls: cfg.TLS}
+func NewServer(server *http.Server, cfg *Config) (*Server, error) {
+	s := &Server{server: server}
 
-	if !cfg.Enabled {
+	if cfg == nil {
 		return s, nil
 	}
+
+	s.tls = cfg.TLS
 
 	l, err := sn.Listener(cfg.Port)
 	if err != nil {
