@@ -49,7 +49,9 @@ environment: development
 
 We support the following:
 - None
-- [Snappy](https://github.com/golang/snappy)
+- [Zstd](https://github.com/klauspost/compress/tree/master/zstd)
+- [S2](https://github.com/klauspost/compress/tree/master/s2)
+- [Snappy](https://github.com/klauspost/compress/tree/master/snappy)
 
 ## Marshalling
 

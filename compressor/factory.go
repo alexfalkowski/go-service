@@ -20,6 +20,8 @@ type Factory struct {
 func NewFactory() *Factory {
 	f := &Factory{
 		configs: configs{
+			"zstd":   NewZstd(),
+			"s2":     NewS2(),
 			"snappy": NewSnappy(),
 			"none":   NewNone(),
 		},
