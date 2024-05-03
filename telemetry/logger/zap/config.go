@@ -10,13 +10,12 @@ import (
 
 // IsEnabled for zap.
 func IsEnabled(c *Config) bool {
-	return c != nil && c.Enabled
+	return c != nil
 }
 
 // Config for zap.
 type Config struct {
-	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`
-	Level   string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
+	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 
 // NewConfig for zap.

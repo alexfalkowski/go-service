@@ -122,7 +122,6 @@ func verifyConfig(cfg config.Configurator) {
 	So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
 	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, "1h")
 	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
-	So(cfg.LimiterConfig().Enabled, ShouldBeTrue)
 	So(cfg.LimiterConfig().Kind, ShouldEqual, "user-agent")
 	So(cfg.LimiterConfig().Pattern, ShouldEqual, "10-S")
 	So(cfg.LoggerConfig().Level, ShouldEqual, "info")

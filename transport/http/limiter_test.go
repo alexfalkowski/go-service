@@ -18,7 +18,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
+	Convey("Given I have all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -26,8 +26,6 @@ func TestGet(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
-		cfg.GRPC.Enabled = false
-
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
@@ -81,8 +79,6 @@ func TestLimiter(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
-			cfg.GRPC.Enabled = false
-
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 

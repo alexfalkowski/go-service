@@ -1,11 +1,10 @@
 environment: production
 transport:
   http:
-    enabled: true
     port: 11000
     retry:
       timeout: 1s
       attempts: 3
     user_agent: Service http/1.0
   grpc:
-    enabled: true
+    port: ""

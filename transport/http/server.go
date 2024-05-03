@@ -104,14 +104,14 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{Server: svr}, nil
 }
 
-func config(cfg *Config) (sh.Config, error) {
-	c := sh.Config{}
-
+//nolint:nilnil
+func config(cfg *Config) (*sh.Config, error) {
 	if !IsEnabled(cfg) {
-		return c, nil
+		return nil, nil
 	}
 
-	c.Enabled = true
+	c := &sh.Config{}
+
 	c.Port = cfg.Port
 
 	if !security.IsEnabled(cfg.Security) {
@@ -119,13 +119,9 @@ func config(cfg *Config) (sh.Config, error) {
 	}
 
 	tls, err := security.NewTLSConfig(cfg.Security)
-	if err != nil {
-		return c, err
-	}
-
 	c.TLS = tls
 
-	return c, nil
+	return c, err
 }
 
 func customMatcher(key string) (string, bool) {

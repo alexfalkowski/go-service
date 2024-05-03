@@ -7,7 +7,7 @@ import (
 
 // IsEnabled for server.
 func IsEnabled(c *Config) bool {
-	return c != nil && c.Enabled
+	return c != nil
 }
 
 // UserAgent for server.
@@ -21,7 +21,6 @@ func UserAgent(c *Config) string {
 
 // Config for server.
 type Config struct {
-	Enabled   bool             `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`
 	Security  *security.Config `yaml:"security,omitempty" json:"security,omitempty" toml:"security,omitempty"`
 	Port      string           `yaml:"port,omitempty" json:"port,omitempty" toml:"port,omitempty"`
 	Retry     *retry.Config    `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`

@@ -6,14 +6,13 @@ import (
 
 // IsEnabled for security.
 func IsEnabled(c *Config) bool {
-	return c != nil && c.Enabled
+	return c != nil
 }
 
 // Config for security.
 type Config struct {
-	Enabled bool   `yaml:"enabled,omitempty" json:"enabled,omitempty" toml:"enabled,omitempty"`
-	Cert    string `yaml:"cert,omitempty" json:"cert,omitempty" toml:"cert,omitempty"`
-	Key     string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+	Cert string `yaml:"cert,omitempty" json:"cert,omitempty" toml:"cert,omitempty"`
+	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 }
 
 // HasKeyPair for security.

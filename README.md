@@ -175,7 +175,6 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   logger:
-    enabled: true
     level: info
 ```
 
@@ -196,7 +195,6 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   metrics:
-    enabled: true
     kind: prometheus
 ```
 
@@ -207,7 +205,6 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   metrics:
-    enabled: true
     kind: otlp
     host: http://localhost:9009/otlp/v1/metrics
 ```
@@ -229,7 +226,6 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   tracer:
-    enabled: true
     kind: baseline
     key: api-key
 ```
@@ -241,7 +237,6 @@ To configure, please specify the following:
 ```yaml
 telemetry:
   tracer:
-    enabled: true
     kind: otlp
     host: localhost:4318
     secure: false
@@ -262,7 +257,7 @@ token:
 
 ## Limiter
 
-The framework allows you to define a [limiter](https://github.com/ulule/limiter). This will be applied to he different transports if enabled.
+The framework allows you to define a [limiter](https://github.com/ulule/limiter). This will be applied to the different transports.
 
 The different kinds are:
 - user-agent
@@ -274,7 +269,6 @@ To configure, please specify the following:
 
 ```yaml
 limiter:
-  enabled: true
   kind: user-agent
   pattern: 10-S
 ```
@@ -322,13 +316,11 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
-    enabled: true
     port: 8000
     retry:
       timeout: 1s
       attempts: 3
   grpc:
-    enabled: true
     port: 9000
     retry:
       timeout: 1s
@@ -341,12 +333,10 @@ If you would like to enable TLS, do the following:
 transport:
   http:
     security:
-      enabled: true
       cert: PEM certificate base64 encoded
       key: PEM certificate base64 encoded
   grpc:
     security:
-      enabled: true
       cert: PEM certificate base64 encoded
       key: PEM certificate base64 encoded
 ```
@@ -397,7 +387,6 @@ To configure, please specify the following:
 
 ```yaml
 debug:
-  enabled: true
   port: 6060
 ```
 
@@ -406,7 +395,6 @@ If you would like to enable TLS, do the following:
 ```yaml
 debug:
   security:
-    enabled: true
     cert: PEM certificate base64 encoded
     key: PEM certificate base64 encoded
 ```

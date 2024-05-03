@@ -1,4 +1,4 @@
 environment: production
 transport:
   http:
-    enabled: true
+    port: ""

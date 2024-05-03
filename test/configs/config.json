@@ -1,7 +1,6 @@
 {
     "environment": "development",
     "debug": {
-      "enabled": true,
       "port": "6060"
     },
     "cache": {
@@ -30,7 +29,6 @@
       "secret": "YWJjZGUxMjM0NQ=="
     },
     "limiter": {
-      "enabled": true,
       "kind": "user-agent",
       "pattern": "10-S"
     },
@@ -53,15 +51,12 @@
     },
     "telemetry": {
       "logger": {
-        "enabled": true,
         "level": "info"
       },
       "metrics": {
-        "enabled": true,
         "kind": "prometheus"
       },
       "tracer": {
-        "enabled": true,
         "kind": "otlp",
         "host": "http://localhost:4318/v1/traces"
       }
@@ -79,11 +74,7 @@
     },
     "transport": {
       "http": {
-        "enabled": true,
         "port": "11000",
-        "security": {
-          "enabled": false
-        },
         "retry": {
           "timeout": "1s",
           "attempts": 3
@@ -91,11 +82,7 @@
         "user_agent": "Service http/1.0"
       },
       "grpc": {
-        "enabled": true,
         "port": "12000",
-        "security": {
-          "enabled": false
-        },
         "retry": {
           "timeout": "1s",
           "attempts": 3

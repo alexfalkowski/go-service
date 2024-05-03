@@ -1,5 +1,4 @@
 environment: production
 telemetry:
   logger:
-    enabled: true
     level: info

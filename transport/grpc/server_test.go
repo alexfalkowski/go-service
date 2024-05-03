@@ -16,8 +16,7 @@ func TestServer(t *testing.T) {
 	Convey("Given I have invalid creds", t, func() {
 		c := &grpc.Config{
 			Config: &server.Config{
-				Enabled:  true,
-				Security: &security.Config{Enabled: true, Cert: "bob", Key: "bob"},
+				Security: &security.Config{Cert: "bob", Key: "bob"},
 			},
 		}
 
@@ -35,7 +34,7 @@ func TestServer(t *testing.T) {
 		logger := test.NewLogger(lc)
 
 		c := test.NewInsecureTransportConfig()
-		c.GRPC.Security = &security.Config{Enabled: true}
+		c.GRPC.Security = &security.Config{}
 
 		Convey("When I create a server", func() {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: metrics.NewNoopMeter()}

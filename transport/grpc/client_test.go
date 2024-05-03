@@ -10,7 +10,7 @@ import (
 
 func TestClient(t *testing.T) {
 	Convey("Given I have invalid creds", t, func() {
-		c := &security.Config{Enabled: true, Cert: "bob", Key: "bob"}
+		c := &security.Config{Cert: "bob", Key: "bob"}
 
 		Convey("When I create an option", func() {
 			_, err := grpc.WithClientSecure(c)
@@ -22,7 +22,7 @@ func TestClient(t *testing.T) {
 	})
 
 	Convey("Given I have secure creds", t, func() {
-		c := &security.Config{Enabled: true}
+		c := &security.Config{}
 
 		Convey("When I create an option", func() {
 			_, err := grpc.WithClientSecure(c)

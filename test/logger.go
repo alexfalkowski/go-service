@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/runtime"
 	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -8,9 +9,13 @@ import (
 
 // NewLogger for test.
 func NewLogger(lc fx.Lifecycle) *zap.Logger {
-	c := &logger.Config{Enabled: true, Level: "info"}
-	cfg, _ := logger.NewConfig(Environment, c)
-	logger, _ := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: c, ZapConfig: cfg, Version: Version})
+	c := &logger.Config{Level: "info"}
+
+	cfg, err := logger.NewConfig(Environment, c)
+	runtime.Must(err)
+
+	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: c, ZapConfig: cfg, Version: Version})
+	runtime.Must(err)
 
 	return logger
 }
