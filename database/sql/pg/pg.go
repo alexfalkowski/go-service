@@ -21,12 +21,11 @@ type OpenParams struct {
 
 // Open for pg.
 func Open(params OpenParams) (*mssqlx.DBs, error) {
-	c := params.Config
-	if c == nil {
+	if !IsEnabled(params.Config) {
 		return &mssqlx.DBs{}, nil
 	}
 
-	return driver.Open(params.Lifecycle, "pg", c.Config)
+	return driver.Open(params.Lifecycle, "pg", params.Config.Config)
 }
 
 var once sync.Once
