@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	rim "github.com/alexfalkowski/go-service/cache/ristretto/telemetry/metrics"
 	gr "github.com/alexfalkowski/go-service/redis"
+	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/go-redis/cache/v8"
@@ -47,7 +48,7 @@ func (c *Cache) NewRedisClient() gr.Client {
 }
 
 // NewRistrettoCache for test.
-func (c *Cache) NewRistrettoCache() ristretto.Cache {
+func (c *Cache) NewRistrettoCache() sr.Cache {
 	cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
 	ca, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: c.Lifecycle, Config: cfg, Version: Version})

@@ -23,11 +23,15 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/marshaller"
+	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
+	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time/ntp"
+	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -193,7 +197,7 @@ func redisCache(c *v8.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func ristrettoCache(c ristretto.Cache) {
+func ristrettoCache(c sr.Cache) {
 	c.Del("test")
 }
 
@@ -211,6 +215,13 @@ func webHooks(_ *h.Webhook, _ *geh.Receiver) {
 
 func ver() version.Version {
 	return test.Version
+}
+
+func timeServices(nt *ntp.Service, ns *nts.Service) {
+	nt.Query()
+	nt.Time()
+
+	ns.Query()
 }
 
 func shutdown(s fx.Shutdowner) {
@@ -231,13 +242,13 @@ func opts() []fx.Option {
 
 	return []fx.Option{
 		fx.NopLogger,
-		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
-		cache.RedisModule, cache.RistrettoModule, compressor.Module, marshaller.Module,
+		cache.Module, compressor.Module, marshaller.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache),
-		fx.Provide(ver), fx.Invoke(meter),
+		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(timeServices),
 	}
 }

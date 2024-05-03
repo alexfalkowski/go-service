@@ -14,6 +14,8 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/time/ntp"
+	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 )
@@ -36,6 +38,8 @@ type Configurator interface {
 	LimiterConfig() *limiter.Config
 	LoggerConfig() *zap.Config
 	MetricsConfig() *metrics.Config
+	NTPConfig() *ntp.Config
+	NTSConfig() *nts.Config
 	PGConfig() *pg.Config
 	RedisConfig() *redis.Config
 	RistrettoConfig() *ristretto.Config
@@ -77,6 +81,14 @@ func loggerConfig(cfg Configurator) *zap.Config {
 
 func metricsConfig(cfg Configurator) *metrics.Config {
 	return cfg.MetricsConfig()
+}
+
+func ntpConfig(cfg Configurator) *ntp.Config {
+	return cfg.NTPConfig()
+}
+
+func ntsConfig(cfg Configurator) *nts.Config {
+	return cfg.NTSConfig()
 }
 
 func pgConfig(cfg Configurator) *pg.Config {

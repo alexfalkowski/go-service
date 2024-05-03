@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -26,6 +27,7 @@ type Config struct {
 	Limiter     *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
 	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
 	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
+	Time        *time.Config      `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
 	Token       *token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
 	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 }
@@ -43,7 +45,7 @@ func (cfg *Config) FeatureConfig() *feature.Config {
 }
 
 func (cfg *Config) GRPCConfig() *grpc.Config {
-	if cfg.Transport == nil {
+	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -55,7 +57,7 @@ func (cfg *Config) HooksConfig() *hooks.Config {
 }
 
 func (cfg *Config) HTTPConfig() *http.Config {
-	if cfg.Transport == nil {
+	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -67,7 +69,7 @@ func (cfg *Config) LimiterConfig() *limiter.Config {
 }
 
 func (cfg *Config) PGConfig() *pg.Config {
-	if cfg.SQL == nil {
+	if !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
 

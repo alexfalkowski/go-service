@@ -6,6 +6,11 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 )
 
+// IsEnabled for telemetry.
+func IsEnabled(c *Config) bool {
+	return c != nil
+}
+
 // Config for telemetry.
 type Config struct {
 	Logger  *zap.Config     `yaml:"logger,omitempty" json:"logger,omitempty" toml:"logger,omitempty"`

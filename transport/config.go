@@ -5,6 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 )
 
+// IsEnabled for transport.
+func IsEnabled(c *Config) bool {
+	return c != nil
+}
+
 // Config for transport.
 type Config struct {
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
