@@ -170,7 +170,7 @@ func NewBaselimeTracerConfig() *tracer.Config {
 
 // NewPGConfig for test.
 func NewPGConfig() *pg.Config {
-	return &pg.Config{Config: config.Config{
+	return &pg.Config{Config: &config.Config{
 		Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},
 		Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},
 		MaxOpenConns:    5,

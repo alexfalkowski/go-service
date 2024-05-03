@@ -243,7 +243,7 @@ func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
-		telemetry.Module, metrics.Module, health.Module, sql.PostgreSQLModule, tm, hooks.Module,
+		telemetry.Module, metrics.Module, health.Module, sql.Module, tm, hooks.Module,
 		cache.Module, compressor.Module, marshaller.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),

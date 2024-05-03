@@ -481,7 +481,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		cfg := &pg.Config{Config: config.Config{
+		cfg := &pg.Config{Config: &config.Config{
 			Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}},
 			Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5444/test?sslmode=disable"}},
 			MaxOpenConns:    5,

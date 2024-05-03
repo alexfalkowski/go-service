@@ -1,6 +1,11 @@
 package config
 
-// Config for SQL DB.
+// IsEnabled for SQL.
+func IsEnabled(c *Config) bool {
+	return c != nil
+}
+
+// Config for SQL.
 type Config struct {
 	Masters         []DSN  `yaml:"masters,omitempty" json:"masters,omitempty" toml:"masters,omitempty"`
 	Slaves          []DSN  `yaml:"slaves,omitempty" json:"slaves,omitempty" toml:"slaves,omitempty"`
@@ -9,7 +14,7 @@ type Config struct {
 	ConnMaxLifetime string `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty"`
 }
 
-// DSN for SQL DB.
+// DSN for SQL.
 type DSN struct {
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }

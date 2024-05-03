@@ -33,7 +33,7 @@ func Register(name string, driver driver.Driver, t trace.Tracer, l *zap.Logger) 
 }
 
 // Open a DB pool.
-func Open(lc fx.Lifecycle, name string, cfg config.Config) (*mssqlx.DBs, error) {
+func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 	for i, m := range cfg.Masters {
 		masters[i] = m.URL
