@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.176.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.176.2) - 2024-05-03
+
+- [`8896ba1`](https://github.com/alexfalkowski/go-service/commit/8896ba1452b3020c8fdd680e15c16c7bbdcde157) fix(sql): move module (#699)
+
 ## [v1.176.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.176.1) - 2024-05-03
 
 - [`fb7ca4c`](https://github.com/alexfalkowski/go-service/commit/fb7ca4c4d0b411548f7b1bc6aee1fa1a3da987c6) fix(redis): stats can be nil (#698)
