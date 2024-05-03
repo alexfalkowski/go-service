@@ -25,7 +25,12 @@ type OptionsParams struct {
 // NewOptions for redis.
 func NewOptions(params OptionsParams) (*cache.Options, error) {
 	if !IsEnabled(params.Config) {
-		return &cache.Options{LocalCache: cache.NewTinyLFU(1, time.Minute)}, nil
+		opts := &cache.Options{
+			StatsEnabled: true,
+			LocalCache:   cache.NewTinyLFU(1, time.Minute),
+		}
+
+		return opts, nil
 	}
 
 	fm, err := params.Marshaller.Create(params.Config.Marshaller)
