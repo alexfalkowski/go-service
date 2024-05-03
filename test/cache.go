@@ -34,7 +34,7 @@ func (c *Cache) NewRedisCache() (*cache.Cache, error) {
 	}
 
 	cache := redis.NewCache(opts)
-	rem.Register(cache, Version, c.Meter)
+	rem.Register(cache, c.Meter)
 
 	return cache, nil
 }
@@ -54,7 +54,7 @@ func (c *Cache) NewRistrettoCache() sr.Cache {
 	ca, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: c.Lifecycle, Config: cfg, Version: Version})
 	runtime.Must(err)
 
-	rim.Register(ca, Version, c.Meter)
+	rim.Register(ca, c.Meter)
 
 	return ca
 }

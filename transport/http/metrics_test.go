@@ -36,7 +36,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
-		sm.Register(dbs, test.Version, m)
+		sm.Register(dbs, m)
 
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()
@@ -102,7 +102,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
 
-		sm.Register(dbs, test.Version, m)
+		sm.Register(dbs, m)
 
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()

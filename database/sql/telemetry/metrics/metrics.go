@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 	"go.opentelemetry.io/otel/attribute"
@@ -14,13 +12,8 @@ import (
 )
 
 // Register for metrics.
-func Register(dbs *mssqlx.DBs, version version.Version, meter metric.Meter) {
-	opts := metric.WithAttributes(
-		attribute.Key("name").String(os.ExecutableName()),
-		attribute.Key("version").String(string(version)),
-		attribute.Key("db_driver").String(dbs.DriverName()),
-	)
-
+func Register(dbs *mssqlx.DBs, meter metric.Meter) {
+	opts := metric.WithAttributes(attribute.Key("db_driver").String(dbs.DriverName()))
 	maxOpen := metrics.MustInt64ObservableGauge(meter, "sql_max_open_total", "Maximum number of open connections to the database.")
 	open := metrics.MustInt64ObservableGauge(meter, "sql_open_total", "The number of established connections both in use and idle.")
 	inUse := metrics.MustInt64ObservableGauge(meter, "sql_in_use_total", "The number of connections currently in use.")
