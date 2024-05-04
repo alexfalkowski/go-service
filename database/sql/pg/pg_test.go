@@ -307,7 +307,6 @@ func TestStatementQuery(t *testing.T) {
 
 			defer stmt.Close()
 
-			//nolint:execinquery
 			rows, err := stmt.QueryContext(ctx, "public")
 
 			Convey("Then I should have valid data", func() {
@@ -464,7 +463,6 @@ func TestInvalidStatementQuery(t *testing.T) {
 
 			defer stmt.Close()
 
-			//nolint:execinquery
 			_, err = stmt.QueryContext(ctx, 1)
 
 			Convey("Then I should have an error", func() {
