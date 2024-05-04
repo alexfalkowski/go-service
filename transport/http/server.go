@@ -54,17 +54,12 @@ type ServerParams struct {
 	Meter      metric.Meter
 	Limiter    *v3.Limiter
 	Key        limiter.KeyFunc
-	Handlers   []negroni.Handler
+	Handlers   []negroni.Handler `optional:"true"`
 }
 
 // Server for HTTP.
 type Server struct {
 	*server.Server
-}
-
-// ServerHandlers for HTTP.
-func ServerHandlers() []negroni.Handler {
-	return nil
 }
 
 // NewServer for HTTP.

@@ -2,6 +2,9 @@ package config
 
 import (
 	"github.com/alexfalkowski/go-service/cache"
+	"github.com/alexfalkowski/go-service/cache/redis"
+	"github.com/alexfalkowski/go-service/cache/ristretto"
+	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -11,11 +14,23 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
+	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time/ntp"
+	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 )
+
+// NewConfig for config.
+func NewConfig(i *cmd.InputConfig) (*Config, error) {
+	c := &Config{}
+
+	return c, i.Unmarshal(c)
+}
 
 // Config for the service.
 type Config struct {
@@ -32,19 +47,19 @@ type Config struct {
 	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 }
 
-func (cfg *Config) DebugConfig() *debug.Config {
+func debugConfig(cfg *Config) *debug.Config {
 	return cfg.Debug
 }
 
-func (cfg *Config) EnvironmentConfig() env.Environment {
+func environmentConfig(cfg *Config) env.Environment {
 	return cfg.Environment
 }
 
-func (cfg *Config) FeatureConfig() *feature.Config {
+func featureConfig(cfg *Config) *feature.Config {
 	return cfg.Feature
 }
 
-func (cfg *Config) GRPCConfig() *grpc.Config {
+func grpcConfig(cfg *Config) *grpc.Config {
 	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
@@ -52,11 +67,11 @@ func (cfg *Config) GRPCConfig() *grpc.Config {
 	return cfg.Transport.GRPC
 }
 
-func (cfg *Config) HooksConfig() *hooks.Config {
+func hooksConfig(cfg *Config) *hooks.Config {
 	return cfg.Hooks
 }
 
-func (cfg *Config) HTTPConfig() *http.Config {
+func httpConfig(cfg *Config) *http.Config {
 	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
@@ -64,11 +79,43 @@ func (cfg *Config) HTTPConfig() *http.Config {
 	return cfg.Transport.HTTP
 }
 
-func (cfg *Config) LimiterConfig() *limiter.Config {
+func limiterConfig(cfg *Config) *limiter.Config {
 	return cfg.Limiter
 }
 
-func (cfg *Config) PGConfig() *pg.Config {
+func loggerConfig(cfg *Config) *zap.Config {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
+		return nil
+	}
+
+	return cfg.Telemetry.Logger
+}
+
+func metricsConfig(cfg *Config) *metrics.Config {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
+		return nil
+	}
+
+	return cfg.Telemetry.Metrics
+}
+
+func ntpConfig(cfg *Config) *ntp.Config {
+	if !time.IsEnabled(cfg.Time) {
+		return nil
+	}
+
+	return cfg.Time.NTP
+}
+
+func ntsConfig(cfg *Config) *nts.Config {
+	if !time.IsEnabled(cfg.Time) {
+		return nil
+	}
+
+	return cfg.Time.NTS
+}
+
+func pgConfig(cfg *Config) *pg.Config {
 	if !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
@@ -76,6 +123,30 @@ func (cfg *Config) PGConfig() *pg.Config {
 	return cfg.SQL.PG
 }
 
-func (cfg *Config) TokenConfig() *token.Config {
+func redisConfig(cfg *Config) *redis.Config {
+	if !cache.IsEnabled(cfg.Cache) {
+		return nil
+	}
+
+	return cfg.Cache.Redis
+}
+
+func ristrettoConfig(cfg *Config) *ristretto.Config {
+	if !cache.IsEnabled(cfg.Cache) {
+		return nil
+	}
+
+	return cfg.Cache.Ristretto
+}
+
+func tokenConfig(cfg *Config) *token.Config {
 	return cfg.Token
+}
+
+func tracerConfig(cfg *Config) *tracer.Config {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
+		return nil
+	}
+
+	return cfg.Telemetry.Tracer
 }

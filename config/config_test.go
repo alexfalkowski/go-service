@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
@@ -29,7 +30,7 @@ func TestValidEnvConfig(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("When I try to parse the configuration file", func() {
-				cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
+				cfg, err := config.NewConfig(&cmd.InputConfig{Config: c})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -48,7 +49,7 @@ func TestValidFileConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
+			cfg, err := config.NewConfig(&cmd.InputConfig{Config: c})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -64,7 +65,7 @@ func TestMissingFileConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
+			_, err := config.NewConfig(&cmd.InputConfig{Config: c})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -86,7 +87,7 @@ func TestValidMemConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg, err := config.NewConfigurator(&cmd.InputConfig{Config: c})
+			cfg, err := config.NewConfig(&cmd.InputConfig{Config: c})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -100,46 +101,46 @@ func TestValidMemConfig(t *testing.T) {
 }
 
 //nolint:funlen
-func verifyConfig(cfg config.Configurator) {
-	So(string(cfg.EnvironmentConfig()), ShouldEqual, "development")
-	So(server.IsEnabled(cfg.DebugConfig().Config), ShouldBeTrue)
-	So(cfg.DebugConfig().Port, ShouldEqual, "6060")
-	So(security.IsEnabled(cfg.DebugConfig().Config.Security), ShouldBeFalse)
-	So(cfg.FeatureConfig().Kind, ShouldEqual, "flipt")
-	So(cfg.FeatureConfig().Host, ShouldEqual, "localhost:9000")
-	So(cfg.HooksConfig().Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")
-	So(cfg.RedisConfig().Compressor, ShouldEqual, "snappy")
-	So(cfg.RedisConfig().Marshaller, ShouldEqual, "proto")
-	So(cfg.RedisConfig().Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
-	So(cfg.RistrettoConfig().BufferItems, ShouldEqual, 64)
-	So(cfg.RistrettoConfig().MaxCost, ShouldEqual, 100000000)
-	So(cfg.RistrettoConfig().NumCounters, ShouldEqual, 10000000)
-	So(len(cfg.PGConfig().Masters), ShouldEqual, 1)
-	So(cfg.PGConfig().Masters[0].URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
-	So(len(cfg.PGConfig().Slaves), ShouldEqual, 1)
-	So(cfg.PGConfig().Slaves[0].URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
-	So(cfg.PGConfig().MaxIdleConns, ShouldEqual, 5)
-	So(cfg.PGConfig().MaxOpenConns, ShouldEqual, 5)
-	So(cfg.PGConfig().ConnMaxLifetime, ShouldEqual, "1h")
-	So(cfg.TokenConfig().Kind, ShouldEqual, "none")
-	So(cfg.LimiterConfig().Kind, ShouldEqual, "user-agent")
-	So(cfg.LimiterConfig().Pattern, ShouldEqual, "10-S")
-	So(cfg.LoggerConfig().Level, ShouldEqual, "info")
-	So(cfg.MetricsConfig().Kind, ShouldEqual, "prometheus")
-	So(cfg.NTPConfig().Host, ShouldEqual, "0.beevik-ntp.pool.ntp.org")
-	So(cfg.NTSConfig().Host, ShouldEqual, "time.cloudflare.com")
-	So(cfg.TracerConfig().Host, ShouldEqual, "http://localhost:4318/v1/traces")
-	So(cfg.TracerConfig().Kind, ShouldEqual, "otlp")
-	So(server.IsEnabled(cfg.GRPCConfig().Config), ShouldBeTrue)
-	So(cfg.GRPCConfig().Port, ShouldEqual, "12000")
-	So(cfg.GRPCConfig().Retry.Attempts, ShouldEqual, 3)
-	So(cfg.GRPCConfig().Retry.Timeout, ShouldEqual, "1s")
-	So(cfg.GRPCConfig().UserAgent, ShouldEqual, "Service grpc/1.0")
-	So(security.IsEnabled(cfg.GRPCConfig().Config.Security), ShouldBeFalse)
-	So(server.IsEnabled(cfg.HTTPConfig().Config), ShouldBeTrue)
-	So(cfg.HTTPConfig().Port, ShouldEqual, "11000")
-	So(cfg.HTTPConfig().Retry.Attempts, ShouldEqual, 3)
-	So(cfg.HTTPConfig().Retry.Timeout, ShouldEqual, "1s")
-	So(cfg.HTTPConfig().UserAgent, ShouldEqual, "Service http/1.0")
-	So(security.IsEnabled(cfg.HTTPConfig().Config.Security), ShouldBeFalse)
+func verifyConfig(cfg *config.Config) {
+	So(string(cfg.Environment), ShouldEqual, "development")
+	So(debug.IsEnabled(cfg.Debug), ShouldBeTrue)
+	So(cfg.Debug.Port, ShouldEqual, "6060")
+	So(security.IsEnabled(cfg.Debug.Security), ShouldBeFalse)
+	So(cfg.Feature.Kind, ShouldEqual, "flipt")
+	So(cfg.Feature.Host, ShouldEqual, "localhost:9000")
+	So(cfg.Hooks.Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")
+	So(cfg.Cache.Redis.Compressor, ShouldEqual, "snappy")
+	So(cfg.Cache.Redis.Marshaller, ShouldEqual, "proto")
+	So(cfg.Cache.Redis.Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
+	So(cfg.Cache.Ristretto.BufferItems, ShouldEqual, 64)
+	So(cfg.Cache.Ristretto.MaxCost, ShouldEqual, 100000000)
+	So(cfg.Cache.Ristretto.NumCounters, ShouldEqual, 10000000)
+	So(len(cfg.SQL.PG.Masters), ShouldEqual, 1)
+	So(cfg.SQL.PG.Masters[0].URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
+	So(len(cfg.SQL.PG.Slaves), ShouldEqual, 1)
+	So(cfg.SQL.PG.Slaves[0].URL, ShouldEqual, "postgres://test:test@localhost:5432/test?sslmode=disable")
+	So(cfg.SQL.PG.MaxIdleConns, ShouldEqual, 5)
+	So(cfg.SQL.PG.MaxOpenConns, ShouldEqual, 5)
+	So(cfg.SQL.PG.ConnMaxLifetime, ShouldEqual, "1h")
+	So(cfg.Token.Kind, ShouldEqual, "none")
+	So(cfg.Limiter.Kind, ShouldEqual, "user-agent")
+	So(cfg.Limiter.Pattern, ShouldEqual, "10-S")
+	So(cfg.Telemetry.Logger.Level, ShouldEqual, "info")
+	So(cfg.Telemetry.Metrics.Kind, ShouldEqual, "prometheus")
+	So(cfg.Time.NTP.Host, ShouldEqual, "0.beevik-ntp.pool.ntp.org")
+	So(cfg.Time.NTS.Host, ShouldEqual, "time.cloudflare.com")
+	So(cfg.Telemetry.Tracer.Host, ShouldEqual, "http://localhost:4318/v1/traces")
+	So(cfg.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
+	So(server.IsEnabled(cfg.Transport.GRPC.Config), ShouldBeTrue)
+	So(cfg.Transport.GRPC.Port, ShouldEqual, "12000")
+	So(cfg.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
+	So(cfg.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
+	So(cfg.Transport.GRPC.UserAgent, ShouldEqual, "Service grpc/1.0")
+	So(security.IsEnabled(cfg.Transport.GRPC.Security), ShouldBeFalse)
+	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
+	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
+	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
+	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
+	So(cfg.Transport.HTTP.UserAgent, ShouldEqual, "Service http/1.0")
+	So(security.IsEnabled(cfg.Transport.HTTP.Security), ShouldBeFalse)
 }

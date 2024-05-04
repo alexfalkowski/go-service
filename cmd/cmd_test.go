@@ -34,7 +34,6 @@ import (
 	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
-	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
 	v8 "github.com/go-redis/cache/v8"
@@ -233,18 +232,11 @@ func shutdown(s fx.Shutdowner) {
 }
 
 func opts() []fx.Option {
-	tm := fx.Options(
-		transport.Module,
-		fx.Provide(grpc.UnaryServerInterceptor),
-		fx.Provide(grpc.StreamServerInterceptor),
-		fx.Provide(http.ServerHandlers),
-	)
-
 	return []fx.Option{
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
-		telemetry.Module, metrics.Module, health.Module, sql.Module, tm, hooks.Module,
-		cache.Module, compressor.Module, marshaller.Module,
+		telemetry.Module, metrics.Module, health.Module, sql.Module, hooks.Module,
+		cache.Module, compressor.Module, marshaller.Module, transport.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
