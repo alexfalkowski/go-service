@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.178.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.178.0) - 2024-05-04
+
+- [`98d8e16`](https://github.com/alexfalkowski/go-service/commit/98d8e16057f76c3b0df02a0058eaafec8870265b) feat(config): simplify by removing configurator (#702)
+- [`fcf7edf`](https://github.com/alexfalkowski/go-service/commit/fcf7edfb8a0c6a0fbce73c06012ab1ac58736648) build(lint): remove execinquery (#701)
+
 ## [v1.177.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.177.0) - 2024-05-03
 
 - [`888346f`](https://github.com/alexfalkowski/go-service/commit/888346fc115720337ed90d053067ec6029b09fc4) feat(config): remove enabled (#700)
