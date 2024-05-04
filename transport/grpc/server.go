@@ -36,18 +36,8 @@ type ServerParams struct {
 	Meter      metric.Meter
 	Limiter    *v3.Limiter
 	Key        limiter.KeyFunc
-	Unary      []grpc.UnaryServerInterceptor
-	Stream     []grpc.StreamServerInterceptor
-}
-
-// UnaryServerInterceptor for gRPC.
-func UnaryServerInterceptor() []grpc.UnaryServerInterceptor {
-	return nil
-}
-
-// StreamServerInterceptor for gRPC.
-func StreamServerInterceptor() []grpc.StreamServerInterceptor {
-	return nil
+	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
+	Stream     []grpc.StreamServerInterceptor `optional:"true"`
 }
 
 // Server for gRPC.
