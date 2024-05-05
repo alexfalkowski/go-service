@@ -5,8 +5,8 @@ import (
 )
 
 // IsEnabled for pg.
-func IsEnabled(c *Config) bool {
-	return c != nil && config.IsEnabled(c.Config)
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && config.IsEnabled(cfg.Config)
 }
 
 // Config for pg.

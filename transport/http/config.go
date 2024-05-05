@@ -5,17 +5,17 @@ import (
 )
 
 // IsEnabled for HTTP.
-func IsEnabled(c *Config) bool {
-	return c != nil && server.IsEnabled(c.Config)
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && server.IsEnabled(cfg.Config)
 }
 
 // UserAgent for HTTP.
-func UserAgent(c *Config) string {
-	if !IsEnabled(c) {
+func UserAgent(cfg *Config) string {
+	if !IsEnabled(cfg) {
 		return ""
 	}
 
-	return server.UserAgent(c.Config)
+	return server.UserAgent(cfg.Config)
 }
 
 // Config for HTTP.

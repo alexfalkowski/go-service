@@ -5,14 +5,14 @@ import (
 )
 
 // IsEnabled for gRPC.
-func IsEnabled(c *Config) bool {
-	return c != nil && server.IsEnabled(c.Config)
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && server.IsEnabled(cfg.Config)
 }
 
 // UserAgent for gRPC.
-func UserAgent(c *Config) string {
-	if IsEnabled(c) {
-		return server.UserAgent(c.Config)
+func UserAgent(cfg *Config) string {
+	if IsEnabled(cfg) {
+		return server.UserAgent(cfg.Config)
 	}
 
 	return ""

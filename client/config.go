@@ -5,6 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/security"
 )
 
+// IsEnabled for server.
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil
+}
+
 // Config for client.
 type Config struct {
 	Host      string           `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`

@@ -6,17 +6,17 @@ import (
 )
 
 // IsEnabled for server.
-func IsEnabled(c *Config) bool {
-	return c != nil
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil
 }
 
 // UserAgent for server.
-func UserAgent(c *Config) string {
-	if !IsEnabled(c) {
+func UserAgent(cfg *Config) string {
+	if !IsEnabled(cfg) {
 		return ""
 	}
 
-	return c.UserAgent
+	return cfg.UserAgent
 }
 
 // Config for server.

@@ -1,17 +1,22 @@
 package time
 
-import (
-	"github.com/alexfalkowski/go-service/time/ntp"
-	"github.com/alexfalkowski/go-service/time/nts"
-)
-
 // IsEnabled for time.
-func IsEnabled(c *Config) bool {
-	return c != nil
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && cfg.Kind != ""
 }
 
 // Config for time.
 type Config struct {
-	NTP *ntp.Config `yaml:"ntp,omitempty" json:"ntp,omitempty" toml:"ntp,omitempty"`
-	NTS *nts.Config `yaml:"nts,omitempty" json:"nts,omitempty" toml:"nts,omitempty"`
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Host string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+}
+
+// IsNTP for configuration.
+func (c *Config) IsNTP() bool {
+	return c.Kind == "ntp"
+}
+
+// IsNTS for configuration.
+func (c *Config) IsNTS() bool {
+	return c.Kind == "nts"
 }

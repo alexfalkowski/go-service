@@ -7,8 +7,8 @@ import (
 )
 
 // IsEnabled for telemetry.
-func IsEnabled(c *Config) bool {
-	return c != nil
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil
 }
 
 // Config for telemetry.

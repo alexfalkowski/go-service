@@ -5,8 +5,8 @@ import (
 )
 
 // IsEnabled for HTTP.
-func IsEnabled(c *Config) bool {
-	return c != nil && server.IsEnabled(c.Config)
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && server.IsEnabled(cfg.Config)
 }
 
 // Config for HTTP.

@@ -18,8 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/time/ntp"
-	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -99,20 +97,12 @@ func metricsConfig(cfg *Config) *metrics.Config {
 	return cfg.Telemetry.Metrics
 }
 
-func ntpConfig(cfg *Config) *ntp.Config {
+func timeConfig(cfg *Config) *time.Config {
 	if !time.IsEnabled(cfg.Time) {
 		return nil
 	}
 
-	return cfg.Time.NTP
-}
-
-func ntsConfig(cfg *Config) *nts.Config {
-	if !time.IsEnabled(cfg.Time) {
-		return nil
-	}
-
-	return cfg.Time.NTS
+	return cfg.Time
 }
 
 func pgConfig(cfg *Config) *pg.Config {
