@@ -32,15 +32,10 @@ func Register() {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 }
 
-// NewNoopTracer for tracer.
-func NewNoopTracer() trace.Tracer {
-	return noop.Tracer{}
-}
-
 // NewTracer for tracer.
 func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) trace.Tracer {
 	if !IsEnabled(cfg) {
-		return NewNoopTracer()
+		return noop.Tracer{}
 	}
 
 	opts := []otlptracehttp.Option{

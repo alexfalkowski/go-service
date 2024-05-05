@@ -3,7 +3,6 @@ package grpc
 import (
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -13,6 +12,7 @@ import (
 	r "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -219,7 +219,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 func clientOptions(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{
 		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
-		tracer:   tracer.NewNoopTracer(),
+		tracer:   noop.Tracer{},
 	}
 	for _, o := range opts {
 		o.apply(os)

@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -17,6 +16,7 @@ import (
 	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 )
 
@@ -109,7 +109,7 @@ func WithClientSecure(sec *security.Config) (ClientOption, error) {
 
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
-	os := &clientOptions{tracer: tracer.NewNoopTracer()}
+	os := &clientOptions{tracer: noop.Tracer{}}
 	for _, o := range opts {
 		o.apply(os)
 	}
@@ -151,7 +151,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 // NewClient for HTTP.
 func NewClient(opts ...ClientOption) *http.Client {
-	defaultOptions := &clientOptions{tracer: tracer.NewNoopTracer()}
+	defaultOptions := &clientOptions{tracer: noop.Tracer{}}
 	for _, o := range opts {
 		o.apply(defaultOptions)
 	}

@@ -9,7 +9,7 @@ import (
 
 func TestValidLimiter(t *testing.T) {
 	Convey("Given I have a valid format", t, func() {
-		c := &limiter.Config{Pattern: "0-S"}
+		c := &limiter.Config{Kind: "user-agent", Pattern: "0-S"}
 
 		Convey("When I try to create a limiter", func() {
 			_, err := limiter.New(c)
@@ -23,7 +23,7 @@ func TestValidLimiter(t *testing.T) {
 
 func TestInvalidLimiter(t *testing.T) {
 	Convey("Given I have an invalid format", t, func() {
-		c := &limiter.Config{Pattern: "bob"}
+		c := &limiter.Config{Kind: "user-agent", Pattern: "bob"}
 
 		Convey("When I try to create a limiter", func() {
 			_, err := limiter.New(c)

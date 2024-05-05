@@ -21,18 +21,11 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
-	"github.com/alexfalkowski/go-service/transport/events"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 )
 
 const timeout = 2 * time.Second
-
-// Config for test.
-type Config struct {
-	Events         *events.Config `yaml:"events,omitempty" json:"events,omitempty" toml:"events,omitempty"`
-	*config.Config `yaml:",inline" json:",inline" toml:",inline"`
-}
 
 // NewHook for test.
 func NewHook() *hooks.Config {
@@ -209,6 +202,7 @@ func NewRedisConfig(host, compressor, marshaller string) *redis.Config {
 // NewLimiterConfig for test.
 func NewLimiterConfig(pattern string) *limiter.Config {
 	return &limiter.Config{
+		Kind:    "user-agent",
 		Pattern: pattern,
 	}
 }

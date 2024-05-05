@@ -68,7 +68,7 @@ func NewMeter(params MeterParams) m.Meter {
 // NewReader for metrics.
 func NewReader(cfg *Config) (metric.Reader, error) {
 	if !IsEnabled(cfg) {
-		return prometheus.New()
+		return prom()
 	}
 
 	if cfg.IsOTLP() {
@@ -77,6 +77,10 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 		return metric.NewPeriodicReader(r), errors.Prefix("new otlp", err)
 	}
 
+	return prom()
+}
+
+func prom() (*prometheus.Exporter, error) {
 	e, err := prometheus.New()
 
 	return e, errors.Prefix("new prometheus", err)

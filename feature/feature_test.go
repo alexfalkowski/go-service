@@ -20,7 +20,7 @@ func TestFlipt(t *testing.T) {
 		tc := test.NewOTLPTracerConfig()
 		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
 		m := test.NewOTLPMeter(lc)
-		cfg := &feature.Config{Kind: "flipt", Config: client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
+		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 		c := feature.NewClient(p)
 
