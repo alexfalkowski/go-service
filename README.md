@@ -285,10 +285,8 @@ To configure, please specify the following:
 
 ```yaml
 time:
-  ntp:
-    host: 0.beevik-ntp.pool.ntp.org
-  nts:
-    host: time.cloudflare.com
+  kind: nts
+  host: time.cloudflare.com
 ```
 
 ## Transport

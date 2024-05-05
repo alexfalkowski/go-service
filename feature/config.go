@@ -6,7 +6,7 @@ import (
 
 // IsEnabled for feature.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && cfg.Config != nil && cfg.Kind != ""
+	return cfg != nil && cfg.Kind != "" && client.IsEnabled(cfg.Config)
 }
 
 // Config for feature.

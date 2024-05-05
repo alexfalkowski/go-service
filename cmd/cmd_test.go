@@ -30,8 +30,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/time/ntp"
-	"github.com/alexfalkowski/go-service/time/nts"
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -216,11 +214,8 @@ func ver() version.Version {
 	return test.Version
 }
 
-func timeServices(nt *ntp.Service, ns *nts.Service) {
-	nt.Query()
-	nt.Time()
-
-	ns.Query()
+func netTime(n st.Network) {
+	n.Now()
 }
 
 func shutdown(s fx.Shutdowner) {
@@ -241,6 +236,6 @@ func opts() []fx.Option {
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache),
-		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(timeServices),
+		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(netTime),
 	}
 }
