@@ -8,10 +8,10 @@ func NewNone() *None {
 	return &None{}
 }
 
-func (c *None) Compress(src []byte) []byte {
-	return src
+func (c *None) Compress(data []byte) []byte {
+	return data
 }
 
-func (c *None) Decompress(src []byte) ([]byte, error) {
-	return src, nil
+func (c *None) Decompress(data []byte) ([]byte, error) {
+	return data, nil
 }
