@@ -1,8 +1,8 @@
 package limiter
 
 // IsEnabled limiter.
-func IsEnabled(c *Config) bool {
-	return c != nil
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil && cfg.Kind != ""
 }
 
 // Config for limiter.

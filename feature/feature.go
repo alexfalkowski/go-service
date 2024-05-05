@@ -30,20 +30,19 @@ func NewClient(params ClientParams) *openfeature.Client {
 }
 
 func provider(params ClientParams) openfeature.FeatureProvider {
-	c := params.Config
+	if !IsEnabled(params.Config) {
+		return openfeature.NoopProvider{}
+	}
 
-	if c != nil && c.Kind == "flipt" {
-		opts := []grpc.ClientOption{
-			grpc.WithClientLogger(params.Logger), grpc.WithClientTracer(params.Tracer),
-			grpc.WithClientMetrics(params.Meter), grpc.WithClientRetry(c.Retry),
-			grpc.WithClientUserAgent(c.UserAgent),
-		}
+	if params.Config.IsFlipt() {
+		is := grpc.UnaryClientInterceptors(grpc.WithClientLogger(params.Logger),
+			grpc.WithClientTracer(params.Tracer),
+			grpc.WithClientMetrics(params.Meter),
+			grpc.WithClientRetry(params.Config.Retry),
+			grpc.WithClientUserAgent(params.Config.UserAgent))
+		svc := transport.New(transport.WithAddress(params.Config.Host), transport.WithUnaryClientInterceptor(is...))
 
-		is := grpc.UnaryClientInterceptors(opts...)
-
-		svc := transport.New(transport.WithAddress(c.Host), transport.WithUnaryClientInterceptor(is...))
-
-		return flipt.NewProvider(flipt.WithAddress(c.Host), flipt.WithService(svc))
+		return flipt.NewProvider(flipt.WithAddress(params.Config.Host), flipt.WithService(svc))
 	}
 
 	return openfeature.NoopProvider{}
