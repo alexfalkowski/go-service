@@ -12,10 +12,10 @@ func NewSnappy() *Snappy {
 	return &Snappy{}
 }
 
-func (c *Snappy) Compress(src []byte) []byte {
-	return snappy.Encode(nil, src)
+func (c *Snappy) Compress(data []byte) []byte {
+	return snappy.Encode(nil, data)
 }
 
-func (c *Snappy) Decompress(src []byte) ([]byte, error) {
-	return snappy.Decode(nil, src)
+func (c *Snappy) Decompress(data []byte) ([]byte, error) {
+	return snappy.Decode(nil, data)
 }
