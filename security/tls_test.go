@@ -12,7 +12,7 @@ func TestTLS(t *testing.T) {
 
 	for _, c := range cs {
 		Convey("When I try to create with missing config", t, func() {
-			c, err := security.NewTLSConfig(c)
+			c, err := security.NewServerTLSConfig(c)
 
 			Convey("Then I should have a default TLS config", func() {
 				So(c, ShouldNotBeNil)
@@ -27,7 +27,7 @@ func TestTLS(t *testing.T) {
 
 	for _, tu := range tus {
 		Convey("When I try to create with bad cert config", t, func() {
-			c, err := security.NewTLSConfig(&security.Config{Cert: tu[0], Key: tu[1]})
+			c, err := security.NewServerTLSConfig(&security.Config{Cert: tu[0], Key: tu[1]})
 
 			Convey("Then I should have an error", func() {
 				So(c, ShouldNotBeNil)

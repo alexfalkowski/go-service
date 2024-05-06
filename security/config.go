@@ -20,6 +20,11 @@ func (c *Config) HasKeyPair() bool {
 	return c.GetCert() != "" && c.GetKey() != ""
 }
 
+// HasCert for security.
+func (c *Config) HasCert() bool {
+	return c.GetCert() != ""
+}
+
 // GetCert for security.
 func (c *Config) GetCert() string {
 	return os.GetFromEnv(c.Cert)

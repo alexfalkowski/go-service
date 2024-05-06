@@ -95,13 +95,13 @@ func WithClientSecure(sec *security.Config) (ClientOption, error) {
 		return none, nil
 	}
 
-	conf, err := security.NewTLSConfig(sec)
+	c, err := security.NewClientTLSConfig(sec)
 	if err != nil {
 		return none, err
 	}
 
 	opt := clientOptionFunc(func(o *clientOptions) {
-		o.tls = conf
+		o.tls = c
 	})
 
 	return opt, nil

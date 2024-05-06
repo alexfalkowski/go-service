@@ -69,7 +69,7 @@ func config(cfg *Config) (*sh.Config, error) {
 		return c, nil
 	}
 
-	tls, err := security.NewTLSConfig(cfg.Security)
+	tls, err := security.NewServerTLSConfig(cfg.Security)
 	c.TLS = tls
 
 	return c, err
