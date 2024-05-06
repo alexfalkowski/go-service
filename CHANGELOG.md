@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.179.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.179.1) - 2024-05-06
+
+- [`500f1b0`](https://github.com/alexfalkowski/go-service/commit/500f1b07c94be6c55253d9611fc91a8f5392ddcd) fix(deps): bump google.golang.org/protobuf from 1.34.0 to 1.34.1 (#708)
+- [`efdc8f4`](https://github.com/alexfalkowski/go-service/commit/efdc8f473e88235d57e928b14191f28c06b0bb11) build(deps): bump bin from `253f8fe` to `693b345` (#707)
+- [`7516d0c`](https://github.com/alexfalkowski/go-service/commit/7516d0c6a16ebe8b0d21d7268da5c652da17836a) build(sql): remove checks for nil (#706)
+
 ## [v1.179.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.179.0) - 2024-05-05
 
 - [`9aec9af`](https://github.com/alexfalkowski/go-service/commit/9aec9af5d72df8c63566aa479d2334eccfd9fb59) feat(time): move time to have a network kind (#705)
