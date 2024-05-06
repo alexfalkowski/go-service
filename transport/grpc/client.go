@@ -63,19 +63,12 @@ func WithClientSecure(sec *security.Config) (ClientOption, error) {
 		return none, nil
 	}
 
-	var creds credentials.TransportCredentials
-
-	if sec.HasKeyPair() {
-		conf, err := security.NewTLSConfig(sec)
-		if err != nil {
-			return none, err
-		}
-
-		creds = credentials.NewTLS(conf)
-	} else {
-		creds = credentials.NewClientTLSFromCert(nil, "")
+	conf, err := security.NewTLSConfig(sec)
+	if err != nil {
+		return none, err
 	}
 
+	creds := credentials.NewTLS(conf)
 	opt := clientOptionFunc(func(o *clientOpts) {
 		o.security = grpc.WithTransportCredentials(creds)
 	})

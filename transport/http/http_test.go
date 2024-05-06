@@ -123,3 +123,41 @@ func TestDefaultClientUnary(t *testing.T) {
 		})
 	})
 }
+
+func TestSecure(t *testing.T) {
+	Convey("Given I a secure client", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewPrometheusMeter(lc)
+		cfg := test.NewSecureTransportConfig()
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s.Register()
+
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Security: test.NewSecureClientConfig(),
+		}
+
+		lc.RequireStart()
+
+		Convey("When I query github", func() {
+			client := cl.NewHTTP()
+
+			req, err := http.NewRequestWithContext(context.Background(), "GET", "https://github.com/alexfalkowski", http.NoBody)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			Convey("Then I should have valid response", func() {
+				So(resp.StatusCode, ShouldEqual, 200)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}

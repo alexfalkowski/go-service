@@ -133,18 +133,12 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
-	var creds credentials.TransportCredentials
-
-	if cfg.Security.HasKeyPair() {
-		conf, err := security.NewTLSConfig(cfg.Security)
-		if err != nil {
-			return grpc.EmptyServerOption{}, err
-		}
-
-		creds = credentials.NewTLS(conf)
-	} else {
-		creds = credentials.NewClientTLSFromCert(nil, "")
+	conf, err := security.NewTLSConfig(cfg.Security)
+	if err != nil {
+		return grpc.EmptyServerOption{}, err
 	}
+
+	creds := credentials.NewTLS(conf)
 
 	return grpc.Creds(creds), nil
 }
