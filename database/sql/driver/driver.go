@@ -18,16 +18,10 @@ import (
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, t trace.Tracer, l *zap.Logger) {
+func Register(name string, driver driver.Driver, trace trace.Tracer, log *zap.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-
-	if t != nil {
-		interceptor = tracer.NewInterceptor(name, t, interceptor)
-	}
-
-	if l != nil {
-		interceptor = logger.NewInterceptor(name, l, interceptor)
-	}
+	interceptor = tracer.NewInterceptor(name, trace, interceptor)
+	interceptor = logger.NewInterceptor(name, log, interceptor)
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
 }
