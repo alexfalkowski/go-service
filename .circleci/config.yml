@@ -4,7 +4,7 @@ jobs:
   build:
     docker:
       - image: alexfalkowski/go:1.22-ruby
-      - image: postgres:15-bullseye
+      - image: postgres:16-bullseye
         environment:
           POSTGRES_DB: test
           POSTGRES_USER: test
