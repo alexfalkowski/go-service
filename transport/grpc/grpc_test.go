@@ -64,7 +64,7 @@ func TestSecureUnary(t *testing.T) {
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		s.Register()
 
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Security: test.NewSecureClientConfig()}
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, TLS: test.NewTLSClientConfig()}
 
 		lc.RequireStart()
 

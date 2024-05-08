@@ -3,7 +3,7 @@ package grpc_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/security"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -16,7 +16,7 @@ func TestServer(t *testing.T) {
 	Convey("Given I have invalid creds", t, func() {
 		c := &grpc.Config{
 			Config: &server.Config{
-				Security: &security.Config{Cert: "bob", Key: "bob"},
+				TLS: &tls.Config{Cert: "bob", Key: "bob"},
 			},
 		}
 
@@ -34,7 +34,7 @@ func TestServer(t *testing.T) {
 		logger := test.NewLogger(lc)
 
 		c := test.NewInsecureTransportConfig()
-		c.GRPC.Security = &security.Config{}
+		c.GRPC.TLS = &tls.Config{}
 
 		Convey("When I create a server", func() {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: metrics.NewNoopMeter()}

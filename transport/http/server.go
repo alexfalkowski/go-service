@@ -3,10 +3,10 @@ package http
 import (
 	"net/http"
 
+	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
@@ -109,11 +109,11 @@ func config(cfg *Config) (*sh.Config, error) {
 
 	c.Port = cfg.Port
 
-	if !security.IsEnabled(cfg.Security) {
+	if !st.IsEnabled(cfg.TLS) {
 		return c, nil
 	}
 
-	tls, err := security.NewTLSConfig(cfg.Security)
+	tls, err := st.NewConfig(cfg.TLS)
 	c.TLS = tls
 
 	return c, err

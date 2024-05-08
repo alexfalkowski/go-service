@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/client"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	g "github.com/alexfalkowski/go-service/transport/grpc"
@@ -23,7 +23,7 @@ type Client struct {
 	Logger       *zap.Logger
 	Tracer       *tracer.Config
 	Transport    *transport.Config
-	Security     *security.Config
+	TLS          *tls.Config
 	Credentials  credentials.PerRPCCredentials
 	RoundTripper http.RoundTripper
 	Meter        metric.Meter
@@ -31,7 +31,7 @@ type Client struct {
 
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
-	sec, err := h.WithClientSecure(c.Security)
+	sec, err := h.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
 	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
@@ -54,7 +54,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(c.Credentials))
 	}
 
-	sec, err := g.WithClientSecure(c.Security)
+	sec, err := g.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
 	cl := &client.Config{

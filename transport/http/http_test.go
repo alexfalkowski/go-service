@@ -137,7 +137,7 @@ func TestSecure(t *testing.T) {
 
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Security: test.NewSecureClientConfig(),
+			TLS: test.NewTLSClientConfig(),
 		}
 
 		lc.RequireStart()

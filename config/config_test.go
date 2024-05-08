@@ -8,8 +8,12 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/crypto"
+	"github.com/alexfalkowski/go-service/crypto/aes"
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -103,9 +107,20 @@ func TestValidMemConfig(t *testing.T) {
 //nolint:funlen
 func verifyConfig(cfg *config.Config) {
 	So(string(cfg.Environment), ShouldEqual, "development")
+	So(crypto.IsEnabled(cfg.Crypto), ShouldBeTrue)
+	So(aes.IsEnabled(cfg.Crypto.AES), ShouldBeTrue)
+	So(cfg.Crypto.AES.Key, ShouldNotBeBlank)
+	So(ed25519.IsEnabled(cfg.Crypto.Ed25519), ShouldBeTrue)
+	So(cfg.Crypto.Ed25519.Public, ShouldNotBeBlank)
+	So(cfg.Crypto.Ed25519.GetPrivate(), ShouldNotBeBlank)
+	So(hmac.IsEnabled(cfg.Crypto.HMAC), ShouldBeTrue)
+	So(cfg.Crypto.HMAC.Key, ShouldNotBeBlank)
+	So(cfg.Crypto.RSA.Public, ShouldNotBeBlank)
+	So(cfg.Crypto.RSA.GetPrivate(), ShouldNotBeBlank)
+	So(cfg.Debug.Port, ShouldEqual, "6060")
 	So(debug.IsEnabled(cfg.Debug), ShouldBeTrue)
 	So(cfg.Debug.Port, ShouldEqual, "6060")
-	So(security.IsEnabled(cfg.Debug.Security), ShouldBeFalse)
+	So(tls.IsEnabled(cfg.Debug.TLS), ShouldBeFalse)
 	So(cfg.Feature.Kind, ShouldEqual, "flipt")
 	So(cfg.Feature.Host, ShouldEqual, "localhost:9000")
 	So(cfg.Hooks.Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")
@@ -136,11 +151,11 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.Transport.GRPC.UserAgent, ShouldEqual, "Service grpc/1.0")
-	So(security.IsEnabled(cfg.Transport.GRPC.Security), ShouldBeFalse)
+	So(tls.IsEnabled(cfg.Transport.GRPC.TLS), ShouldBeFalse)
 	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
 	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
 	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
 	So(cfg.Transport.HTTP.UserAgent, ShouldEqual, "Service http/1.0")
-	So(security.IsEnabled(cfg.Transport.HTTP.Security), ShouldBeFalse)
+	So(tls.IsEnabled(cfg.Transport.HTTP.TLS), ShouldBeFalse)
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -16,7 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
 	sr "github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -42,23 +42,23 @@ func NewRetry() *retry.Config {
 	}
 }
 
-// NewSecureClientConfig for test.
-func NewSecureClientConfig() *security.Config {
-	return NewSecurityConfig("certs/client-cert.pem", "certs/client-key.pem")
+// NewTLSClientConfig for test.
+func NewTLSClientConfig() *tls.Config {
+	return NewTLSConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
 // NewSecureClientConfig for test.
-func NewInsecureConfig() *security.Config {
-	return &security.Config{}
+func NewInsecureConfig() *tls.Config {
+	return &tls.Config{}
 }
 
-// NewSecureServerConfig for test.
-func NewSecureServerConfig() *security.Config {
-	return NewSecurityConfig("certs/cert.pem", "certs/key.pem")
+// NewTLSServerConfig for test.
+func NewTLSServerConfig() *tls.Config {
+	return NewTLSConfig("certs/cert.pem", "certs/key.pem")
 }
 
-// NewSecurityConfig for test.
-func NewSecurityConfig(c, k string) *security.Config {
+// NewTLSConfig for test.
+func NewTLSConfig(c, k string) *tls.Config {
 	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
 	dir := filepath.Dir(b)
 
@@ -68,12 +68,12 @@ func NewSecurityConfig(c, k string) *security.Config {
 	key, err := os.ReadFile(filepath.Join(dir, k))
 	sr.Must(err)
 
-	s := &security.Config{
+	tc := &tls.Config{
 		Cert: base64.StdEncoding.EncodeToString(cert),
 		Key:  base64.StdEncoding.EncodeToString(key),
 	}
 
-	return s
+	return tc
 }
 
 // NewInsecureTransportConfig for test.
@@ -98,13 +98,13 @@ func NewInsecureTransportConfig() *transport.Config {
 
 // NewSecureTransportConfig for test.
 func NewSecureTransportConfig() *transport.Config {
-	s := NewSecureServerConfig()
+	s := NewTLSServerConfig()
 	r := NewRetry()
 
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Security:  s,
+				TLS:       s,
 				Port:      Port(),
 				UserAgent: "TestHTTP/1.0",
 				Retry:     r,
@@ -112,7 +112,7 @@ func NewSecureTransportConfig() *transport.Config {
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Security:  s,
+				TLS:       s,
 				Port:      Port(),
 				UserAgent: "TestGRPC/1.0",
 				Retry:     r,
@@ -183,7 +183,7 @@ func NewInsecureDebugConfig() *debug.Config {
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Security:  NewSecureServerConfig(),
+			TLS:       NewTLSServerConfig(),
 			Port:      Port(),
 			UserAgent: "TestHTTPDebug/1.0",
 			Retry:     NewRetry(),

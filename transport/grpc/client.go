@@ -1,8 +1,8 @@
 package grpc
 
 import (
+	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/retry"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -57,13 +57,13 @@ func WithClientBreaker() ClientOption {
 	})
 }
 
-// WithClientSecure for gRPC.
-func WithClientSecure(sec *security.Config) (ClientOption, error) {
-	if !security.IsEnabled(sec) {
+// WithClientTLS for gRPC.
+func WithClientTLS(sec *st.Config) (ClientOption, error) {
+	if !st.IsEnabled(sec) {
 		return none, nil
 	}
 
-	conf, err := security.NewTLSConfig(sec)
+	conf, err := st.NewConfig(sec)
 	if err != nil {
 		return none, err
 	}

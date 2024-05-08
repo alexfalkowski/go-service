@@ -1,4 +1,4 @@
-package security
+package tls
 
 import (
 	"github.com/alexfalkowski/go-service/os"

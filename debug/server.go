@@ -3,9 +3,9 @@ package debug
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
@@ -65,12 +65,12 @@ func config(cfg *Config) (*sh.Config, error) {
 
 	c.Port = cfg.Port
 
-	if !security.IsEnabled(cfg.Security) {
+	if !tls.IsEnabled(cfg.TLS) {
 		return c, nil
 	}
 
-	tls, err := security.NewTLSConfig(cfg.Security)
-	c.TLS = tls
+	t, err := tls.NewConfig(cfg.TLS)
+	c.TLS = t
 
 	return c, err
 }

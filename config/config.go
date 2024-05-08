@@ -5,6 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/crypto"
+	"github.com/alexfalkowski/go-service/crypto/aes"
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -35,6 +40,7 @@ type Config struct {
 	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
 	Debug       *debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
 	Cache       *cache.Config     `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
+	Crypto      *crypto.Config    `yaml:"crypto,omitempty" json:"crypto,omitempty" toml:"crypto,omitempty"`
 	Feature     *feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
 	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
 	Limiter     *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
@@ -45,8 +51,24 @@ type Config struct {
 	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 }
 
+func aesConfig(cfg *Config) *aes.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.AES
+}
+
 func debugConfig(cfg *Config) *debug.Config {
 	return cfg.Debug
+}
+
+func ed25519Config(cfg *Config) *ed25519.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.Ed25519
 }
 
 func environmentConfig(cfg *Config) env.Environment {
@@ -63,6 +85,14 @@ func grpcConfig(cfg *Config) *grpc.Config {
 	}
 
 	return cfg.Transport.GRPC
+}
+
+func hmacConfig(cfg *Config) *hmac.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.HMAC
 }
 
 func hooksConfig(cfg *Config) *hooks.Config {
@@ -95,6 +125,14 @@ func metricsConfig(cfg *Config) *metrics.Config {
 	}
 
 	return cfg.Telemetry.Metrics
+}
+
+func rsaConfig(cfg *Config) *rsa.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.RSA
 }
 
 func timeConfig(cfg *Config) *time.Config {
