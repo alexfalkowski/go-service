@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/KimMachineGun/automemlimit v0.6.0
-	github.com/alexfalkowski/go-health v1.16.1
+	github.com/alexfalkowski/go-health v1.16.2
 	github.com/alicebob/miniredis/v2 v2.32.1
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
