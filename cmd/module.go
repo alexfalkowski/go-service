@@ -5,4 +5,7 @@ import (
 )
 
 // Module for fx.
-var Module = fx.Options(fx.Provide(NewInputConfig))
+var Module = fx.Options(
+	fx.Provide(NewInputConfig),
+	fx.Provide(NewOutputConfig),
+)

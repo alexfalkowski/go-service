@@ -29,7 +29,7 @@ func New(version string) *Command {
 	}
 
 	root.SetErrPrefix(name + ":")
-	root.PersistentFlags().StringVarP(&inputFlag, "input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
+	StringVar(root, InputFlag, "input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
 
 	return &Command{root: root}
 }
