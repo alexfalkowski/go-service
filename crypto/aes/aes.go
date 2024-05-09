@@ -46,12 +46,7 @@ type algo struct {
 }
 
 func (a *algo) Encrypt(msg string) (string, error) {
-	b, err := aes.NewCipher(a.key)
-	if err != nil {
-		return "", err
-	}
-
-	g, err := cipher.NewGCM(b)
+	g, err := a.aead()
 	if err != nil {
 		return "", err
 	}
@@ -72,12 +67,7 @@ func (a *algo) Decrypt(msg string) (string, error) {
 		return "", err
 	}
 
-	b, err := aes.NewCipher(a.key)
-	if err != nil {
-		return "", err
-	}
-
-	g, err := cipher.NewGCM(b)
+	g, err := a.aead()
 	if err != nil {
 		return "", err
 	}
@@ -91,6 +81,15 @@ func (a *algo) Decrypt(msg string) (string, error) {
 	d, err = g.Open(nil, nonce, c, nil)
 
 	return string(d), err
+}
+
+func (a *algo) aead() (cipher.AEAD, error) {
+	b, err := aes.NewCipher(a.key)
+	if err != nil {
+		return nil, err
+	}
+
+	return cipher.NewGCM(b)
 }
 
 type none struct{}
