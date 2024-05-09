@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.180.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.180.1) - 2024-05-09
+
+- [`56f45c1`](https://github.com/alexfalkowski/go-service/commit/56f45c18a6c60498ce284997f56354b197172765) fix(deps): upgraded github.com/prometheus/client_golang to v1.19.1 (#717)
+- [`e38815b`](https://github.com/alexfalkowski/go-service/commit/e38815b8943bdf9b5c95709337a2de2f0649733e) build(deps): bump bin from `693b345` to `55a2500` (#716)
+
 ## [v1.180.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.180.0) - 2024-05-09
 
 - [`d9de211`](https://github.com/alexfalkowski/go-service/commit/d9de21123b7230c5649379a43130e83f51ae6ae2) feat(crypto): add ability to handle symmetric and asymmetric keys (#715)
