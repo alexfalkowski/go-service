@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.180.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.180.0) - 2024-05-09
+
+- [`d9de211`](https://github.com/alexfalkowski/go-service/commit/d9de21123b7230c5649379a43130e83f51ae6ae2) feat(crypto): add ability to handle symmetric and asymmetric keys (#715)
+
 ## [v1.179.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.179.4) - 2024-05-08
 
 - [`07de0d9`](https://github.com/alexfalkowski/go-service/commit/07de0d983877090da0e7efa4bc48e1b4ca61e7cf) fix(deps): upgraded github.com/alexfalkowski/go-health to v1.16.2 (#714)
