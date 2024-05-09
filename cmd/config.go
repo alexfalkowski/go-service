@@ -7,8 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
-var inputFlag string
-
 // ReaderWriter for cmd.
 type ReaderWriter interface {
 	// Read bytes.

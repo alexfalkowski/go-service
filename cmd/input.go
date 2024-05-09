@@ -5,6 +5,9 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
+// InputFlag for cmd.
+var InputFlag = String()
+
 // InputConfig for cmd.
 type InputConfig struct {
 	*Config
@@ -12,7 +15,7 @@ type InputConfig struct {
 
 // NewInputConfig for cmd.
 func NewInputConfig(factory *marshaller.Factory) (*InputConfig, error) {
-	c, err := NewConfig(inputFlag, factory)
+	c, err := NewConfig(*InputFlag, factory)
 
 	return &InputConfig{Config: c}, errors.Prefix("new input", err)
 }
