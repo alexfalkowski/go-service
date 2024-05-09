@@ -91,7 +91,7 @@ func TestSecureDebug(t *testing.T) {
 			cl := &test.Client{
 				Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(),
 				Transport: test.NewSecureTransportConfig(),
-				Security:  test.NewSecureClientConfig(),
+				TLS:       test.NewTLSClientConfig(),
 				Meter:     m,
 			}
 

@@ -14,6 +14,12 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/config"
+	"github.com/alexfalkowski/go-service/crypto"
+	"github.com/alexfalkowski/go-service/crypto/aes"
+	"github.com/alexfalkowski/go-service/crypto/argon2"
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -48,7 +54,7 @@ func TestRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/configs/config.yml")
 
-		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
+		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
 
@@ -65,7 +71,7 @@ func TestRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		os.Setenv("CONFIG_FILE", "../test/configs/config.yml")
 
-		Convey("When I try to run an application that will shutdown in 5 seconds", func() {
+		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
 
@@ -218,6 +224,9 @@ func netTime(n st.Network) {
 	n.Now()
 }
 
+func crypt(_ argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo) {
+}
+
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
 		time.Sleep(time.Second)
@@ -231,11 +240,11 @@ func opts() []fx.Option {
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		telemetry.Module, metrics.Module, health.Module, sql.Module, hooks.Module,
-		cache.Module, compressor.Module, marshaller.Module, transport.Module,
+		cache.Module, compressor.Module, marshaller.Module, transport.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache),
-		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(netTime),
+		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(crypt),
 	}
 }

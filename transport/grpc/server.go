@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
-	"github.com/alexfalkowski/go-service/security"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/time"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
@@ -129,11 +129,11 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 }
 
 func creds(cfg *Config) (grpc.ServerOption, error) {
-	if !IsEnabled(cfg) || !security.IsEnabled(cfg.Security) {
+	if !IsEnabled(cfg) || !tls.IsEnabled(cfg.TLS) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
-	conf, err := security.NewTLSConfig(cfg.Security)
+	conf, err := tls.NewConfig(cfg.TLS)
 	if err != nil {
 		return grpc.EmptyServerOption{}, err
 	}

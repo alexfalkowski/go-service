@@ -330,13 +330,38 @@ If you would like to enable TLS, do the following:
 ```yaml
 transport:
   http:
-    security:
+    tls:
       cert: PEM certificate base64 encoded
       key: PEM certificate base64 encoded
   grpc:
-    security:
+    tls:
       cert: PEM certificate base64 encoded
       key: PEM certificate base64 encoded
+```
+
+## Cryptography
+
+The crypto package provides sensible defaults for symmetric, asymmetric, hashing and randomness.
+
+We rely on the following libraries:
+- [argon2](https://github.com/matthewhartstonge/argon2)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+crypto:
+  aes:
+    key: certificate base64 encoded
+  ed25519:
+    public: certificate base64 encoded
+    private: certificate base64
+  hmac:
+    key: certificate base64 encoded
+  rsa:
+    public: certificate base64 encoded
+    private: certificate base64 encoded
 ```
 
 ## Debug
@@ -392,7 +417,7 @@ If you would like to enable TLS, do the following:
 
 ```yaml
 debug:
-  security:
+  tls:
     cert: PEM certificate base64 encoded
     key: PEM certificate base64 encoded
 ```

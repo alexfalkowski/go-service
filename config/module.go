@@ -7,6 +7,7 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(NewConfig),
+	fx.Provide(aesConfig), fx.Provide(ed25519Config), fx.Provide(hmacConfig), fx.Provide(rsaConfig),
 	fx.Provide(environmentConfig), fx.Provide(debugConfig), fx.Provide(tokenConfig),
 	fx.Provide(featureConfig), fx.Provide(hooksConfig), fx.Provide(timeConfig),
 	fx.Provide(pgConfig), fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
