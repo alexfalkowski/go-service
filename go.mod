@@ -31,7 +31,7 @@ require (
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/open-feature/go-sdk v1.11.0
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
-	github.com/prometheus/client_golang v1.19.0
+	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/cors v1.11.0
 	github.com/shirou/gopsutil/v3 v3.24.4
 	github.com/smartystreets/goconvey v1.8.1

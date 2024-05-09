@@ -55,6 +55,7 @@ jobs:
           path: test/reports
       - store_artifacts:
           path: test/reports
+      - run: make outdated-dep
     resource_class: large
   release:
     docker:
