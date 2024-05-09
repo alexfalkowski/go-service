@@ -1,13 +1,5 @@
 version: 2
 updates:
-  - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "fix"
-      prefix-development: "build"
-      include: "scope"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
