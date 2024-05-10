@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.183.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.183.0) - 2024-05-10
+
+- [`76b1d61`](https://github.com/alexfalkowski/go-service/commit/76b1d614abcf26b9c1921c82e50cc15adf018624) feat(deps): upgraded github.com/alexfalkowski/go-health to v1.17.0 (#724)
+
 ## [v1.182.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.182.1) - 2024-05-10
 
 - [`645a1c9`](https://github.com/alexfalkowski/go-service/commit/645a1c9faa514970cfbf1847b72321b060c52df4) fix(deps): upgraded github.com/hashicorp/go-retryablehttp to v0.7.6 (#721)
