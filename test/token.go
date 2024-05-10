@@ -14,8 +14,8 @@ func NewGenerator(token string, err error) *Generator {
 
 // Generator for test.
 type Generator struct {
-	token string
 	err   error
+	token string
 }
 
 func (g *Generator) Generate(ctx context.Context) (context.Context, []byte, error) {

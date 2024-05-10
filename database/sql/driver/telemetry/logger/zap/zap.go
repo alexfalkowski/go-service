@@ -19,9 +19,9 @@ func NewInterceptor(name string, logger *zap.Logger, interceptor sqlmw.Intercept
 
 // Interceptor for zap.
 type Interceptor struct {
-	name        string
-	logger      *zap.Logger
 	interceptor sqlmw.Interceptor
+	logger      *zap.Logger
+	name        string
 }
 
 func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {

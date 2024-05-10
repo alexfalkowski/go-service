@@ -19,8 +19,8 @@ type Server struct {
 
 // Config for HTTP.
 type Config struct {
-	Port string
 	TLS  *tls.Config
+	Port string
 }
 
 // NewServer for HTTP.

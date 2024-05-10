@@ -10,10 +10,10 @@ import (
 
 // Server is a generic server.
 type Server struct {
-	svc    string
 	srv    Serverer
-	logger *zap.Logger
 	sh     fx.Shutdowner
+	logger *zap.Logger
+	svc    string
 }
 
 // NewServer that can start and stop an underlying server.

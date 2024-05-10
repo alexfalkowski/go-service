@@ -18,8 +18,8 @@ func NewService(verifyAuth bool) *Service {
 
 // Service ...
 type Service struct {
-	verifyAuth bool
 	v1.UnimplementedGreeterServiceServer
+	verifyAuth bool
 }
 
 // SayHello ...

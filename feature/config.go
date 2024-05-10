@@ -11,8 +11,8 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for feature.
 type Config struct {
-	Kind           string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 	*client.Config `yaml:",inline" json:",inline" toml:",inline"`
+	Kind           string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 
 // IsFlipt configuration.

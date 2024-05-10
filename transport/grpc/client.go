@@ -27,16 +27,16 @@ type ClientOption interface{ apply(opts *clientOpts) }
 var none = clientOptionFunc(func(_ *clientOpts) {})
 
 type clientOpts struct {
-	logger    *zap.Logger
 	tracer    trace.Tracer
 	meter     metric.Meter
+	security  grpc.DialOption
+	logger    *zap.Logger
 	retry     *retry.Config
-	breaker   bool
 	userAgent string
 	opts      []grpc.DialOption
 	unary     []grpc.UnaryClientInterceptor
 	stream    []grpc.StreamClientInterceptor
-	security  grpc.DialOption
+	breaker   bool
 }
 
 type clientOptionFunc func(*clientOpts)
