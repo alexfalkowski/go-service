@@ -4,10 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"github.com/spf13/cobra"
 )
 
 type tuple [2]string
@@ -43,23 +40,4 @@ func TestReadWriter(t *testing.T) {
 			})
 		})
 	}
-}
-
-func TestVar(t *testing.T) {
-	Convey("Given I have a var", t, func() {
-		name := os.ExecutableName()
-		c := &cobra.Command{
-			Use: name, Short: name, Long: name,
-			Version: string(test.Version),
-		}
-		v := cmd.Bool()
-
-		Convey("When I add it to the command", func() {
-			cmd.BoolVar(c, v, "test", "y", true, "test")
-
-			Convey("Then I should have it set to the default value", func() {
-				So(*v, ShouldBeTrue)
-			})
-		})
-	})
 }
