@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.182.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.182.1) - 2024-05-10
+
+- [`645a1c9`](https://github.com/alexfalkowski/go-service/commit/645a1c9faa514970cfbf1847b72321b060c52df4) fix(deps): upgraded github.com/hashicorp/go-retryablehttp to v0.7.6 (#721)
+- [`548f7f0`](https://github.com/alexfalkowski/go-service/commit/548f7f0c195648aab287a9f1d1d6e2c8cae4d08e) build(deps): bump bin from `55a2500` to `9e5c4b7` (#722)
+
 ## [v1.182.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.182.0) - 2024-05-10
 
 - [`b84ac88`](https://github.com/alexfalkowski/go-service/commit/b84ac8893335ab3d9e52f64fb1f4ee472407defc) feat(field-alignment): run tool (#720)
