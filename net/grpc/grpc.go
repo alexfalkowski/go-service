@@ -16,8 +16,8 @@ type Server struct {
 
 // Config for HTTP.
 type Config struct {
-	Enabled bool
 	Port    string
+	Enabled bool
 }
 
 // NewServer for gRPC.

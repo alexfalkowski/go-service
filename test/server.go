@@ -20,17 +20,16 @@ var Mux = th.NewServeMux()
 // Server for test.
 type Server struct {
 	Lifecycle  fx.Lifecycle
+	Meter      metric.Meter
 	Logger     *zap.Logger
 	Tracer     *tracer.Config
 	Transport  *transport.Config
-	Meter      metric.Meter
+	GRPC       *tg.Server
+	HTTP       *th.Server
 	Handlers   []negroni.Handler
-	VerifyAuth bool
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
-
-	GRPC *tg.Server
-	HTTP *th.Server
+	VerifyAuth bool
 }
 
 // Register server.

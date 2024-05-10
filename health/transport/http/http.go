@@ -18,13 +18,12 @@ const (
 // RegisterParams health for HTTP.
 type RegisterParams struct {
 	fx.In
-
 	Mux       *runtime.ServeMux
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
-	Version   version.Version
 	JSON      *marshaller.JSON
+	Version   version.Version
 }
 
 // Register health for HTTP.

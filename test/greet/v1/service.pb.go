@@ -23,10 +23,9 @@ const (
 
 type SayHelloRequest struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SayHelloRequest) Reset() {
@@ -70,10 +69,9 @@ func (x *SayHelloRequest) GetName() string {
 
 type SayHelloResponse struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Message       string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SayHelloResponse) Reset() {
@@ -117,10 +115,9 @@ func (x *SayHelloResponse) GetMessage() string {
 
 type SayStreamHelloRequest struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SayStreamHelloRequest) Reset() {
@@ -164,10 +161,9 @@ func (x *SayStreamHelloRequest) GetName() string {
 
 type SayStreamHelloResponse struct {
 	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
+	Message       string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
-
-	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SayStreamHelloResponse) Reset() {

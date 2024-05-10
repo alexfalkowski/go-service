@@ -36,9 +36,8 @@ func NewRoundTripper(userAgent string, hrt http.RoundTripper) *RoundTripper {
 
 // RoundTripper for meta.
 type RoundTripper struct {
-	userAgent string
-
 	http.RoundTripper
+	userAgent string
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {

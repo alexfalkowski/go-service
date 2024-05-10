@@ -19,9 +19,9 @@ func NewInterceptor(driver string, tracer trace.Tracer, interceptor sqlmw.Interc
 
 // Interceptor for tracer.
 type Interceptor struct {
-	driver      string
 	tracer      trace.Tracer
 	interceptor sqlmw.Interceptor
+	driver      string
 }
 
 func (i *Interceptor) ConnBeginTx(ctx context.Context, conn driver.ConnBeginTx, txOpts driver.TxOptions) (context.Context, driver.Tx, error) {

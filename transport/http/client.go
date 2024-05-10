@@ -26,14 +26,14 @@ type ClientOption interface{ apply(opts *clientOptions) }
 var none = clientOptionFunc(func(_ *clientOptions) {})
 
 type clientOptions struct {
-	logger       *zap.Logger
 	tracer       trace.Tracer
 	meter        metric.Meter
+	roundTripper http.RoundTripper
+	logger       *zap.Logger
 	retry        *r.Config
+	tls          *tls.Config
 	userAgent    string
 	breaker      bool
-	roundTripper http.RoundTripper
-	tls          *tls.Config
 }
 
 type clientOptionFunc func(*clientOptions)
