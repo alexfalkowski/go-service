@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
 // InputFlag for cmd.
-var InputFlag = String()
+var InputFlag = flags.String()
 
 // InputConfig for cmd.
 type InputConfig struct {

@@ -1,11 +1,12 @@
 package cmd
 
 import (
+	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
 // OutputFlag for cmd.
-var OutputFlag = String()
+var OutputFlag = flags.String()
 
 // OutputConfig for cmd.
 type OutputConfig struct {
