@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.186.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.186.0) - 2024-05-11
+
+- [`57056b6`](https://github.com/alexfalkowski/go-service/commit/57056b68482dee7c05235eed78f11477581a98ad) feat(cmd): add name (#728)
+- [`5e4f847`](https://github.com/alexfalkowski/go-service/commit/5e4f8471f3d320ab02dede94b63b90efae0a8dfa) test(config): use output (#727)
+
 ## [v1.185.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.185.0) - 2024-05-11
 
 - [`f087e4f`](https://github.com/alexfalkowski/go-service/commit/f087e4f7d7aa50f1219434d0d72a55f11f567a36) feat(flags): add checking if set (#726)
