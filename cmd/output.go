@@ -14,8 +14,8 @@ type OutputConfig struct {
 }
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(factory *marshaller.Map) *OutputConfig {
-	c := NewConfig(*OutputFlag, factory)
+func NewOutputConfig(mm *marshaller.Map) *OutputConfig {
+	c := NewConfig(*OutputFlag, mm)
 
 	return &OutputConfig{Config: c}
 }

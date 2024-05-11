@@ -9,7 +9,7 @@ import (
 
 func TestMap(t *testing.T) {
 	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
-		Convey("Given I have factory", t, func() {
+		Convey("Given I have map", t, func() {
 			Convey("When I create marshaller", func() {
 				m := test.Marshaller.Get(k)
 
@@ -21,7 +21,7 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, k := range []string{"test", "bob"} {
-		Convey("Given I have factory", t, func() {
+		Convey("Given I have map", t, func() {
 			Convey("When I create marshaller", func() {
 				m := test.Marshaller.Get(k)
 
