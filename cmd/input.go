@@ -14,8 +14,8 @@ type InputConfig struct {
 }
 
 // NewInputConfig for cmd.
-func NewInputConfig(factory *marshaller.Map) *InputConfig {
-	c := NewConfig(*InputFlag, factory)
+func NewInputConfig(mm *marshaller.Map) *InputConfig {
+	c := NewConfig(*InputFlag, mm)
 
 	return &InputConfig{Config: c}
 }
