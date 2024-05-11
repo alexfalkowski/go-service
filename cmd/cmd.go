@@ -121,11 +121,3 @@ func options(opts []fx.Option) []fx.Option {
 func prefix(p string, err error) error {
 	return errors.Prefix(p, dig.RootCause(err))
 }
-
-func valueOrEmpty(v string) string {
-	if v != "" {
-		return v
-	}
-
-	return "empty"
-}
