@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
@@ -56,9 +55,6 @@ func (c *Command) AddServerCommand(name, description string, opts ...fx.Option) 
 		},
 	}
 
-	flags.StringVar(cmd, InputFlag,
-		"input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
-
 	c.root.AddCommand(cmd)
 
 	return cmd
@@ -75,9 +71,6 @@ func (c *Command) AddClientCommand(name, description string, opts ...fx.Option) 
 			return RunClient(c.Context(), name, opts...)
 		},
 	}
-
-	flags.StringVar(cmd, InputFlag,
-		"input", "i", "env:CONFIG_FILE", "input config location (format kind:location, default env:CONFIG_FILE)")
 
 	c.root.AddCommand(cmd)
 

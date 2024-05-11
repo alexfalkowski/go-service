@@ -20,3 +20,10 @@ func NewOutputConfig(factory *marshaller.Factory) (*OutputConfig, error) {
 
 	return &OutputConfig{Config: c}, errors.Prefix("new output", err)
 }
+
+// RegisterInput for cmd.
+func (c *Command) RegisterOutput(env string) {
+	value := "env:" + env
+
+	flags.StringVar(c.root, OutputFlag, "output", "o", value, "input config location (format kind:location, default "+value+")")
+}
