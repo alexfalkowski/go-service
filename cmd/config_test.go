@@ -10,25 +10,26 @@ import (
 )
 
 func TestNoneConfig(t *testing.T) {
-	Convey("Given I have no configuration file", t, func() {
-		Convey("When I read the config", func() {
-			c := test.NewInputConfig("")
+	for _, r := range []string{"", "env:BOB"} {
+		Convey("Given I have no configuration file", t, func() {
+			Convey("When I read the config", func() {
+				c := test.NewInputConfig(r)
 
-			Convey("Then I should have a valid configuration", func() {
-				So(c.Unmarshal(nil), ShouldBeNil)
-				So(c.Kind(), ShouldEqual, "none")
+				Convey("Then I should have a valid configuration", func() {
+					So(c.Unmarshal(nil), ShouldBeError)
+				})
+			})
+
+			Convey("When I write the config", func() {
+				c := test.NewOutputConfig(r)
+				err := c.Write([]byte("test"), os.ModeAppend)
+
+				Convey("Then I should have a valid configuration", func() {
+					So(err, ShouldBeError)
+				})
 			})
 		})
-
-		Convey("When I write the config", func() {
-			c := test.NewOutputConfig("")
-			err := c.Write([]byte("test"), os.ModeAppend)
-
-			Convey("Then I should have a valid configuration", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-	})
+	}
 }
 
 func TestReadValidConfigFile(t *testing.T) {
