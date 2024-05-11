@@ -41,8 +41,12 @@ func TestMap(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should be able to unmarshal", func() {
-					err := m.Unmarshal(d, nil)
+					var b []byte
+
+					err := m.Unmarshal(d, &b)
 					So(err, ShouldBeNil)
+
+					So(b, ShouldEqual, []byte("hello"))
 				})
 			})
 		})

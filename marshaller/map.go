@@ -17,7 +17,6 @@ func NewMap() *Map {
 			"toml":  NewTOML(),
 			"proto": NewProto(),
 			"gob":   NewGOB(),
-			"none":  NewNone(),
 		},
 	}
 
@@ -33,7 +32,7 @@ func (f *Map) Register(kind string, m Marshaller) {
 func (f *Map) Get(kind string) Marshaller {
 	c, ok := f.configs[kind]
 	if !ok {
-		return f.configs["none"]
+		return f.configs["yml"]
 	}
 
 	return c

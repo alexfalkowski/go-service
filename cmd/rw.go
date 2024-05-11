@@ -1,6 +1,8 @@
 package cmd
 
-import "io/fs"
+import (
+	"io/fs"
+)
 
 // NewReadWriter for cmd.
 func NewReadWriter(kind, location string) ReaderWriter {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/file"
 )
+
+// ErrInvalidEnvVariable for cmd.
+var ErrInvalidEnvVariable = errors.New("invalid location: empty")
 
 // ENV for cmd.
 type ENV struct {
@@ -28,6 +32,10 @@ func (e *ENV) Read() ([]byte, error) {
 		return base64.StdEncoding.DecodeString(os.Getenv(e))
 	}
 
+	if e.name() == "" {
+		return nil, ErrInvalidEnvVariable
+	}
+
 	return os.ReadFile(e.path())
 }
 
@@ -37,6 +45,10 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 		_, e := e.split()
 
 		return os.Setenv(e, base64.StdEncoding.EncodeToString(data))
+	}
+
+	if e.name() == "" {
+		return ErrInvalidEnvVariable
 	}
 
 	return os.WriteFile(e.path(), data, mode)
