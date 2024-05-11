@@ -29,8 +29,7 @@ func TestValidEnvConfig(t *testing.T) {
 		Convey("Given I have configuration file", t, func() {
 			So(os.Setenv("CONFIG_FILE", f), ShouldBeNil)
 
-			c, err := test.NewInputConfig("env:CONFIG_FILE")
-			So(err, ShouldBeNil)
+			c := test.NewInputConfig("env:CONFIG_FILE")
 
 			Convey("When I try to parse the configuration file", func() {
 				cfg, err := config.NewConfig(c)
@@ -48,8 +47,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestValidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		c, err := test.NewInputConfig("file:../test/configs/config.yml")
-		So(err, ShouldBeNil)
+		c := test.NewInputConfig("file:../test/configs/config.yml")
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg, err := config.NewConfig(c)
@@ -64,8 +62,7 @@ func TestValidFileConfig(t *testing.T) {
 
 func TestMissingFileConfig(t *testing.T) {
 	Convey("Given I have missing configuration file", t, func() {
-		c, err := test.NewInputConfig("file:../test/configs/missing.yml")
-		So(err, ShouldBeNil)
+		c := test.NewInputConfig("file:../test/configs/missing.yml")
 
 		Convey("When I try to parse the configuration file", func() {
 			_, err := config.NewConfig(c)
@@ -86,8 +83,7 @@ func TestValidMemConfig(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
 		So(os.Setenv("CONFIG", base64.StdEncoding.EncodeToString(d)), ShouldBeNil)
 
-		c, err := test.NewInputConfig("env:CONFIG_FILE")
-		So(err, ShouldBeNil)
+		c := test.NewInputConfig("env:CONFIG_FILE")
 
 		Convey("When I try to parse the configuration file", func() {
 			cfg, err := config.NewConfig(c)

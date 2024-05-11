@@ -5,7 +5,7 @@ import (
 )
 
 // Compressor for tests.
-var Compressor = compressor.NewFactory()
+var Compressor = compressor.NewMap()
 
 // NewCompressor for test.
 func NewCompressor(err error) compressor.Compressor {

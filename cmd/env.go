@@ -42,7 +42,7 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 	return os.WriteFile(e.path(), data, mode)
 }
 
-// Write for env.
+// Kind for env.
 func (e *ENV) Kind() string {
 	if e.isMem() {
 		k, _ := e.split()

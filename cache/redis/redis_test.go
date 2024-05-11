@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/compressor"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -205,9 +203,8 @@ func TestMissingMarshallerCache(t *testing.T) {
 
 		lc.RequireStart()
 
-		Convey("Then I should have an error", func() {
-			So(err, ShouldNotBeNil)
-			So(errors.Is(err, marshaller.ErrInvalidKind), ShouldBeTrue)
+		Convey("Then I should have no error", func() {
+			So(err, ShouldBeNil)
 		})
 
 		lc.RequireStop()
@@ -259,9 +256,8 @@ func TestMissingCompressorCache(t *testing.T) {
 
 		lc.RequireStart()
 
-		Convey("Then I should have an error", func() {
-			So(err, ShouldNotBeNil)
-			So(errors.Is(err, compressor.ErrInvalidKind), ShouldBeTrue)
+		Convey("Then I should have no error", func() {
+			So(err, ShouldBeNil)
 		})
 
 		lc.RequireStop()

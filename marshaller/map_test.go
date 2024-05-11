@@ -7,30 +7,42 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestValidFactory(t *testing.T) {
+func TestMap(t *testing.T) {
 	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
 		Convey("Given I have factory", t, func() {
 			Convey("When I create marshaller", func() {
-				m, err := test.Marshaller.Create(k)
+				m := test.Marshaller.Get(k)
 
 				Convey("Then I should have valid marshaller", func() {
-					So(err, ShouldBeNil)
 					So(m, ShouldNotBeNil)
 				})
 			})
 		})
 	}
-}
 
-func TestInvalidFactory(t *testing.T) {
 	for _, k := range []string{"test", "bob"} {
 		Convey("Given I have factory", t, func() {
 			Convey("When I create marshaller", func() {
-				m, err := test.Marshaller.Create(k)
+				m := test.Marshaller.Get(k)
 
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-					So(m, ShouldBeNil)
+				Convey("Then I should have none", func() {
+					So(m, ShouldNotBeNil)
+				})
+			})
+		})
+
+		Convey("Given I have create a marshaller", t, func() {
+			m := test.Marshaller.Get(k)
+
+			Convey("When I marshal the data", func() {
+				s := []byte("hello")
+
+				d, err := m.Marshal(s)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should be able to unmarshal", func() {
+					err := m.Unmarshal(d, nil)
+					So(err, ShouldBeNil)
 				})
 			})
 		})

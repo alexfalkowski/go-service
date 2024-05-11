@@ -7,5 +7,5 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(NewSnappy),
-	fx.Provide(NewFactory),
+	fx.Provide(NewMap),
 )
