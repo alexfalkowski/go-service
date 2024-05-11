@@ -52,7 +52,7 @@ func (c *Command) AddServerCommand(name, description string, opts ...fx.Option) 
 		Long:         description,
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, _ []string) error {
-			return RunServer(c.Context(), opts...)
+			return RunServer(c.Context(), name, opts...)
 		},
 	}
 
@@ -72,7 +72,7 @@ func (c *Command) AddClientCommand(name, description string, opts ...fx.Option) 
 		Long:         description,
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, _ []string) error {
-			return RunClient(c.Context(), opts...)
+			return RunClient(c.Context(), name, opts...)
 		},
 	}
 
@@ -96,29 +96,29 @@ func (c *Command) Run() error {
 	return c.root.Execute()
 }
 
-// RunServer with args and a timeout.
-func RunServer(ctx context.Context, opts ...fx.Option) error {
+// RunServer is a long running process.
+func RunServer(ctx context.Context, name string, opts ...fx.Option) error {
 	app := fx.New(options(opts)...)
 	done := app.Done()
 
 	if err := app.Start(ctx); err != nil {
-		return prefix("server", err)
+		return prefix(name, err)
 	}
 
 	<-done
 
-	return prefix("server", app.Stop(ctx))
+	return prefix(name, app.Stop(ctx))
 }
 
-// RunClient with args and a timeout.
-func RunClient(ctx context.Context, opts ...fx.Option) error {
+// RunClient is a short lived process.
+func RunClient(ctx context.Context, name string, opts ...fx.Option) error {
 	app := fx.New(options(opts)...)
 
 	if err := app.Start(ctx); err != nil {
-		return prefix("client", err)
+		return prefix(name, err)
 	}
 
-	return prefix("client", app.Stop(ctx))
+	return prefix(name, app.Stop(ctx))
 }
 
 func options(opts []fx.Option) []fx.Option {
