@@ -163,9 +163,18 @@ func NewPGConfig() *pg.Config {
 	}}
 }
 
-// NewCmdConfig for test.
-func NewCmdConfig(flag string) (*cmd.Config, error) {
-	return cmd.NewConfig(flag, Marshaller)
+// NewInputConfig for test.
+func NewInputConfig(flag string) (*cmd.InputConfig, error) {
+	*cmd.InputFlag = flag
+
+	return cmd.NewInputConfig(Marshaller)
+}
+
+// NewOutputConfig for test.
+func NewOutputConfig(flag string) (*cmd.OutputConfig, error) {
+	*cmd.OutputFlag = flag
+
+	return cmd.NewOutputConfig(Marshaller)
 }
 
 // NewInsecureDebugConfig for test.

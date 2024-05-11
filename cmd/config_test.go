@@ -16,7 +16,7 @@ func TestReadValidConfigFile(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", "../test/config.yml"), ShouldBeNil)
 
 		Convey("When I read the config", func() {
-			c, err := test.NewCmdConfig("")
+			c, err := test.NewInputConfig("")
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeNil)
@@ -29,7 +29,7 @@ func TestReadValidConfigFile(t *testing.T) {
 
 	Convey("Given I have configuration file", t, func() {
 		Convey("When I read the config", func() {
-			_, err := test.NewCmdConfig("file:../test/config.yml")
+			_, err := test.NewInputConfig("file:../test/config.yml")
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeNil)
@@ -46,7 +46,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", file), ShouldBeNil)
 
 		Convey("When I write the config", func() {
-			c, err := test.NewCmdConfig("")
+			c, err := test.NewOutputConfig("")
 			So(err, ShouldBeNil)
 
 			err = c.Write([]byte("test"), os.ModeAppend)
@@ -70,7 +70,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 		So(os.WriteFile(file, []byte("environment: development"), os.ModePerm), ShouldBeNil)
 
 		Convey("When I write the config", func() {
-			c, err := test.NewCmdConfig("file:" + file)
+			c, err := test.NewOutputConfig("file:" + file)
 			So(err, ShouldBeNil)
 
 			err = c.Write([]byte("test"), os.ModeAppend)
@@ -94,7 +94,7 @@ func TestValidConfigEnv(t *testing.T) {
 		So(os.Setenv("CONFIG", "ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg=="), ShouldBeNil)
 
 		Convey("When I read the config", func() {
-			_, err := test.NewCmdConfig("")
+			_, err := test.NewInputConfig("")
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeNil)
@@ -105,7 +105,7 @@ func TestValidConfigEnv(t *testing.T) {
 		})
 
 		Convey("When I write the config", func() {
-			c, err := test.NewCmdConfig("")
+			c, err := test.NewInputConfig("")
 			So(err, ShouldBeNil)
 
 			err = c.Write([]byte("test"), os.ModeAppend)
@@ -124,7 +124,7 @@ func TestValidConfigEnv(t *testing.T) {
 func TestMissingConfig(t *testing.T) {
 	Convey("Given I don't have configuration file", t, func() {
 		Convey("When I read the config", func() {
-			_, err := test.NewCmdConfig("")
+			_, err := test.NewInputConfig("")
 
 			Convey("Then I should have an error of missing config file", func() {
 				So(err, ShouldBeError)
@@ -138,7 +138,7 @@ func TestNonExistentConfig(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", "../../test/bob"), ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := test.NewCmdConfig("")
+			_, err := test.NewInputConfig("")
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)
@@ -152,7 +152,7 @@ func TestNonExistentConfig(t *testing.T) {
 func TestInvalidKindConfig(t *testing.T) {
 	Convey("Given I have non existent configuration file", t, func() {
 		Convey("When I try to parse the configuration file", func() {
-			_, err := test.NewCmdConfig("test:test")
+			_, err := test.NewInputConfig("test:test")
 
 			Convey("Then I should have an error of non existent config file", func() {
 				So(err, ShouldBeError)
@@ -167,7 +167,7 @@ func TestInvalidConfig(t *testing.T) {
 		So(os.Setenv("CONFIG_FILE", "../test/greet/v1/service.proto"), ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := test.NewCmdConfig("test:test")
+			_, err := test.NewInputConfig("test:test")
 
 			Convey("Then I should have an error of invalid kind config file", func() {
 				So(err, ShouldBeError)
