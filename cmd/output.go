@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
@@ -16,9 +17,6 @@ type OutputConfig struct {
 // NewOutputConfig for cmd.
 func NewOutputConfig(factory *marshaller.Factory) (*OutputConfig, error) {
 	c, err := NewConfig(*OutputFlag, factory)
-	if err != nil {
-		return nil, err
-	}
 
-	return &OutputConfig{Config: c}, nil
+	return &OutputConfig{Config: c}, errors.Prefix("new output", err)
 }
