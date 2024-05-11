@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.186.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.186.1) - 2024-05-11
+
+- [`fd9ceb8`](https://github.com/alexfalkowski/go-service/commit/fd9ceb819e749996d3b8cb8184b70885a296350d) fix(cmd): wrap error for out config (#729)
+
 ## [v1.186.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.186.0) - 2024-05-11
 
 - [`57056b6`](https://github.com/alexfalkowski/go-service/commit/57056b68482dee7c05235eed78f11477581a98ad) feat(cmd): add name (#728)
