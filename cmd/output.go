@@ -22,5 +22,6 @@ func NewOutputConfig(factory *marshaller.Map) *OutputConfig {
 
 // RegisterInput for cmd.
 func (c *Command) RegisterOutput(value string) {
+	value = valueOrEmpty(value)
 	flags.StringVar(c.root, OutputFlag, "output", "o", value, "input config location (format kind:location, default "+value+")")
 }
