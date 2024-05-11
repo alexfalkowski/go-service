@@ -16,6 +16,11 @@ func StringVar(cmd *cobra.Command, p *string, name, shorthand string, value stri
 	cmd.PersistentFlags().StringVarP(p, name, shorthand, value, usage)
 }
 
+// IsSet the flag for cmd.
+func IsSet(b *bool) bool {
+	return b != nil && *b
+}
+
 // Bool for cmd.
 func Bool() *bool {
 	var b bool

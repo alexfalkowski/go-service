@@ -17,13 +17,13 @@ func TestFlags(t *testing.T) {
 			Use: name, Short: name, Long: name,
 			Version: string(test.Version),
 		}
-		v := flags.Bool()
+		b := flags.Bool()
 
 		Convey("When I add it to the command", func() {
-			flags.BoolVar(c, v, "test", "y", true, "test")
+			flags.BoolVar(c, b, "test", "y", true, "test")
 
 			Convey("Then I should have it set to the default value", func() {
-				So(*v, ShouldBeTrue)
+				So(flags.IsSet(b), ShouldBeTrue)
 			})
 		})
 	})
