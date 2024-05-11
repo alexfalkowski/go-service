@@ -22,6 +22,5 @@ func NewInputConfig(mm *marshaller.Map) *InputConfig {
 
 // RegisterInput for cmd.
 func (c *Command) RegisterInput(value string) {
-	value = valueOrEmpty(value)
-	flags.StringVar(c.root, InputFlag, "input", "i", value, "input config location (format kind:location, default "+value+")")
+	flags.StringVar(c.root, InputFlag, "input", "i", value, "input config location (format kind:location)")
 }
