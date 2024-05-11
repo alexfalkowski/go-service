@@ -164,14 +164,14 @@ func NewPGConfig() *pg.Config {
 }
 
 // NewInputConfig for test.
-func NewInputConfig(flag string) (*cmd.InputConfig, error) {
+func NewInputConfig(flag string) *cmd.InputConfig {
 	*cmd.InputFlag = flag
 
 	return cmd.NewInputConfig(Marshaller)
 }
 
 // NewOutputConfig for test.
-func NewOutputConfig(flag string) (*cmd.OutputConfig, error) {
+func NewOutputConfig(flag string) *cmd.OutputConfig {
 	*cmd.OutputFlag = flag
 
 	return cmd.NewOutputConfig(Marshaller)

@@ -28,7 +28,7 @@ func (f *File) Write(data []byte, mode fs.FileMode) error {
 	return os.WriteFile(f.name(), data, mode)
 }
 
-// Write for file.
+// Kind for file.
 func (f *File) Kind() string {
 	return file.Extension(f.name())
 }

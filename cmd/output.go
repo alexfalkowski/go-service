@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
 )
@@ -15,15 +14,13 @@ type OutputConfig struct {
 }
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(factory *marshaller.Factory) (*OutputConfig, error) {
-	c, err := NewConfig(*OutputFlag, factory)
+func NewOutputConfig(factory *marshaller.Map) *OutputConfig {
+	c := NewConfig(*OutputFlag, factory)
 
-	return &OutputConfig{Config: c}, errors.Prefix("new output", err)
+	return &OutputConfig{Config: c}
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterOutput(env string) {
-	value := "env:" + env
-
+func (c *Command) RegisterOutput(value string) {
 	flags.StringVar(c.root, OutputFlag, "output", "o", value, "input config location (format kind:location, default "+value+")")
 }

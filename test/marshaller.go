@@ -5,7 +5,7 @@ import (
 )
 
 // Marshaller for tests.
-var Marshaller = marshaller.NewFactory()
+var Marshaller = marshaller.NewMap()
 
 // NewMarshaller for test.
 func NewMarshaller(err error) marshaller.Marshaller {

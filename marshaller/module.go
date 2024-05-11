@@ -10,5 +10,5 @@ var Module = fx.Options(
 	fx.Provide(NewJSON),
 	fx.Provide(NewTOML),
 	fx.Provide(NewYAML),
-	fx.Provide(NewFactory),
+	fx.Provide(NewMap),
 )

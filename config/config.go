@@ -35,6 +35,11 @@ func NewConfig(i *cmd.InputConfig) (*Config, error) {
 	return c, i.Unmarshal(c)
 }
 
+// IsEnabled for config.
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil
+}
+
 // Config for the service.
 type Config struct {
 	Debug       *debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
@@ -52,7 +57,7 @@ type Config struct {
 }
 
 func aesConfig(cfg *Config) *aes.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
+	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -60,11 +65,15 @@ func aesConfig(cfg *Config) *aes.Config {
 }
 
 func debugConfig(cfg *Config) *debug.Config {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
 	return cfg.Debug
 }
 
 func ed25519Config(cfg *Config) *ed25519.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
+	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -72,15 +81,23 @@ func ed25519Config(cfg *Config) *ed25519.Config {
 }
 
 func environmentConfig(cfg *Config) env.Environment {
+	if !IsEnabled(cfg) {
+		return env.Development
+	}
+
 	return cfg.Environment
 }
 
 func featureConfig(cfg *Config) *feature.Config {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
 	return cfg.Feature
 }
 
 func grpcConfig(cfg *Config) *grpc.Config {
-	if !transport.IsEnabled(cfg.Transport) {
+	if !IsEnabled(cfg) || !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -88,7 +105,7 @@ func grpcConfig(cfg *Config) *grpc.Config {
 }
 
 func hmacConfig(cfg *Config) *hmac.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
+	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -96,11 +113,15 @@ func hmacConfig(cfg *Config) *hmac.Config {
 }
 
 func hooksConfig(cfg *Config) *hooks.Config {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
 	return cfg.Hooks
 }
 
 func httpConfig(cfg *Config) *http.Config {
-	if !transport.IsEnabled(cfg.Transport) {
+	if !IsEnabled(cfg) || !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -108,11 +129,15 @@ func httpConfig(cfg *Config) *http.Config {
 }
 
 func limiterConfig(cfg *Config) *limiter.Config {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
 	return cfg.Limiter
 }
 
 func loggerConfig(cfg *Config) *zap.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
+	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 
@@ -120,7 +145,7 @@ func loggerConfig(cfg *Config) *zap.Config {
 }
 
 func metricsConfig(cfg *Config) *metrics.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
+	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 
@@ -128,7 +153,7 @@ func metricsConfig(cfg *Config) *metrics.Config {
 }
 
 func rsaConfig(cfg *Config) *rsa.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
+	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -136,7 +161,7 @@ func rsaConfig(cfg *Config) *rsa.Config {
 }
 
 func timeConfig(cfg *Config) *time.Config {
-	if !time.IsEnabled(cfg.Time) {
+	if !IsEnabled(cfg) || !time.IsEnabled(cfg.Time) {
 		return nil
 	}
 
@@ -144,7 +169,7 @@ func timeConfig(cfg *Config) *time.Config {
 }
 
 func pgConfig(cfg *Config) *pg.Config {
-	if !sql.IsEnabled(cfg.SQL) {
+	if !IsEnabled(cfg) || !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
 
@@ -152,7 +177,7 @@ func pgConfig(cfg *Config) *pg.Config {
 }
 
 func redisConfig(cfg *Config) *redis.Config {
-	if !cache.IsEnabled(cfg.Cache) {
+	if !IsEnabled(cfg) || !cache.IsEnabled(cfg.Cache) {
 		return nil
 	}
 
@@ -160,7 +185,7 @@ func redisConfig(cfg *Config) *redis.Config {
 }
 
 func ristrettoConfig(cfg *Config) *ristretto.Config {
-	if !cache.IsEnabled(cfg.Cache) {
+	if !IsEnabled(cfg) || !cache.IsEnabled(cfg.Cache) {
 		return nil
 	}
 
@@ -168,11 +193,15 @@ func ristrettoConfig(cfg *Config) *ristretto.Config {
 }
 
 func tokenConfig(cfg *Config) *token.Config {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
 	return cfg.Token
 }
 
 func tracerConfig(cfg *Config) *tracer.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
+	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 

@@ -7,18 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/marshaller"
 )
 
-// ReaderWriter for cmd.
-type ReaderWriter interface {
-	// Read bytes.
-	Read() ([]byte, error)
-
-	// Write bytes with files's mode.
-	Write(data []byte, mode fs.FileMode) error
-
-	// Kind of read writer.
-	Kind() string
-}
-
 // Config for cmd.
 type Config struct {
 	m  marshaller.Marshaller
@@ -26,12 +14,12 @@ type Config struct {
 }
 
 // NewConfig for cmd.
-func NewConfig(flag string, factory *marshaller.Factory) (*Config, error) {
+func NewConfig(flag string, mm *marshaller.Map) *Config {
 	k, l := SplitFlag(flag)
 	rw := NewReadWriter(k, l)
-	m, err := factory.Create(rw.Kind())
+	m := mm.Get(rw.Kind())
 
-	return &Config{rw: rw, m: m}, errors.Prefix("new config", err)
+	return &Config{rw: rw, m: m}
 }
 
 // Kind of config.
