@@ -9,7 +9,7 @@ import (
 )
 
 // Generate key pair with RSA.
-func Generate() (string, string, error) {
+func Generate() (PublicKey, PrivateKey, error) {
 	p, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return "", "", err
@@ -18,7 +18,7 @@ func Generate() (string, string, error) {
 	pub := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(&p.PublicKey))
 	pri := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(p))
 
-	return pub, pri, nil
+	return PublicKey(pub), PrivateKey(pri), nil
 }
 
 // Algo for rsa.
@@ -82,7 +82,7 @@ func (*none) Decrypt(msg string) (string, error) {
 }
 
 func publicKey(cfg *Config) (*rsa.PublicKey, error) {
-	k, err := base64.StdEncoding.DecodeString(cfg.Public)
+	k, err := base64.StdEncoding.DecodeString(string(cfg.Public))
 	if err != nil {
 		return nil, err
 	}

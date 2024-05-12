@@ -9,12 +9,17 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-// Config for aes.
-type Config struct {
-	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-}
+type (
+	// Key for aes.
+	Key string
+
+	// Config for aes.
+	Config struct {
+		Key Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+	}
+)
 
 // GetKey from config or env.
-func (c Config) GetKey() string {
-	return os.GetFromEnv(c.Key)
+func (c *Config) GetKey() string {
+	return os.GetFromEnv(string(c.Key))
 }

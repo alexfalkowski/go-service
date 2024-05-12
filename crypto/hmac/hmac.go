@@ -12,10 +12,10 @@ import (
 // Code was adapted from github.com/alexellis/hmac/v2.
 
 // Generate for hmac.
-func Generate() (string, error) {
+func Generate() (Key, error) {
 	s, err := rand.GenerateBytes(32)
 
-	return base64.StdEncoding.EncodeToString(s), err
+	return Key(base64.StdEncoding.EncodeToString(s)), err
 }
 
 // Algo for hmac.

@@ -9,10 +9,10 @@ import (
 )
 
 // Generate key pair with Ed25519.
-func Generate() (string, string, error) {
+func Generate() (PublicKey, PrivateKey, error) {
 	pub, pri, err := ed25519.GenerateKey(rand.Reader)
 
-	return base64.StdEncoding.EncodeToString(pub), base64.StdEncoding.EncodeToString(pri), err
+	return PublicKey(base64.StdEncoding.EncodeToString(pub)), PrivateKey(base64.StdEncoding.EncodeToString(pri)), err
 }
 
 // Algo for ed25519.
@@ -36,7 +36,7 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return &none{}, nil
 	}
 
-	pub, err := base64.StdEncoding.DecodeString(cfg.Public)
+	pub, err := base64.StdEncoding.DecodeString(string(cfg.Public))
 	if err != nil {
 		return nil, err
 	}

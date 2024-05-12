@@ -15,10 +15,10 @@ import (
 var ErrInvalidLength = errors.New("invalid length")
 
 // Generate for aes.
-func Generate() (string, error) {
+func Generate() (Key, error) {
 	s, err := rand.GenerateBytes(32)
 
-	return base64.StdEncoding.EncodeToString(s), err
+	return Key(base64.StdEncoding.EncodeToString(s)), err
 }
 
 // Algo for aes.
