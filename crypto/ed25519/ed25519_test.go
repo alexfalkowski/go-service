@@ -15,8 +15,8 @@ func TestAlgo(t *testing.T) {
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
-			So(pub, ShouldNotBeBlank)
-			So(pri, ShouldNotBeBlank)
+			So(string(pub), ShouldNotBeBlank)
+			So(string(pri), ShouldNotBeBlank)
 		})
 	})
 
@@ -46,7 +46,7 @@ func TestAlgo(t *testing.T) {
 
 	for _, tu := range tus {
 		Convey("When I try to create a bad algo", t, func() {
-			_, err := ed25519.NewAlgo(&ed25519.Config{Public: tu[0], Private: tu[1]})
+			_, err := ed25519.NewAlgo(&ed25519.Config{Public: ed25519.PublicKey(tu[0]), Private: ed25519.PrivateKey(tu[1])})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

@@ -9,13 +9,21 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-// Config for ed25519.
-type Config struct {
-	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
-	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
-}
+type (
+	// PublicKey for ed25519.
+	PublicKey string
+
+	// PrivateKey  for ed25519.
+	PrivateKey string
+
+	// Config for ed25519.
+	Config struct {
+		Public  PublicKey  `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+		Private PrivateKey `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
+	}
+)
 
 // GetPrivate from config or env.
-func (c Config) GetPrivate() string {
-	return os.GetFromEnv(c.Private)
+func (c *Config) GetPrivate() string {
+	return os.GetFromEnv(string(c.Private))
 }
