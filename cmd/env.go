@@ -12,8 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/file"
 )
 
-// ErrInvalidEnvVariable for cmd.
-var ErrInvalidEnvVariable = errors.New("invalid location: empty")
+// ErrLocationMissing for cmd.
+var ErrLocationMissing = errors.New("location is missing")
 
 // ENV for cmd.
 type ENV struct {
@@ -34,7 +34,7 @@ func (e *ENV) Read() ([]byte, error) {
 	}
 
 	if e.name() == "" {
-		return nil, e.emptyError()
+		return nil, e.missingLocationError()
 	}
 
 	return os.ReadFile(e.path())
@@ -49,7 +49,7 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 	}
 
 	if e.name() == "" {
-		return e.emptyError()
+		return e.missingLocationError()
 	}
 
 	return os.WriteFile(e.path(), data, mode)
@@ -84,6 +84,6 @@ func (e *ENV) split() (string, string) {
 	return s[0], s[1]
 }
 
-func (e *ENV) emptyError() error {
-	return fmt.Errorf("%s: %w", e.location, ErrInvalidEnvVariable)
+func (e *ENV) missingLocationError() error {
+	return fmt.Errorf("%s: %w", e.location, ErrLocationMissing)
 }
