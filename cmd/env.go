@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -33,7 +34,7 @@ func (e *ENV) Read() ([]byte, error) {
 	}
 
 	if e.name() == "" {
-		return nil, ErrInvalidEnvVariable
+		return nil, e.emptyError()
 	}
 
 	return os.ReadFile(e.path())
@@ -48,7 +49,7 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 	}
 
 	if e.name() == "" {
-		return ErrInvalidEnvVariable
+		return e.emptyError()
 	}
 
 	return os.WriteFile(e.path(), data, mode)
@@ -81,4 +82,8 @@ func (e *ENV) split() (string, string) {
 	s := strings.Split(e.name(), ":")
 
 	return s[0], s[1]
+}
+
+func (e *ENV) emptyError() error {
+	return fmt.Errorf("%s: %w", e.location, ErrInvalidEnvVariable)
 }
