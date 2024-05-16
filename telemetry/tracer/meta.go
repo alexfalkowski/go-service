@@ -14,3 +14,12 @@ func Meta(ctx context.Context, span trace.Span) {
 		span.SetAttributes(attribute.Key(k).String(v))
 	}
 }
+
+// WithTraceID for tracer.
+func WithTraceID(ctx context.Context, span trace.Span) context.Context {
+	if !span.IsRecording() {
+		return ctx
+	}
+
+	return meta.WithAttribute(ctx, "traceId", meta.ToString(span.SpanContext().TraceID()))
+}

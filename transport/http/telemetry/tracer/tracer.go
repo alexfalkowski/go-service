@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/attribute"
@@ -44,7 +42,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+	ctx = tracer.WithTraceID(ctx, span)
 
 	m := snoop.CaptureMetricsFn(resp, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
@@ -79,7 +77,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx, span := r.tracer.Start(ctx, operationName(fmt.Sprintf("%s %s", method, req.URL.Redacted())), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	defer span.End()
 
-	ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+	ctx = tracer.WithTraceID(ctx, span)
 
 	inject(ctx, req)
 
