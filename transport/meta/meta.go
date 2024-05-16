@@ -35,8 +35,3 @@ func WithRequestID(ctx context.Context, id meta.Valuer) context.Context {
 func RequestID(ctx context.Context) meta.Valuer {
 	return meta.Attribute(ctx, RequestIDKey)
 }
-
-// WithTraceID for transport.
-func WithTraceID(ctx context.Context, id meta.Valuer) context.Context {
-	return meta.WithAttribute(ctx, "traceId", id)
-}

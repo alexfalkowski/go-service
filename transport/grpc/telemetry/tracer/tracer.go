@@ -4,9 +4,7 @@ import (
 	"context"
 	"path"
 
-	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"go.opentelemetry.io/otel/attribute"
@@ -37,7 +35,7 @@ func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+		ctx = tracer.WithTraceID(ctx, span)
 		resp, err := handler(ctx, req)
 
 		tracer.Error(err, span)
@@ -69,7 +67,7 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+		ctx = tracer.WithTraceID(ctx, span)
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -102,7 +100,7 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
@@ -133,7 +131,7 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
-		ctx = tm.WithTraceID(ctx, meta.ToString(span.SpanContext().TraceID()))
+		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
