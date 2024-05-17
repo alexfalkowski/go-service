@@ -9,15 +9,16 @@ import (
 
 // NewOTLPMeter for test.
 func NewOTLPMeter(lc fx.Lifecycle) metric.Meter {
-	return newMeter(lc, NewOTLPMetricsConfig())
+	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeter for test.
 func NewPrometheusMeter(lc fx.Lifecycle) metric.Meter {
-	return newMeter(lc, NewPrometheusMetricsConfig())
+	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
-func newMeter(lc fx.Lifecycle, c *metrics.Config) metric.Meter {
+// NewMeter for test.
+func NewMeter(lc fx.Lifecycle, c *metrics.Config) metric.Meter {
 	r, err := metrics.NewReader(c)
 	runtime.Must(err)
 
