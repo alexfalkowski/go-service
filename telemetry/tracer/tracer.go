@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -38,19 +38,16 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *C
 		return noop.Tracer{}
 	}
 
-	opts := []otlptracehttp.Option{
-		otlptracehttp.WithEndpointURL(cfg.Host),
-	}
-
-	if cfg.IsBaselime() {
-		opts = append(opts, otlptracehttp.WithHeaders(map[string]string{"x-api-key": cfg.Key}))
+	opts := []otlp.Option{otlp.WithEndpointURL(cfg.Host)}
+	if cfg.HasKey() {
+		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + cfg.GetKey()}))
 	}
 
 	return newTracer(lc, env, ver, logger, opts)
 }
 
-func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlptracehttp.Option) trace.Tracer {
-	client := otlptracehttp.NewClient(opts...)
+func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlp.Option) trace.Tracer {
+	client := otlp.NewClient(opts...)
 	exporter := otlptrace.NewUnstarted(client)
 
 	name := os.ExecutableName()

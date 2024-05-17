@@ -71,7 +71,12 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 	}
 
 	if cfg.IsOTLP() {
-		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.Host))
+		opts := []otlp.Option{otlp.WithEndpointURL(cfg.Host)}
+		if cfg.HasKey() {
+			opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + cfg.GetKey()}))
+		}
+
+		r, err := otlp.New(context.Background(), opts...)
 
 		return metric.NewPeriodicReader(r), errors.Prefix("new otlp", err)
 	}

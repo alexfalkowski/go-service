@@ -133,6 +133,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
 		Host: "http://localhost:9009/otlp/v1/metrics",
+		Key:  "test",
 	}
 }
 
@@ -141,14 +142,7 @@ func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
 		Host: "localhost:4318",
-	}
-}
-
-// NewBaselimeTracerConfig for test.
-func NewBaselimeTracerConfig() *tracer.Config {
-	return &tracer.Config{
-		Kind: "baselime",
-		Key:  os.Getenv("BASELIME_API_KEY"),
+		Key:  "test",
 	}
 }
 

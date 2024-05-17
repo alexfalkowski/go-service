@@ -41,7 +41,7 @@ func TestHealth(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewBaselimeTracerConfig()
+			tc := test.NewOTLPTracerConfig()
 			m := metrics.NewNoopMeter()
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			client := cl.NewHTTP()

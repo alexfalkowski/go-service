@@ -33,7 +33,7 @@ func TestUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewBaselimeTracerConfig()
+		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
