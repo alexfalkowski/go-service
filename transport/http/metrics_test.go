@@ -31,7 +31,8 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m := test.NewPrometheusMeter(lc)
+		mc := test.NewPrometheusMetricsConfig()
+		m := test.NewMeter(lc, mc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
@@ -48,7 +49,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		err = ht.RegisterMetrics(test.Mux)
+		err = ht.RegisterMetrics(mc, test.Mux)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -97,7 +98,8 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		pg.Register(tracer, logger)
 
-		m := test.NewPrometheusMeter(lc)
+		mc := test.NewPrometheusMetricsConfig()
+		m := test.NewMeter(lc, mc)
 
 		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
 		So(err, ShouldBeNil)
@@ -117,7 +119,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 			TLS: test.NewTLSClientConfig(),
 		}
 
-		err = ht.RegisterMetrics(test.Mux)
+		err = ht.RegisterMetrics(mc, test.Mux)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()

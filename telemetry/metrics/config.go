@@ -21,6 +21,11 @@ func (c *Config) IsOTLP() bool {
 	return c.Kind == "otlp"
 }
 
+// IsPrometheus configuration.
+func (c *Config) IsPrometheus() bool {
+	return c.Kind == "prometheus"
+}
+
 // GetKey for metrics.
 func (c *Config) GetKey() string {
 	return os.GetFromEnv(c.Key)
