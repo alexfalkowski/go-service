@@ -1,5 +1,9 @@
 package tracer
 
+import (
+	"github.com/alexfalkowski/go-service/os"
+)
+
 // IsEnabled for tracer.
 func IsEnabled(cfg *Config) bool {
 	return cfg != nil && cfg.Kind != ""
@@ -12,7 +16,12 @@ type Config struct {
 	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 }
 
-// IsBaselime configuration.
-func (c *Config) IsBaselime() bool {
-	return c.Kind == "baselime"
+// GetKey for tracer.
+func (c *Config) GetKey() string {
+	return os.GetFromEnv(c.Key)
+}
+
+// HasKey for tracer.
+func (c *Config) HasKey() bool {
+	return c.Key != ""
 }

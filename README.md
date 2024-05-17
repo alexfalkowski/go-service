@@ -207,28 +207,17 @@ telemetry:
   metrics:
     kind: otlp
     host: http://localhost:9009/otlp/v1/metrics
+    key: base64 (username:password)
 ```
 
 ### Trace
 
 For distributed tracing we support the following:
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
-- [Baselime](https://github.com/baselime/go-opentelemetry)
 
 #### Configuration
 
 Below is the configuration for each system.
-
-##### Baselime
-
-To configure, please specify the following:
-
-```yaml
-telemetry:
-  tracer:
-    kind: baseline
-    key: api-key
-```
 
 ##### OTLP
 
@@ -239,7 +228,7 @@ telemetry:
   tracer:
     kind: otlp
     host: localhost:4318
-    secure: false
+    key: base64 (username:password)
 ```
 
 ## Token
