@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.191.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.1) - 2024-05-17
+
+- [`24dd3c3`](https://github.com/alexfalkowski/go-service/commit/24dd3c3f58e786c0ee1de56e9a6aac20817a0352) fix(metrics): enable endpoint only for prometheus (#744)
+
 ## [v1.191.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.0) - 2024-05-17
 
 - [`8dadb5d`](https://github.com/alexfalkowski/go-service/commit/8dadb5d660dc5292143d2f993af4d3d246899b88) feat(telemetry): pass key (#743)
