@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,7 +65,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		h.sent.Add(ctx, 1, opts)
 	}
 
-	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.Int(m.Code)))
+	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(m.Code))))
 	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 }
 
@@ -120,7 +121,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	r.received.Add(ctx, 1, opts)
-	r.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.Int(resp.StatusCode)))
+	r.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(resp.StatusCode))))
 	r.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return resp, nil
