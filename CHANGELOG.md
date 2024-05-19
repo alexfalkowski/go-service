@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.191.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.3) - 2024-05-19
+
+- [`626c043`](https://github.com/alexfalkowski/go-service/commit/626c043ece16407b4f285d30ef9f7f1b2c39ac4b) fix(tracer): convert status code to string for http (#746)
+
 ## [v1.191.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.2) - 2024-05-19
 
 - [`e9e4573`](https://github.com/alexfalkowski/go-service/commit/e9e4573902eefe8e34d036b7993b0320d2dc33d1) fix(feature): make sure we shutdown the provider (#745)
