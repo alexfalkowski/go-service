@@ -26,6 +26,7 @@ func NewNoopMeter() m.Meter {
 // MeterParams for metrics.
 type MeterParams struct {
 	fx.In
+
 	Lifecycle   fx.Lifecycle
 	Reader      metric.Reader
 	Config      *Config

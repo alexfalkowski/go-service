@@ -18,6 +18,7 @@ const (
 // RegisterParams health for HTTP.
 type RegisterParams struct {
 	fx.In
+
 	Mux       *runtime.ServeMux
 	Health    *HealthObserver
 	Liveness  *LivenessObserver

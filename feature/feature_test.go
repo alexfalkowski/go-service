@@ -22,7 +22,8 @@ func TestFlipt(t *testing.T) {
 		m := test.NewOTLPMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
-		c := feature.NewClient(p)
+		pr := feature.NewFeatureProvider(p)
+		c := feature.NewClient(lc, pr)
 
 		lc.RequireStart()
 
@@ -32,6 +33,31 @@ func TestFlipt(t *testing.T) {
 
 			Convey("Then I should have missing flag", func() {
 				So(err, ShouldBeError)
+				So(feature.IsNotFoundError(err), ShouldBeTrue)
+			})
+		})
+
+		lc.RequireStop()
+	})
+
+	Convey("Given I have a flipt client", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		tc := test.NewOTLPTracerConfig()
+		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		m := test.NewOTLPMeter(lc)
+		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
+		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
+		pr := feature.NewFeatureProvider(p)
+		c := feature.NewClient(lc, pr)
+
+		lc.RequireStart()
+
+		Convey("When I ping", func() {
+			err := feature.Ping(context.Background(), c)
+
+			Convey("Then I should be up", func() {
+				So(err, ShouldBeNil)
 			})
 		})
 
@@ -41,8 +67,12 @@ func TestFlipt(t *testing.T) {
 
 func TestNoop(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
+		lc := fxtest.NewLifecycle(t)
 		p := feature.ClientParams{Config: &feature.Config{}}
-		c := feature.NewClient(p)
+		pr := feature.NewFeatureProvider(p)
+		c := feature.NewClient(lc, pr)
+
+		lc.RequireStart()
 
 		Convey("When I get a flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}
@@ -53,5 +83,7 @@ func TestNoop(t *testing.T) {
 				So(v, ShouldBeFalse)
 			})
 		})
+
+		lc.RequireStop()
 	})
 }
