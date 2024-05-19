@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.191.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.2) - 2024-05-19
+
+- [`e9e4573`](https://github.com/alexfalkowski/go-service/commit/e9e4573902eefe8e34d036b7993b0320d2dc33d1) fix(feature): make sure we shutdown the provider (#745)
+
 ## [v1.191.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.191.1) - 2024-05-17
 
 - [`24dd3c3`](https://github.com/alexfalkowski/go-service/commit/24dd3c3f58e786c0ee1de56e9a6aac20817a0352) fix(metrics): enable endpoint only for prometheus (#744)
