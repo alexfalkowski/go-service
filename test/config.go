@@ -1,14 +1,16 @@
 package test
 
 import (
-	"encoding/base64"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/crypto/aes"
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -16,7 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
-	sr "github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -27,10 +28,40 @@ import (
 
 const timeout = 2 * time.Second
 
+// NewEd25519 for test.
+func NewEd25519() *ed25519.Config {
+	return &ed25519.Config{
+		Public:  ed25519.PublicKey(hooks.Secret(path("secrets/ed25519_public"))),
+		Private: ed25519.PrivateKey(hooks.Secret(path("secrets/ed25519_private"))),
+	}
+}
+
+// NewEd25519 for test.
+func NewRSA() *rsa.Config {
+	return &rsa.Config{
+		Public:  rsa.PublicKey(hooks.Secret(path("secrets/rsa_public"))),
+		Private: rsa.PrivateKey(hooks.Secret(path("secrets/rsa_private"))),
+	}
+}
+
+// NewAES for test.
+func NewAES() *aes.Config {
+	return &aes.Config{
+		Key: aes.Key(path("secrets/aes")),
+	}
+}
+
+// NewHMAC for test.
+func NewHMAC() *hmac.Config {
+	return &hmac.Config{
+		Key: hmac.Key(path("secrets/hmac")),
+	}
+}
+
 // NewHook for test.
 func NewHook() *hooks.Config {
 	return &hooks.Config{
-		Secret: "YWJjZGUxMjM0NQ==",
+		Secret: hooks.Secret(path("secrets/hooks")),
 	}
 }
 
@@ -59,18 +90,9 @@ func NewTLSServerConfig() *tls.Config {
 
 // NewTLSConfig for test.
 func NewTLSConfig(c, k string) *tls.Config {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	cert, err := os.ReadFile(filepath.Join(dir, c))
-	sr.Must(err)
-
-	key, err := os.ReadFile(filepath.Join(dir, k))
-	sr.Must(err)
-
 	tc := &tls.Config{
-		Cert: base64.StdEncoding.EncodeToString(cert),
-		Key:  base64.StdEncoding.EncodeToString(key),
+		Cert: tls.Cert(path(c)),
+		Key:  tls.Key(path(k)),
 	}
 
 	return tc
@@ -133,7 +155,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
 		Host: "http://localhost:9009/otlp/v1/metrics",
-		Key:  "test",
+		Key:  metrics.Key(path("secrets/basic")),
 	}
 }
 
@@ -142,7 +164,7 @@ func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
 		Host: "localhost:4318",
-		Key:  "test",
+		Key:  tracer.Key(path("secrets/basic")),
 	}
 }
 
@@ -208,4 +230,11 @@ func NewLimiterConfig(pattern string) *limiter.Config {
 		Kind:    "user-agent",
 		Pattern: pattern,
 	}
+}
+
+func path(p string) string {
+	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
+	dir := filepath.Dir(b)
+
+	return filepath.Join(dir, p)
 }

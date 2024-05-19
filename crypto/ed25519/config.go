@@ -23,7 +23,12 @@ type (
 	}
 )
 
-// GetPrivate from config or env.
-func (c *Config) GetPrivate() string {
-	return os.GetFromEnv(string(c.Private))
+// GetPublic for ed25519.
+func (c *Config) GetPublic() ([]byte, error) {
+	return os.ReadBase64File(string(c.Public))
+}
+
+// GetPrivate for ed25519.
+func (c *Config) GetPrivate() ([]byte, error) {
+	return os.ReadBase64File(string(c.Private))
 }

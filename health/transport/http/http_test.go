@@ -45,7 +45,11 @@ func TestHealth(t *testing.T) {
 			m := metrics.NewNoopMeter()
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			client := cl.NewHTTP()
-			o := observer(lc, s.Addr(), "http://localhost:6000/v1/status/200", client, logger).Observe("http")
+
+			so, err := observer(lc, s.Addr(), "http://localhost:6000/v1/status/200", client, logger)
+			So(err, ShouldBeNil)
+
+			o := so.Observe("http")
 
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			s.Register()
@@ -55,7 +59,7 @@ func TestHealth(t *testing.T) {
 				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
 				Version: test.Version,
 			}
-			err := shh.Register(params)
+			err = shh.Register(params)
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
@@ -101,18 +105,21 @@ func TestReadinessNoop(t *testing.T) {
 		m := metrics.NewNoopMeter()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
-		server := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
-		o := server.Observe("http")
+
+		so, err := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
+		So(err, ShouldBeNil)
+
+		o := so.Observe("http")
 
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		s.Register()
 
 		params := shh.RegisterParams{
 			Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
-			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: server.Observe("noop")},
+			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
 			Version: test.Version,
 		}
-		err := shh.Register(params)
+		err = shh.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -156,7 +163,11 @@ func TestInvalidHealth(t *testing.T) {
 		m := metrics.NewNoopMeter()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
-		o := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger).Observe("http")
+
+		so, err := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
+		So(err, ShouldBeNil)
+
+		o := so.Observe("http")
 
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		s.Register()
@@ -166,7 +177,7 @@ func TestInvalidHealth(t *testing.T) {
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
 			Version: test.Version,
 		}
-		err := shh.Register(params)
+		err = shh.Register(params)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -195,9 +206,14 @@ func TestInvalidHealth(t *testing.T) {
 	})
 }
 
-func observer(lc fx.Lifecycle, host, url string, client *http.Client, logger *zap.Logger) *server.Server {
+func observer(lc fx.Lifecycle, host, url string, client *http.Client, logger *zap.Logger) (*server.Server, error) {
 	c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(host, "snappy", "proto"), Logger: logger}
-	r := c.NewRedisClient()
+
+	r, err := c.NewRedisClient()
+	if err != nil {
+		return nil, err
+	}
+
 	rc := shc.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
@@ -209,5 +225,5 @@ func observer(lc fx.Lifecycle, host, url string, client *http.Client, logger *za
 
 	regs := health.Registrations{hr, nr, rr}
 
-	return health.NewServer(lc, regs)
+	return health.NewServer(lc, regs), nil
 }

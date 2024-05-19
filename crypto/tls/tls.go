@@ -2,7 +2,6 @@ package tls
 
 import (
 	"crypto/tls"
-	"encoding/base64"
 )
 
 // NewConfig for tls.
@@ -16,12 +15,12 @@ func NewConfig(cfg *Config) (*tls.Config, error) {
 		return c, nil
 	}
 
-	dc, err := base64.StdEncoding.DecodeString(cfg.GetCert())
+	dc, err := cfg.GetCert()
 	if err != nil {
 		return c, err
 	}
 
-	dk, err := base64.StdEncoding.DecodeString(cfg.GetKey())
+	dk, err := cfg.GetKey()
 	if err != nil {
 		return c, err
 	}

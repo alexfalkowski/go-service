@@ -82,7 +82,7 @@ func (*none) Decrypt(msg string) (string, error) {
 }
 
 func publicKey(cfg *Config) (*rsa.PublicKey, error) {
-	k, err := base64.StdEncoding.DecodeString(string(cfg.Public))
+	k, err := cfg.GetPublic()
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func publicKey(cfg *Config) (*rsa.PublicKey, error) {
 }
 
 func privateKey(cfg *Config) (*rsa.PrivateKey, error) {
-	k, err := base64.StdEncoding.DecodeString(cfg.GetPrivate())
+	k, err := cfg.GetPrivate()
 	if err != nil {
 		return nil, err
 	}

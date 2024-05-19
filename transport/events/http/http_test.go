@@ -41,7 +41,9 @@ func TestSendReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+			tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+			So(err, ShouldBeNil)
+
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 
 			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
@@ -91,7 +93,9 @@ func TestSendNotReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+			tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+			So(err, ShouldBeNil)
+
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			rt = &delRoundTripper{rt: rt}
 

@@ -115,7 +115,7 @@ To configure, please specify the following:
 
 ```yaml
 hooks:
-  secret: Base64 encoded secret
+  secret: path to secret
 ```
 
 ## Runtime
@@ -207,7 +207,7 @@ telemetry:
   metrics:
     kind: otlp
     host: http://localhost:9009/otlp/v1/metrics
-    key: base64 (username:password)
+    key: path to key
 ```
 
 ### Trace
@@ -228,7 +228,7 @@ telemetry:
   tracer:
     kind: otlp
     host: localhost:4318
-    key: base64 (username:password)
+    key: path to key
 ```
 
 ## Token
@@ -320,12 +320,12 @@ If you would like to enable TLS, do the following:
 transport:
   http:
     tls:
-      cert: PEM certificate base64 encoded
-      key: PEM certificate base64 encoded
+      cert: path of cert
+      key: path of key
   grpc:
     tls:
-      cert: PEM certificate base64 encoded
-      key: PEM certificate base64 encoded
+      cert: path of cert
+      key: path of key
 ```
 
 ## Cryptography
@@ -342,15 +342,15 @@ To configure, please specify the following:
 ```yaml
 crypto:
   aes:
-    key: certificate base64 encoded
+    key: path to the key
   ed25519:
-    public: certificate base64 encoded
-    private: certificate base64
+    public: path to the public
+    private: path to the private
   hmac:
-    key: certificate base64 encoded
+    key: path to the key
   rsa:
-    public: certificate base64 encoded
-    private: certificate base64 encoded
+    public: path to the public
+    private: path to the private
 ```
 
 ## Debug
@@ -407,8 +407,8 @@ If you would like to enable TLS, do the following:
 ```yaml
 debug:
   tls:
-    cert: PEM certificate base64 encoded
-    key: PEM certificate base64 encoded
+    cert: path of cert
+    key: path of key
 ```
 
 ## Development

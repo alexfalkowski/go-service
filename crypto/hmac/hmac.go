@@ -33,7 +33,7 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return &none{}, nil
 	}
 
-	k, err := base64.StdEncoding.DecodeString(cfg.GetKey())
+	k, err := cfg.GetKey()
 
 	return &algo{key: k}, err
 }

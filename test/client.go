@@ -34,7 +34,9 @@ func (c *Client) NewHTTP() *http.Client {
 	sec, err := h.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
-	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	runtime.Must(err)
+
 	client := h.NewClient(
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
@@ -47,7 +49,8 @@ func (c *Client) NewHTTP() *http.Client {
 }
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
-	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	runtime.Must(err)
 
 	dialOpts := []grpc.DialOption{}
 	if c.Credentials != nil {

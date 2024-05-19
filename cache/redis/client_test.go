@@ -25,7 +25,8 @@ func TestClientIncr(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger}
-		client := c.NewRedisClient()
+		client, err := c.NewRedisClient()
+		So(err, ShouldBeNil)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

@@ -33,17 +33,23 @@ func Register() {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) trace.Tracer {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
-		return noop.Tracer{}
+		return noop.Tracer{}, nil
 	}
 
 	opts := []otlp.Option{otlp.WithEndpointURL(cfg.Host)}
+
 	if cfg.HasKey() {
-		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + cfg.GetKey()}))
+		k, err := cfg.GetKey()
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + k}))
 	}
 
-	return newTracer(lc, env, ver, logger, opts)
+	return newTracer(lc, env, ver, logger, opts), nil
 }
 
 func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlp.Option) trace.Tracer {

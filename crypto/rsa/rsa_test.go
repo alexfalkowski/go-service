@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/rsa"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -28,36 +29,9 @@ func TestAlgo(t *testing.T) {
 		})
 	})
 
-	Convey("When I create an invalid algo with public", t, func() {
-		pub, _, err := rsa.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := rsa.NewAlgo(&rsa.Config{Public: pub})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(a, ShouldBeNil)
-		})
-	})
-
-	Convey("When I create an invalid algo with private", t, func() {
-		_, pri, err := rsa.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := rsa.NewAlgo(&rsa.Config{Private: pri})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(a, ShouldBeNil)
-		})
-	})
-
 	Convey("Given I have generated a key pair", t, func() {
-		pub, pri, err := rsa.Generate()
-		So(err, ShouldBeNil)
-
 		Convey("When I create an algo", func() {
-			a, err := rsa.NewAlgo(&rsa.Config{Public: pub, Private: pri})
+			a, err := rsa.NewAlgo(test.NewRSA())
 
 			Convey("Then I should not have an error", func() {
 				So(err, ShouldBeNil)
@@ -67,10 +41,7 @@ func TestAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		pub, pri, err := rsa.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := rsa.NewAlgo(&rsa.Config{Public: pub, Private: pri})
+		a, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -87,10 +58,7 @@ func TestAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		pub, pri, err := rsa.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := rsa.NewAlgo(&rsa.Config{Public: pub, Private: pri})
+		a, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {

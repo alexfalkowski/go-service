@@ -36,12 +36,12 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return &none{}, nil
 	}
 
-	pub, err := base64.StdEncoding.DecodeString(string(cfg.Public))
+	pub, err := cfg.GetPublic()
 	if err != nil {
 		return nil, err
 	}
 
-	pri, err := base64.StdEncoding.DecodeString(cfg.GetPrivate())
+	pri, err := cfg.GetPrivate()
 	if err != nil {
 		return nil, err
 	}
