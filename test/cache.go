@@ -26,7 +26,12 @@ type Cache struct {
 
 // NewRedisCache for test.
 func (c *Cache) NewRedisCache() (*cache.Cache, error) {
-	params := redis.OptionsParams{Client: c.NewRedisClient(), Config: c.Redis, Marshaller: Marshaller, Compressor: Compressor}
+	cl, err := c.NewRedisClient()
+	if err != nil {
+		return nil, err
+	}
+
+	params := redis.OptionsParams{Client: cl, Config: c.Redis, Marshaller: Marshaller, Compressor: Compressor}
 
 	opts, err := redis.NewOptions(params)
 	if err != nil {
@@ -40,11 +45,15 @@ func (c *Cache) NewRedisCache() (*cache.Cache, error) {
 }
 
 // NewRedisClient for test.
-func (c *Cache) NewRedisClient() gr.Client {
-	tracer := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+func (c *Cache) NewRedisClient() (gr.Client, error) {
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	if err != nil {
+		return nil, err
+	}
+
 	client := redis.NewClient(redis.ClientParams{Lifecycle: c.Lifecycle, RingOptions: redis.NewRingOptions(c.Redis), Tracer: tracer, Logger: c.Logger})
 
-	return client
+	return client, nil
 }
 
 // NewRistrettoCache for test.

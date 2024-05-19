@@ -20,5 +20,10 @@ func New(cfg *Config) (*hooks.Webhook, error) {
 		return hooks.NewWebhookRaw(nil)
 	}
 
-	return hooks.NewWebhook(string(cfg.Secret))
+	s, err := cfg.GetSecret()
+	if err != nil {
+		return nil, err
+	}
+
+	return hooks.NewWebhook(string(s))
 }

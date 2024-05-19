@@ -5,10 +5,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-//nolint:funlen
 func TestAlgo(t *testing.T) {
 	Convey("When I generate", t, func() {
 		key, err := hmac.Generate()
@@ -19,21 +19,9 @@ func TestAlgo(t *testing.T) {
 		})
 	})
 
-	Convey("When I create an invalid algo", t, func() {
-		a, err := hmac.NewAlgo(&hmac.Config{Key: "==sdd"})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(a, ShouldNotBeNil)
-		})
-	})
-
 	Convey("Given I have generated a key", t, func() {
-		key, err := hmac.Generate()
-		So(err, ShouldBeNil)
-
 		Convey("When I create an algo", func() {
-			a, err := hmac.NewAlgo(&hmac.Config{Key: key})
+			a, err := hmac.NewAlgo(test.NewHMAC())
 
 			Convey("Then I should not have an error", func() {
 				So(err, ShouldBeNil)
@@ -43,10 +31,7 @@ func TestAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		key, err := hmac.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := hmac.NewAlgo(&hmac.Config{Key: key})
+		a, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
@@ -59,10 +44,7 @@ func TestAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		key, err := hmac.Generate()
-		So(err, ShouldBeNil)
-
-		a, err := hmac.NewAlgo(&hmac.Config{Key: key})
+		a, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {

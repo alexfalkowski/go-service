@@ -35,7 +35,9 @@ type Server struct {
 // Register server.
 func (s *Server) Register() {
 	sh := NewShutdowner()
-	tracer := tracer.NewTracer(s.Lifecycle, Environment, Version, s.Tracer, s.Logger)
+	tracer, err := tracer.NewTracer(s.Lifecycle, Environment, Version, s.Tracer, s.Logger)
+	runtime.Must(err)
+
 	h, err := th.NewServer(th.ServerParams{
 		Shutdowner: sh, Mux: Mux,
 		Config: s.Transport.HTTP, Logger: s.Logger,

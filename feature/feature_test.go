@@ -18,7 +18,9 @@ func TestFlipt(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		So(err, ShouldBeNil)
+
 		m := test.NewOTLPMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
@@ -44,7 +46,9 @@ func TestFlipt(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		So(err, ShouldBeNil)
+
 		m := test.NewOTLPMeter(lc)
 		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}

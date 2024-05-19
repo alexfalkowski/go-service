@@ -19,7 +19,7 @@ type (
 	}
 )
 
-// GetKey from config or env.
-func (c *Config) GetKey() string {
-	return os.GetFromEnv(string(c.Key))
+// GetKey for hmac.
+func (c *Config) GetKey() ([]byte, error) {
+	return os.ReadBase64File(string(c.Key))
 }
