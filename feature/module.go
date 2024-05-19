@@ -6,5 +6,6 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
+	fx.Provide(NewFeatureProvider),
 	fx.Provide(NewClient),
 )
