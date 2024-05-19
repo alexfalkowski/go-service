@@ -118,7 +118,7 @@ func verifyConfig(cfg *config.Config) {
 	So(tls.IsEnabled(cfg.Debug.TLS), ShouldBeFalse)
 	So(cfg.Feature.Kind, ShouldEqual, "flipt")
 	So(cfg.Feature.Host, ShouldEqual, "localhost:9000")
-	So(cfg.Hooks.Secret, ShouldEqual, "YWJjZGUxMjM0NQ==")
+	So(string(cfg.Hooks.Secret), ShouldEqual, "YWJjZGUxMjM0NQ==")
 	So(cfg.Cache.Redis.Compressor, ShouldEqual, "snappy")
 	So(cfg.Cache.Redis.Marshaller, ShouldEqual, "proto")
 	So(cfg.Cache.Redis.Addresses, ShouldResemble, map[string]string{"server": "localhost:6379"})
