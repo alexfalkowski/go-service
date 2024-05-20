@@ -59,15 +59,29 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 }
 
 // NewRingOptions for redis.
-func NewRingOptions(cfg *Config) *redis.RingOptions {
+//
+//nolint:nilnil
+func NewRingOptions(cfg *Config) (*redis.RingOptions, error) {
 	if cfg == nil {
-		return nil
+		return nil, nil
 	}
 
-	return &redis.RingOptions{
-		Addrs:    cfg.Addresses,
-		Username: cfg.Username,
-		Password: cfg.Password,
-		DB:       cfg.DB,
+	u, err := cfg.GetURL()
+	if err != nil {
+		return nil, err
 	}
+
+	pu, err := redis.ParseURL(u)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := &redis.RingOptions{
+		Addrs: cfg.Addresses,
+		NewClient: func(string, *redis.Options) *redis.Client {
+			return redis.NewClient(pu)
+		},
+	}
+
+	return opts, nil
 }

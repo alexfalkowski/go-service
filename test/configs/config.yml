@@ -7,6 +7,7 @@ cache:
     compressor: snappy
     addresses:
       server: localhost:6379
+    url: ../test/secrets/redis
   ristretto:
     num_counters: 10000000
     max_cost: 100000000
@@ -39,9 +40,9 @@ time:
 sql:
   pg:
     masters:
-      - url: postgres://test:test@localhost:5432/test?sslmode=disable
+      - url: ../test/secrets/pg
     slaves:
-      - url: postgres://test:test@localhost:5432/test?sslmode=disable
+      - url: ../test/secrets/pg
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h

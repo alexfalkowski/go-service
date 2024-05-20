@@ -79,9 +79,7 @@ cache:
     marshaller: proto
     addresses:
       server: localhost:6379
-    username: test
-    password: test
-    db: 0
+    url: path to url
   ristretto:
     num_counters: 10000000
     max_cost: 100000000
@@ -140,10 +138,10 @@ sql:
   pg:
     masters:
       -
-        url: postgres://test:test@localhost:5432/test?sslmode=disable
+        url: path to url
     slaves:
       -
-        url: postgres://test:test@localhost:5432/test?sslmode=disable
+        url: path to url
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h

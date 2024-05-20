@@ -6,6 +6,7 @@ port = "6060"
 [cache.redis]
 marshaller = "proto"
 compressor = "snappy"
+url = "../test/secrets/redis"
 
 [cache.redis.addresses]
 server = "localhost:6379"
@@ -50,10 +51,10 @@ max_idle_conns = 5
 conn_max_lifetime = "1h"
 
 [[sql.pg.masters]]
-url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+url = "../test/secrets/pg"
 
 [[sql.pg.slaves]]
-url = "postgres://test:test@localhost:5432/test?sslmode=disable"
+url = "../test/secrets/pg"
 
 [telemetry.logger]
 level = "info"

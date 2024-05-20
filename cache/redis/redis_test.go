@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alicebob/miniredis/v2"
 	"github.com/go-redis/cache/v8"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -25,13 +24,10 @@ func init() {
 
 func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -65,13 +61,10 @@ func TestSetCache(t *testing.T) {
 
 func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -100,13 +93,10 @@ func TestSetXXCache(t *testing.T) {
 
 func TestSetNXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -143,7 +133,7 @@ func TestInvalidHostCache(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("invalid_host", "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis_invalid", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
@@ -164,13 +154,10 @@ func TestInvalidHostCache(t *testing.T) {
 
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "error"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "error"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
@@ -192,13 +179,10 @@ func TestInvalidMarshallerCache(t *testing.T) {
 
 func TestMissingMarshallerCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewPrometheusMeter(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "test"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "test"), Logger: logger, Meter: m}
 		_, err := c.NewRedisCache()
 
 		lc.RequireStart()
@@ -213,13 +197,10 @@ func TestMissingMarshallerCache(t *testing.T) {
 
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := metrics.NewNoopMeter()
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "error", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "error", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
 
@@ -245,13 +226,10 @@ func TestInvalidCompressorCache(t *testing.T) {
 
 func TestMissingCompressorCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		m := test.NewPrometheusMeter(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "test", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "test", "proto"), Logger: logger, Meter: m}
 		_, err := c.NewRedisCache()
 
 		lc.RequireStart()

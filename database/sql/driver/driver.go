@@ -29,13 +29,25 @@ func Register(name string, driver driver.Driver, trace trace.Tracer, log *zap.Lo
 // Open a DB pool.
 func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
+
 	for i, m := range cfg.Masters {
-		masters[i] = m.URL
+		u, err := m.GetURL()
+		if err != nil {
+			return nil, err
+		}
+
+		masters[i] = u
 	}
 
 	slaves := make([]string, len(cfg.Slaves))
+
 	for i, s := range cfg.Slaves {
-		slaves[i] = s.URL
+		u, err := s.GetURL()
+		if err != nil {
+			return nil, err
+		}
+
+		slaves[i] = u
 	}
 
 	db, err := connect(name, masters, slaves)
@@ -45,7 +57,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 
 	lc.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
-			return destroy(db)
+			return errors.Join(db.Destroy()...)
 		},
 	})
 
@@ -62,8 +74,4 @@ func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 
 	return db, errors.Join(errs...)
-}
-
-func destroy(db *mssqlx.DBs) error {
-	return errors.Join(db.Destroy()...)
 }

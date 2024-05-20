@@ -19,7 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alicebob/miniredis/v2"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -31,9 +30,6 @@ func init() {
 }
 
 func TestHealth(t *testing.T) {
-	s := miniredis.RunT(t)
-	defer s.Close()
-
 	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
@@ -46,7 +42,7 @@ func TestHealth(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			client := cl.NewHTTP()
 
-			so, err := observer(lc, s.Addr(), "http://localhost:6000/v1/status/200", client, logger)
+			so, err := observer(lc, "redis", "http://localhost:6000/v1/status/200", client, logger)
 			So(err, ShouldBeNil)
 
 			o := so.Observe("http")
@@ -95,9 +91,6 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		r := miniredis.RunT(t)
-		defer r.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -106,7 +99,7 @@ func TestReadinessNoop(t *testing.T) {
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 
-		so, err := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
+		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
@@ -153,9 +146,6 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		r := miniredis.RunT(t)
-		defer r.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -164,7 +154,7 @@ func TestInvalidHealth(t *testing.T) {
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 
-		so, err := observer(lc, r.Addr(), "http://localhost:6000/v1/status/500", client, logger)
+		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
@@ -206,8 +196,8 @@ func TestInvalidHealth(t *testing.T) {
 	})
 }
 
-func observer(lc fx.Lifecycle, host, url string, client *http.Client, logger *zap.Logger) (*server.Server, error) {
-	c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(host, "snappy", "proto"), Logger: logger}
+func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *zap.Logger) (*server.Server, error) {
+	c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(secret, "snappy", "proto"), Logger: logger}
 
 	r, err := c.NewRedisClient()
 	if err != nil {

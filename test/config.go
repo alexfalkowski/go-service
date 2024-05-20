@@ -31,37 +31,37 @@ const timeout = 2 * time.Second
 // NewEd25519 for test.
 func NewEd25519() *ed25519.Config {
 	return &ed25519.Config{
-		Public:  ed25519.PublicKey(hooks.Secret(path("secrets/ed25519_public"))),
-		Private: ed25519.PrivateKey(hooks.Secret(path("secrets/ed25519_private"))),
+		Public:  ed25519.PublicKey(hooks.Secret(Path("secrets/ed25519_public"))),
+		Private: ed25519.PrivateKey(hooks.Secret(Path("secrets/ed25519_private"))),
 	}
 }
 
 // NewEd25519 for test.
 func NewRSA() *rsa.Config {
 	return &rsa.Config{
-		Public:  rsa.PublicKey(hooks.Secret(path("secrets/rsa_public"))),
-		Private: rsa.PrivateKey(hooks.Secret(path("secrets/rsa_private"))),
+		Public:  rsa.PublicKey(hooks.Secret(Path("secrets/rsa_public"))),
+		Private: rsa.PrivateKey(hooks.Secret(Path("secrets/rsa_private"))),
 	}
 }
 
 // NewAES for test.
 func NewAES() *aes.Config {
 	return &aes.Config{
-		Key: aes.Key(path("secrets/aes")),
+		Key: aes.Key(Path("secrets/aes")),
 	}
 }
 
 // NewHMAC for test.
 func NewHMAC() *hmac.Config {
 	return &hmac.Config{
-		Key: hmac.Key(path("secrets/hmac")),
+		Key: hmac.Key(Path("secrets/hmac")),
 	}
 }
 
 // NewHook for test.
 func NewHook() *hooks.Config {
 	return &hooks.Config{
-		Secret: hooks.Secret(path("secrets/hooks")),
+		Secret: hooks.Secret(Path("secrets/hooks")),
 	}
 }
 
@@ -91,8 +91,8 @@ func NewTLSServerConfig() *tls.Config {
 // NewTLSConfig for test.
 func NewTLSConfig(c, k string) *tls.Config {
 	tc := &tls.Config{
-		Cert: tls.Cert(path(c)),
-		Key:  tls.Key(path(k)),
+		Cert: tls.Cert(Path(c)),
+		Key:  tls.Key(Path(k)),
 	}
 
 	return tc
@@ -155,7 +155,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
 		Host: "http://localhost:9009/otlp/v1/metrics",
-		Key:  metrics.Key(path("secrets/basic")),
+		Key:  metrics.Key(Path("secrets/basic")),
 	}
 }
 
@@ -164,19 +164,21 @@ func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
 		Host: "localhost:4318",
-		Key:  tracer.Key(path("secrets/basic")),
+		Key:  tracer.Key(Path("secrets/basic")),
 	}
 }
 
 // NewPGConfig for test.
 func NewPGConfig() *pg.Config {
-	return &pg.Config{Config: &config.Config{
-		Masters:         []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},
-		Slaves:          []config.DSN{{URL: "postgres://test:test@localhost:5432/test?sslmode=disable"}},
-		MaxOpenConns:    5,
-		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour.String(),
-	}}
+	return &pg.Config{
+		Config: &config.Config{
+			Masters:         []config.DSN{{URL: config.URL(Path("secrets/pg"))}},
+			Slaves:          []config.DSN{{URL: config.URL(Path("secrets/pg"))}},
+			MaxOpenConns:    5,
+			MaxIdleConns:    5,
+			ConnMaxLifetime: time.Hour.String(),
+		},
+	}
 }
 
 // NewInputConfig for test.
@@ -217,10 +219,11 @@ func NewSecureDebugConfig() *debug.Config {
 }
 
 // NewRedisConfig for test.
-func NewRedisConfig(host, compressor, marshaller string) *redis.Config {
+func NewRedisConfig(secret, compressor, marshaller string) *redis.Config {
 	return &redis.Config{
-		Addresses:  map[string]string{"server": host},
+		Addresses:  map[string]string{"server": "localhost:6379"},
 		Compressor: compressor, Marshaller: marshaller,
+		URL: redis.URL(Path("secrets/" + secret)),
 	}
 }
 
@@ -232,7 +235,8 @@ func NewLimiterConfig(pattern string) *limiter.Config {
 	}
 }
 
-func path(p string) string {
+// Path for test.
+func Path(p string) string {
 	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
 	dir := filepath.Dir(b)
 

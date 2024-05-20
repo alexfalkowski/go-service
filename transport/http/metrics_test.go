@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/time"
 	ht "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alicebob/miniredis/v2"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
@@ -21,9 +20,6 @@ import (
 //nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		r := miniredis.RunT(t)
-		defer r.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -40,7 +36,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, m)
 
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()
 		_ = c.NewRistrettoCache()
 		cfg := test.NewInsecureTransportConfig()
@@ -89,9 +85,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 //nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		r := miniredis.RunT(t)
-		defer r.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -108,7 +101,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		sm.Register(dbs, m)
 
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(r.Addr(), "snappy", "proto"), Logger: logger, Meter: m}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()
 		_ = c.NewRistrettoCache()
 		cfg := test.NewSecureTransportConfig()
