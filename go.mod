@@ -14,8 +14,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/felixge/fgprof v0.9.4
 	github.com/felixge/httpsnoop v1.0.4
-	github.com/go-redis/cache/v8 v8.4.4
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/cache/v9 v9.0.0
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -31,6 +30,7 @@ require (
 	github.com/open-feature/go-sdk v1.11.0
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.19.1
+	github.com/redis/go-redis/v9 v9.0.4
 	github.com/rs/cors v1.11.0
 	github.com/shirou/gopsutil/v3 v3.24.4
 	github.com/smartystreets/goconvey v1.8.1

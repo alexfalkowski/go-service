@@ -7,7 +7,7 @@ import (
 	gr "github.com/alexfalkowski/go-service/redis"
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

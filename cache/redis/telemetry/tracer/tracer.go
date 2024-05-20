@@ -6,7 +6,7 @@ import (
 
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 	"go.opentelemetry.io/otel/trace"

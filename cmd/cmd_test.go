@@ -40,7 +40,7 @@ import (
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/version"
-	v8 "github.com/go-redis/cache/v8"
+	rc "github.com/go-redis/cache/v9"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -204,7 +204,7 @@ func grpcObserver(healthServer *server.Server) *shg.Observer {
 	return &shg.Observer{Observer: healthServer.Observe("http")}
 }
 
-func redisCache(c *v8.Cache) error {
+func redisCache(c *rc.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 

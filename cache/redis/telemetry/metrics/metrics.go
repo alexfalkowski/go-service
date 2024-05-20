@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
-	"github.com/go-redis/cache/v8"
+	"github.com/go-redis/cache/v9"
 	"go.opentelemetry.io/otel/metric"
 )
 
