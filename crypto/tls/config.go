@@ -1,8 +1,7 @@
 package tls
 
 import (
-	"os"
-	"path/filepath"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // IsEnabled for security.
@@ -31,11 +30,11 @@ func (c *Config) HasKeyPair() bool {
 }
 
 // GetCert for tls.
-func (c *Config) GetCert() ([]byte, error) {
-	return os.ReadFile(filepath.Clean(string(c.Cert)))
+func (c *Config) GetCert() (string, error) {
+	return os.ReadFile(string(c.Cert))
 }
 
 // GetKey for tls.
-func (c *Config) GetKey() ([]byte, error) {
-	return os.ReadFile(filepath.Clean(string(c.Key)))
+func (c *Config) GetKey() (string, error) {
+	return os.ReadFile(string(c.Key))
 }

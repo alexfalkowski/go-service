@@ -1,9 +1,7 @@
 package config
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // IsEnabled for SQL.
@@ -32,7 +30,5 @@ type (
 
 // GetPassword for SQL.
 func (d *DSN) GetURL() (string, error) {
-	k, err := os.ReadFile(filepath.Clean(string(d.URL)))
-
-	return strings.TrimSpace(string(k)), err
+	return os.ReadFile(string(d.URL))
 }

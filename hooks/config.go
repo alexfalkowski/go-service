@@ -1,8 +1,7 @@
 package hooks
 
 import (
-	"os"
-	"path/filepath"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 type (
@@ -16,6 +15,6 @@ type (
 )
 
 // GetCert for hooks.
-func (c *Config) GetSecret() ([]byte, error) {
-	return os.ReadFile(filepath.Clean(string(c.Secret)))
+func (c *Config) GetSecret() (string, error) {
+	return os.ReadFile(string(c.Secret))
 }

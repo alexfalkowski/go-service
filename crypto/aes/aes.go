@@ -38,7 +38,7 @@ func NewAlgo(cfg *Config) (Algo, error) {
 
 	k, err := cfg.GetKey()
 
-	return &algo{key: k}, err
+	return &algo{key: []byte(k)}, err
 }
 
 type algo struct {

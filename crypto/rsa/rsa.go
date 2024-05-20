@@ -87,7 +87,7 @@ func publicKey(cfg *Config) (*rsa.PublicKey, error) {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PublicKey(k)
+	return x509.ParsePKCS1PublicKey([]byte(k))
 }
 
 func privateKey(cfg *Config) (*rsa.PrivateKey, error) {
@@ -96,5 +96,5 @@ func privateKey(cfg *Config) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PrivateKey(k)
+	return x509.ParsePKCS1PrivateKey([]byte(k))
 }

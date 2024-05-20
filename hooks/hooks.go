@@ -25,5 +25,5 @@ func New(cfg *Config) (*hooks.Webhook, error) {
 		return nil, err
 	}
 
-	return hooks.NewWebhook(string(s))
+	return hooks.NewWebhook(s)
 }

@@ -24,11 +24,11 @@ type (
 )
 
 // GetPublic for ed25519.
-func (c *Config) GetPublic() ([]byte, error) {
+func (c *Config) GetPublic() (string, error) {
 	return os.ReadBase64File(string(c.Public))
 }
 
 // GetPrivate for ed25519.
-func (c *Config) GetPrivate() ([]byte, error) {
+func (c *Config) GetPrivate() (string, error) {
 	return os.ReadBase64File(string(c.Private))
 }
