@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.194.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.194.0) - 2024-05-20
+
+- [`66faf8f`](https://github.com/alexfalkowski/go-service/commit/66faf8f94602d6f71e164c632d8de8d1165b539e) feat(secrets): make sure we load them from file system (#750)
+
 ## [v1.193.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.193.1) - 2024-05-20
 
 - [`9ba6211`](https://github.com/alexfalkowski/go-service/commit/9ba6211d8f6cf1260b572e7c03209db313c919bb) fix(deps): bump github.com/KimMachineGun/automemlimit from 0.6.0 to 0.6.1 (#749)
