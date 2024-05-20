@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alicebob/miniredis/v2"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
@@ -19,12 +18,9 @@ func init() {
 
 func TestClientIncr(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		s := miniredis.RunT(t)
-		defer s.Close()
-
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(s.Addr(), "snappy", "proto"), Logger: logger}
+		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger}
 		client, err := c.NewRedisClient()
 		So(err, ShouldBeNil)
 

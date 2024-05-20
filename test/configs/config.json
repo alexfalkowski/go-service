@@ -9,7 +9,8 @@
         "compressor": "snappy",
         "addresses": {
           "server": "localhost:6379"
-        }
+        },
+        "url": "../test/secrets/redis"
       },
       "ristretto": {
         "num_counters": 10000000,
@@ -52,12 +53,12 @@
       "pg": {
         "masters": [
           {
-            "url": "postgres://test:test@localhost:5432/test?sslmode=disable"
+            "url": "../test/secrets/pg"
           }
         ],
         "slaves": [
           {
-            "url": "postgres://test:test@localhost:5432/test?sslmode=disable"
+            "url": "../test/secrets/pg"
           }
         ],
         "max_open_conns": 5,

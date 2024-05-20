@@ -51,7 +51,10 @@ func (c *Cache) NewRedisClient() (gr.Client, error) {
 		return nil, err
 	}
 
-	client := redis.NewClient(redis.ClientParams{Lifecycle: c.Lifecycle, RingOptions: redis.NewRingOptions(c.Redis), Tracer: tracer, Logger: c.Logger})
+	opts, err := redis.NewRingOptions(c.Redis)
+	runtime.Must(err)
+
+	client := redis.NewClient(redis.ClientParams{Lifecycle: c.Lifecycle, RingOptions: opts, Tracer: tracer, Logger: c.Logger})
 
 	return client, nil
 }

@@ -6,7 +6,6 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/KimMachineGun/automemlimit v0.6.1
 	github.com/alexfalkowski/go-health v1.17.0
-	github.com/alicebob/miniredis/v2 v2.32.1
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/beevik/ntp v1.4.1
@@ -62,7 +61,6 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 // indirect
-	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -118,7 +116,6 @@ require (
 	github.com/vmihailenco/go-tinylfu v0.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/yuin/gopher-lua v1.1.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.flipt.io/flipt/errors v1.19.3 // indirect
 	go.flipt.io/flipt/rpc/flipt v1.30.0 // indirect
