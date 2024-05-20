@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.195.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.195.0) - 2024-05-20
+
+- [`7d47784`](https://github.com/alexfalkowski/go-service/commit/7d47784c9d7a34216cfc431a7690831ede0c92f1) feat(os): add read file (#751)
+
 ## [v1.194.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.194.0) - 2024-05-20
 
 - [`66faf8f`](https://github.com/alexfalkowski/go-service/commit/66faf8f94602d6f71e164c632d8de8d1165b539e) feat(secrets): make sure we load them from file system (#750)
