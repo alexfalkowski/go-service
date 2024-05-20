@@ -9,7 +9,7 @@ import (
 	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
-	"github.com/go-redis/cache/v8"
+	"github.com/go-redis/cache/v9"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

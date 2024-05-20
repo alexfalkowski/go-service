@@ -6,8 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/compressor"
 	"github.com/alexfalkowski/go-service/marshaller"
 	gr "github.com/alexfalkowski/go-service/redis"
-	"github.com/go-redis/cache/v8"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/cache/v9"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
 
@@ -78,7 +78,7 @@ func NewRingOptions(cfg *Config) (*redis.RingOptions, error) {
 
 	opts := &redis.RingOptions{
 		Addrs: cfg.Addresses,
-		NewClient: func(string, *redis.Options) *redis.Client {
+		NewClient: func(*redis.Options) *redis.Client {
 			return redis.NewClient(pu)
 		},
 	}

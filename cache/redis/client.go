@@ -6,7 +6,7 @@ import (
 	gz "github.com/alexfalkowski/go-service/cache/redis/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/cache/redis/telemetry/tracer"
 	gr "github.com/alexfalkowski/go-service/redis"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
