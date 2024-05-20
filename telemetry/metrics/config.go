@@ -1,9 +1,7 @@
 package metrics
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // IsEnabled for metrics.
@@ -35,9 +33,7 @@ func (c *Config) IsPrometheus() bool {
 
 // GetKey for metrics.
 func (c *Config) GetKey() (string, error) {
-	k, err := os.ReadFile(filepath.Clean(string(c.Key)))
-
-	return strings.TrimSpace(string(k)), err
+	return os.ReadFile(string(c.Key))
 }
 
 // HasKey for metrics.

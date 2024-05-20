@@ -1,9 +1,7 @@
 package redis
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // IsEnabled for redis.
@@ -26,7 +24,5 @@ type (
 
 // GetURL for redis.
 func (c *Config) GetURL() (string, error) {
-	k, err := os.ReadFile(filepath.Clean(string(c.URL)))
-
-	return strings.TrimSpace(string(k)), err
+	return os.ReadFile(string(c.URL))
 }

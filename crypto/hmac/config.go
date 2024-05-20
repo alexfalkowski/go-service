@@ -20,6 +20,6 @@ type (
 )
 
 // GetKey for hmac.
-func (c *Config) GetKey() ([]byte, error) {
+func (c *Config) GetKey() (string, error) {
 	return os.ReadBase64File(string(c.Key))
 }

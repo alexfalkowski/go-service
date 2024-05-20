@@ -46,7 +46,7 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return nil, err
 	}
 
-	return &algo{publicKey: pub, privateKey: pri}, nil
+	return &algo{publicKey: []byte(pub), privateKey: []byte(pri)}, nil
 }
 
 type algo struct {
