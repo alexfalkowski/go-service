@@ -1,15 +1,18 @@
 package grpc
 
 import (
+	"time"
+
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/retry"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	gm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
-	r "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	ri "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
+	ti "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
@@ -37,11 +40,19 @@ type clientOpts struct {
 	unary     []grpc.UnaryClientInterceptor
 	stream    []grpc.StreamClientInterceptor
 	breaker   bool
+	timeout   time.Duration
 }
 
 type clientOptionFunc func(*clientOpts)
 
 func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientTimeout for gRPC.
+func WithClientTimeout(timeout string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.timeout = t.MustParseDuration(timeout)
+	})
+}
 
 // WithClientRetry for gRPC.
 func WithClientRetry(cfg *retry.Config) ClientOption {
@@ -133,8 +144,8 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                time.Timeout,
-			Timeout:             time.Timeout,
+			Time:                t.Timeout,
+			Timeout:             t.Timeout,
 			PermitWithoutStream: true,
 		}),
 		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
@@ -159,15 +170,19 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 	unary = append(unary, os.unary...)
 
+	if os.timeout > 0 {
+		unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
+	}
+
 	if os.retry != nil {
-		d := time.MustParseDuration(os.retry.Timeout)
+		d := t.MustParseDuration(os.retry.Timeout)
 
 		unary = append(unary,
-			r.UnaryClientInterceptor(
-				r.WithCodes(codes.Unavailable, codes.DataLoss),
-				r.WithMax(os.retry.Attempts),
-				r.WithBackoff(r.BackoffLinear(time.Backoff)),
-				r.WithPerRetryTimeout(d),
+			ri.UnaryClientInterceptor(
+				ri.WithCodes(codes.Unavailable, codes.DataLoss),
+				ri.WithMax(os.retry.Attempts),
+				ri.WithBackoff(ri.BackoffLinear(t.Backoff)),
+				ri.WithPerRetryTimeout(d),
 			),
 		)
 	}
