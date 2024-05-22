@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"context"
+	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
 	"go.uber.org/dig"
 	"go.uber.org/fx"
@@ -115,7 +115,7 @@ func RunClient(ctx context.Context, name string, opts ...fx.Option) error {
 }
 
 func options(opts []fx.Option) []fx.Option {
-	return append(opts, fx.StartTimeout(time.Timeout), fx.StopTimeout(time.Timeout), fx.NopLogger)
+	return append(opts, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
 }
 
 func prefix(p string, err error) error {

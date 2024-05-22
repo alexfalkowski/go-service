@@ -1,3 +1,4 @@
 environment: production
 debug:
   port: ""
+  timeout: 10s

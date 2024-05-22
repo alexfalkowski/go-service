@@ -1,6 +1,7 @@
 environment: development
 debug:
   port: 6060
+  timeout: 10s
 cache:
   redis:
     marshaller: proto
@@ -27,8 +28,10 @@ feature:
   kind: flipt
   host: localhost:9000
   retry:
+    backoff: 100ms
     timeout: 1s
     attempts: 3
+  timeout: 10s
 hooks:
   secret: ../test/secrets/hooks
 limiter:
@@ -60,12 +63,16 @@ transport:
   http:
     port: 11000
     retry:
+      backoff: 100ms
       timeout: 1s
       attempts: 3
+    timeout: 10s
     user_agent: Service http/1.0
   grpc:
     port: 12000
     retry:
+      backoff: 100ms
       timeout: 1s
       attempts: 3
+    timeout: 10s
     user_agent: Service grpc/1.0

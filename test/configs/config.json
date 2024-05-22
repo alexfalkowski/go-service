@@ -1,7 +1,8 @@
 {
     "environment": "development",
     "debug": {
-      "port": "6060"
+      "port": "6060",
+      "timeout": "10s"
     },
     "cache": {
       "redis": {
@@ -38,9 +39,11 @@
       "kind": "flipt",
       "host": "localhost:9000",
       "retry": {
+        "backoff": "100ms",
         "timeout": "1s",
         "attempts": 3
-      }
+      },
+      "timeout": "10s"
     },
     "hooks": {
       "secret": "../test/secrets/hooks"
@@ -89,18 +92,22 @@
       "http": {
         "port": "11000",
         "retry": {
+          "backoff": "100ms",
           "timeout": "1s",
           "attempts": 3
         },
-        "user_agent": "Service http/1.0"
+        "user_agent": "Service http/1.0",
+        "timeout": "10s"
       },
       "grpc": {
         "port": "12000",
         "retry": {
+          "backoff": "100ms",
           "timeout": "1s",
           "attempts": 3
         },
-        "user_agent": "Service grpc/1.0"
+        "user_agent": "Service grpc/1.0",
+        "timeout": "10s"
       }
     }
   }

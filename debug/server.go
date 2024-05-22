@@ -2,12 +2,13 @@ package debug
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -34,10 +35,11 @@ type Server struct {
 
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
+	timeout := timeout(params.Config)
 	s := &http.Server{
 		Handler:     params.Mux,
-		ReadTimeout: time.Timeout, WriteTimeout: time.Timeout,
-		IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout,
+		ReadTimeout: timeout, WriteTimeout: timeout,
+		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
 
 	c, err := config(params.Config)
@@ -73,4 +75,12 @@ func config(cfg *Config) (*sh.Config, error) {
 	c.TLS = t
 
 	return c, err
+}
+
+func timeout(cfg *Config) time.Duration {
+	if !IsEnabled(cfg) {
+		return time.Minute
+	}
+
+	return t.MustParseDuration(cfg.Timeout)
 }

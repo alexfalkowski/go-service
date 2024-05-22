@@ -2,6 +2,7 @@ environment = "development"
 
 [debug]
 port = "6060"
+timeout = "10s"
 
 [cache.redis]
 marshaller = "proto"
@@ -33,8 +34,10 @@ private = "../test/secrets/rsa_private"
 [feature]
 kind = "flipt"
 host = "localhost:9000"
+timeout = "10s"
 
 [feature.retry]
+backoff = "100ms"
 timeout = "1s"
 attempts = 3
 
@@ -76,16 +79,19 @@ kind = "none"
 [transport.http]
 port = "11000"
 user_agent = "Service http/1.0"
+timeout = "10s"
 
 [transport.http.retry]
+backoff = "100ms"
 timeout = "1s"
 attempts = 3
 
 [transport.grpc]
 port = "12000"
 user_agent = "Service grpc/1.0"
-
+timeout = "10s"
 
 [transport.grpc.retry]
+backoff = "100ms"
 timeout = "1s"
 attempts = 3

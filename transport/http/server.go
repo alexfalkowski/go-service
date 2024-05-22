@@ -2,13 +2,14 @@ package http
 
 import (
 	"net/http"
+	"time"
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -64,6 +65,8 @@ type Server struct {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
+	timeout := timeout(params.Config)
+
 	n := negroni.New()
 	n.Use(meta.NewHandler(UserAgent(params.Config)))
 	n.Use(tracer.NewHandler(params.Tracer))
@@ -80,8 +83,8 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	s := &http.Server{
 		Handler:     n,
-		ReadTimeout: time.Timeout, WriteTimeout: time.Timeout,
-		IdleTimeout: time.Timeout, ReadHeaderTimeout: time.Timeout,
+		ReadTimeout: timeout, WriteTimeout: timeout,
+		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
 
 	c, err := config(params.Config)
@@ -126,4 +129,12 @@ func customMatcher(key string) (string, bool) {
 	default:
 		return runtime.DefaultHeaderMatcher(key)
 	}
+}
+
+func timeout(cfg *Config) time.Duration {
+	if !IsEnabled(cfg) {
+		return time.Minute
+	}
+
+	return t.MustParseDuration(cfg.Timeout)
 }
