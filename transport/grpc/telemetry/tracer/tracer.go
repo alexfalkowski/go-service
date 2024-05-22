@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 	"go.opentelemetry.io/otel/trace"

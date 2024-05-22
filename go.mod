@@ -17,7 +17,7 @@ require (
 	github.com/go-redis/cache/v9 v9.0.0
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.6.0
-	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/hashicorp/go-retryablehttp v0.7.6
 	github.com/iancoleman/strcase v0.3.0

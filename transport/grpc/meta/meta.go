@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
-	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

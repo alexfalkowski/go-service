@@ -13,7 +13,6 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
-	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	v3 "github.com/ulule/limiter/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -111,7 +110,7 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.UnaryInterceptor(middleware.ChainUnaryServer(defaultInterceptors...))
+	return grpc.ChainUnaryInterceptor(defaultInterceptors...)
 }
 
 func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
@@ -125,7 +124,7 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
 
-	return grpc.StreamInterceptor(middleware.ChainStreamServer(defaultInterceptors...))
+	return grpc.ChainStreamInterceptor(defaultInterceptors...)
 }
 
 func creds(cfg *Config) (grpc.ServerOption, error) {
