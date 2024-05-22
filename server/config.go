@@ -21,6 +21,7 @@ func UserAgent(cfg *Config) string {
 
 // Config for server.
 type Config struct {
+	Timeout   string        `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 	Port      string        `yaml:"port,omitempty" json:"port,omitempty" toml:"port,omitempty"`
 	Retry     *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
 	TLS       *tls.Config   `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`

@@ -6,12 +6,12 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/time"
 	ht "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -54,7 +54,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Timeout)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 
 			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://localhost:%s/metrics", cfg.HTTP.Port), http.NoBody)
@@ -122,7 +122,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Timeout)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 
 			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://localhost:%s/metrics", cfg.HTTP.Port), http.NoBody)

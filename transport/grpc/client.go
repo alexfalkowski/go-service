@@ -144,8 +144,8 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                t.Timeout,
-			Timeout:             t.Timeout,
+			Time:                os.timeout,
+			Timeout:             os.timeout,
 			PermitWithoutStream: true,
 		}),
 		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
@@ -175,14 +175,15 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.retry != nil {
-		d := t.MustParseDuration(os.retry.Timeout)
+		to := t.MustParseDuration(os.retry.Timeout)
+		bo := t.MustParseDuration(os.retry.Backoff)
 
 		unary = append(unary,
 			ri.UnaryClientInterceptor(
 				ri.WithCodes(codes.Unavailable, codes.DataLoss),
 				ri.WithMax(os.retry.Attempts),
-				ri.WithBackoff(ri.BackoffLinear(t.Backoff)),
-				ri.WithPerRetryTimeout(d),
+				ri.WithBackoff(ri.BackoffLinear(bo)),
+				ri.WithPerRetryTimeout(to),
 			),
 		)
 	}

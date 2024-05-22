@@ -3,11 +3,12 @@ package http
 import (
 	"crypto/tls"
 	"net/http"
+	"time"
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
@@ -21,11 +22,11 @@ import (
 )
 
 // ClientOption for HTTP.
-type ClientOption interface{ apply(opts *clientOptions) }
+type ClientOption interface{ apply(opts *clientOpts) }
 
-var none = clientOptionFunc(func(_ *clientOptions) {})
+var none = clientOptionFunc(func(_ *clientOpts) {})
 
-type clientOptions struct {
+type clientOpts struct {
 	tracer       trace.Tracer
 	meter        metric.Meter
 	roundTripper http.RoundTripper
@@ -34,57 +35,65 @@ type clientOptions struct {
 	tls          *tls.Config
 	userAgent    string
 	breaker      bool
+	timeout      time.Duration
 }
 
-type clientOptionFunc func(*clientOptions)
+type clientOptionFunc func(*clientOpts)
 
-func (f clientOptionFunc) apply(o *clientOptions) { f(o) }
+func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientTimeout for HTTP.
+func WithClientTimeout(timeout string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.timeout = t.MustParseDuration(timeout)
+	})
+}
 
 // WithClientRoundTripper for HTTP.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
 // WithClientRetry for HTTP.
 func WithClientRetry(cfg *r.Config) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
 	})
 }
 
 // WithClientBreaker for HTTP.
 func WithClientBreaker() ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
 	})
 }
 
 // WithClientLogger for HTTP.
 func WithClientLogger(logger *zap.Logger) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.logger = logger
 	})
 }
 
 // WithClientTracer for HTTP.
 func WithClientTracer(tracer trace.Tracer) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.tracer = tracer
 	})
 }
 
 // WithClientMetrics for HTTP.
 func WithClientMetrics(meter metric.Meter) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.meter = meter
 	})
 }
 
 // WithUserAgent for HTTP.
 func WithClientUserAgent(userAgent string) ClientOption {
-	return clientOptionFunc(func(o *clientOptions) {
+	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
 	})
 }
@@ -100,7 +109,7 @@ func WithClientTLS(sec *st.Config) (ClientOption, error) {
 		return none, err
 	}
 
-	opt := clientOptionFunc(func(o *clientOptions) {
+	opt := clientOptionFunc(func(o *clientOpts) {
 		o.tls = conf
 	})
 
@@ -109,7 +118,7 @@ func WithClientTLS(sec *st.Config) (ClientOption, error) {
 
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
-	os := &clientOptions{tracer: noop.Tracer{}}
+	os := &clientOpts{tracer: noop.Tracer{}}
 	for _, o := range opts {
 		o.apply(os)
 	}
@@ -151,14 +160,14 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 // NewClient for HTTP.
 func NewClient(opts ...ClientOption) *http.Client {
-	defaultOptions := &clientOptions{tracer: noop.Tracer{}}
+	os := &clientOpts{tracer: noop.Tracer{}}
 	for _, o := range opts {
-		o.apply(defaultOptions)
+		o.apply(os)
 	}
 
 	client := &http.Client{
 		Transport: NewRoundTripper(opts...),
-		Timeout:   time.Timeout,
+		Timeout:   os.timeout,
 	}
 
 	return client
