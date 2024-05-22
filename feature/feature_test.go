@@ -22,7 +22,10 @@ func TestFlipt(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		m := test.NewOTLPMeter(lc)
-		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
+		cfg := &feature.Config{
+			Kind:   "flipt",
+			Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry(), Timeout: "5s"},
+		}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 		pr := feature.NewFeatureProvider(p)
 		c := feature.NewClient(lc, pr)
@@ -50,7 +53,10 @@ func TestFlipt(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		m := test.NewOTLPMeter(lc)
-		cfg := &feature.Config{Kind: "flipt", Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry()}}
+		cfg := &feature.Config{
+			Kind:   "flipt",
+			Config: &client.Config{Host: "localhost:9000", Retry: test.NewRetry(), Timeout: "5s"},
+		}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 		pr := feature.NewFeatureProvider(p)
 		c := feature.NewClient(lc, pr)

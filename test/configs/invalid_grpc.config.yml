@@ -2,9 +2,12 @@ environment: production
 transport:
   http:
     port: 11000
+    timeout: 10s
     retry:
+      backoff: 100ms
       timeout: 1s
       attempts: 3
     user_agent: Service http/1.0
   grpc:
     port: ""
+    timeout: 10s

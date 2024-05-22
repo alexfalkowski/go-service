@@ -38,7 +38,8 @@ func NewFeatureProvider(params ClientParams) openfeature.FeatureProvider {
 			grpc.WithClientTracer(params.Tracer),
 			grpc.WithClientMetrics(params.Meter),
 			grpc.WithClientRetry(params.Config.Retry),
-			grpc.WithClientUserAgent(params.Config.UserAgent))
+			grpc.WithClientUserAgent(params.Config.UserAgent),
+			grpc.WithClientTimeout(params.Config.Timeout))
 		svc := transport.New(transport.WithAddress(params.Config.Host), transport.WithUnaryClientInterceptor(is...))
 
 		return flipt.NewProvider(flipt.WithAddress(params.Config.Host), flipt.WithService(svc))

@@ -99,8 +99,9 @@ feature:
   kind: flipt
   host: localhost:9000
   retry:
-      timeout: 1s
-      attempts: 3
+    backoff: 100ms
+    timeout: 1s
+    attempts: 3
 ```
 
 ## Hooks
@@ -303,13 +304,17 @@ transport:
   http:
     port: 8000
     retry:
+      backoff: 100ms
       timeout: 1s
       attempts: 3
+    timeout: 10s
   grpc:
     port: 9000
     retry:
+      backoff: 100ms
       timeout: 1s
       attempts: 3
+    timeout: 10s
 ```
 
 If you would like to enable TLS, do the following:
@@ -398,6 +403,7 @@ To configure, please specify the following:
 ```yaml
 debug:
   port: 6060
+  timeout: 10s
 ```
 
 If you would like to enable TLS, do the following:

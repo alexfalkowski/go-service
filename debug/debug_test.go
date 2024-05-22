@@ -19,7 +19,6 @@ func TestInsecureDebug(t *testing.T) {
 		m := test.NewOTLPMeter(lc)
 		p := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
-			Mux:        debug.NewServeMux(),
 			Config:     test.NewInsecureDebugConfig(),
 			Logger:     logger,
 		}
@@ -27,10 +26,10 @@ func TestInsecureDebug(t *testing.T) {
 		server, err := debug.NewServer(p)
 		So(err, ShouldBeNil)
 
-		debug.RegisterPprof(p.Mux)
-		debug.RegisterFgprof(p.Mux)
-		debug.RegisterPsutil(p.Mux, marshaller.NewJSON())
-		debug.RegisterStatsviz(p.Mux)
+		debug.RegisterPprof(server)
+		debug.RegisterFgprof(server)
+		debug.RegisterPsutil(server, marshaller.NewJSON())
+		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
 		lc.RequireStart()
@@ -70,7 +69,6 @@ func TestSecureDebug(t *testing.T) {
 		m := test.NewOTLPMeter(lc)
 		p := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
-			Mux:        debug.NewServeMux(),
 			Config:     test.NewSecureDebugConfig(),
 			Logger:     logger,
 		}
@@ -78,10 +76,10 @@ func TestSecureDebug(t *testing.T) {
 		server, err := debug.NewServer(p)
 		So(err, ShouldBeNil)
 
-		debug.RegisterPprof(p.Mux)
-		debug.RegisterFgprof(p.Mux)
-		debug.RegisterPsutil(p.Mux, marshaller.NewJSON())
-		debug.RegisterStatsviz(p.Mux)
+		debug.RegisterPprof(server)
+		debug.RegisterFgprof(server)
+		debug.RegisterPsutil(server, marshaller.NewJSON())
+		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
 		lc.RequireStart()

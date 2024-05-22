@@ -2,3 +2,4 @@ environment: production
 transport:
   http:
     port: ""
+    timeout: 10s

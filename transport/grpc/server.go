@@ -2,12 +2,13 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/time"
+	t "github.com/alexfalkowski/go-service/time"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
@@ -53,18 +54,19 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	metrics := metrics.NewServer(params.Meter)
+	timeout := timeout(params.Config)
 
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-			MinTime:             time.Timeout,
+			MinTime:             timeout,
 			PermitWithoutStream: true,
 		}),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     time.Timeout,
-			MaxConnectionAge:      time.Timeout,
-			MaxConnectionAgeGrace: time.Timeout,
-			Time:                  time.Timeout,
-			Timeout:               time.Timeout,
+			MaxConnectionIdle:     timeout,
+			MaxConnectionAge:      timeout,
+			MaxConnectionAgeGrace: timeout,
+			Time:                  timeout,
+			Timeout:               timeout,
 		}),
 		unaryServerOption(params, metrics, params.Unary...),
 		streamServerOption(params, metrics, params.Stream...),
@@ -153,4 +155,12 @@ func config(cfg *Config) sg.Config {
 	c.Port = cfg.Port
 
 	return c
+}
+
+func timeout(cfg *Config) time.Duration {
+	if !IsEnabled(cfg) {
+		return time.Minute
+	}
+
+	return t.MustParseDuration(cfg.Timeout)
 }
