@@ -36,6 +36,10 @@ func (InvalidMeter) Int64ObservableGauge(string, ...metric.Int64ObservableGaugeO
 	return nil, errInvalid
 }
 
+func (InvalidMeter) Int64Gauge(string, ...metric.Int64GaugeOption) (metric.Int64Gauge, error) {
+	return nil, errInvalid
+}
+
 func (InvalidMeter) Float64Counter(string, ...metric.Float64CounterOption) (metric.Float64Counter, error) {
 	return nil, errInvalid
 }
@@ -57,6 +61,10 @@ func (InvalidMeter) Float64ObservableUpDownCounter(string, ...metric.Float64Obse
 }
 
 func (InvalidMeter) Float64ObservableGauge(string, ...metric.Float64ObservableGaugeOption) (metric.Float64ObservableGauge, error) {
+	return nil, errInvalid
+}
+
+func (InvalidMeter) Float64Gauge(string, ...metric.Float64GaugeOption) (metric.Float64Gauge, error) {
 	return nil, errInvalid
 }
 
