@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.199.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.199.0) - 2024-05-22
+
+- [`832f0c3`](https://github.com/alexfalkowski/go-service/commit/832f0c3b265fa55236b02adff3d933068d005a1b) feat(grpc): upgrade  github.com/grpc-ecosystem/go-grpc-middleware/v2 to v2.1.0 (#761)
+
 ## [v1.198.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.198.0) - 2024-05-21
 
 - [`8b055bd`](https://github.com/alexfalkowski/go-service/commit/8b055bdaedb93aa2a06de3894ea59bb8c6fa5430) feat(client): add run for clients that run on start (#755)
