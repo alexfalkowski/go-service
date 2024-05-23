@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
+	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -25,7 +26,7 @@ func TestUnary(t *testing.T) {
 		m := test.NewOTLPMeter(lc)
 		tc := test.NewOTLPTracerConfig()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		lc.RequireStart()
@@ -40,7 +41,7 @@ func TestUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -82,7 +83,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		lc.RequireStart()
@@ -95,7 +96,7 @@ func TestDefaultClientUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -126,13 +127,14 @@ func TestDefaultClientUnary(t *testing.T) {
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
+		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewPrometheusMeter(lc)
 		cfg := test.NewSecureTransportConfig()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		cl := &test.Client{

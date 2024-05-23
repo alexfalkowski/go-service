@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -14,8 +15,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Mux for test.
-var Mux = th.NewServeMux()
+var (
+	// RuntimeMux for test.
+	RuntimeMux = http.NewRuntimeServeMux()
+
+	// GatewayMux for test.
+	GatewayMux = http.NewServeMux(http.Gateway, RuntimeMux, http.NewStandardServeMux())
+)
 
 // Server for test.
 type Server struct {
@@ -26,6 +32,7 @@ type Server struct {
 	Transport  *transport.Config
 	GRPC       *tg.Server
 	HTTP       *th.Server
+	Mux        http.ServeMux
 	Handlers   []negroni.Handler
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor
@@ -39,7 +46,7 @@ func (s *Server) Register() {
 	runtime.Must(err)
 
 	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: sh, Mux: Mux,
+		Shutdowner: sh, Mux: s.Mux,
 		Config: s.Transport.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter, Handlers: s.Handlers,
 	})

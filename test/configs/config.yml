@@ -61,6 +61,7 @@ token:
   kind: none
 transport:
   http:
+    mux: gateway
     port: 11000
     retry:
       backoff: 100ms

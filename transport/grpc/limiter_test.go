@@ -32,6 +32,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -76,6 +77,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -119,6 +121,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -169,6 +172,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
 			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 

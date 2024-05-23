@@ -33,6 +33,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -47,7 +48,7 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -93,6 +94,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -107,7 +109,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -153,6 +155,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -164,7 +167,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -209,6 +212,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -223,7 +227,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -262,6 +266,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -273,7 +278,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -318,6 +323,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -332,7 +338,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.Mux, conn)
+		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {

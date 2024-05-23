@@ -39,7 +39,7 @@ func TestUnary(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -80,7 +80,7 @@ func TestInvalidUnary(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/500", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -127,6 +127,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -167,7 +168,7 @@ func TestStream(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -210,7 +211,7 @@ func TestInvalidStream(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/500", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -257,6 +258,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 

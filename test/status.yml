@@ -5,21 +5,20 @@ health:
 telemetry:
   logger:
     level: info
-  tracer:
-    host: localhost:4318
-    secure: false
 transport:
   http:
-    enabled: true
     port: 6000
+    retry:
+      backoff: 100ms
+      timeout: 1s
+      attempts: 3
+    timeout: 10s
     user_agent: "Status-server/1.0 http/1.0"
-    retry:
-      timeout: 2s
-      attempts: 3
   grpc:
-    enabled: true
     port: 6001
-    user_agent: "Status-server/1.0 grpc/1.0"
     retry:
-      timeout: 2s
+      backoff: 100ms
+      timeout: 1s
       attempts: 3
+    timeout: 10s
+    user_agent: "Status-server/1.0 grpc/1.0"

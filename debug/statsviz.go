@@ -1,12 +1,12 @@
 package debug
 
 import (
-	"net/http"
-
 	"github.com/arl/statsviz"
 )
 
 // RegisterStatsviz for debug.
-func RegisterStatsviz(mux *http.ServeMux) {
+func RegisterStatsviz(srv *Server) {
+	mux := srv.ServeMux()
+
 	statsviz.Register(mux)
 }

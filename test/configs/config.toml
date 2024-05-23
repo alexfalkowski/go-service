@@ -77,6 +77,7 @@ host = "time.cloudflare.com"
 kind = "none"
 
 [transport.http]
+mux = "gateway"
 port = "11000"
 user_agent = "Service http/1.0"
 timeout = "10s"

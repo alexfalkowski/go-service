@@ -13,31 +13,27 @@ import (
 	"go.uber.org/zap"
 )
 
-// NewServeMux for debug.
-func NewServeMux() *http.ServeMux {
-	return http.NewServeMux()
-}
-
 // ServerParams for debug.
 type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 }
 
 // Server for debug.
 type Server struct {
+	mux *http.ServeMux
 	*server.Server
 }
 
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
+	mux := http.NewServeMux()
 	timeout := timeout(params.Config)
 	s := &http.Server{
-		Handler:     params.Mux,
+		Handler:     mux,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
@@ -54,7 +50,12 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
 
-	return &Server{Server: svr}, nil
+	return &Server{Server: svr, mux: mux}, nil
+}
+
+// ServeMux for debug.
+func (s *Server) ServeMux() *http.ServeMux {
+	return s.mux
 }
 
 //nolint:nilnil
