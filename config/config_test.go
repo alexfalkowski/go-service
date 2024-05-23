@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -148,7 +148,7 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Transport.GRPC.UserAgent, ShouldEqual, "Service grpc/1.0")
 	So(tls.IsEnabled(cfg.Transport.GRPC.TLS), ShouldBeFalse)
 	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
-	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(http.Gateway))
+	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(hm.Gateway))
 	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
 	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")

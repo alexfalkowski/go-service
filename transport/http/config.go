@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/server"
 )
 
@@ -20,12 +20,12 @@ func UserAgent(cfg *Config) string {
 }
 
 // Mux for config.
-func Mux(cfg *Config) http.Kind {
+func Mux(cfg *Config) hm.Kind {
 	if !IsEnabled(cfg) {
-		return http.Standard
+		return hm.Standard
 	}
 
-	return http.Kind(cfg.Mux)
+	return hm.Kind(cfg.Mux)
 }
 
 // Config for HTTP.

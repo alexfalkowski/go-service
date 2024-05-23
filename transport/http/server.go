@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/server"
 	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
@@ -29,7 +30,7 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        sh.ServeMux
+	Mux        hm.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     trace.Tracer

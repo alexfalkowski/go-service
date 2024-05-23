@@ -3,13 +3,13 @@ package http
 import (
 	"net/http"
 
-	sh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	prom "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // RegisterMetrics for HTTP.
-func RegisterMetrics(cfg *metrics.Config, mux sh.ServeMux) error {
+func RegisterMetrics(cfg *metrics.Config, mux hm.ServeMux) error {
 	if !metrics.IsEnabled(cfg) || !cfg.IsPrometheus() {
 		return nil
 	}

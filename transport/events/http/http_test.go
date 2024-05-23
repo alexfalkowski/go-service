@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/hooks"
-	nh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
@@ -20,7 +20,7 @@ import (
 
 func TestSendReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
-		mux := nh.NewServeMux(nh.Standard, test.RuntimeMux, nh.NewStandardServeMux())
+		mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -73,7 +73,7 @@ func TestSendReceive(t *testing.T) {
 
 func TestSendNotReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
-		mux := nh.NewServeMux(nh.Standard, test.RuntimeMux, nh.NewStandardServeMux())
+		mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

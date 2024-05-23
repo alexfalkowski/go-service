@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -17,10 +17,10 @@ import (
 
 var (
 	// RuntimeMux for test.
-	RuntimeMux = http.NewRuntimeServeMux()
+	RuntimeMux = hm.NewRuntimeServeMux()
 
 	// GatewayMux for test.
-	GatewayMux = http.NewServeMux(http.Gateway, RuntimeMux, http.NewStandardServeMux())
+	GatewayMux = hm.NewServeMux(hm.Gateway, RuntimeMux, hm.NewStandardServeMux())
 )
 
 // Server for test.
@@ -32,7 +32,7 @@ type Server struct {
 	Transport  *transport.Config
 	GRPC       *tg.Server
 	HTTP       *th.Server
-	Mux        http.ServeMux
+	Mux        hm.ServeMux
 	Handlers   []negroni.Handler
 	Unary      []grpc.UnaryServerInterceptor
 	Stream     []grpc.StreamServerInterceptor

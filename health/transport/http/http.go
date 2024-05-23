@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/marshaller"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/fx"
 )
@@ -19,7 +19,7 @@ const (
 type RegisterParams struct {
 	fx.In
 
-	Mux       sh.ServeMux
+	Mux       hm.ServeMux
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
@@ -38,7 +38,7 @@ func Register(params RegisterParams) error {
 	return nil
 }
 
-func resister(path string, mux sh.ServeMux, ob *subscriber.Observer, version version.Version, json *marshaller.JSON, withErrors bool) {
+func resister(path string, mux hm.ServeMux, ob *subscriber.Observer, version version.Version, json *marshaller.JSON, withErrors bool) {
 	mux.Handle("GET", path, func(resp http.ResponseWriter, _ *http.Request) {
 		resp.Header().Set("Content-Type", "application/json")
 		resp.Header().Set("Version", string(version))

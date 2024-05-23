@@ -15,7 +15,7 @@ import (
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/meta"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -35,7 +35,7 @@ func TestHealth(t *testing.T) {
 
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
-			mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+			mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
@@ -93,7 +93,7 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -149,7 +149,7 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

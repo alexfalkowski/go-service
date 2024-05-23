@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -127,7 +127,7 @@ func TestDefaultClientUnary(t *testing.T) {
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := hm.NewServeMux(hm.Standard, test.RuntimeMux, hm.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

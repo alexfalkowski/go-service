@@ -1,16 +1,15 @@
 package http
 
 import (
-	"github.com/alexfalkowski/go-service/net/http"
+	hm "github.com/alexfalkowski/go-service/net/http/mux"
 	"go.uber.org/fx"
 )
 
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(Mux),
-	fx.Provide(http.NewRuntimeServeMux),
-	fx.Provide(http.NewStandardServeMux),
-	fx.Provide(http.NewServeMux),
+	fx.Provide(hm.NewRuntimeServeMux),
+	fx.Provide(hm.NewStandardServeMux),
 	fx.Provide(NewServer),
 	fx.Invoke(RegisterMetrics),
 )
