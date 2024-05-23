@@ -20,7 +20,7 @@ var (
 	RuntimeMux = http.NewRuntimeServeMux()
 
 	// GatewayMux for test.
-	GatewayMux = http.NewServeMux(http.Gateway, RuntimeMux, http.NewStandardServeMux())
+	GatewayMux = http.NewServeMux(http.GatewayMux, RuntimeMux, http.NewStandardServeMux())
 )
 
 // Server for test.

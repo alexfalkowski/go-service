@@ -127,7 +127,7 @@ func TestDefaultClientUnary(t *testing.T) {
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

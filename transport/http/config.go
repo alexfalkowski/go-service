@@ -20,12 +20,12 @@ func UserAgent(cfg *Config) string {
 }
 
 // Mux for config.
-func Mux(cfg *Config) http.Kind {
+func Mux(cfg *Config) http.MuxKind {
 	if !IsEnabled(cfg) {
-		return http.Standard
+		return http.StandardMux
 	}
 
-	return http.Kind(cfg.Mux)
+	return http.MuxKind(cfg.Mux)
 }
 
 // Config for HTTP.

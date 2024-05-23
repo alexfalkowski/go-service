@@ -20,7 +20,7 @@ import (
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -74,7 +74,7 @@ func TestGet(t *testing.T) {
 func TestLimiter(t *testing.T) {
 	for _, f := range []limiter.KeyFunc{tm.UserAgent, tm.IPAddr} {
 		Convey("Given I have a all the servers", t, func() {
-			mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+			mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 

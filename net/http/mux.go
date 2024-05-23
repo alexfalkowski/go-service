@@ -8,20 +8,20 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// Kind of mux for HTTP.
-type Kind string
+// MuxKind for HTTP.
+type MuxKind string
 
 const (
-	// Standard mux for HTTP.
-	Standard = Kind("standard")
+	// StandardMux for HTTP.
+	StandardMux = MuxKind("standard")
 
-	// Gateway mux for HTTP.
-	Gateway = Kind("gateway")
+	// GatewayMux for HTTP.
+	GatewayMux = MuxKind("gateway")
 )
 
 // NewServeMux for HTTP.
-func NewServeMux(kind Kind, r *runtime.ServeMux, s *http.ServeMux) ServeMux {
-	if kind == Gateway {
+func NewServeMux(kind MuxKind, r *runtime.ServeMux, s *http.ServeMux) ServeMux {
+	if kind == GatewayMux {
 		return &RuntimeServeMux{r}
 	}
 
