@@ -86,7 +86,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 //nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

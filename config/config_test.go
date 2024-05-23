@@ -148,7 +148,7 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Transport.GRPC.UserAgent, ShouldEqual, "Service grpc/1.0")
 	So(tls.IsEnabled(cfg.Transport.GRPC.TLS), ShouldBeFalse)
 	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
-	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(http.Gateway))
+	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(http.GatewayMux))
 	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
 	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
