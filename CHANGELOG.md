@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.202.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.1) - 2024-05-23
+
+- [`f0580de`](https://github.com/alexfalkowski/go-service/commit/f0580deaed98667bdb05529a42dafab726653e55) fix(http): rename to have a more descriptive name for kind of mux (#768)
+
 ## [v1.202.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.0) - 2024-05-23
 
 - [`e8e3264`](https://github.com/alexfalkowski/go-service/commit/e8e3264fbe7891a0e0b7c87b98c2d241ae2315be) feat(http): add ability to define the mux (#766)
