@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/hooks"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
@@ -19,19 +20,20 @@ import (
 
 func TestSendReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
+		mux := nh.NewServeMux(nh.Standard, test.RuntimeMux, nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 		m := test.NewOTLPMeter(lc)
 		tc := test.NewOTLPTracerConfig()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
-		r := eh.NewReceiver(test.Mux, h)
+		r := eh.NewReceiver(mux, h)
 
 		var event *events.Event
 
@@ -71,19 +73,20 @@ func TestSendReceive(t *testing.T) {
 
 func TestSendNotReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
+		mux := nh.NewServeMux(nh.Standard, test.RuntimeMux, nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 		m := test.NewOTLPMeter(lc)
 		tc := test.NewOTLPTracerConfig()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
-		r := eh.NewReceiver(test.Mux, h)
+		r := eh.NewReceiver(mux, h)
 
 		var event *events.Event
 

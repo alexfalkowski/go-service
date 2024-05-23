@@ -25,7 +25,7 @@ func TestInsecureUnary(t *testing.T) {
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -61,7 +61,7 @@ func TestSecureUnary(t *testing.T) {
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, TLS: test.NewTLSClientConfig()}
@@ -102,6 +102,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -147,6 +148,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -191,6 +193,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -234,6 +237,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -274,6 +278,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -317,6 +322,7 @@ func TestBreakerUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -359,7 +365,7 @@ func TestStream(t *testing.T) {
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}

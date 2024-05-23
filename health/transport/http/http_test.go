@@ -15,6 +15,7 @@ import (
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/meta"
+	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -34,6 +35,7 @@ func TestHealth(t *testing.T) {
 
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
+			mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 			cfg := test.NewInsecureTransportConfig()
@@ -47,11 +49,11 @@ func TestHealth(t *testing.T) {
 
 			o := so.Observe("http")
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 			s.Register()
 
 			params := shh.RegisterParams{
-				Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
+				Mux: mux, Health: &shh.HealthObserver{Observer: o},
 				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
 				Version: test.Version,
 			}
@@ -91,6 +93,7 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
+		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -104,11 +107,11 @@ func TestReadinessNoop(t *testing.T) {
 
 		o := so.Observe("http")
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		params := shh.RegisterParams{
-			Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
+			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
 			Version: test.Version,
 		}
@@ -146,6 +149,7 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
+		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -159,11 +163,11 @@ func TestInvalidHealth(t *testing.T) {
 
 		o := so.Observe("http")
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		params := shh.RegisterParams{
-			Mux: test.Mux, Health: &shh.HealthObserver{Observer: o},
+			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
 			Version: test.Version,
 		}

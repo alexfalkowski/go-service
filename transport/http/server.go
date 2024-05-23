@@ -16,39 +16,20 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	v3 "github.com/ulule/limiter/v3"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/encoding/protojson"
 )
-
-// NewServeMux for HTTP.
-func NewServeMux() *runtime.ServeMux {
-	opts := []runtime.ServeMuxOption{
-		runtime.WithIncomingHeaderMatcher(customMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames: true,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
-	}
-
-	return runtime.NewServeMux(opts...)
-}
 
 // ServerParams for HTTP.
 type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        *runtime.ServeMux
+	Mux        sh.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
@@ -79,7 +60,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	n.Use(cors.New())
 	n.Use(hl.NewHandler(params.Limiter, params.Key))
-	n.UseHandler(params.Mux)
+	n.UseHandler(params.Mux.Handler())
 
 	s := &http.Server{
 		Handler:     n,
@@ -120,15 +101,6 @@ func config(cfg *Config) (*sh.Config, error) {
 	c.TLS = tls
 
 	return c, err
-}
-
-func customMatcher(key string) (string, bool) {
-	switch key {
-	case "Request-Id", "Geolocation", "X-Forwarded-For":
-		return key, true
-	default:
-		return runtime.DefaultHeaderMatcher(key)
-	}
 }
 
 func timeout(cfg *Config) time.Duration {

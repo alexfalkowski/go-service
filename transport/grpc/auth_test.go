@@ -33,6 +33,7 @@ func TestValidAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -82,6 +83,7 @@ func TestInvalidAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -130,6 +132,7 @@ func TestEmptyAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -172,6 +175,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 
@@ -217,6 +221,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
 			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
 			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
+			Mux:    test.GatewayMux,
 		}
 		s.Register()
 

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -19,6 +20,7 @@ import (
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
+		mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -31,18 +33,18 @@ func TestGet(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Handlers: []negroni.Handler{hl.NewHandler(l, tm.UserAgent)},
+			Handlers: []negroni.Handler{hl.NewHandler(l, tm.UserAgent)}, Mux: mux,
 		}
 		s.Register()
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		lc.RequireStart()
-
-		err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
+		err = mux.Handle("GET", "/hello", func(w http.ResponseWriter, _ *http.Request) {
 			w.Write([]byte("hello!"))
 		})
 		So(err, ShouldBeNil)
+
+		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			client := cl.NewHTTP()
@@ -72,6 +74,7 @@ func TestGet(t *testing.T) {
 func TestLimiter(t *testing.T) {
 	for _, f := range []limiter.KeyFunc{tm.UserAgent, tm.IPAddr} {
 		Convey("Given I have a all the servers", t, func() {
+			mux := sh.NewServeMux(sh.Standard, test.RuntimeMux, sh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -84,18 +87,18 @@ func TestLimiter(t *testing.T) {
 
 			s := &test.Server{
 				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-				Handlers: []negroni.Handler{hl.NewHandler(l, f)},
+				Handlers: []negroni.Handler{hl.NewHandler(l, f)}, Mux: mux,
 			}
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			lc.RequireStart()
-
-			err = test.Mux.HandlePath("GET", "/hello", func(w http.ResponseWriter, _ *http.Request, _ map[string]string) {
+			err = mux.Handle("GET", "/hello", func(w http.ResponseWriter, _ *http.Request) {
 				w.Write([]byte("hello!"))
 			})
 			So(err, ShouldBeNil)
+
+			lc.RequireStart()
 
 			Convey("When I query for a greet", func() {
 				client := cl.NewHTTP()

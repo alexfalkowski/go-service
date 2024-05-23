@@ -1,6 +1,7 @@
 environment: production
 transport:
   http:
+    mux: gateway
     port: 11000
     timeout: 10s
     retry:
