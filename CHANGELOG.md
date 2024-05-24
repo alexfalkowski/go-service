@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.202.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.2) - 2024-05-24
+
+- [`76f773e`](https://github.com/alexfalkowski/go-service/commit/76f773e6fb0630641696c900aa29e88d1990e314) fix(deps): bump github.com/beevik/ntp from 1.4.1 to 1.4.2 (#769)
+
 ## [v1.202.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.1) - 2024-05-23
 
 - [`f0580de`](https://github.com/alexfalkowski/go-service/commit/f0580deaed98667bdb05529a42dafab726653e55) fix(http): rename to have a more descriptive name for kind of mux (#768)
