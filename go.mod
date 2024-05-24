@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.22.3
 
 require (
-	github.com/BurntSushi/toml v1.3.2
+	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.6.1
 	github.com/alexfalkowski/go-health v1.17.0
 	github.com/arl/statsviz v0.6.0
