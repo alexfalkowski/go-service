@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.202.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.3) - 2024-05-24
+
+- [`8bd0563`](https://github.com/alexfalkowski/go-service/commit/8bd05637f7e7b6c130d973b30c5393c3853be0b3) fix(deps): bump github.com/BurntSushi/toml from 1.3.2 to 1.4.0 (#770)
+
 ## [v1.202.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.2) - 2024-05-24
 
 - [`76f773e`](https://github.com/alexfalkowski/go-service/commit/76f773e6fb0630641696c900aa29e88d1990e314) fix(deps): bump github.com/beevik/ntp from 1.4.1 to 1.4.2 (#769)
