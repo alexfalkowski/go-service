@@ -1,4 +1,4 @@
 environment: production
 debug:
-  port: ""
+  port: "invalid"
   timeout: 10s

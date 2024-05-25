@@ -106,7 +106,7 @@ func TestInvalid(t *testing.T) {
 					err := c.RunWithArgs([]string{"server", "--input", i})
 
 					So(err, ShouldBeError)
-					So(err.Error(), ShouldContainSubstring, "invalid port")
+					So(err.Error(), ShouldContainSubstring, "unknown port")
 				})
 			})
 		})
@@ -164,7 +164,7 @@ func TestInvalidClient(t *testing.T) {
 					err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
 
 					So(err, ShouldBeError)
-					So(err.Error(), ShouldContainSubstring, "invalid port")
+					So(err.Error(), ShouldContainSubstring, "unknown port")
 				})
 
 				So(os.Unsetenv("TEST_CONFIG_FILE"), ShouldBeNil)

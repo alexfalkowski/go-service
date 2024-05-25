@@ -144,15 +144,13 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 	return grpc.Creds(creds), nil
 }
 
-func config(cfg *Config) sg.Config {
-	c := sg.Config{}
-
+func config(cfg *Config) *sg.Config {
 	if !IsEnabled(cfg) {
-		return c
+		return nil
 	}
 
-	c.Enabled = true
-	c.Port = cfg.Port
+	c := &sg.Config{}
+	c.Port = cfg.GetPort("9090")
 
 	return c
 }
