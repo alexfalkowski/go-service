@@ -16,15 +16,14 @@ type Server struct {
 
 // Config for HTTP.
 type Config struct {
-	Port    string
-	Enabled bool
+	Port string
 }
 
 // NewServer for gRPC.
-func NewServer(server *grpc.Server, cfg Config) (*Server, error) {
+func NewServer(server *grpc.Server, cfg *Config) (*Server, error) {
 	s := &Server{server: server}
 
-	if !cfg.Enabled {
+	if cfg == nil {
 		return s, nil
 	}
 

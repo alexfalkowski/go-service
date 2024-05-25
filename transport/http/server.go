@@ -90,8 +90,7 @@ func config(cfg *Config) (*sh.Config, error) {
 	}
 
 	c := &sh.Config{}
-
-	c.Port = cfg.Port
+	c.Port = cfg.GetPort("8080")
 
 	if !st.IsEnabled(cfg.TLS) {
 		return c, nil

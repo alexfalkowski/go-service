@@ -27,3 +27,12 @@ type Config struct {
 	TLS       *tls.Config   `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 	UserAgent string        `yaml:"user_agent,omitempty" json:"user_agent,omitempty" toml:"user_agent,omitempty"`
 }
+
+// GetPort or default.
+func (c *Config) GetPort(port string) string {
+	if c.Port == "" {
+		return port
+	}
+
+	return c.Port
+}
