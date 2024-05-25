@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.203.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.203.0) - 2024-05-25
+
+- [`0aed3dc`](https://github.com/alexfalkowski/go-service/commit/0aed3dcc4f0720980da0db88ecaa69a4c15c2f9a) feat(transport): specify default ports (#771)
+
 ## [v1.202.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.202.3) - 2024-05-24
 
 - [`8bd0563`](https://github.com/alexfalkowski/go-service/commit/8bd05637f7e7b6c130d973b30c5393c3853be0b3) fix(deps): bump github.com/BurntSushi/toml from 1.3.2 to 1.4.0 (#770)
