@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -17,7 +16,6 @@ import (
 
 func init() {
 	meta.RegisterKeys()
-	token.RegisterKeys()
 }
 
 func TestLimiterLimitedUnary(t *testing.T) {

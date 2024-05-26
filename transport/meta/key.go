@@ -13,12 +13,16 @@ const (
 
 	// IPAddrKey for meta.
 	IPAddrKey = "ipAddr"
+
+	// Authorization for meta.
+	AuthorizationKey = "authorization"
 )
 
 // RegisterKeys for limiter.
 func RegisterKeys() {
 	limiter.RegisterKey("user-agent", UserAgent)
 	limiter.RegisterKey("ip", IPAddr)
+	limiter.RegisterKey("token", Authorization)
 }
 
 // WithUserAgent for transport.
@@ -39,4 +43,14 @@ func WithIPAddr(ctx context.Context, addr meta.Valuer) context.Context {
 // IPAddr for transport.
 func IPAddr(ctx context.Context) meta.Valuer {
 	return meta.Attribute(ctx, IPAddrKey)
+}
+
+// WithAuthorization for transport.
+func WithAuthorization(ctx context.Context, auth meta.Valuer) context.Context {
+	return meta.WithAttribute(ctx, AuthorizationKey, auth)
+}
+
+// Authorization for transport.
+func Authorization(ctx context.Context) meta.Valuer {
+	return meta.Attribute(ctx, AuthorizationKey)
 }
