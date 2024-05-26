@@ -53,6 +53,7 @@ func TestNoneCase(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestBlank(t *testing.T) {
 	Convey("When I have a blank value", t, func() {
 		v := meta.String("")
@@ -64,6 +65,22 @@ func TestBlank(t *testing.T) {
 
 	Convey("When I have a blank value", t, func() {
 		v := meta.Redacted("")
+
+		Convey("Then it should be blank", func() {
+			So(meta.IsBlank(v), ShouldBeTrue)
+		})
+	})
+
+	Convey("When I have a blank value", t, func() {
+		v := meta.Ignored("")
+
+		Convey("Then it should be blank", func() {
+			So(meta.IsBlank(v), ShouldBeTrue)
+		})
+	})
+
+	Convey("When I have a blank value", t, func() {
+		v := meta.Blank()
 
 		Convey("Then it should be blank", func() {
 			So(meta.IsBlank(v), ShouldBeTrue)
@@ -88,6 +105,14 @@ func TestBlank(t *testing.T) {
 
 	Convey("When I have a no stringer", t, func() {
 		v := meta.ToRedacted(nil)
+
+		Convey("Then it should be blank", func() {
+			So(meta.IsBlank(v), ShouldBeTrue)
+		})
+	})
+
+	Convey("When I have a no stringer", t, func() {
+		v := meta.ToIgnored(nil)
 
 		Convey("Then it should be blank", func() {
 			So(meta.IsBlank(v), ShouldBeTrue)

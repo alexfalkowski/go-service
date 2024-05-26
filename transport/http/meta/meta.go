@@ -83,21 +83,21 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 }
 
 func extractIP(req *http.Request) meta.Valuer {
-	return meta.ToRedacted(limiter.GetIP(req, limiter.Options{TrustForwardHeader: true}))
+	return meta.ToIgnored(limiter.GetIP(req, limiter.Options{TrustForwardHeader: true}))
 }
 
 func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
 	a := req.Header.Get("Authorization")
 	if a == "" {
-		return meta.String("")
+		return meta.Blank()
 	}
 
 	_, t, err := header.ParseAuthorization(a)
 	if err != nil {
 		meta.WithAttribute(ctx, "authError", meta.Error(err))
 
-		return meta.String("")
+		return meta.Blank()
 	}
 
-	return meta.Redacted(t)
+	return meta.Ignored(t)
 }

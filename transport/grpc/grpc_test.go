@@ -2,6 +2,7 @@ package grpc_test
 
 import (
 	"context"
+	"net"
 	"testing"
 	"time"
 
@@ -28,7 +29,8 @@ func TestInsecureUnary(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
+			ctx := meta.WithAttribute(context.Background(), "test", meta.Ignored("test"))
+			ctx = meta.WithAttribute(ctx, "ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
 			conn := cl.NewGRPC()
 			defer conn.Close()
@@ -64,7 +66,7 @@ func TestSecureUnary(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := meta.WithAttribute(context.Background(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
 			conn := cl.NewGRPC()
 			defer conn.Close()

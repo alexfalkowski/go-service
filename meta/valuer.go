@@ -12,6 +12,11 @@ type Valuer interface {
 	fmt.Stringer
 }
 
+// Blank for meta.
+func Blank() Valuer {
+	return String("")
+}
+
 // ValueOrBlank for meta.
 func ValueOrBlank(s Valuer) string {
 	if s == nil {
@@ -34,7 +39,7 @@ func IsEqual(actual Valuer, expected string) bool {
 // Error for meta.
 func Error(err error) Valuer {
 	if err == nil {
-		return String("")
+		return Blank()
 	}
 
 	return String(err.Error())
@@ -82,4 +87,26 @@ func (v Redacted) Value() string {
 // String to satisfy fmt.Stringer.
 func (v Redacted) String() string {
 	return strings.Repeat("*", len(v.Value()))
+}
+
+// ToIgnored for meta.
+func ToIgnored(st fmt.Stringer) Ignored {
+	if st == nil {
+		return Ignored("")
+	}
+
+	return Ignored(st.String())
+}
+
+// Ignored for meta.
+type Ignored string
+
+// Value of the string.
+func (v Ignored) Value() string {
+	return string(v)
+}
+
+// String to satisfy fmt.Stringer.
+func (v Ignored) String() string {
+	return ""
 }
