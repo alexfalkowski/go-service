@@ -233,7 +233,10 @@ telemetry:
 
 ## Token
 
-The framework allows you to define different token generators and verifiers. We provide the config, how these are defined are up to you.
+The framework allows you to define different token generators and verifiers. Out to the box, we provide a simple key and hash solution. We recommend that you look at a better auth strategies, such as:
+- https://github.com/supertokens/supertokens-core
+- https://github.com/ory/hydra
+
 
 ### Configuration
 
@@ -241,7 +244,8 @@ To configure, please specify the following:
 
 ```yaml
 token:
-  Kind: none
+  key: path 2 key
+  hash: argon2 has of the key
 ```
 
 ## Limiter
@@ -249,8 +253,9 @@ token:
 The framework allows you to define a [limiter](https://github.com/ulule/limiter). This will be applied to the different transports.
 
 The different kinds are:
-- user-agent
-- ip
+- [user-agent](meta/meta.go)
+- [ip](meta/meta.go)
+- [token](transport/grpc/security/token/token.go)
 
 ### Configuration
 

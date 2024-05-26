@@ -160,14 +160,6 @@ func rsaConfig(cfg *Config) *rsa.Config {
 	return cfg.Crypto.RSA
 }
 
-func timeConfig(cfg *Config) *time.Config {
-	if !IsEnabled(cfg) || !time.IsEnabled(cfg.Time) {
-		return nil
-	}
-
-	return cfg.Time
-}
-
 func pgConfig(cfg *Config) *pg.Config {
 	if !IsEnabled(cfg) || !sql.IsEnabled(cfg.SQL) {
 		return nil
@@ -190,6 +182,14 @@ func ristrettoConfig(cfg *Config) *ristretto.Config {
 	}
 
 	return cfg.Cache.Ristretto
+}
+
+func timeConfig(cfg *Config) *time.Config {
+	if !IsEnabled(cfg) || !time.IsEnabled(cfg.Time) {
+		return nil
+	}
+
+	return cfg.Time
 }
 
 func tokenConfig(cfg *Config) *token.Config {

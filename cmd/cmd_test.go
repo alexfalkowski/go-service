@@ -212,17 +212,13 @@ func ristrettoCache(c sr.Cache) {
 	c.Del("test")
 }
 
-func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config, _ *token.Config) {
-}
+func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config) {}
 
-func meter(_ metric.Meter) {
-}
+func meter(_ metric.Meter) {}
 
-func featureClient(_ *openfeature.Client) {
-}
+func featureClient(_ *openfeature.Client) {}
 
-func webHooks(_ *h.Webhook, _ *geh.Receiver) {
-}
+func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
 
 func ver() version.Version {
 	return test.Version
@@ -232,7 +228,33 @@ func netTime(n st.Network) {
 	n.Now()
 }
 
-func crypt(_ argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo) {
+func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo) error {
+	msg := "hello"
+
+	e, err := a.Generate(msg)
+	if err != nil {
+		return err
+	}
+
+	err = a.Compare(e, msg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func tkn(t token.Tokenizer) error {
+	ctx := context.Background()
+
+	_, b, err := t.Generate(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = t.Verify(ctx, b)
+
+	return err
 }
 
 func shutdown(s fx.Shutdowner) {
@@ -247,12 +269,13 @@ func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
-		telemetry.Module, metrics.Module, health.Module, sql.Module, hooks.Module,
-		cache.Module, compressor.Module, marshaller.Module, transport.Module, crypto.Module,
+		transport.Module, telemetry.Module, metrics.Module, health.Module,
+		sql.Module, hooks.Module, token.Module, cache.Module,
+		compressor.Module, marshaller.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
-		fx.Invoke(redisCache), fx.Invoke(ristrettoCache),
-		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(crypt),
+		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn),
 	}
 }

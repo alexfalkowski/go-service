@@ -11,12 +11,14 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
-	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"github.com/urfave/negroni/v3"
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	meta.RegisterKeys()
+}
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
@@ -24,7 +26,7 @@ func TestGet(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New(test.NewLimiterConfig("100-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -33,7 +35,7 @@ func TestGet(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Handlers: []negroni.Handler{hl.NewHandler(l, tm.UserAgent)}, Mux: mux,
+			Limiter: l, Key: k, Mux: mux,
 		}
 		s.Register()
 
@@ -72,13 +74,13 @@ func TestGet(t *testing.T) {
 }
 
 func TestLimiter(t *testing.T) {
-	for _, f := range []limiter.KeyFunc{tm.UserAgent, tm.IPAddr} {
+	for _, f := range []string{"user-agent", "ip"} {
 		Convey("Given I have a all the servers", t, func() {
 			mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, err := limiter.New(test.NewLimiterConfig("0-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig(f, "0-S"))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -87,7 +89,7 @@ func TestLimiter(t *testing.T) {
 
 			s := &test.Server{
 				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-				Handlers: []negroni.Handler{hl.NewHandler(l, f)}, Mux: mux,
+				Limiter: l, Key: k, Mux: mux,
 			}
 			s.Register()
 

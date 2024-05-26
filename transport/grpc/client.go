@@ -5,9 +5,11 @@ import (
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/security/token"
 	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	tkn "github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	gm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
@@ -33,19 +35,27 @@ type clientOpts struct {
 	tracer    trace.Tracer
 	meter     metric.Meter
 	security  grpc.DialOption
+	gen       token.Generator
 	logger    *zap.Logger
 	retry     *retry.Config
 	userAgent string
 	opts      []grpc.DialOption
 	unary     []grpc.UnaryClientInterceptor
 	stream    []grpc.StreamClientInterceptor
-	breaker   bool
 	timeout   time.Duration
+	breaker   bool
 }
 
 type clientOptionFunc func(*clientOpts)
 
 func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientTokenGenerator for gRPC.
+func WithClientTokenGenerator(gen token.Generator) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.gen = gen
+	})
+}
 
 // WithClientTimeout for gRPC.
 func WithClientTimeout(timeout string) ClientOption {
@@ -149,6 +159,10 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 			PermitWithoutStream: true,
 		}),
 		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
+	}
+
+	if os.gen != nil {
+		ops = append(ops, grpc.WithPerRPCCredentials(tkn.NewPerRPCCredentials(os.gen)))
 	}
 
 	ops = append(ops, os.opts...)

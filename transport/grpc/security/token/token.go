@@ -7,7 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/token"
-	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	gm "github.com/alexfalkowski/go-service/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
@@ -18,7 +18,7 @@ import (
 
 // ExtractToken from context.
 func ExtractToken(ctx context.Context) (string, error) {
-	md := meta.ExtractIncoming(ctx)
+	md := gm.ExtractIncoming(ctx)
 
 	values := md["authorization"]
 	if len(values) == 0 {
@@ -50,7 +50,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 
 		ctx, err := VerifyToken(ctx, verifier)
 		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
+			return nil, status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}
 
 		return handler(ctx, req)
@@ -69,7 +69,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		ctx, err := VerifyToken(ctx, verifier)
 		if err != nil {
-			return status.Errorf(codes.Unauthenticated, "could not verify token: %s", err.Error())
+			return status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}
 
 		wrapped := middleware.WrapServerStream(stream)

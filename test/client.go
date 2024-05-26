@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
 	g "github.com/alexfalkowski/go-service/transport/grpc"
@@ -14,7 +15,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 // Client for test.
@@ -24,9 +24,9 @@ type Client struct {
 	Tracer       *tracer.Config
 	Transport    *transport.Config
 	TLS          *tls.Config
-	Credentials  credentials.PerRPCCredentials
 	RoundTripper http.RoundTripper
 	Meter        metric.Meter
+	Generator    token.Generator
 }
 
 // NewHTTP client for test.
@@ -42,7 +42,7 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(c.Transport.HTTP.UserAgent),
-		sec,
+		h.WithClientTokenGenerator(c.Generator), sec,
 	)
 
 	return client
@@ -51,11 +51,6 @@ func (c *Client) NewHTTP() *http.Client {
 func (c *Client) NewGRPC() *grpc.ClientConn {
 	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
 	runtime.Must(err)
-
-	dialOpts := []grpc.DialOption{}
-	if c.Credentials != nil {
-		dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(c.Credentials))
-	}
 
 	sec, err := g.WithClientTLS(c.TLS)
 	runtime.Must(err)
@@ -70,8 +65,8 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
-		g.WithClientDialOption(dialOpts...), g.WithClientMetrics(c.Meter),
-		g.WithClientUserAgent(cl.UserAgent), g.WithClientTimeout("5s"), sec,
+		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(cl.UserAgent),
+		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator), sec,
 	)
 	runtime.Must(err)
 

@@ -15,22 +15,10 @@ const (
 	IPAddrKey = "ipAddr"
 )
 
-var keys = map[string]limiter.KeyFunc{
-	"user-agent": UserAgent,
-	"ip":         IPAddr,
-}
-
-// NewKey for meta.
-func NewKey(cfg *limiter.Config) limiter.KeyFunc {
-	if !limiter.IsEnabled(cfg) {
-		return nil
-	}
-
-	if u, ok := keys[cfg.Kind]; ok {
-		return u
-	}
-
-	return nil
+// RegisterKeys for limiter.
+func RegisterKeys() {
+	limiter.RegisterKey("user-agent", UserAgent)
+	limiter.RegisterKey("ip", IPAddr)
 }
 
 // WithUserAgent for transport.

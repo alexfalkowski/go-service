@@ -235,9 +235,9 @@ func NewRedisConfig(secret, compressor, marshaller string) *redis.Config {
 }
 
 // NewLimiterConfig for test.
-func NewLimiterConfig(pattern string) *limiter.Config {
+func NewLimiterConfig(kind, pattern string) *limiter.Config {
 	return &limiter.Config{
-		Kind:    "user-agent",
+		Kind:    kind,
 		Pattern: pattern,
 	}
 }

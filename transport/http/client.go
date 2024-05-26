@@ -8,10 +8,12 @@ import (
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/security/token"
 	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
+	tkn "github.com/alexfalkowski/go-service/transport/http/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
@@ -30,17 +32,25 @@ type clientOpts struct {
 	tracer       trace.Tracer
 	meter        metric.Meter
 	roundTripper http.RoundTripper
+	gen          token.Generator
 	logger       *zap.Logger
 	retry        *r.Config
 	tls          *tls.Config
 	userAgent    string
-	breaker      bool
 	timeout      time.Duration
+	breaker      bool
 }
 
 type clientOptionFunc func(*clientOpts)
 
 func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientTokenGenerator for HTTP.
+func WithClientTokenGenerator(gen token.Generator) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.gen = gen
+	})
+}
 
 // WithClientTimeout for HTTP.
 func WithClientTimeout(timeout string) ClientOption {
@@ -140,6 +150,10 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 	if os.breaker {
 		hrt = breaker.NewRoundTripper(hrt)
+	}
+
+	if os.gen != nil {
+		hrt = tkn.NewRoundTripper(os.gen, hrt)
 	}
 
 	if os.logger != nil {
