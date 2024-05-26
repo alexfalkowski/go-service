@@ -208,7 +208,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("bob")
 
-		l, _, err := limiter.New(test.NewLimiterConfig("token", "10-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("token", "10-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -217,7 +217,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Limiter: l, Key: token.Key, Verifier: verifier, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 

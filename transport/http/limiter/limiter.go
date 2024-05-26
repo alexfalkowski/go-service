@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/transport/strings"
 	l "github.com/ulule/limiter/v3"
 )
 
@@ -22,7 +23,7 @@ type Handler struct {
 
 // ServeHTTP for limiter.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if h.limiter == nil {
+	if h.limiter == nil || strings.IsHealth(req.URL.Path) {
 		next(res, req)
 
 		return

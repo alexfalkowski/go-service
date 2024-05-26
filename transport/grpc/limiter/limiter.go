@@ -2,9 +2,11 @@ package limiter
 
 import (
 	"context"
+	"path"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	v3 "github.com/ulule/limiter/v3"
 	"google.golang.org/grpc"
@@ -14,7 +16,12 @@ import (
 
 // UnaryServerInterceptor for gRPC.
 func UnaryServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		p := path.Dir(info.FullMethod)[1:]
+		if limiter == nil || strings.IsHealth(p) {
+			return handler(ctx, req)
+		}
+
 		if err := limit(ctx, limiter, key); err != nil {
 			return nil, err
 		}
@@ -25,7 +32,12 @@ func UnaryServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.Unary
 
 // StreamServerInterceptor for gRPC.
 func StreamServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		p := path.Dir(info.FullMethod)[1:]
+		if limiter == nil || strings.IsHealth(p) {
+			return handler(srv, stream)
+		}
+
 		ctx := stream.Context()
 		if err := limit(ctx, limiter, key); err != nil {
 			return err
@@ -39,10 +51,6 @@ func StreamServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.Stre
 }
 
 func limit(ctx context.Context, limiter *v3.Limiter, key limiter.KeyFunc) error {
-	if limiter == nil {
-		return nil
-	}
-
 	// Memory stores do not return error.
 	context, _ := limiter.Get(ctx, meta.ValueOrBlank(key(ctx)))
 

@@ -14,11 +14,13 @@ import (
 	"github.com/alexfalkowski/go-service/health"
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
@@ -28,8 +30,11 @@ import (
 
 func init() {
 	tracer.Register()
+	tm.RegisterKeys()
+	token.RegisterKeys()
 }
 
+//nolint:funlen
 func TestHealth(t *testing.T) {
 	checks := []string{"healthz", "livez", "readyz"}
 
@@ -38,6 +43,10 @@ func TestHealth(t *testing.T) {
 			mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
+
+			l, k, err := limiter.New(test.NewLimiterConfig("token", "0-S"))
+			So(err, ShouldBeNil)
+
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := metrics.NewNoopMeter()
@@ -49,7 +58,10 @@ func TestHealth(t *testing.T) {
 
 			o := so.Observe("http")
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+			s := &test.Server{
+				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+				Limiter: l, Key: k, Mux: mux,
+			}
 			s.Register()
 
 			params := shh.RegisterParams{
