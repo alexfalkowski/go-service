@@ -1,4 +1,4 @@
-package meta
+package token
 
 import (
 	"go.uber.org/fx"
@@ -6,5 +6,5 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Invoke(RegisterKeys),
+	fx.Provide(NewTokenizer),
 )

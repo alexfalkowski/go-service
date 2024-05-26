@@ -1,4 +1,4 @@
-package meta
+package token
 
 import (
 	"go.uber.org/fx"

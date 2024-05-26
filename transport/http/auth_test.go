@@ -12,11 +12,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	gt "github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
-	"google.golang.org/grpc"
 )
 
 //nolint:dupl
@@ -31,9 +29,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -42,7 +38,7 @@ func TestValidAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			RoundTripper: ht.NewRoundTripper(test.NewGenerator("test", nil), http.DefaultTransport),
+			Generator: test.NewGenerator("test", nil),
 		}
 
 		conn := cl.NewGRPC()
@@ -92,9 +88,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -103,7 +97,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			RoundTripper: ht.NewRoundTripper(test.NewGenerator("bob", nil), http.DefaultTransport),
+			Generator: test.NewGenerator("bob", nil),
 		}
 
 		conn := cl.NewGRPC()
@@ -133,7 +127,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			actual := strings.TrimSpace(string(body))
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(actual, ShouldContainSubstring, `could not verify token: invalid token`)
+				So(actual, ShouldContainSubstring, `verify token: invalid token`)
 			})
 
 			lc.RequireStop()
@@ -153,9 +147,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -210,9 +202,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -264,9 +254,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -321,9 +309,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Unary:  []grpc.UnaryServerInterceptor{gt.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{gt.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -332,7 +318,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			RoundTripper: ht.NewRoundTripper(test.NewGenerator("", errors.New("token error")), http.DefaultTransport),
+			Generator: test.NewGenerator("", errors.New("token error")),
 		}
 
 		conn := cl.NewGRPC()

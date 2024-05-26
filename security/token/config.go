@@ -1,6 +1,17 @@
 package token
 
-// Config for token.
-type Config struct {
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+// IsEnabled the config.
+func IsEnabled(cfg *Config) bool {
+	return cfg != nil
 }
+
+type (
+	// Key for token.
+	Key string
+
+	// Config for token.
+	Config struct {
+		Key  Key    `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+		Hash string `yaml:"hash,omitempty" json:"hash,omitempty" toml:"hash,omitempty"`
+	}
+)

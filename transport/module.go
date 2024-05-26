@@ -14,8 +14,8 @@ var Module = fx.Options(
 	grpc.Module,
 	http.Module,
 	events.Module,
-	limiter.Module,
 	meta.Module,
+	limiter.Module,
 	fx.Provide(NewServers),
 	fx.Invoke(Register),
 )

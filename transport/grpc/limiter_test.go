@@ -7,21 +7,25 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func init() {
+	meta.RegisterKeys()
+	token.RegisterKeys()
+}
 
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New(test.NewLimiterConfig("0-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "0-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -30,9 +34,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
-			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
-			Mux:    test.GatewayMux,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -66,7 +68,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New(test.NewLimiterConfig("10-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "10-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -75,9 +77,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
-			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
-			Mux:    test.GatewayMux,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -110,7 +110,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New(test.NewLimiterConfig("0-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "0-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -119,9 +119,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
-			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
-			Mux:    test.GatewayMux,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -161,7 +159,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, err := limiter.New(test.NewLimiterConfig("10-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "10-S"))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -170,9 +168,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{gl.UnaryServerInterceptor(l, tm.UserAgent)},
-			Stream: []grpc.StreamServerInterceptor{gl.StreamServerInterceptor(l, tm.UserAgent)},
-			Mux:    test.GatewayMux,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -196,6 +192,56 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			_, err = stream.Recv()
+
+			Convey("Then I should not have exhausted resources", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestLimiterAuthUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		verifier := test.NewVerifier("bob")
+
+		l, _, err := limiter.New(test.NewLimiterConfig("token", "10-S"))
+		So(err, ShouldBeNil)
+
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
+			Limiter: l, Key: token.Key, Verifier: verifier, Mux: test.GatewayMux,
+		}
+		s.Register()
+
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Generator: test.NewGenerator("bob", nil),
+		}
+
+		lc.RequireStart()
+
+		Convey("When I query for a authenticated greet multiple times", func() {
+			ctx := context.Background()
+
+			conn := cl.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			var err error
+
+			for i := 0; i < 10; i++ {
+				_, err = client.SayHello(ctx, req)
+			}
 
 			Convey("Then I should not have exhausted resources", func() {
 				So(err, ShouldBeNil)

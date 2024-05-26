@@ -5,16 +5,18 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
-	"github.com/alexfalkowski/go-service/limiter"
+	lm "github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/server"
 	t "github.com/alexfalkowski/go-service/time"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	tkn "github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
-	v3 "github.com/ulule/limiter/v3"
+	"github.com/ulule/limiter/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
@@ -34,8 +36,9 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
 	Meter      metric.Meter
-	Limiter    *v3.Limiter
-	Key        limiter.KeyFunc
+	Limiter    *limiter.Limiter               `optional:"true"`
+	Key        lm.KeyFunc                     `optional:"true"`
+	Verifier   token.Verifier                 `optional:"true"`
 	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
 	Stream     []grpc.StreamServerInterceptor `optional:"true"`
 }
@@ -107,7 +110,14 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 		tracer.UnaryServerInterceptor(params.Tracer),
 		logger.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
-		gl.UnaryServerInterceptor(params.Limiter, params.Key),
+	}
+
+	if params.Verifier != nil {
+		defaultInterceptors = append(defaultInterceptors, tkn.UnaryServerInterceptor(params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		defaultInterceptors = append(defaultInterceptors, gl.UnaryServerInterceptor(params.Limiter, params.Key))
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)
@@ -121,7 +131,14 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 		tracer.StreamServerInterceptor(params.Tracer),
 		logger.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),
-		gl.StreamServerInterceptor(params.Limiter, params.Key),
+	}
+
+	if params.Verifier != nil {
+		defaultInterceptors = append(defaultInterceptors, tkn.StreamServerInterceptor(params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		defaultInterceptors = append(defaultInterceptors, gl.StreamServerInterceptor(params.Limiter, params.Key))
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

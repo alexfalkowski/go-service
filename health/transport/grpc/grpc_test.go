@@ -14,12 +14,10 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 )
@@ -125,9 +123,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
@@ -256,9 +252,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Unary:  []grpc.UnaryServerInterceptor{token.UnaryServerInterceptor(verifier)},
-			Stream: []grpc.StreamServerInterceptor{token.StreamServerInterceptor(verifier)},
-			Mux:    test.GatewayMux,
+			Verifier: verifier, Mux: test.GatewayMux,
 		}
 		s.Register()
 
