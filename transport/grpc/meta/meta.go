@@ -23,7 +23,7 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Redacted(IPAddr(ctx, md)))
+		ctx = m.WithIPAddr(ctx, meta.Ignored(IPAddr(ctx, md)))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		return handler(ctx, req)
@@ -38,7 +38,7 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Redacted(IPAddr(ctx, md)))
+		ctx = m.WithIPAddr(ctx, meta.Ignored(IPAddr(ctx, md)))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
@@ -138,17 +138,17 @@ func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
 func extractAuthorization(ctx context.Context, md metadata.MD) meta.Valuer {
 	a := authorization(md)
 	if a == "" {
-		return meta.String("")
+		return meta.Blank()
 	}
 
 	_, t, err := header.ParseAuthorization(a)
 	if err != nil {
 		meta.WithAttribute(ctx, "authError", meta.Error(err))
 
-		return meta.String("")
+		return meta.Blank()
 	}
 
-	return meta.Redacted(t)
+	return meta.Ignored(t)
 }
 
 func authorization(md metadata.MD) string {

@@ -42,10 +42,13 @@ func CamelStrings(ctx context.Context, prefix string) map[string]string {
 // Strings for meta.
 func Strings(ctx context.Context, prefix string, converter Converter) map[string]string {
 	as := attributes(ctx)
-	ss := make(map[string]string, len(as))
+	ss := map[string]string{}
 
 	for k, v := range as {
-		ss[prefix+converter(k)] = v.String()
+		s := v.String()
+		if s != "" {
+			ss[prefix+converter(k)] = s
+		}
 	}
 
 	return ss
