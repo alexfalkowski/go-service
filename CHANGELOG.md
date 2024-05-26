@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.204.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.204.1) - 2024-05-26
+
+- [`4592f52`](https://github.com/alexfalkowski/go-service/commit/4592f52875a20b3898ad9aa9de0ed28a429541b6) fix(limiter): do not rate limit health checks (#773)
+
 ## [v1.204.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.204.0) - 2024-05-26
 
 - [`8c09250`](https://github.com/alexfalkowski/go-service/commit/8c092507bdb0ded6266a0191c1e0e0a07167a9d6) feat(security): add options for tokens (#772)
