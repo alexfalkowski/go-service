@@ -11,9 +11,11 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
@@ -24,12 +26,18 @@ import (
 
 func init() {
 	tracer.Register()
+	tm.RegisterKeys()
+	token.RegisterKeys()
 }
 
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
+
+		l, k, err := limiter.New(test.NewLimiterConfig("token", "0-S"))
+		So(err, ShouldBeNil)
+
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
@@ -37,7 +45,10 @@ func TestUnary(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
+		}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -152,11 +163,14 @@ func TestIgnoreAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
+
+		l, k, err := limiter.New(test.NewLimiterConfig("token", "0-S"))
+		So(err, ShouldBeNil)
+
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
 		m := test.NewOTLPMeter(lc)
@@ -164,7 +178,10 @@ func TestStream(t *testing.T) {
 		client := cl.NewHTTP()
 		o := observer(lc, "http://localhost:6000/v1/status/200", client)
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Limiter: l, Key: k, Mux: test.GatewayMux,
+		}
 		s.Register()
 
 		shg.Register(s.GRPC, &shg.Observer{Observer: o})
@@ -195,7 +212,6 @@ func TestStream(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		lc := fxtest.NewLifecycle(t)
