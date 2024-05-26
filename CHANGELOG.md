@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.205.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.205.0) - 2024-05-26
+
+- [`853c9c9`](https://github.com/alexfalkowski/go-service/commit/853c9c974e9c96cfad39a9ab293b6b5d54085187) feat(security): add authorization to meta (#775)
+
 ## [v1.204.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.204.2) - 2024-05-26
 
 - [`9dd92bb`](https://github.com/alexfalkowski/go-service/commit/9dd92bb6d0c34a3c808e1c8872e4ecc10a6c320d) fix(grpc): handle metadata prefix for authorization (#774)
