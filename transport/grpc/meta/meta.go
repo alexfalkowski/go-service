@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
@@ -22,7 +23,8 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Redacted((IPAddr(ctx, md))))
+		ctx = m.WithIPAddr(ctx, meta.Redacted(IPAddr(ctx, md)))
+		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		return handler(ctx, req)
 	}
@@ -36,7 +38,8 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Redacted((IPAddr(ctx, md))))
+		ctx = m.WithIPAddr(ctx, meta.Redacted(IPAddr(ctx, md)))
+		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -130,4 +133,32 @@ func extractRequestID(ctx context.Context, md metadata.MD) meta.Valuer {
 	}
 
 	return meta.ToString(uuid.New())
+}
+
+func extractAuthorization(ctx context.Context, md metadata.MD) meta.Valuer {
+	a := authorization(md)
+	if a == "" {
+		return meta.String("")
+	}
+
+	_, t, err := header.ParseAuthorization(a)
+	if err != nil {
+		meta.WithAttribute(ctx, "authError", meta.Error(err))
+
+		return meta.String("")
+	}
+
+	return meta.Redacted(t)
+}
+
+func authorization(md metadata.MD) string {
+	if a := md.Get(runtime.MetadataPrefix + "authorization"); len(a) > 0 {
+		return a[0]
+	}
+
+	if a := md.Get("authorization"); len(a) > 0 {
+		return a[0]
+	}
+
+	return ""
 }

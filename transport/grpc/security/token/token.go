@@ -7,34 +7,18 @@ import (
 
 	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/token"
-	gm "github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
-// ExtractToken from context.
-func ExtractToken(ctx context.Context) (string, error) {
-	a, err := authorization(ctx)
-	if err != nil {
-		return a, err
-	}
-
-	_, token, err := header.ParseAuthorization(a)
-
-	return token, err
-}
-
 // VerifyToken from context.
 func VerifyToken(ctx context.Context, verifier token.Verifier) (context.Context, error) {
-	token, err := ExtractToken(ctx)
-	if err != nil {
-		return ctx, err
-	}
+	token := meta.Authorization(ctx).Value()
 
 	return verifier.Verify(ctx, []byte(token))
 }
@@ -102,18 +86,4 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...st
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {
 	return false
-}
-
-func authorization(ctx context.Context) (string, error) {
-	md := gm.ExtractIncoming(ctx)
-
-	if a := md.Get(runtime.MetadataPrefix + "authorization"); len(a) > 0 {
-		return a[0], nil
-	}
-
-	if a := md.Get("authorization"); len(a) > 0 {
-		return a[0], nil
-	}
-
-	return "", header.ErrInvalidAuthorization
 }

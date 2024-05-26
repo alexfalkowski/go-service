@@ -20,7 +20,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/transport/grpc/security/token"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
@@ -31,7 +30,6 @@ import (
 func init() {
 	tracer.Register()
 	tm.RegisterKeys()
-	token.RegisterKeys()
 }
 
 //nolint:funlen
