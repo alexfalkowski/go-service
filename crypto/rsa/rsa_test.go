@@ -61,6 +61,23 @@ func TestAlgo(t *testing.T) {
 		a, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
+		Convey("When I encrypt data", func() {
+			e, err := a.Encrypt("test")
+			So(err, ShouldBeNil)
+
+			e += "wha"
+
+			Convey("Then I should have an error", func() {
+				_, err := a.Decrypt(e)
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
+	Convey("Given I have an algo", t, func() {
+		a, err := rsa.NewAlgo(test.NewRSA())
+		So(err, ShouldBeNil)
+
 		Convey("When I decrypt invalid data", func() {
 			_, err := a.Decrypt("test")
 

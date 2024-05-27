@@ -42,12 +42,30 @@ func TestAlgo(t *testing.T) {
 	Convey("Given I have an algo", t, func() {
 		a, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
+		So(a.PrivateKey(), ShouldNotBeNil)
+		So(a.PublicKey(), ShouldNotBeNil)
 
 		Convey("When I generate data", func() {
 			e := a.Generate("test")
 
 			Convey("Then I should compared the data", func() {
 				So(a.Compare(e, "test"), ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given I have an algo", t, func() {
+		a, err := ed25519.NewAlgo(test.NewEd25519())
+		So(err, ShouldBeNil)
+		So(a.PrivateKey(), ShouldNotBeNil)
+		So(a.PublicKey(), ShouldNotBeNil)
+
+		Convey("When I generate data", func() {
+			e := a.Generate("test")
+			e += "wha"
+
+			Convey("Then I should have an error", func() {
+				So(a.Compare(e, "test"), ShouldBeError)
 			})
 		})
 	})
