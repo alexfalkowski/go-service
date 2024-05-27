@@ -21,7 +21,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/hashicorp/go-retryablehttp v0.7.6
 	github.com/iancoleman/strcase v0.3.0
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/klauspost/compress v1.17.8
 	github.com/linxGnu/mssqlx v1.1.8
