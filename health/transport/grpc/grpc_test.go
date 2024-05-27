@@ -49,7 +49,7 @@ func TestUnary(t *testing.T) {
 		}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -90,7 +90,7 @@ func TestInvalidUnary(t *testing.T) {
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -136,7 +136,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -182,7 +182,7 @@ func TestStream(t *testing.T) {
 		}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -224,7 +224,7 @@ func TestInvalidStream(t *testing.T) {
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
@@ -270,7 +270,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		}
 		s.Register()
 
-		shg.Register(s.GRPC, &shg.Observer{Observer: o})
+		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
 		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
