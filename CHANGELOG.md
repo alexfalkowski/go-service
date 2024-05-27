@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.206.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.206.2) - 2024-05-27
+
+- [`7c9d536`](https://github.com/alexfalkowski/go-service/commit/7c9d536a01b5f025e878bd20198d10dd4d07023c) fix(health): gRPC observer should be optional (#778)
+
 ## [v1.206.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.206.1) - 2024-05-27
 
 - [`740d191`](https://github.com/alexfalkowski/go-service/commit/740d1913abd4735be21a53c7f8e66d0be99ee09a) fix(deps): bump github.com/jackc/pgx/v5 from 5.5.5 to 5.6.0 (#777)
