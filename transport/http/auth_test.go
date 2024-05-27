@@ -17,7 +17,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:dupl
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -76,7 +75,6 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -115,6 +113,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Authorization", "What Invalid")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)

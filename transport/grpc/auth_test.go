@@ -10,6 +10,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -55,7 +56,6 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -137,7 +137,6 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -162,6 +161,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
+			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 			conn := cl.NewGRPC()
 			defer conn.Close()

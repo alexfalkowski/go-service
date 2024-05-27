@@ -42,7 +42,7 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(c.Transport.HTTP.UserAgent),
-		h.WithClientTokenGenerator(c.Generator), sec,
+		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
 	)
 
 	return client
@@ -66,7 +66,8 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(cl.UserAgent),
-		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator), sec,
+		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
+		g.WithClientTimeout("1m"), sec,
 	)
 	runtime.Must(err)
 
