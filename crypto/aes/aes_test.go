@@ -38,6 +38,23 @@ func TestAlgo(t *testing.T) {
 			e, err := a.Encrypt("test")
 			So(err, ShouldBeNil)
 
+			e += "wha"
+
+			Convey("Then I should have an error", func() {
+				_, err := a.Decrypt(e)
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
+	Convey("Given I have an algo", t, func() {
+		a, err := aes.NewAlgo(test.NewAES())
+		So(err, ShouldBeNil)
+
+		Convey("When I encrypt data", func() {
+			e, err := a.Encrypt("test")
+			So(err, ShouldBeNil)
+
 			Convey("Then I should decrypt the data", func() {
 				d, err := a.Decrypt(e)
 				So(err, ShouldBeNil)
