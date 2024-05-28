@@ -62,6 +62,7 @@ We support the following:
 - [Proto](https://google.golang.org/protobuf/proto)
 - [GOB](https://pkg.go.dev/encoding/gob)
 
+
 ## Caching
 
 The framework currently supports the following caching solutions:
@@ -85,6 +86,10 @@ cache:
     max_cost: 100000000
     buffer_items: 64
 ```
+
+### Dependencies
+
+![Dependencies](./assets/cache.png)
 
 ## Feature
 
@@ -148,6 +153,10 @@ sql:
     max_idle_conns: 5
     conn_max_lifetime: 1h
 ```
+
+### Dependencies
+
+![Dependencies](./assets/database.png)
 
 ## Health
 
