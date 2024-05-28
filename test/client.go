@@ -67,7 +67,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(cl.UserAgent),
 		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
-		g.WithClientTimeout("1m"), sec,
+		g.WithClientTimeout("1m"), g.WithClientDialOption(), sec,
 	)
 	runtime.Must(err)
 
