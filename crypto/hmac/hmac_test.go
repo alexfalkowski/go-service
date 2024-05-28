@@ -9,8 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-//nolint:funlen
-func TestAlgo(t *testing.T) {
+func TestValidAlgo(t *testing.T) {
 	Convey("When I generate", t, func() {
 		key, err := hmac.Generate()
 
@@ -44,6 +43,21 @@ func TestAlgo(t *testing.T) {
 		})
 	})
 
+	Convey("Given I have a missing algo", t, func() {
+		a, err := hmac.NewAlgo(nil)
+		So(err, ShouldBeNil)
+
+		Convey("When I generate data", func() {
+			e := a.Generate("test")
+
+			Convey("Then I should compared the data", func() {
+				So(a.Compare(e, "test"), ShouldBeNil)
+			})
+		})
+	})
+}
+
+func TestInvalidAlgo(t *testing.T) {
 	Convey("Given I have an algo", t, func() {
 		a, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
@@ -67,19 +81,6 @@ func TestAlgo(t *testing.T) {
 
 			Convey("Then I comparing another message will gave an error", func() {
 				So(a.Compare(e, "bob"), ShouldBeError, errors.ErrMismatch)
-			})
-		})
-	})
-
-	Convey("Given I have a missing algo", t, func() {
-		a, err := hmac.NewAlgo(nil)
-		So(err, ShouldBeNil)
-
-		Convey("When I generate data", func() {
-			e := a.Generate("test")
-
-			Convey("Then I should compared the data", func() {
-				So(a.Compare(e, "test"), ShouldBeNil)
 			})
 		})
 	})
