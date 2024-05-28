@@ -7,7 +7,6 @@ diagrams: crypto-diagram cache-diagram database-diagram telemetry-diagram transp
 cache-diagram:
 	$(MAKE) package=cache create-diagram
 
-
 crypto-diagram:
 	$(MAKE) package=crypto create-diagram
 
