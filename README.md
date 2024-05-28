@@ -231,6 +231,10 @@ telemetry:
     key: path to key
 ```
 
+### Dependencies
+
+![Dependencies](./assets/telemetry.png)
+
 ## Token
 
 The framework allows you to define different token generators and verifiers. Out to the box, we provide a simple key and hash solution. We recommend that you look at a better auth strategies, such as:
@@ -338,6 +342,10 @@ transport:
       key: path of key
 ```
 
+### Dependencies
+
+![Dependencies](./assets/transport.png)
+
 ## Cryptography
 
 The crypto package provides sensible defaults for symmetric, asymmetric, hashing and randomness.
@@ -362,6 +370,10 @@ crypto:
     public: path to the public
     private: path to the private
 ```
+
+### Dependencies
+
+![Dependencies](./assets/crypto.png)
 
 ## Debug
 
