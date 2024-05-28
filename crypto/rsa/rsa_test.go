@@ -8,8 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-//nolint:funlen
-func TestAlgo(t *testing.T) {
+func TestValidAlgo(t *testing.T) {
 	Convey("When I generate", t, func() {
 		pub, pri, err := rsa.Generate()
 
@@ -17,15 +16,6 @@ func TestAlgo(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(string(pub), ShouldNotBeBlank)
 			So(string(pri), ShouldNotBeBlank)
-		})
-	})
-
-	Convey("When I create an invalid algo", t, func() {
-		a, err := rsa.NewAlgo(&rsa.Config{})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(a, ShouldBeNil)
 		})
 	})
 
@@ -57,6 +47,34 @@ func TestAlgo(t *testing.T) {
 		})
 	})
 
+	Convey("Given I have a missing algo", t, func() {
+		a, err := rsa.NewAlgo(nil)
+		So(err, ShouldBeNil)
+
+		Convey("When I encrypt data", func() {
+			e, err := a.Encrypt("test")
+			So(err, ShouldBeNil)
+
+			Convey("Then I should decrypt the data", func() {
+				d, err := a.Decrypt(e)
+				So(err, ShouldBeNil)
+
+				So(d, ShouldEqual, "test")
+			})
+		})
+	})
+}
+
+func TestInvalidAlgo(t *testing.T) {
+	Convey("When I create an invalid algo", t, func() {
+		a, err := rsa.NewAlgo(&rsa.Config{})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+			So(a, ShouldBeNil)
+		})
+	})
+
 	Convey("Given I have an algo", t, func() {
 		a, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
@@ -83,23 +101,6 @@ func TestAlgo(t *testing.T) {
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)
-			})
-		})
-	})
-
-	Convey("Given I have a missing algo", t, func() {
-		a, err := rsa.NewAlgo(nil)
-		So(err, ShouldBeNil)
-
-		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
-			So(err, ShouldBeNil)
-
-			Convey("Then I should decrypt the data", func() {
-				d, err := a.Decrypt(e)
-				So(err, ShouldBeNil)
-
-				So(d, ShouldEqual, "test")
 			})
 		})
 	})

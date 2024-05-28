@@ -9,8 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-//nolint:funlen
-func TestAlgo(t *testing.T) {
+func TestValidAlgo(t *testing.T) {
 	Convey("When I generate", t, func() {
 		pub, pri, err := ed25519.Generate()
 
@@ -18,24 +17,6 @@ func TestAlgo(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(string(pub), ShouldNotBeBlank)
 			So(string(pri), ShouldNotBeBlank)
-		})
-	})
-
-	Convey("When I create a algo", t, func() {
-		_, err := ed25519.NewAlgo(&ed25519.Config{})
-
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
-
-	Convey("When I create a missing algo", t, func() {
-		a, err := ed25519.NewAlgo(nil)
-
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeNil)
-			So(a.PrivateKey(), ShouldNotBeNil)
-			So(a.PublicKey(), ShouldNotBeNil)
 		})
 	})
 
@@ -51,6 +32,39 @@ func TestAlgo(t *testing.T) {
 			Convey("Then I should compared the data", func() {
 				So(a.Compare(e, "test"), ShouldBeNil)
 			})
+		})
+	})
+
+	Convey("Given I have a missing algo", t, func() {
+		a, err := ed25519.NewAlgo(nil)
+		So(err, ShouldBeNil)
+
+		Convey("When I generate data", func() {
+			e := a.Generate("test")
+
+			Convey("Then I should compared the data", func() {
+				So(a.Compare(e, "test"), ShouldBeNil)
+			})
+		})
+	})
+}
+
+func TestInvalidAlgo(t *testing.T) {
+	Convey("When I create a algo", t, func() {
+		_, err := ed25519.NewAlgo(&ed25519.Config{})
+
+		Convey("Then I should not have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I create a missing algo", t, func() {
+		a, err := ed25519.NewAlgo(nil)
+
+		Convey("Then I should not have an error", func() {
+			So(err, ShouldBeNil)
+			So(a.PrivateKey(), ShouldNotBeNil)
+			So(a.PublicKey(), ShouldNotBeNil)
 		})
 	})
 
@@ -79,19 +93,6 @@ func TestAlgo(t *testing.T) {
 
 			Convey("Then I comparing another message will gave an error", func() {
 				So(a.Compare(e, "bob"), ShouldBeError, errors.ErrMismatch)
-			})
-		})
-	})
-
-	Convey("Given I have a missing algo", t, func() {
-		a, err := ed25519.NewAlgo(nil)
-		So(err, ShouldBeNil)
-
-		Convey("When I generate data", func() {
-			e := a.Generate("test")
-
-			Convey("Then I should compared the data", func() {
-				So(a.Compare(e, "test"), ShouldBeNil)
 			})
 		})
 	})
