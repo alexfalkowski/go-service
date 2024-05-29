@@ -50,7 +50,7 @@ func TestInvalidCache(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I try to create a cache", func() {
-			_, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg, Version: test.Version})
+			_, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: lc, Config: cfg})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldNotBeNil)

@@ -104,18 +104,16 @@ func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout:   timeout.String(),
-				Port:      Port(),
-				UserAgent: "TestHTTP/1.0",
-				Retry:     NewRetry(),
+				Timeout: timeout.String(),
+				Port:    Port(),
+				Retry:   NewRetry(),
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout:   timeout.String(),
-				Port:      Port(),
-				UserAgent: "TestGRPC/1.0",
-				Retry:     NewRetry(),
+				Timeout: timeout.String(),
+				Port:    Port(),
+				Retry:   NewRetry(),
 			},
 		},
 	}
@@ -129,20 +127,18 @@ func NewSecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout:   timeout.String(),
-				TLS:       s,
-				Port:      Port(),
-				UserAgent: "TestHTTP/1.0",
-				Retry:     r,
+				Timeout: timeout.String(),
+				TLS:     s,
+				Port:    Port(),
+				Retry:   r,
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout:   timeout.String(),
-				TLS:       s,
-				Port:      Port(),
-				UserAgent: "TestGRPC/1.0",
-				Retry:     r,
+				Timeout: timeout.String(),
+				TLS:     s,
+				Port:    Port(),
+				Retry:   r,
 			},
 		},
 	}
@@ -204,10 +200,9 @@ func NewOutputConfig(flag string) *cmd.OutputConfig {
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout:   "5s",
-			Port:      Port(),
-			UserAgent: "TestHTTPDebug/1.0",
-			Retry:     NewRetry(),
+			Timeout: "5s",
+			Port:    Port(),
+			Retry:   NewRetry(),
 		},
 	}
 }
@@ -216,11 +211,10 @@ func NewInsecureDebugConfig() *debug.Config {
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout:   "5s",
-			TLS:       NewTLSServerConfig(),
-			Port:      Port(),
-			UserAgent: "TestHTTPDebug/1.0",
-			Retry:     NewRetry(),
+			Timeout: "5s",
+			TLS:     NewTLSServerConfig(),
+			Port:    Port(),
+			Retry:   NewRetry(),
 		},
 	}
 }

@@ -46,7 +46,7 @@ func (c *Cache) NewRedisCache() (*cache.Cache, error) {
 
 // NewRedisClient for test.
 func (c *Cache) NewRedisClient() (gr.Client, error) {
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *Cache) NewRedisClient() (gr.Client, error) {
 func (c *Cache) NewRistrettoCache() sr.Cache {
 	cfg := &ristretto.Config{NumCounters: 1e7, MaxCost: 1 << 30, BufferItems: 64}
 
-	ca, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: c.Lifecycle, Config: cfg, Version: Version})
+	ca, err := ristretto.NewCache(ristretto.CacheParams{Lifecycle: c.Lifecycle, Config: cfg})
 	runtime.Must(err)
 
 	rim.Register(ca, c.Meter)

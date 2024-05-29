@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/env"
 	lm "github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/security/token"
@@ -32,15 +33,17 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Config     *Config
-	Logger     *zap.Logger
-	Tracer     trace.Tracer
-	Meter      metric.Meter
-	Limiter    *limiter.Limiter               `optional:"true"`
-	Key        lm.KeyFunc                     `optional:"true"`
-	Verifier   token.Verifier                 `optional:"true"`
-	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
-	Stream     []grpc.StreamServerInterceptor `optional:"true"`
+
+	Config    *Config
+	Logger    *zap.Logger
+	Tracer    trace.Tracer
+	Meter     metric.Meter
+	UserAgent env.UserAgent
+	Limiter   *limiter.Limiter               `optional:"true"`
+	Key       lm.KeyFunc                     `optional:"true"`
+	Verifier  token.Verifier                 `optional:"true"`
+	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
+	Stream    []grpc.StreamServerInterceptor `optional:"true"`
 }
 
 // Server for gRPC.
@@ -106,7 +109,7 @@ func (s *Server) Server() *grpc.Server {
 
 func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(UserAgent(params.Config)),
+		meta.UnaryServerInterceptor(string(params.UserAgent)),
 		tracer.UnaryServerInterceptor(params.Tracer),
 		logger.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
@@ -127,7 +130,7 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 
 func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
-		meta.StreamServerInterceptor(UserAgent(params.Config)),
+		meta.StreamServerInterceptor(string(params.UserAgent)),
 		tracer.StreamServerInterceptor(params.Tracer),
 		logger.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),

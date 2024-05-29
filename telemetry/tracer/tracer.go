@@ -7,8 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/version"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -33,7 +31,7 @@ func Register() {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
 		return noop.Tracer{}, nil
 	}
@@ -49,17 +47,16 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, cfg *C
 		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + k}))
 	}
 
-	return newTracer(lc, env, ver, logger, opts), nil
+	return newTracer(lc, env, ver, name, logger, opts), nil
 }
 
-func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger *zap.Logger, opts []otlp.Option) trace.Tracer {
+func newTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, logger *zap.Logger, opts []otlp.Option) trace.Tracer {
 	client := otlp.NewClient(opts...)
 	exporter := otlptrace.NewUnstarted(client)
 
-	name := os.ExecutableName()
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName(name),
+		semconv.ServiceName(string(name)),
 		semconv.ServiceVersion(string(ver)),
 		semconv.DeploymentEnvironment(string(env)),
 	)
@@ -78,7 +75,7 @@ func newTracer(lc fx.Lifecycle, env env.Environment, ver version.Version, logger
 		},
 	})
 
-	return p.Tracer(name)
+	return p.Tracer(string(name))
 }
 
 type errorHandler struct {

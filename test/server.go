@@ -46,7 +46,7 @@ type Server struct {
 // Register server.
 func (s *Server) Register() {
 	sh := NewShutdowner()
-	tracer, err := tracer.NewTracer(s.Lifecycle, Environment, Version, s.Tracer, s.Logger)
+	tracer, err := tracer.NewTracer(s.Lifecycle, Environment, Version, Name, s.Tracer, s.Logger)
 	runtime.Must(err)
 
 	h, err := th.NewServer(th.ServerParams{

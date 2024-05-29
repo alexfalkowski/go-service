@@ -5,8 +5,9 @@ import (
 	"time"
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/limiter"
+	lm "github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
 	t "github.com/alexfalkowski/go-service/time"
@@ -16,7 +17,7 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
-	v3 "github.com/ulule/limiter/v3"
+	"github.com/ulule/limiter/v3"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -34,8 +35,9 @@ type ServerParams struct {
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
 	Meter      metric.Meter
-	Limiter    *v3.Limiter
-	Key        limiter.KeyFunc
+	UserAgent  env.UserAgent
+	Limiter    *limiter.Limiter  `optional:"true"`
+	Key        lm.KeyFunc        `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
 }
 
@@ -49,7 +51,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	timeout := timeout(params.Config)
 
 	n := negroni.New()
-	n.Use(meta.NewHandler(UserAgent(params.Config)))
+	n.Use(meta.NewHandler(string(params.UserAgent)))
 	n.Use(tracer.NewHandler(params.Tracer))
 	n.Use(logger.NewHandler(params.Logger))
 	n.Use(metrics.NewHandler(params.Meter))

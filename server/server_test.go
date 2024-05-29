@@ -12,22 +12,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestConfig(t *testing.T) {
-	cs := []*server.Config{{}, nil}
-
-	for _, c := range cs {
-		Convey("Given I have an invalid config", t, func() {
-			Convey("When I get the user agent", func() {
-				u := server.UserAgent(c)
-
-				Convey("Then it should be blank", func() {
-					So(u, ShouldBeBlank)
-				})
-			})
-		})
-	}
-}
-
 func TestServer(t *testing.T) {
 	Convey("Given I have a server", t, func() {
 		lc := fxtest.NewLifecycle(t)

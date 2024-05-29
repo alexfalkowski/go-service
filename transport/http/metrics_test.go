@@ -24,7 +24,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)
@@ -90,7 +90,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
 		So(err, ShouldBeNil)
 
 		pg.Register(tracer, logger)

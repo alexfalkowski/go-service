@@ -6,8 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/version"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	m "go.opentelemetry.io/otel/metric"
@@ -31,7 +29,8 @@ type MeterParams struct {
 	Reader      metric.Reader
 	Config      *Config
 	Environment env.Environment
-	Version     version.Version
+	Version     env.Version
+	Name        env.Name
 }
 
 // NewMeter for metrics.
@@ -40,7 +39,7 @@ func NewMeter(params MeterParams) m.Meter {
 		return NewNoopMeter()
 	}
 
-	name := os.ExecutableName()
+	name := string(params.Name)
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(name),

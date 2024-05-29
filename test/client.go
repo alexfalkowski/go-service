@@ -34,14 +34,14 @@ func (c *Client) NewHTTP() *http.Client {
 	sec, err := h.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
 	runtime.Must(err)
 
 	client := h.NewClient(
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
-		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(c.Transport.HTTP.UserAgent),
+		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(string(UserAgent)),
 		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
 	)
 
@@ -49,23 +49,22 @@ func (c *Client) NewHTTP() *http.Client {
 }
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
 	runtime.Must(err)
 
 	sec, err := g.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
 	cl := &client.Config{
-		Host:      "localhost:" + c.Transport.GRPC.Port,
-		Retry:     c.Transport.GRPC.Retry,
-		UserAgent: c.Transport.GRPC.UserAgent,
+		Host:  "localhost:" + c.Transport.GRPC.Port,
+		Retry: c.Transport.GRPC.Retry,
 	}
 
 	conn, err := g.NewClient(cl.Host,
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
-		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(cl.UserAgent),
+		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(string(UserAgent)),
 		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
 		g.WithClientTimeout("1m"), g.WithClientDialOption(), sec,
 	)
