@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/flags"
-	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"github.com/spf13/cobra"
@@ -12,7 +11,7 @@ import (
 
 func TestFlags(t *testing.T) {
 	Convey("Given I have a var", t, func() {
-		name := os.ExecutableName()
+		name := string(test.Name)
 		c := &cobra.Command{
 			Use: name, Short: name, Long: name,
 			Version: string(test.Version),

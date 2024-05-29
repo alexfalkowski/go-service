@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/marshaller"
 	sh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/fx"
 )
 
@@ -24,7 +24,7 @@ type RegisterParams struct {
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
 	JSON      *marshaller.JSON
-	Version   version.Version
+	Version   env.Version
 }
 
 // Register health for HTTP.
@@ -38,7 +38,7 @@ func Register(params RegisterParams) error {
 	return nil
 }
 
-func resister(path string, mux sh.ServeMux, ob *subscriber.Observer, version version.Version, json *marshaller.JSON, withErrors bool) {
+func resister(path string, mux sh.ServeMux, ob *subscriber.Observer, version env.Version, json *marshaller.JSON, withErrors bool) {
 	mux.Handle("GET", path, func(resp http.ResponseWriter, _ *http.Request) {
 		resp.Header().Set("Content-Type", "application/json")
 		resp.Header().Set("Version", string(version))

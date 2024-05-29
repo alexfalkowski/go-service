@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/version"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -19,7 +17,8 @@ type LoggerParams struct {
 	Config      *Config
 	ZapConfig   zap.Config
 	Environment env.Environment
-	Version     version.Version
+	Version     env.Version
+	Name        env.Name
 }
 
 // NewLogger using zap.
@@ -29,7 +28,7 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 	}
 
 	fields := zap.Fields(
-		zap.String("name", os.ExecutableName()),
+		zap.String("name", string(params.Name)),
 		zap.String("environment", string(params.Environment)),
 		zap.String("version", string(params.Version)),
 	)

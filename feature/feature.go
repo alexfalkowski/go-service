@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/google/uuid"
 	flipt "github.com/open-feature/go-sdk-contrib/providers/flipt/pkg/provider"
@@ -21,10 +21,12 @@ import (
 type ClientParams struct {
 	fx.In
 
-	Config *Config
-	Logger *zap.Logger
-	Tracer trace.Tracer
-	Meter  metric.Meter
+	Config    *Config
+	Logger    *zap.Logger
+	Tracer    trace.Tracer
+	Meter     metric.Meter
+	Name      env.Name
+	UserAgent env.UserAgent
 }
 
 // NewFeatureProvider for feature.
@@ -38,7 +40,7 @@ func NewFeatureProvider(params ClientParams) openfeature.FeatureProvider {
 			grpc.WithClientTracer(params.Tracer),
 			grpc.WithClientMetrics(params.Meter),
 			grpc.WithClientRetry(params.Config.Retry),
-			grpc.WithClientUserAgent(params.Config.UserAgent),
+			grpc.WithClientUserAgent(string(params.UserAgent)),
 			grpc.WithClientTimeout(params.Config.Timeout))
 		svc := transport.New(transport.WithAddress(params.Config.Host), transport.WithUnaryClientInterceptor(is...))
 
@@ -49,7 +51,7 @@ func NewFeatureProvider(params ClientParams) openfeature.FeatureProvider {
 }
 
 // NewClient for feature.
-func NewClient(lc fx.Lifecycle, provider openfeature.FeatureProvider) *openfeature.Client {
+func NewClient(lc fx.Lifecycle, name env.Name, provider openfeature.FeatureProvider) *openfeature.Client {
 	openfeature.SetProvider(provider)
 
 	lc.Append(fx.Hook{
@@ -60,7 +62,7 @@ func NewClient(lc fx.Lifecycle, provider openfeature.FeatureProvider) *openfeatu
 		},
 	})
 
-	return openfeature.NewClient(os.ExecutableName())
+	return openfeature.NewClient(string(name))
 }
 
 // IsNotFoundError for feature.

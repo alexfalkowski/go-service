@@ -18,7 +18,7 @@ func TestFlipt(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
 		So(err, ShouldBeNil)
 
 		m := test.NewOTLPMeter(lc)
@@ -28,7 +28,7 @@ func TestFlipt(t *testing.T) {
 		}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 		pr := feature.NewFeatureProvider(p)
-		c := feature.NewClient(lc, pr)
+		c := feature.NewClient(lc, test.Name, pr)
 
 		lc.RequireStart()
 
@@ -49,7 +49,7 @@ func TestFlipt(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, tc, logger)
+		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
 		So(err, ShouldBeNil)
 
 		m := test.NewOTLPMeter(lc)
@@ -59,7 +59,7 @@ func TestFlipt(t *testing.T) {
 		}
 		p := feature.ClientParams{Config: cfg, Logger: logger, Tracer: tracer, Meter: m}
 		pr := feature.NewFeatureProvider(p)
-		c := feature.NewClient(lc, pr)
+		c := feature.NewClient(lc, test.Name, pr)
 
 		lc.RequireStart()
 
@@ -80,7 +80,7 @@ func TestNoop(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		p := feature.ClientParams{Config: &feature.Config{}}
 		pr := feature.NewFeatureProvider(p)
-		c := feature.NewClient(lc, pr)
+		c := feature.NewClient(lc, test.Name, pr)
 
 		lc.RequireStart()
 

@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
@@ -39,7 +40,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/version"
 	rc "github.com/go-redis/cache/v9"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -173,7 +173,7 @@ func TestInvalidClient(t *testing.T) {
 	}
 }
 
-func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ version.Version) health.Registrations {
+func registrations(logger *zap.Logger, cfg *http.Config, ua env.UserAgent, tracer trace.Tracer, _ env.Version) health.Registrations {
 	if cfg == nil {
 		return nil
 	}
@@ -181,7 +181,7 @@ func registrations(logger *zap.Logger, cfg *http.Config, tracer trace.Tracer, _ 
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	client := http.NewClient(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(cfg.UserAgent))
+	client := http.NewClient(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(string(ua)))
 	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 
@@ -220,9 +220,11 @@ func featureClient(_ *openfeature.Client) {}
 
 func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
 
-func ver() version.Version {
+func ver() env.Version {
 	return test.Version
 }
+
+func environment(_ env.Name, _ env.UserAgent) {}
 
 func netTime(n st.Network) {
 	n.Now()
@@ -267,7 +269,7 @@ func shutdown(s fx.Shutdowner) {
 
 func opts() []fx.Option {
 	return []fx.Option{
-		fx.NopLogger,
+		fx.NopLogger, env.Module,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, metrics.Module, health.Module,
 		sql.Module, hooks.Module, token.Module, cache.Module,
@@ -276,6 +278,6 @@ func opts() []fx.Option {
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment),
 	}
 }

@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	sr "github.com/alexfalkowski/go-service/ristretto"
-	"github.com/alexfalkowski/go-service/version"
 	"github.com/dgraph-io/ristretto"
 	"go.uber.org/fx"
 )
@@ -16,7 +15,6 @@ type CacheParams struct {
 
 	Lifecycle fx.Lifecycle
 	Config    *Config
-	Version   version.Version
 }
 
 // NewCache for ristretto.

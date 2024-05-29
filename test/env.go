@@ -4,5 +4,16 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 )
 
-// Environment for test.
-var Environment = env.Environment("dev")
+var (
+	// Environment for test.
+	Environment = env.Environment("dev")
+
+	// Version for test.
+	Version = env.Version("1.0.0")
+
+	// Name for test.
+	Name = env.Name("test")
+
+	// UserAgent for test.
+	UserAgent = env.UserAgent(string(Name) + "/" + string(Version))
+)
