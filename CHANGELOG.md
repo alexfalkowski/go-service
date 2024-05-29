@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.207.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.207.0) - 2024-05-29
+
+- [`cf37a11`](https://github.com/alexfalkowski/go-service/commit/cf37a11268809a8a6adc51a1916c166cb2e8ae2c) feat(env): add name to env (#788)
+- [`38ceeea`](https://github.com/alexfalkowski/go-service/commit/38ceeea87cfe8612e04aba3bc97ff710fe3dc9b1) build(make): remove newline (#787)
+- [`4a97ec0`](https://github.com/alexfalkowski/go-service/commit/4a97ec0f0b00020207092d78cbcf5c13d08aace6) build(diagrams): remove diagram target (#786)
+- [`033995c`](https://github.com/alexfalkowski/go-service/commit/033995c00ca238c72460f419357757c4d25d6bc5) build(deps): bump bin from `bf008ad` to `955891d` (#785)
+- [`16aefa6`](https://github.com/alexfalkowski/go-service/commit/16aefa61848733304803e309a641fccaa3c07415) build(deps): bump bin from `93c02b7` to `bf008ad` (#784)
+- [`7b96001`](https://github.com/alexfalkowski/go-service/commit/7b96001a7ed9cedc346954e9e02c21525059e825) build(diagrams): add dependencies (#783)
+- [`a286e8b`](https://github.com/alexfalkowski/go-service/commit/a286e8b93b0f2ddcc7c1fdb5bfbacbb838aeeafd) test(transport): use missing options (#782)
+- [`d08e76b`](https://github.com/alexfalkowski/go-service/commit/d08e76bfd3d68573f8079259aad8d4d57ed8bce3) test(crypto): break up large tests (#781)
+- [`0d77a44`](https://github.com/alexfalkowski/go-service/commit/0d77a448a6c275e60894aa304a7ab9725292fdd5) test(crypto): add tests (#780)
+- [`ffe53f0`](https://github.com/alexfalkowski/go-service/commit/ffe53f05c1708343f41c0e06c74789be86ab7459) test(http): add timeout (#779)
+
 ## [v1.206.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.206.2) - 2024-05-27
 
 - [`7c9d536`](https://github.com/alexfalkowski/go-service/commit/7c9d536a01b5f025e878bd20198d10dd4d07023c) fix(health): gRPC observer should be optional (#778)
