@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.209.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.209.1) - 2024-05-30
+
+- [`258bdf1`](https://github.com/alexfalkowski/go-service/commit/258bdf174ee0057f891b012ed66d92af10790c70) fix(deps): bump github.com/beevik/ntp from 1.4.2 to 1.4.3 (#794)
+
 ## [v1.209.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.209.0) - 2024-05-30
 
 - [`03c5854`](https://github.com/alexfalkowski/go-service/commit/03c5854b30bc1d9b56c9067c6789d6ee9d4729d9) feat(cmd): allow to specify flags on individual commands (#793)
