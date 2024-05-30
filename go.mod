@@ -8,7 +8,7 @@ require (
 	github.com/alexfalkowski/go-health v1.17.0
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
-	github.com/beevik/ntp v1.4.2
+	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.1.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dgraph-io/ristretto v0.1.1
