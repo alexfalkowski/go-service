@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.208.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.208.1) - 2024-05-30
+
+- [`1988db4`](https://github.com/alexfalkowski/go-service/commit/1988db4951669e1a06a329149fc37b5d9c745b02) fix(telemetry): ignore stop error as there is little we can do about it (#792)
+- [`79fa39e`](https://github.com/alexfalkowski/go-service/commit/79fa39ee00eee9f8aa7555ad24fe0b55c23d001e) fix(deps): bump github.com/open-feature/go-sdk from 1.11.0 to 1.12.0 (#791)
+
 ## [v1.208.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.208.0) - 2024-05-29
 
 - [`bd0448f`](https://github.com/alexfalkowski/go-service/commit/bd0448f5beff43e131a9701fb4e72b69d12fb4f4) feat(env): strip v from user agent (#789)
