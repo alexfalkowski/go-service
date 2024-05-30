@@ -2,11 +2,9 @@ package tracer
 
 import (
 	"context"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/net"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -71,7 +69,10 @@ func newTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 			return se.Prefix("start tracer", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
-			return se.Prefix("stop tracer", errors.Join(p.Shutdown(ctx), exporter.Shutdown(ctx)))
+			_ = p.Shutdown(ctx)
+			_ = exporter.Shutdown(ctx)
+
+			return nil
 		},
 	})
 
@@ -83,9 +84,5 @@ type errorHandler struct {
 }
 
 func (e *errorHandler) Handle(err error) {
-	if net.IsConnectionRefused(err) {
-		return
-	}
-
 	e.logger.Error("trace: global error", zap.Error(err))
 }
