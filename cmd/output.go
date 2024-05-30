@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/spf13/cobra"
 )
 
 // OutputFlag for cmd.
@@ -21,6 +22,6 @@ func NewOutputConfig(mm *marshaller.Map) *OutputConfig {
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterOutput(value string) {
-	flags.StringVar(c.root, OutputFlag, "output", "o", value, "output config location (format kind:location)")
+func (c *Command) RegisterOutput(cmd *cobra.Command, value string) {
+	flags.StringVar(cmd, OutputFlag, "output", "o", value, "output config location (format kind:location)")
 }

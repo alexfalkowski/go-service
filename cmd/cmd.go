@@ -33,6 +33,11 @@ func New(version string) *Command {
 	return &Command{root: root}
 }
 
+// Root command.
+func (c *Command) Root() *cobra.Command {
+	return c.root
+}
+
 // AddServer to the command.
 func (c *Command) AddServer(opts ...fx.Option) *cobra.Command {
 	return c.AddServerCommand("server", "Start the server.", opts...)
