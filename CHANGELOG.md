@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.209.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.209.0) - 2024-05-30
+
+- [`03c5854`](https://github.com/alexfalkowski/go-service/commit/03c5854b30bc1d9b56c9067c6789d6ee9d4729d9) feat(cmd): allow to specify flags on individual commands (#793)
+
 ## [v1.208.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.208.2) - 2024-05-30
 
 - [`60cb850`](https://github.com/alexfalkowski/go-service/commit/60cb850d9af014be67a80e82b34e34faf3681450) fix(deps): bump github.com/hashicorp/go-retryablehttp from 0.7.6 to 0.7.7 (#790)
