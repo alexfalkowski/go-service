@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/spf13/cobra"
 )
 
 // InputFlag for cmd.
@@ -21,6 +22,6 @@ func NewInputConfig(mm *marshaller.Map) *InputConfig {
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterInput(value string) {
-	flags.StringVar(c.root, InputFlag, "input", "i", value, "input config location (format kind:location)")
+func (c *Command) RegisterInput(cmd *cobra.Command, value string) {
+	flags.StringVar(cmd, InputFlag, "input", "i", value, "input config location (format kind:location)")
 }

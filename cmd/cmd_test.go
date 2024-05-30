@@ -57,8 +57,8 @@ func TestRunWithServer(t *testing.T) {
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
-			c.RegisterInput("env:IN_CONFIG_FILE")
-			c.RegisterOutput("env:OUT_CONFIG_FILE")
+			c.RegisterInput(c.Root(), "env:IN_CONFIG_FILE")
+			c.RegisterOutput(c.Root(), "env:OUT_CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
 				So(c.RunWithArgs([]string{"server"}), ShouldBeNil)
@@ -76,8 +76,7 @@ func TestRun(t *testing.T) {
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
-
-			c.RegisterInput("env:CONFIG_FILE")
+			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
 				So(c.Run(), ShouldBeNil)
@@ -100,7 +99,7 @@ func TestInvalid(t *testing.T) {
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
 				c.AddServer(opts()...)
-				c.RegisterInput("env:CONFIG_FILE")
+				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 				Convey("Then I should not see an error", func() {
 					err := c.RunWithArgs([]string{"server", "--input", i})
@@ -118,7 +117,7 @@ func TestDisabled(t *testing.T) {
 		Convey("When I try to run an application", func() {
 			c := cmd.New("1.0.0")
 			c.AddServer(opts()...)
-			c.RegisterInput("env:CONFIG_FILE")
+			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should see an error", func() {
 				err := c.RunWithArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
@@ -136,7 +135,7 @@ func TestClient(t *testing.T) {
 
 			c := cmd.New("1.0.0")
 			c.AddClient(opts...)
-			c.RegisterInput("env:CONFIG_FILE")
+			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
 				So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
@@ -158,7 +157,7 @@ func TestInvalidClient(t *testing.T) {
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
 				c.AddClient(opts()...)
-				c.RegisterInput("env:CONFIG_FILE")
+				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 				Convey("Then I should see an error", func() {
 					err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
