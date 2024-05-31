@@ -91,7 +91,9 @@ func NewRuntimeServeMux() *runtime.ServeMux {
 
 func customMatcher(key string) (string, bool) {
 	switch key {
-	case "Request-Id", "Geolocation", "X-Forwarded-For":
+	case "X-Real-IP", "CF-Connecting-IP", "True-Client-IP", "X-Forwarded-For":
+		return key, true
+	case "Request-Id", "Geolocation":
 		return key, true
 	default:
 		return runtime.DefaultHeaderMatcher(key)

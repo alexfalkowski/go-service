@@ -16,6 +16,9 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
+// IPKeys to get the IP of the caller.
+var IPKeys = []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
+
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
@@ -88,8 +91,10 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 
 // IPAddr for meta.
 func IPAddr(ctx context.Context, md metadata.MD) string {
-	if f := md.Get("x-forwarded-for"); len(f) > 0 {
-		return strings.Split(f[0], ",")[0]
+	for _, k := range IPKeys {
+		if f := md.Get(k); len(f) > 0 {
+			return strings.Split(f[0], ",")[0]
+		}
 	}
 
 	p, ok := peer.FromContext(ctx)

@@ -12,17 +12,19 @@ import (
 )
 
 func TestIPAddr(t *testing.T) {
-	Convey("Given I have a x-forwarded-for header", t, func() {
-		md := metadata.MD{"x-forwarded-for": []string{"test"}}
+	for _, k := range meta.IPKeys {
+		Convey("Given I have a header", t, func() {
+			md := metadata.MD{k: []string{"test"}}
 
-		Convey("When I get the ip address", func() {
-			ip := meta.IPAddr(context.Background(), md)
+			Convey("When I get the ip address", func() {
+				ip := meta.IPAddr(context.Background(), md)
 
-			Convey("Then I should have an ip address", func() {
-				So(ip, ShouldEqual, "test")
+				Convey("Then I should have an ip address", func() {
+					So(ip, ShouldEqual, "test")
+				})
 			})
 		})
-	})
+	}
 
 	Convey("Given I have no context", t, func() {
 		md := metadata.MD{}
