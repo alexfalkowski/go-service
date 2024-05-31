@@ -13,9 +13,11 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/server"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/ssh"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -142,15 +144,20 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Time.Host, ShouldEqual, "time.cloudflare.com")
 	So(cfg.Telemetry.Tracer.Host, ShouldEqual, "http://localhost:4318/v1/traces")
 	So(cfg.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
-	So(server.IsEnabled(cfg.Transport.GRPC.Config), ShouldBeTrue)
+	So(grpc.IsEnabled(cfg.Transport.GRPC), ShouldBeTrue)
 	So(cfg.Transport.GRPC.Port, ShouldEqual, "12000")
 	So(cfg.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
 	So(tls.IsEnabled(cfg.Transport.GRPC.TLS), ShouldBeFalse)
-	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
-	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(http.GatewayMux))
+	So(cfg.Transport.GRPC.Timeout, ShouldEqual, "10s")
+	So(http.IsEnabled(cfg.Transport.HTTP), ShouldBeTrue)
+	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(nh.GatewayMux))
 	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
 	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
 	So(tls.IsEnabled(cfg.Transport.HTTP.TLS), ShouldBeFalse)
+	So(cfg.Transport.HTTP.Timeout, ShouldEqual, "10s")
+	So(ssh.IsEnabled(cfg.Transport.SSH), ShouldBeTrue)
+	So(cfg.Transport.SSH.Port, ShouldEqual, "13000")
+	So(cfg.Transport.SSH.Timeout, ShouldEqual, "10s")
 }

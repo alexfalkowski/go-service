@@ -98,7 +98,6 @@
           "timeout": "1s",
           "attempts": 3
         },
-        "user_agent": "Service http/1.0",
         "timeout": "10s"
       },
       "grpc": {
@@ -108,7 +107,10 @@
           "timeout": "1s",
           "attempts": 3
         },
-        "user_agent": "Service grpc/1.0",
+        "timeout": "10s"
+      },
+      "ssh": {
+        "port": "13000",
         "timeout": "10s"
       }
     }

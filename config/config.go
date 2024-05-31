@@ -26,6 +26,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/ssh"
 )
 
 // NewConfig for config.
@@ -182,6 +183,14 @@ func ristrettoConfig(cfg *Config) *ristretto.Config {
 	}
 
 	return cfg.Cache.Ristretto
+}
+
+func sshConfig(cfg *Config) *ssh.Config {
+	if !IsEnabled(cfg) || !transport.IsEnabled(cfg.Transport) {
+		return nil
+	}
+
+	return cfg.Transport.SSH
 }
 
 func timeConfig(cfg *Config) *time.Config {

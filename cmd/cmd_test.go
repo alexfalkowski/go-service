@@ -40,6 +40,8 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/ssh/handler"
+	"github.com/gliderlabs/ssh"
 	rc "github.com/go-redis/cache/v9"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -92,6 +94,7 @@ func TestInvalid(t *testing.T) {
 		"file:../test/configs/invalid_http.config.yml",
 		"file:../test/configs/invalid_grpc.config.yml",
 		"file:../test/configs/invalid_debug.config.yml",
+		"file:../test/configs/invalid_ssh.config.yml",
 	}
 
 	for _, i := range configs {
@@ -258,6 +261,16 @@ func tkn(t token.Tokenizer) error {
 	return err
 }
 
+type hdl struct{}
+
+func (*hdl) Handle(_ ssh.Context, _ []string) error {
+	return nil
+}
+
+func sshHandler() handler.Server {
+	return &hdl{}
+}
+
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
 		time.Sleep(time.Second)
@@ -277,6 +290,6 @@ func opts() []fx.Option {
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment), fx.Provide(sshHandler),
 	}
 }

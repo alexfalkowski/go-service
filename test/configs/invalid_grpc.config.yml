@@ -8,7 +8,6 @@ transport:
       backoff: 100ms
       timeout: 1s
       attempts: 3
-    user_agent: Service http/1.0
   grpc:
     port: "invalid"
     timeout: 10s

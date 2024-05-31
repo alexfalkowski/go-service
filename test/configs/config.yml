@@ -69,7 +69,6 @@ transport:
       timeout: 1s
       attempts: 3
     timeout: 10s
-    user_agent: Service http/1.0
   grpc:
     port: 12000
     retry:
@@ -77,4 +76,6 @@ transport:
       timeout: 1s
       attempts: 3
     timeout: 10s
-    user_agent: Service grpc/1.0
+  ssh:
+    port: 13000
+    timeout: 10s

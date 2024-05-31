@@ -3,6 +3,7 @@ package transport
 import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/ssh"
 )
 
 // IsEnabled for transport.
@@ -14,4 +15,5 @@ func IsEnabled(cfg *Config) bool {
 type Config struct {
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
 	HTTP *http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
+	SSH  *ssh.Config  `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
 }

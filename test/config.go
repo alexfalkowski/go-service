@@ -24,6 +24,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/transport/ssh"
 )
 
 const timeout = 2 * time.Second
@@ -101,19 +102,28 @@ func NewTLSConfig(c, k string) *tls.Config {
 
 // NewInsecureTransportConfig for test.
 func NewInsecureTransportConfig() *transport.Config {
+	r := NewRetry()
+
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				Port:    Port(),
-				Retry:   NewRetry(),
+				Retry:   r,
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				Port:    Port(),
-				Retry:   NewRetry(),
+				Retry:   r,
+			},
+		},
+		SSH: &ssh.Config{
+			Config: &server.Config{
+				Timeout: timeout.String(),
+				Port:    Port(),
+				Retry:   r,
 			},
 		},
 	}
@@ -134,6 +144,14 @@ func NewSecureTransportConfig() *transport.Config {
 			},
 		},
 		GRPC: &grpc.Config{
+			Config: &server.Config{
+				Timeout: timeout.String(),
+				TLS:     s,
+				Port:    Port(),
+				Retry:   r,
+			},
+		},
+		SSH: &ssh.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				TLS:     s,

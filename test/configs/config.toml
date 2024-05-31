@@ -80,7 +80,6 @@ hash = "$argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4
 [transport.http]
 mux = "gateway"
 port = "11000"
-user_agent = "Service http/1.0"
 timeout = "10s"
 
 [transport.http.retry]
@@ -90,10 +89,13 @@ attempts = 3
 
 [transport.grpc]
 port = "12000"
-user_agent = "Service grpc/1.0"
 timeout = "10s"
 
 [transport.grpc.retry]
 backoff = "100ms"
 timeout = "1s"
 attempts = 3
+
+[transport.ssh]
+port = "13000"
+timeout = "10s"

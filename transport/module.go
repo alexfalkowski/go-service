@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/ssh"
 	"go.uber.org/fx"
 )
 
@@ -13,6 +14,7 @@ import (
 var Module = fx.Options(
 	grpc.Module,
 	http.Module,
+	ssh.Module,
 	events.Module,
 	meta.Module,
 	limiter.Module,

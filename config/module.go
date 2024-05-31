@@ -12,5 +12,5 @@ var Module = fx.Options(
 	fx.Provide(featureConfig), fx.Provide(hooksConfig), fx.Provide(timeConfig),
 	fx.Provide(pgConfig), fx.Provide(redisConfig), fx.Provide(ristrettoConfig),
 	fx.Provide(loggerConfig), fx.Provide(tracerConfig), fx.Provide(metricsConfig),
-	fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(limiterConfig),
+	fx.Provide(grpcConfig), fx.Provide(httpConfig), fx.Provide(sshConfig), fx.Provide(limiterConfig),
 )
