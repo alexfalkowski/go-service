@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.211.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.211.0) - 2024-06-01
+
+- [`0caf2d0`](https://github.com/alexfalkowski/go-service/commit/0caf2d0795afc741df5d1f31d633b2b58f72a2e5) feat(grpc): record ip addr kind (#798)
+
 ## [v1.210.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.210.0) - 2024-06-01
 
 - [`8e7fc48`](https://github.com/alexfalkowski/go-service/commit/8e7fc4847934d8e9095865b067aea998cd7d2df0) feat(grpc): add ip keys (#797)
