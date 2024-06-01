@@ -16,9 +16,6 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-// IPKeys to get the IP of the caller.
-var IPKeys = []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
-
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
@@ -26,7 +23,11 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Ignored(IPAddr(ctx, md)))
+
+		kind, ip := extractIPAddr(ctx, md)
+		ctx = m.WithIPAddr(ctx, ip)
+		ctx = m.WithIPAddrKind(ctx, kind)
+
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		return handler(ctx, req)
@@ -41,7 +42,11 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
-		ctx = m.WithIPAddr(ctx, meta.Ignored(IPAddr(ctx, md)))
+
+		kind, ip := extractIPAddr(ctx, md)
+		ctx = m.WithIPAddr(ctx, ip)
+		ctx = m.WithIPAddrKind(ctx, kind)
+
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
@@ -89,27 +94,29 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 	}
 }
 
-// IPAddr for meta.
-func IPAddr(ctx context.Context, md metadata.MD) string {
-	for _, k := range IPKeys {
+func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Valuer) {
+	ipKeys := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
+	for _, k := range ipKeys {
 		if f := md.Get(k); len(f) > 0 {
-			return strings.Split(f[0], ",")[0]
+			return meta.String(k), meta.String(strings.Split(f[0], ",")[0])
 		}
 	}
 
+	peerKind := meta.String("peer")
+
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return ""
+		return peerKind, meta.Blank()
 	}
 
 	addr := p.Addr.String()
 
 	host, _, err := net.SplitHostPort(p.Addr.String())
 	if err != nil {
-		return addr
+		return peerKind, meta.String(addr)
 	}
 
-	return host
+	return peerKind, meta.String(host)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) meta.Valuer {

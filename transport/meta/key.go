@@ -45,6 +45,11 @@ func IPAddr(ctx context.Context) meta.Valuer {
 	return meta.Attribute(ctx, IPAddrKey)
 }
 
+// WithIPAddrKind for transport.
+func WithIPAddrKind(ctx context.Context, kind meta.Valuer) context.Context {
+	return meta.WithAttribute(ctx, "ipAddrKind", kind)
+}
+
 // WithAuthorization for transport.
 func WithAuthorization(ctx context.Context, auth meta.Valuer) context.Context {
 	return meta.WithAttribute(ctx, AuthorizationKey, auth)
