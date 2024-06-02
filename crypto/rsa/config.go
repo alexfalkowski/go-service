@@ -1,7 +1,7 @@
 package rsa
 
 import (
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/crypto/pem"
 )
 
 // IsEnabled for rsa.
@@ -24,11 +24,11 @@ type (
 )
 
 // GetPublic for rsa.
-func (c *Config) GetPublic() (string, error) {
-	return os.ReadBase64File(string(c.Public))
+func (c *Config) GetPublic() ([]byte, error) {
+	return pem.Decode(string(c.Public), "RSA PUBLIC KEY")
 }
 
 // GetPrivate for rsa.
-func (c *Config) GetPrivate() (string, error) {
-	return os.ReadBase64File(string(c.Private))
+func (c *Config) GetPrivate() ([]byte, error) {
+	return pem.Decode(string(c.Private), "RSA PRIVATE KEY")
 }

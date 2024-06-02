@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 )
 
 // Generate key pair with RSA.
@@ -15,8 +16,8 @@ func Generate() (PublicKey, PrivateKey, error) {
 		return "", "", err
 	}
 
-	pub := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PublicKey(&p.PublicKey))
-	pri := base64.StdEncoding.EncodeToString(x509.MarshalPKCS1PrivateKey(p))
+	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&p.PublicKey)})
+	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(p)})
 
 	return PublicKey(pub), PrivateKey(pri), nil
 }
@@ -82,19 +83,19 @@ func (*none) Decrypt(msg string) (string, error) {
 }
 
 func publicKey(cfg *Config) (*rsa.PublicKey, error) {
-	k, err := cfg.GetPublic()
+	d, err := cfg.GetPublic()
 	if err != nil {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PublicKey([]byte(k))
+	return x509.ParsePKCS1PublicKey(d)
 }
 
 func privateKey(cfg *Config) (*rsa.PrivateKey, error) {
-	k, err := cfg.GetPrivate()
+	d, err := cfg.GetPrivate()
 	if err != nil {
 		return nil, err
 	}
 
-	return x509.ParsePKCS1PrivateKey([]byte(k))
+	return x509.ParsePKCS1PrivateKey(d)
 }
