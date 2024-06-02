@@ -3,16 +3,34 @@ package ed25519
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 
 	"github.com/alexfalkowski/go-service/crypto/errors"
 )
 
 // Generate key pair with Ed25519.
 func Generate() (PublicKey, PrivateKey, error) {
-	pub, pri, err := ed25519.GenerateKey(rand.Reader)
+	pu, pr, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return "", "", err
+	}
 
-	return PublicKey(base64.StdEncoding.EncodeToString(pub)), PrivateKey(base64.StdEncoding.EncodeToString(pri)), err
+	mpu, err := x509.MarshalPKIXPublicKey(pu)
+	if err != nil {
+		return "", "", err
+	}
+
+	mpr, err := x509.MarshalPKCS8PrivateKey(pr)
+	if err != nil {
+		return "", "", err
+	}
+
+	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
+	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
+
+	return PublicKey(pub), PrivateKey(pri), nil
 }
 
 // Algo for ed25519.
@@ -36,12 +54,12 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return &none{}, nil
 	}
 
-	pub, err := cfg.GetPublic()
+	pub, err := publicKey(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	pri, err := cfg.GetPrivate()
+	pri, err := privateKey(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -98,4 +116,32 @@ func (*none) PublicKey() ed25519.PublicKey {
 
 func (*none) PrivateKey() ed25519.PrivateKey {
 	return ed25519.PrivateKey{}
+}
+
+func publicKey(cfg *Config) (ed25519.PublicKey, error) {
+	d, err := cfg.GetPublic()
+	if err != nil {
+		return nil, err
+	}
+
+	k, err := x509.ParsePKIXPublicKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.(ed25519.PublicKey), nil
+}
+
+func privateKey(cfg *Config) (ed25519.PrivateKey, error) {
+	d, err := cfg.GetPrivate()
+	if err != nil {
+		return nil, err
+	}
+
+	k, err := x509.ParsePKCS8PrivateKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.(ed25519.PrivateKey), nil
 }
