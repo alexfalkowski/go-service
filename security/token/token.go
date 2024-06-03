@@ -4,8 +4,26 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/crypto/argon2"
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/os"
 )
+
+// Generate key and hash for token.
+func Generate() (Key, Hash, error) {
+	k, err := rand.GenerateString(32)
+	if err != nil {
+		return "", "", err
+	}
+
+	algo := argon2.NewAlgo()
+
+	h, err := algo.Generate(k)
+	if err != nil {
+		return "", "", err
+	}
+
+	return Key(k), Hash(h), nil
+}
 
 type (
 	// Generator allows the implementation of different types generators.
@@ -52,7 +70,7 @@ func (t *token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 // Verify the token with the stored hash.
 func (t *token) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	return ctx, t.algo.Compare(t.cfg.Hash, string(token))
+	return ctx, t.algo.Compare(string(t.cfg.Hash), string(token))
 }
 
 func (*none) Generate(ctx context.Context) (context.Context, []byte, error) {
