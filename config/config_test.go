@@ -133,7 +133,7 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.SQL.PG.MaxOpenConns, ShouldEqual, 5)
 	So(cfg.SQL.PG.ConnMaxLifetime, ShouldEqual, "1h")
 	So(string(cfg.Token.Key), ShouldNotBeBlank)
-	So(cfg.Token.Hash, ShouldNotBeBlank)
+	So(string(cfg.Token.Hash), ShouldNotBeBlank)
 	So(cfg.Limiter.Kind, ShouldEqual, "user-agent")
 	So(cfg.Limiter.Pattern, ShouldEqual, "10-S")
 	So(cfg.Telemetry.Logger.Level, ShouldEqual, "info")
