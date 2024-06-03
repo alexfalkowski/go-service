@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.212.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.212.1) - 2024-06-03
+
+- [`00ba836`](https://github.com/alexfalkowski/go-service/commit/00ba836ae4510c3ec0a986f064e22489428be602) fix(deps): bump github.com/shirou/gopsutil/v3 from 3.24.4 to 3.24.5 (#800)
+
 ## [v1.212.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.212.0) - 2024-06-02
 
 - [`456eb63`](https://github.com/alexfalkowski/go-service/commit/456eb6328f879c629d0552fd24b190801d340f6c) feat(crypto): use pem blocks for public/private keys (#799)
