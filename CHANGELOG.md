@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.213.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.213.2) - 2024-06-05
+
+- [`876df31`](https://github.com/alexfalkowski/go-service/commit/876df316ab0cee8a1cf1da31e6d9be4f617cc706) fix(deps): bump github.com/urfave/negroni/v3 from 3.1.0 to 3.1.1 (#803)
+
 ## [v1.213.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.213.1) - 2024-06-05
 
 - [`a78bfb9`](https://github.com/alexfalkowski/go-service/commit/a78bfb99247e364f0eb097447277f3cdeb0f521b) fix(deps): upgrade to go 1.22.4 (#804)
