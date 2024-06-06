@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:1.22-ruby
+      - image: alexfalkowski/go:1.22
       - image: postgres:16-bullseye
         environment:
           POSTGRES_DB: test
