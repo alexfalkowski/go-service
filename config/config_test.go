@@ -11,6 +11,8 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/rsa"
+	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/net/http"
@@ -111,8 +113,12 @@ func verifyConfig(cfg *config.Config) {
 	So(string(cfg.Crypto.Ed25519.Private), ShouldNotBeBlank)
 	So(hmac.IsEnabled(cfg.Crypto.HMAC), ShouldBeTrue)
 	So(string(cfg.Crypto.HMAC.Key), ShouldNotBeBlank)
+	So(rsa.IsEnabled(cfg.Crypto.RSA), ShouldBeTrue)
 	So(string(cfg.Crypto.RSA.Public), ShouldNotBeBlank)
 	So(string(cfg.Crypto.RSA.Private), ShouldNotBeBlank)
+	So(ssh.IsEnabled(cfg.Crypto.SSH), ShouldBeTrue)
+	So(string(cfg.Crypto.SSH.Public), ShouldNotBeBlank)
+	So(string(cfg.Crypto.SSH.Private), ShouldNotBeBlank)
 	So(cfg.Debug.Port, ShouldEqual, "6060")
 	So(debug.IsEnabled(cfg.Debug), ShouldBeTrue)
 	So(cfg.Debug.Port, ShouldEqual, "6060")

@@ -361,6 +361,7 @@ The crypto package provides sensible defaults for symmetric, asymmetric, hashing
 
 We rely on the following libraries:
 - [argon2](https://github.com/matthewhartstonge/argon2)
+- [crypto](https://pkg.go.dev/golang.org/x/crypto)
 
 ### Configuration
 
@@ -376,6 +377,9 @@ crypto:
   hmac:
     key: path to the key
   rsa:
+    public: path to the public
+    private: path to the private
+  ssh:
     public: path to the public
     private: path to the private
 ```

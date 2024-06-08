@@ -20,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
+	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -229,7 +230,7 @@ func netTime(n st.Network) {
 	n.Now()
 }
 
-func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo) error {
+func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo, _ ssh.Algo) error {
 	msg := "hello"
 
 	e, err := a.Generate(msg)

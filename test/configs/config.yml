@@ -24,6 +24,9 @@ crypto:
   rsa:
     public: ../test/secrets/rsa_public
     private: ../test/secrets/rsa_private
+  ssh:
+    public: ../test/secrets/ssh_public
+    private: ../test/secrets/ssh_private
 feature:
   kind: flipt
   host: localhost:9000
