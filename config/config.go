@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
+	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -182,6 +183,14 @@ func ristrettoConfig(cfg *Config) *ristretto.Config {
 	}
 
 	return cfg.Cache.Ristretto
+}
+
+func sshConfig(cfg *Config) *ssh.Config {
+	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.SSH
 }
 
 func timeConfig(cfg *Config) *time.Config {

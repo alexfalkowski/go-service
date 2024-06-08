@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
+	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -31,16 +32,16 @@ const timeout = 2 * time.Second
 // NewEd25519 for test.
 func NewEd25519() *ed25519.Config {
 	return &ed25519.Config{
-		Public:  ed25519.PublicKey(hooks.Secret(Path("secrets/ed25519_public"))),
-		Private: ed25519.PrivateKey(hooks.Secret(Path("secrets/ed25519_private"))),
+		Public:  ed25519.PublicKey(Path("secrets/ed25519_public")),
+		Private: ed25519.PrivateKey(Path("secrets/ed25519_private")),
 	}
 }
 
-// NewEd25519 for test.
+// NewRSA for test.
 func NewRSA() *rsa.Config {
 	return &rsa.Config{
-		Public:  rsa.PublicKey(hooks.Secret(Path("secrets/rsa_public"))),
-		Private: rsa.PrivateKey(hooks.Secret(Path("secrets/rsa_private"))),
+		Public:  rsa.PublicKey(Path("secrets/rsa_public")),
+		Private: rsa.PrivateKey(Path("secrets/rsa_private")),
 	}
 }
 
@@ -62,6 +63,14 @@ func NewHMAC() *hmac.Config {
 func NewHook() *hooks.Config {
 	return &hooks.Config{
 		Secret: hooks.Secret(Path("secrets/hooks")),
+	}
+}
+
+// NewSSH for test.
+func NewSSH() *ssh.Config {
+	return &ssh.Config{
+		Public:  ssh.PublicKey(Path("secrets/ssh_public")),
+		Private: ssh.PrivateKey(Path("secrets/ssh_private")),
 	}
 }
 
