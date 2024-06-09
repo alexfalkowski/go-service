@@ -1,7 +1,10 @@
 package ssh
 
 import (
+	"crypto/rsa"
 	"os"
+
+	"golang.org/x/crypto/ssh"
 )
 
 // IsEnabled for ssh.
@@ -23,12 +26,35 @@ type (
 	}
 )
 
-// GetPublic for ssh.
-func (c *Config) GetPublic() ([]byte, error) {
-	return os.ReadFile(string(c.Public))
+// PublicKey ssh.
+func (c *Config) PublicKey() (*rsa.PublicKey, error) {
+	d, err := os.ReadFile(string(c.Public))
+	if err != nil {
+		return nil, err
+	}
+
+	//nolint:dogsled
+	parsed, _, _, _, err := ssh.ParseAuthorizedKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	key := parsed.(ssh.CryptoPublicKey)
+
+	return key.CryptoPublicKey().(*rsa.PublicKey), nil
 }
 
-// GetPrivate for ssh.
-func (c *Config) GetPrivate() ([]byte, error) {
-	return os.ReadFile(string(c.Private))
+// PrivateKey ssh.
+func (c *Config) PrivateKey() (*rsa.PrivateKey, error) {
+	d, err := os.ReadFile(string(c.Private))
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := ssh.ParseRawPrivateKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	return key.(*rsa.PrivateKey), nil
 }

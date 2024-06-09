@@ -5,6 +5,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 
+	"github.com/alexfalkowski/go-service/crypto/algo"
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
@@ -20,37 +21,33 @@ func Generate() (Key, error) {
 
 // Algo for hmac.
 type Algo interface {
-	// Generate an encoded msg.
-	Generate(msg string) string
-
-	// Compare encoded with msg.
-	Compare(enc, msg string) error
+	algo.Signer
 }
 
 // NewAlgo for hmac.
 func NewAlgo(cfg *Config) (Algo, error) {
 	if !IsEnabled(cfg) {
-		return &none{}, nil
+		return &algo.NoSigner{}, nil
 	}
 
 	k, err := cfg.GetKey()
 
-	return &algo{key: []byte(k)}, err
+	return &hmacAlgo{key: []byte(k)}, err
 }
 
-type algo struct {
+type hmacAlgo struct {
 	key []byte
 }
 
-func (a *algo) Generate(msg string) string {
+func (a *hmacAlgo) Sign(msg string) string {
 	mac := hmac.New(sha512.New, a.key)
 	mac.Write([]byte(msg))
 
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }
 
-func (a *algo) Compare(enc, msg string) error {
-	d, err := base64.StdEncoding.DecodeString(enc)
+func (a *hmacAlgo) Verify(sig, msg string) error {
+	d, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
 	}
@@ -64,15 +61,5 @@ func (a *algo) Compare(enc, msg string) error {
 		return errors.ErrMismatch
 	}
 
-	return nil
-}
-
-type none struct{}
-
-func (*none) Generate(msg string) string {
-	return msg
-}
-
-func (*none) Compare(_, _ string) error {
 	return nil
 }

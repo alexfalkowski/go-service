@@ -1,6 +1,9 @@
 package rsa
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+
 	"github.com/alexfalkowski/go-service/crypto/pem"
 )
 
@@ -23,12 +26,22 @@ type (
 	}
 )
 
-// GetPublic for rsa.
-func (c *Config) GetPublic() ([]byte, error) {
-	return pem.Decode(string(c.Public), "RSA PUBLIC KEY")
+// PublicKey rsa.
+func (c *Config) PublicKey() (*rsa.PublicKey, error) {
+	d, err := pem.Decode(string(c.Public), "RSA PUBLIC KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	return x509.ParsePKCS1PublicKey(d)
 }
 
-// GetPrivate for rsa.
-func (c *Config) GetPrivate() ([]byte, error) {
-	return pem.Decode(string(c.Private), "RSA PRIVATE KEY")
+// PrivateKey rsa.
+func (c *Config) PrivateKey() (*rsa.PrivateKey, error) {
+	d, err := pem.Decode(string(c.Private), "RSA PRIVATE KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	return x509.ParsePKCS1PrivateKey(d)
 }
