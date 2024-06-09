@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.214.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.214.1) - 2024-06-09
+
+- [`e709f28`](https://github.com/alexfalkowski/go-service/commit/e709f2862ac952f557e730513bc89c88f1fe4c32) fix(crypto): move to algo interfaces (#808)
+
 ## [v1.214.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.214.0) - 2024-06-08
 
 - [`5bd68d7`](https://github.com/alexfalkowski/go-service/commit/5bd68d7ec20cd065fbfb74a55a601c64b579b2e0) feat(crypto): add ssh (#807)
