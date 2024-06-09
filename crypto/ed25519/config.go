@@ -1,6 +1,9 @@
 package ed25519
 
 import (
+	"crypto/ed25519"
+	"crypto/x509"
+
 	"github.com/alexfalkowski/go-service/crypto/pem"
 )
 
@@ -23,12 +26,32 @@ type (
 	}
 )
 
-// GetPublic for ed25519.
-func (c *Config) GetPublic() ([]byte, error) {
-	return pem.Decode(string(c.Public), "PUBLIC KEY")
+// PublicKey ed25519.
+func (c *Config) PublicKey() (ed25519.PublicKey, error) {
+	d, err := pem.Decode(string(c.Public), "PUBLIC KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	k, err := x509.ParsePKIXPublicKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.(ed25519.PublicKey), nil
 }
 
-// GetPrivate for ed25519.
-func (c *Config) GetPrivate() ([]byte, error) {
-	return pem.Decode(string(c.Private), "PRIVATE KEY")
+// PrivateKey ed25519.
+func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
+	d, err := pem.Decode(string(c.Private), "PRIVATE KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	k, err := x509.ParsePKCS8PrivateKey(d)
+	if err != nil {
+		return nil, err
+	}
+
+	return k.(ed25519.PrivateKey), nil
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
+	"github.com/alexfalkowski/go-service/crypto/algo"
 	"github.com/alexfalkowski/go-service/crypto/errors"
 )
 
@@ -35,51 +36,41 @@ func Generate() (PublicKey, PrivateKey, error) {
 
 // Algo for ed25519.
 type Algo interface {
-	// Generate an encoded msg.
-	Generate(msg string) string
-
-	// Compare encoded with msg.
-	Compare(enc, msg string) error
-
-	// PublicKey for Ed25519.
-	PublicKey() ed25519.PublicKey
-
-	// PrivateKey for Ed25519.
-	PrivateKey() ed25519.PrivateKey
+	algo.Signer
 }
 
 // NewAlgo for ed25519.
 func NewAlgo(cfg *Config) (Algo, error) {
 	if !IsEnabled(cfg) {
-		return &none{}, nil
+		return &algo.NoSigner{}, nil
 	}
 
-	pub, err := publicKey(cfg)
+	pub, err := cfg.PublicKey()
 	if err != nil {
 		return nil, err
 	}
 
-	pri, err := privateKey(cfg)
+	pri, err := cfg.PrivateKey()
 	if err != nil {
 		return nil, err
 	}
 
-	return &algo{publicKey: []byte(pub), privateKey: []byte(pri)}, nil
+	return &ed25519Algo{publicKey: pub, privateKey: pri}, nil
 }
 
-type algo struct {
+type ed25519Algo struct {
 	publicKey  ed25519.PublicKey
 	privateKey ed25519.PrivateKey
 }
 
-func (a *algo) Generate(msg string) string {
+func (a *ed25519Algo) Sign(msg string) string {
 	m := ed25519.Sign(a.privateKey, []byte(msg))
 
 	return base64.StdEncoding.EncodeToString(m)
 }
 
-func (a *algo) Compare(enc, msg string) error {
-	d, err := base64.StdEncoding.DecodeString(enc)
+func (a *ed25519Algo) Verify(sig, msg string) error {
+	d, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
 	}
@@ -90,58 +81,4 @@ func (a *algo) Compare(enc, msg string) error {
 	}
 
 	return nil
-}
-
-func (a *algo) PublicKey() ed25519.PublicKey {
-	return a.publicKey
-}
-
-func (a *algo) PrivateKey() ed25519.PrivateKey {
-	return a.privateKey
-}
-
-type none struct{}
-
-func (*none) Generate(msg string) string {
-	return msg
-}
-
-func (*none) Compare(_, _ string) error {
-	return nil
-}
-
-func (*none) PublicKey() ed25519.PublicKey {
-	return ed25519.PublicKey{}
-}
-
-func (*none) PrivateKey() ed25519.PrivateKey {
-	return ed25519.PrivateKey{}
-}
-
-func publicKey(cfg *Config) (ed25519.PublicKey, error) {
-	d, err := cfg.GetPublic()
-	if err != nil {
-		return nil, err
-	}
-
-	k, err := x509.ParsePKIXPublicKey(d)
-	if err != nil {
-		return nil, err
-	}
-
-	return k.(ed25519.PublicKey), nil
-}
-
-func privateKey(cfg *Config) (ed25519.PrivateKey, error) {
-	d, err := cfg.GetPrivate()
-	if err != nil {
-		return nil, err
-	}
-
-	k, err := x509.ParsePKCS8PrivateKey(d)
-	if err != nil {
-		return nil, err
-	}
-
-	return k.(ed25519.PrivateKey), nil
 }
