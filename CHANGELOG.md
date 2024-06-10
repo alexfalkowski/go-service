@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.215.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.215.0) - 2024-06-10
+
+- [`eeffb98`](https://github.com/alexfalkowski/go-service/commit/eeffb989fc153d66ae020b2886af593594e10e8e) feat(crypto): ssh should use signature (#810)
+- [`0d3a349`](https://github.com/alexfalkowski/go-service/commit/0d3a349ea10ec62d6802a8f4103b02c1c4218e6a) build(deps): bump bin from `955891d` to `897d5f1` (#809)
+
 ## [v1.214.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.214.1) - 2024-06-09
 
 - [`e709f28`](https://github.com/alexfalkowski/go-service/commit/e709f2862ac952f557e730513bc89c88f1fe4c32) fix(crypto): move to algo interfaces (#808)
