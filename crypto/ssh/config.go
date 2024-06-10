@@ -1,7 +1,7 @@
 package ssh
 
 import (
-	"crypto/rsa"
+	"crypto/ed25519"
 	"os"
 
 	"golang.org/x/crypto/ssh"
@@ -27,7 +27,7 @@ type (
 )
 
 // PublicKey ssh.
-func (c *Config) PublicKey() (*rsa.PublicKey, error) {
+func (c *Config) PublicKey() (ed25519.PublicKey, error) {
 	d, err := os.ReadFile(string(c.Public))
 	if err != nil {
 		return nil, err
@@ -41,11 +41,11 @@ func (c *Config) PublicKey() (*rsa.PublicKey, error) {
 
 	key := parsed.(ssh.CryptoPublicKey)
 
-	return key.CryptoPublicKey().(*rsa.PublicKey), nil
+	return key.CryptoPublicKey().(ed25519.PublicKey), nil
 }
 
 // PrivateKey ssh.
-func (c *Config) PrivateKey() (*rsa.PrivateKey, error) {
+func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
 	d, err := os.ReadFile(string(c.Private))
 	if err != nil {
 		return nil, err
@@ -56,5 +56,7 @@ func (c *Config) PrivateKey() (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	return key.(*rsa.PrivateKey), nil
+	k := key.(*ed25519.PrivateKey)
+
+	return *k, nil
 }
