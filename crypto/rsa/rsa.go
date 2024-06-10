@@ -12,7 +12,7 @@ import (
 )
 
 // Generate key pair with RSA.
-func Generate() (PublicKey, PrivateKey, error) {
+func Generate() (string, string, error) {
 	p, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return "", "", err
@@ -21,7 +21,7 @@ func Generate() (PublicKey, PrivateKey, error) {
 	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&p.PublicKey)})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(p)})
 
-	return PublicKey(pub), PrivateKey(pri), nil
+	return string(pub), string(pri), nil
 }
 
 // Algo for rsa.

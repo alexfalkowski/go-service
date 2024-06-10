@@ -233,12 +233,12 @@ func netTime(n st.Network) {
 func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo, _ ssh.Algo) error {
 	msg := "hello"
 
-	e, err := a.Generate(msg)
+	e, err := a.Sign(msg)
 	if err != nil {
 		return err
 	}
 
-	err = a.Compare(e, msg)
+	err = a.Verify(e, msg)
 	if err != nil {
 		return err
 	}

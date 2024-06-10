@@ -9,17 +9,12 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil && cfg.Kind != ""
 }
 
-type (
-	// Key for metrics.
-	Key string
-
-	// Config for metrics.
-	Config struct {
-		Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-		Host string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
-		Key  Key    `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-	}
-)
+// Config for metrics.
+type Config struct {
+	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Host string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+}
 
 // IsOTLP configuration.
 func (c *Config) IsOTLP() bool {
@@ -33,7 +28,7 @@ func (c *Config) IsPrometheus() bool {
 
 // GetKey for metrics.
 func (c *Config) GetKey() (string, error) {
-	return os.ReadFile(string(c.Key))
+	return os.ReadFile(c.Key)
 }
 
 // HasKey for metrics.

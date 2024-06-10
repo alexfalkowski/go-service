@@ -489,8 +489,8 @@ func TestInvalidStatementQuery(t *testing.T) {
 func TestInvalidSQLPort(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		cfg := &pg.Config{Config: &config.Config{
-			Masters:         []config.DSN{{URL: config.URL(test.Path("secrets/pg_invalid"))}},
-			Slaves:          []config.DSN{{URL: config.URL(test.Path("secrets/pg_invalid"))}},
+			Masters:         []config.DSN{{URL: test.Path("secrets/pg_invalid")}},
+			Slaves:          []config.DSN{{URL: test.Path("secrets/pg_invalid")}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour.String(),

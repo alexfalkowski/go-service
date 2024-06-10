@@ -12,23 +12,15 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-type (
-	// PublicKey for ssh.
-	PublicKey string
-
-	// PrivateKey for ssh.
-	PrivateKey string
-
-	// Config for ssh.
-	Config struct {
-		Public  PublicKey  `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
-		Private PrivateKey `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
-	}
-)
+// Config for ssh.
+type Config struct {
+	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
+}
 
 // PublicKey ssh.
 func (c *Config) PublicKey() (ed25519.PublicKey, error) {
-	d, err := os.ReadFile(string(c.Public))
+	d, err := os.ReadFile(c.Public)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +38,7 @@ func (c *Config) PublicKey() (ed25519.PublicKey, error) {
 
 // PrivateKey ssh.
 func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
-	d, err := os.ReadFile(string(c.Private))
+	d, err := os.ReadFile(c.Private)
 	if err != nil {
 		return nil, err
 	}

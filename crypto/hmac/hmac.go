@@ -13,10 +13,10 @@ import (
 // Code was adapted from github.com/alexellis/hmac/v2.
 
 // Generate for hmac.
-func Generate() (Key, error) {
+func Generate() (string, error) {
 	s, err := rand.GenerateBytes(32)
 
-	return Key(base64.StdEncoding.EncodeToString(s)), err
+	return base64.StdEncoding.EncodeToString(s), err
 }
 
 // Algo for hmac.
@@ -39,11 +39,15 @@ type hmacAlgo struct {
 	key []byte
 }
 
-func (a *hmacAlgo) Sign(msg string) string {
+func (a *hmacAlgo) Sign(msg string) (string, error) {
 	mac := hmac.New(sha512.New, a.key)
-	mac.Write([]byte(msg))
 
-	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	_, err := mac.Write([]byte(msg))
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
 }
 
 func (a *hmacAlgo) Verify(sig, msg string) error {
@@ -53,7 +57,11 @@ func (a *hmacAlgo) Verify(sig, msg string) error {
 	}
 
 	mac := hmac.New(sha512.New, a.key)
-	mac.Write([]byte(msg))
+
+	_, err = mac.Write([]byte(msg))
+	if err != nil {
+		return err
+	}
 
 	expectedMAC := mac.Sum(nil)
 

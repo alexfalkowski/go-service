@@ -8,10 +8,10 @@ import (
 )
 
 // Generate for hooks.
-func Generate() (Secret, error) {
+func Generate() (string, error) {
 	s, err := rand.GenerateBytes(32)
 
-	return Secret(base64.StdEncoding.EncodeToString(s)), err
+	return base64.StdEncoding.EncodeToString(s), err
 }
 
 // New hook from config.
