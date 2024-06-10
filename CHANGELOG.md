@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.216.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.216.0) - 2024-06-10
+
+- [`904d787`](https://github.com/alexfalkowski/go-service/commit/904d787bd9ef8995766507fcb0aeb364cd0551cd) feat(crypto): use string for paths (#811)
+
 ## [v1.215.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.215.0) - 2024-06-10
 
 - [`eeffb98`](https://github.com/alexfalkowski/go-service/commit/eeffb989fc153d66ae020b2886af593594e10e8e) feat(crypto): ssh should use signature (#810)
