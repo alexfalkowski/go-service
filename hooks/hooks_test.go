@@ -13,7 +13,7 @@ func TestHooks(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have random secret", func() {
-			So(string(c), ShouldNotBeBlank)
+			So(c, ShouldNotBeBlank)
 		})
 	})
 }

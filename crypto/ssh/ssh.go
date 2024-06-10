@@ -12,7 +12,7 @@ import (
 )
 
 // Generate key pair with ssh.
-func Generate() (PublicKey, PrivateKey, error) {
+func Generate() (string, string, error) {
 	pu, pr, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return "", "", err
@@ -28,7 +28,7 @@ func Generate() (PublicKey, PrivateKey, error) {
 		return "", "", err
 	}
 
-	return PublicKey(ssh.MarshalAuthorizedKey(pub)), PrivateKey(pem.EncodeToMemory(ppr)), nil
+	return string(ssh.MarshalAuthorizedKey(pub)), string(pem.EncodeToMemory(ppr)), nil
 }
 
 // Algo for ssh.
@@ -60,10 +60,10 @@ type sshAlgo struct {
 	privateKey ed25519.PrivateKey
 }
 
-func (a *sshAlgo) Sign(msg string) string {
+func (a *sshAlgo) Sign(msg string) (string, error) {
 	m := ed25519.Sign(a.privateKey, []byte(msg))
 
-	return base64.StdEncoding.EncodeToString(m)
+	return base64.StdEncoding.EncodeToString(m), nil
 }
 
 func (a *sshAlgo) Verify(sig, msg string) error {

@@ -19,16 +19,13 @@ type (
 		MaxIdleConns    int    `yaml:"max_idle_conns,omitempty" json:"max_idle_conns,omitempty" toml:"max_idle_conns,omitempty"`
 	}
 
-	// URL for DSN.
-	URL string
-
 	// DSN for SQL.
 	DSN struct {
-		URL URL `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
+		URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 	}
 )
 
 // GetPassword for SQL.
 func (d *DSN) GetURL() (string, error) {
-	return os.ReadFile(string(d.URL))
+	return os.ReadFile(d.URL)
 }

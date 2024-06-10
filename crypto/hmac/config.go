@@ -9,17 +9,12 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-type (
-	// Key for hmac.
-	Key string
-
-	// Config for hmac.
-	Config struct {
-		Key Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-	}
-)
+// Config for hmac.
+type Config struct {
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+}
 
 // GetKey for hmac.
 func (c *Config) GetKey() (string, error) {
-	return os.ReadBase64File(string(c.Key))
+	return os.ReadBase64File(c.Key)
 }

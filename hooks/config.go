@@ -4,17 +4,12 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 )
 
-type (
-	// Secret for hooks.
-	Secret string
-
-	// Config for hooks.
-	Config struct {
-		Secret Secret `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
-	}
-)
+// Config for hooks.
+type Config struct {
+	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
+}
 
 // GetCert for hooks.
 func (c *Config) GetSecret() (string, error) {
-	return os.ReadFile(string(c.Secret))
+	return os.ReadFile(c.Secret)
 }

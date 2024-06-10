@@ -9,7 +9,7 @@ import (
 )
 
 // Generate key and hash for token.
-func Generate() (Key, Hash, error) {
+func Generate() (string, string, error) {
 	k, err := rand.GenerateString(32)
 	if err != nil {
 		return "", "", err
@@ -17,12 +17,12 @@ func Generate() (Key, Hash, error) {
 
 	algo := argon2.NewAlgo()
 
-	h, err := algo.Generate(k)
+	h, err := algo.Sign(k)
 	if err != nil {
 		return "", "", err
 	}
 
-	return Key(k), Hash(h), nil
+	return k, h, nil
 }
 
 type (
@@ -63,14 +63,14 @@ func NewTokenizer(cfg *Config, algo argon2.Algo) Tokenizer {
 
 // Generate token from secret file.
 func (t *token) Generate(ctx context.Context) (context.Context, []byte, error) {
-	d, err := os.ReadBase64File(string(t.cfg.Key))
+	d, err := os.ReadBase64File(t.cfg.Key)
 
 	return ctx, []byte(d), err
 }
 
 // Verify the token with the stored hash.
 func (t *token) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	return ctx, t.algo.Compare(string(t.cfg.Hash), string(token))
+	return ctx, t.algo.Verify(t.cfg.Hash, string(token))
 }
 
 func (*none) Generate(ctx context.Context) (context.Context, []byte, error) {

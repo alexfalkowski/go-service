@@ -3,7 +3,7 @@ package algo
 // Signer for algo.
 type Signer interface {
 	// Sign a message.
-	Sign(msg string) string
+	Sign(msg string) (string, error)
 
 	// Verify sig with msg.
 	Verify(sig, msg string) error
@@ -12,8 +12,8 @@ type Signer interface {
 // NoSigner for algo.
 type NoSigner struct{}
 
-func (*NoSigner) Sign(msg string) string {
-	return msg
+func (*NoSigner) Sign(msg string) (string, error) {
+	return msg, nil
 }
 
 func (*NoSigner) Verify(_, _ string) error {

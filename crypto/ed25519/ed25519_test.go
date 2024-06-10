@@ -15,8 +15,8 @@ func TestValidAlgo(t *testing.T) {
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
-			So(string(pub), ShouldNotBeBlank)
-			So(string(pri), ShouldNotBeBlank)
+			So(pub, ShouldNotBeBlank)
+			So(pri, ShouldNotBeBlank)
 		})
 	})
 
@@ -25,7 +25,7 @@ func TestValidAlgo(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e := a.Sign("test")
+			e, _ := a.Sign("test")
 
 			Convey("Then I should compared the data", func() {
 				So(a.Verify(e, "test"), ShouldBeNil)
@@ -38,7 +38,7 @@ func TestValidAlgo(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e := a.Sign("test")
+			e, _ := a.Sign("test")
 
 			Convey("Then I should compared the data", func() {
 				So(a.Verify(e, "test"), ShouldBeNil)
@@ -61,7 +61,7 @@ func TestInvalidAlgo(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e := a.Sign("test")
+			e, _ := a.Sign("test")
 			e += "wha"
 
 			Convey("Then I should have an error", func() {
@@ -75,7 +75,7 @@ func TestInvalidAlgo(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {
-			e := a.Sign("test")
+			e, _ := a.Sign("test")
 
 			Convey("Then I comparing another message will gave an error", func() {
 				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrMismatch)

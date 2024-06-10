@@ -9,20 +9,11 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-type (
-
-	// Cert for tls.
-	Cert string
-
-	// Cert for tls.
-	Key string
-
-	// Config for tls.
-	Config struct {
-		Cert Cert `yaml:"cert,omitempty" json:"cert,omitempty" toml:"cert,omitempty"`
-		Key  Key  `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-	}
-)
+// Config for tls.
+type Config struct {
+	Cert string `yaml:"cert,omitempty" json:"cert,omitempty" toml:"cert,omitempty"`
+	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+}
 
 // HasKeyPair for security.
 func (c *Config) HasKeyPair() bool {
@@ -31,10 +22,10 @@ func (c *Config) HasKeyPair() bool {
 
 // GetCert for tls.
 func (c *Config) GetCert() (string, error) {
-	return os.ReadFile(string(c.Cert))
+	return os.ReadFile(c.Cert)
 }
 
 // GetKey for tls.
 func (c *Config) GetKey() (string, error) {
-	return os.ReadFile(string(c.Key))
+	return os.ReadFile(c.Key)
 }

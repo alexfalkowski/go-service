@@ -12,7 +12,7 @@ import (
 )
 
 // Generate key pair with Ed25519.
-func Generate() (PublicKey, PrivateKey, error) {
+func Generate() (string, string, error) {
 	pu, pr, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return "", "", err
@@ -31,7 +31,7 @@ func Generate() (PublicKey, PrivateKey, error) {
 	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
 
-	return PublicKey(pub), PrivateKey(pri), nil
+	return string(pub), string(pri), nil
 }
 
 // Algo for ed25519.
@@ -63,10 +63,10 @@ type ed25519Algo struct {
 	privateKey ed25519.PrivateKey
 }
 
-func (a *ed25519Algo) Sign(msg string) string {
+func (a *ed25519Algo) Sign(msg string) (string, error) {
 	m := ed25519.Sign(a.privateKey, []byte(msg))
 
-	return base64.StdEncoding.EncodeToString(m)
+	return base64.StdEncoding.EncodeToString(m), nil
 }
 
 func (a *ed25519Algo) Verify(sig, msg string) error {

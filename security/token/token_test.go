@@ -13,8 +13,8 @@ func TestGenerate(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a unauthenticated reply", func() {
-			So(string(k), ShouldNotBeBlank)
-			So(string(h), ShouldNotBeBlank)
+			So(k, ShouldNotBeBlank)
+			So(h, ShouldNotBeBlank)
 		})
 	})
 }

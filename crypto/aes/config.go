@@ -9,17 +9,12 @@ func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-type (
-	// Key for aes.
-	Key string
-
-	// Config for aes.
-	Config struct {
-		Key Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-	}
-)
+// Config for aes.
+type Config struct {
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+}
 
 // GetKey for aes.
 func (c *Config) GetKey() (string, error) {
-	return os.ReadBase64File(string(c.Key))
+	return os.ReadBase64File(c.Key)
 }

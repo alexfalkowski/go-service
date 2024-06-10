@@ -8,12 +8,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestHash(t *testing.T) {
+func TestAlgo(t *testing.T) {
 	Convey("Given I have a hash", t, func() {
 		h := argon2.NewAlgo()
 
-		Convey("When I generate a hash", func() {
-			s, err := h.Generate("test")
+		Convey("When I sign a hash", func() {
+			s, err := h.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should a hash", func() {
@@ -21,26 +21,26 @@ func TestHash(t *testing.T) {
 			})
 		})
 
-		Convey("When I generate a hash for test", func() {
-			s, err := h.Generate("test")
+		Convey("When I sign a hash for test", func() {
+			s, err := h.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should a hash that is equal to test", func() {
-				So(h.Compare(s, "test"), ShouldBeNil)
+				So(h.Verify(s, "test"), ShouldBeNil)
 			})
 		})
 
-		Convey("When I generate a hash with the word steve", func() {
-			s, err := h.Generate("steve")
+		Convey("When I sign a hash with the word steve", func() {
+			s, err := h.Sign("steve")
 			So(err, ShouldBeNil)
 
-			Convey("Then comparing to bob should fail", func() {
-				So(h.Compare(s, "bob"), ShouldBeError, errors.ErrMismatch)
+			Convey("Then verifying to bob should fail", func() {
+				So(h.Verify(s, "bob"), ShouldBeError, errors.ErrMismatch)
 			})
 		})
 
 		Convey("When I compare a non hashed value", func() {
-			err := h.Compare("steve", "bob")
+			err := h.Verify("steve", "bob")
 
 			Convey("Then comparing to bob should fail", func() {
 				So(err, ShouldBeError)

@@ -14,8 +14,8 @@ func TestValidAlgo(t *testing.T) {
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
-			So(string(pub), ShouldNotBeBlank)
-			So(string(pri), ShouldNotBeBlank)
+			So(pub, ShouldNotBeBlank)
+			So(pri, ShouldNotBeBlank)
 		})
 	})
 
