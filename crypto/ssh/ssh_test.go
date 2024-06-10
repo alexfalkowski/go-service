@@ -3,13 +3,14 @@ package ssh_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestValidAlgo(t *testing.T) {
-	Convey("When I generate", t, func() {
+	Convey("When I generate keys", t, func() {
 		pub, pri, err := ssh.Generate()
 
 		Convey("Then I should not have an error", func() {
@@ -19,30 +20,15 @@ func TestValidAlgo(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have generated a key pair", t, func() {
-		Convey("When I create an algo", func() {
-			a, err := ssh.NewAlgo(test.NewSSH())
-
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-				So(a, ShouldNotBeNil)
-			})
-		})
-	})
-
 	Convey("Given I have an algo", t, func() {
 		a, err := ssh.NewAlgo(test.NewSSH())
 		So(err, ShouldBeNil)
 
-		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
-			So(err, ShouldBeNil)
+		Convey("When I sign data", func() {
+			e := a.Sign("test")
 
-			Convey("Then I should decrypt the data", func() {
-				d, err := a.Decrypt(e)
-				So(err, ShouldBeNil)
-
-				So(d, ShouldEqual, "test")
+			Convey("Then I should compared the data", func() {
+				So(a.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
@@ -51,27 +37,22 @@ func TestValidAlgo(t *testing.T) {
 		a, err := ssh.NewAlgo(nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
-			So(err, ShouldBeNil)
+		Convey("When I sign data", func() {
+			e := a.Sign("test")
 
-			Convey("Then I should decrypt the data", func() {
-				d, err := a.Decrypt(e)
-				So(err, ShouldBeNil)
-
-				So(d, ShouldEqual, "test")
+			Convey("Then I should compared the data", func() {
+				So(a.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
 }
 
 func TestInvalidAlgo(t *testing.T) {
-	Convey("When I create an invalid algo", t, func() {
-		a, err := ssh.NewAlgo(&ssh.Config{})
+	Convey("When I create a algo", t, func() {
+		_, err := ssh.NewAlgo(&ssh.Config{})
 
-		Convey("Then I should have an error", func() {
+		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeError)
-			So(a, ShouldBeNil)
 		})
 	})
 
@@ -79,15 +60,12 @@ func TestInvalidAlgo(t *testing.T) {
 		a, err := ssh.NewAlgo(test.NewSSH())
 		So(err, ShouldBeNil)
 
-		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
-			So(err, ShouldBeNil)
-
+		Convey("When I sign data", func() {
+			e := a.Sign("test")
 			e += "wha"
 
 			Convey("Then I should have an error", func() {
-				_, err := a.Decrypt(e)
-				So(err, ShouldBeError)
+				So(a.Verify(e, "test"), ShouldBeError)
 			})
 		})
 	})
@@ -96,11 +74,11 @@ func TestInvalidAlgo(t *testing.T) {
 		a, err := ssh.NewAlgo(test.NewSSH())
 		So(err, ShouldBeNil)
 
-		Convey("When I decrypt invalid data", func() {
-			_, err := a.Decrypt("test")
+		Convey("When I sign one message", func() {
+			e := a.Sign("test")
 
-			Convey("Then I have an error", func() {
-				So(err, ShouldBeError)
+			Convey("Then I comparing another message will gave an error", func() {
+				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrMismatch)
 			})
 		})
 	})
