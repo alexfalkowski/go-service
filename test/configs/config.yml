@@ -61,8 +61,9 @@ telemetry:
     kind: otlp
     host: http://localhost:4318/v1/traces
 token:
-  key: ../test/secrets/token
-  hash: $argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4UHNSvylB3BHgC8OClmnr0Uxc4
+  argon2:
+    key: ../test/secrets/token
+    hash: $argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4UHNSvylB3BHgC8OClmnr0Uxc4
 transport:
   http:
     mux: gateway
