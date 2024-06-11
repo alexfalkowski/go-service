@@ -4,26 +4,8 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/crypto/argon2"
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/os"
+	ta "github.com/alexfalkowski/go-service/security/token/argon2"
 )
-
-// Generate key and hash for token.
-func Generate() (string, string, error) {
-	k, err := rand.GenerateString(32)
-	if err != nil {
-		return "", "", err
-	}
-
-	algo := argon2.NewAlgo()
-
-	h, err := algo.Sign(k)
-	if err != nil {
-		return "", "", err
-	}
-
-	return k, h, nil
-}
 
 type (
 	// Generator allows the implementation of different types generators.
@@ -42,11 +24,9 @@ type (
 	Tokenizer interface {
 		Generator
 		Verifier
-	}
 
-	token struct {
-		cfg  *Config
-		algo argon2.Algo
+		// GenerateConfig to be used by the Tokenizer.
+		GenerateConfig() (string, string, error)
 	}
 
 	none struct{}
@@ -58,19 +38,11 @@ func NewTokenizer(cfg *Config, algo argon2.Algo) Tokenizer {
 		return &none{}
 	}
 
-	return &token{cfg: cfg, algo: algo}
+	return ta.NewTokenizer(cfg.Argon2, algo)
 }
 
-// Generate token from secret file.
-func (t *token) Generate(ctx context.Context) (context.Context, []byte, error) {
-	d, err := os.ReadBase64File(t.cfg.Key)
-
-	return ctx, []byte(d), err
-}
-
-// Verify the token with the stored hash.
-func (t *token) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	return ctx, t.algo.Verify(t.cfg.Hash, string(token))
+func (*none) GenerateConfig() (string, string, error) {
+	return "", "", nil
 }
 
 func (*none) Generate(ctx context.Context) (context.Context, []byte, error) {
