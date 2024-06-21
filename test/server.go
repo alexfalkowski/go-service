@@ -54,6 +54,7 @@ func (s *Server) Register() {
 		Config: s.Transport.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
 		Limiter: s.Limiter, Key: s.Key, Handlers: []negroni.Handler{&none{}},
+		Verifier: s.Verifier,
 	})
 	runtime.Must(err)
 

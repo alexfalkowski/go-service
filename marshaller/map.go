@@ -30,10 +30,5 @@ func (f *Map) Register(kind string, m Marshaller) {
 
 // Get from kind.
 func (f *Map) Get(kind string) Marshaller {
-	c, ok := f.configs[kind]
-	if !ok {
-		return f.configs["yml"]
-	}
-
-	return c
+	return f.configs[kind]
 }

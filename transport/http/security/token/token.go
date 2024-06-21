@@ -6,7 +6,38 @@ import (
 
 	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/token"
+	st "github.com/alexfalkowski/go-service/transport/security/token"
+	"github.com/alexfalkowski/go-service/transport/strings"
 )
+
+// Handler for token.
+type Handler struct {
+	verifier token.Verifier
+}
+
+// NewHandler for token.
+func NewHandler(verifier token.Verifier) *Handler {
+	return &Handler{verifier: verifier}
+}
+
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if strings.IsObservable(req.URL.Path) {
+		next(res, req)
+
+		return
+	}
+
+	ctx := req.Context()
+
+	ctx, err := st.Verify(ctx, h.verifier)
+	if err != nil {
+		http.Error(res, "verify token: "+err.Error(), http.StatusUnauthorized)
+
+		return
+	}
+
+	next(res, req.WithContext(ctx))
+}
 
 // NewRoundTripper for token.
 func NewRoundTripper(gen token.Generator, hrt http.RoundTripper) *RoundTripper {

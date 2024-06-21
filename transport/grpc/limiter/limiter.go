@@ -18,7 +18,7 @@ import (
 func UnaryServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
-		if limiter == nil || strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
@@ -34,7 +34,7 @@ func UnaryServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.Unary
 func StreamServerInterceptor(limiter *v3.Limiter, key limiter.KeyFunc) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
-		if limiter == nil || strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 

@@ -16,7 +16,7 @@ func RegisterMetrics(cfg *metrics.Config, mux sh.ServeMux) error {
 
 	handler := prom.Handler()
 
-	return mux.Handle("GET", "/metrics", func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
+	return mux.Handle("GET", "/metrics", func(res http.ResponseWriter, req *http.Request) {
+		handler.ServeHTTP(res, req)
 	})
 }

@@ -8,7 +8,7 @@ import (
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	ss "github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -29,10 +29,10 @@ type Handler struct {
 }
 
 // ServeHTTP or zap.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if ss.IsHealth(path) {
-		next(resp, req)
+	if ts.IsObservable(path) {
+		next(res, req)
 
 		return
 	}
@@ -44,7 +44,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 		zap.String(tm.MethodKey, method),
 	}
 
-	m := snoop.CaptureMetricsFn(resp, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
+	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
 	fields = append(fields, zap.Stringer(tm.DurationKey, m.Duration), zap.Int(tm.CodeKey, m.Code))
 	fields = append(fields, tz.Meta(ctx)...)
@@ -66,7 +66,7 @@ type RoundTripper struct {
 
 // RoundTrip for zap.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ss.IsHealth(req.URL.String()) {
+	if ts.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

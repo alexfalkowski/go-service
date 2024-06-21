@@ -17,7 +17,7 @@ func TestSnakeCase(t *testing.T) {
 			m := meta.SnakeStrings(ctx, "")
 
 			Convey("Then I should have valid marshaller", func() {
-				So(m, ShouldEqual, map[string]string{"test_id": "1"})
+				So(m, ShouldEqual, meta.Map{"test_id": "1"})
 			})
 		})
 	})
@@ -32,7 +32,7 @@ func TestCamelCase(t *testing.T) {
 			m := meta.CamelStrings(ctx, "")
 
 			Convey("Then I should have valid strings", func() {
-				So(m, ShouldEqual, map[string]string{"testId": "1"})
+				So(m, ShouldEqual, meta.Map{"testId": "1"})
 			})
 		})
 	})
@@ -47,7 +47,7 @@ func TestNoneCase(t *testing.T) {
 			m := meta.Strings(ctx, "", meta.NoneConverter)
 
 			Convey("Then I should have valid strings", func() {
-				So(m, ShouldEqual, map[string]string{"testId": "1"})
+				So(m, ShouldEqual, meta.Map{"testId": "1"})
 			})
 		})
 	})

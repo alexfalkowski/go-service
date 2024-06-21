@@ -7,7 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/token"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	st "github.com/alexfalkowski/go-service/transport/security/token"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
@@ -16,22 +16,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// VerifyToken from context.
-func VerifyToken(ctx context.Context, verifier token.Verifier) (context.Context, error) {
-	token := meta.Authorization(ctx).Value()
-
-	return verifier.Verify(ctx, []byte(token))
-}
-
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return handler(ctx, req)
 		}
 
-		ctx, err := VerifyToken(ctx, verifier)
+		ctx, err := st.Verify(ctx, verifier)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}
@@ -44,13 +37,13 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return handler(srv, stream)
 		}
 
 		ctx := stream.Context()
 
-		ctx, err := VerifyToken(ctx, verifier)
+		ctx, err := st.Verify(ctx, verifier)
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}

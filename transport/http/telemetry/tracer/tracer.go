@@ -24,10 +24,10 @@ func NewHandler(tracer trace.Tracer) *Handler {
 }
 
 // ServeHTTP for tracer.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if ts.IsHealth(path) {
-		next(resp, req)
+	if ts.IsObservable(path) {
+		next(res, req)
 
 		return
 	}
@@ -44,7 +44,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 
 	ctx = tracer.WithTraceID(ctx, span)
 
-	m := snoop.CaptureMetricsFn(resp, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
+	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
 	span.SetAttributes(semconv.HTTPResponseStatusCode(m.Code))
 	tracer.Meta(ctx, span)
@@ -63,7 +63,7 @@ type RoundTripper struct {
 
 // RoundTrip for tracer.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ts.IsHealth(req.URL.String()) {
+	if ts.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

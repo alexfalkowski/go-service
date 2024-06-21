@@ -6,15 +6,22 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-// Converter for meta.
-type Converter func(string) string
+type (
+	// Converter for meta.
+	Converter func(string) string
 
-// NoneConverter for meta.
-var NoneConverter = func(s string) string { return s }
+	// Map for meta.
+	Map map[string]string
 
-type contextKey string
+	contextKey string
+)
 
-var meta = contextKey("meta")
+var (
+	// NoneConverter for meta.
+	NoneConverter = func(s string) string { return s }
+
+	meta = contextKey("meta")
+)
 
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key string, value Valuer) context.Context {
@@ -30,28 +37,28 @@ func Attribute(ctx context.Context, key string) Valuer {
 }
 
 // SnakeStrings for meta.
-func SnakeStrings(ctx context.Context, prefix string) map[string]string {
+func SnakeStrings(ctx context.Context, prefix string) Map {
 	return Strings(ctx, prefix, strcase.ToSnake)
 }
 
 // CamelStrings for meta.
-func CamelStrings(ctx context.Context, prefix string) map[string]string {
+func CamelStrings(ctx context.Context, prefix string) Map {
 	return Strings(ctx, prefix, strcase.ToLowerCamel)
 }
 
 // Strings for meta.
-func Strings(ctx context.Context, prefix string, converter Converter) map[string]string {
+func Strings(ctx context.Context, prefix string, converter Converter) Map {
 	as := attributes(ctx)
-	ss := map[string]string{}
+	m := Map{}
 
 	for k, v := range as {
 		s := v.String()
 		if s != "" {
-			ss[prefix+converter(k)] = s
+			m[prefix+converter(k)] = s
 		}
 	}
 
-	return ss
+	return m
 }
 
 func attributes(ctx context.Context) map[string]Valuer {

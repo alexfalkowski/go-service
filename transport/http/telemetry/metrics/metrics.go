@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
-	ss "github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/metric"
 )
@@ -40,10 +40,10 @@ type Handler struct {
 }
 
 // ServeHTTP for metrics.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if ss.IsHealth(service) {
-		next(resp, req)
+	if ts.IsObservable(service) {
+		next(res, req)
 
 		return
 	}
@@ -59,7 +59,7 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	h.started.Add(ctx, 1, opts)
 	h.received.Add(ctx, 1, opts)
 
-	m := snoop.CaptureMetricsFn(resp, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
+	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
 	if m.Code >= 200 && m.Code <= 299 {
 		h.sent.Add(ctx, 1, opts)
@@ -99,7 +99,7 @@ type RoundTripper struct {
 
 // RoundTrip for metrics.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ss.IsHealth(req.URL.String()) {
+	if ts.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
