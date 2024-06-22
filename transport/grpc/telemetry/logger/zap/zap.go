@@ -23,7 +23,7 @@ const (
 func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
@@ -50,7 +50,7 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 
@@ -78,7 +78,7 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := path.Dir(fullMethod)[1:]
-		if strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -105,7 +105,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := path.Dir(fullMethod)[1:]
-		if strings.IsHealth(p) {
+		if strings.IsObservable(p) {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 

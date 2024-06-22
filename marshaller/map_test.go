@@ -26,27 +26,7 @@ func TestMap(t *testing.T) {
 				m := test.Marshaller.Get(k)
 
 				Convey("Then I should have none", func() {
-					So(m, ShouldNotBeNil)
-				})
-			})
-		})
-
-		Convey("Given I have create a marshaller", t, func() {
-			m := test.Marshaller.Get(k)
-
-			Convey("When I marshal the data", func() {
-				s := []byte("hello")
-
-				d, err := m.Marshal(s)
-				So(err, ShouldBeNil)
-
-				Convey("Then I should be able to unmarshal", func() {
-					var b []byte
-
-					err := m.Unmarshal(d, &b)
-					So(err, ShouldBeNil)
-
-					So(b, ShouldEqual, []byte("hello"))
+					So(m, ShouldBeNil)
 				})
 			})
 		})

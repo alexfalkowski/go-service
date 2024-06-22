@@ -23,7 +23,7 @@ type Handler struct {
 
 // ServeHTTP for limiter.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if h.limiter == nil || strings.IsHealth(req.URL.Path) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 
 		return

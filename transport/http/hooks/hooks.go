@@ -25,7 +25,7 @@ func NewHandler(hook *hooks.Webhook) *Handler {
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	payload, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(resp, err.Error(), http.StatusInternalServerError)
+		http.Error(resp, err.Error(), http.StatusBadRequest)
 
 		return
 	}

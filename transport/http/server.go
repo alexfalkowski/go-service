@@ -9,11 +9,13 @@ import (
 	"github.com/alexfalkowski/go-service/errors"
 	lm "github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/server"
 	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
+	tkn "github.com/alexfalkowski/go-service/transport/http/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
@@ -38,6 +40,7 @@ type ServerParams struct {
 	UserAgent  env.UserAgent
 	Limiter    *limiter.Limiter  `optional:"true"`
 	Key        lm.KeyFunc        `optional:"true"`
+	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
 }
 
@@ -60,8 +63,15 @@ func NewServer(params ServerParams) (*Server, error) {
 		n.Use(hd)
 	}
 
+	if params.Verifier != nil {
+		n.Use(tkn.NewHandler(params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		n.Use(hl.NewHandler(params.Limiter, params.Key))
+	}
+
 	n.Use(cors.New())
-	n.Use(hl.NewHandler(params.Limiter, params.Key))
 	n.UseHandler(params.Mux.Handler())
 
 	s := &http.Server{

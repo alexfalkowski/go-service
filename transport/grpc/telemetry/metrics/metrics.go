@@ -45,7 +45,7 @@ type Server struct {
 func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return handler(ctx, req)
 		}
 
@@ -75,7 +75,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, st grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return handler(srv, st)
 		}
 
@@ -184,7 +184,7 @@ type Client struct {
 func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return invoker(ctx, fullMethod, req, resp, cc, opts...)
 		}
 
@@ -214,7 +214,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
-		if strings.IsHealth(service) {
+		if strings.IsObservable(service) {
 			return streamer(ctx, desc, cc, fullMethod, opts...)
 		}
 

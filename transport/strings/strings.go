@@ -6,7 +6,7 @@ import (
 
 var health = regexp.MustCompile(`health|healthz|livez|readyz|metrics`)
 
-// IsHealth in the text.
-func IsHealth(text string) bool {
+// IsObservable in the text.
+func IsObservable(text string) bool {
 	return health.MatchString(text)
 }

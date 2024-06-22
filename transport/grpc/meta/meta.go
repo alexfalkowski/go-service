@@ -3,11 +3,13 @@ package meta
 import (
 	"context"
 	"net"
+	"path"
 	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -18,7 +20,12 @@ import (
 
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		p := path.Dir(info.FullMethod)[1:]
+		if ts.IsObservable(p) {
+			return handler(ctx, req)
+		}
+
 		md := ExtractIncoming(ctx)
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
@@ -36,7 +43,12 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor for meta.
 func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		p := path.Dir(info.FullMethod)[1:]
+		if ts.IsObservable(p) {
+			return handler(srv, stream)
+		}
+
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
 

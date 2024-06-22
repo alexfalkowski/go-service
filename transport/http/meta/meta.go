@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/google/uuid"
 	"github.com/ulule/limiter/v3"
 )
@@ -21,14 +22,20 @@ func NewHandler(userAgent string) *Handler {
 	return &Handler{userAgent: userAgent}
 }
 
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if strings.IsObservable(req.URL.Path) {
+		next(res, req)
+
+		return
+	}
+
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 	ctx = m.WithRequestID(ctx, extractRequestID(ctx, req))
 	ctx = m.WithIPAddr(ctx, extractIP(req))
 	ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, req))
 
-	next(resp, req.WithContext(ctx))
+	next(res, req.WithContext(ctx))
 }
 
 // NewRoundTripper for meta.
