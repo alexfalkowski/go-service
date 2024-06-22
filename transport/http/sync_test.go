@@ -39,8 +39,8 @@ type Error struct {
 
 type Errorer struct{}
 
-func (*Errorer) Error(err error) *Response {
-	return &Response{Error: &Error{Message: err.Error()}}
+func (*Errorer) Error(ctx context.Context, err error) *Response {
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
 func (*Errorer) Status(error) int {

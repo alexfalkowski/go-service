@@ -13,7 +13,7 @@ import (
 // Errorer for HTTP.
 type Errorer[Res any] interface {
 	// Error for this handler.
-	Error(err error) *Res
+	Error(ctx context.Context, err error) *Res
 
 	// Status code from error.
 	Status(err error) int
@@ -37,12 +37,13 @@ type Handle[Req any, Res any] func(context.Context, *Req) (*Res, error)
 // Handle for HTTP.
 func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) error {
 	h := func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
 		c, k := s.kind(req)
 		m := s.mar.Get(k)
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
-			s.error(res, m, err)
+			s.error(ctx, res, m, err)
 
 			return
 		}
@@ -53,23 +54,23 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		ptr := &rq
 
 		if err := m.Unmarshal(body, ptr); err != nil {
-			s.error(res, m, err)
+			s.error(ctx, res, m, err)
 
 			return
 		}
 
 		res.Header().Add("Content-Type", c)
 
-		rs, err := fn(req.Context(), ptr)
+		rs, err := fn(ctx, ptr)
 		if err != nil {
-			s.error(res, m, err)
+			s.error(ctx, res, m, err)
 
 			return
 		}
 
 		d, err := m.Marshal(rs)
 		if err != nil {
-			s.error(res, m, err)
+			s.error(ctx, res, m, err)
 
 			return
 		}
@@ -89,8 +90,8 @@ func (s *Handler[Req, Res]) kind(req *http.Request) (string, string) {
 	return t.String(), t.Subtype
 }
 
-func (s *Handler[Req, Res]) error(res http.ResponseWriter, m marshaller.Marshaller, err error) {
-	d, _ := m.Marshal(s.err.Error(err))
+func (s *Handler[Req, Res]) error(ctx context.Context, res http.ResponseWriter, m marshaller.Marshaller, err error) {
+	d, _ := m.Marshal(s.err.Error(ctx, err))
 
 	res.WriteHeader(s.err.Status(err))
 	res.Write(d)
