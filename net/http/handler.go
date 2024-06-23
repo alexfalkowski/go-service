@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -60,7 +61,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "readAllError", meta.Error(err))
-			s.error(ctx, res, m, ErrReadAll)
+			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrReadAll, err))
 
 			return
 		}
@@ -72,7 +73,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 
 		if err := m.Unmarshal(body, ptr); err != nil {
 			ctx = meta.WithAttribute(ctx, "unmarshalError", meta.Error(err))
-			s.error(ctx, res, m, ErrUnmarshal)
+			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrUnmarshal, err))
 
 			return
 		}
@@ -82,7 +83,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		rs, err := fn(ctx, ptr)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "handleError", meta.Error(err))
-			s.error(ctx, res, m, ErrHandle)
+			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrHandle, err))
 
 			return
 		}
@@ -90,7 +91,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		d, err := m.Marshal(rs)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "marshalError", meta.Error(err))
-			s.error(ctx, res, m, ErrMarshal)
+			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrMarshal, err))
 
 			return
 		}
