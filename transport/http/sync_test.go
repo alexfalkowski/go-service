@@ -165,7 +165,7 @@ func TestBadSync(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(r.Error.Message, ShouldEqual, "ohh no")
+					So(r.Error.Message, ShouldEqual, "invalid handle")
 					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
 					So(resp.StatusCode, ShouldEqual, 500)
 				})

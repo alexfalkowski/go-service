@@ -3,11 +3,27 @@ package http
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/meta"
 	ct "github.com/elnormous/contenttype"
+)
+
+var (
+	// ErrReadAll for HTTP.
+	ErrReadAll = errors.New("invalid body read")
+
+	// ErrUnmarshal for HTTP.
+	ErrUnmarshal = errors.New("invalid unmarshal")
+
+	// ErrHandle for HTTP.
+	ErrHandle = errors.New("invalid handle")
+
+	// ErrMarshal for HTTP.
+	ErrMarshal = errors.New("invalid marshal")
 )
 
 // Errorer for HTTP.
@@ -43,7 +59,8 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
-			s.error(ctx, res, m, err)
+			ctx = meta.WithAttribute(ctx, "readAllError", meta.Error(err))
+			s.error(ctx, res, m, ErrReadAll)
 
 			return
 		}
@@ -54,7 +71,8 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		ptr := &rq
 
 		if err := m.Unmarshal(body, ptr); err != nil {
-			s.error(ctx, res, m, err)
+			ctx = meta.WithAttribute(ctx, "unmarshalError", meta.Error(err))
+			s.error(ctx, res, m, ErrUnmarshal)
 
 			return
 		}
@@ -63,14 +81,16 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 
 		rs, err := fn(ctx, ptr)
 		if err != nil {
-			s.error(ctx, res, m, err)
+			ctx = meta.WithAttribute(ctx, "handleError", meta.Error(err))
+			s.error(ctx, res, m, ErrHandle)
 
 			return
 		}
 
 		d, err := m.Marshal(rs)
 		if err != nil {
-			s.error(ctx, res, m, err)
+			ctx = meta.WithAttribute(ctx, "marshalError", meta.Error(err))
+			s.error(ctx, res, m, ErrMarshal)
 
 			return
 		}
