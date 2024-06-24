@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.219.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.219.1) - 2024-06-24
+
+- [`0b9f357`](https://github.com/alexfalkowski/go-service/commit/0b9f35780e3fa88000134cf3f9034eca84ea8e22) fix(http): parse remote addr (#823)
+
 ## [v1.219.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.219.0) - 2024-06-24
 
 - [`17b6d14`](https://github.com/alexfalkowski/go-service/commit/17b6d14c634b7dff8fdff37055f2d993dfda3b65) feat(meta): add geolocation (#822)
