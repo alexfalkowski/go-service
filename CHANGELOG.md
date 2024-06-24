@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.220.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.220.0) - 2024-06-24
+
+- [`1e108e4`](https://github.com/alexfalkowski/go-service/commit/1e108e49998e1e15b02e6c3b53e06df14633c43e) feat(http): remove grpc gateway (#821)
+
 ## [v1.219.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.219.1) - 2024-06-24
 
 - [`0b9f357`](https://github.com/alexfalkowski/go-service/commit/0b9f35780e3fa88000134cf3f9034eca84ea8e22) fix(http): parse remote addr (#823)
