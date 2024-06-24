@@ -16,6 +16,9 @@ const (
 
 	// Authorization for meta.
 	AuthorizationKey = "authorization"
+
+	// GeoLocation for meta.
+	GeolocationKey = "geoLocation"
 )
 
 // RegisterKeys for limiter.
@@ -43,6 +46,16 @@ func WithIPAddr(ctx context.Context, addr meta.Valuer) context.Context {
 // IPAddr for transport.
 func IPAddr(ctx context.Context) meta.Valuer {
 	return meta.Attribute(ctx, IPAddrKey)
+}
+
+// WithGeolocation for transport.
+func WithGeolocation(ctx context.Context, location meta.Valuer) context.Context {
+	return meta.WithAttribute(ctx, GeolocationKey, location)
+}
+
+// Geolocation for transport.
+func Geolocation(ctx context.Context) meta.Valuer {
+	return meta.Attribute(ctx, GeolocationKey)
 }
 
 // WithIPAddrKind for transport.
