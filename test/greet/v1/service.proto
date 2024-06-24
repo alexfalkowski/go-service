@@ -2,25 +2,7 @@ syntax = "proto3";
 
 package greet.v1;
 
-import "google/api/annotations.proto";
-
 option go_package = "github.com/alexfalkowski/go-service/test/greet/v1";
-
-service GreeterService {
-  rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {
-    option (google.api.http) = {
-      post: "/v1/greet/hello"
-      body: "*"
-    };
-  }
-
-  rpc SayStreamHello(stream SayStreamHelloRequest) returns (stream SayStreamHelloResponse) {
-    option (google.api.http) = {
-      post: "/v1/greet/hello/stream"
-      body: "*"
-    };
-  }
-}
 
 message SayHelloRequest {
   string name = 1;
@@ -36,4 +18,10 @@ message SayStreamHelloRequest {
 
 message SayStreamHelloResponse {
   string message = 1;
+}
+
+service GreeterService {
+  rpc SayHello(SayHelloRequest) returns (SayHelloResponse) {}
+
+  rpc SayStreamHello(stream SayStreamHelloRequest) returns (stream SayStreamHelloResponse) {}
 }

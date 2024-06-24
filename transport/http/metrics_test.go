@@ -10,7 +10,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	ht "github.com/alexfalkowski/go-service/transport/http"
@@ -21,6 +21,7 @@ import (
 //nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -42,12 +43,12 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		_ = c.NewRistrettoCache()
 		cfg := test.NewInsecureTransportConfig()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 		s.Register()
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		err = ht.RegisterMetrics(mc, test.GatewayMux)
+		err = ht.RegisterMetrics(mc, mux)
 		So(err, ShouldBeNil)
 
 		lc.RequireStart()
@@ -86,7 +87,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 //nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

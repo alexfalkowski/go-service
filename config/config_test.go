@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security/token/argon2"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
@@ -156,7 +155,6 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
 	So(tls.IsEnabled(cfg.Transport.GRPC.TLS), ShouldBeFalse)
 	So(server.IsEnabled(cfg.Transport.HTTP.Config), ShouldBeTrue)
-	So(cfg.Transport.HTTP.Mux, ShouldEqual, string(http.GatewayMux))
 	So(cfg.Transport.HTTP.Port, ShouldEqual, "11000")
 	So(cfg.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(cfg.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")

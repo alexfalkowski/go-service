@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -22,7 +22,7 @@ func init() {
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
-		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -76,7 +76,7 @@ func TestGet(t *testing.T) {
 func TestLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		Convey("Given I have a all the servers", t, func() {
-			mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
+			mux := nh.NewServeMux(nh.NewStandardServeMux())
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
