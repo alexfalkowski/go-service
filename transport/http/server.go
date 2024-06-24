@@ -32,7 +32,7 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        sh.ServeMux
+	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *zap.Logger
 	Tracer     trace.Tracer
@@ -72,7 +72,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n.Use(cors.New())
-	n.UseHandler(params.Mux.Handler())
+	n.UseHandler(params.Mux)
 
 	s := &http.Server{
 		Handler:     n,

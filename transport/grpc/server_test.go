@@ -31,7 +31,7 @@ func TestServer(t *testing.T) {
 	})
 
 	Convey("Given I have secure creds", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 

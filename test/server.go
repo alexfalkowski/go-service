@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	lm "github.com/alexfalkowski/go-service/limiter"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -24,7 +23,7 @@ type Server struct {
 	Lifecycle  fx.Lifecycle
 	Meter      metric.Meter
 	Verifier   token.Verifier
-	Mux        nh.ServeMux
+	Mux        *http.ServeMux
 	HTTP       *th.Server
 	GRPC       *tg.Server
 	Transport  *transport.Config

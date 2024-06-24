@@ -21,7 +21,7 @@ func init() {
 
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -65,7 +65,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -108,7 +108,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 func TestLimiterLimitedStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -158,7 +158,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 
 func TestLimiterUnlimitedStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -207,7 +207,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 
 func TestLimiterAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("bob")

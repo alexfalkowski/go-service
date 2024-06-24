@@ -51,7 +51,7 @@ func (*Errorer) Status(error) int {
 func TestSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			mux := nh.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -66,14 +66,13 @@ func TestSync(t *testing.T) {
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
 
-			err = h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			nh.RegisterHandler(mux, test.Marshaller)
+			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 				s := "Hello " + r.Name
 
 				return &Response{Greeting: &s}, nil
 			})
-			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 
@@ -116,7 +115,7 @@ func TestSync(t *testing.T) {
 func TestBadSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			mux := nh.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -131,12 +130,11 @@ func TestBadSync(t *testing.T) {
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
 
-			err = h.Handle("POST", "/hello", func(_ context.Context, _ *Request) (*Response, error) {
+			nh.RegisterHandler(mux, test.Marshaller)
+			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, _ *Request) (*Response, error) {
 				return nil, errors.New("ohh no")
 			})
-			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 
@@ -180,7 +178,7 @@ func TestBadSync(t *testing.T) {
 func TestAllowedSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			mux := nh.NewServeMux()
 			verifier := test.NewVerifier("test")
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
@@ -193,14 +191,13 @@ func TestAllowedSync(t *testing.T) {
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
-			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
 
-			err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			nh.RegisterHandler(mux, test.Marshaller)
+			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 				s := "Hello " + r.Name
 
 				return &Response{Greeting: &s}, nil
 			})
-			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 
@@ -243,7 +240,7 @@ func TestAllowedSync(t *testing.T) {
 func TestDisallowedSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			mux := nh.NewServeMux()
 			verifier := test.NewVerifier("test")
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
@@ -256,14 +253,13 @@ func TestDisallowedSync(t *testing.T) {
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
-			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
 
-			err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			nh.RegisterHandler(mux, test.Marshaller)
+			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 				s := "Hello " + r.Name
 
 				return &Response{Greeting: &s}, nil
 			})
-			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 
@@ -300,7 +296,7 @@ func TestDisallowedSync(t *testing.T) {
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
