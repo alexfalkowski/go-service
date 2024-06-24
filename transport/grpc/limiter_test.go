@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport/meta"
@@ -20,6 +21,7 @@ func init() {
 
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -32,7 +34,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Mux: mux,
 		}
 		s.Register()
 
@@ -63,6 +65,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -75,7 +78,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Mux: mux,
 		}
 		s.Register()
 
@@ -105,6 +108,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 func TestLimiterLimitedStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -117,7 +121,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Mux: mux,
 		}
 		s.Register()
 
@@ -154,6 +158,7 @@ func TestLimiterLimitedStream(t *testing.T) {
 
 func TestLimiterUnlimitedStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -166,7 +171,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Mux: mux,
 		}
 		s.Register()
 
@@ -202,6 +207,7 @@ func TestLimiterUnlimitedStream(t *testing.T) {
 
 func TestLimiterAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("bob")
@@ -215,7 +221,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Limiter: l, Key: k, Verifier: verifier, Mux: test.GatewayMux,
+			Limiter: l, Key: k, Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 

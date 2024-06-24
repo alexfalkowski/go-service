@@ -19,14 +19,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var (
-	// RuntimeMux for test.
-	RuntimeMux = nh.NewRuntimeServeMux()
-
-	// GatewayMux for test.
-	GatewayMux = nh.NewServeMux(nh.GatewayMux, RuntimeMux, nh.NewStandardServeMux())
-)
-
 // Server for test.
 type Server struct {
 	Lifecycle  fx.Lifecycle

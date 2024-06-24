@@ -3,131 +3,304 @@ package http_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	sh "github.com/alexfalkowski/go-service/net/http"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
-func TestUnary(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		m := test.NewOTLPMeter(lc)
-		tc := test.NewOTLPTracerConfig()
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
-		s.Register()
-
-		lc.RequireStart()
-
-		ctx := meta.WithAttribute(context.Background(), "error", meta.Error(http.ErrBodyNotAllowed))
-
-		ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
-		defer cancel()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		conn := cl.NewGRPC()
-		defer conn.Close()
-
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
-		So(err, ShouldBeNil)
-
-		Convey("When I query for a greet", func() {
-			client := cl.NewHTTP()
-			message := []byte(`{"name":"test"}`)
-
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
-			So(err, ShouldBeNil)
-
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
-			req.Header.Set("X-Forwarded-For", "test")
-			req.Header.Set("Geolocation", "test")
-
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
-
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
-			So(err, ShouldBeNil)
-
-			actual := strings.TrimSpace(string(body))
-
-			Convey("Then I should have a valid reply", func() {
-				So(actual, ShouldEqual, `{"message":"Hello test"}`)
-			})
-
-			lc.RequireStop()
-		})
-	})
+func init() {
+	tm.RegisterKeys()
 }
 
-func TestDefaultClientUnary(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
+type Request struct {
+	Name string
+}
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: test.GatewayMux}
-		s.Register()
+type Response struct {
+	Meta     meta.Map
+	Error    *Error
+	Greeting *string
+}
 
-		lc.RequireStart()
+type Error struct {
+	Message string
+}
 
-		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(10*time.Minute))
-		defer cancel()
+type Errorer struct{}
 
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+func (*Errorer) Error(ctx context.Context, err error) *Response {
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
+}
 
-		conn := cl.NewGRPC()
-		defer conn.Close()
+func (*Errorer) Status(error) int {
+	return http.StatusInternalServerError
+}
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
-		So(err, ShouldBeNil)
+//nolint:dupl,funlen
+func TestSync(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
 
-		Convey("When I query for a greet", func() {
-			client := http.DefaultClient
-
-			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
 			So(err, ShouldBeNil)
 
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
 
-			defer resp.Body.Close()
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s.Register()
 
-			body, err := io.ReadAll(resp.Body)
-			So(err, ShouldBeNil)
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
 
-			actual := strings.TrimSpace(string(body))
+			err = h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+				s := "Hello " + r.Name
 
-			Convey("Then I should have a valid reply", func() {
-				So(actual, ShouldEqual, `{"message":"Hello test"}`)
+				return &Response{Greeting: &s}, nil
 			})
+			So(err, ShouldBeNil)
 
-			lc.RequireStop()
+			lc.RequireStart()
+
+			Convey("When I post data", func() {
+				client := cl.NewHTTP()
+				mar := test.Marshaller.Get(mt)
+
+				d, err := mar.Marshal(Request{Name: "Bob"})
+				So(err, ShouldBeNil)
+
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/"+mt)
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				var r Response
+				err = mar.Unmarshal(body, &r)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have response", func() {
+					So(*r.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(resp.StatusCode, ShouldEqual, 200)
+				})
+
+				lc.RequireStop()
+			})
 		})
-	})
+	}
+}
+
+func TestBadSync(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			So(err, ShouldBeNil)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+			err = h.Handle("POST", "/hello", func(_ context.Context, _ *Request) (*Response, error) {
+				return nil, errors.New("ohh no")
+			})
+			So(err, ShouldBeNil)
+
+			lc.RequireStart()
+
+			Convey("When I post data", func() {
+				client := cl.NewHTTP()
+				mar := test.Marshaller.Get(mt)
+
+				d, err := mar.Marshal(Request{Name: "Bob"})
+				So(err, ShouldBeNil)
+
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/"+mt)
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				var r Response
+				err = mar.Unmarshal(body, &r)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have response", func() {
+					So(r.Error.Message, ShouldEqual, "invalid handle: ohh no")
+					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(resp.StatusCode, ShouldEqual, 500)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
+
+//nolint:dupl
+func TestAllowedSync(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			verifier := test.NewVerifier("test")
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux, Verifier: verifier, VerifyAuth: true}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
+			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+			err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+				s := "Hello " + r.Name
+
+				return &Response{Greeting: &s}, nil
+			})
+			So(err, ShouldBeNil)
+
+			lc.RequireStart()
+
+			Convey("When I post authenticated data", func() {
+				client := cl.NewHTTP()
+				mar := test.Marshaller.Get(mt)
+
+				d, err := mar.Marshal(Request{Name: "Bob"})
+				So(err, ShouldBeNil)
+
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/"+mt)
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				var r Response
+				err = mar.Unmarshal(body, &r)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have response", func() {
+					So(*r.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(resp.StatusCode, ShouldEqual, 200)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
+
+func TestDisallowedSync(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			verifier := test.NewVerifier("test")
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux, Verifier: verifier, VerifyAuth: true}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
+			h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+			err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+				s := "Hello " + r.Name
+
+				return &Response{Greeting: &s}, nil
+			})
+			So(err, ShouldBeNil)
+
+			lc.RequireStart()
+
+			Convey("When I post authenticated data", func() {
+				client := cl.NewHTTP()
+				mar := test.Marshaller.Get(mt)
+
+				d, err := mar.Marshal(Request{Name: "Bob"})
+				So(err, ShouldBeNil)
+
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/"+mt)
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have response", func() {
+					So(strings.TrimSpace(string(body)), ShouldEqual, "verify token: invalid token")
+					So(resp.StatusCode, ShouldEqual, 401)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
 }
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		mux := sh.NewServeMux(sh.StandardMux, test.RuntimeMux, sh.NewStandardServeMux())
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

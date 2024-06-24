@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -30,6 +31,7 @@ func TestServer(t *testing.T) {
 	})
 
 	Convey("Given I have secure creds", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -37,7 +39,7 @@ func TestServer(t *testing.T) {
 		c.GRPC.TLS = &tls.Config{}
 
 		Convey("When I create a server", func() {
-			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: metrics.NewNoopMeter(), Mux: test.GatewayMux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: metrics.NewNoopMeter(), Mux: mux}
 			s.Register()
 
 			Convey("Then I should start the server", func() {

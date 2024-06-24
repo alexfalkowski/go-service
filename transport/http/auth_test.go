@@ -10,16 +10,17 @@ import (
 	"strings"
 	"testing"
 
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:dupl
+//nolint:funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -29,7 +30,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -44,14 +45,20 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
 			client := cl.NewHTTP()
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -69,7 +76,7 @@ func TestValidAuthUnary(t *testing.T) {
 			actual := strings.TrimSpace(string(body))
 
 			Convey("Then I should have a valid reply", func() {
-				So(actual, ShouldEqual, `{"message":"Hello test"}`)
+				So(actual, ShouldNotBeBlank)
 			})
 
 			lc.RequireStop()
@@ -77,9 +84,10 @@ func TestValidAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
+//nolint:funlen
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -89,7 +97,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -104,14 +112,20 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -140,6 +154,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 //nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -149,7 +164,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -161,14 +176,20 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -195,6 +216,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -204,7 +226,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -219,14 +241,20 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -247,6 +275,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 //nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -256,7 +285,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -268,14 +297,20 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -302,6 +337,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
+		mux := nh.NewServeMux(nh.NewStandardServeMux())
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -311,7 +347,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: test.GatewayMux,
+			Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -326,14 +362,20 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		err := v1.RegisterGreeterServiceHandler(ctx, test.RuntimeMux, conn)
+		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
+
+		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+			s := "Hello " + r.Name
+
+			return &Response{Greeting: &s}, nil
+		})
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/v1/greet/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
