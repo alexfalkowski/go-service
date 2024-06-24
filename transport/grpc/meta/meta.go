@@ -12,7 +12,6 @@ import (
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/google/uuid"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -138,10 +137,6 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) met
 		return ua
 	}
 
-	if ua := md.Get(runtime.MetadataPrefix + "user-agent"); len(ua) > 0 {
-		return meta.String(ua[0])
-	}
-
 	if ua := md.Get("user-agent"); len(ua) > 0 {
 		return meta.String(ua[0])
 	}
@@ -178,10 +173,6 @@ func extractAuthorization(ctx context.Context, md metadata.MD) meta.Valuer {
 }
 
 func authorization(md metadata.MD) string {
-	if a := md.Get(runtime.MetadataPrefix + "authorization"); len(a) > 0 {
-		return a[0]
-	}
-
 	if a := md.Get("authorization"); len(a) > 0 {
 		return a[0]
 	}
