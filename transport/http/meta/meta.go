@@ -2,6 +2,7 @@ package meta
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"strings"
 
@@ -102,7 +103,15 @@ func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
 		}
 	}
 
-	return meta.String("remote"), meta.String(req.RemoteAddr)
+	remoteKind := meta.String("remote")
+	addr := req.RemoteAddr
+
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return remoteKind, meta.String(addr)
+	}
+
+	return remoteKind, meta.String(host)
 }
 
 func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
