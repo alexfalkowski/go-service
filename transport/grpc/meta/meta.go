@@ -34,6 +34,7 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 		ctx = m.WithIPAddr(ctx, ip)
 		ctx = m.WithIPAddrKind(ctx, kind)
 
+		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		return handler(ctx, req)
@@ -58,6 +59,7 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 		ctx = m.WithIPAddr(ctx, ip)
 		ctx = m.WithIPAddrKind(ctx, kind)
 
+		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
@@ -106,8 +108,8 @@ func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
 }
 
 func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Valuer) {
-	ipKeys := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
-	for _, k := range ipKeys {
+	headers := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
+	for _, k := range headers {
 		if f := md.Get(k); len(f) > 0 {
 			return meta.String(k), meta.String(strings.Split(f[0], ",")[0])
 		}
@@ -176,4 +178,16 @@ func authorization(md metadata.MD) string {
 	}
 
 	return ""
+}
+
+func extractGeolocation(ctx context.Context, md metadata.MD) meta.Valuer {
+	if gl := m.Geolocation(ctx); gl != nil {
+		return gl
+	}
+
+	if id := md.Get("geolocation"); len(id) > 0 {
+		return meta.String(id[0])
+	}
+
+	return meta.Blank()
 }

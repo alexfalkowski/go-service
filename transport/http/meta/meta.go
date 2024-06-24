@@ -3,13 +3,13 @@ package meta
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	"github.com/google/uuid"
-	"github.com/ulule/limiter/v3"
 )
 
 // Handler for meta.
@@ -23,7 +23,7 @@ func NewHandler(userAgent string) *Handler {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsObservable(req.URL.Path) {
+	if ts.IsObservable(req.URL.Path) {
 		next(res, req)
 
 		return
@@ -32,7 +32,12 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 	ctx = m.WithRequestID(ctx, extractRequestID(ctx, req))
-	ctx = m.WithIPAddr(ctx, extractIP(req))
+
+	kind, ip := extractIP(req)
+	ctx = m.WithIPAddr(ctx, ip)
+	ctx = m.WithIPAddrKind(ctx, kind)
+
+	ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, req))
 	ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, req))
 
 	next(res, req.WithContext(ctx))
@@ -89,8 +94,15 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 	return meta.ToString(uuid.New())
 }
 
-func extractIP(req *http.Request) meta.Valuer {
-	return meta.ToIgnored(limiter.GetIP(req, limiter.Options{TrustForwardHeader: true}))
+func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
+	headers := []string{"X-Real-IP", "CF-Connecting-IP", "True-Client-IP", "X-Forwarded-For"}
+	for _, h := range headers {
+		if ip := req.Header.Get(h); ip != "" {
+			return meta.String(strings.ToLower(h)), meta.String(strings.Split(ip, ",")[0])
+		}
+	}
+
+	return meta.String("remote"), meta.String(req.RemoteAddr)
 }
 
 func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
@@ -107,4 +119,12 @@ func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
 	}
 
 	return meta.Ignored(t)
+}
+
+func extractGeolocation(ctx context.Context, req *http.Request) meta.Valuer {
+	if gl := m.Geolocation(ctx); gl != nil {
+		return gl
+	}
+
+	return meta.String(req.Header.Get("Geolocation"))
 }
