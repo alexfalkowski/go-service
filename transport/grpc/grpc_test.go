@@ -3,11 +3,11 @@ package grpc_test
 import (
 	"context"
 	"net"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -16,7 +16,7 @@ import (
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -54,7 +54,7 @@ func TestInsecureUnary(t *testing.T) {
 
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewSecureTransportConfig()
@@ -91,7 +91,7 @@ func TestSecureUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
