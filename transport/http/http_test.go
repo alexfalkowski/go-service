@@ -128,7 +128,65 @@ func TestSync(t *testing.T) {
 	}
 }
 
-func TestBadSync(t *testing.T) {
+func TestBadUnmarshalSync(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := http.NewServeMux()
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			So(err, ShouldBeNil)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+			nh.Register(mux, test.Marshaller)
+			nh.Handle("POST /hello", &SuccessHandler{})
+
+			lc.RequireStart()
+
+			Convey("When I post data", func() {
+				client := cl.NewHTTP()
+				mar := test.Marshaller.Get(mt)
+				d := []byte("a bad payload")
+
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/"+mt)
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				var r Response
+				err = mar.Unmarshal(body, &r)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have response", func() {
+					So(r.Error.Message, ShouldNotBeBlank)
+					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(resp.StatusCode, ShouldEqual, 500)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
+
+func TestErrorSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()

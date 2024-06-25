@@ -56,6 +56,8 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 		c, k := kind(req)
 		m := mar.Get(k)
 
+		res.Header().Add("Content-Type", c)
+
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "readAllError", meta.Error(err))
@@ -75,8 +77,6 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 
 			return
 		}
-
-		res.Header().Add("Content-Type", c)
 
 		rs, err := handler.Handle(ctx, ptr)
 		if err != nil {
