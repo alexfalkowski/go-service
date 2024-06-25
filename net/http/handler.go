@@ -110,8 +110,14 @@ func kind(req *http.Request) (string, string) {
 }
 
 func writeError[Req any, Res any](ctx context.Context, res http.ResponseWriter, m marshaller.Marshaller, err error, h Handler[Req, Res]) {
-	d, _ := m.Marshal(h.Error(ctx, err))
-
 	res.WriteHeader(h.Status(err))
+
+	d, err := m.Marshal(h.Error(ctx, err))
+	if err != nil {
+		meta.WithAttribute(ctx, "writeError", meta.Error(err))
+
+		return
+	}
+
 	res.Write(d)
 }
