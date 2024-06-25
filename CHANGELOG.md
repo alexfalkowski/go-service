@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.221.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.221.0) - 2024-06-25
+
+- [`eb41d96`](https://github.com/alexfalkowski/go-service/commit/eb41d964e20a7c34757975c2243f984315a0da93) feat(http): simplify handler (#824)
+
 ## [v1.220.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.220.0) - 2024-06-24
 
 - [`1e108e4`](https://github.com/alexfalkowski/go-service/commit/1e108e49998e1e15b02e6c3b53e06df14633c43e) feat(http): remove grpc gateway (#821)
