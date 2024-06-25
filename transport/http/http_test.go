@@ -37,21 +37,41 @@ type Error struct {
 	Message string
 }
 
-type Errorer struct{}
+type SuccessHandler struct{}
 
-func (*Errorer) Error(ctx context.Context, err error) *Response {
+func (*SuccessHandler) Handle(_ context.Context, r *Request) (*Response, error) {
+	s := "Hello " + r.Name
+
+	return &Response{Greeting: &s}, nil
+}
+
+func (*SuccessHandler) Error(ctx context.Context, err error) *Response {
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
-func (*Errorer) Status(error) int {
+func (*SuccessHandler) Status(error) int {
 	return http.StatusInternalServerError
 }
 
-//nolint:dupl,funlen
+type ErrorHandler struct{}
+
+func (*ErrorHandler) Handle(_ context.Context, _ *Request) (*Response, error) {
+	return nil, errors.New("ohh no")
+}
+
+func (*ErrorHandler) Error(ctx context.Context, err error) *Response {
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
+}
+
+func (*ErrorHandler) Status(error) int {
+	return http.StatusInternalServerError
+}
+
+//nolint:dupl
 func TestSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux()
+			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -67,12 +87,8 @@ func TestSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			nh.RegisterHandler(mux, test.Marshaller)
-			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
-				s := "Hello " + r.Name
-
-				return &Response{Greeting: &s}, nil
-			})
+			nh.Register(mux, test.Marshaller)
+			nh.Handle("POST /hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -115,7 +131,7 @@ func TestSync(t *testing.T) {
 func TestBadSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux()
+			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -131,10 +147,8 @@ func TestBadSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			nh.RegisterHandler(mux, test.Marshaller)
-			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, _ *Request) (*Response, error) {
-				return nil, errors.New("ohh no")
-			})
+			nh.Register(mux, test.Marshaller)
+			nh.Handle("POST /hello", &ErrorHandler{})
 
 			lc.RequireStart()
 
@@ -178,7 +192,7 @@ func TestBadSync(t *testing.T) {
 func TestAllowedSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux()
+			mux := http.NewServeMux()
 			verifier := test.NewVerifier("test")
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
@@ -192,12 +206,8 @@ func TestAllowedSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
-			nh.RegisterHandler(mux, test.Marshaller)
-			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
-				s := "Hello " + r.Name
-
-				return &Response{Greeting: &s}, nil
-			})
+			nh.Register(mux, test.Marshaller)
+			nh.Handle("POST /hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -240,7 +250,7 @@ func TestAllowedSync(t *testing.T) {
 func TestDisallowedSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := nh.NewServeMux()
+			mux := http.NewServeMux()
 			verifier := test.NewVerifier("test")
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
@@ -254,12 +264,8 @@ func TestDisallowedSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
-			nh.RegisterHandler(mux, test.Marshaller)
-			nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
-				s := "Hello " + r.Name
-
-				return &Response{Greeting: &s}, nil
-			})
+			nh.Register(mux, test.Marshaller)
+			nh.Handle("POST /hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -296,7 +302,7 @@ func TestDisallowedSync(t *testing.T) {
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

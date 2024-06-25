@@ -16,7 +16,6 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -38,7 +37,7 @@ func TestHealth(t *testing.T) {
 
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
-			mux := nh.NewServeMux()
+			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -103,7 +102,7 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -159,7 +158,7 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

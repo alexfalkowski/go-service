@@ -10,7 +10,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	ht "github.com/alexfalkowski/go-service/transport/http"
@@ -20,7 +19,7 @@ import (
 
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -84,7 +83,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 //nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()

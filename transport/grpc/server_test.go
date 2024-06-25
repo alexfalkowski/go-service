@@ -1,10 +1,10 @@
 package grpc_test
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
@@ -31,7 +31,7 @@ func TestServer(t *testing.T) {
 	})
 
 	Convey("Given I have secure creds", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 

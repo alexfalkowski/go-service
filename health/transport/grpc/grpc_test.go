@@ -13,7 +13,6 @@ import (
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -31,7 +30,7 @@ func init() {
 
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -80,7 +79,7 @@ func TestUnary(t *testing.T) {
 
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -123,7 +122,7 @@ func TestInvalidUnary(t *testing.T) {
 
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -167,7 +166,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -217,7 +216,7 @@ func TestStream(t *testing.T) {
 
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -260,7 +259,7 @@ func TestInvalidStream(t *testing.T) {
 
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

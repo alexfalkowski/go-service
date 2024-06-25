@@ -3,9 +3,9 @@ package grpc_test
 import (
 	"context"
 	"errors"
+	"net/http"
 	"testing"
 
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -17,7 +17,7 @@ import (
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -60,7 +60,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -103,7 +103,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -143,7 +143,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -187,7 +187,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -231,7 +231,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 func TestBreakerAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -278,7 +278,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 
 func TestValidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -327,7 +327,7 @@ func TestValidAuthStream(t *testing.T) {
 
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -375,7 +375,7 @@ func TestInvalidAuthStream(t *testing.T) {
 
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -417,7 +417,7 @@ func TestEmptyAuthStream(t *testing.T) {
 
 func TestMissingClientAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -462,7 +462,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux()
+		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
