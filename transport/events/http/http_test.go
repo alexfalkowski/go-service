@@ -20,7 +20,7 @@ import (
 
 func TestSendReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -73,7 +73,7 @@ func TestSendReceive(t *testing.T) {
 
 func TestSendNotReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

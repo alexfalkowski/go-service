@@ -16,7 +16,7 @@ import (
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -54,7 +54,7 @@ func TestInsecureUnary(t *testing.T) {
 
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewSecureTransportConfig()
@@ -91,7 +91,7 @@ func TestSecureUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

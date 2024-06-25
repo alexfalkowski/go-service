@@ -7,8 +7,8 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(http.NewStandardServeMux),
 	fx.Provide(http.NewServeMux),
+	fx.Invoke(http.RegisterHandler),
 	fx.Provide(NewServer),
 	fx.Invoke(RegisterMetrics),
 )

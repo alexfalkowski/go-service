@@ -27,41 +27,41 @@ var (
 	ErrMarshal = errors.New("invalid marshal")
 )
 
-// Errorer for HTTP.
-type Errorer[Res any] interface {
-	// Error for this handler.
-	Error(ctx context.Context, err error) *Res
+type (
+	// Errorer for HTTP.
+	Errorer[Res any] interface {
+		// Error for this handler.
+		Error(ctx context.Context, err error) *Res
 
-	// Status code from error.
-	Status(err error) int
-}
+		// Status code from error.
+		Status(err error) int
+	}
 
-// NewHandler for HTTP.
-func NewHandler[Req any, Res any](mux ServeMux, mar *marshaller.Map, err Errorer[Res]) *Handler[Req, Res] {
-	return &Handler[Req, Res]{mux: mux, mar: mar, err: err}
+	// Handle func for request/response.
+	Handle[Req any, Res any] func(context.Context, *Req) (*Res, error)
+)
+
+var (
+	mux *http.ServeMux
+	mar *marshaller.Map
+)
+
+// RegisterHandler for HTTP.
+func RegisterHandler(mu *http.ServeMux, ma *marshaller.Map) {
+	mux, mar = mu, ma
 }
 
 // Handler for HTTP.
-type Handler[Req any, Res any] struct {
-	mux ServeMux
-	mar *marshaller.Map
-	err Errorer[Res]
-}
-
-// Handle func for request/response.
-type Handle[Req any, Res any] func(context.Context, *Req) (*Res, error)
-
-// Handle for HTTP.
-func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) error {
+func Handler[Req any, Res any](pattern string, errorer Errorer[Res], fn Handle[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		c, k := s.kind(req)
-		m := s.mar.Get(k)
+		c, k := kind(req)
+		m := mar.Get(k)
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "readAllError", meta.Error(err))
-			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrReadAll, err))
+			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrReadAll, err), errorer)
 
 			return
 		}
@@ -73,7 +73,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 
 		if err := m.Unmarshal(body, ptr); err != nil {
 			ctx = meta.WithAttribute(ctx, "unmarshalError", meta.Error(err))
-			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrUnmarshal, err))
+			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrUnmarshal, err), errorer)
 
 			return
 		}
@@ -83,7 +83,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		rs, err := fn(ctx, ptr)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "handleError", meta.Error(err))
-			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrHandle, err))
+			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrHandle, err), errorer)
 
 			return
 		}
@@ -91,7 +91,7 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		d, err := m.Marshal(rs)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "marshalError", meta.Error(err))
-			s.error(ctx, res, m, fmt.Errorf("%w: %w", ErrMarshal, err))
+			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrMarshal, err), errorer)
 
 			return
 		}
@@ -99,10 +99,10 @@ func (s *Handler[Req, Res]) Handle(verb, pattern string, fn Handle[Req, Res]) er
 		res.Write(d)
 	}
 
-	return s.mux.Handle(verb, pattern, h)
+	mux.HandleFunc(pattern, h)
 }
 
-func (s *Handler[Req, Res]) kind(req *http.Request) (string, string) {
+func kind(req *http.Request) (string, string) {
 	t, err := ct.GetMediaType(req)
 	if err != nil {
 		return "application/json", "json"
@@ -111,9 +111,9 @@ func (s *Handler[Req, Res]) kind(req *http.Request) (string, string) {
 	return t.String(), t.Subtype
 }
 
-func (s *Handler[Req, Res]) error(ctx context.Context, res http.ResponseWriter, m marshaller.Marshaller, err error) {
-	d, _ := m.Marshal(s.err.Error(ctx, err))
+func writeError[Res any](ctx context.Context, res http.ResponseWriter, m marshaller.Marshaller, err error, errorer Errorer[Res]) {
+	d, _ := m.Marshal(errorer.Error(ctx, err))
 
-	res.WriteHeader(s.err.Status(err))
+	res.WriteHeader(errorer.Status(err))
 	res.Write(d)
 }

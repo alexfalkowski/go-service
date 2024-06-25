@@ -22,7 +22,7 @@ func init() {
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -41,10 +41,9 @@ func TestGet(t *testing.T) {
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		err = mux.Handle("GET", "/hello", func(w http.ResponseWriter, _ *http.Request) {
+		mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
 			w.Write([]byte("hello!"))
 		})
-		So(err, ShouldBeNil)
 
 		lc.RequireStart()
 
@@ -76,7 +75,7 @@ func TestGet(t *testing.T) {
 func TestLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		Convey("Given I have a all the servers", t, func() {
-			mux := nh.NewServeMux(nh.NewStandardServeMux())
+			mux := nh.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
@@ -95,10 +94,9 @@ func TestLimiter(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			err = mux.Handle("GET", "/hello", func(w http.ResponseWriter, _ *http.Request) {
+			mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
 				w.Write([]byte("hello!"))
 			})
-			So(err, ShouldBeNil)
 
 			lc.RequireStart()
 

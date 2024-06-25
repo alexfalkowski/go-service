@@ -20,7 +20,7 @@ import (
 //nolint:funlen
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -45,14 +45,12 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for an authenticated greet", func() {
 			client := cl.NewHTTP()
@@ -87,7 +85,7 @@ func TestValidAuthUnary(t *testing.T) {
 //nolint:funlen
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -112,14 +110,12 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -154,7 +150,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 //nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -176,14 +172,12 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -216,7 +210,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -241,14 +235,12 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -275,7 +267,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 //nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -297,14 +289,12 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -337,7 +327,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("test")
@@ -362,14 +352,12 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		h := nh.NewHandler[Request, Response](mux, test.Marshaller, &Errorer{})
-
-		err := h.Handle("POST", "/hello", func(_ context.Context, r *Request) (*Response, error) {
+		nh.RegisterHandler(mux, test.Marshaller)
+		nh.Handler("POST /hello", &Errorer{}, func(_ context.Context, r *Request) (*Response, error) {
 			s := "Hello " + r.Name
 
 			return &Response{Greeting: &s}, nil
 		})
-		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			client := cl.NewHTTP()

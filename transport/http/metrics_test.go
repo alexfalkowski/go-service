@@ -18,10 +18,9 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -48,9 +47,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		err = ht.RegisterMetrics(mc, mux)
-		So(err, ShouldBeNil)
-
+		ht.RegisterMetrics(mc, mux)
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {
@@ -87,7 +84,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 //nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
@@ -117,9 +114,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 			TLS: test.NewTLSClientConfig(),
 		}
 
-		err = ht.RegisterMetrics(mc, mux)
-		So(err, ShouldBeNil)
-
+		ht.RegisterMetrics(mc, mux)
 		lc.RequireStart()
 
 		Convey("When I query metrics", func() {

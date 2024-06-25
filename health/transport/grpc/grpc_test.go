@@ -31,7 +31,7 @@ func init() {
 
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -80,7 +80,7 @@ func TestUnary(t *testing.T) {
 
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -123,7 +123,7 @@ func TestInvalidUnary(t *testing.T) {
 
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -167,7 +167,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
@@ -217,7 +217,7 @@ func TestStream(t *testing.T) {
 
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
@@ -260,7 +260,7 @@ func TestInvalidStream(t *testing.T) {
 
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := nh.NewServeMux(nh.NewStandardServeMux())
+		mux := nh.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()

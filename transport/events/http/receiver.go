@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	sh "github.com/alexfalkowski/go-service/net/http"
 	h "github.com/alexfalkowski/go-service/transport/events/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -15,12 +14,12 @@ type ReceiverFunc func(ctx context.Context, e events.Event)
 
 // Receiver for HTTP.
 type Receiver struct {
-	mux  sh.ServeMux
+	mux  *http.ServeMux
 	hook *hooks.Webhook
 }
 
 // NewReceiver for HTTP.
-func NewReceiver(mux sh.ServeMux, hook *hooks.Webhook) *Receiver {
+func NewReceiver(mux *http.ServeMux, hook *hooks.Webhook) *Receiver {
 	return &Receiver{mux: mux, hook: hook}
 }
 
@@ -41,7 +40,9 @@ func (r *Receiver) Register(ctx context.Context, path string, fn ReceiverFunc) e
 
 	handler = h.NewHandler(r.hook, handler)
 
-	return r.mux.Handle("POST", path, func(w http.ResponseWriter, r *http.Request) {
+	r.mux.HandleFunc("POST "+path, func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)
 	})
+
+	return nil
 }
