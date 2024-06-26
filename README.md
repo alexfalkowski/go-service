@@ -326,7 +326,6 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
-    mux: gateway #standard: if grpc is disabled
     port: 8000
     retry:
       backoff: 100ms

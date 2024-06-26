@@ -1,8 +1,7 @@
 environment: production
 transport:
   http:
-    mux: gateway
-    port: 11000
+    port: random
     timeout: 10s
     retry:
       backoff: 100ms

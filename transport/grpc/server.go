@@ -169,8 +169,9 @@ func config(cfg *Config) *sg.Config {
 		return nil
 	}
 
-	c := &sg.Config{}
-	c.Port = cfg.GetPort("9090")
+	c := &sg.Config{
+		Port: cfg.GetPort("9090"),
+	}
 
 	return c
 }

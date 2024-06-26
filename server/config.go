@@ -20,6 +20,10 @@ type Config struct {
 
 // GetPort or default.
 func (c *Config) GetPort(port string) string {
+	if c.Port == "random" {
+		return ""
+	}
+
 	if c.Port == "" {
 		return port
 	}
