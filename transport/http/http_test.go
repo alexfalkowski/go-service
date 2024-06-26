@@ -103,7 +103,7 @@ func TestSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &SuccessHandler{})
+			nh.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -163,7 +163,7 @@ func TestProtobufSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &ProtobufHandler{})
+			nh.Handle("/hello", &ProtobufHandler{})
 
 			lc.RequireStart()
 
@@ -223,7 +223,7 @@ func TestBadUnmarshalSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &SuccessHandler{})
+			nh.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -281,7 +281,7 @@ func TestErrorSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &ErrorHandler{})
+			nh.Handle("/hello", &ErrorHandler{})
 
 			lc.RequireStart()
 
@@ -340,7 +340,7 @@ func TestAllowedSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &SuccessHandler{})
+			nh.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -398,7 +398,7 @@ func TestDisallowedSync(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
 			nh.Register(mux, test.Marshaller)
-			nh.Handle("POST /hello", &SuccessHandler{})
+			nh.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
