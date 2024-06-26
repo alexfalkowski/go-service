@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.222.4](https://github.com/alexfalkowski/go-service/releases/tag/v1.222.4) - 2024-06-26
+
+- [`2ecefb4`](https://github.com/alexfalkowski/go-service/commit/2ecefb42ba6411c9075a056231b78df462a7a068) fix(http): remove meta as we return the error (#831)
+- [`6821521`](https://github.com/alexfalkowski/go-service/commit/68215215fbc7412bcb3d5185a7a230a25abe7e9e) docs(http): remove rpc gateway (#830)
+
 ## [v1.222.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.222.3) - 2024-06-26
 
 - [`85c14c3`](https://github.com/alexfalkowski/go-service/commit/85c14c3365cb6fe3d7927687540d11324cfb7aad) fix(deps): upgrade go.uber.org/fx to v1.22.1 (#829)
