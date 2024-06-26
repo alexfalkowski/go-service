@@ -64,8 +64,9 @@ func config(cfg *Config) (*sh.Config, error) {
 		return nil, nil
 	}
 
-	c := &sh.Config{}
-	c.Port = cfg.GetPort("6060")
+	c := &sh.Config{
+		Port: cfg.GetPort("6060"),
+	}
 
 	if !tls.IsEnabled(cfg.TLS) {
 		return c, nil
