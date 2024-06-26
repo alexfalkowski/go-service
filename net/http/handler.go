@@ -49,7 +49,7 @@ func Register(mu *http.ServeMux, ma *marshaller.Map) {
 }
 
 // Handler for HTTP.
-func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
+func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		c, k := kind(req)
@@ -92,7 +92,7 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 		res.Write(d)
 	}
 
-	mux.HandleFunc(pattern, h)
+	mux.HandleFunc("POST "+path, h)
 }
 
 func kind(req *http.Request) (string, string) {

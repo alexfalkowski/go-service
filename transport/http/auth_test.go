@@ -45,7 +45,7 @@ func TestValidAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for an authenticated greet", func() {
 			client := cl.NewHTTP()
@@ -105,7 +105,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -163,7 +163,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -222,7 +222,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -272,7 +272,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -331,7 +331,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		defer conn.Close()
 
 		nh.Register(mux, test.Marshaller)
-		nh.Handle("POST /hello", &SuccessHandler{})
+		nh.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			client := cl.NewHTTP()
