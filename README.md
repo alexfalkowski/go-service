@@ -305,7 +305,7 @@ time:
 
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
-- [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway).
+- [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) - This is achieved with [http mux](https://pkg.go.dev/net/http). We have an [RPC](net/http/handler.go) abstraction using [content negotiation](https://github.com/elnormous/contenttype).
 - [CloudEvents](https://github.com/cloudevents/sdk-go) - A specification for describing event data in a common way.
 
 ### gRPC
