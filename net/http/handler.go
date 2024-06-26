@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/alexfalkowski/go-service/meta"
 	ct "github.com/elnormous/contenttype"
 )
 
@@ -60,7 +59,6 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
-			ctx = meta.WithAttribute(ctx, "readAllError", meta.Error(err))
 			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrReadAll, err), handler)
 
 			return
@@ -72,7 +70,6 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 		ptr := &rq
 
 		if err := m.Unmarshal(body, ptr); err != nil {
-			ctx = meta.WithAttribute(ctx, "unmarshalError", meta.Error(err))
 			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrUnmarshal, err), handler)
 
 			return
@@ -80,7 +77,6 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 
 		rs, err := handler.Handle(ctx, ptr)
 		if err != nil {
-			ctx = meta.WithAttribute(ctx, "handleError", meta.Error(err))
 			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrHandle, err), handler)
 
 			return
@@ -88,7 +84,6 @@ func Handle[Req any, Res any](pattern string, handler Handler[Req, Res]) {
 
 		d, err := m.Marshal(rs)
 		if err != nil {
-			ctx = meta.WithAttribute(ctx, "marshalError", meta.Error(err))
 			writeError(ctx, res, m, fmt.Errorf("%w: %w", ErrMarshal, err), handler)
 
 			return
@@ -112,12 +107,6 @@ func kind(req *http.Request) (string, string) {
 func writeError[Req any, Res any](ctx context.Context, res http.ResponseWriter, m marshaller.Marshaller, err error, h Handler[Req, Res]) {
 	res.WriteHeader(h.Status(err))
 
-	d, err := m.Marshal(h.Error(ctx, err))
-	if err != nil {
-		meta.WithAttribute(ctx, "writeError", meta.Error(err))
-
-		return
-	}
-
+	d, _ := m.Marshal(h.Error(ctx, err))
 	res.Write(d)
 }
