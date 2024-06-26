@@ -11,12 +11,13 @@ type Map struct {
 func NewMap() *Map {
 	f := &Map{
 		configs: configs{
-			"json":  NewJSON(),
-			"yaml":  NewYAML(),
-			"yml":   NewYAML(),
-			"toml":  NewTOML(),
-			"proto": NewProto(),
-			"gob":   NewGOB(),
+			"json":     NewJSON(),
+			"yaml":     NewYAML(),
+			"yml":      NewYAML(),
+			"toml":     NewTOML(),
+			"proto":    NewProto(),
+			"protobuf": NewProto(),
+			"gob":      NewGOB(),
 		},
 	}
 
