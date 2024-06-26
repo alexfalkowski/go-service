@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.222.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.222.3) - 2024-06-26
+
+- [`85c14c3`](https://github.com/alexfalkowski/go-service/commit/85c14c3365cb6fe3d7927687540d11324cfb7aad) fix(deps): upgrade go.uber.org/fx to v1.22.1 (#829)
+
 ## [v1.222.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.222.2) - 2024-06-25
 
 - [`09f8958`](https://github.com/alexfalkowski/go-service/commit/09f895804d305cf244512429e9fe554b46c76292) fix(http): invalid content type (#827)
