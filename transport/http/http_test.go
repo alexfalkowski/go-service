@@ -100,7 +100,7 @@ func TestSync(t *testing.T) {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
 			s.Register()
 
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
 
 			nh.Register(mux, test.Marshaller)
 			nh.Handle("/hello", &SuccessHandler{})

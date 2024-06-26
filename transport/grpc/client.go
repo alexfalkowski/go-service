@@ -32,23 +32,31 @@ type ClientOption interface{ apply(opts *clientOpts) }
 var none = clientOptionFunc(func(_ *clientOpts) {})
 
 type clientOpts struct {
-	tracer    trace.Tracer
-	meter     metric.Meter
-	security  grpc.DialOption
-	gen       token.Generator
-	logger    *zap.Logger
-	retry     *retry.Config
-	userAgent string
-	opts      []grpc.DialOption
-	unary     []grpc.UnaryClientInterceptor
-	stream    []grpc.StreamClientInterceptor
-	timeout   time.Duration
-	breaker   bool
+	tracer      trace.Tracer
+	meter       metric.Meter
+	security    grpc.DialOption
+	gen         token.Generator
+	logger      *zap.Logger
+	retry       *retry.Config
+	userAgent   string
+	opts        []grpc.DialOption
+	unary       []grpc.UnaryClientInterceptor
+	stream      []grpc.StreamClientInterceptor
+	timeout     time.Duration
+	breaker     bool
+	compression bool
 }
 
 type clientOptionFunc func(*clientOpts)
 
 func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientBreaker for gRPC.
+func WithClientCompression() ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.compression = true
+	})
+}
 
 // WithClientTokenGenerator for gRPC.
 func WithClientTokenGenerator(gen token.Generator) ClientOption {
@@ -159,6 +167,10 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 			PermitWithoutStream: true,
 		}),
 		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
+	}
+
+	if os.compression {
+		ops = append(ops, grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")))
 	}
 
 	if os.gen != nil {

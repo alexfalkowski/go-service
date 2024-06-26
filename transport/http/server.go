@@ -19,6 +19,7 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	"github.com/klauspost/compress/gzhttp"
 	"github.com/ulule/limiter/v3"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
@@ -72,7 +73,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	n.Use(cors.New())
-	n.UseHandler(params.Mux)
+	n.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	s := &http.Server{
 		Handler:     n,
