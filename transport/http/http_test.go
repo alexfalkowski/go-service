@@ -40,13 +40,18 @@ type Error struct {
 
 type SuccessHandler struct{}
 
-func (*SuccessHandler) Handle(_ context.Context, r *Request) (*Response, error) {
-	s := "Hello " + r.Name
+func (*SuccessHandler) Handle(ctx nh.Context, r *Request) (*Response, error) {
+	name := ctx.Request().URL.Query().Get("name")
+	if name == "" {
+		name = r.Name
+	}
+
+	s := "Hello " + name
 
 	return &Response{Greeting: &s}, nil
 }
 
-func (*SuccessHandler) Error(ctx context.Context, err error) *Response {
+func (*SuccessHandler) Error(ctx nh.Context, err error) *Response {
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
@@ -56,11 +61,11 @@ func (*SuccessHandler) Status(error) int {
 
 type ProtobufHandler struct{}
 
-func (*ProtobufHandler) Handle(_ context.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
+func (*ProtobufHandler) Handle(_ nh.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return &v1.SayHelloResponse{Message: "Hello " + r.GetName()}, nil
 }
 
-func (*ProtobufHandler) Error(_ context.Context, err error) *v1.SayHelloResponse {
+func (*ProtobufHandler) Error(_ nh.Context, err error) *v1.SayHelloResponse {
 	return &v1.SayHelloResponse{Message: err.Error()}
 }
 
@@ -70,11 +75,11 @@ func (*ProtobufHandler) Status(error) int {
 
 type ErrorHandler struct{}
 
-func (*ErrorHandler) Handle(_ context.Context, _ *Request) (*Response, error) {
+func (*ErrorHandler) Handle(_ nh.Context, _ *Request) (*Response, error) {
 	return nil, errors.New("ohh no")
 }
 
-func (*ErrorHandler) Error(ctx context.Context, err error) *Response {
+func (*ErrorHandler) Error(ctx nh.Context, err error) *Response {
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
