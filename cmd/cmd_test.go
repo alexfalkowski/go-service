@@ -181,7 +181,7 @@ func registrations(logger *zap.Logger, cfg *http.Config, ua env.UserAgent, trace
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 5*time.Second, nc)
 
-	client := http.NewClient(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(string(ua)))
+	client := http.NewClient(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(ua))
 	hc := checker.NewHTTPChecker("https://google.com", client)
 	hr := server.NewRegistration("http", 5*time.Second, hc)
 

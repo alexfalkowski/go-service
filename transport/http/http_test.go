@@ -87,7 +87,6 @@ func (*ErrorHandler) Status(error) int {
 	return http.StatusInternalServerError
 }
 
-//nolint:dupl
 func TestSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
@@ -139,6 +138,7 @@ func TestSync(t *testing.T) {
 				Convey("Then I should have response", func() {
 					So(*r.Greeting, ShouldEqual, "Hello Bob")
 					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(resp.Header.Get("Service-Version"), ShouldEqual, "1.0.0")
 					So(resp.StatusCode, ShouldEqual, 200)
 				})
 
@@ -326,7 +326,6 @@ func TestErrorSync(t *testing.T) {
 	}
 }
 
-//nolint:dupl
 func TestAllowedSync(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {

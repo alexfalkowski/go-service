@@ -4,6 +4,7 @@ import (
 	"time"
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security/token"
 	t "github.com/alexfalkowski/go-service/time"
@@ -38,7 +39,7 @@ type clientOpts struct {
 	gen         token.Generator
 	logger      *zap.Logger
 	retry       *retry.Config
-	userAgent   string
+	userAgent   env.UserAgent
 	opts        []grpc.DialOption
 	unary       []grpc.UnaryClientInterceptor
 	stream      []grpc.StreamClientInterceptor
@@ -148,7 +149,7 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 }
 
 // WithUserAgent for gRPC.
-func WithClientUserAgent(userAgent string) ClientOption {
+func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
 	})
@@ -160,7 +161,7 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 	os := clientOptions(opts...)
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
-		grpc.WithUserAgent(os.userAgent),
+		grpc.WithUserAgent(string(os.userAgent)),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                os.timeout,
 			Timeout:             os.timeout,

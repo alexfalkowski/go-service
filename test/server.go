@@ -45,7 +45,7 @@ func (s *Server) Register() {
 		Config: s.Transport.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
 		Limiter: s.Limiter, Key: s.Key, Handlers: []negroni.Handler{&none{}},
-		Verifier: s.Verifier,
+		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
 
@@ -54,7 +54,7 @@ func (s *Server) Register() {
 	g, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: sh, Config: s.Transport.GRPC, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter, Key: s.Key,
-		Verifier: s.Verifier,
+		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
 

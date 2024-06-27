@@ -42,7 +42,7 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
-		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(string(UserAgent)),
+		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
 		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
 	}
 
@@ -71,7 +71,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
-		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(string(UserAgent)),
+		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
 		g.WithClientTimeout("1m"), g.WithClientDialOption(), sec,
 	}

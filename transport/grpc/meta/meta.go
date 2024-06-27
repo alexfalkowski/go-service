@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
@@ -18,11 +19,15 @@ import (
 )
 
 // UnaryServerInterceptor for meta.
-func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if ts.IsObservable(p) {
 			return handler(ctx, req)
+		}
+
+		if err := grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String())); err != nil {
+			return nil, err
 		}
 
 		md := ExtractIncoming(ctx)
@@ -42,11 +47,15 @@ func UnaryServerInterceptor(userAgent string) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for meta.
-func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
 		if ts.IsObservable(p) {
 			return handler(srv, stream)
+		}
+
+		if err := stream.SetHeader(metadata.Pairs("service-version", version.String())); err != nil {
+			return err
 		}
 
 		ctx := stream.Context()
@@ -70,7 +79,7 @@ func StreamServerInterceptor(userAgent string) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for meta.
-func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(userAgent env.UserAgent) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		md := ExtractOutgoing(ctx)
 
@@ -89,7 +98,7 @@ func UnaryClientInterceptor(userAgent string) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for meta.
-func StreamClientInterceptor(userAgent string) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(userAgent env.UserAgent) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		md := ExtractOutgoing(ctx)
 
@@ -132,7 +141,7 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Value
 	return peerKind, meta.String(host)
 }
 
-func extractUserAgent(ctx context.Context, md metadata.MD, userAgent string) meta.Valuer {
+func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Valuer {
 	if ua := m.UserAgent(ctx); ua != nil {
 		return ua
 	}

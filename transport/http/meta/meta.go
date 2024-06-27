@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/security/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
@@ -15,12 +16,13 @@ import (
 
 // Handler for meta.
 type Handler struct {
-	userAgent string
+	userAgent env.UserAgent
+	version   env.Version
 }
 
 // NewHandler for meta.
-func NewHandler(userAgent string) *Handler {
-	return &Handler{userAgent: userAgent}
+func NewHandler(userAgent env.UserAgent, version env.Version) *Handler {
+	return &Handler{userAgent: userAgent, version: version}
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -29,6 +31,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 		return
 	}
+
+	res.Header().Add("Service-Version", h.version.String())
 
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
@@ -45,14 +49,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for meta.
-func NewRoundTripper(userAgent string, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(userAgent env.UserAgent, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{userAgent: userAgent, RoundTripper: hrt}
 }
 
 // RoundTripper for meta.
 type RoundTripper struct {
 	http.RoundTripper
-	userAgent string
+	userAgent env.UserAgent
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -71,7 +75,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
-func extractUserAgent(ctx context.Context, req *http.Request, userAgent string) meta.Valuer {
+func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Valuer {
 	if ua := m.UserAgent(ctx); ua != nil {
 		return ua
 	}

@@ -40,6 +40,7 @@ type ServerParams struct {
 	Tracer    trace.Tracer
 	Meter     metric.Meter
 	UserAgent env.UserAgent
+	Version   env.Version
 	Limiter   *limiter.Limiter               `optional:"true"`
 	Key       lm.KeyFunc                     `optional:"true"`
 	Verifier  token.Verifier                 `optional:"true"`
@@ -110,7 +111,7 @@ func (s *Server) Server() *grpc.Server {
 
 func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.UnaryServerInterceptor{
-		meta.UnaryServerInterceptor(string(params.UserAgent)),
+		meta.UnaryServerInterceptor(params.UserAgent, params.Version),
 		tracer.UnaryServerInterceptor(params.Tracer),
 		logger.UnaryServerInterceptor(params.Logger),
 		m.UnaryInterceptor(),
@@ -131,7 +132,7 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 
 func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	defaultInterceptors := []grpc.StreamServerInterceptor{
-		meta.StreamServerInterceptor(string(params.UserAgent)),
+		meta.StreamServerInterceptor(params.UserAgent, params.Version),
 		tracer.StreamServerInterceptor(params.Tracer),
 		logger.StreamServerInterceptor(params.Logger),
 		m.StreamInterceptor(),
