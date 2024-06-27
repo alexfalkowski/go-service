@@ -17,6 +17,7 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	"github.com/klauspost/compress/gzhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
@@ -39,11 +40,19 @@ type clientOpts struct {
 	userAgent    string
 	timeout      time.Duration
 	breaker      bool
+	compression  bool
 }
 
 type clientOptionFunc func(*clientOpts)
 
 func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClientBreaker for HTTP.
+func WithClientCompression() ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.compression = true
+	})
+}
 
 // WithClientTokenGenerator for HTTP.
 func WithClientTokenGenerator(gen token.Generator) ClientOption {
@@ -142,6 +151,10 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 		}
 
 		hrt = t
+	}
+
+	if os.compression {
+		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
 	}
 
 	if os.retry != nil {

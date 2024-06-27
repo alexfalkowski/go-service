@@ -27,6 +27,7 @@ type Client struct {
 	RoundTripper http.RoundTripper
 	Meter        metric.Meter
 	Generator    token.Generator
+	Compression  bool
 }
 
 // NewHTTP client for test.
@@ -37,13 +38,19 @@ func (c *Client) NewHTTP() *http.Client {
 	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
 	runtime.Must(err)
 
-	client := h.NewClient(
+	opts := []h.ClientOption{
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(string(UserAgent)),
 		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
-	)
+	}
+
+	if c.Compression {
+		opts = append(opts, h.WithClientCompression())
+	}
+
+	client := h.NewClient(opts...)
 
 	return client
 }
@@ -60,14 +67,20 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		Retry: c.Transport.GRPC.Retry,
 	}
 
-	conn, err := g.NewClient(cl.Host,
+	opts := []g.ClientOption{
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(string(UserAgent)),
 		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
 		g.WithClientTimeout("1m"), g.WithClientDialOption(), sec,
-	)
+	}
+
+	if c.Compression {
+		opts = append(opts, g.WithClientCompression())
+	}
+
+	conn, err := g.NewClient(cl.Host, opts...)
 	runtime.Must(err)
 
 	return conn
