@@ -12,6 +12,8 @@ import (
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func TestInsecureUnary(t *testing.T) {
@@ -40,10 +42,16 @@ func TestInsecureUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			resp, err := client.SayHello(ctx, req)
+			var header metadata.MD
+
+			resp, err := client.SayHello(ctx, req, grpc.Header(&header))
 			So(err, ShouldBeNil)
 
+			h := header.Get("service-version")
+
 			Convey("Then I should have a valid reply", func() {
+				So(h, ShouldNotBeEmpty)
+				So(h[0], ShouldEqual, "1.0.0")
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 

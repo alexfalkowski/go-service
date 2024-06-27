@@ -39,6 +39,7 @@ type ServerParams struct {
 	Tracer     trace.Tracer
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
+	Version    env.Version
 	Limiter    *limiter.Limiter  `optional:"true"`
 	Key        lm.KeyFunc        `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
@@ -55,7 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	timeout := timeout(params.Config)
 
 	n := negroni.New()
-	n.Use(meta.NewHandler(string(params.UserAgent)))
+	n.Use(meta.NewHandler(params.UserAgent, params.Version))
 	n.Use(tracer.NewHandler(params.Tracer))
 	n.Use(logger.NewHandler(params.Logger))
 	n.Use(metrics.NewHandler(params.Meter))

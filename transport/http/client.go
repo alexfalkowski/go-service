@@ -6,6 +6,7 @@ import (
 	"time"
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/net"
 	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security/token"
@@ -37,7 +38,7 @@ type clientOpts struct {
 	logger       *zap.Logger
 	retry        *r.Config
 	tls          *tls.Config
-	userAgent    string
+	userAgent    env.UserAgent
 	timeout      time.Duration
 	breaker      bool
 	compression  bool
@@ -111,7 +112,7 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 }
 
 // WithUserAgent for HTTP.
-func WithClientUserAgent(userAgent string) ClientOption {
+func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
 	})
