@@ -1,5 +1,8 @@
-[![CircleCI](https://circleci.com/gh/alexfalkowski/go-service.svg?style=svg)](https://circleci.com/gh/alexfalkowski/go-service)
+[![CircleCI](https://circleci.com/gh/alexfalkowski/go-service.svg?style=shield)](https://circleci.com/gh/alexfalkowski/go-service)
 [![codecov](https://codecov.io/gh/alexfalkowski/go-service/graph/badge.svg?token=AGP01JOTM0)](https://codecov.io/gh/alexfalkowski/go-service)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service)](https://goreportcard.com/report/github.com/alexfalkowski/go-service)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service)
+[![Stability: Active](https://masterminds.github.io/stability/active.svg)](https://masterminds.github.io/stability/active.html)
 
 # Go Service
 
