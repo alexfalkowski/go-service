@@ -25,7 +25,7 @@ func TestGet(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -52,6 +52,7 @@ func TestGet(t *testing.T) {
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 			So(err, ShouldBeNil)
 
+			client.Do(req)
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
 
@@ -78,7 +79,7 @@ func TestLimiter(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig(f, "0-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig(f, "1s", 0))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -105,6 +106,7 @@ func TestLimiter(t *testing.T) {
 				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
 				So(err, ShouldBeNil)
 
+				client.Do(req)
 				resp, err := client.Do(req)
 				So(err, ShouldBeNil)
 
@@ -112,7 +114,7 @@ func TestLimiter(t *testing.T) {
 
 				Convey("Then I should have been rate limited", func() {
 					So(resp.StatusCode, ShouldEqual, http.StatusTooManyRequests)
-					So(resp.Header.Get("X-Rate-Limit-Limit"), ShouldEqual, "0")
+					So(resp.Header.Get("X-RateLimit-Limit"), ShouldEqual, "1")
 				})
 
 				lc.RequireStop()

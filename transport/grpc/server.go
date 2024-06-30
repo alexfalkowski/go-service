@@ -17,7 +17,7 @@ import (
 	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
-	"github.com/ulule/limiter/v3"
+	"github.com/sethvargo/go-limiter"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
@@ -41,7 +41,7 @@ type ServerParams struct {
 	Meter     metric.Meter
 	UserAgent env.UserAgent
 	Version   env.Version
-	Limiter   *limiter.Limiter               `optional:"true"`
+	Limiter   limiter.Store                  `optional:"true"`
 	Key       lm.KeyFunc                     `optional:"true"`
 	Verifier  token.Verifier                 `optional:"true"`
 	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
@@ -140,10 +140,6 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 
 	if params.Verifier != nil {
 		defaultInterceptors = append(defaultInterceptors, tkn.StreamServerInterceptor(params.Verifier))
-	}
-
-	if params.Limiter != nil {
-		defaultInterceptors = append(defaultInterceptors, gl.StreamServerInterceptor(params.Limiter, params.Key))
 	}
 
 	defaultInterceptors = append(defaultInterceptors, interceptors...)

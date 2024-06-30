@@ -250,10 +250,11 @@ func NewRedisConfig(secret, compressor, marshaller string) *redis.Config {
 }
 
 // NewLimiterConfig for test.
-func NewLimiterConfig(kind, pattern string) *limiter.Config {
+func NewLimiterConfig(kind, interval string, tokens uint64) *limiter.Config {
 	return &limiter.Config{
-		Kind:    kind,
-		Pattern: pattern,
+		Kind:     kind,
+		Interval: interval,
+		Tokens:   tokens,
 	}
 }
 

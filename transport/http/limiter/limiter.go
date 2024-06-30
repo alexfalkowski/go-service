@@ -3,21 +3,23 @@ package limiter
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	l "github.com/ulule/limiter/v3"
+	l "github.com/sethvargo/go-limiter"
+	"github.com/sethvargo/go-limiter/httplimit"
 )
 
 // Handler for limiter.
-func NewHandler(limiter *l.Limiter, key limiter.KeyFunc) *Handler {
+func NewHandler(limiter l.Store, key limiter.KeyFunc) *Handler {
 	return &Handler{limiter: limiter, key: key}
 }
 
 // Handler for tracer.
 type Handler struct {
-	limiter *l.Limiter
+	limiter l.Store
 	key     limiter.KeyFunc
 }
 
@@ -31,12 +33,22 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 
-	// Memory stores do not return error.
-	context, _ := h.limiter.Get(ctx, meta.ValueOrBlank(h.key(ctx)))
+	tokens, remaining, reset, ok, err := h.limiter.Take(ctx, meta.ValueOrBlank(h.key(ctx)))
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 
-	if context.Reached {
-		res.Header().Add("X-Rate-Limit-Limit", strconv.FormatInt(context.Limit, 10))
-		res.WriteHeader(http.StatusTooManyRequests)
+		return
+	}
+
+	resetTime := time.Unix(0, int64(reset)).UTC().Format(time.RFC1123)
+
+	res.Header().Set(httplimit.HeaderRateLimitLimit, strconv.FormatUint(tokens, 10))
+	res.Header().Set(httplimit.HeaderRateLimitRemaining, strconv.FormatUint(remaining, 10))
+	res.Header().Set(httplimit.HeaderRateLimitReset, resetTime)
+
+	if !ok {
+		res.Header().Set(httplimit.HeaderRetryAfter, resetTime)
+		http.Error(res, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		return
 	}

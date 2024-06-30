@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	th "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/ulule/limiter/v3"
+	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -28,7 +28,7 @@ type Server struct {
 	GRPC       *tg.Server
 	Transport  *transport.Config
 	Tracer     *tracer.Config
-	Limiter    *limiter.Limiter
+	Limiter    limiter.Store
 	Key        lm.KeyFunc
 	Logger     *zap.Logger
 	VerifyAuth bool
