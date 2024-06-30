@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.227.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.227.0) - 2024-06-30
+
+- [`014a39a`](https://github.com/alexfalkowski/go-service/commit/014a39a9e8393ef51a936efec3da98c9a552f28b) feat(limiter): move to use github.com/sethvargo/go-limiter (#839)
+- [`d2568ba`](https://github.com/alexfalkowski/go-service/commit/d2568baae17f14ca79d83fd60cf38990824ed27f) docs(readme): add badges (#838)
+- [`9badf23`](https://github.com/alexfalkowski/go-service/commit/9badf23ef30c3806441b1df31dc4a5e7a24ac895) build(ci): add codecov (#837)
+- [`d0ee914`](https://github.com/alexfalkowski/go-service/commit/d0ee914ccbf48d4cee9ec5638940a43db7eb0ea8) docs(transport): diagrams (#836)
+
 ## [v1.226.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.226.0) - 2024-06-27
 
 - [`34b1ec5`](https://github.com/alexfalkowski/go-service/commit/34b1ec570a03b6803c30fad2d02dc503780c1688) feat(transport): add version (#835)
