@@ -20,7 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	"github.com/klauspost/compress/gzhttp"
-	"github.com/ulule/limiter/v3"
+	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -40,7 +40,7 @@ type ServerParams struct {
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
-	Limiter    *limiter.Limiter  `optional:"true"`
+	Limiter    limiter.Store     `optional:"true"`
 	Key        lm.KeyFunc        `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`

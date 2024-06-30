@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	ge "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/ulule/limiter/v3"
-	"github.com/ulule/limiter/v3/drivers/store/memory"
+	"github.com/alexfalkowski/go-service/time"
+	"github.com/sethvargo/go-limiter"
+	"github.com/sethvargo/go-limiter/memorystore"
 )
 
 var (
@@ -23,7 +23,7 @@ func RegisterKey(name string, fn KeyFunc) {
 }
 
 // New limiter.
-func New(cfg *Config) (*limiter.Limiter, KeyFunc, error) {
+func New(cfg *Config) (limiter.Store, KeyFunc, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil, nil
 	}
@@ -33,12 +33,12 @@ func New(cfg *Config) (*limiter.Limiter, KeyFunc, error) {
 		return nil, nil, ErrMissingKey
 	}
 
-	rate, err := limiter.NewRateFromFormatted(cfg.Pattern)
+	store, err := memorystore.New(&memorystore.Config{Tokens: cfg.Tokens, Interval: time.MustParseDuration(cfg.Interval)})
 	if err != nil {
-		return nil, nil, ge.Prefix("new limiter", err)
+		return nil, nil, err
 	}
 
-	return limiter.New(memory.NewStore(), rate), k, nil
+	return store, k, nil
 }
 
 // KeyFunc for the limiter.

@@ -22,10 +22,10 @@ func NewHandler(hook *hooks.Webhook) *Handler {
 }
 
 // ServeHTTP for hooks.
-func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	payload, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(resp, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusBadRequest)
 
 		return
 	}
@@ -33,12 +33,12 @@ func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request, next ht
 	req.Body = io.NopCloser(bytes.NewReader(payload))
 
 	if err := h.hook.Verify(payload, req.Header); err != nil {
-		http.Error(resp, err.Error(), http.StatusBadRequest)
+		http.Error(res, err.Error(), http.StatusBadRequest)
 
 		return
 	}
 
-	next(resp, req)
+	next(res, req)
 }
 
 // NewRoundTripper for hooks.

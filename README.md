@@ -272,7 +272,7 @@ token:
 
 ## Limiter
 
-The framework allows you to define a [limiter](https://github.com/ulule/limiter). This will be applied to the different transports.
+The framework allows you to define a [limiter](https://github.com/sethvargo/go-limiter). This will be applied to the different transports.
 
 The different kinds are:
 - [user-agent](meta/meta.go)
@@ -286,7 +286,8 @@ To configure, please specify the following:
 ```yaml
 limiter:
   kind: user-agent
-  pattern: 10-S
+  tokens: 10
+  interval: 1s
 ```
 
 ## Time

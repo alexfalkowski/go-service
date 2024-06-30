@@ -41,7 +41,7 @@ func TestHealth(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("token", "0-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig("token", "1s", 0))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()

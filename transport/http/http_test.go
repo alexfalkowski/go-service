@@ -94,7 +94,7 @@ func TestSync(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -155,7 +155,7 @@ func TestProtobufSync(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -215,7 +215,7 @@ func TestBadUnmarshalSync(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -273,7 +273,7 @@ func TestErrorSync(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "100-S"))
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()

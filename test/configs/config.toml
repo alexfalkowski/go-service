@@ -50,7 +50,8 @@ secret = "../test/secrets/hooks"
 
 [limiter]
 kind = "user-agent"
-pattern = "10-S"
+tokens = 10
+interval = "1s"
 
 [sql.pg]
 max_open_conns = 5
