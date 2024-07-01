@@ -32,11 +32,16 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	res.Header().Add("Service-Version", h.version.String())
+	header := res.Header()
+	header.Add("Service-Version", h.version.String())
 
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
-	ctx = m.WithRequestID(ctx, extractRequestID(ctx, req))
+
+	requestID := extractRequestID(ctx, req)
+
+	header.Set("Request-ID", requestID.Value())
+	ctx = m.WithRequestID(ctx, requestID)
 
 	kind, ip := extractIP(req)
 	ctx = m.WithIPAddr(ctx, ip)
