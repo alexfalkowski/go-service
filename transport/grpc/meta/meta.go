@@ -33,7 +33,13 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.U
 		md := ExtractIncoming(ctx)
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
-		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+
+		requestID := extractRequestID(ctx, md)
+		if err := grpc.SetHeader(ctx, metadata.Pairs("request-id", requestID.Value())); err != nil {
+			return nil, err
+		}
+
+		ctx = m.WithRequestID(ctx, requestID)
 
 		kind, ip := extractIPAddr(ctx, md)
 		ctx = m.WithIPAddr(ctx, ip)
@@ -62,7 +68,13 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.
 		md := ExtractIncoming(ctx)
 
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
-		ctx = m.WithRequestID(ctx, extractRequestID(ctx, md))
+
+		requestID := extractRequestID(ctx, md)
+		if err := stream.SetHeader(metadata.Pairs("request-id", requestID.Value())); err != nil {
+			return err
+		}
+
+		ctx = m.WithRequestID(ctx, requestID)
 
 		kind, ip := extractIPAddr(ctx, md)
 		ctx = m.WithIPAddr(ctx, ip)
