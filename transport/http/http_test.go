@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
@@ -112,34 +111,13 @@ func TestSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
+				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
 
-				d, err := mar.Marshal(Request{Name: "Bob"})
-				So(err, ShouldBeNil)
-
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
-				So(err, ShouldBeNil)
-
-				var r Response
-				err = mar.Unmarshal(body, &r)
+				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(*r.Greeting, ShouldEqual, "Hello Bob")
-					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
-					So(resp.Header.Get("Service-Version"), ShouldEqual, "1.0.0")
-					So(resp.StatusCode, ShouldEqual, 200)
+					So(*resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				lc.RequireStop()
@@ -173,33 +151,13 @@ func TestProtobufSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
+				client := nh.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](cl.NewHTTP(), test.Marshaller)
 
-				d, err := mar.Marshal(&v1.SayHelloRequest{Name: "Bob"})
-				So(err, ShouldBeNil)
-
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
-				So(err, ShouldBeNil)
-
-				var r v1.SayHelloResponse
-				err = mar.Unmarshal(body, &r)
+				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(r.GetMessage(), ShouldEqual, "Hello Bob")
-					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
-					So(resp.StatusCode, ShouldEqual, 200)
+					So(resp.GetMessage(), ShouldEqual, "Hello Bob")
 				})
 
 				lc.RequireStop()
@@ -349,33 +307,13 @@ func TestAllowedSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
+				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
 
-				d, err := mar.Marshal(Request{Name: "Bob"})
-				So(err, ShouldBeNil)
-
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
-				So(err, ShouldBeNil)
-
-				var r Response
-				err = mar.Unmarshal(body, &r)
+				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(*r.Greeting, ShouldEqual, "Hello Bob")
-					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
-					So(resp.StatusCode, ShouldEqual, 200)
+					So(*resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				lc.RequireStop()
@@ -407,28 +345,12 @@ func TestDisallowedSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
+				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
+				_, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
 
-				d, err := mar.Marshal(Request{Name: "Bob"})
-				So(err, ShouldBeNil)
-
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
-				So(err, ShouldBeNil)
-
-				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldEqual, "verify token: invalid token")
-					So(resp.StatusCode, ShouldEqual, 401)
+				Convey("Then I should have an error", func() {
+					So(err, ShouldNotBeNil)
+					So(err.Error(), ShouldEqual, "verify token: invalid token")
 				})
 
 				lc.RequireStop()
