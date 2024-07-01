@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
@@ -29,12 +30,7 @@ type Request struct {
 
 type Response struct {
 	Meta     meta.Map
-	Error    *Error
 	Greeting *string
-}
-
-type Error struct {
-	Message string
 }
 
 type SuccessHandler struct{}
@@ -48,10 +44,6 @@ func (*SuccessHandler) Handle(ctx nh.Context, r *Request) (*Response, error) {
 	s := "Hello " + name
 
 	return &Response{Greeting: &s}, nil
-}
-
-func (*SuccessHandler) Error(ctx nh.Context, err error) *Response {
-	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
 func (*SuccessHandler) Status(error) int {
@@ -76,10 +68,6 @@ type ErrorHandler struct{}
 
 func (*ErrorHandler) Handle(_ nh.Context, _ *Request) (*Response, error) {
 	return nil, errors.New("ohh no")
-}
-
-func (*ErrorHandler) Error(ctx nh.Context, err error) *Response {
-	return &Response{Meta: meta.CamelStrings(ctx, ""), Error: &Error{Message: err.Error()}}
 }
 
 func (*ErrorHandler) Status(error) int {
@@ -192,7 +180,6 @@ func TestBadUnmarshalSync(t *testing.T) {
 
 			Convey("When I post data", func() {
 				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
 				d := []byte("a bad payload")
 
 				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
@@ -208,13 +195,8 @@ func TestBadUnmarshalSync(t *testing.T) {
 				body, err := io.ReadAll(resp.Body)
 				So(err, ShouldBeNil)
 
-				var r Response
-				err = mar.Unmarshal(body, &r)
-				So(err, ShouldBeNil)
-
 				Convey("Then I should have response", func() {
-					So(r.Error.Message, ShouldNotBeBlank)
-					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
 					So(resp.StatusCode, ShouldEqual, 500)
 				})
 
@@ -268,13 +250,8 @@ func TestErrorSync(t *testing.T) {
 				body, err := io.ReadAll(resp.Body)
 				So(err, ShouldBeNil)
 
-				var r Response
-				err = mar.Unmarshal(body, &r)
-				So(err, ShouldBeNil)
-
 				Convey("Then I should have response", func() {
-					So(r.Error.Message, ShouldEqual, "invalid handle: ohh no")
-					So(resp.Header.Get("Content-Type"), ShouldEqual, "application/"+mt)
+					So(strings.TrimSpace(string(body)), ShouldEqual, "invalid handle: ohh no")
 					So(resp.StatusCode, ShouldEqual, 500)
 				})
 
