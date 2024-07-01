@@ -114,7 +114,7 @@ func TestLimiter(t *testing.T) {
 
 				Convey("Then I should have been rate limited", func() {
 					So(resp.StatusCode, ShouldEqual, http.StatusTooManyRequests)
-					So(resp.Header.Get("X-RateLimit-Limit"), ShouldEqual, "1")
+					So(resp.Header.Get("RateLimit"), ShouldNotBeBlank)
 				})
 
 				lc.RequireStop()

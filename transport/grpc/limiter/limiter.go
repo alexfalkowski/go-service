@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"context"
+	"fmt"
 	"path"
 
 	"github.com/alexfalkowski/go-service/limiter"
@@ -30,13 +31,13 @@ func UnaryServerInterceptor(limiter l.Store, key limiter.KeyFunc) grpc.UnaryServ
 }
 
 func limit(ctx context.Context, limiter l.Store, key limiter.KeyFunc) error {
-	tokens, _, _, ok, err := limiter.Take(ctx, meta.ValueOrBlank(key(ctx)))
+	tokens, remaining, reset, ok, err := limiter.Take(ctx, meta.ValueOrBlank(key(ctx)))
 	if err != nil {
-		return status.Errorf(codes.Internal, "limit: %s", err.Error())
+		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 	}
 
 	if !ok {
-		return status.Errorf(codes.ResourceExhausted, "limit: %d allowed", tokens)
+		return status.Errorf(codes.ResourceExhausted, fmt.Sprintf("limiter: limit=%d, remaining=%d, reset=%d", tokens, remaining, reset))
 	}
 
 	return nil
