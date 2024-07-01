@@ -1,15 +1,13 @@
 package limiter
 
 import (
+	"fmt"
 	"net/http"
-	"strconv"
-	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	l "github.com/sethvargo/go-limiter"
-	"github.com/sethvargo/go-limiter/httplimit"
 )
 
 // Handler for limiter.
@@ -40,14 +38,9 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	resetTime := time.Unix(0, int64(reset)).UTC().Format(time.RFC1123)
-
-	res.Header().Set(httplimit.HeaderRateLimitLimit, strconv.FormatUint(tokens, 10))
-	res.Header().Set(httplimit.HeaderRateLimitRemaining, strconv.FormatUint(remaining, 10))
-	res.Header().Set(httplimit.HeaderRateLimitReset, resetTime)
+	res.Header().Add("RateLimit", fmt.Sprintf("limit=%d, remaining=%d, reset=%d", tokens, remaining, reset))
 
 	if !ok {
-		res.Header().Set(httplimit.HeaderRetryAfter, resetTime)
 		http.Error(res, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 
 		return
