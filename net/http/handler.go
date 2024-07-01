@@ -23,6 +23,8 @@ var (
 
 	// ErrMarshal for HTTP.
 	ErrMarshal = errors.New("invalid marshal")
+
+	contentTypeKey = "Content-Type"
 )
 
 // Handler for HTTP.
@@ -54,7 +56,7 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 		c, k := kind(req)
 		m := mar.Get(k)
 
-		res.Header().Add("Content-Type", c)
+		res.Header().Add(contentTypeKey, c)
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
