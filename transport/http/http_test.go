@@ -313,7 +313,8 @@ func TestDisallowedSync(t *testing.T) {
 				_, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
-					So(err, ShouldNotBeNil)
+					So(nh.IsError(err), ShouldBeTrue)
+					So(nh.Code(err), ShouldEqual, http.StatusUnauthorized)
 					So(err.Error(), ShouldEqual, "verify token: invalid token")
 				})
 

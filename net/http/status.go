@@ -10,6 +10,13 @@ func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
 }
 
+// IsError verifies if the package created this error.
+func IsError(err error) bool {
+	e := &statusError{}
+
+	return errors.As(err, &e)
+}
+
 // Code from the error, otherwise 500.
 func Code(err error) int {
 	e := &statusError{}
