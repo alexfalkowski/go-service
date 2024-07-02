@@ -31,9 +31,6 @@ var (
 type Handler[Req any, Res any] interface {
 	// Handle func for request/response.
 	Handle(ctx Context, req *Req) (*Res, error)
-
-	// Status code from error.
-	Status(err error) int
 }
 
 var (
@@ -57,7 +54,7 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
-			writeError(ctx, fmt.Errorf("%w: %w", ErrReadAll, err), handler)
+			writeError(ctx, fmt.Errorf("%w: %w", ErrReadAll, err))
 
 			return
 		}
@@ -68,21 +65,21 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 		ptr := &rq
 
 		if err := m.Unmarshal(body, ptr); err != nil {
-			writeError(ctx, fmt.Errorf("%w: %w", ErrUnmarshal, err), handler)
+			writeError(ctx, fmt.Errorf("%w: %w", ErrUnmarshal, err))
 
 			return
 		}
 
 		rs, err := handler.Handle(ctx, ptr)
 		if err != nil {
-			writeError(ctx, fmt.Errorf("%w: %w", ErrHandle, err), handler)
+			writeError(ctx, fmt.Errorf("%w: %w", ErrHandle, err))
 
 			return
 		}
 
 		d, err := m.Marshal(rs)
 		if err != nil {
-			writeError(ctx, fmt.Errorf("%w: %w", ErrMarshal, err), handler)
+			writeError(ctx, fmt.Errorf("%w: %w", ErrMarshal, err))
 
 			return
 		}
@@ -102,6 +99,6 @@ func kind(req *http.Request) (string, string) {
 	return t.String(), t.Subtype
 }
 
-func writeError[Req any, Res any](ctx Context, err error, h Handler[Req, Res]) {
-	http.Error(ctx.Response(), err.Error(), h.Status(err))
+func writeError(ctx Context, err error) {
+	http.Error(ctx.Response(), err.Error(), Code(err))
 }

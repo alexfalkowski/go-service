@@ -3,7 +3,6 @@ package http_test
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,10 +45,6 @@ func (*SuccessHandler) Handle(ctx nh.Context, r *Request) (*Response, error) {
 	return &Response{Greeting: &s}, nil
 }
 
-func (*SuccessHandler) Status(error) int {
-	return http.StatusInternalServerError
-}
-
 type ProtobufHandler struct{}
 
 func (*ProtobufHandler) Handle(_ nh.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
@@ -60,18 +55,10 @@ func (*ProtobufHandler) Error(_ nh.Context, err error) *v1.SayHelloResponse {
 	return &v1.SayHelloResponse{Message: err.Error()}
 }
 
-func (*ProtobufHandler) Status(error) int {
-	return http.StatusInternalServerError
-}
-
 type ErrorHandler struct{}
 
 func (*ErrorHandler) Handle(_ nh.Context, _ *Request) (*Response, error) {
-	return nil, errors.New("ohh no")
-}
-
-func (*ErrorHandler) Status(error) int {
-	return http.StatusInternalServerError
+	return nil, nh.Error(http.StatusServiceUnavailable, "ohh no")
 }
 
 func TestSync(t *testing.T) {
@@ -252,7 +239,7 @@ func TestErrorSync(t *testing.T) {
 
 				Convey("Then I should have response", func() {
 					So(strings.TrimSpace(string(body)), ShouldEqual, "invalid handle: ohh no")
-					So(resp.StatusCode, ShouldEqual, 500)
+					So(resp.StatusCode, ShouldEqual, 503)
 				})
 
 				lc.RequireStop()
