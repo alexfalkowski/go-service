@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.231.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.231.0) - 2024-07-02
+
+- [`991ba9f`](https://github.com/alexfalkowski/go-service/commit/991ba9f7678e70edc03ccbbe3c84ff3b8bc608e2) feat(http): use a custom error to mark the status (#844)
+
 ## [v1.230.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.230.1) - 2024-07-01
 
 - [`dad7d55`](https://github.com/alexfalkowski/go-service/commit/dad7d5554568cbebcf1123761e07f12178c4581f) fix(transport): add meta to response (#843)
