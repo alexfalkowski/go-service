@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -59,7 +58,7 @@ func (c *Client[Req, Res]) Call(ctx context.Context, url, contentType string, re
 
 	// The server handlers return text on errors.
 	if isText(t) {
-		return nil, errors.New(strings.TrimSpace(string(body)))
+		return nil, Error(response.StatusCode, strings.TrimSpace(string(body)))
 	}
 
 	var rp Res
