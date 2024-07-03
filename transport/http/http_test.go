@@ -86,9 +86,9 @@ func TestSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
+				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
-				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
+				resp, err := client.Call(context.Background(), &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -126,9 +126,9 @@ func TestProtobufSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := nh.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](cl.NewHTTP(), test.Marshaller)
+				client := nh.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
-				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &v1.SayHelloRequest{Name: "Bob"})
+				resp, err := client.Call(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -271,9 +271,9 @@ func TestAllowedSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
+				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
-				resp, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
+				resp, err := client.Call(context.Background(), &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -309,8 +309,9 @@ func TestDisallowedSync(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := nh.NewClient[Request, Response](cl.NewHTTP(), test.Marshaller)
-				_, err := client.Call(context.Background(), fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, &Request{Name: "Bob"})
+				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+
+				_, err := client.Call(context.Background(), &Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
 					So(nh.IsError(err), ShouldBeTrue)
