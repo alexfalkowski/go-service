@@ -47,7 +47,7 @@ func Register(mu *http.ServeMux, ma *marshaller.Map) {
 func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := newContext(req.Context(), req, res)
-		c, k := kind(req)
+		c, k := kindFromRequest(req)
 		m := mar.Get(k)
 
 		res.Header().Add(contentTypeKey, c)
@@ -90,7 +90,7 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	mux.HandleFunc("POST "+path, h)
 }
 
-func kind(req *http.Request) (string, string) {
+func kindFromRequest(req *http.Request) (string, string) {
 	t, err := ct.GetMediaType(req)
 	if err != nil {
 		return "application/json", "json"

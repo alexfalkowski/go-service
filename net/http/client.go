@@ -12,32 +12,35 @@ import (
 )
 
 // NewClient for HTTP.
-func NewClient[Req any, Res any](client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
-	return &Client[Req, Res]{client: client, mar: mar}
+func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
+	ct, kind := kindFromContentType(contentType)
+	ma := mar.Get(kind)
+
+	return &Client[Req, Res]{client: client, mar: ma, url: url, contentType: ct, kind: kind}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
-	client *http.Client
-	mar    *marshaller.Map
+	client      *http.Client
+	mar         marshaller.Marshaller
+	url         string
+	contentType string
+	kind        string
 }
 
 // Call for HTTP.
-func (c *Client[Req, Res]) Call(ctx context.Context, url, contentType string, req *Req) (*Res, error) {
-	cType, kind := c.kind(contentType)
-	ma := c.mar.Get(kind)
-
-	d, err := ma.Marshal(req)
+func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (*Res, error) {
+	d, err := c.mar.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(d))
+	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
 	if err != nil {
 		return nil, err
 	}
 
-	request.Header.Set(contentTypeKey, cType)
+	request.Header.Set(contentTypeKey, c.contentType)
 
 	response, err := c.client.Do(request)
 	if err != nil {
@@ -64,14 +67,14 @@ func (c *Client[Req, Res]) Call(ctx context.Context, url, contentType string, re
 	var rp Res
 	ptr := &rp
 
-	if err := ma.Unmarshal(body, ptr); err != nil {
+	if err := c.mar.Unmarshal(body, ptr); err != nil {
 		return nil, err
 	}
 
 	return ptr, nil
 }
 
-func (c *Client[Req, Res]) kind(contentType string) (string, string) {
+func kindFromContentType(contentType string) (string, string) {
 	t, err := ct.ParseMediaType(contentType)
 	if err != nil {
 		return "application/json", "json"
