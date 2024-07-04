@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/crypto/tls"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -28,6 +29,7 @@ type Client struct {
 	Meter        metric.Meter
 	Generator    token.Generator
 	Compression  bool
+	Version      nh.Version
 }
 
 // NewHTTP client for test.
@@ -43,7 +45,8 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
-		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
+		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"),
+		h.WithClientVersion(c.Version), sec,
 	}
 
 	if c.Compression {

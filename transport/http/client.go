@@ -7,7 +7,9 @@ import (
 
 	st "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/net"
+	nh "github.com/alexfalkowski/go-service/net/http"
+	v1 "github.com/alexfalkowski/go-service/net/http/v1"
+	v2 "github.com/alexfalkowski/go-service/net/http/v2"
 	r "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/security/token"
 	t "github.com/alexfalkowski/go-service/time"
@@ -42,6 +44,7 @@ type clientOpts struct {
 	timeout      time.Duration
 	breaker      bool
 	compression  bool
+	version      nh.Version
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -136,6 +139,13 @@ func WithClientTLS(sec *st.Config) (ClientOption, error) {
 	return opt, nil
 }
 
+// WithClientVersion for HTTP.
+func WithClientVersion(version nh.Version) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.version = version
+	})
+}
+
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	os := &clientOpts{tracer: noop.Tracer{}}
@@ -143,16 +153,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 		o.apply(os)
 	}
 
-	hrt := os.roundTripper
-	if hrt == nil {
-		t := Transport()
-
-		if os.tls != nil {
-			t.TLSClientConfig = os.tls
-		}
-
-		hrt = t
-	}
+	hrt := roundTripper(os)
 
 	if os.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
@@ -201,13 +202,22 @@ func NewClient(opts ...ClientOption) *http.Client {
 	return client
 }
 
-// Transport for HTTP.
-func Transport() *http.Transport {
-	t := http.DefaultTransport.(*http.Transport).Clone()
-	t.MaxIdleConns = 100
-	t.MaxConnsPerHost = 100
-	t.MaxIdleConnsPerHost = 100
-	t.DialContext = net.DialContext
+func roundTripper(os *clientOpts) http.RoundTripper {
+	hrt := os.roundTripper
+	if hrt != nil {
+		return hrt
+	}
 
-	return t
+	if os.version == 0 {
+		os.version = nh.V1
+	}
+
+	switch os.version {
+	case nh.V1:
+		hrt = v1.Transport(os.tls)
+	case nh.V2:
+		hrt = v2.Transport(os.tls)
+	}
+
+	return hrt
 }
