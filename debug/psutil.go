@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/mem"
 )
 
 // RegisterPprof for debug.

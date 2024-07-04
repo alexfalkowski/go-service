@@ -17,6 +17,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+//nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		mux := http.NewServeMux()
@@ -73,6 +74,9 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 				So(response, ShouldContainSubstring, "redis_hits_total")
 				So(response, ShouldContainSubstring, "ristretto_hits_total")
 				So(response, ShouldContainSubstring, "sql_max_open_total")
+				So(response, ShouldContainSubstring, "system")
+				So(response, ShouldContainSubstring, "process")
+				So(response, ShouldContainSubstring, "runtime")
 			})
 		})
 

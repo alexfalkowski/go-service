@@ -2,21 +2,24 @@ package metrics
 
 import (
 	"context"
+	"errors"
 
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/errors"
+	se "github.com/alexfalkowski/go-service/errors"
+	"go.opentelemetry.io/contrib/instrumentation/host"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
-	m "go.opentelemetry.io/otel/metric"
+	om "go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
-	"go.opentelemetry.io/otel/sdk/metric"
+	sm "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
 )
 
 // NewNoopMeter for metrics.
-func NewNoopMeter() m.Meter {
+func NewNoopMeter() om.Meter {
 	return noop.Meter{}
 }
 
@@ -25,7 +28,7 @@ type MeterParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
-	Reader      metric.Reader
+	Reader      sm.Reader
 	Config      *Config
 	Environment env.Environment
 	Version     env.Version
@@ -33,7 +36,7 @@ type MeterParams struct {
 }
 
 // NewMeter for metrics.
-func NewMeter(params MeterParams) m.Meter {
+func NewMeter(params MeterParams) om.Meter {
 	if !IsEnabled(params.Config) {
 		return NewNoopMeter()
 	}
@@ -46,10 +49,15 @@ func NewMeter(params MeterParams) m.Meter {
 		semconv.DeploymentEnvironment(string(params.Environment)),
 	)
 
-	provider := metric.NewMeterProvider(metric.WithReader(params.Reader), metric.WithResource(attrs))
+	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
 	meter := provider.Meter(name)
 
 	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(_ context.Context) error {
+			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
+
+			return se.Prefix("new meter", err)
+		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
 
@@ -61,7 +69,7 @@ func NewMeter(params MeterParams) m.Meter {
 }
 
 // NewReader for metrics.
-func NewReader(cfg *Config) (metric.Reader, error) {
+func NewReader(cfg *Config) (sm.Reader, error) {
 	if !IsEnabled(cfg) {
 		return prom()
 	}
@@ -80,7 +88,7 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 
 		r, err := otlp.New(context.Background(), opts...)
 
-		return metric.NewPeriodicReader(r), errors.Prefix("new otlp", err)
+		return sm.NewPeriodicReader(r), se.Prefix("new otlp", err)
 	}
 
 	return prom()
@@ -89,5 +97,5 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 func prom() (*prometheus.Exporter, error) {
 	e, err := prometheus.New()
 
-	return e, errors.Prefix("new prometheus", err)
+	return e, se.Prefix("new prometheus", err)
 }
