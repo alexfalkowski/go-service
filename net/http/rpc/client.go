@@ -9,12 +9,13 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // NewClient for HTTP.
-func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
+func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) nh.Client[Req, Res] {
 	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
 	ct := content.NewFromMedia(contentType)
 
@@ -61,7 +62,7 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	// The server handlers return text on errors.
 	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
-		return nil, errors.Prefix("rpc error", Error(response.StatusCode, strings.TrimSpace(string(body))))
+		return nil, errors.Prefix("rpc error", nh.Error(response.StatusCode, strings.TrimSpace(string(body))))
 	}
 
 	var rp Res

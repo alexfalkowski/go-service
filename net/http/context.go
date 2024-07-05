@@ -1,4 +1,4 @@
-package rpc
+package http
 
 import (
 	"context"
@@ -26,7 +26,8 @@ type (
 	}
 )
 
-func newContext(ctx context.Context, req *http.Request, res http.ResponseWriter) Context {
+// NewContext for HTTP.
+func NewContext(ctx context.Context, req *http.Request, res http.ResponseWriter) Context {
 	return &handlerContext{req: req, res: res, Context: ctx}
 }
 
