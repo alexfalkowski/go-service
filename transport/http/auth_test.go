@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	nh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -44,8 +44,8 @@ func TestValidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for an authenticated greet", func() {
 			client := cl.NewHTTP()
@@ -102,8 +102,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -158,8 +158,8 @@ func TestMissingAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -215,8 +215,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -265,8 +265,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a unauthenticated greet", func() {
 			client := cl.NewHTTP()
@@ -322,8 +322,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		conn := cl.NewGRPC()
 		defer conn.Close()
 
-		nh.Register(mux, test.Marshaller)
-		nh.Handle("/hello", &SuccessHandler{})
+		rpc.Register(mux, test.Marshaller)
+		rpc.Handle("/hello", &SuccessHandler{})
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			client := cl.NewHTTP()
