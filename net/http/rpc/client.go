@@ -8,29 +8,24 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
-	ct "github.com/elnormous/contenttype"
 )
 
 // NewClient for HTTP.
 func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
-	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
-		return http.ErrUseLastResponse
-	}
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+	ct := content.NewFromMedia(contentType)
 
-	ct, kind := kindFromContentType(contentType)
-	ma := mar.Get(kind)
-
-	return &Client[Req, Res]{client: client, mar: ma, url: url, contentType: ct, kind: kind}
+	return &Client[Req, Res]{client: client, mar: ct.Marshaller(mar), url: url, ct: ct}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
-	client      *http.Client
-	mar         marshaller.Marshaller
-	url         string
-	contentType string
-	kind        string
+	mar    marshaller.Marshaller
+	client *http.Client
+	ct     *content.Type
+	url    string
 }
 
 // Call for HTTP.
@@ -49,7 +44,7 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
 	runtime.Must(err)
 
-	request.Header.Set(contentTypeKey, c.contentType)
+	request.Header.Set(content.TypeKey, c.ct.Media)
 
 	response, err := c.client.Do(request)
 	runtime.Must(err)
@@ -59,11 +54,9 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	body, err := io.ReadAll(response.Body)
 	runtime.Must(err)
 
-	t, err := ct.ParseMediaType(response.Header.Get(contentTypeKey))
-	runtime.Must(err)
-
 	// The server handlers return text on errors.
-	if isText(t) {
+	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
+	if ct.IsText() {
 		return nil, Error(response.StatusCode, strings.TrimSpace(string(body)))
 	}
 
@@ -74,17 +67,4 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	runtime.Must(err)
 
 	return //nolint:nakedret
-}
-
-func kindFromContentType(contentType string) (string, string) {
-	t, err := ct.ParseMediaType(contentType)
-	if err != nil {
-		return "application/json", "json"
-	}
-
-	return t.String(), t.Subtype
-}
-
-func isText(t ct.MediaType) bool {
-	return t.Type == "text" && t.Subtype == "plain"
 }

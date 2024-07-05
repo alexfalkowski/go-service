@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/marshaller"
-	ct "github.com/elnormous/contenttype"
+	"github.com/alexfalkowski/go-service/net/http/content"
 )
 
 var (
@@ -23,8 +23,6 @@ var (
 
 	// ErrMarshal for HTTP.
 	ErrMarshal = errors.New("invalid marshal")
-
-	contentTypeKey = "Content-Type"
 )
 
 // Handler for HTTP.
@@ -47,10 +45,10 @@ func Register(mu *http.ServeMux, ma *marshaller.Map) {
 func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := newContext(req.Context(), req, res)
-		c, k := kindFromRequest(req)
-		m := mar.Get(k)
+		ct := content.NewFromRequest(req)
+		m := ct.Marshaller(mar)
 
-		res.Header().Add(contentTypeKey, c)
+		res.Header().Add(content.TypeKey, ct.Media)
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
@@ -88,15 +86,6 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	}
 
 	mux.HandleFunc("POST "+path, h)
-}
-
-func kindFromRequest(req *http.Request) (string, string) {
-	t, err := ct.GetMediaType(req)
-	if err != nil {
-		return "application/json", "json"
-	}
-
-	return t.String(), t.Subtype
 }
 
 func writeError(ctx Context, err error) {
