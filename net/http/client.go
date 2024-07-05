@@ -8,11 +8,16 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/runtime"
 	ct "github.com/elnormous/contenttype"
 )
 
 // NewClient for HTTP.
 func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
 	ct, kind := kindFromContentType(contentType)
 	ma := mar.Get(kind)
 
@@ -29,35 +34,33 @@ type Client[Req any, Res any] struct {
 }
 
 // Call for HTTP.
-func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (*Res, error) {
+//
+//nolint:nonamedreturns
+func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = runtime.ConvertRecover(r)
+		}
+	}()
+
 	d, err := c.mar.Marshal(req)
-	if err != nil {
-		return nil, err
-	}
+	runtime.Must(err)
 
 	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
-	if err != nil {
-		return nil, err
-	}
+	runtime.Must(err)
 
 	request.Header.Set(contentTypeKey, c.contentType)
 
 	response, err := c.client.Do(request)
-	if err != nil {
-		return nil, err
-	}
+	runtime.Must(err)
 
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
+	runtime.Must(err)
 
 	t, err := ct.ParseMediaType(response.Header.Get(contentTypeKey))
-	if err != nil {
-		return nil, err
-	}
+	runtime.Must(err)
 
 	// The server handlers return text on errors.
 	if isText(t) {
@@ -65,13 +68,12 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (*Res, error) {
 	}
 
 	var rp Res
-	ptr := &rp
+	res = &rp
 
-	if err := c.mar.Unmarshal(body, ptr); err != nil {
-		return nil, err
-	}
+	err = c.mar.Unmarshal(body, res)
+	runtime.Must(err)
 
-	return ptr, nil
+	return //nolint:nakedret
 }
 
 func kindFromContentType(contentType string) (string, string) {

@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	sh "github.com/alexfalkowski/go-service/transport/http"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	h "github.com/alexfalkowski/go-service/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
@@ -31,7 +31,7 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 
 // NewSender for HTTP.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
-	os := &senderOptions{roundTripper: sh.Transport()}
+	os := &senderOptions{roundTripper: nh.Transport(nil)}
 	for _, o := range opts {
 		o.apply(os)
 	}
