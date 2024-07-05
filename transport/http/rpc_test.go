@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -276,8 +275,8 @@ func TestDisallowedRPC(t *testing.T) {
 				_, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
-					So(nh.IsError(err), ShouldBeTrue)
-					So(nh.Code(err), ShouldEqual, http.StatusUnauthorized)
+					So(rpc.IsError(err), ShouldBeTrue)
+					So(rpc.Code(err), ShouldEqual, http.StatusUnauthorized)
 					So(err.Error(), ShouldContainSubstring, "verify token: invalid token")
 				})
 

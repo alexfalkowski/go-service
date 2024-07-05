@@ -1,4 +1,4 @@
-package http
+package rpc
 
 import (
 	"context"
