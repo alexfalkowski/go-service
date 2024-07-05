@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 )
 
@@ -22,14 +21,20 @@ func Register(mu *http.ServeMux, ma *marshaller.Map) {
 }
 
 // Handler for HTTP.
-func Handle[Req any, Res any](path string, handler nh.Handler[Req, Res]) {
+type Handler[Req any, Res any] interface {
+	// Handle the request/response.
+	Handle(ctx Context, req *Req) (*Res, error)
+}
+
+// Handler for HTTP.
+func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
-		ctx := nh.NewContext(req.Context(), req, res)
+		ctx := NewContext(req.Context(), req, res)
 		ct := content.NewFromRequest(req)
 
 		m, err := ct.Marshaller(mar)
 		if err != nil {
-			nh.WriteError(ctx, errors.Prefix("rpc marshaller", err))
+			WriteError(ctx, errors.Prefix("rpc marshaller", err))
 
 			return
 		}
@@ -38,7 +43,7 @@ func Handle[Req any, Res any](path string, handler nh.Handler[Req, Res]) {
 
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
-			nh.WriteError(ctx, errors.Prefix("rpc read", err))
+			WriteError(ctx, errors.Prefix("rpc read", err))
 
 			return
 		}
@@ -49,21 +54,21 @@ func Handle[Req any, Res any](path string, handler nh.Handler[Req, Res]) {
 		ptr := &rq
 
 		if err := m.Unmarshal(body, ptr); err != nil {
-			nh.WriteError(ctx, errors.Prefix("rpc unmarshal", err))
+			WriteError(ctx, errors.Prefix("rpc unmarshal", err))
 
 			return
 		}
 
 		rs, err := handler.Handle(ctx, ptr)
 		if err != nil {
-			nh.WriteError(ctx, errors.Prefix("rpc handle", err))
+			WriteError(ctx, errors.Prefix("rpc handle", err))
 
 			return
 		}
 
 		d, err := m.Marshal(rs)
 		if err != nil {
-			nh.WriteError(ctx, errors.Prefix("rpc marshal", err))
+			WriteError(ctx, errors.Prefix("rpc marshal", err))
 
 			return
 		}
