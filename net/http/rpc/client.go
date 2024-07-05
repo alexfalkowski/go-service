@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -17,12 +18,12 @@ func NewClient[Req any, Res any](url, contentType string, client *http.Client, m
 	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
 	ct := content.NewFromMedia(contentType)
 
-	return &Client[Req, Res]{client: client, mar: ct.Marshaller(mar), url: url, ct: ct}
+	return &Client[Req, Res]{client: client, mar: mar, url: url, ct: ct}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
-	mar    marshaller.Marshaller
+	mar    *marshaller.Map
 	client *http.Client
 	ct     *content.Type
 	url    string
@@ -38,8 +39,11 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 		}
 	}()
 
-	d, err := c.mar.Marshal(req)
-	runtime.Must(err)
+	m, err := c.ct.Marshaller(mar)
+	runtime.Must(errors.Prefix("rpc marshaller", err))
+
+	d, err := m.Marshal(req)
+	runtime.Must(errors.Prefix("rpc marshal", err))
 
 	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
 	runtime.Must(err)
@@ -47,24 +51,24 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	request.Header.Set(content.TypeKey, c.ct.Media)
 
 	response, err := c.client.Do(request)
-	runtime.Must(err)
+	runtime.Must(errors.Prefix("rpc send", err))
 
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
-	runtime.Must(err)
+	runtime.Must(errors.Prefix("rpc read", err))
 
 	// The server handlers return text on errors.
 	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
-		return nil, Error(response.StatusCode, strings.TrimSpace(string(body)))
+		return nil, errors.Prefix("rpc error", Error(response.StatusCode, strings.TrimSpace(string(body))))
 	}
 
 	var rp Res
 	res = &rp
 
-	err = c.mar.Unmarshal(body, res)
-	runtime.Must(err)
+	err = m.Unmarshal(body, res)
+	runtime.Must(errors.Prefix("rpc unmarshal", err))
 
 	return //nolint:nakedret
 }

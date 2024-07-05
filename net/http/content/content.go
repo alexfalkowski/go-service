@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/marshaller"
-	"github.com/alexfalkowski/go-service/runtime"
 	ct "github.com/elnormous/contenttype"
 )
 
@@ -49,13 +48,13 @@ type Type struct {
 }
 
 // Marshaller for type.
-func (t *Type) Marshaller(mar *marshaller.Map) marshaller.Marshaller {
+func (t *Type) Marshaller(mar *marshaller.Map) (marshaller.Marshaller, error) {
 	m := mar.Get(t.Kind)
 	if m == nil {
-		runtime.Must(ErrInvalidMarshaller)
+		return nil, ErrInvalidMarshaller
 	}
 
-	return m
+	return m, nil
 }
 
 // IsText for type.

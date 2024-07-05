@@ -238,7 +238,7 @@ func TestErrorSync(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldEqual, "invalid handle: ohh no")
+					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc handle: ohh no")
 					So(resp.StatusCode, ShouldEqual, 503)
 				})
 
@@ -316,7 +316,7 @@ func TestDisallowedSync(t *testing.T) {
 				Convey("Then I should have an error", func() {
 					So(rpc.IsError(err), ShouldBeTrue)
 					So(rpc.Code(err), ShouldEqual, http.StatusUnauthorized)
-					So(err.Error(), ShouldEqual, "verify token: invalid token")
+					So(err.Error(), ShouldContainSubstring, "verify token: invalid token")
 				})
 
 				lc.RequireStop()
