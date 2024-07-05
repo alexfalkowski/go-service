@@ -11,7 +11,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	nh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -34,7 +34,7 @@ type Response struct {
 
 type SuccessHandler struct{}
 
-func (*SuccessHandler) Handle(ctx nh.Context, r *Request) (*Response, error) {
+func (*SuccessHandler) Handle(ctx rpc.Context, r *Request) (*Response, error) {
 	name := ctx.Request().URL.Query().Get("name")
 	if name == "" {
 		name = r.Name
@@ -47,18 +47,18 @@ func (*SuccessHandler) Handle(ctx nh.Context, r *Request) (*Response, error) {
 
 type ProtobufHandler struct{}
 
-func (*ProtobufHandler) Handle(_ nh.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
+func (*ProtobufHandler) Handle(_ rpc.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return &v1.SayHelloResponse{Message: "Hello " + r.GetName()}, nil
 }
 
-func (*ProtobufHandler) Error(_ nh.Context, err error) *v1.SayHelloResponse {
+func (*ProtobufHandler) Error(_ rpc.Context, err error) *v1.SayHelloResponse {
 	return &v1.SayHelloResponse{Message: err.Error()}
 }
 
 type ErrorHandler struct{}
 
-func (*ErrorHandler) Handle(_ nh.Context, _ *Request) (*Response, error) {
-	return nil, nh.Error(http.StatusServiceUnavailable, "ohh no")
+func (*ErrorHandler) Handle(_ rpc.Context, _ *Request) (*Response, error) {
+	return nil, rpc.Error(http.StatusServiceUnavailable, "ohh no")
 }
 
 func TestSync(t *testing.T) {
@@ -80,13 +80,13 @@ func TestSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &SuccessHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
 				resp, err := client.Call(context.Background(), &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -120,13 +120,13 @@ func TestProtobufSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &ProtobufHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &ProtobufHandler{})
 
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := nh.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
 				resp, err := client.Call(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -160,8 +160,8 @@ func TestBadUnmarshalSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &SuccessHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
@@ -212,8 +212,8 @@ func TestErrorSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &ErrorHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &ErrorHandler{})
 
 			lc.RequireStart()
 
@@ -265,13 +265,13 @@ func TestAllowedSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &SuccessHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
 				resp, err := client.Call(context.Background(), &Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -303,19 +303,19 @@ func TestDisallowedSync(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
-			nh.Register(mux, test.Marshaller)
-			nh.Handle("/hello", &SuccessHandler{})
+			rpc.Register(mux, test.Marshaller)
+			rpc.Handle("/hello", &SuccessHandler{})
 
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := nh.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[Request, Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
 
 				_, err := client.Call(context.Background(), &Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
-					So(nh.IsError(err), ShouldBeTrue)
-					So(nh.Code(err), ShouldEqual, http.StatusUnauthorized)
+					So(rpc.IsError(err), ShouldBeTrue)
+					So(rpc.Code(err), ShouldEqual, http.StatusUnauthorized)
 					So(err.Error(), ShouldEqual, "verify token: invalid token")
 				})
 
