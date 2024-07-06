@@ -1,14 +1,14 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/compressor"
+	"github.com/alexfalkowski/go-service/compress"
 )
 
 // Compressor for tests.
-var Compressor = compressor.NewMap()
+var Compressor = compress.NewMap()
 
 // NewCompressor for test.
-func NewCompressor(err error) compressor.Compressor {
+func NewCompressor(err error) compress.Compressor {
 	return &cmp{err: err}
 }
 

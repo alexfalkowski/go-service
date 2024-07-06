@@ -1,4 +1,11 @@
-package compressor
+package compress
+
+import (
+	"github.com/alexfalkowski/go-service/compress/none"
+	"github.com/alexfalkowski/go-service/compress/s2"
+	"github.com/alexfalkowski/go-service/compress/snappy"
+	"github.com/alexfalkowski/go-service/compress/zstd"
+)
 
 type configs map[string]Compressor
 
@@ -11,10 +18,10 @@ type Map struct {
 func NewMap() *Map {
 	f := &Map{
 		configs: configs{
-			"zstd":   NewZstd(),
-			"s2":     NewS2(),
-			"snappy": NewSnappy(),
-			"none":   NewNone(),
+			"zstd":   zstd.NewCompressor(),
+			"s2":     s2.NewCompressor(),
+			"snappy": snappy.NewCompressor(),
+			"none":   none.NewCompressor(),
 		},
 	}
 

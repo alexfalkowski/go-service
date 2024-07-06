@@ -1,4 +1,4 @@
-package compressor
+package compress
 
 // Compressor allows to have different ways to compress/decompress.
 type Compressor interface {

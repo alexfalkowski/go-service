@@ -1,4 +1,4 @@
-package compressor_test
+package compress_test
 
 import (
 	"testing"
