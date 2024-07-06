@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.241.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.241.1) - 2024-07-06
+
+- [`a521ba7`](https://github.com/alexfalkowski/go-service/commit/a521ba703121ad758aeafdff83e69b1b20ab05e9) fix(deps): bump golang.org/x/crypto from 0.24.0 to 0.25.0 (#865)
+
 ## [v1.241.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.241.0) - 2024-07-05
 
 - [`ae3e8f1`](https://github.com/alexfalkowski/go-service/commit/ae3e8f1a62470927af385932396d4fe30cb924ad) feat(http): move back to rpc (#864)
