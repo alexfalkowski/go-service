@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
-	"github.com/alexfalkowski/go-service/compressor"
+	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -273,7 +273,7 @@ func opts() []fx.Option {
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, metrics.Module, health.Module,
 		sql.Module, hooks.Module, token.Module, cache.Module,
-		compressor.Module, marshaller.Module, crypto.Module,
+		compress.Module, marshaller.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
