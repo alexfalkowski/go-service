@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/flags"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/spf13/cobra"
 )
 
@@ -15,8 +15,8 @@ type InputConfig struct {
 }
 
 // NewInputConfig for cmd.
-func NewInputConfig(mm *marshaller.Map) *InputConfig {
-	c := NewConfig(*InputFlag, mm)
+func NewInputConfig(enc *encoding.Map) *InputConfig {
+	c := NewConfig(*InputFlag, enc)
 
 	return &InputConfig{Config: c}
 }

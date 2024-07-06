@@ -5,19 +5,19 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/net/http/content"
 )
 
 var (
 	mux *http.ServeMux
-	mar *marshaller.Map
+	enc *encoding.Map
 )
 
 // Register for HTTP.
-func Register(mu *http.ServeMux, ma *marshaller.Map) {
-	mux, mar = mu, ma
+func Register(mu *http.ServeMux, en *encoding.Map) {
+	mux, enc = mu, en
 }
 
 // Handler for HTTP.
@@ -32,7 +32,7 @@ func Handle[Req any, Res any](path string, handler Handler[Req, Res]) {
 		ctx := NewContext(req.Context(), req, res)
 		ct := content.NewFromRequest(req)
 
-		m, err := ct.Marshaller(mar)
+		m, err := ct.Marshaller(enc)
 		if err != nil {
 			WriteError(ctx, errors.Prefix("rpc marshaller", err))
 

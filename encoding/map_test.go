@@ -1,4 +1,4 @@
-package marshaller_test
+package encoding_test
 
 import (
 	"testing"

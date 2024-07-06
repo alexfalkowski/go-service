@@ -31,7 +31,7 @@ func (c *Cache) NewRedisCache() (*cache.Cache, error) {
 		return nil, err
 	}
 
-	params := redis.OptionsParams{Client: cl, Config: c.Redis, Marshaller: Marshaller, Map: Compressor}
+	params := redis.OptionsParams{Client: cl, Config: c.Redis, Encoder: Marshaller, Compressor: Compressor}
 
 	opts, err := redis.NewOptions(params)
 	if err != nil {

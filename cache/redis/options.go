@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/compress"
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding"
 	gr "github.com/alexfalkowski/go-service/redis"
 	"github.com/go-redis/cache/v9"
 	"github.com/redis/go-redis/v9"
@@ -17,8 +17,8 @@ type OptionsParams struct {
 
 	Client     gr.Client
 	Config     *Config
-	Marshaller *marshaller.Map
-	Map        *compress.Map
+	Encoder    *encoding.Map
+	Compressor *compress.Map
 }
 
 // NewOptions for redis.
@@ -32,8 +32,8 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 		return opts, nil
 	}
 
-	fm := params.Marshaller.Get(params.Config.Marshaller)
-	cm := params.Map.Get(params.Config.Compressor)
+	fm := params.Encoder.Get(params.Config.Marshaller)
+	cm := params.Compressor.Get(params.Config.Compressor)
 	opts := &cache.Options{
 		Redis:        params.Client,
 		StatsEnabled: true,

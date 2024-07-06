@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding"
 	ct "github.com/elnormous/contenttype"
 )
 
@@ -20,6 +20,11 @@ var (
 	// ErrInvalidMarshaller for content.
 	ErrInvalidMarshaller = errors.New("invalid marshaller")
 )
+
+// AddJSONHeader for content.
+func AddJSONHeader(header http.Header) {
+	header.Set(TypeKey, jsonMediaType)
+}
 
 // NewFromRequest for content.
 func NewFromRequest(req *http.Request) *Type {
@@ -48,8 +53,8 @@ type Type struct {
 }
 
 // Marshaller for type.
-func (t *Type) Marshaller(mar *marshaller.Map) (marshaller.Marshaller, error) {
-	m := mar.Get(t.Kind)
+func (t *Type) Marshaller(enc *encoding.Map) (encoding.Marshaller, error) {
+	m := enc.Get(t.Kind)
 	if m == nil {
 		return nil, ErrInvalidMarshaller
 	}

@@ -1,16 +1,16 @@
-package marshaller_test
+package json_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/json"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestJSON(t *testing.T) {
 	Convey("Given I have JSON marshaller", t, func() {
-		m := marshaller.NewJSON()
+		m := json.NewMarshaller()
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I marshall the JSON", func() {
@@ -26,9 +26,9 @@ func TestJSON(t *testing.T) {
 	})
 
 	Convey("Given I have JSON marshaller", t, func() {
-		m := marshaller.NewJSON()
+		m := json.NewMarshaller()
 
-		Convey("When I unmarshall the JSON", func() {
+		Convey("When I unmarshal the JSON", func() {
 			var msg map[string]string
 
 			err := m.Unmarshal([]byte("{\n    \"test\": \"test\"\n}"), &msg)

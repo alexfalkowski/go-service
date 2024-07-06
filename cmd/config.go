@@ -3,21 +3,21 @@ package cmd
 import (
 	"io/fs"
 
+	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/marshaller"
 )
 
 // Config for cmd.
 type Config struct {
-	m  marshaller.Marshaller
+	m  encoding.Marshaller
 	rw ReaderWriter
 }
 
 // NewConfig for cmd.
-func NewConfig(flag string, mm *marshaller.Map) *Config {
+func NewConfig(flag string, enc *encoding.Map) *Config {
 	k, l := SplitFlag(flag)
 	rw := NewReadWriter(k, l)
-	m := mm.Get(rw.Kind())
+	m := enc.Get(rw.Kind())
 
 	return &Config{rw: rw, m: m}
 }
