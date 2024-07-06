@@ -1,17 +1,17 @@
-package marshaller_test
+package proto_test
 
 import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/proto"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func TestProto(t *testing.T) {
 	Convey("Given I have proto marshaller", t, func() {
-		m := marshaller.NewProto()
+		m := proto.NewMarshaller()
 		msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
 
 		Convey("When I marshall the proto", func() {
@@ -27,9 +27,9 @@ func TestProto(t *testing.T) {
 	})
 
 	Convey("Given I have proto marshaller", t, func() {
-		m := marshaller.NewProto()
+		m := proto.NewMarshaller()
 
-		Convey("When I unmarshall the proto", func() {
+		Convey("When I unmarshal the proto", func() {
 			b, err := base64.StdEncoding.DecodeString("CAE=")
 			So(err, ShouldBeNil)
 

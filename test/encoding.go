@@ -1,14 +1,14 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding"
 )
 
 // Marshaller for tests.
-var Marshaller = marshaller.NewMap()
+var Marshaller = encoding.NewMap()
 
 // NewMarshaller for test.
-func NewMarshaller(err error) marshaller.Marshaller {
+func NewMarshaller(err error) encoding.Marshaller {
 	return &mar{err: err}
 }
 

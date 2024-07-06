@@ -3,13 +3,14 @@ package debug
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/json"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
 // RegisterPprof for debug.
-func RegisterPsutil(srv *Server, json *marshaller.JSON) {
+func RegisterPsutil(srv *Server, mar *json.Marshaller) {
 	mux := srv.ServeMux()
 
 	psutil := func(resp http.ResponseWriter, req *http.Request) {
@@ -32,9 +33,9 @@ func RegisterPsutil(srv *Server, json *marshaller.JSON) {
 			"virtual": vm,
 		}
 
-		resp.Header().Add("Content-Type", "application/json")
+		content.AddJSONHeader(resp.Header())
 
-		b, _ := json.Marshal(r)
+		b, _ := mar.Marshal(r)
 
 		resp.Write(b)
 	}

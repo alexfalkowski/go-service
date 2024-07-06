@@ -1,16 +1,16 @@
-package marshaller_test
+package yaml_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/yaml"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestYAML(t *testing.T) {
 	Convey("Given I have YAML marshaller", t, func() {
-		m := marshaller.NewYAML()
+		m := yaml.NewMarshaller()
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I marshall the YAML", func() {
@@ -26,9 +26,9 @@ func TestYAML(t *testing.T) {
 	})
 
 	Convey("Given I have YAML marshaller", t, func() {
-		m := marshaller.NewYAML()
+		m := yaml.NewMarshaller()
 
-		Convey("When I unmarshall the YAML", func() {
+		Convey("When I unmarshal the YAML", func() {
 			var msg map[string]string
 
 			err := m.Unmarshal([]byte("test: test"), &msg)

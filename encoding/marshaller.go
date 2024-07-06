@@ -1,4 +1,4 @@
-package marshaller
+package encoding
 
 // Marshaller allows to have different ways to marshal/unmarshal.
 type Marshaller interface {

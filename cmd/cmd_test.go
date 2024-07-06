@@ -24,13 +24,13 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
-	"github.com/alexfalkowski/go-service/marshaller"
 	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
@@ -273,7 +273,7 @@ func opts() []fx.Option {
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, metrics.Module, health.Module,
 		sql.Module, hooks.Module, token.Module, cache.Module,
-		compress.Module, marshaller.Module, crypto.Module,
+		compress.Module, encoding.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),

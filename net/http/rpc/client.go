@@ -7,23 +7,23 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/marshaller"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // NewClient for HTTP.
-func NewClient[Req any, Res any](url, contentType string, client *http.Client, mar *marshaller.Map) *Client[Req, Res] {
+func NewClient[Req any, Res any](url, contentType string, client *http.Client, enc *encoding.Map) *Client[Req, Res] {
 	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
 	ct := content.NewFromMedia(contentType)
 
-	return &Client[Req, Res]{client: client, mar: mar, url: url, ct: ct}
+	return &Client[Req, Res]{client: client, enc: enc, url: url, ct: ct}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
-	mar    *marshaller.Map
+	enc    *encoding.Map
 	client *http.Client
 	ct     *content.Type
 	url    string
@@ -39,7 +39,7 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 		}
 	}()
 
-	m, err := c.ct.Marshaller(mar)
+	m, err := c.ct.Marshaller(enc)
 	runtime.Must(errors.Prefix("rpc marshaller", err))
 
 	d, err := m.Marshal(req)

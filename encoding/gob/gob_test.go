@@ -1,16 +1,16 @@
-package marshaller_test
+package gob_test
 
 import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/gob"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestGob(t *testing.T) {
 	Convey("Given I have gob marshaller", t, func() {
-		m := marshaller.NewGOB()
+		m := gob.NewMarshaller()
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I marshall the proto", func() {
@@ -26,9 +26,9 @@ func TestGob(t *testing.T) {
 	})
 
 	Convey("Given I have gob marshaller", t, func() {
-		m := marshaller.NewGOB()
+		m := gob.NewMarshaller()
 
-		Convey("When I unmarshall the gob", func() {
+		Convey("When I unmarshal the gob", func() {
 			b, err := base64.StdEncoding.DecodeString("DX8EAQL/gAABDAEMAAAO/4AAAQR0ZXN0BHRlc3Q=")
 			So(err, ShouldBeNil)
 

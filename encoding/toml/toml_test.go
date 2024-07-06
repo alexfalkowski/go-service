@@ -1,16 +1,16 @@
-package marshaller_test
+package toml_test
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/marshaller"
+	"github.com/alexfalkowski/go-service/encoding/toml"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestTOML(t *testing.T) {
 	Convey("Given I have TOML marshaller", t, func() {
-		m := marshaller.NewTOML()
+		m := toml.NewMarshaller()
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I marshall the TOML", func() {
@@ -26,9 +26,9 @@ func TestTOML(t *testing.T) {
 	})
 
 	Convey("Given I have TOML marshaller", t, func() {
-		m := marshaller.NewTOML()
+		m := toml.NewMarshaller()
 
-		Convey("When I unmarshall the TOML", func() {
+		Convey("When I unmarshal the TOML", func() {
 			var msg map[string]string
 
 			err := m.Unmarshal([]byte(`test = "test"`), &msg)
