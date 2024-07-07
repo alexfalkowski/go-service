@@ -17,7 +17,7 @@ func IsError(err error) bool {
 	return errors.As(err, &e)
 }
 
-// Code from the error, otherwise 500.
+// Code from the error. If nil 200, otherwise 500.
 func Code(err error) int {
 	if err == nil {
 		return http.StatusOK

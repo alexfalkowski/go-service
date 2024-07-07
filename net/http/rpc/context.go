@@ -5,36 +5,24 @@ import (
 	"net/http"
 )
 
-type (
-	// Context for HTTP.
-	Context interface {
-		// Request of the context.
-		Request() *http.Request
+type contextKey string
 
-		// Response of the context.
-		Response() http.ResponseWriter
-
-		context.Context
-	}
-
-	//nolint:containedctx
-	handlerContext struct {
-		req *http.Request
-		res http.ResponseWriter
-
-		context.Context
-	}
-)
-
-// NewContext for HTTP.
-func NewContext(ctx context.Context, req *http.Request, res http.ResponseWriter) Context {
-	return &handlerContext{req: req, res: res, Context: ctx}
+// WithRequest for rpc.
+func WithRequest(ctx context.Context, r *http.Request) context.Context {
+	return context.WithValue(ctx, contextKey("request"), r)
 }
 
-func (c *handlerContext) Request() *http.Request {
-	return c.req
+// Request for rpc.
+func Request(ctx context.Context) *http.Request {
+	return ctx.Value(contextKey("request")).(*http.Request)
 }
 
-func (c *handlerContext) Response() http.ResponseWriter {
-	return c.res
+// WithResponse for rpc.
+func WithResponse(ctx context.Context, r http.ResponseWriter) context.Context {
+	return context.WithValue(ctx, contextKey("response"), r)
+}
+
+// Response for rpc.
+func Response(ctx context.Context) http.ResponseWriter {
+	return ctx.Value(contextKey("response")).(http.ResponseWriter)
 }
