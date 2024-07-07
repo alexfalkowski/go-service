@@ -1,10 +1,11 @@
 package rpc
 
 import (
+	"context"
 	"net/http"
 )
 
-// WriteError for HTTP.
-func WriteError(ctx Context, err error) {
-	http.Error(ctx.Response(), err.Error(), Code(err))
+// WriteError for rpc.
+func WriteError(ctx context.Context, err error) {
+	http.Error(Response(ctx), err.Error(), Code(err))
 }
