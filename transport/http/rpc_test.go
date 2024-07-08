@@ -42,7 +42,7 @@ func TestRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.SuccessHandler{})
+			rpc.Unary("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -82,7 +82,7 @@ func TestProtobufRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.ProtobufHandler{})
+			rpc.Unary("/hello", test.ProtobufSayHello)
 
 			lc.RequireStart()
 
@@ -122,7 +122,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.SuccessHandler{})
+			rpc.Unary("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -174,7 +174,7 @@ func TestErrorRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.ErrorHandler{})
+			rpc.Unary("/hello", test.ErrorSayHello)
 
 			lc.RequireStart()
 
@@ -227,7 +227,7 @@ func TestAllowedRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.SuccessHandler{})
+			rpc.Unary("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -265,7 +265,7 @@ func TestDisallowedRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", &test.SuccessHandler{})
+			rpc.Unary("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
