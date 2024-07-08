@@ -11,10 +11,7 @@ import (
 )
 
 // UnaryHandler for rpc.
-type UnaryHandler[Req any, Res any] interface {
-	// Handle the request/response.
-	Handle(ctx context.Context, req *Req) (*Res, error)
-}
+type UnaryHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
 // Unary for rpc.
 func Unary[Req any, Res any](path string, handler UnaryHandler[Req, Res]) {
@@ -51,7 +48,7 @@ func Unary[Req any, Res any](path string, handler UnaryHandler[Req, Res]) {
 			return
 		}
 
-		rs, err := handler.Handle(ctx, ptr)
+		rs, err := handler(ctx, ptr)
 		if err != nil {
 			WriteError(ctx, errors.Prefix("rpc handle", err))
 
