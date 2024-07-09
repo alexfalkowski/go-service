@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
 
@@ -36,5 +37,5 @@ func ProtobufSayHello(_ context.Context, r *v1.SayHelloRequest) (*v1.SayHelloRes
 }
 
 func ErrorSayHello(_ context.Context, _ *Request) (*Response, error) {
-	return nil, rpc.Error(http.StatusServiceUnavailable, "ohh no")
+	return nil, status.Error(http.StatusServiceUnavailable, "ohh no")
 }

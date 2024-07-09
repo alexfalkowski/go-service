@@ -41,9 +41,6 @@ func TestValidAuthUnary(t *testing.T) {
 			Generator: test.NewGenerator("test", nil),
 		}
 
-		conn := cl.NewGRPC()
-		defer conn.Close()
-
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)
 
@@ -99,9 +96,6 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Generator: test.NewGenerator("bob", nil),
 		}
 
-		conn := cl.NewGRPC()
-		defer conn.Close()
-
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)
 
@@ -154,9 +148,6 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		conn := cl.NewGRPC()
-		defer conn.Close()
 
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)
@@ -212,9 +203,6 @@ func TestEmptyAuthUnary(t *testing.T) {
 			RoundTripper: ht.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport),
 		}
 
-		conn := cl.NewGRPC()
-		defer conn.Close()
-
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)
 
@@ -261,9 +249,6 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		conn := cl.NewGRPC()
-		defer conn.Close()
 
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)
@@ -318,9 +303,6 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 			Generator: test.NewGenerator("", errors.New("token error")),
 		}
-
-		conn := cl.NewGRPC()
-		defer conn.Close()
 
 		rpc.Register(mux, test.Marshaller)
 		rpc.Unary("/hello", test.SuccessSayHello)

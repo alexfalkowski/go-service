@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net/http/content"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
 )
 
@@ -61,7 +62,7 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	// The server handlers return text on errors.
 	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
-		return nil, errors.Prefix("rpc error", Error(response.StatusCode, strings.TrimSpace(string(body))))
+		return nil, errors.Prefix("rpc error", status.Error(response.StatusCode, strings.TrimSpace(string(body))))
 	}
 
 	var rp Res
