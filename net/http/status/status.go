@@ -1,4 +1,4 @@
-package rpc
+package status
 
 import (
 	"errors"
