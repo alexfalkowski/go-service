@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.247.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.247.0) - 2024-07-10
+
+- [`e09feba`](https://github.com/alexfalkowski/go-service/commit/e09febaa787ec9f7fc8ee8c3cedfe1ef350d7d22) feat(http): add ability for no controller for mvc (#874)
+
 ## [v1.246.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.246.0) - 2024-07-09
 
 - [`c1fb821`](https://github.com/alexfalkowski/go-service/commit/c1fb821837be95f116e2635915e72684ec157dde) feat(http): add mvc (#873)
