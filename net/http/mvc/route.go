@@ -3,8 +3,6 @@ package mvc
 import (
 	"context"
 	"net/http"
-
-	"github.com/alexfalkowski/go-service/net/http/status"
 )
 
 // Controller for mvc.
@@ -15,18 +13,21 @@ func Route[Res any](path string, view *View, controller Controller[Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		r, err := controller(ctx, req, res)
-		if err != nil {
-			res.WriteHeader(status.Code(err))
-			view.ExecuteFailure(res, err)
+		var response *Res
 
-			return
+		if controller != nil {
+			r, err := controller(ctx, req, res)
+			if err != nil {
+				WriteError(ctx, view, res, err)
+
+				return
+			}
+
+			response = r
 		}
 
-		err = view.ExecuteSuccess(res, r)
-		if err != nil {
-			res.WriteHeader(status.Code(err))
-			view.ExecuteFailure(res, err)
+		if err := view.ExecuteSuccess(res, response); err != nil {
+			WriteError(ctx, view, res, err)
 
 			return
 		}
