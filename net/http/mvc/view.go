@@ -33,8 +33,8 @@ func (t *View) ExecuteSuccess(wr io.Writer, data any) error {
 }
 
 // ExecuteFailure for template.
-func (t *View) ExecuteFailure(wr io.Writer, data any) error {
-	return execute(t.failure, wr, data)
+func (t *View) ExecuteFailure(wr io.Writer, err error) error {
+	return execute(t.failure, wr, err)
 }
 
 func execute(template *template.Template, wr io.Writer, data any) error {
