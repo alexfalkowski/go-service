@@ -16,6 +16,11 @@ func ParseTemplate(fs fs.FS, pattern string) *template.Template {
 	return t
 }
 
+// NewSuccessView for routes in mvc.
+func NewSuccessView(template *template.Template) *View {
+	return NewView(template, nil)
+}
+
 // NewView for routes in mvc.
 func NewView(success, failure *template.Template) *View {
 	return &View{success: success, failure: failure}
