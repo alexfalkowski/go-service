@@ -30,14 +30,14 @@ require (
 	github.com/open-feature/go-sdk v1.12.0
 	github.com/open-feature/go-sdk-contrib/providers/flipt v0.1.1
 	github.com/prometheus/client_golang v1.19.1
-	github.com/redis/go-redis/v9 v9.5.4
+	github.com/redis/go-redis/v9 v9.6.0
 	github.com/rs/cors v1.11.0
 	github.com/sethvargo/go-limiter v1.0.0
 	github.com/shirou/gopsutil/v4 v4.24.6
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240515140834-bd08ac9ba53b
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240715193043-f20cd6aa01c7
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/instrumentation/host v0.53.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.53.0
