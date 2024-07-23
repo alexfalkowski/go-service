@@ -5,11 +5,14 @@ import (
 )
 
 type (
+	// Todo for test.
+	//nolint:godox
 	Todo struct {
 		Title string
 		Done  bool
 	}
 
+	// PageData for test.
 	PageData struct {
 		Title string
 		Todos []Todo
