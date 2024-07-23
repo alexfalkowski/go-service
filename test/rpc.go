@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net/http/rpc"
+	nc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
@@ -20,7 +20,7 @@ type Response struct {
 }
 
 func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
-	req := rpc.Request(ctx)
+	req := nc.Request(ctx)
 
 	name := req.URL.Query().Get("name")
 	if name == "" {

@@ -36,7 +36,7 @@ func TestRouteSuccess(t *testing.T) {
 
 		mvc.Register(mux)
 
-		mvc.Route("GET /hello", func(_ context.Context, _ *http.Request, _ http.ResponseWriter) *mvc.Result {
+		mvc.Route("GET /hello", func(_ context.Context) *mvc.Result {
 			r := mvc.NewResult(&test.Model, template.Must(template.ParseFS(test.Views, "views/hello.tmpl.html")))
 
 			return r
@@ -93,9 +93,10 @@ func TestRouteError(t *testing.T) {
 
 		mvc.Register(mux)
 
-		mvc.Route("GET /hello", func(_ context.Context, _ *http.Request, _ http.ResponseWriter) *mvc.Result {
+		mvc.Route("GET /hello", func(_ context.Context) *mvc.Result {
+			v := template.Must(template.ParseFS(test.Views, "views/error.tmpl.html"))
 			m := status.Error(http.StatusServiceUnavailable, "ohh no")
-			r := mvc.NewResult(m, template.Must(template.ParseFS(test.Views, "views/error.tmpl.html")))
+			r := mvc.NewResult(m, v)
 
 			return r
 		})

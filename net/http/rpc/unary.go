@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net/http/content"
+	nc "github.com/alexfalkowski/go-service/net/http/context"
 )
 
 // UnaryHandler for rpc.
@@ -17,8 +18,8 @@ type UnaryHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, e
 func Unary[Req any, Res any](path string, handler UnaryHandler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		ctx = WithRequest(ctx, req)
-		ctx = WithResponse(ctx, res)
+		ctx = nc.WithRequest(ctx, req)
+		ctx = nc.WithResponse(ctx, res)
 		ct := content.NewFromRequest(req)
 
 		m, err := ct.Marshaller(enc)

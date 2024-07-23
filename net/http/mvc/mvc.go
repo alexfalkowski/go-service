@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
+	nc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 )
 
@@ -24,7 +25,7 @@ type (
 	}
 
 	// Controller for mvc.
-	Controller func(ctx context.Context, req *http.Request, res http.ResponseWriter) *Result
+	Controller func(ctx context.Context) *Result
 )
 
 // NewResult for mvc.
@@ -38,7 +39,10 @@ func Route(path string, controller Controller) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 		ctx := req.Context()
-		r := controller(ctx, req, res)
+		ctx = nc.WithRequest(ctx, req)
+		ctx = nc.WithResponse(ctx, res)
+
+		r := controller(ctx)
 
 		if err, ok := r.model.(error); ok {
 			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
