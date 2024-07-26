@@ -3,6 +3,7 @@ package mvc
 import (
 	"context"
 	"html/template"
+	"io/fs"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -31,6 +32,11 @@ type (
 // NewResult for mvc.
 func NewResult(model any, view *template.Template) *Result {
 	return &Result{model: model, view: view}
+}
+
+// View from fs with path.
+func View(fs fs.FS, path string) *template.Template {
+	return template.Must(template.ParseFS(fs, path))
 }
 
 // Route the path with controller for mvc.

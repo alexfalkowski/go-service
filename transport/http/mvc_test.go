@@ -3,7 +3,6 @@ package http_test
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"io"
 	"net/http"
 	"strings"
@@ -37,7 +36,8 @@ func TestRouteSuccess(t *testing.T) {
 		mvc.Register(mux)
 
 		mvc.Route("GET /hello", func(_ context.Context) *mvc.Result {
-			r := mvc.NewResult(&test.Model, template.Must(template.ParseFS(test.Views, "views/hello.tmpl.html")))
+			v := mvc.View(test.Views, "views/hello.tmpl.html")
+			r := mvc.NewResult(&test.Model, v)
 
 			return r
 		})
@@ -94,7 +94,7 @@ func TestRouteError(t *testing.T) {
 		mvc.Register(mux)
 
 		mvc.Route("GET /hello", func(_ context.Context) *mvc.Result {
-			v := template.Must(template.ParseFS(test.Views, "views/error.tmpl.html"))
+			v := mvc.View(test.Views, "views/error.tmpl.html")
 			m := status.Error(http.StatusServiceUnavailable, "ohh no")
 			r := mvc.NewResult(m, v)
 
