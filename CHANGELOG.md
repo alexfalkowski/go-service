@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.251.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.251.1) - 2024-07-26
+
+- [`5157d68`](https://github.com/alexfalkowski/go-service/commit/5157d6819ee63c6ab0ae9787d3432d6f6b9b6d3f) fix(deps): bump github.com/redis/go-redis/v9 from 9.6.0 to 9.6.1 (#881)
+
 ## [v1.251.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.251.0) - 2024-07-23
 
 - [`4438bd5`](https://github.com/alexfalkowski/go-service/commit/4438bd50f576f47a69b87511d53a33a028e6f75b) feat(http): use context in mvc like in rpc (#880)
