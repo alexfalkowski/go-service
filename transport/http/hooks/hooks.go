@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/google/uuid"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
@@ -25,7 +26,7 @@ func NewHandler(hook *hooks.Webhook) *Handler {
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	payload, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		nh.WriteError(req.Context(), res, err, http.StatusBadRequest)
 
 		return
 	}
@@ -33,7 +34,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	req.Body = io.NopCloser(bytes.NewReader(payload))
 
 	if err := h.hook.Verify(payload, req.Header); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		nh.WriteError(req.Context(), res, err, http.StatusBadRequest)
 
 		return
 	}

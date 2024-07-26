@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
-	nc "github.com/alexfalkowski/go-service/net/http/context"
+	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 )
 
@@ -39,8 +39,8 @@ func Route(path string, controller Controller) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 		ctx := req.Context()
-		ctx = nc.WithRequest(ctx, req)
-		ctx = nc.WithResponse(ctx, res)
+		ctx = hc.WithRequest(ctx, req)
+		ctx = hc.WithResponse(ctx, res)
 
 		r := controller(ctx)
 
