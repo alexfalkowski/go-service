@@ -18,21 +18,8 @@ func Register(mu *http.ServeMux) {
 	mux = mu
 }
 
-type (
-	// Result from the controller.
-	Result struct {
-		model any
-		view  *template.Template
-	}
-
-	// Controller for mvc.
-	Controller func(ctx context.Context) *Result
-)
-
-// NewResult for mvc.
-func NewResult(model any, view *template.Template) *Result {
-	return &Result{model: model, view: view}
-}
+// Controller for mvc.
+type Controller func(ctx context.Context) (*template.Template, any)
 
 // View from fs with path.
 func View(fs fs.FS, path string) *template.Template {
@@ -48,14 +35,14 @@ func Route(path string, controller Controller) {
 		ctx = hc.WithRequest(ctx, req)
 		ctx = hc.WithResponse(ctx, res)
 
-		r := controller(ctx)
+		v, m := controller(ctx)
 
-		if err, ok := r.model.(error); ok {
+		if err, ok := m.(error); ok {
 			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 		}
 
-		if err := r.view.Execute(res, r.model); err != nil {
+		if err := v.Execute(res, m); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		}
 	}
