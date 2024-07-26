@@ -5,10 +5,12 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/meta"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/go-sprout/sprout"
 )
 
 var mux *http.ServeMux
@@ -18,12 +20,26 @@ func Register(mu *http.ServeMux) {
 	mux = mu
 }
 
-// Controller for mvc.
-type Controller func(ctx context.Context) (*template.Template, any)
+type (
+	// View for mvc.
+	View struct {
+		template *template.Template
+		name     string
+	}
+
+	// Model for mvc.
+	Model any
+
+	// Controller for mvc.
+	Controller func(ctx context.Context) (*View, Model)
+)
 
 // View from fs with path.
-func View(fs fs.FS, path string) *template.Template {
-	return template.Must(template.ParseFS(fs, path))
+func NewView(fs fs.FS, path string) *View {
+	d, f := filepath.Split(path)
+	t := template.Must(template.New(d).Funcs(sprout.FuncMap(sprout.WithLogger(nil))).ParseFS(fs, path))
+
+	return &View{name: f, template: t}
 }
 
 // Route the path with controller for mvc.
@@ -42,7 +58,7 @@ func Route(path string, controller Controller) {
 			res.WriteHeader(status.Code(err))
 		}
 
-		if err := v.Execute(res, m); err != nil {
+		if err := v.template.ExecuteTemplate(res, v.name, m); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		}
 	}

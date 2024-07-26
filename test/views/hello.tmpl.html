@@ -1,4 +1,4 @@
-<h1>{{.Title}}</h1>
+<h1>{{.Title | quote}}</h1>
 <ul>
     {{range .Todos}}
         {{if .Done}}
