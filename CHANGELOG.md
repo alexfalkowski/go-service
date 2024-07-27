@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.256.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.256.1) - 2024-07-27
+
+- [`56f08f7`](https://github.com/alexfalkowski/go-service/commit/56f08f71ce69a971874c540adf9f0bba56fe69ce) fix(grpc): set internal error for limiter (#888)
+
 ## [v1.256.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.256.0) - 2024-07-27
 
 - [`6a7101b`](https://github.com/alexfalkowski/go-service/commit/6a7101bc6bffd97e06de0483c7693e75beb8dd3b) feat(transport): remove duplication in limiter (#887)
