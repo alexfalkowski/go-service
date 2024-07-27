@@ -2,12 +2,9 @@ package limiter
 
 import (
 	"context"
-	"fmt"
 	"path"
-	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	l "github.com/sethvargo/go-limiter"
 	"google.golang.org/grpc"
@@ -32,21 +29,18 @@ func UnaryServerInterceptor(limiter l.Store, key limiter.KeyFunc) grpc.UnaryServ
 	}
 }
 
-func limit(ctx context.Context, limiter l.Store, key limiter.KeyFunc) error {
-	tokens, remaining, reset, ok, err := limiter.Take(ctx, meta.ValueOrBlank(key(ctx)))
+func limit(ctx context.Context, store l.Store, key limiter.KeyFunc) error {
+	ok, info, err := limiter.Take(ctx, store, key)
 	if err != nil {
 		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 	}
 
-	r := time.Until(time.Unix(0, int64(reset)))
-	v := fmt.Sprintf("limit=%d, remaining=%d, reset=%s", tokens, remaining, r)
-
-	if err := grpc.SetHeader(ctx, metadata.Pairs("ratelimit", v)); err != nil {
+	if err := grpc.SetHeader(ctx, metadata.Pairs("ratelimit", info)); err != nil {
 		return err
 	}
 
 	if !ok {
-		return status.Errorf(codes.ResourceExhausted, "limiter: %s", v)
+		return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", info)
 	}
 
 	return nil
