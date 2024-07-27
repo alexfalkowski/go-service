@@ -1,9 +1,9 @@
 package limiter
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
@@ -40,10 +40,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	res.Header().Add("RateLimit", fmt.Sprintf("limit=%d, remaining=%d, reset=%d", tokens, remaining, reset))
+	r := time.Until(time.Unix(0, int64(reset)))
+	v := fmt.Sprintf("limit=%d, remaining=%d, reset=%s", tokens, remaining, r)
+
+	res.Header().Add("RateLimit", v)
 
 	if !ok {
-		nh.WriteError(req.Context(), res, errors.New(http.StatusText(http.StatusTooManyRequests)), http.StatusTooManyRequests)
+		nh.WriteError(ctx, res, fmt.Errorf("limiter: %s", v), http.StatusTooManyRequests)
 
 		return
 	}

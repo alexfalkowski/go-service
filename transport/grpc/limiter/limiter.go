@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
@@ -11,6 +12,7 @@ import (
 	l "github.com/sethvargo/go-limiter"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -36,8 +38,15 @@ func limit(ctx context.Context, limiter l.Store, key limiter.KeyFunc) error {
 		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 	}
 
+	r := time.Until(time.Unix(0, int64(reset)))
+	v := fmt.Sprintf("limit=%d, remaining=%d, reset=%s", tokens, remaining, r)
+
+	if err := grpc.SetHeader(ctx, metadata.Pairs("ratelimit", v)); err != nil {
+		return err
+	}
+
 	if !ok {
-		return status.Errorf(codes.ResourceExhausted, fmt.Sprintf("limiter: limit=%d, remaining=%d, reset=%d", tokens, remaining, reset))
+		return status.Errorf(codes.ResourceExhausted, "limiter: %s", v)
 	}
 
 	return nil
