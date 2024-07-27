@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.256.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.256.0) - 2024-07-27
+
+- [`6a7101b`](https://github.com/alexfalkowski/go-service/commit/6a7101bc6bffd97e06de0483c7693e75beb8dd3b) feat(transport): remove duplication in limiter (#887)
+
 ## [v1.255.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.255.1) - 2024-07-27
 
 - [`290305c`](https://github.com/alexfalkowski/go-service/commit/290305c22ddde78c9126e78f98b3c060117b864f) fix(transport): calculate duration for rate limit reset (#886)
