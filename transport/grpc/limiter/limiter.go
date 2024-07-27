@@ -32,11 +32,11 @@ func UnaryServerInterceptor(limiter l.Store, key limiter.KeyFunc) grpc.UnaryServ
 func limit(ctx context.Context, store l.Store, key limiter.KeyFunc) error {
 	ok, info, err := limiter.Take(ctx, store, key)
 	if err != nil {
-		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
+		return internalError(err)
 	}
 
 	if err := grpc.SetHeader(ctx, metadata.Pairs("ratelimit", info)); err != nil {
-		return err
+		return internalError(err)
 	}
 
 	if !ok {
@@ -44,4 +44,8 @@ func limit(ctx context.Context, store l.Store, key limiter.KeyFunc) error {
 	}
 
 	return nil
+}
+
+func internalError(err error) error {
+	return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 }
