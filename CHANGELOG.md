@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.255.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.255.1) - 2024-07-27
+
+- [`290305c`](https://github.com/alexfalkowski/go-service/commit/290305c22ddde78c9126e78f98b3c060117b864f) fix(transport): calculate duration for rate limit reset (#886)
+
 ## [v1.255.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.255.0) - 2024-07-26
 
 - [`27ee5c6`](https://github.com/alexfalkowski/go-service/commit/27ee5c611deb15bf670f98133f1159caf1ad1989) feat(http): add github.com/go-sprout/sprout v0.4.1 (#885)
