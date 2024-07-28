@@ -42,8 +42,8 @@ func TestRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -82,8 +82,8 @@ func TestProtobufRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.ProtobufSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.ProtobufSayHello)
 
 			lc.RequireStart()
 
@@ -122,8 +122,8 @@ func TestBadUnmarshalRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -174,8 +174,8 @@ func TestErrorRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.ErrorSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.ErrorSayHello)
 
 			lc.RequireStart()
 
@@ -200,7 +200,7 @@ func TestErrorRPC(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc handle: ohh no")
+					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc: ohh no")
 					So(resp.StatusCode, ShouldEqual, 503)
 				})
 
@@ -227,8 +227,8 @@ func TestAllowedRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -265,8 +265,8 @@ func TestDisallowedRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
-			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			r := rpc.NewRouter(mux, test.Marshaller)
+			r.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
