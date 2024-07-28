@@ -33,10 +33,11 @@ func TestRouteSuccess(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		mvc.Register(mux)
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
 
-		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, mvc.Model) {
-			return mvc.NewView(test.Views, "views/hello.tmpl.html"), &test.Model
+		r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+			return mvc.View("hello.tmpl"), &test.Model
 		})
 
 		Convey("When I query for hello", func() {
@@ -88,10 +89,11 @@ func TestRouteError(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		mvc.Register(mux)
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
 
-		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, mvc.Model) {
-			return mvc.NewView(test.Views, "views/error.tmpl.html"), status.Error(http.StatusServiceUnavailable, "ohh no")
+		r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+			return mvc.View("error.tmpl"), status.Error(http.StatusServiceUnavailable, "ohh no")
 		})
 
 		Convey("When I query for hello", func() {

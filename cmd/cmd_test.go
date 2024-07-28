@@ -31,6 +31,7 @@ import (
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/net/http/mvc"
 	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
@@ -259,6 +260,12 @@ func tkn(t token.Tokenizer) error {
 	return err
 }
 
+func controller(router *mvc.Router) {
+	router.Route("GET /test", func(_ context.Context) (mvc.View, mvc.Model) {
+		return mvc.View("test.tmpl"), nil
+	})
+}
+
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
 		time.Sleep(time.Second)
@@ -278,6 +285,6 @@ func opts() []fx.Option {
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment), fx.Invoke(controller),
 	}
 }
