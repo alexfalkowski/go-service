@@ -200,7 +200,7 @@ func TestErrorRPC(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc handle: ohh no")
+					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc: ohh no")
 					So(resp.StatusCode, ShouldEqual, 503)
 				})
 
