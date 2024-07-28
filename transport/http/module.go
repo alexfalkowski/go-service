@@ -11,7 +11,8 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(http.NewServeMux),
-	fx.Invoke(mvc.Register),
+	fx.Provide(mvc.NewViews),
+	fx.Provide(mvc.NewRouter),
 	fx.Invoke(rpc.Register),
 	fx.Provide(NewServer),
 	fx.Invoke(RegisterMetrics),

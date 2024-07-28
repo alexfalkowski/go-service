@@ -20,8 +20,7 @@ type (
 )
 
 var (
-	//go:embed views/hello.tmpl.html
-	//go:embed views/error.tmpl.html
+	//go:embed views/*.tmpl
 	Views embed.FS
 
 	// Model for test.

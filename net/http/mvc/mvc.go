@@ -2,48 +2,70 @@ package mvc
 
 import (
 	"context"
+	"embed"
 	"html/template"
-	"io/fs"
 	"net/http"
-	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/meta"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/go-sprout/sprout"
+	"go.uber.org/fx"
 )
 
-var mux *http.ServeMux
-
-// Register for mvc.
-func Register(mu *http.ServeMux) {
-	mux = mu
-}
-
 type (
-	// View for mvc.
-	View struct {
-		template *template.Template
-		name     string
+	// ViewsParams for mvc.
+	ViewsParams struct {
+		fx.In
+
+		FS       *embed.FS `optional:"true"`
+		Patterns Patterns  `optional:"true"`
 	}
+
+	// View for mvc.
+	Views struct {
+		template *template.Template
+	}
+
+	// View to render.
+	View string
 
 	// Model for mvc.
 	Model any
 
+	// Patterns to render views.
+	Patterns []string
+
+	// Router for mvc.
+	Router struct {
+		mux   *http.ServeMux
+		views *Views
+	}
+
 	// Controller for mvc.
-	Controller func(ctx context.Context) (*View, Model)
+	Controller func(ctx context.Context) (View, Model)
 )
 
-// View from fs with path.
-func NewView(fs fs.FS, path string) *View {
-	d, f := filepath.Split(path)
-	t := template.Must(template.New(d).Funcs(sprout.FuncMap(sprout.WithLogger(nil))).ParseFS(fs, path))
+// NewView from fs with patterns.
+func NewViews(params ViewsParams) *Views {
+	var t *template.Template
 
-	return &View{name: f, template: t}
+	if params.FS == nil || params.Patterns == nil {
+		t = template.New("")
+	} else {
+		t = template.Must(template.New("").Funcs(sprout.FuncMap(sprout.WithLogger(nil))).ParseFS(params.FS, params.Patterns...))
+	}
+
+	return &Views{template: t}
+}
+
+// NewRouter for mvc.
+func NewRouter(mux *http.ServeMux, views *Views) *Router {
+	return &Router{mux: mux, views: views}
 }
 
 // Route the path with controller for mvc.
-func Route(path string, controller Controller) {
+func (r *Router) Route(path string, controller Controller) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -58,10 +80,10 @@ func Route(path string, controller Controller) {
 			res.WriteHeader(status.Code(err))
 		}
 
-		if err := v.template.ExecuteTemplate(res, v.name, m); err != nil {
+		if err := r.views.template.ExecuteTemplate(res, string(v), m); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		}
 	}
 
-	mux.HandleFunc(path, h)
+	r.mux.HandleFunc(path, h)
 }
