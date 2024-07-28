@@ -36,15 +36,15 @@ type Client[Req any, Res any] struct {
 func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = runtime.ConvertRecover(r)
+			err = errors.Prefix("rpc", runtime.ConvertRecover(r))
 		}
 	}()
 
 	m, err := c.ct.Marshaller(enc)
-	runtime.Must(errors.Prefix("rpc marshaller", err))
+	runtime.Must(err)
 
 	d, err := m.Marshal(req)
-	runtime.Must(errors.Prefix("rpc marshal", err))
+	runtime.Must(err)
 
 	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
 	runtime.Must(err)
@@ -52,24 +52,24 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	request.Header.Set(content.TypeKey, c.ct.Media)
 
 	response, err := c.client.Do(request)
-	runtime.Must(errors.Prefix("rpc send", err))
+	runtime.Must(err)
 
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
-	runtime.Must(errors.Prefix("rpc read", err))
+	runtime.Must(err)
 
 	// The server handlers return text on errors.
 	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
-		return nil, errors.Prefix("rpc error", status.Error(response.StatusCode, strings.TrimSpace(string(body))))
+		return nil, status.Error(response.StatusCode, strings.TrimSpace(string(body)))
 	}
 
 	var rp Res
 	res = &rp
 
 	err = m.Unmarshal(body, res)
-	runtime.Must(errors.Prefix("rpc unmarshal", err))
+	runtime.Must(err)
 
 	return //nolint:nakedret
 }
