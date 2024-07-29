@@ -82,8 +82,6 @@ func TestProtobufRPC(t *testing.T) {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
 			s.Register()
 
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
 			rpc.Register(mux, test.Marshaller)
 			rpc.Route("/hello", test.ProtobufSayHello)
 
@@ -91,8 +89,7 @@ func TestProtobufRPC(t *testing.T) {
 
 			Convey("When I post data", func() {
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClient(cl.NewHTTP()))
+					rpc.WithClientContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
