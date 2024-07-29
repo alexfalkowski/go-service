@@ -13,11 +13,42 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 )
 
-// NewClient for HTTP.
-func NewClient[Req any, Res any](url, ct string, client *http.Client) *Client[Req, Res] {
-	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+// ClientOption for rpc.
+type ClientOption interface{ apply(opts *clientOpts) }
 
-	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(ct)}
+type clientOpts struct {
+	client      *http.Client
+	contentType string
+}
+
+type clientOptionFunc func(*clientOpts)
+
+func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+
+// WithClient for rpc.
+func WithClient(client *http.Client) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.client = client
+	})
+}
+
+// WithClientContentType for rpc.
+func WithClientContentType(ct string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.contentType = ct
+	})
+}
+
+// NewClient for rpc.
+func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
+	os := &clientOpts{client: http.DefaultClient, contentType: content.JSONMediaType}
+	for _, o := range opts {
+		o.apply(os)
+	}
+
+	os.client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+
+	return &Client[Req, Res]{client: os.client, url: url, ct: content.NewFromMedia(os.contentType)}
 }
 
 // Client for HTTP.
@@ -27,10 +58,10 @@ type Client[Req any, Res any] struct {
 	url    string
 }
 
-// Call for HTTP.
+// Invoke for rpc.
 //
 //nolint:nonamedreturns
-func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err error) {
+func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Prefix("rpc", runtime.ConvertRecover(r))
@@ -68,5 +99,5 @@ func (c *Client[Req, Res]) Call(ctx context.Context, req *Req) (res *Res, err er
 	err = m.Unmarshal(body, res)
 	runtime.Must(err)
 
-	return //nolint:nakedret
+	return res, nil
 }
