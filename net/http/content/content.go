@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	jsonMediaType = "application/json"
-	jsonKind      = "json"
+	// JSONMediaType for HTTP.
+	JSONMediaType = "application/json"
+
+	jsonKind = "json"
 )
 
 var (
@@ -23,14 +25,14 @@ var (
 
 // AddJSONHeader for content.
 func AddJSONHeader(header http.Header) {
-	header.Set(TypeKey, jsonMediaType)
+	header.Set(TypeKey, JSONMediaType)
 }
 
 // NewFromRequest for content.
 func NewFromRequest(req *http.Request) *Type {
 	t, err := ct.GetMediaType(req)
 	if err != nil {
-		return &Type{Media: jsonMediaType, Kind: jsonKind}
+		return &Type{Media: JSONMediaType, Kind: jsonKind}
 	}
 
 	return &Type{Media: t.String(), Kind: t.Subtype}
@@ -40,7 +42,7 @@ func NewFromRequest(req *http.Request) *Type {
 func NewFromMedia(mediaType string) *Type {
 	t, err := ct.ParseMediaType(mediaType)
 	if err != nil {
-		return &Type{Media: jsonMediaType, Kind: jsonKind}
+		return &Type{Media: JSONMediaType, Kind: jsonKind}
 	}
 
 	return &Type{Media: t.String(), Kind: t.Subtype}

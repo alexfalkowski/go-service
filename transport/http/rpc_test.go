@@ -48,9 +48,11 @@ func TestRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClient(cl.NewHTTP()))
 
-				resp, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
+				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -88,9 +90,11 @@ func TestProtobufRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
+				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClient(cl.NewHTTP()))
 
-				resp, err := client.Call(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -233,9 +237,11 @@ func TestAllowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClient(cl.NewHTTP()))
 
-				resp, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
+				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -271,9 +277,11 @@ func TestDisallowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClient(cl.NewHTTP()))
 
-				_, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
+				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
 					So(status.IsError(err), ShouldBeTrue)
