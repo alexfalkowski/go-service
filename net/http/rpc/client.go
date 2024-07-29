@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
@@ -15,16 +14,14 @@ import (
 )
 
 // NewClient for HTTP.
-func NewClient[Req any, Res any](url, contentType string, client *http.Client, enc *encoding.Map) *Client[Req, Res] {
+func NewClient[Req any, Res any](url, ct string, client *http.Client) *Client[Req, Res] {
 	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
-	ct := content.NewFromMedia(contentType)
 
-	return &Client[Req, Res]{client: client, enc: enc, url: url, ct: ct}
+	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(ct)}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
-	enc    *encoding.Map
 	client *http.Client
 	ct     *content.Type
 	url    string

@@ -43,12 +43,12 @@ func TestRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
 
 				resp, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -83,12 +83,12 @@ func TestProtobufRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.ProtobufSayHello)
+			rpc.Route("/hello", test.ProtobufSayHello)
 
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
 
 				resp, err := client.Call(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -123,7 +123,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
@@ -175,7 +175,7 @@ func TestErrorRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.ErrorSayHello)
+			rpc.Route("/hello", test.ErrorSayHello)
 
 			lc.RequireStart()
 
@@ -228,12 +228,12 @@ func TestAllowedRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
 
 				resp, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -266,12 +266,12 @@ func TestDisallowedRPC(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
 			rpc.Register(mux, test.Marshaller)
-			rpc.Unary("/hello", test.SuccessSayHello)
+			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP(), test.Marshaller)
+				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), "application/"+mt, cl.NewHTTP())
 
 				_, err := client.Call(context.Background(), &test.Request{Name: "Bob"})
 

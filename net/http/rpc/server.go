@@ -25,11 +25,11 @@ func Register(mu *http.ServeMux, en *encoding.Map) {
 	mux, enc = mu, en
 }
 
-// UnaryHandler for rpc.
-type UnaryHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
+// Handler for rpc.
+type Handler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
-// Unary for rpc.
-func Unary[Req any, Res any](path string, handler UnaryHandler[Req, Res]) {
+// Route for rpc.
+func Route[Req any, Res any](path string, handler Handler[Req, Res]) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
