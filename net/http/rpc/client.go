@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/errors"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -41,7 +42,7 @@ func WithClientContentType(ct string) ClientOption {
 
 // NewClient for rpc.
 func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
-	os := &clientOpts{client: http.DefaultClient, contentType: content.JSONMediaType}
+	os := &clientOpts{client: &http.Client{Transport: nh.Transport(nil)}, contentType: content.JSONMediaType}
 	for _, o := range opts {
 		o.apply(os)
 	}
