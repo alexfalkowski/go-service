@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// JSONMediaType for HTTP.
+	// JSONMediaType for content.
 	JSONMediaType = "application/json"
 
 	jsonKind = "json"

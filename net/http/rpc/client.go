@@ -42,14 +42,19 @@ func WithClientContentType(ct string) ClientOption {
 
 // NewClient for rpc.
 func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
-	os := &clientOpts{client: &http.Client{Transport: nh.Transport(nil)}, contentType: content.JSONMediaType}
+	os := &clientOpts{contentType: content.JSONMediaType}
 	for _, o := range opts {
 		o.apply(os)
 	}
 
-	os.client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+	client := os.client
+	if client == nil {
+		client = &http.Client{Transport: nh.Transport(nil)}
+	}
 
-	return &Client[Req, Res]{client: os.client, url: url, ct: content.NewFromMedia(os.contentType)}
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
+
+	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(os.contentType)}
 }
 
 // Client for HTTP.
