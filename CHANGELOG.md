@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.261.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.261.0) - 2024-07-30
+
+- [`7338855`](https://github.com/alexfalkowski/go-service/commit/73388559c30ba0213c72d0c1ad5060a537216d4b) feat(http): shorten options for rpc client (#897)
+
 ## [v1.260.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.260.2) - 2024-07-29
 
 - [`3be011e`](https://github.com/alexfalkowski/go-service/commit/3be011e45897bd523e37235b0e55eae744edd4fe) fix(http): only create client if needed for rpc (#896)
