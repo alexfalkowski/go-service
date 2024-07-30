@@ -48,9 +48,8 @@ func TestRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClient(cl.NewHTTP()))
+				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -88,8 +87,8 @@ func TestProtobufRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
-					rpc.WithClientContentType("application/"+mt))
+				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -234,9 +233,8 @@ func TestAllowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClient(cl.NewHTTP()))
+				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -274,9 +272,8 @@ func TestDisallowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				client := rpc.NewClient[test.Request, test.Response](fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port),
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClient(cl.NewHTTP()))
+				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
 
 				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 

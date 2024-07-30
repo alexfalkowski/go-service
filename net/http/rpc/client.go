@@ -33,8 +33,8 @@ func WithClient(client *http.Client) ClientOption {
 	})
 }
 
-// WithClientContentType for rpc.
-func WithClientContentType(ct string) ClientOption {
+// WithContentType for rpc.
+func WithContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
 	})
@@ -42,7 +42,7 @@ func WithClientContentType(ct string) ClientOption {
 
 // NewClient for rpc.
 func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
-	os := &clientOpts{contentType: content.JSONMediaType}
+	os := &clientOpts{}
 	for _, o := range opts {
 		o.apply(os)
 	}
