@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.264.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.264.0) - 2024-08-01
+
+- [`0fa91d1`](https://github.com/alexfalkowski/go-service/commit/0fa91d13651184e02b8c0c9e3259fe500b52d11b) feat(http): pass roundtripper to rpc client (#901)
+
 ## [v1.263.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.263.0) - 2024-08-01
 
 - [`a9652e5`](https://github.com/alexfalkowski/go-service/commit/a9652e52a7ac233827edb57cf8d669cc0adffbbb) feat(http): provide default timeouts for clients (#900)
