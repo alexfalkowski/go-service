@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.262.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.262.1) - 2024-08-01
+
+- [`904e790`](https://github.com/alexfalkowski/go-service/commit/904e79011379809ade4562aa99f682d36dc4f9aa) fix(deps): bump github.com/shirou/gopsutil/v4 from 4.24.6 to 4.24.7 (#899)
+
 ## [v1.262.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.262.0) - 2024-07-30
 
 - [`25f9d24`](https://github.com/alexfalkowski/go-service/commit/25f9d24e038108f00d8fc89e8eba20b0900f82a6) feat(grpc): ignore the error for headers (#898)
