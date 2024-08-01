@@ -27,9 +27,12 @@ import (
 )
 
 // ClientOption for HTTP.
-type ClientOption interface{ apply(opts *clientOpts) }
+type ClientOption interface {
+	apply(opts *clientOpts)
+}
 
-var none = clientOptionFunc(func(_ *clientOpts) {})
+var none = clientOptionFunc(func(_ *clientOpts) {
+})
 
 type clientOpts struct {
 	tracer       trace.Tracer
@@ -48,7 +51,9 @@ type clientOpts struct {
 
 type clientOptionFunc func(*clientOpts)
 
-func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+func (f clientOptionFunc) apply(o *clientOpts) {
+	f(o)
+}
 
 // WithClientBreaker for HTTP.
 func WithClientCompression() ClientOption {

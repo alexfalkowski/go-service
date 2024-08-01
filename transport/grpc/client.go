@@ -28,9 +28,12 @@ import (
 )
 
 // ClientOption for gRPC.
-type ClientOption interface{ apply(opts *clientOpts) }
+type ClientOption interface {
+	apply(opts *clientOpts)
+}
 
-var none = clientOptionFunc(func(_ *clientOpts) {})
+var none = clientOptionFunc(func(_ *clientOpts) {
+})
 
 type clientOpts struct {
 	tracer      trace.Tracer
@@ -50,7 +53,9 @@ type clientOpts struct {
 
 type clientOptionFunc func(*clientOpts)
 
-func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+func (f clientOptionFunc) apply(o *clientOpts) {
+	f(o)
+}
 
 // WithClientBreaker for gRPC.
 func WithClientCompression() ClientOption {
@@ -158,7 +163,7 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 // NewDialOptions for gRPC.
 func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 	cis := UnaryClientInterceptors(opts...)
-	os := clientOptions(opts...)
+	os := options(opts...)
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(string(os.userAgent)),
@@ -192,7 +197,7 @@ func NewClient(target string, opts ...ClientOption) (*grpc.ClientConn, error) {
 
 // UnaryClientInterceptors for gRPC.
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
-	os := clientOptions(opts...)
+	os := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
 	unary = append(unary, os.unary...)
@@ -252,13 +257,18 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	return grpc.WithChainStreamInterceptor(stream...)
 }
 
-func clientOptions(opts ...ClientOption) *clientOpts {
-	os := &clientOpts{
-		security: grpc.WithTransportCredentials(insecure.NewCredentials()),
-		tracer:   noop.Tracer{},
-	}
+func options(opts ...ClientOption) *clientOpts {
+	os := &clientOpts{}
 	for _, o := range opts {
 		o.apply(os)
+	}
+
+	if os.security == nil {
+		os.security = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	if os.tracer == nil {
+		os.tracer = noop.Tracer{}
 	}
 
 	return os
