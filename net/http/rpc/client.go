@@ -17,34 +17,38 @@ import (
 )
 
 // ClientOption for rpc.
-type ClientOption interface{ apply(opts *clientOpts) }
+type ClientOption interface {
+	apply(opts *clientOpts)
+}
 
 type clientOpts struct {
-	client      *http.Client
-	contentType string
-	timeout     time.Duration
+	roundTripper http.RoundTripper
+	contentType  string
+	timeout      time.Duration
 }
 
 type clientOptionFunc func(*clientOpts)
 
-func (f clientOptionFunc) apply(o *clientOpts) { f(o) }
+func (f clientOptionFunc) apply(o *clientOpts) {
+	f(o)
+}
 
-// WithClient for rpc.
-func WithClient(client *http.Client) ClientOption {
+// WithSenderRoundTripper for rpc.
+func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.client = client
+		o.roundTripper = rt
 	})
 }
 
-// WithContentType for rpc.
-func WithContentType(ct string) ClientOption {
+// WithClientContentType for rpc.
+func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
 	})
 }
 
-// WithTimeout for rpc.
-func WithTimeout(timeout string) ClientOption {
+// WithClientTimeout for rpc.
+func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = st.MustParseDuration(timeout)
 	})
@@ -53,8 +57,15 @@ func WithTimeout(timeout string) ClientOption {
 // NewClient for rpc.
 func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
 	os := options(opts...)
+	client := &http.Client{
+		Transport: os.roundTripper,
+		Timeout:   os.timeout,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 
-	return &Client[Req, Res]{client: os.client, url: url, ct: content.NewFromMedia(os.contentType)}
+	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(os.contentType)}
 }
 
 // Client for HTTP.
@@ -118,15 +129,8 @@ func options(opts ...ClientOption) *clientOpts {
 		os.timeout = 30 * time.Second
 	}
 
-	if os.client == nil {
-		os.client = &http.Client{
-			Transport: nh.Transport(nil),
-			Timeout:   os.timeout,
-		}
-	}
-
-	os.client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
-		return http.ErrUseLastResponse
+	if os.roundTripper == nil {
+		os.roundTripper = nh.Transport(nil)
 	}
 
 	return os

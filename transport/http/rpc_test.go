@@ -49,7 +49,9 @@ func TestRPC(t *testing.T) {
 
 			Convey("When I post data", func() {
 				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
-				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
+				client := rpc.NewClient[test.Request, test.Response](url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -88,7 +90,7 @@ func TestProtobufRPC(t *testing.T) {
 
 			Convey("When I post data", func() {
 				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
-				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithContentType("application/"+mt))
+				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -234,7 +236,9 @@ func TestAllowedRPC(t *testing.T) {
 
 			Convey("When I post authenticated data", func() {
 				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
-				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
+				client := rpc.NewClient[test.Request, test.Response](url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -273,7 +277,9 @@ func TestDisallowedRPC(t *testing.T) {
 
 			Convey("When I post authenticated data", func() {
 				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
-				client := rpc.NewClient[test.Request, test.Response](url, rpc.WithContentType("application/"+mt), rpc.WithClient(cl.NewHTTP()))
+				client := rpc.NewClient[test.Request, test.Response](url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
 				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 
