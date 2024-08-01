@@ -77,8 +77,8 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
-		g.WithClientTimeout("5s"), g.WithClientTokenGenerator(c.Generator),
-		g.WithClientTimeout("1m"), g.WithClientDialOption(), sec,
+		g.WithClientTokenGenerator(c.Generator), g.WithClientTimeout("1m"),
+		g.WithClientDialOption(), sec,
 	}
 
 	if c.Compression {

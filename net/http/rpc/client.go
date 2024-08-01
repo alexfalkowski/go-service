@@ -6,12 +6,14 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
+	st "github.com/alexfalkowski/go-service/time"
 )
 
 // ClientOption for rpc.
@@ -20,6 +22,7 @@ type ClientOption interface{ apply(opts *clientOpts) }
 type clientOpts struct {
 	client      *http.Client
 	contentType string
+	timeout     time.Duration
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -40,21 +43,18 @@ func WithContentType(ct string) ClientOption {
 	})
 }
 
+// WithTimeout for rpc.
+func WithTimeout(timeout string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.timeout = st.MustParseDuration(timeout)
+	})
+}
+
 // NewClient for rpc.
 func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
-	os := &clientOpts{}
-	for _, o := range opts {
-		o.apply(os)
-	}
+	os := options(opts...)
 
-	client := os.client
-	if client == nil {
-		client = &http.Client{Transport: nh.Transport(nil)}
-	}
-
-	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }
-
-	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(os.contentType)}
+	return &Client[Req, Res]{client: os.client, url: url, ct: content.NewFromMedia(os.contentType)}
 }
 
 // Client for HTTP.
@@ -106,4 +106,28 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	runtime.Must(err)
 
 	return res, nil
+}
+
+func options(opts ...ClientOption) *clientOpts {
+	os := &clientOpts{}
+	for _, o := range opts {
+		o.apply(os)
+	}
+
+	if os.timeout == 0 {
+		os.timeout = 30 * time.Second
+	}
+
+	if os.client == nil {
+		os.client = &http.Client{
+			Transport: nh.Transport(nil),
+			Timeout:   os.timeout,
+		}
+	}
+
+	os.client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	return os
 }

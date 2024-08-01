@@ -147,11 +147,7 @@ func WithClientH2C() ClientOption {
 
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
-	os := &clientOpts{tracer: noop.Tracer{}}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
+	os := options(opts...)
 	hrt := roundTripper(os)
 
 	if os.compression {
@@ -188,11 +184,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 // NewClient for HTTP.
 func NewClient(opts ...ClientOption) *http.Client {
-	os := &clientOpts{tracer: noop.Tracer{}}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
+	os := options(opts...)
 	client := &http.Client{
 		Transport: NewRoundTripper(opts...),
 		Timeout:   os.timeout,
@@ -214,4 +206,21 @@ func roundTripper(os *clientOpts) http.RoundTripper {
 	}
 
 	return hrt
+}
+
+func options(opts ...ClientOption) *clientOpts {
+	os := &clientOpts{}
+	for _, o := range opts {
+		o.apply(os)
+	}
+
+	if os.tracer == nil {
+		os.tracer = noop.Tracer{}
+	}
+
+	if os.timeout == 0 {
+		os.timeout = 30 * time.Second
+	}
+
+	return os
 }
