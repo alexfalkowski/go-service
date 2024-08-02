@@ -20,7 +20,6 @@ jobs:
         environment:
           CONFIG_FILE: yaml:CONFIG
           CONFIG: ZW52aXJvbm1lbnQ6IHByb2R1Y3Rpb24KaGVhbHRoOgogIGR1cmF0aW9uOiAxcwogIHRpbWVvdXQ6IDFzCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIHBvcnQ6IDYwMDAKICAgIHJldHJ5OgogICAgICBiYWNrb2ZmOiAxMDBtcwogICAgICB0aW1lb3V0OiAxcwogICAgICBhdHRlbXB0czogMwogICAgdGltZW91dDogMTBzCiAgICB1c2VyX2FnZW50OiAiU3RhdHVzLXNlcnZlci8xLjAgaHR0cC8xLjAiCiAgZ3JwYzoKICAgIHBvcnQ6IDYwMDEKICAgIHJldHJ5OgogICAgICBiYWNrb2ZmOiAxMDBtcwogICAgICB0aW1lb3V0OiAxcwogICAgICBhdHRlbXB0czogMwogICAgdGltZW91dDogMTBzCiAgICB1c2VyX2FnZW50OiAiU3RhdHVzLXNlcnZlci8xLjAgZ3JwYy8xLjAiCg==
-      - image: flipt/flipt:latest
       - image: grafana/mimir:latest
         command: -server.http-listen-port=9009 -auth.multitenancy-enabled=false -ingester.ring.replication-factor=1
     working_directory: ~/go-service
@@ -30,7 +29,7 @@ jobs:
       - run: git submodule update --init
       - run: mkcert -install
       - run: make create-certs
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9000 -wait tcp://localhost:9009 -timeout 1m
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9009 -timeout 1m
       - restore_cache:
           name: restore deps
           keys:
