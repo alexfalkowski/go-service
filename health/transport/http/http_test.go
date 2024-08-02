@@ -76,7 +76,7 @@ func TestHealth(t *testing.T) {
 				ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-				req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://localhost:%s/%s", cfg.HTTP.Port, check), http.NoBody)
+				req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/%s", cfg.HTTP.Address, check), http.NoBody)
 				So(err, ShouldBeNil)
 
 				resp, err := client.Do(req)
@@ -130,7 +130,7 @@ func TestReadinessNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/readyz", cfg.HTTP.Port), http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/readyz", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			req.Header.Add("Request-ID", "test-id")
@@ -186,7 +186,7 @@ func TestInvalidHealth(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://localhost:%s/healthz", cfg.HTTP.Port), http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/healthz", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

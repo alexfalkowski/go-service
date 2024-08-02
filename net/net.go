@@ -7,8 +7,8 @@ import (
 )
 
 // Listener for net.
-func Listener(port string) (net.Listener, error) {
-	return net.Listen("tcp", ":"+port)
+func Listener(address string) (net.Listener, error) {
+	return net.Listen("tcp", address)
 }
 
 // DialContext for net.

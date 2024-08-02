@@ -35,17 +35,16 @@ func TestInsecureDebug(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("Then all the debug URLs are valid", func() {
-			port := p.Config.Port
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(), Transport: test.NewInsecureTransportConfig(), Meter: m}
 			client := cl.NewHTTP()
 			urls := []string{
-				url("http", port, "debug/statsviz"),
-				url("http", port, "debug/pprof/"),
-				url("http", port, "debug/pprof/cmdline"),
-				url("http", port, "debug/pprof/symbol"),
-				url("http", port, "debug/pprof/trace"),
-				url("http", port, "debug/fgprof?seconds=1"),
-				url("http", port, "debug/psutil"),
+				url("http", p.Config.Address, "debug/statsviz"),
+				url("http", p.Config.Address, "debug/pprof/"),
+				url("http", p.Config.Address, "debug/pprof/cmdline"),
+				url("http", p.Config.Address, "debug/pprof/symbol"),
+				url("http", p.Config.Address, "debug/pprof/trace"),
+				url("http", p.Config.Address, "debug/fgprof?seconds=1"),
+				url("http", p.Config.Address, "debug/psutil"),
 			}
 
 			for _, u := range urls {
@@ -85,7 +84,6 @@ func TestSecureDebug(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("Then all the debug URLs are valid", func() {
-			port := p.Config.Port
 			cl := &test.Client{
 				Lifecycle: lc, Logger: logger, Tracer: test.NewOTLPTracerConfig(),
 				Transport: test.NewSecureTransportConfig(),
@@ -95,13 +93,13 @@ func TestSecureDebug(t *testing.T) {
 
 			client := cl.NewHTTP()
 			urls := []string{
-				url("https", port, "debug/statsviz"),
-				url("https", port, "debug/pprof/"),
-				url("https", port, "debug/pprof/cmdline"),
-				url("https", port, "debug/pprof/symbol"),
-				url("https", port, "debug/pprof/trace"),
-				url("https", port, "debug/fgprof?seconds=1"),
-				url("https", port, "debug/psutil"),
+				url("https", p.Config.Address, "debug/statsviz"),
+				url("https", p.Config.Address, "debug/pprof/"),
+				url("https", p.Config.Address, "debug/pprof/cmdline"),
+				url("https", p.Config.Address, "debug/pprof/symbol"),
+				url("https", p.Config.Address, "debug/pprof/trace"),
+				url("https", p.Config.Address, "debug/fgprof?seconds=1"),
+				url("https", p.Config.Address, "debug/psutil"),
 			}
 
 			for _, u := range urls {
@@ -118,6 +116,6 @@ func TestSecureDebug(t *testing.T) {
 	})
 }
 
-func url(scheme, port, path string) string {
-	return fmt.Sprintf("%s://localhost:%s/%s", scheme, port, path)
+func url(scheme, address, path string) string {
+	return fmt.Sprintf("%s://%s/%s", scheme, address, path)
 }

@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -50,7 +51,7 @@ func TestSendReceive(t *testing.T) {
 			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
-			ctx := events.ContextWithTarget(context.Background(), "http://localhost:"+cfg.HTTP.Port+"/events")
+			ctx := events.ContextWithTarget(context.Background(), fmt.Sprintf("http://%s/events", cfg.HTTP.Address))
 
 			e := events.NewEvent()
 			e.SetSource("example/uri")
@@ -104,7 +105,7 @@ func TestSendNotReceive(t *testing.T) {
 			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
-			ctx := events.ContextWithTarget(context.Background(), "http://localhost:"+cfg.HTTP.Port+"/events")
+			ctx := events.ContextWithTarget(context.Background(), fmt.Sprintf("http://%s/events", cfg.HTTP.Address))
 
 			e := events.NewEvent()
 			e.SetSource("example/uri")

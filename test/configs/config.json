@@ -1,7 +1,7 @@
 {
     "environment": "development",
     "debug": {
-      "port": "6060",
+      "address": ":6060",
       "timeout": "10s"
     },
     "cache": {
@@ -40,7 +40,7 @@
       }
     },
     "feature": {
-      "host": "localhost:9000",
+      "address": "localhost:9000",
       "retry": {
         "backoff": "100ms",
         "timeout": "1s",
@@ -82,12 +82,12 @@
       },
       "tracer": {
         "kind": "otlp",
-        "host": "http://localhost:4318/v1/traces"
+        "url": "http://localhost:4318/v1/traces"
       }
     },
     "time": {
       "kind": "nts",
-      "host": "time.cloudflare.com"
+      "address": "time.cloudflare.com"
     },
     "token": {
       "argon2": {
@@ -97,8 +97,7 @@
     },
     "transport": {
       "http": {
-        "mux": "gateway",
-        "port": "11000",
+        "address": ":11000",
         "retry": {
           "backoff": "100ms",
           "timeout": "1s",
@@ -108,7 +107,7 @@
         "timeout": "10s"
       },
       "grpc": {
-        "port": "12000",
+        "address": ":12000",
         "retry": {
           "backoff": "100ms",
           "timeout": "1s",

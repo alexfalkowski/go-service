@@ -1,6 +1,6 @@
 environment: development
 debug:
-  port: 6060
+  address: :6060
   timeout: 10s
 cache:
   redis:
@@ -28,7 +28,7 @@ crypto:
     public: ../test/secrets/ssh_public
     private: ../test/secrets/ssh_private
 feature:
-  host: localhost:9000
+  address: localhost:9000
   retry:
     backoff: 100ms
     timeout: 1s
@@ -42,7 +42,7 @@ limiter:
   interval: 1s
 time:
   kind: nts
-  host: time.cloudflare.com
+  address: time.cloudflare.com
 sql:
   pg:
     masters:
@@ -59,14 +59,14 @@ telemetry:
     kind: prometheus
   tracer:
     kind: otlp
-    host: http://localhost:4318/v1/traces
+    url: http://localhost:4318/v1/traces
 token:
   argon2:
     key: ../test/secrets/token
     hash: $argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4UHNSvylB3BHgC8OClmnr0Uxc4
 transport:
   http:
-    port: 11000
+    address: :11000
     retry:
       backoff: 100ms
       timeout: 1s
@@ -74,7 +74,7 @@ transport:
     timeout: 10s
     user_agent: Service http/1.0
   grpc:
-    port: 12000
+    address: :12000
     retry:
       backoff: 100ms
       timeout: 1s

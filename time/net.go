@@ -39,7 +39,7 @@ type ntpNetwork struct {
 }
 
 func (n *ntpNetwork) Now() (time.Time, error) {
-	t, err := ntp.Time(n.c.Host)
+	t, err := ntp.Time(n.c.Address)
 
 	return t, errors.Prefix("ntp time", err)
 }
@@ -49,7 +49,7 @@ type ntsNetwork struct {
 }
 
 func (n *ntsNetwork) Now() (time.Time, error) {
-	se, err := nts.NewSession(n.c.Host)
+	se, err := nts.NewSession(n.c.Address)
 	if err != nil {
 		return time.Now(), errors.Prefix("nts time", err)
 	}

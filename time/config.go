@@ -7,8 +7,8 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for time.
 type Config struct {
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	Host string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+	Kind    string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
 }
 
 // IsNTP for configuration.

@@ -48,7 +48,7 @@ func TestValidAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -103,7 +103,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -156,7 +156,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -210,7 +210,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -257,7 +257,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
@@ -311,7 +311,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")

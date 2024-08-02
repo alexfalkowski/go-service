@@ -16,7 +16,7 @@ type Server struct {
 
 // Config for HTTP.
 type Config struct {
-	Port string
+	Address string
 }
 
 // NewServer for gRPC.
@@ -27,7 +27,7 @@ func NewServer(server *grpc.Server, cfg *Config) (*Server, error) {
 		return s, nil
 	}
 
-	l, err := sn.Listener(cfg.Port)
+	l, err := sn.Listener(cfg.Address)
 	if err != nil {
 		return s, err
 	}

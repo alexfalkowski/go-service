@@ -48,7 +48,7 @@ func TestRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
@@ -89,7 +89,7 @@ func TestProtobufRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
@@ -133,7 +133,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 				client := cl.NewHTTP()
 				d := []byte("a bad payload")
 
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/"+mt)
@@ -188,7 +188,7 @@ func TestErrorRPC(t *testing.T) {
 				d, err := mar.Marshal(test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), bytes.NewReader(d))
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/"+mt)
@@ -235,7 +235,7 @@ func TestAllowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
@@ -276,7 +276,7 @@ func TestDisallowedRPC(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port)
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))

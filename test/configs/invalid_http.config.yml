@@ -1,5 +1,5 @@
 environment: production
 transport:
   http:
-    port: "invalid"
+    address: ":invalid"
     timeout: 10s

@@ -20,8 +20,8 @@ type (
 
 	// Config for HTTP.
 	Config struct {
-		TLS  *tls.Config
-		Port string
+		TLS     *tls.Config
+		Address string
 	}
 )
 
@@ -35,7 +35,7 @@ func NewServer(server *http.Server, cfg *Config) (*Server, error) {
 
 	s.tls = cfg.TLS
 
-	l, err := sn.Listener(cfg.Port)
+	l, err := sn.Listener(cfg.Address)
 	if err != nil {
 		return s, err
 	}
