@@ -18,27 +18,22 @@ import (
 	"go.uber.org/fx"
 )
 
-// NewNoopMeter for metrics.
-func NewNoopMeter() om.Meter {
-	return noop.Meter{}
-}
-
-// MeterParams for metrics.
-type MeterParams struct {
+// MeterProviderParams for metrics.
+type MeterProviderParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
-	Reader      sm.Reader
 	Config      *Config
+	Reader      sm.Reader
 	Environment env.Environment
 	Version     env.Version
 	Name        env.Name
 }
 
-// NewMeter for metrics.
-func NewMeter(params MeterParams) om.Meter {
+// NewMeterProvider for metrics.
+func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 	if !IsEnabled(params.Config) {
-		return NewNoopMeter()
+		return &noop.MeterProvider{}
 	}
 
 	name := string(params.Name)
@@ -48,9 +43,7 @@ func NewMeter(params MeterParams) om.Meter {
 		semconv.ServiceVersion(string(params.Version)),
 		semconv.DeploymentEnvironment(string(params.Environment)),
 	)
-
 	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
-	meter := provider.Meter(name)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
@@ -65,7 +58,25 @@ func NewMeter(params MeterParams) om.Meter {
 		},
 	})
 
-	return meter
+	return provider
+}
+
+// MeterParams for metrics.
+type MeterParams struct {
+	fx.In
+
+	Config   *Config
+	Provider om.MeterProvider
+	Name     env.Name
+}
+
+// NewMeter for metrics.
+func NewMeter(params MeterParams) om.Meter {
+	if !IsEnabled(params.Config) {
+		return noop.Meter{}
+	}
+
+	return params.Provider.Meter(string(params.Name))
 }
 
 // NewReader for metrics.

@@ -19,16 +19,38 @@ func NewPrometheusMeter(lc fx.Lifecycle) metric.Meter {
 
 // NewMeter for test.
 func NewMeter(lc fx.Lifecycle, c *metrics.Config) metric.Meter {
-	r, err := metrics.NewReader(c)
-	runtime.Must(err)
-
 	p := metrics.MeterParams{
-		Lifecycle:   lc,
-		Environment: Environment,
-		Version:     Version,
-		Config:      c,
-		Reader:      r,
+		Config:   c,
+		Provider: NewMeterProvider(lc, c),
+		Name:     Name,
 	}
 
 	return metrics.NewMeter(p)
+}
+
+// NewOTLPMeterProvider for test.
+func NewOTLPMeterProvider(lc fx.Lifecycle) metric.MeterProvider {
+	return NewMeterProvider(lc, NewOTLPMetricsConfig())
+}
+
+// NewPrometheusMeterProvider for test.
+func NewPrometheusMeterProvider(lc fx.Lifecycle) metric.MeterProvider {
+	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
+}
+
+// NewMeterProvider for test.
+func NewMeterProvider(lc fx.Lifecycle, c *metrics.Config) metric.MeterProvider {
+	r, err := metrics.NewReader(c)
+	runtime.Must(err)
+
+	p := metrics.MeterProviderParams{
+		Lifecycle:   lc,
+		Config:      c,
+		Reader:      r,
+		Environment: Environment,
+		Version:     Version,
+		Name:        Name,
+	}
+
+	return metrics.NewMeterProvider(p)
 }

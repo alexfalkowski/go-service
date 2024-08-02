@@ -7,5 +7,6 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(NewReader),
+	fx.Provide(NewMeterProvider),
 	fx.Provide(NewMeter),
 )
