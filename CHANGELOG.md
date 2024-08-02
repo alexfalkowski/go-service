@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.265.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.265.0) - 2024-08-02
+
+- [`b68d585`](https://github.com/alexfalkowski/go-service/commit/b68d5850e0046de17357e56daaef5cceda76aa1b) feat(flags): remove flipt to leave it to use the provider we want (#902)
+
 ## [v1.264.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.264.0) - 2024-08-01
 
 - [`0fa91d1`](https://github.com/alexfalkowski/go-service/commit/0fa91d13651184e02b8c0c9e3259fe500b52d11b) feat(http): pass roundtripper to rpc client (#901)
