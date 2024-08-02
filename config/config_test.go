@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/security/token/argon2"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
@@ -123,7 +124,7 @@ func verifyConfig(cfg *config.Config) {
 	So(debug.IsEnabled(cfg.Debug), ShouldBeTrue)
 	So(cfg.Debug.Port, ShouldEqual, "6060")
 	So(tls.IsEnabled(cfg.Debug.TLS), ShouldBeFalse)
-	So(cfg.Feature.Kind, ShouldEqual, "flipt")
+	So(feature.IsEnabled(cfg.Feature), ShouldBeTrue)
 	So(cfg.Feature.Host, ShouldEqual, "localhost:9000")
 	So(cfg.Hooks.Secret, ShouldEqual, "../test/secrets/hooks")
 	So(cfg.Cache.Redis.Compressor, ShouldEqual, "snappy")

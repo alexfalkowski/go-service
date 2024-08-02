@@ -105,7 +105,6 @@ To configure, please specify the following:
 
 ```yaml
 feature:
-  kind: flipt
   host: localhost:9000
   retry:
     backoff: 100ms

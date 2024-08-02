@@ -16,11 +16,11 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/zap"
@@ -46,7 +46,7 @@ func TestHealth(t *testing.T) {
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
-			m := metrics.NewNoopMeter()
+			m := noop.Meter{}
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			client := cl.NewHTTP()
 
@@ -107,7 +107,7 @@ func TestReadinessNoop(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 
@@ -163,7 +163,7 @@ func TestInvalidHealth(t *testing.T) {
 		logger := test.NewLogger(lc)
 		cfg := test.NewInsecureTransportConfig()
 		tc := test.NewOTLPTracerConfig()
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 

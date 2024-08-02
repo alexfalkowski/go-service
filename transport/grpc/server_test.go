@@ -6,10 +6,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -39,7 +39,7 @@ func TestServer(t *testing.T) {
 		c.GRPC.TLS = &tls.Config{}
 
 		Convey("When I create a server", func() {
-			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: metrics.NewNoopMeter(), Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: noop.Meter{}, Mux: mux}
 			s.Register()
 
 			Convey("Then I should start the server", func() {

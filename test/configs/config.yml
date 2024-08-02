@@ -28,7 +28,6 @@ crypto:
     public: ../test/secrets/ssh_public
     private: ../test/secrets/ssh_private
 feature:
-  kind: flipt
   host: localhost:9000
   retry:
     backoff: 100ms

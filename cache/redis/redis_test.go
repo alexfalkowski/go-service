@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v9"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -26,7 +26,7 @@ func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
@@ -63,7 +63,7 @@ func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
@@ -95,7 +95,7 @@ func TestSetNXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
@@ -132,7 +132,7 @@ func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis_invalid", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
@@ -156,7 +156,7 @@ func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "error"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
@@ -199,7 +199,7 @@ func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
-		m := metrics.NewNoopMeter()
+		m := noop.Meter{}
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "error", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 		ctx := context.Background()
