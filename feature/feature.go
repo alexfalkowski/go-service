@@ -11,23 +11,23 @@ import (
 	"go.uber.org/fx"
 )
 
-// NoopProvider for feature.
-func NoopProvider() openfeature.FeatureProvider {
-	return openfeature.NoopProvider{}
-}
-
 // ProviderParams for feature.
 type ProviderParams struct {
 	fx.In
 
 	Lifecycle       fx.Lifecycle
 	MetricProvider  metric.MeterProvider
-	FeatureProvider openfeature.FeatureProvider
+	FeatureProvider openfeature.FeatureProvider `optional:"true"`
 	Name            env.Name
 }
 
 // Register for feature.
 func Register(params ProviderParams) {
+	fp := params.FeatureProvider
+	if fp == nil {
+		fp = openfeature.NoopProvider{}
+	}
+
 	h, err := hooks.NewMetricsHookForProvider(params.MetricProvider)
 	runtime.Must(err)
 
@@ -35,7 +35,7 @@ func Register(params ProviderParams) {
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
-			return openfeature.SetProviderAndWait(params.FeatureProvider)
+			return openfeature.SetProviderAndWait(fp)
 		},
 		OnStop: func(_ context.Context) error {
 			openfeature.Shutdown()

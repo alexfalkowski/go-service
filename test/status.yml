@@ -7,7 +7,7 @@ telemetry:
     level: info
 transport:
   http:
-    port: 6000
+    address: :6000
     retry:
       backoff: 100ms
       timeout: 1s
@@ -15,7 +15,7 @@ transport:
     timeout: 10s
     user_agent: "Status-server/1.0 http/1.0"
   grpc:
-    port: 6001
+    address: :6001
     retry:
       backoff: 100ms
       timeout: 1s
