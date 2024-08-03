@@ -277,7 +277,7 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger, env.Module,
-		runtime.Module, cmd.Module, config.Module, debug.Module, feature.NoopModule, st.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, metrics.Module, health.Module,
 		sql.Module, hooks.Module, token.Module, cache.Module,
 		compress.Module, encoding.Module, crypto.Module,

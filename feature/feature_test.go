@@ -16,10 +16,9 @@ func TestNoop(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 
 		feature.Register(feature.ProviderParams{
-			Lifecycle:       lc,
-			Name:            test.Name,
-			FeatureProvider: feature.NoopProvider(),
-			MetricProvider:  test.NewPrometheusMeterProvider(lc),
+			Lifecycle:      lc,
+			Name:           test.Name,
+			MetricProvider: test.NewPrometheusMeterProvider(lc),
 		})
 
 		c := feature.NewClient(test.Name)
