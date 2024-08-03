@@ -168,7 +168,7 @@ func config(cfg *Config) *sg.Config {
 	}
 
 	c := &sg.Config{
-		Port: cfg.GetPort("9090"),
+		Address: cfg.GetAddress(":9090"),
 	}
 
 	return c

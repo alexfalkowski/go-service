@@ -1,7 +1,7 @@
 environment: production
 transport:
   http:
-    port: random
+    address: :0
     timeout: 10s
     retry:
       backoff: 100ms
@@ -9,5 +9,5 @@ transport:
       attempts: 3
     user_agent: Service http/1.0
   grpc:
-    port: "invalid"
+    address: ":invalid"
     timeout: 10s

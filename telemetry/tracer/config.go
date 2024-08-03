@@ -12,7 +12,7 @@ func IsEnabled(cfg *Config) bool {
 // Config for tracer.
 type Config struct {
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	Host string `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+	URL  string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 }
 

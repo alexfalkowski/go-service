@@ -68,8 +68,8 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 	runtime.Must(err)
 
 	cl := &client.Config{
-		Host:  "localhost:" + c.Transport.GRPC.Port,
-		Retry: c.Transport.GRPC.Retry,
+		Address: c.Transport.GRPC.Address,
+		Retry:   c.Transport.GRPC.Retry,
 	}
 
 	opts := []g.ClientOption{
@@ -85,7 +85,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		opts = append(opts, g.WithClientCompression())
 	}
 
-	conn, err := g.NewClient(cl.Host, opts...)
+	conn, err := g.NewClient(cl.Address, opts...)
 	runtime.Must(err)
 
 	return conn

@@ -15,18 +15,14 @@ type Config struct {
 	Retry   *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
 	TLS     *tls.Config   `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 	Timeout string        `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
-	Port    string        `yaml:"port,omitempty" json:"port,omitempty" toml:"port,omitempty"`
+	Address string        `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
 }
 
-// GetPort or default.
-func (c *Config) GetPort(port string) string {
-	if c.Port == "random" {
-		return ""
+// GetAddress or default.
+func (c *Config) GetAddress(address string) string {
+	if c.Address == "" {
+		return address
 	}
 
-	if c.Port == "" {
-		return port
-	}
-
-	return c.Port
+	return c.Address
 }

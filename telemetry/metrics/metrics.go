@@ -86,7 +86,7 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 	}
 
 	if cfg.IsOTLP() {
-		opts := []otlp.Option{otlp.WithEndpointURL(cfg.Host)}
+		opts := []otlp.Option{otlp.WithEndpointURL(cfg.URL)}
 
 		if cfg.HasKey() {
 			k, err := cfg.GetKey()

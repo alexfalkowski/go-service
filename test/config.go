@@ -126,14 +126,14 @@ func NewInsecureTransportConfig() *transport.Config {
 		HTTP: &http.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				Port:    Port(),
+				Address: "localhost:" + Port(),
 				Retry:   NewRetry(),
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				Port:    Port(),
+				Address: "localhost:" + Port(),
 				Retry:   NewRetry(),
 			},
 		},
@@ -150,7 +150,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				TLS:     s,
-				Port:    Port(),
+				Address: "localhost:" + Port(),
 				Retry:   r,
 			},
 		},
@@ -158,7 +158,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				TLS:     s,
-				Port:    Port(),
+				Address: "localhost:" + Port(),
 				Retry:   r,
 			},
 		},
@@ -176,7 +176,7 @@ func NewPrometheusMetricsConfig() *metrics.Config {
 func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
-		Host: "http://localhost:9009/otlp/v1/metrics",
+		URL:  "http://localhost:9009/otlp/v1/metrics",
 		Key:  Path("secrets/basic"),
 	}
 }
@@ -185,7 +185,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
-		Host: "localhost:4318",
+		URL:  "localhost:4318",
 		Key:  Path("secrets/basic"),
 	}
 }
@@ -222,7 +222,7 @@ func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
 			Timeout: "5s",
-			Port:    Port(),
+			Address: "localhost:" + Port(),
 			Retry:   NewRetry(),
 		},
 	}
@@ -234,7 +234,7 @@ func NewSecureDebugConfig() *debug.Config {
 		Config: &server.Config{
 			Timeout: "5s",
 			TLS:     NewTLSServerConfig(),
-			Port:    Port(),
+			Address: "localhost:" + Port(),
 			Retry:   NewRetry(),
 		},
 	}

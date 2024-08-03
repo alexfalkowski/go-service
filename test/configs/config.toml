@@ -1,7 +1,7 @@
 environment = "development"
 
 [debug]
-port = "6060"
+address = ":6060"
 timeout = "10s"
 
 [cache.redis]
@@ -36,7 +36,7 @@ public = "../test/secrets/ssh_public"
 private = "../test/secrets/ssh_private"
 
 [feature]
-host = "localhost:9000"
+address = "localhost:9000"
 timeout = "10s"
 
 [feature.retry]
@@ -71,19 +71,18 @@ kind = "prometheus"
 
 [telemetry.tracer]
 kind = "otlp"
-host = "http://localhost:4318/v1/traces"
+url = "http://localhost:4318/v1/traces"
 
 [time]
 kind = "nts"
-host = "time.cloudflare.com"
+address = "time.cloudflare.com"
 
 [token.argon2]
 key = "../test/secrets/token"
 hash = "$argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4UHNSvylB3BHgC8OClmnr0Uxc4"
 
 [transport.http]
-mux = "gateway"
-port = "11000"
+address = ":11000"
 user_agent = "Service http/1.0"
 timeout = "10s"
 
@@ -93,7 +92,7 @@ timeout = "1s"
 attempts = 3
 
 [transport.grpc]
-port = "12000"
+address = ":12000"
 user_agent = "Service grpc/1.0"
 timeout = "10s"
 

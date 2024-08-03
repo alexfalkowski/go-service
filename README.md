@@ -17,7 +17,7 @@ This framework heavily relies on [DI](https://en.wikipedia.org/wiki/Dependency_i
 ## Commands
 
 A service has commands that are configured using [Cobra](github.com/spf13/cobra). Each service has the following commands (you can add more):
-- `Server` - This will host your server.
+- `Server` - This will provide your server needs.
 - `Client` - This will provide your client needs.
 
 These are configured in the main function.
@@ -105,7 +105,7 @@ To configure, please specify the following:
 
 ```yaml
 feature:
-  host: localhost:9000
+  address: localhost:9000
   retry:
     backoff: 100ms
     timeout: 1s
@@ -218,7 +218,7 @@ To configure, please specify the following:
 telemetry:
   metrics:
     kind: otlp
-    host: http://localhost:9009/otlp/v1/metrics
+    url: http://localhost:9009/otlp/v1/metrics
     key: path to key
 ```
 
@@ -239,7 +239,7 @@ To configure, please specify the following:
 telemetry:
   tracer:
     kind: otlp
-    host: localhost:4318
+    url: localhost:4318
     key: path to key
 ```
 
@@ -302,7 +302,7 @@ To configure, please specify the following:
 ```yaml
 time:
   kind: nts
-  host: time.cloudflare.com
+  address: time.cloudflare.com
 ```
 
 ## Transport
@@ -331,14 +331,14 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
-    port: 8000
+    address: :8000
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
     timeout: 10s
   grpc:
-    port: 9000
+    address: :9000
     retry:
       backoff: 100ms
       timeout: 1s
@@ -443,7 +443,7 @@ To configure, please specify the following:
 
 ```yaml
 debug:
-  port: 6060
+  address: :6060
   timeout: 10s
 ```
 

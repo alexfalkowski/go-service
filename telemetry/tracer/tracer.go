@@ -34,7 +34,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		return noop.Tracer{}, nil
 	}
 
-	opts := []otlp.Option{otlp.WithEndpointURL(cfg.Host)}
+	opts := []otlp.Option{otlp.WithEndpointURL(cfg.URL)}
 
 	if cfg.HasKey() {
 		k, err := cfg.GetKey()

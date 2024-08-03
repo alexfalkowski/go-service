@@ -24,7 +24,7 @@ func TestSystem(t *testing.T) {
 
 func TestNTP(t *testing.T) {
 	Convey("Given I have NTP setup correctly", t, func() {
-		c := &time.Config{Kind: "ntp", Host: "0.beevik-ntp.pool.ntp.org"}
+		c := &time.Config{Kind: "ntp", Address: "0.beevik-ntp.pool.ntp.org"}
 		n := time.NewNetwork(c)
 
 		Convey("When I get the time", func() {
@@ -52,7 +52,7 @@ func TestNTP(t *testing.T) {
 
 func TestNTS(t *testing.T) {
 	Convey("Given I have NTS setup correctly", t, func() {
-		c := &time.Config{Kind: "nts", Host: "time.cloudflare.com"}
+		c := &time.Config{Kind: "nts", Address: "time.cloudflare.com"}
 		n := time.NewNetwork(c)
 
 		Convey("When I get the time", func() {

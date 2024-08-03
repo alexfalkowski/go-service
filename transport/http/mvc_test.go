@@ -43,7 +43,7 @@ func TestRouteSuccess(t *testing.T) {
 		Convey("When I query for hello", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "text/html")
@@ -99,7 +99,7 @@ func TestRouteError(t *testing.T) {
 		Convey("When I query for hello", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://localhost:%s/hello", cfg.HTTP.Port), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "text/html")
