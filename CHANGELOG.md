@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.266.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.266.0) - 2024-08-03
+
+- [`1d3b732`](https://github.com/alexfalkowski/go-service/commit/1d3b73207bff7fb3cdec3ad63d4c384a4976a6dc) feat(net): rename to use address (#904)
+- [`a8a7aa5`](https://github.com/alexfalkowski/go-service/commit/a8a7aa5e8c4ad7e8d5ba30be2b4c540b0b941a3f) build(ci): remove flipt (#903)
+
 ## [v1.265.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.265.0) - 2024-08-02
 
 - [`b68d585`](https://github.com/alexfalkowski/go-service/commit/b68d5850e0046de17357e56daaef5cceda76aa1b) feat(flags): remove flipt to leave it to use the provider we want (#902)
