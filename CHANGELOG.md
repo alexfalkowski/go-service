@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.269.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.269.0) - 2024-08-04
+
+- [`35a9bfe`](https://github.com/alexfalkowski/go-service/commit/35a9bfeed4717be447cfd6d9039b8b37bf7dfaf8) feat(metrics): do not default to prometheus (#908)
+
 ## [v1.268.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.268.0) - 2024-08-04
 
 - [`21d3b09`](https://github.com/alexfalkowski/go-service/commit/21d3b097c9e4ecec9f47d7e73db4fcd51154dfc0) feat(tracer): reader should be nil if disabled (#907)
