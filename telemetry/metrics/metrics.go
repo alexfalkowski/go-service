@@ -32,7 +32,7 @@ type MeterProviderParams struct {
 
 // NewMeterProvider for metrics.
 func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
-	if !IsEnabled(params.Config) {
+	if !IsEnabled(params.Config) || params.Reader == nil {
 		return &noop.MeterProvider{}
 	}
 
@@ -49,7 +49,7 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		OnStart: func(_ context.Context) error {
 			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
 
-			return se.Prefix("new meter", err)
+			return se.Prefix("start meter provider", err)
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
@@ -79,11 +79,10 @@ func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
 //
 //nolint:nilnil
 func NewReader(cfg *Config) (sm.Reader, error) {
-	if !IsEnabled(cfg) {
+	switch {
+	case !IsEnabled(cfg):
 		return nil, nil
-	}
-
-	if cfg.IsOTLP() {
+	case cfg.IsOTLP():
 		opts := []otlp.Option{otlp.WithEndpointURL(cfg.URL)}
 
 		if cfg.HasKey() {
@@ -98,9 +97,11 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 		r, err := otlp.New(context.Background(), opts...)
 
 		return sm.NewPeriodicReader(r), se.Prefix("new otlp", err)
+	case cfg.IsPrometheus():
+		e, err := prometheus.New()
+
+		return e, se.Prefix("new prometheus", err)
+	default:
+		return nil, nil
 	}
-
-	e, err := prometheus.New()
-
-	return e, se.Prefix("new prometheus", err)
 }
