@@ -71,18 +71,16 @@ type MeterParams struct {
 }
 
 // NewMeter for metrics.
-func NewMeter(params MeterParams) om.Meter {
-	if !IsEnabled(params.Config) {
-		return noop.Meter{}
-	}
-
-	return params.Provider.Meter(string(params.Name))
+func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
+	return provider.Meter(string(name))
 }
 
-// NewReader for metrics.
+// NewReader for metrics. A nil reader means disabled.
+//
+//nolint:nilnil
 func NewReader(cfg *Config) (sm.Reader, error) {
 	if !IsEnabled(cfg) {
-		return prom()
+		return nil, nil
 	}
 
 	if cfg.IsOTLP() {
@@ -102,10 +100,6 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 		return sm.NewPeriodicReader(r), se.Prefix("new otlp", err)
 	}
 
-	return prom()
-}
-
-func prom() (*prometheus.Exporter, error) {
 	e, err := prometheus.New()
 
 	return e, se.Prefix("new prometheus", err)
