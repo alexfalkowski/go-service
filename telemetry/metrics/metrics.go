@@ -11,7 +11,6 @@ import (
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	om "go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/noop"
 	sm "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
@@ -23,7 +22,6 @@ type MeterProviderParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
-	Config      *Config
 	Reader      sm.Reader
 	Environment env.Environment
 	Version     env.Version
@@ -32,10 +30,6 @@ type MeterProviderParams struct {
 
 // NewMeterProvider for metrics.
 func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
-	if !IsEnabled(params.Config) {
-		return &noop.MeterProvider{}
-	}
-
 	name := string(params.Name)
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
@@ -65,24 +59,21 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 type MeterParams struct {
 	fx.In
 
-	Config   *Config
 	Provider om.MeterProvider
 	Name     env.Name
 }
 
 // NewMeter for metrics.
-func NewMeter(params MeterParams) om.Meter {
-	if !IsEnabled(params.Config) {
-		return noop.Meter{}
-	}
-
-	return params.Provider.Meter(string(params.Name))
+func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
+	return provider.Meter(string(name))
 }
 
-// NewReader for metrics.
+// NewReader for metrics, a nil reader means noop provider.
+//
+//nolint:nilnil
 func NewReader(cfg *Config) (sm.Reader, error) {
 	if !IsEnabled(cfg) {
-		return prom()
+		return nil, nil
 	}
 
 	if cfg.IsOTLP() {
@@ -102,10 +93,6 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 		return sm.NewPeriodicReader(r), se.Prefix("new otlp", err)
 	}
 
-	return prom()
-}
-
-func prom() (*prometheus.Exporter, error) {
 	e, err := prometheus.New()
 
 	return e, se.Prefix("new prometheus", err)

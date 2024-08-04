@@ -17,8 +17,9 @@ import (
 	ri "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	ti "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"go.opentelemetry.io/otel/metric"
+	mn "go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
+	tn "go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -268,7 +269,11 @@ func options(opts ...ClientOption) *clientOpts {
 	}
 
 	if os.tracer == nil {
-		os.tracer = noop.Tracer{}
+		os.tracer = tn.Tracer{}
+	}
+
+	if os.meter == nil {
+		os.meter = mn.Meter{}
 	}
 
 	return os

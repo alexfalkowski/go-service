@@ -36,7 +36,6 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport"
@@ -278,7 +277,7 @@ func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger, env.Module,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
-		transport.Module, telemetry.Module, metrics.Module, health.Module,
+		transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, token.Module, cache.Module,
 		compress.Module, encoding.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
