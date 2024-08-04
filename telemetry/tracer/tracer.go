@@ -45,10 +45,6 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + k}))
 	}
 
-	return newTracer(lc, env, ver, name, logger, opts), nil
-}
-
-func newTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, logger *zap.Logger, opts []otlp.Option) trace.Tracer {
 	client := otlp.NewClient(opts...)
 	exporter := otlptrace.NewUnstarted(client)
 
@@ -76,7 +72,7 @@ func newTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		},
 	})
 
-	return p.Tracer(string(name))
+	return p.Tracer(string(name)), nil
 }
 
 type errorHandler struct {
