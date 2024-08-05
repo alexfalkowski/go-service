@@ -22,7 +22,6 @@ import (
 	"github.com/klauspost/compress/gzhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 )
 
@@ -181,7 +180,10 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 		hrt = rt
 	}
 
-	hrt = ht.NewRoundTripper(os.tracer, hrt)
+	if os.tracer != nil {
+		hrt = ht.NewRoundTripper(os.tracer, hrt)
+	}
+
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
 	return hrt
@@ -217,10 +219,6 @@ func options(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{}
 	for _, o := range opts {
 		o.apply(os)
-	}
-
-	if os.tracer == nil {
-		os.tracer = noop.Tracer{}
 	}
 
 	if os.timeout == 0 {
