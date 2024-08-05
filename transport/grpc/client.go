@@ -18,7 +18,6 @@ import (
 	ti "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -201,10 +200,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary := []grpc.UnaryClientInterceptor{}
 
 	unary = append(unary, os.unary...)
-
-	if os.timeout > 0 {
-		unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
-	}
+	unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
 		to := t.MustParseDuration(os.retry.Timeout)
@@ -232,7 +228,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, gm.NewClient(os.meter).UnaryInterceptor())
 	}
 
-	unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
+	if os.tracer != nil {
+		unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
+	}
+
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
 
 	return unary
@@ -263,12 +262,12 @@ func options(opts ...ClientOption) *clientOpts {
 		o.apply(os)
 	}
 
-	if os.security == nil {
-		os.security = grpc.WithTransportCredentials(insecure.NewCredentials())
+	if os.timeout == 0 {
+		os.timeout = 30 * time.Second
 	}
 
-	if os.tracer == nil {
-		os.tracer = noop.Tracer{}
+	if os.security == nil {
+		os.security = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
 	return os
