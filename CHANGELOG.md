@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.270.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.270.1) - 2024-08-06
+
+- [`e8f1484`](https://github.com/alexfalkowski/go-service/commit/e8f1484773b37fbdb9a56b499a48054e8d4e4698) fix(http): remove tmp variable (#910)
+
 ## [v1.270.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.270.0) - 2024-08-05
 
 - [`25b33b1`](https://github.com/alexfalkowski/go-service/commit/25b33b121d142aa87892aa38029f47d53b69d2ad) feat(grpc): set timout like other transports (#909)
