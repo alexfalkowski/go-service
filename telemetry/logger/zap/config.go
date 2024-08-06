@@ -38,8 +38,6 @@ func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 	}
 
 	cfg.Level = l
-	cfg.DisableCaller = true
-	cfg.DisableStacktrace = true
 	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.Format(time.RFC3339))
 	})
