@@ -18,15 +18,17 @@ type Config struct {
 	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 
-// NewConfig for zap.
-func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
+// NewConfig for zap. If disabled returns nil and ignored by logger.
+//
+//nolint:nilnil
+func NewConfig(env env.Environment, config *Config) (*zap.Config, error) {
 	if !IsEnabled(config) {
-		return zap.Config{}, nil
+		return nil, nil
 	}
 
 	l, err := zap.ParseAtomicLevel(config.Level)
 	if err != nil {
-		return zap.Config{}, err
+		return nil, err
 	}
 
 	var cfg zap.Config
@@ -42,5 +44,5 @@ func NewConfig(env env.Environment, config *Config) (zap.Config, error) {
 		enc.AppendString(t.Format(time.RFC3339))
 	})
 
-	return cfg, nil
+	return &cfg, nil
 }

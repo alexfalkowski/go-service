@@ -14,7 +14,7 @@ func NewLogger(lc fx.Lifecycle) *zap.Logger {
 	cfg, err := logger.NewConfig(Environment, c)
 	runtime.Must(err)
 
-	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: c, ZapConfig: cfg, Version: Version})
+	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: c, Logger: cfg, Version: Version})
 	runtime.Must(err)
 
 	return logger

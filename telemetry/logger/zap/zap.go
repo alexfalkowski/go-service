@@ -15,7 +15,7 @@ type LoggerParams struct {
 
 	Lifecycle   fx.Lifecycle
 	Config      *Config
-	ZapConfig   zap.Config
+	Logger      *zap.Config
 	Environment env.Environment
 	Version     env.Version
 	Name        env.Name
@@ -33,7 +33,7 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 		zap.String("version", string(params.Version)),
 	)
 
-	logger, err := params.ZapConfig.Build(fields)
+	logger, err := params.Logger.Build(fields)
 	if err != nil {
 		return nil, err
 	}
