@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.270.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.270.3) - 2024-08-06
+
+- [`34dbde8`](https://github.com/alexfalkowski/go-service/commit/34dbde8e8c04da9a8e18b0458d9fdf5ebb512946) fix(logger): zap config to be nillable (#912)
+
 ## [v1.270.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.270.2) - 2024-08-06
 
 - [`c22d5e3`](https://github.com/alexfalkowski/go-service/commit/c22d5e3874f8d8342d0386806d118e19b8587292) fix(logger): enable annotaions and stack trace (#911)
