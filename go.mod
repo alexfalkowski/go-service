@@ -1,6 +1,6 @@
 module github.com/alexfalkowski/go-service
 
-go 1.22.5
+go 1.22.6
 
 require (
 	github.com/BurntSushi/toml v1.4.0
