@@ -220,7 +220,7 @@ func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *
 	rc := shc.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
-	cc := checker.NewHTTPChecker(url, client)
+	cc := checker.NewHTTPChecker(url, client.Transport, 5*time.Second)
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 
 	no := checker.NewNoopChecker()
