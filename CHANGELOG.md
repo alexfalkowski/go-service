@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.272.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.272.1) - 2024-08-08
+
+- [`ba39dfe`](https://github.com/alexfalkowski/go-service/commit/ba39dfe3c02312623606f5f026ccfcd259a9f657) fix(go): set to min 1.22 (#926)
+
 ## [v1.272.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.272.0) - 2024-08-08
 
 - [`6c585c3`](https://github.com/alexfalkowski/go-service/commit/6c585c3fbcd59f3e582256cfe0f0efb49ed9ab71) feat(mem): limit allocations (#925)
