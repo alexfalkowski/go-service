@@ -1,12 +1,24 @@
 package strings
 
 import (
-	"regexp"
+	"strings"
 )
 
-var health = regexp.MustCompile(`health|healthz|livez|readyz|metrics`)
+var observables = []string{
+	"health",
+	"healthz",
+	"livez",
+	"readyz",
+	"metrics",
+}
 
 // IsObservable in the text.
 func IsObservable(text string) bool {
-	return health.MatchString(text)
+	for _, o := range observables {
+		if strings.Contains(text, o) {
+			return true
+		}
+	}
+
+	return false
 }

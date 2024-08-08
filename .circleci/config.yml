@@ -61,7 +61,6 @@ jobs:
           path: test/reports
       - codecov/upload:
           file: test/reports/final.cov
-      - run: make benchmarks
     resource_class: large
   release:
     docker:
