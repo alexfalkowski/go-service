@@ -10,9 +10,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
+	"go.uber.org/zap"
 	"golang.org/x/net/html"
 )
 
@@ -126,4 +128,46 @@ func TestRouteError(t *testing.T) {
 			lc.RequireStop()
 		})
 	})
+}
+
+func BenchmarkRoute(b *testing.B) {
+	b.ReportAllocs()
+
+	mux := http.NewServeMux()
+	lc := fxtest.NewLifecycle(b)
+	logger := zap.NewNop()
+	cfg := test.NewInsecureTransportConfig()
+	tc := test.NewOTLPTracerConfig()
+	m := test.NewOTLPMeter(lc)
+
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+	s.Register()
+
+	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+	v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+	r := mvc.NewRouter(mux, v)
+
+	r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+		return mvc.View("hello.tmpl"), &test.Model
+	})
+
+	client := cl.NewHTTP()
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+	runtime.Must(err)
+
+	req.Header.Set("Content-Type", "text/html")
+
+	lc.RequireStart()
+	b.ResetTimer()
+
+	b.Run("html", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = client.Do(req)
+		}
+	})
+
+	b.StopTimer()
+	lc.RequireStop()
 }
