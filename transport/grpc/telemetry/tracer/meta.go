@@ -30,9 +30,12 @@ func (s *Carrier) Set(key string, value string) {
 
 // Keys lists the keys stored in this carrier.
 func (s *Carrier) Keys() []string {
-	out := make([]string, 0, len(s.Metadata))
+	out := make([]string, len(s.Metadata))
+	cnt := 0
+
 	for key := range s.Metadata {
-		out = append(out, key)
+		out[cnt] = key
+		cnt++
 	}
 
 	return out

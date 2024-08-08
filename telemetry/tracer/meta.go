@@ -10,9 +10,16 @@ import (
 
 // Meta for tracer.
 func Meta(ctx context.Context, span trace.Span) {
-	for k, v := range meta.SnakeStrings(ctx, "meta.") {
-		span.SetAttributes(attribute.Key(k).String(v))
+	strs := meta.SnakeStrings(ctx, "meta.")
+	attrs := make([]attribute.KeyValue, len(strs))
+	cnt := 0
+
+	for k, v := range strs {
+		attrs[cnt] = attribute.Key(k).String(v)
+		cnt++
 	}
+
+	span.SetAttributes(attrs...)
 }
 
 // WithTraceID for tracer.
