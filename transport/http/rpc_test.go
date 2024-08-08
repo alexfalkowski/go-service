@@ -17,6 +17,7 @@ import (
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -293,4 +294,45 @@ func TestDisallowedRPC(t *testing.T) {
 			})
 		})
 	}
+}
+
+func BenchmarkRPC(b *testing.B) {
+	b.ReportAllocs()
+
+	mux := http.NewServeMux()
+	lc := fxtest.NewLifecycle(b)
+	logger := zap.NewNop()
+
+	cfg := test.NewInsecureTransportConfig()
+	tc := test.NewOTLPTracerConfig()
+	m := test.NewOTLPMeter(lc)
+
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+	s.Register()
+
+	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+	t := cl.NewHTTP().Transport
+
+	rpc.Register(mux, test.Marshaller)
+	rpc.Route("/hello", test.SuccessSayHello)
+
+	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
+	lc.RequireStart()
+	b.ResetTimer()
+
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		b.Run(mt, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				client := rpc.NewClient[test.Request, test.Response](url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(t))
+
+				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+			}
+		})
+	}
+
+	b.StopTimer()
+	lc.RequireStop()
 }
