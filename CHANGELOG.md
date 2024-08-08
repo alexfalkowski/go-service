@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.271.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.271.2) - 2024-08-08
+
+- [`1837ab8`](https://github.com/alexfalkowski/go-service/commit/1837ab8e9ef9872a20f0f2b3112b8d39b9ecae2d) fix(transport): limit memory usage (#922)
+- [`dad124f`](https://github.com/alexfalkowski/go-service/commit/dad124f98689e11a2aba9c96c2fb19db90359493) build(ci): add benchmarks (#921)
+- [`7d58744`](https://github.com/alexfalkowski/go-service/commit/7d5874465796cc874b6433a0b74c228f07516440) build(deps): bump bin from `44badfa` to `8724850` (#920)
+
 ## [v1.271.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.271.1) - 2024-08-08
 
 - [`7b93e47`](https://github.com/alexfalkowski/go-service/commit/7b93e47af972289b10e6e4804a285a20304e15ce) fix(deps): bump go.uber.org/fx from 1.22.1 to 1.22.2 (#918)
