@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.272.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.272.0) - 2024-08-08
+
+- [`6c585c3`](https://github.com/alexfalkowski/go-service/commit/6c585c3fbcd59f3e582256cfe0f0efb49ed9ab71) feat(mem): limit allocations (#925)
+- [`cd389f9`](https://github.com/alexfalkowski/go-service/commit/cd389f967d9ba11a23ebd92b442daebe44355db2) build(deps): bump bin from `cf2f550` to `2d4d510` (#924)
+- [`3bbcc27`](https://github.com/alexfalkowski/go-service/commit/3bbcc2746c56a958b8379658fa402e23faa49dd9) build(deps): bump bin from `8724850` to `cf2f550` (#923)
+
 ## [v1.271.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.271.2) - 2024-08-08
 
 - [`1837ab8`](https://github.com/alexfalkowski/go-service/commit/1837ab8e9ef9872a20f0f2b3112b8d39b9ecae2d) fix(transport): limit memory usage (#922)
