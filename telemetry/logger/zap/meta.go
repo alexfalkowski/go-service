@@ -10,10 +10,13 @@ import (
 
 // Meta for zap.
 func Meta(ctx context.Context) []zapcore.Field {
-	fields := []zapcore.Field{}
+	strs := meta.CamelStrings(ctx, "")
+	fields := make([]zapcore.Field, len(strs))
+	cnt := 0
 
-	for k, v := range meta.CamelStrings(ctx, "") {
-		fields = append(fields, zap.String(k, v))
+	for k, v := range strs {
+		fields[cnt] = zap.String(k, v)
+		cnt++
 	}
 
 	return fields

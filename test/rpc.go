@@ -29,7 +29,7 @@ func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 
 	s := "Hello " + name
 
-	return &Response{Greeting: &s}, nil
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}, nil
 }
 
 func ProtobufSayHello(_ context.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
