@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.273.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.273.0) - 2024-08-09
+
+- [`9fe7725`](https://github.com/alexfalkowski/go-service/commit/9fe772568d097531c7c77e6b6bee7c88151afdce) feat(crypto): remove argon token (#929)
+- [`303cf60`](https://github.com/alexfalkowski/go-service/commit/303cf6005b2bde0e1eb762a2d5f42156c9c54bb1) build(deps): bump bin from `2d4d510` to `808558f` (#928)
+
 ## [v1.272.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.272.2) - 2024-08-08
 
 - [`99b1d1b`](https://github.com/alexfalkowski/go-service/commit/99b1d1bc776d518dbb45011f4a636e32a7458ade) fix(deps): update github.com/alexfalkowski/go-health to v1.18.1 (#927)
