@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/feature"
-	"github.com/alexfalkowski/go-service/security/token/argon2"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -138,9 +137,6 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.SQL.PG.MaxIdleConns, ShouldEqual, 5)
 	So(cfg.SQL.PG.MaxOpenConns, ShouldEqual, 5)
 	So(cfg.SQL.PG.ConnMaxLifetime, ShouldEqual, "1h")
-	So(argon2.IsEnabled(cfg.Token.Argon2), ShouldBeTrue)
-	So(cfg.Token.Argon2.Key, ShouldNotBeBlank)
-	So(cfg.Token.Argon2.Hash, ShouldNotBeBlank)
 	So(cfg.Limiter.Kind, ShouldEqual, "user-agent")
 	So(cfg.Limiter.Tokens, ShouldEqual, 10)
 	So(cfg.Limiter.Interval, ShouldEqual, "1s")

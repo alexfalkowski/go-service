@@ -18,7 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -52,7 +51,6 @@ type Config struct {
 	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
 	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
 	Time        *time.Config      `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
-	Token       *token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
 	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
 }
@@ -199,14 +197,6 @@ func timeConfig(cfg *Config) *time.Config {
 	}
 
 	return cfg.Time
-}
-
-func tokenConfig(cfg *Config) *token.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
-	return cfg.Token
 }
 
 func tracerConfig(cfg *Config) *tracer.Config {

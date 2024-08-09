@@ -2,9 +2,6 @@ package token
 
 import (
 	"context"
-
-	"github.com/alexfalkowski/go-service/crypto/argon2"
-	ta "github.com/alexfalkowski/go-service/security/token/argon2"
 )
 
 type (
@@ -29,26 +26,18 @@ type (
 		GenerateConfig() (string, string, error)
 	}
 
-	none struct{}
+	// NoopTokenizer for token.
+	NoopTokenizer struct{}
 )
 
-// NewTokenizer for token.
-func NewTokenizer(cfg *Config, algo argon2.Algo) Tokenizer {
-	if !IsEnabled(cfg) {
-		return &none{}
-	}
-
-	return ta.NewTokenizer(cfg.Argon2, algo)
-}
-
-func (*none) GenerateConfig() (string, string, error) {
+func (*NoopTokenizer) GenerateConfig() (string, string, error) {
 	return "", "", nil
 }
 
-func (*none) Generate(ctx context.Context) (context.Context, []byte, error) {
+func (*NoopTokenizer) Generate(ctx context.Context) (context.Context, []byte, error) {
 	return ctx, nil, nil
 }
 
-func (*none) Verify(ctx context.Context, _ []byte) (context.Context, error) {
+func (*NoopTokenizer) Verify(ctx context.Context, _ []byte) (context.Context, error) {
 	return ctx, nil
 }

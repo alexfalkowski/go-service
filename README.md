@@ -249,25 +249,11 @@ telemetry:
 
 ## Token
 
-The framework allows you to define different token generators and verifiers.
-
-Out to the box we provide the following:
-- [argon2](https://github.com/matthewhartstonge/argon2)
+The framework allows you to define different token generators and verifiers. This is left up to you!
 
 We recommend that you look at better auth strategies, such as:
 - https://github.com/supertokens/supertokens-core
 - https://github.com/ory/hydra
-
-### Configuration
-
-To configure, please specify the following:
-
-```yaml
-token:
-  argon2:
-    key: path to the key
-    hash: hash of the key
-```
 
 ## Limiter
 
