@@ -19,8 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
-	"github.com/alexfalkowski/go-service/security/token"
-	"github.com/alexfalkowski/go-service/security/token/argon2"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -30,16 +28,6 @@ import (
 )
 
 const timeout = 2 * time.Second
-
-// NewToken for test.
-func NewToken() *token.Config {
-	return &token.Config{
-		Argon2: &argon2.Config{
-			Key:  Path("secrets/token"),
-			Hash: "$argon2id$v=19$m=65536,t=3,p=4$Pl+/KEOE1lEYXJAUKb+JVg$DxBhEwsBuMPKGCqz/4UHNSvylB3BHgC8OClmnr0Uxc4",
-		},
-	}
-}
 
 // NewEd25519 for test.
 func NewEd25519() *ed25519.Config {

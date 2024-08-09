@@ -34,7 +34,6 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -246,19 +245,6 @@ func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo, _
 	return nil
 }
 
-func tkn(t token.Tokenizer) error {
-	ctx := context.Background()
-
-	_, b, err := t.Generate(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = t.Verify(ctx, b)
-
-	return err
-}
-
 func controller(router *mvc.Router) {
 	router.Route("GET /test", func(_ context.Context) (mvc.View, mvc.Model) {
 		return mvc.View("test.tmpl"), nil
@@ -278,12 +264,12 @@ func opts() []fx.Option {
 		fx.NopLogger, env.Module,
 		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, health.Module,
-		sql.Module, hooks.Module, token.Module, cache.Module,
+		sql.Module, hooks.Module, cache.Module,
 		compress.Module, encoding.Module, crypto.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(tkn), fx.Invoke(environment), fx.Invoke(controller),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(controller),
 	}
 }
