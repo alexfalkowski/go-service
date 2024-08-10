@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.274.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.274.0) - 2024-08-10
+
+- [`af87847`](https://github.com/alexfalkowski/go-service/commit/af878478dac2524fb6fb62b288497f677abc20a3) feat(token): remove security package (#932)
+- [`0e72feb`](https://github.com/alexfalkowski/go-service/commit/0e72feb4ad97b3b9e2f4fe456569a9928ad126f2) feat(transport): remove security package (#931)
+
 ## [v1.273.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.273.1) - 2024-08-09
 
 - [`b0a8381`](https://github.com/alexfalkowski/go-service/commit/b0a83812355944af51198271401ca786c81cd5e7) fix(security): remove argon package (#930)
