@@ -3,7 +3,7 @@ package header_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/security/header"
+	"github.com/alexfalkowski/go-service/transport/header"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 

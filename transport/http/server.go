@@ -4,21 +4,21 @@ import (
 	"net/http"
 	"time"
 
-	st "github.com/alexfalkowski/go-service/crypto/tls"
+	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
 	lm "github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/security/token"
 	"github.com/alexfalkowski/go-service/server"
-	t "github.com/alexfalkowski/go-service/time"
+	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/http/cors"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	tkn "github.com/alexfalkowski/go-service/transport/http/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
@@ -68,7 +68,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Verifier != nil {
-		n.Use(tkn.NewHandler(params.Verifier))
+		n.Use(ht.NewHandler(params.Verifier))
 	}
 
 	if params.Limiter != nil {
@@ -109,11 +109,11 @@ func config(cfg *Config) (*sh.Config, error) {
 		Address: cfg.GetAddress(":8080"),
 	}
 
-	if !st.IsEnabled(cfg.TLS) {
+	if !ct.IsEnabled(cfg.TLS) {
 		return c, nil
 	}
 
-	tls, err := st.NewConfig(cfg.TLS)
+	tls, err := ct.NewConfig(cfg.TLS)
 	c.TLS = tls
 
 	return c, err
@@ -124,5 +124,5 @@ func timeout(cfg *Config) time.Duration {
 		return time.Minute
 	}
 
-	return t.MustParseDuration(cfg.Timeout)
+	return st.MustParseDuration(cfg.Timeout)
 }

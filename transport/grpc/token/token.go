@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/alexfalkowski/go-service/security/header"
 	"github.com/alexfalkowski/go-service/security/token"
-	st "github.com/alexfalkowski/go-service/transport/security/token"
+	"github.com/alexfalkowski/go-service/transport/header"
 	"github.com/alexfalkowski/go-service/transport/strings"
+	tt "github.com/alexfalkowski/go-service/transport/token"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,7 +24,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 			return handler(ctx, req)
 		}
 
-		ctx, err := st.Verify(ctx, verifier)
+		ctx, err := tt.Verify(ctx, verifier)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}
@@ -43,7 +43,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		ctx := stream.Context()
 
-		ctx, err := st.Verify(ctx, verifier)
+		ctx, err := tt.Verify(ctx, verifier)
 		if err != nil {
 			return status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
 		}
