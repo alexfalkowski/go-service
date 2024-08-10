@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	st "github.com/alexfalkowski/go-service/crypto/tls"
+	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/h2c"
@@ -15,10 +15,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	tkn "github.com/alexfalkowski/go-service/transport/http/security/token"
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
-	ht "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	tt "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -125,12 +125,12 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 }
 
 // WithClientTLS for HTTP.
-func WithClientTLS(sec *st.Config) (ClientOption, error) {
-	if !st.IsEnabled(sec) {
+func WithClientTLS(sec *ct.Config) (ClientOption, error) {
+	if !ct.IsEnabled(sec) {
 		return none, nil
 	}
 
-	conf, err := st.NewConfig(sec)
+	conf, err := ct.NewConfig(sec)
 	if err != nil {
 		return none, err
 	}
@@ -167,7 +167,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	}
 
 	if os.gen != nil {
-		hrt = tkn.NewRoundTripper(os.gen, hrt)
+		hrt = ht.NewRoundTripper(os.gen, hrt)
 	}
 
 	if os.logger != nil {
@@ -179,7 +179,7 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	}
 
 	if os.tracer != nil {
-		hrt = ht.NewRoundTripper(os.tracer, hrt)
+		hrt = tt.NewRoundTripper(os.tracer, hrt)
 	}
 
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)

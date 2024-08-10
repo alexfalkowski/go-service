@@ -12,7 +12,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
-	ht "github.com/alexfalkowski/go-service/transport/http/security/token"
+	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )

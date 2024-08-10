@@ -16,28 +16,4 @@ type (
 		// Verify a token or error.
 		Verify(ctx context.Context, token []byte) (context.Context, error)
 	}
-
-	// Tokenizer will generate and verify.
-	Tokenizer interface {
-		Generator
-		Verifier
-
-		// GenerateConfig to be used by the Tokenizer.
-		GenerateConfig() (string, string, error)
-	}
-
-	// NoopTokenizer for token.
-	NoopTokenizer struct{}
 )
-
-func (*NoopTokenizer) GenerateConfig() (string, string, error) {
-	return "", "", nil
-}
-
-func (*NoopTokenizer) Generate(ctx context.Context) (context.Context, []byte, error) {
-	return ctx, nil, nil
-}
-
-func (*NoopTokenizer) Verify(ctx context.Context, _ []byte) (context.Context, error) {
-	return ctx, nil
-}
