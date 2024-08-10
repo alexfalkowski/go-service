@@ -9,9 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/h2c"
-	r "github.com/alexfalkowski/go-service/retry"
-	"github.com/alexfalkowski/go-service/security/token"
-	t "github.com/alexfalkowski/go-service/time"
+	sr "github.com/alexfalkowski/go-service/retry"
+	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
@@ -39,7 +39,7 @@ type clientOpts struct {
 	roundTripper http.RoundTripper
 	gen          token.Generator
 	logger       *zap.Logger
-	retry        *r.Config
+	retry        *sr.Config
 	tls          *tls.Config
 	userAgent    env.UserAgent
 	timeout      time.Duration
@@ -71,7 +71,7 @@ func WithClientTokenGenerator(gen token.Generator) ClientOption {
 // WithClientTimeout for HTTP.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = t.MustParseDuration(timeout)
+		o.timeout = st.MustParseDuration(timeout)
 	})
 }
 
@@ -83,7 +83,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientRetry for HTTP.
-func WithClientRetry(cfg *r.Config) ClientOption {
+func WithClientRetry(cfg *sr.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
 	})

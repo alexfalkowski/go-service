@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/security/token"
+	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	tt "github.com/alexfalkowski/go-service/transport/token"
