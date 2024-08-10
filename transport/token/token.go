@@ -3,7 +3,7 @@ package token
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/security/token"
+	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/meta"
 )
 
