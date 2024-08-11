@@ -1,7 +1,7 @@
 package tracer
 
 import (
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/telemetry/header"
 )
 
 // IsEnabled for tracer.
@@ -11,17 +11,7 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for tracer.
 type Config struct {
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	URL  string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
-	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
-}
-
-// GetKey for tracer.
-func (c *Config) GetKey() (string, error) {
-	return os.ReadFile(c.Key)
-}
-
-// HasKey for tracer.
-func (c *Config) HasKey() bool {
-	return c.Key != ""
+	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
+	Kind    string     `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	URL     string     `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }

@@ -1,7 +1,7 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/telemetry/header"
 )
 
 // IsEnabled for metrics.
@@ -11,9 +11,9 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for metrics.
 type Config struct {
-	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	URL  string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
-	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+	Headers header.Map `yaml:"headers,omitempty" json:"headers,omitempty" toml:"headers,omitempty"`
+	Kind    string     `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	URL     string     `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }
 
 // IsOTLP configuration.
@@ -24,14 +24,4 @@ func (c *Config) IsOTLP() bool {
 // IsPrometheus configuration.
 func (c *Config) IsPrometheus() bool {
 	return c.Kind == "prometheus"
-}
-
-// GetKey for metrics.
-func (c *Config) GetKey() (string, error) {
-	return os.ReadFile(c.Key)
-}
-
-// HasKey for metrics.
-func (c *Config) HasKey() bool {
-	return c.Key != ""
 }
