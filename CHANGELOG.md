@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.275.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.275.0) - 2024-08-11
+
+- [`a307639`](https://github.com/alexfalkowski/go-service/commit/a3076396003982575a31ede5fe1642abf683a020) docs(telemetry): add headers (#934)
+- [`d1026a6`](https://github.com/alexfalkowski/go-service/commit/d1026a6cb8da268da9c643499993132f0ebc6c68) feat(telemetry): move to use headers (#933)
+
 ## [v1.274.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.274.0) - 2024-08-10
 
 - [`af87847`](https://github.com/alexfalkowski/go-service/commit/af878478dac2524fb6fb62b288497f677abc20a3) feat(token): remove security package (#932)
