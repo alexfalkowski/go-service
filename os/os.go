@@ -2,19 +2,29 @@ package os
 
 import (
 	"encoding/base64"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// ReadFile for os.
+// FileExists for the path provided.
+func FileExists(path string) bool {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+
+	return true
+}
+
+// ReadFile for the path provided.
 func ReadFile(path string) (string, error) {
 	b, err := os.ReadFile(filepath.Clean(path))
 
 	return strings.TrimSpace(string(b)), err
 }
 
-// ReadBase64File for os.
+// ReadBase64File for the path provided.
 func ReadBase64File(path string) (string, error) {
 	s, err := ReadFile(path)
 	if err != nil {

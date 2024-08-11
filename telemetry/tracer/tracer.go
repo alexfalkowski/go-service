@@ -34,18 +34,11 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		return noop.Tracer{}, nil
 	}
 
-	opts := []otlp.Option{otlp.WithEndpointURL(cfg.URL)}
-
-	if cfg.HasKey() {
-		k, err := cfg.GetKey()
-		if err != nil {
-			return nil, err
-		}
-
-		opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + k}))
+	if err := cfg.Headers.Secrets(); err != nil {
+		return nil, se.Prefix("tracer: header secrets", err)
 	}
 
-	client := otlp.NewClient(opts...)
+	client := otlp.NewClient(otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 	exporter := otlptrace.NewUnstarted(client)
 
 	attrs := resource.NewWithAttributes(
@@ -62,7 +55,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			return se.Prefix("start tracer", exporter.Start(ctx))
+			return se.Prefix("tracer: start error", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = p.Shutdown(ctx)
@@ -80,5 +73,5 @@ type errorHandler struct {
 }
 
 func (e *errorHandler) Handle(err error) {
-	e.logger.Error("trace: global error", zap.Error(err))
+	e.logger.Error("tracer: global error", zap.Error(err))
 }

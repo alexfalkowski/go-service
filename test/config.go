@@ -20,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/telemetry/header"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/transport"
@@ -165,7 +166,9 @@ func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
 		URL:  "http://localhost:9009/otlp/v1/metrics",
-		Key:  Path("secrets/basic"),
+		Headers: header.Map{
+			"Authorization": Path("secrets/metrics"),
+		},
 	}
 }
 
@@ -174,7 +177,9 @@ func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
 		URL:  "localhost:4318",
-		Key:  Path("secrets/basic"),
+		Headers: header.Map{
+			"Authorization": Path("secrets/tracer"),
+		},
 	}
 }
 

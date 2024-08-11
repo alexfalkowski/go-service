@@ -49,7 +49,7 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		OnStart: func(_ context.Context) error {
 			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
 
-			return se.Prefix("start meter provider", err)
+			return se.Prefix("metrics: start provider", err)
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
@@ -83,24 +83,17 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 	case !IsEnabled(cfg):
 		return nil, nil
 	case cfg.IsOTLP():
-		opts := []otlp.Option{otlp.WithEndpointURL(cfg.URL)}
-
-		if cfg.HasKey() {
-			k, err := cfg.GetKey()
-			if err != nil {
-				return nil, err
-			}
-
-			opts = append(opts, otlp.WithHeaders(map[string]string{"Authorization": "Basic " + k}))
+		if err := cfg.Headers.Secrets(); err != nil {
+			return nil, se.Prefix("metrics: header secrets", err)
 		}
 
-		r, err := otlp.New(context.Background(), opts...)
+		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 
-		return sm.NewPeriodicReader(r), se.Prefix("new otlp", err)
+		return sm.NewPeriodicReader(r), se.Prefix("metrics: otlp error", err)
 	case cfg.IsPrometheus():
 		e, err := prometheus.New()
 
-		return e, se.Prefix("new prometheus", err)
+		return e, se.Prefix("metrics: prometheus error", err)
 	default:
 		return nil, nil
 	}
