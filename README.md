@@ -219,7 +219,8 @@ telemetry:
   metrics:
     kind: otlp
     url: http://localhost:9009/otlp/v1/metrics
-    key: path to key
+    headers:
+      Authorization: path to key
 ```
 
 ### Trace
@@ -240,7 +241,8 @@ telemetry:
   tracer:
     kind: otlp
     url: localhost:4318
-    key: path to key
+    headers:
+      Authorization: path to key
 ```
 
 ### Dependencies
