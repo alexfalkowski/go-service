@@ -12,8 +12,8 @@ github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 h1:+JkXLHME8vLJafGhOH4aoV2Iu8bR55nU6iKMVfYVLjY=
 github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1/go.mod h1:nuudZmJhzWtx2212z+pkuy7B6nkBqa+xwNXZHL1j8cg=
-github.com/alexfalkowski/go-health v1.18.1 h1:UcZJhboo/QWI8rOpFWcJMtT6ZtF/5CuY+DI/MkizCss=
-github.com/alexfalkowski/go-health v1.18.1/go.mod h1:3tyoVAHZn5WQkHk+agMLQTEL02063M9G1gHab4JmgiU=
+github.com/alexfalkowski/go-health v1.19.0 h1:p8gx3OJ+jpxXHh6W5eXF1pfCys1DMWgzE/yyH/u1v5E=
+github.com/alexfalkowski/go-health v1.19.0/go.mod h1:OxtnkvUD2qKWQWTOvUJxPOSHaueFICXNDtAsXJejFBQ=
 github.com/arl/statsviz v0.6.0 h1:jbW1QJkEYQkufd//4NDYRSNBpwJNrdzPahF7ZmoGdyE=
 github.com/arl/statsviz v0.6.0/go.mod h1:0toboo+YGSUXDaS4g1D5TVS4dXs7S7YYT5J/qnW2h8s=
 github.com/avast/retry-go/v3 v3.1.1 h1:49Scxf4v8PmiQ/nY0aY3p0hDueqSmc7++cBbtiDGu2g=
