@@ -1,12 +1,9 @@
 version: 2.1
 
-orbs:
-  codecov: codecov/codecov@4.0.1
-
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:1.22
+      - image: alexfalkowski/go:1.23
       - image: postgres:16-bullseye
         environment:
           POSTGRES_DB: test
@@ -59,8 +56,7 @@ jobs:
           path: test/reports
       - store_artifacts:
           path: test/reports
-      - codecov/upload:
-          file: test/reports/final.cov
+      - run: make codecov-upload
     resource_class: large
   release:
     docker:
