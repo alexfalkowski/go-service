@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.276.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.276.0) - 2024-08-14
+
+- [`f9a5087`](https://github.com/alexfalkowski/go-service/commit/f9a50870671076a0aca37e28cff4ead26ff53684) feat(go): upload to v1.23 (#939)
+- [`7e19b29`](https://github.com/alexfalkowski/go-service/commit/7e19b29b89692bb50579c20fdc70fd3c44736b76) build(deps): bump bin from `808558f` to `ac397e7` (#937)
+- [`92d03a4`](https://github.com/alexfalkowski/go-service/commit/92d03a43dff90a218c68b94c7d7eb34f869f41a9) docs(diagrams): update (#935)
+
 ## [v1.275.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.275.0) - 2024-08-11
 
 - [`a307639`](https://github.com/alexfalkowski/go-service/commit/a3076396003982575a31ede5fe1642abf683a020) docs(telemetry): add headers (#934)
