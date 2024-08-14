@@ -1,11 +1,11 @@
 module github.com/alexfalkowski/go-service
 
-go 1.22
+go 1.23
 
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.6.1
-	github.com/alexfalkowski/go-health v1.18.1
+	github.com/alexfalkowski/go-health v1.19.0
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/beevik/ntp v1.4.3
