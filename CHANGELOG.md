@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.276.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.276.1) - 2024-08-15
+
+- [`7c93f2f`](https://github.com/alexfalkowski/go-service/commit/7c93f2f48a4737377bcdd8b790cb87652260eef5) fix(deps): bump github.com/open-feature/go-sdk-contrib/hooks/open-telemetry from 0.3.3 to 0.3.4 (#941)
+- [`2b5a833`](https://github.com/alexfalkowski/go-service/commit/2b5a8336b9f4183d8cb4c01e474ac3f2b3ff2e63) build(deps): bump bin from `ac397e7` to `41b7c8b` (#942)
+
 ## [v1.276.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.276.0) - 2024-08-14
 
 - [`f9a5087`](https://github.com/alexfalkowski/go-service/commit/f9a50870671076a0aca37e28cff4ead26ff53684) feat(go): upload to v1.23 (#939)
