@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.276.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.276.2) - 2024-08-15
+
+- [`5f0ba95`](https://github.com/alexfalkowski/go-service/commit/5f0ba95292ad99b2b4949d96de28f9397a27f592) fix(deps): bump github.com/prometheus/client_golang from 1.19.1 to 1.20.0 (#940)
+
 ## [v1.276.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.276.1) - 2024-08-15
 
 - [`7c93f2f`](https://github.com/alexfalkowski/go-service/commit/7c93f2f48a4737377bcdd8b790cb87652260eef5) fix(deps): bump github.com/open-feature/go-sdk-contrib/hooks/open-telemetry from 0.3.3 to 0.3.4 (#941)
