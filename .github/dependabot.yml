@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      prefix: "fix"
+      prefix: "feat"
       prefix-development: "build"
       include: "scope"
   - package-ecosystem: "gitsubmodule"

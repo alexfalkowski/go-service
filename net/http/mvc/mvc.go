@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/meta"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/go-sprout/sprout"
+	"github.com/go-sprout/sprout/sprigin"
 	"go.uber.org/fx"
 )
 
@@ -53,7 +53,7 @@ func NewViews(params ViewsParams) *Views {
 	if params.FS == nil || params.Patterns == nil {
 		t = template.New("")
 	} else {
-		t = template.Must(template.New("").Funcs(sprout.FuncMap(sprout.WithLogger(nil))).ParseFS(params.FS, params.Patterns...))
+		t = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
 	}
 
 	return &Views{template: t}
