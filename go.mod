@@ -30,7 +30,7 @@ require (
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/open-feature/go-sdk v1.12.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.4
-	github.com/prometheus/client_golang v1.20.1
+	github.com/prometheus/client_golang v1.20.2
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/rs/cors v1.11.0
 	github.com/sethvargo/go-limiter v1.0.0
