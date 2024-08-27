@@ -23,6 +23,7 @@ type ms struct {
 	miss  metric.Int64ObservableCounter
 }
 
+//nolint:gosec
 func (m *ms) callback(_ context.Context, o metric.Observer) error {
 	stats := m.cache.Stats()
 	if stats != nil {

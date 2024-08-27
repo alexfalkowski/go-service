@@ -12,6 +12,7 @@ linters:
     - bidichk
     - containedctx
     - contextcheck
+    - copyloopvar
     - cyclop
     - decorder
     - dogsled
@@ -21,9 +22,7 @@ linters:
     - errchkjson
     - errname
     - errorlint
-    - exportloopref
     - exhaustive
-    - exportloopref
     - forbidigo
     - funlen
     - gci
