@@ -48,7 +48,7 @@ func (a *aesAlgo) Encrypt(msg string) (string, error) {
 		return "", err
 	}
 
-	n, err := rand.GenerateBytes(uint32(g.NonceSize()))
+	n, err := rand.GenerateBytes(uint32(g.NonceSize())) //nolint:gosec
 	if err != nil {
 		return "", err
 	}

@@ -53,7 +53,7 @@ func Take(ctx context.Context, store limiter.Store, key KeyFunc) (bool, string, 
 		return false, "", err
 	}
 
-	r := time.Until(time.Unix(0, int64(reset)))
+	r := time.Until(time.Unix(0, int64(reset))) //nolint:gosec
 	v := fmt.Sprintf("limit=%d, remaining=%d, reset=%s", tokens, remaining, r)
 
 	return ok, v, nil
