@@ -15,7 +15,7 @@ type OutputConfig struct {
 }
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(enc *encoding.Map) *OutputConfig {
+func NewOutputConfig(enc *encoding.MarshallerMap) *OutputConfig {
 	c := NewConfig(*OutputFlag, enc)
 
 	return &OutputConfig{Config: c}

@@ -14,7 +14,7 @@ type Config struct {
 }
 
 // NewConfig for cmd.
-func NewConfig(flag string, enc *encoding.Map) *Config {
+func NewConfig(flag string, enc *encoding.MarshallerMap) *Config {
 	k, l := SplitFlag(flag)
 	rw := NewReadWriter(k, l)
 	m := enc.Get(rw.Kind())
