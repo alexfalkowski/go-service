@@ -200,14 +200,14 @@ func NewPGConfig() *pg.Config {
 func NewInputConfig(flag string) *cmd.InputConfig {
 	*cmd.InputFlag = flag
 
-	return cmd.NewInputConfig(Marshaller)
+	return cmd.NewInputConfig(Encoder)
 }
 
 // NewOutputConfig for test.
 func NewOutputConfig(flag string) *cmd.OutputConfig {
 	*cmd.OutputFlag = flag
 
-	return cmd.NewOutputConfig(Marshaller)
+	return cmd.NewOutputConfig(Encoder)
 }
 
 // NewInsecureDebugConfig for test.
@@ -234,10 +234,10 @@ func NewSecureDebugConfig() *debug.Config {
 }
 
 // NewRedisConfig for test.
-func NewRedisConfig(secret, compressor, marshaller string) *redis.Config {
+func NewRedisConfig(secret, compressor, encoder string) *redis.Config {
 	return &redis.Config{
 		Addresses:  map[string]string{"server": "localhost:6379"},
-		Compressor: compressor, Marshaller: marshaller,
+		Compressor: compressor, Encoder: encoder,
 		URL: Path("secrets/" + secret),
 	}
 }

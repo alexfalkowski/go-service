@@ -9,11 +9,11 @@ import (
 
 var (
 	mux  *http.ServeMux
-	enc  *encoding.EncoderMap
+	enc  *encoding.Map
 	pool *sync.BufferPool
 )
 
 // Register for rpc.
-func Register(mu *http.ServeMux, en *encoding.EncoderMap, p *sync.BufferPool) {
+func Register(mu *http.ServeMux, en *encoding.Map, p *sync.BufferPool) {
 	mux, enc, pool = mu, en, p
 }

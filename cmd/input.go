@@ -15,7 +15,7 @@ type InputConfig struct {
 }
 
 // NewInputConfig for cmd.
-func NewInputConfig(enc *encoding.MarshallerMap) *InputConfig {
+func NewInputConfig(enc *encoding.Map) *InputConfig {
 	c := NewConfig(*InputFlag, enc)
 
 	return &InputConfig{Config: c}

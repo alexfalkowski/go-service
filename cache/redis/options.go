@@ -1,11 +1,13 @@
 package redis
 
 import (
+	"bytes"
 	"time"
 
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
 	gr "github.com/alexfalkowski/go-service/redis"
+	"github.com/alexfalkowski/go-service/sync"
 	"github.com/go-redis/cache/v9"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
@@ -17,7 +19,8 @@ type OptionsParams struct {
 
 	Client     gr.Client
 	Config     *Config
-	Encoder    *encoding.MarshallerMap
+	Encoder    *encoding.Map
+	Pool       *sync.BufferPool
 	Compressor *compress.Map
 }
 
@@ -32,18 +35,20 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 		return opts, nil
 	}
 
-	fm := params.Encoder.Get(params.Config.Marshaller)
+	fm := params.Encoder.Get(params.Config.Encoder)
 	cm := params.Compressor.Get(params.Config.Compressor)
 	opts := &cache.Options{
 		Redis:        params.Client,
 		StatsEnabled: true,
 		Marshal: func(v any) ([]byte, error) {
-			d, err := fm.Marshal(v)
-			if err != nil {
+			b := params.Pool.Get()
+			defer params.Pool.Put(b)
+
+			if err := fm.Encode(b, v); err != nil {
 				return nil, err
 			}
 
-			return cm.Compress(d), nil
+			return cm.Compress(b.Bytes()), nil
 		},
 		Unmarshal: func(b []byte, v any) error {
 			d, err := cm.Decompress(b)
@@ -51,7 +56,7 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 				return err
 			}
 
-			return fm.Unmarshal(d, v)
+			return fm.Decode(bytes.NewReader(d), v)
 		},
 	}
 

@@ -53,7 +53,7 @@ type Type struct {
 }
 
 // Marshaller for type.
-func (t *Type) Encoder(enc *encoding.EncoderMap) (encoding.Encoder, error) {
+func (t *Type) Encoder(enc *encoding.Map) (encoding.Encoder, error) {
 	m := enc.Get(t.Kind)
 	if m == nil {
 		return nil, ErrInvalidEncoder

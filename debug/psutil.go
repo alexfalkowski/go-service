@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterPprof for debug.
-func RegisterPsutil(srv *Server, mar *json.Marshaller) {
+func RegisterPsutil(srv *Server, enc *json.Encoder) {
 	mux := srv.ServeMux()
 
 	psutil := func(resp http.ResponseWriter, req *http.Request) {
@@ -34,10 +34,7 @@ func RegisterPsutil(srv *Server, mar *json.Marshaller) {
 		}
 
 		content.AddJSONHeader(resp.Header())
-
-		b, _ := mar.Marshal(r)
-
-		resp.Write(b)
+		enc.Encode(resp, r)
 	}
 
 	mux.HandleFunc("/debug/psutil", psutil)

@@ -11,7 +11,7 @@ func TestMustParseDuration(t *testing.T) {
 	Convey("When I try to parse duration", t, func() {
 		f := func() { time.MustParseDuration("test") }
 
-		Convey("Then I should have valid marshaller", func() {
+		Convey("Then I should have an invalid duration", func() {
 			So(f, ShouldPanic)
 		})
 	})

@@ -28,7 +28,7 @@ func TestInsecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, json.NewMarshaller())
+		debug.RegisterPsutil(server, json.NewEncoder())
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
@@ -77,7 +77,7 @@ func TestSecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, json.NewMarshaller())
+		debug.RegisterPsutil(server, json.NewEncoder())
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
