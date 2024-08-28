@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.281.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.281.0) - 2024-08-28
+
+- [`e128672`](https://github.com/alexfalkowski/go-service/commit/e1286726a75f9f0c4e5b5d7ac27b078d7e633db7) feat(deps): bump google.golang.org/grpc from 1.65.0 to 1.66.0 (#960)
+- [`05ec181`](https://github.com/alexfalkowski/go-service/commit/05ec18119bebca1a85c1530509bf8874df2e4c65) build(deps): bump bin from `41b7c8b` to `4d2cb2a` (#958)
+- [`1dd56d6`](https://github.com/alexfalkowski/go-service/commit/1dd56d6590127ea03a6cf730c6153234cf72347f) build(sec): disable gosec lint (#957)
+
 ## [v1.280.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.280.1) - 2024-08-26
 
 - [`17f3f0b`](https://github.com/alexfalkowski/go-service/commit/17f3f0bb0ef3c49d0a3faa113d56dfbd5a8d29d4) fix(deps): update github.com/prometheus/client_golang to v1.20.2 (#955)
