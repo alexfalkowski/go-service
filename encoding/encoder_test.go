@@ -7,14 +7,14 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestMap(t *testing.T) {
+func TestEncoder(t *testing.T) {
 	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
 		Convey("Given I have map", t, func() {
-			Convey("When I create marshaller", func() {
-				m := test.Marshaller.Get(k)
+			Convey("When I create encoder", func() {
+				e := test.Encoder.Get(k)
 
-				Convey("Then I should have valid marshaller", func() {
-					So(m, ShouldNotBeNil)
+				Convey("Then I should have valid encoder", func() {
+					So(e, ShouldNotBeNil)
 				})
 			})
 		})
@@ -22,8 +22,8 @@ func TestMap(t *testing.T) {
 
 	for _, k := range []string{"test", "bob"} {
 		Convey("Given I have map", t, func() {
-			Convey("When I create marshaller", func() {
-				m := test.Marshaller.Get(k)
+			Convey("When I create encoder", func() {
+				m := test.Encoder.Get(k)
 
 				Convey("Then I should have none", func() {
 					So(m, ShouldBeNil)

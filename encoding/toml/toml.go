@@ -1,7 +1,7 @@
 package toml
 
 import (
-	"bytes"
+	"io"
 
 	"github.com/BurntSushi/toml"
 )
@@ -15,12 +15,27 @@ func NewMarshaller() *Marshaller {
 }
 
 func (m *Marshaller) Marshal(v any) ([]byte, error) {
-	var b bytes.Buffer
-	err := toml.NewEncoder(&b).Encode(v)
-
-	return b.Bytes(), err
+	return toml.Marshal(v)
 }
 
 func (m *Marshaller) Unmarshal(data []byte, v any) error {
 	return toml.Unmarshal(data, v)
+}
+
+// Encoder for toml.
+type Encoder struct{}
+
+// NewEncoder for toml.
+func NewEncoder() *Encoder {
+	return &Encoder{}
+}
+
+func (e *Encoder) Encode(w io.Writer, v any) error {
+	return toml.NewEncoder(w).Encode(v)
+}
+
+func (e *Encoder) Decode(r io.Reader, v any) error {
+	_, err := toml.NewDecoder(r).Decode(v)
+
+	return err
 }

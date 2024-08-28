@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -85,13 +84,16 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		}
 	}()
 
-	m, err := c.ct.Marshaller(enc)
+	e, err := c.ct.Encoder(enc)
 	runtime.Must(err)
 
-	d, err := m.Marshal(req)
+	b := pool.Get()
+	defer pool.Put(b)
+
+	err = e.Encode(b, req)
 	runtime.Must(err)
 
-	request, err := http.NewRequestWithContext(ctx, "POST", c.url, bytes.NewBuffer(d))
+	request, err := http.NewRequestWithContext(ctx, "POST", c.url, b)
 	runtime.Must(err)
 
 	request.Header.Set(content.TypeKey, c.ct.Media)
@@ -101,19 +103,21 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 
 	defer response.Body.Close()
 
-	body, err := io.ReadAll(response.Body)
+	b.Reset()
+
+	_, err = io.Copy(b, response.Body)
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
 	ct := content.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
-		return nil, status.Error(response.StatusCode, strings.TrimSpace(string(body)))
+		return nil, status.Error(response.StatusCode, strings.TrimSpace(b.String()))
 	}
 
 	var rp Res
 	res = &rp
 
-	err = m.Unmarshal(body, res)
+	err = e.Decode(b, res)
 	runtime.Must(err)
 
 	return res, nil

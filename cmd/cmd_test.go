@@ -34,6 +34,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -262,7 +263,8 @@ func shutdown(s fx.Shutdowner) {
 func opts() []fx.Option {
 	return []fx.Option{
 		fx.NopLogger, env.Module,
-		runtime.Module, cmd.Module, config.Module, debug.Module, feature.Module, st.Module,
+		runtime.Module, cmd.Module, config.Module, debug.Module,
+		sync.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module,
 		compress.Module, encoding.Module, crypto.Module,

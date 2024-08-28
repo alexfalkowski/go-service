@@ -17,7 +17,7 @@ type OptionsParams struct {
 
 	Client     gr.Client
 	Config     *Config
-	Encoder    *encoding.Map
+	Encoder    *encoding.MarshallerMap
 	Compressor *compress.Map
 }
 

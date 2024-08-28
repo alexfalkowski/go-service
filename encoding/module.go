@@ -12,9 +12,15 @@ import (
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(proto.NewMarshaller),
+	fx.Provide(proto.NewEncoder),
 	fx.Provide(json.NewMarshaller),
+	fx.Provide(json.NewEncoder),
 	fx.Provide(toml.NewMarshaller),
+	fx.Provide(toml.NewEncoder),
 	fx.Provide(yaml.NewMarshaller),
+	fx.Provide(yaml.NewEncoder),
 	fx.Provide(gob.NewMarshaller),
-	fx.Provide(NewMap),
+	fx.Provide(gob.NewEncoder),
+	fx.Provide(NewMarshallerMap),
+	fx.Provide(NewEncoderMap),
 )

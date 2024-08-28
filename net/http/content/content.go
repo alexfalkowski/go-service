@@ -17,8 +17,8 @@ var (
 	// TypeKey for HTTP headers.
 	TypeKey = "Content-Type"
 
-	// ErrInvalidMarshaller for content.
-	ErrInvalidMarshaller = errors.New("invalid marshaller")
+	// ErrInvalidEncoder for content.
+	ErrInvalidEncoder = errors.New("invalid encoder")
 )
 
 // AddJSONHeader for content.
@@ -53,10 +53,10 @@ type Type struct {
 }
 
 // Marshaller for type.
-func (t *Type) Marshaller(enc *encoding.Map) (encoding.Marshaller, error) {
+func (t *Type) Encoder(enc *encoding.EncoderMap) (encoding.Encoder, error) {
 	m := enc.Get(t.Kind)
 	if m == nil {
-		return nil, ErrInvalidMarshaller
+		return nil, ErrInvalidEncoder
 	}
 
 	return m, nil
