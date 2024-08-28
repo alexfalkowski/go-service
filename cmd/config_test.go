@@ -16,7 +16,7 @@ func TestNoneConfig(t *testing.T) {
 				c := test.NewInputConfig(r)
 
 				Convey("Then I should have a valid configuration", func() {
-					So(c.Unmarshal(nil), ShouldBeError)
+					So(c.Decode(nil), ShouldBeError)
 				})
 			})
 

@@ -32,7 +32,7 @@ import (
 func NewConfig(i *cmd.InputConfig) (*Config, error) {
 	c := &Config{}
 
-	return c, i.Unmarshal(c)
+	return c, i.Decode(c)
 }
 
 // IsEnabled for config.

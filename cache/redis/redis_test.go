@@ -20,7 +20,6 @@ func init() {
 	tracer.Register()
 
 	test.Encoder.Register("error", test.NewEncoder(errors.New("failed")))
-	test.Marshaller.Register("error", test.NewMarshaller(errors.New("failed")))
 	test.Compressor.Register("error", test.NewCompressor(errors.New("failed")))
 }
 
