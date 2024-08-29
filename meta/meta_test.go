@@ -16,7 +16,7 @@ func TestSnakeCase(t *testing.T) {
 		Convey("When I get the strings", func() {
 			m := meta.SnakeStrings(ctx, "")
 
-			Convey("Then I should have valid marshaller", func() {
+			Convey("Then I should have valid map", func() {
 				So(m, ShouldEqual, meta.Map{"test_id": "1"})
 			})
 		})

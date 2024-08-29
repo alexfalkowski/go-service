@@ -57,7 +57,7 @@ We support the following:
 - [S2](https://github.com/klauspost/compress/tree/master/s2)
 - [Snappy](https://github.com/klauspost/compress/tree/master/snappy)
 
-## Marshalling
+## Encoders
 
 We support the following:
 - [JSON](https://github.com/goccy/go-json)
@@ -81,7 +81,7 @@ To configure, please specify the following:
 cache:
   redis:
     compressor: snappy
-    marshaller: proto
+    encoder: proto
     addresses:
       server: localhost:6379
     url: path to url

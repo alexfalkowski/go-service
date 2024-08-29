@@ -126,7 +126,7 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Feature.Address, ShouldEqual, "localhost:9000")
 	So(cfg.Hooks.Secret, ShouldEqual, "../test/secrets/hooks")
 	So(cfg.Cache.Redis.Compressor, ShouldEqual, "snappy")
-	So(cfg.Cache.Redis.Marshaller, ShouldEqual, "proto")
+	So(cfg.Cache.Redis.Encoder, ShouldEqual, "proto")
 	So(cfg.Cache.Ristretto.BufferItems, ShouldEqual, 64)
 	So(cfg.Cache.Ristretto.MaxCost, ShouldEqual, 100000000)
 	So(cfg.Cache.Ristretto.NumCounters, ShouldEqual, 10000000)

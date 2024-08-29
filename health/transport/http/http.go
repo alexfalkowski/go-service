@@ -19,26 +19,26 @@ const (
 type RegisterParams struct {
 	fx.In
 
-	Mux        *http.ServeMux
-	Health     *HealthObserver
-	Liveness   *LivenessObserver
-	Readiness  *ReadinessObserver
-	Marshaller *json.Marshaller
-	Version    env.Version
+	Mux       *http.ServeMux
+	Health    *HealthObserver
+	Liveness  *LivenessObserver
+	Readiness *ReadinessObserver
+	Encoder   *json.Encoder
+	Version   env.Version
 }
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
 	mux := params.Mux
 
-	resister("/healthz", mux, params.Health.Observer, params.Version, params.Marshaller, true)
-	resister("/livez", mux, params.Liveness.Observer, params.Version, params.Marshaller, false)
-	resister("/readyz", mux, params.Readiness.Observer, params.Version, params.Marshaller, false)
+	resister("/healthz", mux, params.Health.Observer, params.Version, params.Encoder, true)
+	resister("/livez", mux, params.Liveness.Observer, params.Version, params.Encoder, false)
+	resister("/readyz", mux, params.Readiness.Observer, params.Version, params.Encoder, false)
 
 	return nil
 }
 
-func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version env.Version, mar *json.Marshaller, withErrors bool) {
+func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version env.Version, enc *json.Encoder, withErrors bool) {
 	mux.HandleFunc("GET "+path, func(resp http.ResponseWriter, _ *http.Request) {
 		content.AddJSONHeader(resp.Header())
 		resp.Header().Set("Version", string(version))
@@ -76,8 +76,6 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version 
 			}
 		}
 
-		b, _ := mar.Marshal(data)
-
-		resp.Write(b)
+		enc.Encode(resp, data)
 	})
 }

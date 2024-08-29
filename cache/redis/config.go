@@ -12,7 +12,7 @@ func IsEnabled(cfg *Config) bool {
 // Config for redis.
 type Config struct {
 	Compressor string            `yaml:"compressor,omitempty" json:"compressor,omitempty" toml:"compressor,omitempty"`
-	Marshaller string            `yaml:"marshaller,omitempty" json:"marshaller,omitempty" toml:"marshaller,omitempty"`
+	Encoder    string            `yaml:"encoder,omitempty" json:"encoder,omitempty" toml:"encoder,omitempty"`
 	Addresses  map[string]string `yaml:"addresses,omitempty" json:"addresses,omitempty" toml:"addresses,omitempty"`
 	URL        string            `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }

@@ -13,7 +13,7 @@ func TestMap(t *testing.T) {
 			Convey("When I create compressor", func() {
 				m := test.Compressor.Get(k)
 
-				Convey("Then I should have valid marshaller", func() {
+				Convey("Then I should have valid compressor", func() {
 					So(m, ShouldNotBeNil)
 				})
 			})

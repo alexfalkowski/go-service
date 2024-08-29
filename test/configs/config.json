@@ -6,7 +6,7 @@
     },
     "cache": {
       "redis": {
-        "marshaller": "proto",
+        "encoder": "proto",
         "compressor": "snappy",
         "addresses": {
           "server": "localhost:6379"

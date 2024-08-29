@@ -21,14 +21,14 @@ type Encoder interface {
 
 type encoders map[string]Encoder
 
-// MarshallerMap of marshaller.
-type EncoderMap struct {
+// Map of encoding.
+type Map struct {
 	encoders encoders
 }
 
-// NewMarshallerMap for marshaller.
-func NewEncoderMap() *EncoderMap {
-	m := &EncoderMap{
+// NewMap for encoding.
+func NewMap() *Map {
+	m := &Map{
 		encoders: encoders{
 			"json":     json.NewEncoder(),
 			"yaml":     yaml.NewEncoder(),
@@ -44,11 +44,11 @@ func NewEncoderMap() *EncoderMap {
 }
 
 // Register kind and encoder.
-func (f *EncoderMap) Register(kind string, enc Encoder) {
+func (f *Map) Register(kind string, enc Encoder) {
 	f.encoders[kind] = enc
 }
 
 // Get from kind.
-func (f *EncoderMap) Get(kind string) Encoder {
+func (f *Map) Get(kind string) Encoder {
 	return f.encoders[kind]
 }

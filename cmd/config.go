@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"io/fs"
 
 	"github.com/alexfalkowski/go-service/encoding"
@@ -9,17 +10,17 @@ import (
 
 // Config for cmd.
 type Config struct {
-	m  encoding.Marshaller
-	rw ReaderWriter
+	enc encoding.Encoder
+	rw  ReaderWriter
 }
 
 // NewConfig for cmd.
-func NewConfig(flag string, enc *encoding.MarshallerMap) *Config {
+func NewConfig(flag string, enc *encoding.Map) *Config {
 	k, l := SplitFlag(flag)
 	rw := NewReadWriter(k, l)
 	m := enc.Get(rw.Kind())
 
-	return &Config{rw: rw, m: m}
+	return &Config{rw: rw, enc: m}
 }
 
 // Kind of config.
@@ -27,14 +28,14 @@ func (c *Config) Kind() string {
 	return c.rw.Kind()
 }
 
-// Unmarshal for config.
-func (c *Config) Unmarshal(data any) error {
+// Decode for config.
+func (c *Config) Decode(data any) error {
 	d, err := c.rw.Read()
 	if err != nil {
-		return errors.Prefix("unmarshal config", err)
+		return errors.Prefix("decode config", err)
 	}
 
-	return errors.Prefix("unmarshal config", c.m.Unmarshal(d, data))
+	return errors.Prefix("decode config", c.enc.Decode(bytes.NewReader(d), data))
 }
 
 // Write for config.

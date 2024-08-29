@@ -184,12 +184,15 @@ func TestErrorRPC(t *testing.T) {
 
 			Convey("When I post data", func() {
 				client := cl.NewHTTP()
-				mar := test.Marshaller.Get(mt)
+				enc := test.Encoder.Get(mt)
 
-				d, err := mar.Marshal(test.Request{Name: "Bob"})
+				b := test.Pool.Get()
+				defer test.Pool.Put(b)
+
+				err := enc.Encode(b, test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
+				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), b)
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/"+mt)

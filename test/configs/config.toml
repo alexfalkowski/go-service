@@ -5,7 +5,7 @@ address = ":6060"
 timeout = "10s"
 
 [cache.redis]
-marshaller = "proto"
+encoder = "proto"
 compressor = "snappy"
 url = "../test/secrets/redis"
 

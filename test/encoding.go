@@ -10,28 +10,8 @@ import (
 // Pool for tests.
 var Pool = sync.NewBufferPool()
 
-// Marshaller for tests.
-var Marshaller = encoding.NewMarshallerMap()
-
-// NewMarshaller for test.
-func NewMarshaller(err error) encoding.Marshaller {
-	return &mar{err: err}
-}
-
-type mar struct {
-	err error
-}
-
-func (m *mar) Marshal(_ any) ([]byte, error) {
-	return nil, m.err
-}
-
-func (m *mar) Unmarshal(_ []byte, _ any) error {
-	return m.err
-}
-
 // Encoder for tests.
-var Encoder = encoding.NewEncoderMap()
+var Encoder = encoding.NewMap()
 
 // NewEncoder for test.
 func NewEncoder(err error) encoding.Encoder {
