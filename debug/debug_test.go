@@ -1,11 +1,12 @@
 package debug_test
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -28,7 +29,7 @@ func TestInsecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, json.NewEncoder())
+		debug.RegisterPsutil(server, test.Encoder)
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
@@ -48,12 +49,17 @@ func TestInsecureDebug(t *testing.T) {
 			}
 
 			for _, u := range urls {
-				r, err := client.Get(u)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", u, http.NoBody)
 				So(err, ShouldBeNil)
 
-				defer r.Body.Close()
+				req.Header.Set("Content-Type", "application/json")
 
-				So(r.StatusCode, ShouldEqual, 200)
+				res, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer res.Body.Close()
+
+				So(res.StatusCode, ShouldEqual, 200)
 			}
 
 			lc.RequireStop()
@@ -77,7 +83,7 @@ func TestSecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, json.NewEncoder())
+		debug.RegisterPsutil(server, test.Encoder)
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
@@ -103,12 +109,17 @@ func TestSecureDebug(t *testing.T) {
 			}
 
 			for _, u := range urls {
-				r, err := client.Get(u)
+				req, err := http.NewRequestWithContext(context.Background(), "GET", u, http.NoBody)
 				So(err, ShouldBeNil)
 
-				defer r.Body.Close()
+				req.Header.Set("Content-Type", "application/json")
 
-				So(r.StatusCode, ShouldEqual, 200)
+				res, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer res.Body.Close()
+
+				So(res.StatusCode, ShouldEqual, 200)
 			}
 
 			lc.RequireStop()

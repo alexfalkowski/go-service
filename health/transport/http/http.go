@@ -4,9 +4,12 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/encoding/json"
-	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/errors"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
+	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/runtime"
 	"go.uber.org/fx"
 )
 
@@ -23,25 +26,36 @@ type RegisterParams struct {
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
-	Encoder   *json.Encoder
-	Version   env.Version
+	Encoder   *encoding.Map
 }
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
 	mux := params.Mux
 
-	resister("/healthz", mux, params.Health.Observer, params.Version, params.Encoder, true)
-	resister("/livez", mux, params.Liveness.Observer, params.Version, params.Encoder, false)
-	resister("/readyz", mux, params.Readiness.Observer, params.Version, params.Encoder, false)
+	resister("/healthz", mux, params.Health.Observer, params.Encoder, true)
+	resister("/livez", mux, params.Liveness.Observer, params.Encoder, false)
+	resister("/readyz", mux, params.Readiness.Observer, params.Encoder, false)
 
 	return nil
 }
 
-func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version env.Version, enc *json.Encoder, withErrors bool) {
-	mux.HandleFunc("GET "+path, func(resp http.ResponseWriter, _ *http.Request) {
-		content.AddJSONHeader(resp.Header())
-		resp.Header().Set("Version", string(version))
+func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *encoding.Map, withErrors bool) {
+	mux.HandleFunc("GET "+path, func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+
+		defer func() {
+			if r := recover(); r != nil {
+				err := errors.Prefix("health", runtime.ConvertRecover(r))
+				nh.WriteError(ctx, res, err, status.Code(err))
+			}
+		}()
+
+		ct := content.NewFromRequest(req)
+		res.Header().Add(content.TypeKey, ct.Media)
+
+		e, err := ct.Encoder(enc)
+		runtime.Must(err)
 
 		var (
 			status   int
@@ -56,7 +70,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version 
 			response = serving
 		}
 
-		resp.WriteHeader(status)
+		res.WriteHeader(status)
 
 		data := map[string]any{"status": response}
 
@@ -76,6 +90,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, version 
 			}
 		}
 
-		enc.Encode(resp, data)
+		err = e.Encode(res, data)
+		runtime.Must(err)
 	})
 }
