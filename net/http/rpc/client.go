@@ -64,13 +64,13 @@ func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, 
 		},
 	}
 
-	return &Client[Req, Res]{client: client, url: url, ct: content.NewFromMedia(os.contentType, enc)}
+	return &Client[Req, Res]{client: client, url: url, ct: os.contentType}
 }
 
 // Client for HTTP.
 type Client[Req any, Res any] struct {
 	client *http.Client
-	ct     *content.Type
+	ct     string
 	url    string
 }
 
@@ -87,13 +87,15 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	b := pool.Get()
 	defer pool.Put(b)
 
-	err = c.ct.Encoder.Encode(b, req)
+	ct := cont.NewFromMedia(c.ct)
+
+	err = ct.Encoder.Encode(b, req)
 	runtime.Must(err)
 
 	request, err := http.NewRequestWithContext(ctx, "POST", c.url, b)
 	runtime.Must(err)
 
-	request.Header.Set(content.TypeKey, c.ct.Media)
+	request.Header.Set(content.TypeKey, ct.Media)
 
 	response, err := c.client.Do(request)
 	runtime.Must(err)
@@ -106,7 +108,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
-	ct := content.NewFromMedia(response.Header.Get(content.TypeKey), enc)
+	ct = cont.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
 		return nil, status.Error(response.StatusCode, strings.TrimSpace(b.String()))
 	}
@@ -114,7 +116,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	var rp Res
 	res = &rp
 
-	err = c.ct.Encoder.Decode(b, res)
+	err = ct.Encoder.Decode(b, res)
 	runtime.Must(err)
 
 	return res, nil

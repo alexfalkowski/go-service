@@ -64,7 +64,7 @@ func TestHealth(t *testing.T) {
 			params := shh.RegisterParams{
 				Mux: mux, Health: &shh.HealthObserver{Observer: o},
 				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-				Encoder: test.Encoder,
+				Content: test.Content,
 			}
 			err = shh.Register(params)
 			So(err, ShouldBeNil)
@@ -123,7 +123,7 @@ func TestReadinessNoop(t *testing.T) {
 		params := shh.RegisterParams{
 			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
-			Encoder: test.Encoder,
+			Content: test.Content,
 		}
 		err = shh.Register(params)
 		So(err, ShouldBeNil)
@@ -181,7 +181,7 @@ func TestInvalidHealth(t *testing.T) {
 		params := shh.RegisterParams{
 			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-			Encoder: test.Encoder,
+			Content: test.Content,
 		}
 		err = shh.Register(params)
 		So(err, ShouldBeNil)

@@ -29,7 +29,7 @@ func TestInsecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, test.Encoder)
+		debug.RegisterPsutil(server, test.Content)
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})
@@ -83,7 +83,7 @@ func TestSecureDebug(t *testing.T) {
 
 		debug.RegisterPprof(server)
 		debug.RegisterFgprof(server)
-		debug.RegisterPsutil(server, test.Encoder)
+		debug.RegisterPsutil(server, test.Content)
 		debug.RegisterStatsviz(server)
 
 		transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{server}})

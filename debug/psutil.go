@@ -3,7 +3,6 @@ package debug
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -11,9 +10,9 @@ import (
 )
 
 // RegisterPprof for debug.
-func RegisterPsutil(srv *Server, enc *encoding.Map) {
+func RegisterPsutil(srv *Server, content *content.Content) {
 	mux := srv.ServeMux()
-	h := content.NewHandler("debug", enc, func(ctx context.Context) any {
+	h := content.NewHandler("debug", func(ctx context.Context) any {
 		data := make(map[string]any)
 
 		i, err := cpu.InfoWithContext(ctx)

@@ -41,7 +41,7 @@ func TestValidAuthUnary(t *testing.T) {
 			Generator: test.NewGenerator("test", nil),
 		}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for an authenticated greet", func() {
@@ -96,7 +96,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			Generator: test.NewGenerator("bob", nil),
 		}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -149,7 +149,7 @@ func TestMissingAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -203,7 +203,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			RoundTripper: ht.NewRoundTripper(test.NewGenerator("", nil), http.DefaultTransport),
 		}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -250,7 +250,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for a unauthenticated greet", func() {
@@ -304,7 +304,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			Generator: test.NewGenerator("", errors.New("token error")),
 		}
 
-		rpc.Register(mux, test.Encoder, test.Pool)
+		rpc.Register(mux, test.Content, test.Pool)
 		rpc.Route("/hello", test.SuccessSayHello)
 
 		Convey("When I query for a greet that will generate a token error", func() {

@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/net/http/content"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/runtime"
 )
@@ -13,7 +12,7 @@ type Handler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
 // Route for rpc.
 func Route[Req any, Res any](path string, handler Handler[Req, Res]) {
-	h := content.NewHandler("rpc", enc, func(ctx context.Context) any {
+	h := cont.NewHandler("rpc", func(ctx context.Context) any {
 		e := hc.Encoder(ctx)
 		req := hc.Request(ctx)
 

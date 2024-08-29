@@ -43,7 +43,7 @@ func TestRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
@@ -84,7 +84,7 @@ func TestProtobufRPC(t *testing.T) {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
 			s.Register()
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.ProtobufSayHello)
 
 			lc.RequireStart()
@@ -125,7 +125,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
@@ -177,7 +177,7 @@ func TestErrorRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.ErrorSayHello)
 
 			lc.RequireStart()
@@ -233,7 +233,7 @@ func TestAllowedRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
@@ -274,7 +274,7 @@ func TestDisallowedRPC(t *testing.T) {
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
 
-			rpc.Register(mux, test.Encoder, test.Pool)
+			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			lc.RequireStart()
@@ -316,7 +316,7 @@ func BenchmarkRPC(b *testing.B) {
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 	t := cl.NewHTTP().Transport
 
-	rpc.Register(mux, test.Encoder, test.Pool)
+	rpc.Register(mux, test.Content, test.Pool)
 	rpc.Route("/hello", test.SuccessSayHello)
 
 	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
