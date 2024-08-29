@@ -1,15 +1,13 @@
 package http
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/runtime"
+	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"go.uber.org/fx"
 )
 
@@ -41,21 +39,7 @@ func Register(params RegisterParams) error {
 }
 
 func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *encoding.Map, withErrors bool) {
-	mux.HandleFunc("GET "+path, func(res http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
-
-		defer func() {
-			if r := recover(); r != nil {
-				err := errors.Prefix("health", runtime.ConvertRecover(r))
-				nh.WriteError(ctx, res, err, status.Code(err))
-			}
-		}()
-
-		ct := content.NewFromRequest(req)
-		res.Header().Add(content.TypeKey, ct.Media)
-
-		e := ct.Encoder(enc)
-
+	h := content.NewHandler("health", enc, func(ctx context.Context) any {
 		var (
 			status   int
 			response string
@@ -69,6 +53,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *enc
 			response = serving
 		}
 
+		res := hc.Response(ctx)
 		res.WriteHeader(status)
 
 		data := map[string]any{"status": response}
@@ -89,7 +74,8 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *enc
 			}
 		}
 
-		err := e.Encode(res, data)
-		runtime.Must(err)
+		return data
 	})
+
+	mux.HandleFunc("GET "+path, h)
 }
