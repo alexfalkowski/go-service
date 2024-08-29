@@ -21,11 +21,6 @@ var (
 	ErrInvalidEncoder = errors.New("invalid encoder")
 )
 
-// AddJSONHeader for content.
-func AddJSONHeader(header http.Header) {
-	header.Set(TypeKey, jsonMediaType)
-}
-
 // NewFromRequest for content.
 func NewFromRequest(req *http.Request) *Type {
 	t, err := ct.GetMediaType(req)

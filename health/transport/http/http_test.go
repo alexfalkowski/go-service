@@ -64,7 +64,7 @@ func TestHealth(t *testing.T) {
 			params := shh.RegisterParams{
 				Mux: mux, Health: &shh.HealthObserver{Observer: o},
 				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-				Version: test.Version,
+				Encoder: test.Encoder,
 			}
 			err = shh.Register(params)
 			So(err, ShouldBeNil)
@@ -78,6 +78,8 @@ func TestHealth(t *testing.T) {
 
 				req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/%s", cfg.HTTP.Address, check), http.NoBody)
 				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/json")
 
 				resp, err := client.Do(req)
 				So(err, ShouldBeNil)
@@ -93,7 +95,6 @@ func TestHealth(t *testing.T) {
 
 				Convey("Then I should have a healthy response", func() {
 					So(actual, ShouldEqual, "{\"status\":\"SERVING\"}")
-					So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 				})
 			})
 		})
@@ -122,7 +123,7 @@ func TestReadinessNoop(t *testing.T) {
 		params := shh.RegisterParams{
 			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
-			Version: test.Version,
+			Encoder: test.Encoder,
 		}
 		err = shh.Register(params)
 		So(err, ShouldBeNil)
@@ -135,6 +136,7 @@ func TestReadinessNoop(t *testing.T) {
 
 			req.Header.Add("Request-ID", "test-id")
 			req.Header.Add("User-Agent", "test-user-agent")
+			req.Header.Set("Content-Type", "application/json")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -150,7 +152,6 @@ func TestReadinessNoop(t *testing.T) {
 
 			Convey("Then I should have a healthy response", func() {
 				So(actual, ShouldEqual, "{\"status\":\"SERVING\"}")
-				So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 			})
 		})
 	})
@@ -178,7 +179,7 @@ func TestInvalidHealth(t *testing.T) {
 		params := shh.RegisterParams{
 			Mux: mux, Health: &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-			Version: test.Version,
+			Encoder: test.Encoder,
 		}
 		err = shh.Register(params)
 		So(err, ShouldBeNil)
@@ -188,6 +189,8 @@ func TestInvalidHealth(t *testing.T) {
 		Convey("When I query health", func() {
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/healthz", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
+
+			req.Header.Set("Content-Type", "application/json")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -203,7 +206,6 @@ func TestInvalidHealth(t *testing.T) {
 
 			Convey("Then I should have an unhealthy response", func() {
 				So(actual, ShouldEqual, "{\"errors\":{\"http\":\"invalid status code\"},\"status\":\"NOT_SERVING\"}")
-				So(resp.Header.Get("Version"), ShouldEqual, string(test.Version))
 			})
 		})
 	})
