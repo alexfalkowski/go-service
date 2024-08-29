@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"go.uber.org/fx"
@@ -24,22 +23,22 @@ type RegisterParams struct {
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
-	Encoder   *encoding.Map
+	Content   *content.Content
 }
 
 // Register health for HTTP.
 func Register(params RegisterParams) error {
 	mux := params.Mux
 
-	resister("/healthz", mux, params.Health.Observer, params.Encoder, true)
-	resister("/livez", mux, params.Liveness.Observer, params.Encoder, false)
-	resister("/readyz", mux, params.Readiness.Observer, params.Encoder, false)
+	resister("/healthz", mux, params.Health.Observer, params.Content, true)
+	resister("/livez", mux, params.Liveness.Observer, params.Content, false)
+	resister("/readyz", mux, params.Readiness.Observer, params.Content, false)
 
 	return nil
 }
 
-func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *encoding.Map, withErrors bool) {
-	h := content.NewHandler("health", enc, func(ctx context.Context) any {
+func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *content.Content, withErrors bool) {
+	h := ct.NewHandler("health", func(ctx context.Context) any {
 		var (
 			status   int
 			response string

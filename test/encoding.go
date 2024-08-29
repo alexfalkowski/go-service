@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/sync"
 )
 
@@ -12,6 +13,9 @@ var Pool = sync.NewBufferPool()
 
 // Encoder for tests.
 var Encoder = encoding.NewMap()
+
+// Content for tests.
+var Content = content.NewContent(Encoder)
 
 // NewEncoder for test.
 func NewEncoder(err error) encoding.Encoder {

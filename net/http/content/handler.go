@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
@@ -16,7 +15,7 @@ import (
 type Handler func(ctx context.Context) any
 
 // NewHandler for content.
-func NewHandler(prefix string, enc *encoding.Map, handler Handler) func(res http.ResponseWriter, req *http.Request) {
+func (c *Content) NewHandler(prefix string, handler Handler) func(res http.ResponseWriter, req *http.Request) {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
@@ -29,7 +28,7 @@ func NewHandler(prefix string, enc *encoding.Map, handler Handler) func(res http
 			}
 		}()
 
-		ct := NewFromRequest(req, enc)
+		ct := c.NewFromRequest(req)
 
 		ctx = hc.WithEncoder(ctx, ct.Encoder)
 		res.Header().Add(TypeKey, ct.Media)

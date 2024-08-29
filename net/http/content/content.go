@@ -15,18 +15,28 @@ const (
 	TypeKey = "Content-Type"
 )
 
+// Content creates types from media types.
+type Content struct {
+	enc *encoding.Map
+}
+
+// NewContent with an encoding.
+func NewContent(enc *encoding.Map) *Content {
+	return &Content{enc: enc}
+}
+
 // NewFromRequest for content.
-func NewFromRequest(req *http.Request, enc *encoding.Map) *Type {
+func (c *Content) NewFromRequest(req *http.Request) *Type {
 	t, err := ct.GetMediaType(req)
 
-	return newType(t, err, enc)
+	return newType(t, err, c.enc)
 }
 
 // NewFromMedia for content.
-func NewFromMedia(mediaType string, enc *encoding.Map) *Type {
+func (c *Content) NewFromMedia(mediaType string) *Type {
 	t, err := ct.ParseMediaType(mediaType)
 
-	return newType(t, err, enc)
+	return newType(t, err, c.enc)
 }
 
 // Type for content.
