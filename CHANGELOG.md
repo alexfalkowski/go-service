@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.283.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.283.0) - 2024-08-29
+
+- [`812655c`](https://github.com/alexfalkowski/go-service/commit/812655c6a82a6ed23bcc0fecefe6037ecff19458) feat(encoding): remove unmarshal (#963)
+
 ## [v1.282.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.282.0) - 2024-08-28
 
 - [`292055a`](https://github.com/alexfalkowski/go-service/commit/292055a22a1aed68829efbce231cc8d4652a61ce) feat(sync): use a buffer pool (#959)
