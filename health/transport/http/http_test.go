@@ -138,12 +138,12 @@ func TestReadinessNoop(t *testing.T) {
 			req.Header.Add("User-Agent", "test-user-agent")
 			req.Header.Set("Content-Type", "application/json")
 
-			resp, err := client.Do(req)
+			res, err := client.Do(req)
 			So(err, ShouldBeNil)
 
-			defer resp.Body.Close()
+			defer res.Body.Close()
 
-			body, err := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(res.Body)
 			So(err, ShouldBeNil)
 
 			actual := strings.TrimSpace(string(body))
@@ -152,6 +152,8 @@ func TestReadinessNoop(t *testing.T) {
 
 			Convey("Then I should have a healthy response", func() {
 				So(actual, ShouldEqual, "{\"status\":\"SERVING\"}")
+				So(res.StatusCode, ShouldEqual, 200)
+				So(res.Header.Get("Content-Type"), ShouldEqual, "application/json")
 			})
 		})
 	})
@@ -190,12 +192,12 @@ func TestInvalidHealth(t *testing.T) {
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/healthz", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
-			resp, err := client.Do(req)
+			res, err := client.Do(req)
 			So(err, ShouldBeNil)
 
-			defer resp.Body.Close()
+			defer res.Body.Close()
 
-			body, err := io.ReadAll(resp.Body)
+			body, err := io.ReadAll(res.Body)
 			So(err, ShouldBeNil)
 
 			actual := strings.TrimSpace(string(body))
@@ -204,6 +206,8 @@ func TestInvalidHealth(t *testing.T) {
 
 			Convey("Then I should have an unhealthy response", func() {
 				So(actual, ShouldEqual, "{\"errors\":{\"http\":\"invalid status code\"},\"status\":\"NOT_SERVING\"}")
+				So(res.StatusCode, ShouldEqual, 503)
+				So(res.Header.Get("Content-Type"), ShouldEqual, "application/json")
 			})
 		})
 	})

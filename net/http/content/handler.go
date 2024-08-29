@@ -29,13 +29,12 @@ func NewHandler(prefix string, enc *encoding.Map, handler Handler) func(res http
 			}
 		}()
 
-		ct := NewFromRequest(req)
+		ct := NewFromRequest(req, enc)
 		res.Header().Add(TypeKey, ct.Media)
 
-		e := ct.Encoder(enc)
 		data := handler(ctx)
 
-		err := e.Encode(res, data)
+		err := ct.Encoder.Encode(res, data)
 		runtime.Must(err)
 	}
 
