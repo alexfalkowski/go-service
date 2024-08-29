@@ -1,7 +1,6 @@
 package content
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/encoding"
@@ -13,13 +12,8 @@ const (
 	jsonKind      = "json"
 )
 
-var (
-	// TypeKey for HTTP headers.
-	TypeKey = "Content-Type"
-
-	// ErrInvalidEncoder for content.
-	ErrInvalidEncoder = errors.New("invalid encoder")
-)
+// TypeKey for HTTP headers.
+var TypeKey = "Content-Type"
 
 // NewFromRequest for content.
 func NewFromRequest(req *http.Request) *Type {
@@ -48,13 +42,13 @@ type Type struct {
 }
 
 // Marshaller for type.
-func (t *Type) Encoder(enc *encoding.Map) (encoding.Encoder, error) {
+func (t *Type) Encoder(enc *encoding.Map) encoding.Encoder {
 	m := enc.Get(t.Kind)
 	if m == nil {
-		return nil, ErrInvalidEncoder
+		m = enc.Get(jsonKind)
 	}
 
-	return m, nil
+	return m
 }
 
 // IsText for type.

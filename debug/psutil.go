@@ -30,8 +30,7 @@ func RegisterPsutil(srv *Server, enc *encoding.Map) {
 		ct := content.NewFromRequest(req)
 		res.Header().Add(content.TypeKey, ct.Media)
 
-		e, err := ct.Encoder(enc)
-		runtime.Must(err)
+		e := ct.Encoder(enc)
 
 		data := make(map[string]any)
 

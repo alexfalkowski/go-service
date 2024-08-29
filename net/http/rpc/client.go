@@ -84,8 +84,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		}
 	}()
 
-	e, err := c.ct.Encoder(enc)
-	runtime.Must(err)
+	e := c.ct.Encoder(enc)
 
 	b := pool.Get()
 	defer pool.Put(b)

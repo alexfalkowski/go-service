@@ -190,8 +190,6 @@ func TestInvalidHealth(t *testing.T) {
 			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/healthz", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
-			req.Header.Set("Content-Type", "application/json")
-
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
 
