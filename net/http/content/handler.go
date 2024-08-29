@@ -30,6 +30,8 @@ func NewHandler(prefix string, enc *encoding.Map, handler Handler) func(res http
 		}()
 
 		ct := NewFromRequest(req, enc)
+
+		ctx = hc.WithEncoder(ctx, ct.Encoder)
 		res.Header().Add(TypeKey, ct.Media)
 
 		data := handler(ctx)
