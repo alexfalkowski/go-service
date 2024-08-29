@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.286.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.286.2) - 2024-08-29
+
+- [`62926cb`](https://github.com/alexfalkowski/go-service/commit/62926cbf5fe1d29c5a1e280ea0fd31409faaa55d) fix(http): make sure rpc uses content handler (#968)
+
 ## [v1.286.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.286.1) - 2024-08-29
 
 - [`1cf54bd`](https://github.com/alexfalkowski/go-service/commit/1cf54bd63c1f0ab221f80402e6240448c5b93be5) fix(http): make sure we set the media to json if encoder is not found (#967)
