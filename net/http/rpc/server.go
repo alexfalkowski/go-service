@@ -32,13 +32,12 @@ func Route[Req any, Res any](path string, handler Handler[Req, Res]) {
 		ct := content.NewFromRequest(req)
 		res.Header().Add(content.TypeKey, ct.Media)
 
-		e, err := ct.Encoder(enc)
-		runtime.Must(err)
+		e := ct.Encoder(enc)
 
 		var rq Req
 		ptr := &rq
 
-		err = e.Decode(req.Body, ptr)
+		err := e.Decode(req.Body, ptr)
 		runtime.Must(err)
 
 		rs, err := handler(ctx, ptr)

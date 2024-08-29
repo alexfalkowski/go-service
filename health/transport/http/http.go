@@ -54,8 +54,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *enc
 		ct := content.NewFromRequest(req)
 		res.Header().Add(content.TypeKey, ct.Media)
 
-		e, err := ct.Encoder(enc)
-		runtime.Must(err)
+		e := ct.Encoder(enc)
 
 		var (
 			status   int
@@ -90,7 +89,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, enc *enc
 			}
 		}
 
-		err = e.Encode(res, data)
+		err := e.Encode(res, data)
 		runtime.Must(err)
 	})
 }
