@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.287.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.287.1) - 2024-08-30
+
+- [`49c0896`](https://github.com/alexfalkowski/go-service/commit/49c08962f80006312f3f3692fd654cbf30ee82c8) fix(deps): update github.com/rs/cors to v1.11.1 (#972)
+- [`a7808df`](https://github.com/alexfalkowski/go-service/commit/a7808df5d4f0e7ba760d80319bf21e6b25fb080d) docs(diagrams): update with make diagrams (#970)
+
 ## [v1.287.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.287.0) - 2024-08-30
 
 - [`162f34d`](https://github.com/alexfalkowski/go-service/commit/162f34d970cb917874bcbfb3b74a338b81b3aad3) feat(http): move to a content struct (#969)
