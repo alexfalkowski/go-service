@@ -13,7 +13,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dgraph-io/ristretto v0.1.1
 	github.com/elnormous/contenttype v1.0.4
-	github.com/felixge/fgprof v0.9.4
+	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-redis/cache/v9 v9.0.0
 	github.com/go-sprout/sprout v0.5.1
