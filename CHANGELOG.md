@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.288.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.288.0) - 2024-09-01
+
+- [`c6e42d8`](https://github.com/alexfalkowski/go-service/commit/c6e42d8179e3b43ac4734467359b9bd384ef013e) feat(maps): add a map with string key and any value (#974)
+
 ## [v1.287.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.287.2) - 2024-08-31
 
 - [`7295a29`](https://github.com/alexfalkowski/go-service/commit/7295a29377b54dfd512571533d4d6c9c491983d1) fix(deps): update github.com/felixge/fgprof to v0.9.5 (#973)
