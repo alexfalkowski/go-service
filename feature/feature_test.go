@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/feature"
+	"github.com/alexfalkowski/go-service/maps"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -26,7 +27,7 @@ func TestNoop(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I get a flag", func() {
-			attrs := map[string]any{"favorite_color": "blue"}
+			attrs := maps.StringAny{"favorite_color": "blue"}
 			v, err := c.BooleanValue(context.Background(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
 			So(err, ShouldBeNil)
 
