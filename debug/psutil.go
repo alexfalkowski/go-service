@@ -3,6 +3,7 @@ package debug
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/maps"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -13,7 +14,7 @@ import (
 func RegisterPsutil(srv *Server, content *content.Content) {
 	mux := srv.ServeMux()
 	h := content.NewHandler("debug", func(ctx context.Context) any {
-		data := make(map[string]any)
+		data := maps.StringAny{}
 
 		i, err := cpu.InfoWithContext(ctx)
 		runtime.Must(err)
@@ -21,7 +22,7 @@ func RegisterPsutil(srv *Server, content *content.Content) {
 		t, err := cpu.TimesWithContext(ctx, true)
 		runtime.Must(err)
 
-		data["cpu"] = map[string]any{
+		data["cpu"] = maps.StringAny{
 			"info":  i,
 			"times": t,
 		}
@@ -35,7 +36,7 @@ func RegisterPsutil(srv *Server, content *content.Content) {
 		vm, err := mem.VirtualMemoryWithContext(ctx)
 		runtime.Must(err)
 
-		data["mem"] = map[string]any{
+		data["mem"] = maps.StringAny{
 			"swap":    sm,
 			"devices": sd,
 			"virtual": vm,

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
+	"github.com/alexfalkowski/go-service/maps"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"go.uber.org/fx"
@@ -55,10 +56,10 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *cont
 		res := hc.Response(ctx)
 		res.WriteHeader(status)
 
-		data := map[string]any{"status": response}
+		data := maps.StringAny{"status": response}
 
 		if withErrors {
-			errors := map[string]any{}
+			errors := maps.StringAny{}
 
 			for n, e := range ob.Errors() {
 				if e == nil {
@@ -68,7 +69,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *cont
 				errors[n] = e.Error()
 			}
 
-			if len(errors) > 0 {
+			if !errors.IsEmpty() {
 				data["errors"] = errors
 			}
 		}
