@@ -34,7 +34,7 @@ require (
 	github.com/redis/go-redis/v9 v9.6.1
 	github.com/rs/cors v1.11.1
 	github.com/sethvargo/go-limiter v1.0.0
-	github.com/shirou/gopsutil/v4 v4.24.7
+	github.com/shirou/gopsutil/v4 v4.24.8
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
