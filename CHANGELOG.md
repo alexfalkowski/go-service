@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.288.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.288.1) - 2024-09-02
+
+- [`74bbc42`](https://github.com/alexfalkowski/go-service/commit/74bbc422cc4b5765f05b3689e0b93a759da00f5d) fix(deps): update github.com/shirou/gopsutil/v4 to v4.24.8 (#976)
+
 ## [v1.288.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.288.0) - 2024-09-01
 
 - [`c6e42d8`](https://github.com/alexfalkowski/go-service/commit/c6e42d8179e3b43ac4734467359b9bd384ef013e) feat(maps): add a map with string key and any value (#974)
