@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.290.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.290.0) - 2024-09-09
+
+- [`d77c6a4`](https://github.com/alexfalkowski/go-service/commit/d77c6a4610cbb61d04003b740b6aad417e845177) feat(deps): bump github.com/jackc/pgx/v5 from 5.6.0 to 5.7.0 (#981)
+
 ## [v1.289.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.289.0) - 2024-09-06
 
 - [`2489cdf`](https://github.com/alexfalkowski/go-service/commit/2489cdf0e1f91ee961bd4fb237dd2fa5331d3fce) feat(deps): bump golang.org/x/net from 0.28.0 to 0.29.0 (#979)
