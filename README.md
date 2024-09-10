@@ -304,13 +304,13 @@ The transport layer provides ways to abstract communication for in/out of the se
 ### gRPC
 
 Below is list of the provided interceptors:
-- [Limiter](https://github.com/ulule/limiter)
+- [Limiter](https://github.com/sethvargo/go-limiter)
 
 ### REST
 
 Below is list of the provided handlers:
 - [CORS](https://github.com/rs/cors)
-- [Limiter](https://github.com/ulule/limiter)
+- [Limiter](https://github.com/sethvargo/go-limiter)
 
 ### Configuration
 
