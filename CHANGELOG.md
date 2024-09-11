@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.292.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.292.0) - 2024-09-11
+
+- [`a8886f4`](https://github.com/alexfalkowski/go-service/commit/a8886f4de5712d1ed7686e01744d437cc5fb9a42) feat(deps): update go.opentelemetry.io/otel to v1.30.0 (#994)
+- [`931ea0c`](https://github.com/alexfalkowski/go-service/commit/931ea0cae2ec22747859faa52b35e9b811d81634) build(deps): bump bin from `1eca781` to `b975eab` (#988)
+- [`c985687`](https://github.com/alexfalkowski/go-service/commit/c985687ecf9447a933204aeebdfdae5ef60ba907) docs(readme): limiter broken link (#987)
+- [`fa1dbd1`](https://github.com/alexfalkowski/go-service/commit/fa1dbd1a2fcec01590ae83fc12cb76569e6b5863) docs(readme): broken link (#986)
+
 ## [v1.291.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.291.1) - 2024-09-10
 
 - [`99f0ffc`](https://github.com/alexfalkowski/go-service/commit/99f0ffc165c70dc6fceada95ecb37670e58b40a0) fix(deps): update github.com/jackc/pgx/v5 to v5.7.1 (#985)
