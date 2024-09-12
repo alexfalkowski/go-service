@@ -338,8 +338,8 @@ github.com/yusufpapurcu/wmi v1.2.4 h1:zFUKzehAFReQwLys1b/iSMl+JQGSCSjtVqQn9bBrPo
 github.com/yusufpapurcu/wmi v1.2.4/go.mod h1:SBZ9tNy3G9/m5Oi98Zks0QjeHVDvuK0qfxQmPyzfmi0=
 go.opentelemetry.io/contrib/instrumentation/host v0.54.0 h1:ForLwWOQDIhZZdaf09H0Cy82jBWIQhWLn/tqzclD36E=
 go.opentelemetry.io/contrib/instrumentation/host v0.54.0/go.mod h1:LV9KQI6PdSf+TTg4npgD7FzPo/80CuyLekiHiCd1nt8=
-go.opentelemetry.io/contrib/instrumentation/runtime v0.54.0 h1:KD+8SJvRaW9n0vE0UgkytT207J3CmV1hGf9GYYU73ns=
-go.opentelemetry.io/contrib/instrumentation/runtime v0.54.0/go.mod h1:/CsTuLR28IN3Vn13YEc72HljfHiGOMXiCbl4xiCSDhA=
+go.opentelemetry.io/contrib/instrumentation/runtime v0.55.0 h1:GotCpbh7YkCHdFs+hYMdvAEyGsBZifFognqrOnBwyJM=
+go.opentelemetry.io/contrib/instrumentation/runtime v0.55.0/go.mod h1:6b0AS55EEPj7qP44khqF5dqTUq+RkakDMShFaW1EcA4=
 go.opentelemetry.io/otel v1.30.0 h1:F2t8sK4qf1fAmY9ua4ohFS/K+FUuOPemHUIXHtktrts=
 go.opentelemetry.io/otel v1.30.0/go.mod h1:tFw4Br9b7fOS+uEao81PJjVMjW/5fvNCbpsDIXqP0pc=
 go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.30.0 h1:VrMAbeJz4gnVDg2zEzjHG4dEH86j4jO6VYB+NgtGD8s=
