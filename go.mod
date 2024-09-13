@@ -26,7 +26,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/klauspost/compress v1.17.9
 	github.com/linxGnu/mssqlx v1.1.8
-	github.com/matthewhartstonge/argon2 v1.0.0
+	github.com/matthewhartstonge/argon2 v1.0.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/open-feature/go-sdk v1.13.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.4
