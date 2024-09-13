@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.294.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.294.0) - 2024-09-13
+
+- [`33dab17`](https://github.com/alexfalkowski/go-service/commit/33dab172102d577dd27b455fae5afe8e58916a2b) feat(deps): bump github.com/matthewhartstonge/argon2 from 1.0.0 to 1.0.1 (#999)
+
 ## [v1.293.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.293.0) - 2024-09-12
 
 - [`a8d8912`](https://github.com/alexfalkowski/go-service/commit/a8d89129d6725e8f3570d8f6c1ba2600bd45b299) feat(deps): update go.opentelemetry.io/contrib/instrumentation to  v0.55.0 (#998)
