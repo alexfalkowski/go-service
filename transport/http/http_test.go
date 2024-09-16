@@ -2,9 +2,12 @@ package http_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -52,4 +55,40 @@ func TestSecure(t *testing.T) {
 
 		lc.RequireStop()
 	})
+}
+
+func BenchmarkHTTP(b *testing.B) {
+	b.ReportAllocs()
+
+	mux := http.NewServeMux()
+	p := test.Port()
+
+	mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {
+	})
+
+	server := &http.Server{
+		Handler:           mux,
+		Addr:              ":" + p,
+		ReadHeaderTimeout: time.Second,
+	}
+	defer server.Close()
+
+	go server.ListenAndServe()
+
+	client := &http.Client{Transport: http.DefaultTransport}
+	url := fmt.Sprintf("http://localhost:%s/hello", p)
+
+	b.ResetTimer()
+
+	b.Run("std", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			runtime.Must(err)
+
+			_, err = client.Do(req)
+			runtime.Must(err)
+		}
+	})
+
+	b.StopTimer()
 }
