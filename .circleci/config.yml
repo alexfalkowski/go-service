@@ -46,6 +46,7 @@ jobs:
       - run: make lint
       - run: make sec
       - run: make specs
+      - run: make benchmarks
       - save_cache:
           name: save go build cache
           key: go-service-go-build-cache-{{ checksum "go.sum" }}

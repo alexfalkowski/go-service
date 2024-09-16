@@ -18,3 +18,7 @@ telemetry-diagram:
 
 transport-diagram:
 	$(MAKE) package=transport create-diagram
+
+# Run all the benchmarks.
+benchmarks:
+	$(MAKE) package=transport/http benchmark
