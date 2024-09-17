@@ -12,11 +12,6 @@ url = "../test/secrets/redis"
 [cache.redis.addresses]
 server = "localhost:6379"
 
-[cache.ristretto]
-num_counters = 10_000_000
-max_cost = 100_000_000
-buffer_items = 64
-
 [crypto.aes]
 key = "../test/secrets/aes"
 
