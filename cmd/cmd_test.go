@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/config"
@@ -32,7 +31,6 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
-	sr "github.com/alexfalkowski/go-service/ristretto"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/telemetry"
@@ -208,11 +206,7 @@ func redisCache(c *rc.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func ristrettoCache(c sr.Cache) {
-	c.Del("test")
-}
-
-func configs(_ *redis.Config, _ *ristretto.Config, _ *pg.Config) {}
+func configs(_ *redis.Config, _ *pg.Config) {}
 
 func meter(_ metric.Meter) {}
 
@@ -271,7 +265,7 @@ func opts() []fx.Option {
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
-		fx.Invoke(redisCache), fx.Invoke(ristrettoCache), fx.Provide(ver), fx.Invoke(meter),
+		fx.Invoke(redisCache), fx.Provide(ver), fx.Invoke(meter),
 		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(controller),
 	}
 }

@@ -9,10 +9,6 @@ cache:
     addresses:
       server: localhost:6379
     url: ../test/secrets/redis
-  ristretto:
-    num_counters: 10000000
-    max_cost: 100000000
-    buffer_items: 64
 crypto:
   aes:
     key: ../test/secrets/aes

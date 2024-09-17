@@ -39,7 +39,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()
-		_ = c.NewRistrettoCache()
 		cfg := test.NewInsecureTransportConfig()
 
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
@@ -72,7 +71,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 				So(response, ShouldContainSubstring, "go_info")
 				So(response, ShouldContainSubstring, "redis_hits_total")
-				So(response, ShouldContainSubstring, "ristretto_hits_total")
 				So(response, ShouldContainSubstring, "sql_max_open_total")
 				So(response, ShouldContainSubstring, "system")
 				So(response, ShouldContainSubstring, "process")
@@ -106,7 +104,6 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		_, _ = c.NewRedisCache()
-		_ = c.NewRistrettoCache()
 		cfg := test.NewSecureTransportConfig()
 
 		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
@@ -142,7 +139,6 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 				So(response, ShouldContainSubstring, "go_info")
 				So(response, ShouldContainSubstring, "redis_hits_total")
-				So(response, ShouldContainSubstring, "ristretto_hits_total")
 				So(response, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})

@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
-	"github.com/alexfalkowski/go-service/cache/ristretto"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -173,14 +172,6 @@ func redisConfig(cfg *Config) *redis.Config {
 	}
 
 	return cfg.Cache.Redis
-}
-
-func ristrettoConfig(cfg *Config) *ristretto.Config {
-	if !IsEnabled(cfg) || !cache.IsEnabled(cfg.Cache) {
-		return nil
-	}
-
-	return cfg.Cache.Ristretto
 }
 
 func sshConfig(cfg *Config) *ssh.Config {

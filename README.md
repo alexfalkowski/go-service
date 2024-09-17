@@ -71,7 +71,6 @@ We support the following:
 
 The framework currently supports the following caching solutions:
 - [Redis Cache](https://github.com/go-redis/cache)
-- [Ristretto](https://github.com/dgraph-io/ristretto)
 
 ### Configuration
 
@@ -85,10 +84,6 @@ cache:
     addresses:
       server: localhost:6379
     url: path to url
-  ristretto:
-    num_counters: 10000000
-    max_cost: 100000000
-    buffer_items: 64
 ```
 
 ### Dependencies
