@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.295.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.295.0) - 2024-09-17
+
+- [`f8d743a`](https://github.com/alexfalkowski/go-service/commit/f8d743a55b4ef2c5c551e0fff6e495b9b84d3128) feat(deps): bump github.com/go-sprout/sprout from 0.5.1 to 0.6.0 (#1003)
+- [`8f5360a`](https://github.com/alexfalkowski/go-service/commit/8f5360aa95da049877b0fe67eb4a4cbb7edcd3e0) test(http): add std benchmark (#1002)
+- [`0f8a4b0`](https://github.com/alexfalkowski/go-service/commit/0f8a4b069936c54addb52c923441f51edcab37c9) build(ci): add benchmarks (#1000)
+- [`d9fd255`](https://github.com/alexfalkowski/go-service/commit/d9fd255495327c6331f154a1c738ea27fd3a65e8) build(deps): bump bin from `b975eab` to `8b87d26` (#1001)
+
 ## [v1.294.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.294.0) - 2024-09-13
 
 - [`33dab17`](https://github.com/alexfalkowski/go-service/commit/33dab172102d577dd27b455fae5afe8e58916a2b) feat(deps): bump github.com/matthewhartstonge/argon2 from 1.0.0 to 1.0.1 (#999)
