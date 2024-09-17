@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.296.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.296.0) - 2024-09-17
+
+- [`eddc0c6`](https://github.com/alexfalkowski/go-service/commit/eddc0c632fff47bed06f262b9702058c81b9def2) feat(cache): remove ristreto (#1006)
+
 ## [v1.295.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.295.1) - 2024-09-17
 
 - [`8f43726`](https://github.com/alexfalkowski/go-service/commit/8f4372676dcf2eb0a1f49fae259a11b0a2670198) fix(deps): update github.com/prometheus/client_golang to v1.20.4 (#1004)
