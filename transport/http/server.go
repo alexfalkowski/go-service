@@ -59,9 +59,18 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	n := negroni.New()
 	n.Use(meta.NewHandler(params.UserAgent, params.Version))
-	n.Use(tracer.NewHandler(params.Tracer))
-	n.Use(logger.NewHandler(params.Logger))
-	n.Use(metrics.NewHandler(params.Meter))
+
+	if params.Tracer != nil {
+		n.Use(tracer.NewHandler(params.Tracer))
+	}
+
+	if params.Logger != nil {
+		n.Use(logger.NewHandler(params.Logger))
+	}
+
+	if params.Meter != nil {
+		n.Use(metrics.NewHandler(params.Meter))
+	}
 
 	for _, hd := range params.Handlers {
 		n.Use(hd)
