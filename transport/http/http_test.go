@@ -96,6 +96,42 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	b.StopTimer()
 }
 
+func BenchmarkHTTP(b *testing.B) {
+	b.ReportAllocs()
+
+	mux := http.NewServeMux()
+	lc := fxtest.NewLifecycle(b)
+	cfg := test.NewInsecureTransportConfig()
+
+	h, err := th.NewServer(th.ServerParams{
+		Shutdowner: test.NewShutdowner(), Mux: mux,
+		Config:    cfg.HTTP,
+		UserAgent: test.UserAgent, Version: test.Version,
+	})
+	runtime.Must(err)
+
+	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
+
+	client := &http.Client{Transport: http.DefaultTransport}
+	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
+	lc.RequireStart()
+	b.ResetTimer()
+
+	b.Run("none", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			runtime.Must(err)
+
+			_, err = client.Do(req)
+			runtime.Must(err)
+		}
+	})
+
+	b.StopTimer()
+	lc.RequireStop()
+}
+
 func BenchmarkLogHTTP(b *testing.B) {
 	b.ReportAllocs()
 
