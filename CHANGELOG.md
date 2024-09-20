@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.297.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.297.0) - 2024-09-20
+
+- [`9badf58`](https://github.com/alexfalkowski/go-service/commit/9badf5806e70119bfbae8e744bb2d948df0fc49b) feat(deps): update grpc to v1.67.0 (#1009)
+- [`0234b78`](https://github.com/alexfalkowski/go-service/commit/0234b78f9d67fb116f1cfa04d05ac7014d4c605d) test(http): ignore logger if not present (#1008)
+- [`781f914`](https://github.com/alexfalkowski/go-service/commit/781f9140caa58591925344fac9a661acc7984e42) test(http): benchmark different handlers (#1007)
+
 ## [v1.296.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.296.0) - 2024-09-17
 
 - [`eddc0c6`](https://github.com/alexfalkowski/go-service/commit/eddc0c632fff47bed06f262b9702058c81b9def2) feat(cache): remove ristreto (#1006)
