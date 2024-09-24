@@ -304,7 +304,6 @@ Below is list of the provided interceptors:
 ### REST
 
 Below is list of the provided handlers:
-- [CORS](https://github.com/rs/cors)
 - [Limiter](https://github.com/sethvargo/go-limiter)
 
 ### Configuration
