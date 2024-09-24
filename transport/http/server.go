@@ -18,7 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
-	"github.com/klauspost/compress/gzhttp"
 	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
@@ -82,8 +81,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	if params.Limiter != nil {
 		n.Use(hl.NewHandler(params.Limiter, params.Key))
 	}
-
-	n.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	s := &http.Server{
 		Handler:     h2c.NewHandler(n, &http2.Server{}),
