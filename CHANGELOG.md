@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.300.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.300.0) - 2024-09-24
+
+- [`4e05cae`](https://github.com/alexfalkowski/go-service/commit/4e05cae8594505a3704cf1692c9a0e5e20c88bf4) feat(http): remove cors (#1012)
+
 ## [v1.299.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.299.0) - 2024-09-24
 
 - [`3be9967`](https://github.com/alexfalkowski/go-service/commit/3be9967515898e6e7893e015f6cf60d24a8c1bd8) feat(deps): bump go.uber.org/automaxprocs from 1.5.3 to 1.6.0 (#1011)
