@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/server"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/transport/http/cors"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
@@ -84,7 +83,6 @@ func NewServer(params ServerParams) (*Server, error) {
 		n.Use(hl.NewHandler(params.Limiter, params.Key))
 	}
 
-	n.Use(cors.New())
 	n.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	s := &http.Server{
