@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.300.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.300.1) - 2024-09-25
+
+- [`85debb9`](https://github.com/alexfalkowski/go-service/commit/85debb9f2591656822a7076dda50f05971be4350) fix(grpc): verify nil in server (#1014)
+
 ## [v1.300.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.300.0) - 2024-09-24
 
 - [`4e05cae`](https://github.com/alexfalkowski/go-service/commit/4e05cae8594505a3704cf1692c9a0e5e20c88bf4) feat(http): remove cors (#1012)
