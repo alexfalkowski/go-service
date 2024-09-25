@@ -20,6 +20,10 @@ transport-diagram:
 	$(MAKE) package=transport create-diagram
 
 # Run all the benchmarks.
-benchmarks:
+benchmarks: http-benchmarks grpc-benchmarks
+
+http-benchmarks:
 	$(MAKE) package=transport/http benchmark
+
+grpc-benchmarks:
 	$(MAKE) package=transport/grpc benchmark
