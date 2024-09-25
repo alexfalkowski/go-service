@@ -22,3 +22,4 @@ transport-diagram:
 # Run all the benchmarks.
 benchmarks:
 	$(MAKE) package=transport/http benchmark
+	$(MAKE) package=transport/grpc benchmark
