@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.300.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.300.2) - 2024-10-01
+
+- [`98a05c3`](https://github.com/alexfalkowski/go-service/commit/98a05c33c5ef8238f33a59d63f681f8c422f05ec) fix(deps): update google.golang.org/grpc to v1.67.1 (#1016)
+- [`a97ddd0`](https://github.com/alexfalkowski/go-service/commit/a97ddd05344c93602da36b1913da1d8e069e4462) build(make): seperate targets for benchmarks (#1015)
+
 ## [v1.300.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.300.1) - 2024-09-25
 
 - [`85debb9`](https://github.com/alexfalkowski/go-service/commit/85debb9f2591656822a7076dda50f05971be4350) fix(grpc): verify nil in server (#1014)
