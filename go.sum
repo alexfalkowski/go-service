@@ -20,8 +20,8 @@ github.com/avast/retry-go/v3 v3.1.1 h1:49Scxf4v8PmiQ/nY0aY3p0hDueqSmc7++cBbtiDGu
 github.com/avast/retry-go/v3 v3.1.1/go.mod h1:6cXRK369RpzFL3UQGqIUp9Q7GDrams+KsYWrfNA1/nQ=
 github.com/beevik/ntp v1.4.3 h1:PlbTvE5NNy4QHmA4Mg57n7mcFTmr1W1j3gcK7L1lqho=
 github.com/beevik/ntp v1.4.3/go.mod h1:Unr8Zg+2dRn7d8bHFuehIMSvvUYssHMxW3Q5Nx4RW5Q=
-github.com/beevik/nts v0.1.1 h1:a8yot7WDfsQ/BWuAyAtxdPZ46bsz4tF1drE6DwIrFV8=
-github.com/beevik/nts v0.1.1/go.mod h1:24oIgxWAgpbVCDUltveb3riYNBToDhrPj0dtSwMTLmk=
+github.com/beevik/nts v0.2.0 h1:FMaan33CQYYMmL+K9KDl8MChjWlTPvgTJmVUoXSnvmI=
+github.com/beevik/nts v0.2.0/go.mod h1:PsbzM+nBJv639oFfcsTmD5gyVYtcnaCRSAGKZbwkjHg=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=

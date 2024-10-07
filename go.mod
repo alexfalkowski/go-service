@@ -9,7 +9,7 @@ require (
 	github.com/arl/statsviz v0.6.0
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/beevik/ntp v1.4.3
-	github.com/beevik/nts v0.1.1
+	github.com/beevik/nts v0.2.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/elnormous/contenttype v1.0.4
 	github.com/felixge/fgprof v0.9.5
