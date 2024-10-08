@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.303.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.303.0) - 2024-10-08
+
+- [`dd2d205`](https://github.com/alexfalkowski/go-service/commit/dd2d205cd88496dbd9cdda29c513bb7e327d2cb0) feat(deps): bump google.golang.org/protobuf from 1.34.2 to 1.35.1 (#1021)
+
 ## [v1.302.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.302.0) - 2024-10-07
 
 - [`7b84a43`](https://github.com/alexfalkowski/go-service/commit/7b84a43d817f27dec2e67951c58fb57b70c6ba3d) feat(deps): bump github.com/beevik/nts from 0.1.1 to 0.2.0 (#1020)
