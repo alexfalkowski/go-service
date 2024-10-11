@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.304.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.304.0) - 2024-10-11
+
+- [`7d77c8a`](https://github.com/alexfalkowski/go-service/commit/7d77c8ab3c69e2aac04e28654e8201ece08c5107) feat(deps): upgraded go.uber.org/fx v1.22.2 => v1.23.0 (#1023)
+
 ## [v1.303.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.303.1) - 2024-10-11
 
 - [`e3856c1`](https://github.com/alexfalkowski/go-service/commit/e3856c1cd0cd620add6961f36effb36a590d4c6f) fix(deps): upgraded github.com/klauspost/compress v1.17.10 => v1.17.11 (#1022)
