@@ -23,7 +23,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/klauspost/compress v1.17.10
+	github.com/klauspost/compress v1.17.11
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/matthewhartstonge/argon2 v1.0.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
@@ -36,7 +36,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20240924003954-e9bdd77cda04
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241007201626-bcb222ad648f
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/instrumentation/host v0.55.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.55.0
