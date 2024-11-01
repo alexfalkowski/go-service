@@ -32,11 +32,11 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sethvargo/go-limiter v1.0.0
-	github.com/shirou/gopsutil/v4 v4.24.9
+	github.com/shirou/gopsutil/v4 v4.24.10
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241007201626-bcb222ad648f
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241021195043-f3a49acf8447
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/instrumentation/host v0.56.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.56.0
@@ -73,7 +73,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/ebitengine/purego v0.8.0 // indirect
+	github.com/ebitengine/purego v0.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
