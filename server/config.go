@@ -17,12 +17,3 @@ type Config struct {
 	Timeout string        `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 	Address string        `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
 }
-
-// GetAddress or default.
-func (c *Config) GetAddress(address string) string {
-	if c.Address == "" {
-		return address
-	}
-
-	return c.Address
-}

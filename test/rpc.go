@@ -1,6 +1,7 @@
 package test
 
 import (
+	"cmp"
 	"context"
 	"net/http"
 
@@ -21,12 +22,7 @@ type Response struct {
 
 func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	req := nc.Request(ctx)
-
-	name := req.URL.Query().Get("name")
-	if name == "" {
-		name = r.Name
-	}
-
+	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}, nil

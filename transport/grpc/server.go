@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"cmp"
 	"context"
 	"time"
 
@@ -186,7 +187,7 @@ func config(cfg *Config) *sg.Config {
 	}
 
 	c := &sg.Config{
-		Address: cfg.GetAddress(":9090"),
+		Address: cmp.Or(cfg.Address, ":9090"),
 	}
 
 	return c
