@@ -9,17 +9,17 @@ var Compressor = compress.NewMap()
 
 // NewCompressor for test.
 func NewCompressor(err error) compress.Compressor {
-	return &cmp{err: err}
+	return &compressor{err: err}
 }
 
-type cmp struct {
+type compressor struct {
 	err error
 }
 
-func (c *cmp) Compress(_ []byte) []byte {
+func (c *compressor) Compress(_ []byte) []byte {
 	return nil
 }
 
-func (c *cmp) Decompress(_ []byte) ([]byte, error) {
+func (c *compressor) Decompress(_ []byte) ([]byte, error) {
 	return nil, c.err
 }

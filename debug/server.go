@@ -1,6 +1,7 @@
 package debug
 
 import (
+	"cmp"
 	"net/http"
 	"time"
 
@@ -65,7 +66,7 @@ func config(cfg *Config) (*sh.Config, error) {
 	}
 
 	c := &sh.Config{
-		Address: cfg.GetAddress(":6060"),
+		Address: cmp.Or(cfg.Address, ":6060"),
 	}
 
 	if !tls.IsEnabled(cfg.TLS) {

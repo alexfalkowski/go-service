@@ -1,6 +1,7 @@
 package http
 
 import (
+	"cmp"
 	"net/http"
 	"time"
 
@@ -113,7 +114,7 @@ func config(cfg *Config) (*sh.Config, error) {
 	}
 
 	c := &sh.Config{
-		Address: cfg.GetAddress(":8080"),
+		Address: cmp.Or(cfg.Address, ":8080"),
 	}
 
 	if !ct.IsEnabled(cfg.TLS) {
