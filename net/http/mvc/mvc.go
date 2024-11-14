@@ -25,6 +25,7 @@ type (
 	// View for mvc.
 	Views struct {
 		template *template.Template
+		fs       *embed.FS
 	}
 
 	// View to render.
@@ -56,7 +57,7 @@ func NewViews(params ViewsParams) *Views {
 		t = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
 	}
 
-	return &Views{template: t}
+	return &Views{template: t, fs: params.FS}
 }
 
 // NewRouter for mvc.
@@ -82,6 +83,34 @@ func (r *Router) Route(path string, controller Controller) {
 
 		if err := r.views.template.ExecuteTemplate(res, string(v), m); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
+		}
+	}
+
+	r.mux.HandleFunc(path, h)
+}
+
+// Static file name to be served via path.
+func (r *Router) Static(path, name string) {
+	fs := r.views.fs
+	if fs == nil {
+		return
+	}
+
+	h := func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+
+		b, err := fs.ReadFile(name)
+		if err != nil {
+			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
+			res.WriteHeader(status.Code(err))
+
+			return
+		}
+
+		if _, err := res.Write(b); err != nil {
+			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
+
+			return
 		}
 	}
 

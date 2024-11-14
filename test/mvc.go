@@ -21,6 +21,7 @@ type (
 
 var (
 	//go:embed views/*.tmpl
+	//go:embed static/*.txt
 	Views embed.FS
 
 	// Model for test.
