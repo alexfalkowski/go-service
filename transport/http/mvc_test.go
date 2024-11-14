@@ -130,6 +130,99 @@ func TestRouteError(t *testing.T) {
 	})
 }
 
+func TestStaticSuccess(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+		s.Register()
+
+		lc.RequireStart()
+
+		ctx := context.Background()
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
+
+		r.Static("GET /robots.txt", "static/robots.txt")
+
+		Convey("When I query for robots", func() {
+			client := cl.NewHTTP()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid html", func() {
+				So(resp.StatusCode, ShouldEqual, 200)
+				So(resp.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
+
+				So(string(body), ShouldNotBeEmpty)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestStaticError(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+		s.Register()
+
+		lc.RequireStart()
+
+		ctx := context.Background()
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
+
+		r.Static("GET /robots.txt", "static/bob.txt")
+
+		Convey("When I query for hello", func() {
+			client := cl.NewHTTP()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			_, err = io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have an error", func() {
+				So(resp.StatusCode, ShouldEqual, 500)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
