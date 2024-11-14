@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.313.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.313.0) - 2024-11-14
+
+- [`9bd47b0`](https://github.com/alexfalkowski/go-service/commit/9bd47b04336d8ad8c60a1dbd72f32bb7be9fd33f) feat(mvc): add ability to serve static files (#1039)
+
 ## [v1.312.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.312.1) - 2024-11-14
 
 - [`10e8069`](https://github.com/alexfalkowski/go-service/commit/10e80698cf6c798c89b5689343e733d388a0cea4) fix(deps): upgraded google.golang.org/protobuf v1.35.1 => v1.35.2 (#1038)
