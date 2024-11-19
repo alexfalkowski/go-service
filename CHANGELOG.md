@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.314.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.314.0) - 2024-11-19
+
+- [`9c85680`](https://github.com/alexfalkowski/go-service/commit/9c8568071fa172ed5cd0c8a907db13efbb5bf7b5) feat(http): add rest (#1040)
+
 ## [v1.313.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.313.0) - 2024-11-14
 
 - [`9bd47b0`](https://github.com/alexfalkowski/go-service/commit/9bd47b04336d8ad8c60a1dbd72f32bb7be9fd33f) feat(mvc): add ability to serve static files (#1039)
