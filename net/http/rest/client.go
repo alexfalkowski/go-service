@@ -1,4 +1,4 @@
-package rpc
+package rest
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/maps"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
@@ -15,7 +16,12 @@ import (
 	st "github.com/alexfalkowski/go-service/time"
 )
 
-// ClientOption for rpc.
+// NoRequest to use for the client.
+//
+//nolint:revive
+var NoRequest maps.StringAny = nil
+
+// ClientOption for rest.
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -32,52 +38,51 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithSenderRoundTripper for rpc.
+// WithSenderRoundTripper for rest.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithClientContentType for rpc.
+// WithClientContentType for rest.
 func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
 	})
 }
 
-// WithClientTimeout for rpc.
+// WithClientTimeout for rest.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = st.MustParseDuration(timeout)
 	})
 }
 
-// NewClient for rpc.
-func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
+// NewClient for rest.
+func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := &http.Client{
 		Transport: os.roundTripper,
 		Timeout:   os.timeout,
 	}
 
-	return &Client[Req, Res]{client: client, url: url, ct: os.contentType}
+	return &Client{client: client, ct: os.contentType}
 }
 
-// Client for rpc.
-type Client[Req any, Res any] struct {
+// Client for rest.
+type Client struct {
 	client *http.Client
 	ct     string
-	url    string
 }
 
-// Invoke for rpc.
+// Invoke for rest.
 //
 //nolint:nonamedreturns
-func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err error) {
+func (c *Client) Invoke(ctx context.Context, method, url string, req maps.StringAny) (res maps.StringAny, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.Prefix("rpc", runtime.ConvertRecover(r))
+			err = errors.Prefix("rest", runtime.ConvertRecover(r))
 		}
 	}()
 
@@ -91,7 +96,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		runtime.Must(err)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, "POST", c.url, b)
+	request, err := http.NewRequestWithContext(ctx, method, url, b)
 	runtime.Must(err)
 
 	request.Header.Set(content.TypeKey, ct.Media)
@@ -117,10 +122,9 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		return nil, nil
 	}
 
-	var rp Res
-	res = &rp
+	res = make(maps.StringAny)
 
-	err = ct.Encoder.Decode(b, res)
+	err = ct.Encoder.Decode(b, &res)
 	runtime.Must(err)
 
 	return res, nil

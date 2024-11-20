@@ -52,7 +52,9 @@ func TestRPC(t *testing.T) {
 				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
+					rpc.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rpc.WithClientTimeout("10s"),
+				)
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
