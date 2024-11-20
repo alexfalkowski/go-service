@@ -34,6 +34,9 @@ func (c *Content) NewHandler(prefix string, handler Handler) func(res http.Respo
 		res.Header().Add(TypeKey, ct.Media)
 
 		data := handler(ctx)
+		if data == nil {
+			return
+		}
 
 		err := ct.Encoder.Encode(res, data)
 		runtime.Must(err)
