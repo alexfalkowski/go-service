@@ -24,7 +24,51 @@ func init() {
 	tm.RegisterKeys()
 }
 
-func TestRPC(t *testing.T) {
+func TestRPCNoContent(t *testing.T) {
+	for _, mt := range []string{"json", "yaml", "yml", "toml"} {
+		Convey("Given I have all the servers", t, func() {
+			mux := http.NewServeMux()
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			So(err, ShouldBeNil)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
+
+			rpc.Register(mux, test.Content, test.Pool)
+			rpc.Route("/hello", test.NoContent)
+
+			lc.RequireStart()
+
+			Convey("When I post data", func() {
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				client := rpc.NewClient[test.Request, test.Response](url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rpc.WithClientTimeout("10s"),
+				)
+
+				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+
+				Convey("Then I should have no error", func() {
+					So(err, ShouldBeNil)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
+
+func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
