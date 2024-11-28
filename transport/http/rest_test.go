@@ -1,11 +1,11 @@
 package http_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -34,7 +34,7 @@ func TestRestNoContent(t *testing.T) {
 
 				cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
-				rest.Register(mux, test.Content, test.Pool)
+				rest.Register(mux, test.Content)
 				rest.Delete("/hello", test.RestNoContent)
 				rest.Get("/hello", test.RestNoContent)
 				rest.Post("/hello", test.RestNoContent)
@@ -45,15 +45,16 @@ func TestRestNoContent(t *testing.T) {
 				Convey("When I send data", func() {
 					url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 					client := rest.NewClient(
-						rest.WithClientContentType("application/"+mt),
 						rest.WithClientRoundTripper(cl.NewHTTP().Transport),
 						rest.WithClientTimeout("10s"),
+						rest.WithClientContentType("application/"+mt),
 					)
 
-					_, err := client.Invoke(context.Background(), v, url, rest.NoRequest)
+					resp, err := client.R().Execute(v, url)
 
 					Convey("Then I should have no error", func() {
 						So(err, ShouldBeNil)
+						So(resp.Header().Get(content.TypeKey), ShouldEqual, "application/"+mt)
 					})
 
 					lc.RequireStop()
@@ -78,7 +79,7 @@ func TestRestWithContent(t *testing.T) {
 				s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
 				s.Register()
 
-				rest.Register(mux, test.Content, test.Pool)
+				rest.Register(mux, test.Content)
 				rest.Delete("/hello", test.RestContent)
 				rest.Get("/hello", test.RestContent)
 				rest.Post("/hello", test.RestContent)
@@ -92,11 +93,12 @@ func TestRestWithContent(t *testing.T) {
 						rest.WithClientContentType("application/" + mt),
 					)
 
-					resp, err := client.Invoke(context.Background(), v, url, rest.NoRequest)
+					resp, err := client.R().Execute(v, url)
 					So(err, ShouldBeNil)
 
 					Convey("Then I should have a response", func() {
-						So(resp.IsEmpty(), ShouldBeFalse)
+						So(resp.Body(), ShouldNotBeEmpty)
+						So(resp.Header().Get(content.TypeKey), ShouldEqual, "application/"+mt)
 					})
 
 					lc.RequireStop()
