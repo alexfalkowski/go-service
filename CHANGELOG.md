@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.316.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.316.0) - 2024-11-28
+
+- [`c678459`](https://github.com/alexfalkowski/go-service/commit/c6784593d78f906a890ac03a0da345b60bfb30f3) feat(rest): use resty (#1044)
+- [`bc7f1f4`](https://github.com/alexfalkowski/go-service/commit/bc7f1f4c68a2e240f7f99c48d3b34a4b3980cfad) test(rpc): no content (#1043)
+
 ## [v1.315.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.315.0) - 2024-11-20
 
 - [`78c087d`](https://github.com/alexfalkowski/go-service/commit/78c087df324a7b6d869db0ffdd838e4f388931cb) feat(rest): add basic rest client (#1042)
