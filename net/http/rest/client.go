@@ -5,7 +5,6 @@ import (
 	"time"
 
 	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/net/http/content"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/go-resty/resty/v2"
 )
@@ -17,7 +16,6 @@ type ClientOption interface {
 
 type clientOpts struct {
 	roundTripper http.RoundTripper
-	contentType  string
 	timeout      time.Duration
 }
 
@@ -34,13 +32,6 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	})
 }
 
-// WithClientContentType for rest.
-func WithClientContentType(ct string) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.contentType = ct
-	})
-}
-
 // WithClientTimeout for rest.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
@@ -52,9 +43,8 @@ func WithClientTimeout(timeout string) ClientOption {
 func NewClient(opts ...ClientOption) *resty.Client {
 	os := options(opts...)
 	client := &http.Client{Transport: os.roundTripper, Timeout: os.timeout}
-	ct := cont.NewFromMedia(os.contentType)
 
-	return resty.NewWithClient(client).SetHeader(content.TypeKey, ct.Media)
+	return resty.NewWithClient(client)
 }
 
 func options(opts ...ClientOption) *clientOpts {
