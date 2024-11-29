@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/go-resty/resty/v2"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
@@ -17,7 +18,7 @@ func init() {
 }
 
 func TestRestNoContent(t *testing.T) {
-	for _, v := range []string{"DELETE", "GET", "POST", "PUT"} {
+	for _, v := range []string{resty.MethodDelete, resty.MethodGet, resty.MethodPost, resty.MethodPut, resty.MethodPatch, resty.MethodHead, resty.MethodOptions} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
@@ -37,6 +38,9 @@ func TestRestNoContent(t *testing.T) {
 			rest.Get("/hello", test.RestNoContent)
 			rest.Post("/hello", test.RestNoContent)
 			rest.Put("/hello", test.RestNoContent)
+			rest.Patch("/hello", test.RestNoContent)
+			rest.Head("/hello", test.RestNoContent)
+			rest.Options("/hello", test.RestNoContent)
 
 			lc.RequireStart()
 
@@ -60,7 +64,7 @@ func TestRestNoContent(t *testing.T) {
 }
 
 func TestRestWithContent(t *testing.T) {
-	for _, v := range []string{"DELETE", "GET", "POST", "PUT"} {
+	for _, v := range []string{resty.MethodDelete, resty.MethodGet, resty.MethodPost, resty.MethodPut, resty.MethodPatch, resty.MethodHead, resty.MethodOptions} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
@@ -78,6 +82,9 @@ func TestRestWithContent(t *testing.T) {
 			rest.Get("/hello", test.RestContent)
 			rest.Post("/hello", test.RestContent)
 			rest.Put("/hello", test.RestContent)
+			rest.Patch("/hello", test.RestContent)
+			rest.Head("/hello", test.RestContent)
+			rest.Options("/hello", test.RestContent)
 
 			lc.RequireStart()
 
@@ -89,7 +96,7 @@ func TestRestWithContent(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a response", func() {
-					So(resp.Body(), ShouldNotBeEmpty)
+					So(resp, ShouldNotBeNil)
 				})
 
 				lc.RequireStop()
