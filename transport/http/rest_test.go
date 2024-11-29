@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -13,12 +14,18 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+var methods = []string{
+	resty.MethodDelete, resty.MethodGet, resty.MethodPost,
+	resty.MethodPut, resty.MethodPatch, resty.MethodHead,
+	resty.MethodOptions,
+}
+
 func init() {
 	tm.RegisterKeys()
 }
 
 func TestRestNoContent(t *testing.T) {
-	for _, v := range []string{resty.MethodDelete, resty.MethodGet, resty.MethodPost, resty.MethodPut, resty.MethodPatch, resty.MethodHead, resty.MethodOptions} {
+	for _, v := range methods {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
@@ -34,13 +41,7 @@ func TestRestNoContent(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rest.Register(mux, test.Content)
-			rest.Delete("/hello", test.RestNoContent)
-			rest.Get("/hello", test.RestNoContent)
-			rest.Post("/hello", test.RestNoContent)
-			rest.Put("/hello", test.RestNoContent)
-			rest.Patch("/hello", test.RestNoContent)
-			rest.Head("/hello", test.RestNoContent)
-			rest.Options("/hello", test.RestNoContent)
+			registerHandlers("/hello", test.RestNoContent)
 
 			lc.RequireStart()
 
@@ -64,7 +65,7 @@ func TestRestNoContent(t *testing.T) {
 }
 
 func TestRestWithContent(t *testing.T) {
-	for _, v := range []string{resty.MethodDelete, resty.MethodGet, resty.MethodPost, resty.MethodPut, resty.MethodPatch, resty.MethodHead, resty.MethodOptions} {
+	for _, v := range methods {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
@@ -78,13 +79,7 @@ func TestRestWithContent(t *testing.T) {
 			s.Register()
 
 			rest.Register(mux, test.Content)
-			rest.Delete("/hello", test.RestContent)
-			rest.Get("/hello", test.RestContent)
-			rest.Post("/hello", test.RestContent)
-			rest.Put("/hello", test.RestContent)
-			rest.Patch("/hello", test.RestContent)
-			rest.Head("/hello", test.RestContent)
-			rest.Options("/hello", test.RestContent)
+			registerHandlers("/hello", test.RestContent)
 
 			lc.RequireStart()
 
@@ -103,4 +98,14 @@ func TestRestWithContent(t *testing.T) {
 			})
 		})
 	}
+}
+
+func registerHandlers(path string, h content.Handler) {
+	rest.Delete(path, h)
+	rest.Get(path, h)
+	rest.Post(path, h)
+	rest.Put(path, h)
+	rest.Patch(path, h)
+	rest.Head(path, h)
+	rest.Options(path, h)
 }
