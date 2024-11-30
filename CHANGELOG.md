@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.318.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.318.0) - 2024-11-30
+
+- [`c9a3b75`](https://github.com/alexfalkowski/go-service/commit/c9a3b75eec0f89b2060db3a492c4655d7faa6457) feat(lint): enable linters (#1049)
+- [`f8873f4`](https://github.com/alexfalkowski/go-service/commit/f8873f4c529bbacbe62f0fa9f3b989d6a053504f) build(lint): enable all and disbale others (#1048)
+- [`bf999d7`](https://github.com/alexfalkowski/go-service/commit/bf999d7360e9b1303d6d96035f9d8287e22f05db) test(rest): remove duplication (#1047)
+
 ## [v1.317.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.317.0) - 2024-11-29
 
 - [`df70ce5`](https://github.com/alexfalkowski/go-service/commit/df70ce5817cdb30474ba058245cfc514c90b2406) feat(rest): add missing methods (#1046)
