@@ -49,7 +49,7 @@ func TestInsecureDebug(t *testing.T) {
 			}
 
 			for _, u := range urls {
-				req, err := http.NewRequestWithContext(context.Background(), "GET", u, http.NoBody)
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, u, http.NoBody)
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/json")
@@ -109,7 +109,7 @@ func TestSecureDebug(t *testing.T) {
 			}
 
 			for _, u := range urls {
-				req, err := http.NewRequestWithContext(context.Background(), "GET", u, http.NoBody)
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, u, http.NoBody)
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/json")

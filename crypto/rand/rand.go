@@ -25,7 +25,7 @@ func GenerateBytes(n uint32) ([]byte, error) {
 func GenerateString(n uint32) (string, error) {
 	r := make([]byte, n)
 
-	for i := 0; i < int(n); i++ {
+	for i := range n {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(all))))
 		if err != nil {
 			return "", err

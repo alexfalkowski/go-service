@@ -45,7 +45,7 @@ func TestRouteSuccess(t *testing.T) {
 		Convey("When I query for hello", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "text/html")
@@ -101,7 +101,7 @@ func TestRouteError(t *testing.T) {
 		Convey("When I query for hello", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "text/html")
@@ -155,7 +155,7 @@ func TestStaticSuccess(t *testing.T) {
 		Convey("When I query for robots", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -203,7 +203,7 @@ func TestStaticError(t *testing.T) {
 		Convey("When I query for hello", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/robots.txt", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -247,7 +247,7 @@ func BenchmarkRoute(b *testing.B) {
 
 	client := cl.NewHTTP()
 
-	req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 	runtime.Must(err)
 
 	req.Header.Set("Content-Type", "text/html")

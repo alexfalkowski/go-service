@@ -9,15 +9,14 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/go-resty/resty/v2"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
 var methods = []string{
-	resty.MethodDelete, resty.MethodGet, resty.MethodPost,
-	resty.MethodPut, resty.MethodPatch, resty.MethodHead,
-	resty.MethodOptions,
+	http.MethodDelete, http.MethodGet, http.MethodPost,
+	http.MethodPut, http.MethodPatch, http.MethodHead,
+	http.MethodOptions,
 }
 
 func init() {

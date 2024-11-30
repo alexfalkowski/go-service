@@ -49,7 +49,7 @@ func TestGet(t *testing.T) {
 		Convey("When I query for a greet", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			client.Do(req)
@@ -103,7 +103,7 @@ func TestLimiter(t *testing.T) {
 			Convey("When I query for a greet", func() {
 				client := cl.NewHTTP()
 
-				req, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 				So(err, ShouldBeNil)
 
 				client.Do(req)
@@ -114,7 +114,7 @@ func TestLimiter(t *testing.T) {
 
 				Convey("Then I should have been rate limited", func() {
 					So(resp.StatusCode, ShouldEqual, http.StatusTooManyRequests)
-					So(resp.Header.Get("RateLimit"), ShouldNotBeBlank)
+					So(resp.Header.Get("Ratelimit"), ShouldNotBeBlank)
 				})
 
 				lc.RequireStop()
