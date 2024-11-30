@@ -40,7 +40,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	requestID := extractRequestID(ctx, req)
 
-	header.Set("Request-ID", requestID.Value())
+	header.Set("Request-Id", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
 
 	kind, ip := extractIP(req)
@@ -74,7 +74,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	requestID := extractRequestID(ctx, req)
 
-	req.Header.Set("Request-ID", requestID.Value())
+	req.Header.Set("Request-Id", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
@@ -97,7 +97,7 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 		return id
 	}
 
-	if id := req.Header.Get("Request-ID"); id != "" {
+	if id := req.Header.Get("Request-Id"); id != "" {
 		return meta.String(id)
 	}
 
@@ -105,7 +105,7 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 }
 
 func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
-	headers := []string{"X-Real-IP", "CF-Connecting-IP", "True-Client-IP", "X-Forwarded-For"}
+	headers := []string{"X-Real-Ip", "CF-Connecting-Ip", "True-Client-Ip", "X-Forwarded-For"}
 	for _, h := range headers {
 		if ip := req.Header.Get(h); ip != "" {
 			return meta.String(strings.ToLower(h)), meta.String(strings.Split(ip, ",")[0])

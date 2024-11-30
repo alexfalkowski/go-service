@@ -55,7 +55,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -123,7 +123,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 			defer cancel()
 
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

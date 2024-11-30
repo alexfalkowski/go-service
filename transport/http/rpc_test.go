@@ -180,7 +180,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 				client := cl.NewHTTP()
 				d := []byte("a bad payload")
 
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/"+mt)
@@ -238,7 +238,7 @@ func TestErrorRPC(t *testing.T) {
 				err := enc.Encode(b, test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
-				req, err := http.NewRequestWithContext(context.Background(), "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), b)
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), b)
 				So(err, ShouldBeNil)
 
 				req.Header.Set("Content-Type", "application/"+mt)

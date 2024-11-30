@@ -48,11 +48,11 @@ func TestValidAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 
 			message := []byte(`{"name":"test"}`)
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 			req.Header.Set("X-Forwarded-For", "127.0.0.1")
 
 			resp, err := client.Do(req)
@@ -103,11 +103,11 @@ func TestInvalidAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 			req.Header.Set("Authorization", "What Invalid")
 
 			resp, err := client.Do(req)
@@ -156,11 +156,11 @@ func TestMissingAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -210,11 +210,11 @@ func TestEmptyAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 
 			_, err = client.Do(req)
 
@@ -257,11 +257,11 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -311,11 +311,11 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			client := cl.NewHTTP()
 			message := []byte(`{"name":"test"}`)
 
-			req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
 			So(err, ShouldBeNil)
 
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Request-ID", "test")
+			req.Header.Set("Request-Id", "test")
 
 			_, err = client.Do(req)
 

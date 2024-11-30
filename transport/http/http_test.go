@@ -44,7 +44,7 @@ func TestSecure(t *testing.T) {
 		Convey("When I query github", func() {
 			client := cl.NewHTTP()
 
-			req, err := http.NewRequestWithContext(context.Background(), "GET", "https://github.com/alexfalkowski", http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://github.com/alexfalkowski", http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -85,7 +85,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 
 	b.Run("std", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
 			_, err = client.Do(req)
@@ -120,7 +120,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 	b.Run("none", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
 			_, err = client.Do(req)
@@ -157,7 +157,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 
 	b.Run("log", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
 			_, err = client.Do(req)
@@ -200,7 +200,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 
 	b.Run("trace", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			req, err := http.NewRequestWithContext(context.Background(), "GET", url, http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
 			_, err = client.Do(req)

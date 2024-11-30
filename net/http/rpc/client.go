@@ -91,7 +91,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		runtime.Must(err)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, "POST", c.url, b)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, b)
 	runtime.Must(err)
 
 	request.Header.Set(content.TypeKey, ct.Media)
