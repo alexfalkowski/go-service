@@ -2,7 +2,6 @@ package redis_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -19,8 +18,8 @@ import (
 func init() {
 	tracer.Register()
 
-	test.Encoder.Register("error", test.NewEncoder(errors.New("failed")))
-	test.Compressor.Register("error", test.NewCompressor(errors.New("failed")))
+	test.Encoder.Register("error", test.NewEncoder(test.ErrFailed))
+	test.Compressor.Register("error", test.NewCompressor(test.ErrFailed))
 }
 
 func TestSetCache(t *testing.T) {

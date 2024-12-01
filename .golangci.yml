@@ -15,7 +15,6 @@ linters:
     - gochecknoinits
     - bodyclose
     - depguard
-    - err113
     - exhaustruct
     - fatcontext
     - forcetypeassert

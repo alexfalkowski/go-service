@@ -13,6 +13,8 @@ func Must(err error) {
 }
 
 // ConvertRecover to an error.
+//
+//nolint:err113
 func ConvertRecover(r any) error {
 	switch x := r.(type) {
 	case string:

@@ -1,16 +1,16 @@
 package runtime_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestPanic(t *testing.T) {
 	Convey("When I have an error", t, func() {
-		f := func() { runtime.Must(errors.New("test")) }
+		f := func() { runtime.Must(test.ErrFailed) }
 
 		Convey("Then I should panic", func() {
 			So(f, ShouldPanic)
@@ -36,7 +36,7 @@ func TestRecover(t *testing.T) {
 			}
 		}()
 
-		panic(errors.New("test"))
+		panic(test.ErrFailed)
 	}
 
 	strPanic := func() (err error) {

@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/meta"
 )
@@ -34,7 +33,7 @@ type Verifier struct {
 
 func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, error) {
 	if string(token) != v.token {
-		return ctx, errors.New("invalid token")
+		return ctx, ErrInvalid
 	}
 
 	return WithTest(ctx, meta.String("auth")), nil
