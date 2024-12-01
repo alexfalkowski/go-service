@@ -209,6 +209,7 @@ func TestDBCommitTransExec(t *testing.T) {
 			tx, err := db.BeginTx(ctx, nil)
 			So(err, ShouldBeNil)
 
+			//nolint:errcheck
 			defer tx.Rollback()
 
 			result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
@@ -413,6 +414,7 @@ func TestTransStatementExec(t *testing.T) {
 			tx, err := db.Begin()
 			So(err, ShouldBeNil)
 
+			//nolint:errcheck
 			defer tx.Rollback()
 
 			stmt, err := tx.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")

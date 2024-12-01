@@ -51,7 +51,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			client.SayHello(ctx, req)
+			_, _ = client.SayHello(ctx, req)
 			_, err := client.SayHello(ctx, req)
 
 			Convey("Then I should have exhausted resources", func() {

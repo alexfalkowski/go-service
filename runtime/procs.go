@@ -5,6 +5,8 @@ import (
 )
 
 // RegisterMaxProcs for runtime.
-func RegisterMaxProcs() {
-	maxprocs.Set()
+func RegisterMaxProcs() error {
+	_, err := maxprocs.Set()
+
+	return err
 }

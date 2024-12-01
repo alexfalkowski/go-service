@@ -10,7 +10,6 @@ linters:
     - exportloopref
     - execinquery
     - gomnd
-    - errcheck
     - tagalign
     - gochecknoinits
     - bodyclose

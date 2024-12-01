@@ -31,7 +31,7 @@ func Register(dbs *mssqlx.DBs, meter metric.Meter) {
 		mic: maxIdleClosed, mitc: maxIdleTimeClosed, mlc: maxLifetimeClosed,
 	}
 
-	meter.RegisterCallback(m.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
+	metrics.MustRegisterCallback(meter, m.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
 }
 
 type ms struct {

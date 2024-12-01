@@ -14,7 +14,7 @@ func Register(cache *cache.Cache, meter metric.Meter) {
 	misses := metrics.MustInt64ObservableCounter(meter, "redis_misses_total", "The number of misses in the cache.")
 	m := &ms{cache: cache, hit: hits, miss: misses}
 
-	meter.RegisterCallback(m.callback, hits, misses)
+	metrics.MustRegisterCallback(meter, m.callback, hits, misses)
 }
 
 type ms struct {

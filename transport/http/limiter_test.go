@@ -41,7 +41,7 @@ func TestGet(t *testing.T) {
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 		mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-			w.Write([]byte("hello!"))
+			_, _ = w.Write([]byte("hello!"))
 		})
 
 		lc.RequireStart()
@@ -52,7 +52,7 @@ func TestGet(t *testing.T) {
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
-			client.Do(req)
+			_, _ = client.Do(req)
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
 
@@ -95,7 +95,7 @@ func TestLimiter(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-				w.Write([]byte("hello!"))
+				_, _ = w.Write([]byte("hello!"))
 			})
 
 			lc.RequireStart()
@@ -106,7 +106,7 @@ func TestLimiter(t *testing.T) {
 				req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
 				So(err, ShouldBeNil)
 
-				client.Do(req)
+				_, _ = client.Do(req)
 				resp, err := client.Do(req)
 				So(err, ShouldBeNil)
 

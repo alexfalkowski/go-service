@@ -5,8 +5,8 @@ import (
 )
 
 // RegisterStatsviz for debug.
-func RegisterStatsviz(srv *Server) {
+func RegisterStatsviz(srv *Server) error {
 	mux := srv.ServeMux()
 
-	statsviz.Register(mux)
+	return statsviz.Register(mux)
 }
