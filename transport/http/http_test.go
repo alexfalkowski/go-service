@@ -76,6 +76,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	}
 	defer server.Close()
 
+	//nolint:errcheck
 	go server.ListenAndServe()
 
 	client := &http.Client{Transport: http.DefaultTransport}

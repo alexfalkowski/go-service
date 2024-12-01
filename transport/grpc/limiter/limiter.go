@@ -35,7 +35,7 @@ func limit(ctx context.Context, store l.Store, key limiter.KeyFunc) error {
 		return internalError(err)
 	}
 
-	grpc.SetHeader(ctx, metadata.Pairs("ratelimit", info))
+	_ = grpc.SetHeader(ctx, metadata.Pairs("ratelimit", info))
 
 	if !ok {
 		return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", info)

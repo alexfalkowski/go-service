@@ -44,3 +44,11 @@ func MustInt64ObservableGauge(meter metric.Meter, name, description string) metr
 
 	return g
 }
+
+// MustRegisterCallback for metrics.
+func MustRegisterCallback(meter metric.Meter, f metric.Callback, instruments ...metric.Observable) metric.Registration {
+	reg, err := meter.RegisterCallback(f, instruments...)
+	runtime.Must(err)
+
+	return reg
+}

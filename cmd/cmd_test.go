@@ -221,7 +221,7 @@ func ver() env.Version {
 func environment(_ env.Name, _ env.UserAgent) {}
 
 func netTime(n st.Network) {
-	n.Now()
+	_, _ = n.Now()
 }
 
 func crypt(a argon2.Algo, _ ed25519.Algo, _ rsa.Algo, _ aes.Algo, _ hmac.Algo, _ ssh.Algo) error {

@@ -40,7 +40,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.U
 		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
-		grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", requestID.Value()))
+		_ = grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", requestID.Value()))
 
 		return handler(ctx, req)
 	}
@@ -54,19 +54,14 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.
 			return handler(srv, stream)
 		}
 
-		if err := stream.SetHeader(metadata.Pairs("service-version", version.String())); err != nil {
-			return err
-		}
+		_ = stream.SetHeader(metadata.Pairs("service-version", version.String()))
 
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
-
 		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 
 		requestID := extractRequestID(ctx, md)
-		if err := stream.SetHeader(metadata.Pairs("request-id", requestID.Value())); err != nil {
-			return err
-		}
+		_ = stream.SetHeader(metadata.Pairs("request-id", requestID.Value()))
 
 		ctx = m.WithRequestID(ctx, requestID)
 

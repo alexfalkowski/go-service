@@ -56,7 +56,9 @@ func TestSendReceive(t *testing.T) {
 			e := events.NewEvent()
 			e.SetSource("example/uri")
 			e.SetType("example.type")
-			e.SetData(events.TextPlain, "test")
+
+			err = e.SetData(events.TextPlain, "test")
+			So(err, ShouldBeNil)
 
 			result := c.Send(ctx, e)
 
@@ -110,7 +112,9 @@ func TestSendNotReceive(t *testing.T) {
 			e := events.NewEvent()
 			e.SetSource("example/uri")
 			e.SetType("example.type")
-			e.SetData(events.TextPlain, "test")
+
+			err = e.SetData(events.TextPlain, "test")
+			So(err, ShouldBeNil)
 
 			result := c.Send(ctx, e)
 
