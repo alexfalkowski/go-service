@@ -2,7 +2,6 @@ package grpc_test
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"testing"
 
@@ -33,7 +32,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("bob", errors.New("token error")),
+			Generator: test.NewGenerator("bob", test.ErrGenerate),
 		}
 
 		lc.RequireStart()
@@ -478,7 +477,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("", errors.New("token error")),
+			Generator: test.NewGenerator("", test.ErrGenerate),
 		}
 
 		lc.RequireStart()

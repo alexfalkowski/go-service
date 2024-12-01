@@ -3,7 +3,6 @@ package http_test
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -301,7 +300,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		ctx := context.Background()
 		cl := &test.Client{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("", errors.New("token error")),
+			Generator: test.NewGenerator("", test.ErrGenerate),
 		}
 
 		rpc.Register(mux, test.Content, test.Pool)
