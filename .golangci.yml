@@ -8,8 +8,6 @@ linters:
   enable-all: true
   disable:
     - exportloopref
-    - execinquery
-    - gomnd
     - tagalign
     - gochecknoinits
     - bodyclose
