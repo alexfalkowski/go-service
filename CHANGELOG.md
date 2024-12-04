@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.321.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.321.0) - 2024-12-04
+
+- [`035d30e`](https://github.com/alexfalkowski/go-service/commit/035d30e9c5c1092ec35ae19512abbae8d72e6c5b) feat(deps): bump google.golang.org/grpc from 1.68.0 to 1.68.1 (#1054)
+- [`28e1a41`](https://github.com/alexfalkowski/go-service/commit/28e1a41675affd1ffdd9e6e7db20a0e39bb630f1) build(lint): remove disabled linters (#1053)
+
 ## [v1.320.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.320.1) - 2024-12-01
 
 - [`d58869c`](https://github.com/alexfalkowski/go-service/commit/d58869cb5c7f9828355169fffaea1dc3dbaaae34) fix(deps): upgraded github.com/shirou/gopsutil/v4 v4.24.10 => v4.24.11 (#1052)
