@@ -37,12 +37,18 @@ func Generate() (string, string, error) {
 // Algo for ed25519.
 type Algo interface {
 	algo.Signer
+
+	// PublicKey for ed25519.
+	PublicKey() ed25519.PublicKey
+
+	// PrivateKey for ed25519.
+	PrivateKey() ed25519.PrivateKey
 }
 
 // NewAlgo for ed25519.
 func NewAlgo(cfg *Config) (Algo, error) {
 	if !IsEnabled(cfg) {
-		return &algo.NoSigner{}, nil
+		return &None{&algo.NoSigner{}}, nil
 	}
 
 	pub, err := cfg.PublicKey()
@@ -80,5 +86,30 @@ func (a *ed25519Algo) Verify(sig, msg string) error {
 		return errors.ErrMismatch
 	}
 
+	return nil
+}
+
+// PublicKey for ed25519.
+func (a *ed25519Algo) PublicKey() ed25519.PublicKey {
+	return a.publicKey
+}
+
+// PrivateKey for ed25519.
+func (a *ed25519Algo) PrivateKey() ed25519.PrivateKey {
+	return a.privateKey
+}
+
+// None for ed25519.
+type None struct {
+	algo.Signer
+}
+
+// PublicKey for none.
+func (a *None) PublicKey() ed25519.PublicKey {
+	return nil
+}
+
+// PrivateKey for none.
+func (a *None) PrivateKey() ed25519.PrivateKey {
 	return nil
 }

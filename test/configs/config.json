@@ -87,6 +87,13 @@
       "kind": "nts",
       "address": "time.cloudflare.com"
     },
+    "token": {
+      "kind": "jwt",
+      "sub": "sub",
+      "aud": "aud",
+      "iss": "iss",
+      "exp": "1h"
+    },
     "transport": {
       "http": {
         "address": ":11000",

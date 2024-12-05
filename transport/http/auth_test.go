@@ -9,12 +9,75 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/token"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
+
+func TestTokenAuthUnary(t *testing.T) {
+	for _, kind := range []string{"jwt", "paseto"} {
+		Convey("Given I have a all the servers", t, func() {
+			mux := http.NewServeMux()
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+			kid, _ := token.NewKID()
+			a, _ := ed25519.NewAlgo(test.NewEd25519())
+			jwt := token.NewJWT(kid, a)
+			pas := token.NewPaseto(a)
+			token := token.NewToken(test.NewToken(kind), jwt, pas)
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{
+				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
+				Verifier: token, Mux: mux,
+			}
+			s.Register()
+
+			lc.RequireStart()
+
+			ctx := context.Background()
+			cl := &test.Client{
+				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+				Generator: token,
+			}
+
+			rpc.Register(mux, test.Content, test.Pool)
+			rpc.Route("/hello", test.SuccessSayHello)
+
+			Convey("When I query for an authenticated greet", func() {
+				client := cl.NewHTTP()
+
+				message := []byte(`{"name":"test"}`)
+				req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+				So(err, ShouldBeNil)
+
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Request-Id", "test")
+				req.Header.Set("X-Forwarded-For", "127.0.0.1")
+
+				resp, err := client.Do(req)
+				So(err, ShouldBeNil)
+
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have a valid reply", func() {
+					So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
 
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {

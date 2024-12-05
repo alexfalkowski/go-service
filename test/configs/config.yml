@@ -58,6 +58,12 @@ telemetry:
     url: http://localhost:4318/v1/traces
     headers:
       Authorization: ../test/secrets/tracer
+token:
+  kind: "jwt"
+  sub: "sub"
+  aud: "aud"
+  iss: "iss"
+  exp: "1h"
 transport:
   http:
     address: :11000

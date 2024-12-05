@@ -246,11 +246,11 @@ telemetry:
 
 ## Token
 
-The framework allows you to define different token generators and verifiers. This is left up to you!
+The framework allows you to define different token generators and verifiers.
 
-We recommend that you look at better auth strategies, such as:
-- https://github.com/supertokens/supertokens-core
-- https://github.com/ory/hydra
+We provide the following out of the box:
+- [JWT](https://github.com/golang-jwt/jwt)
+- [Paseto](https://github.com/aidantwoods/go-paseto)
 
 ## Limiter
 

@@ -23,12 +23,24 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/header"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 )
 
 const timeout = 2 * time.Second
+
+// NewToken for test.
+func NewToken(kind string) *token.Config {
+	return &token.Config{
+		Kind:       kind,
+		Subject:    "sub",
+		Audience:   "aud",
+		Issuer:     "iss",
+		Expiration: "1h",
+	}
+}
 
 // NewEd25519 for test.
 func NewEd25519() *ed25519.Config {

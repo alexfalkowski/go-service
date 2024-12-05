@@ -36,6 +36,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -246,6 +247,8 @@ func controller(router *mvc.Router) {
 	})
 }
 
+func tokens(_ token.KID, _ *token.JWT, _ *token.Paseto, _ *token.Token) {}
+
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
 		time.Sleep(time.Second)
@@ -261,11 +264,12 @@ func opts() []fx.Option {
 		sync.Module, feature.Module, st.Module,
 		transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module,
-		compress.Module, encoding.Module, crypto.Module,
+		compress.Module, encoding.Module, crypto.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(redisCache), fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(controller),
+		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment),
+		fx.Invoke(controller), fx.Invoke(tokens),
 	}
 }

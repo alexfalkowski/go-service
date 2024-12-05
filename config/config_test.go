@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -143,6 +144,12 @@ func verifyConfig(cfg *config.Config) {
 	So(cfg.Time.Address, ShouldEqual, "time.cloudflare.com")
 	So(cfg.Telemetry.Tracer.URL, ShouldEqual, "http://localhost:4318/v1/traces")
 	So(cfg.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
+	So(token.IsEnabled(cfg.Token), ShouldBeTrue)
+	So(cfg.Token.Audience, ShouldEqual, "aud")
+	So(cfg.Token.Expiration, ShouldEqual, "1h")
+	So(cfg.Token.Issuer, ShouldEqual, "iss")
+	So(cfg.Token.Kind, ShouldEqual, "jwt")
+	So(cfg.Token.Subject, ShouldEqual, "sub")
 	So(server.IsEnabled(cfg.Transport.GRPC.Config), ShouldBeTrue)
 	So(cfg.Transport.GRPC.Address, ShouldEqual, ":12000")
 	So(cfg.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
