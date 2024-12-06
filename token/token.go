@@ -1,14 +1,18 @@
 package token
 
 import (
+	"bytes"
 	"context"
 	"errors"
-	"time"
 
+	"github.com/alexfalkowski/go-service/os"
 	st "github.com/alexfalkowski/go-service/time"
 )
 
 var (
+	// ErrInvalid for token.
+	ErrInvalid = errors.New("invalid token")
+
 	// ErrInvalidAlgorithm for service.
 	ErrInvalidAlgorithm = errors.New("invalid algorithm")
 
@@ -35,52 +39,68 @@ type (
 		Verify(ctx context.Context, token []byte) (context.Context, error)
 	}
 
-	token interface {
-		Generate(sub, aud, iss string, exp time.Duration) (string, error)
-		Verify(token, aud, iss string) (string, error)
-	}
-
 	// Token will generate and verify based on what is defined in the config.
 	Token struct {
-		cfg   *Config
-		token token
+		cfg *Config
+		jwt *JWT
+		pas *Paseto
 	}
 )
 
 // NewToken based on config.
 func NewToken(cfg *Config, jwt *JWT, pas *Paseto) *Token {
-	if !IsEnabled(cfg) {
-		return &Token{}
-	}
-
-	var token token
-
-	switch {
-	case cfg.IsJWT():
-		token = jwt
-	case cfg.IsPaseto():
-		token = pas
-	}
-
-	return &Token{cfg: cfg, token: token}
+	return &Token{cfg: cfg, jwt: jwt, pas: pas}
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
-	if t.token == nil {
+	if t.cfg == nil {
 		return ctx, nil, nil
 	}
 
-	token, err := t.token.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+	switch {
+	case t.cfg.IsKey():
+		d, err := os.ReadBase64File(t.cfg.Key)
 
-	return ctx, []byte(token), err
+		return ctx, []byte(d), err
+	case t.cfg.IsJWT():
+		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+
+		return ctx, []byte(token), err
+	case t.cfg.IsPaseto():
+		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+
+		return ctx, []byte(token), err
+	}
+
+	return ctx, nil, nil
 }
 
 func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	if t.token == nil {
+	if t.cfg == nil {
 		return ctx, nil
 	}
 
-	_, err := t.token.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+	switch {
+	case t.cfg.IsKey():
+		d, err := os.ReadBase64File(t.cfg.Key)
+		if err != nil {
+			return ctx, err
+		}
 
-	return ctx, err
+		if !bytes.Equal([]byte(d), token) {
+			return ctx, ErrInvalid
+		}
+
+		return ctx, nil
+	case t.cfg.IsJWT():
+		_, err := t.jwt.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+
+		return ctx, err
+	case t.cfg.IsPaseto():
+		_, err := t.pas.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+
+		return ctx, err
+	}
+
+	return ctx, nil
 }

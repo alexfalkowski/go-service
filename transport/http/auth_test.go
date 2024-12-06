@@ -19,7 +19,7 @@ import (
 )
 
 func TestTokenAuthUnary(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto"} {
+	for _, kind := range []string{"jwt", "paseto", "key"} {
 		Convey("Given I have a all the servers", t, func() {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)

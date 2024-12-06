@@ -252,6 +252,18 @@ We provide the following out of the box:
 - [JWT](https://github.com/golang-jwt/jwt)
 - [Paseto](https://github.com/aidantwoods/go-paseto)
 
+To configure, please specify the following:
+
+```yaml
+token:
+  kind: jwt, paseto, key
+  key: path to a key (only used for kind key)
+  sub: subject
+  aud: audience
+  iss: issuer
+  exp: 1h
+```
+
 ## Limiter
 
 The framework allows you to define a [limiter](https://github.com/sethvargo/go-limiter). This will be applied to the different transports.

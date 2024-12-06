@@ -35,6 +35,7 @@ const timeout = 2 * time.Second
 func NewToken(kind string) *token.Config {
 	return &token.Config{
 		Kind:       kind,
+		Key:        Path("secrets/token"),
 		Subject:    "sub",
 		Audience:   "aud",
 		Issuer:     "iss",
