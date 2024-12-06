@@ -3,6 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.23
 
 require (
+	aidanwoods.dev/go-paseto v1.5.2
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.6.1
 	github.com/alexfalkowski/go-health v1.19.0
@@ -18,6 +19,7 @@ require (
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/go-sprout/sprout v0.6.0
 	github.com/goccy/go-json v0.10.3
+	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
@@ -62,6 +64,7 @@ require (
 )
 
 require (
+	aidanwoods.dev/go-result v0.1.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
