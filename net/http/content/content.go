@@ -1,9 +1,11 @@
 package content
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/encoding"
+	hc "github.com/alexfalkowski/go-service/net/http/context"
 	ct "github.com/elnormous/contenttype"
 )
 
@@ -14,6 +16,14 @@ const (
 	// TypeKey for HTTP headers.
 	TypeKey = "Content-Type"
 )
+
+// Decode to v, unless an error occurs.
+func Decode(ctx context.Context, v any) error {
+	e := hc.Encoder(ctx)
+	req := hc.Request(ctx)
+
+	return e.Decode(req.Body, v)
+}
 
 // Content creates types from media types.
 type Content struct {

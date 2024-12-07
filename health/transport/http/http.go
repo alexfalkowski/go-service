@@ -39,7 +39,7 @@ func Register(params RegisterParams) error {
 }
 
 func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *content.Content, withErrors bool) {
-	h := ct.NewHandler("health", func(ctx context.Context) any {
+	h := ct.NewHandler("health", func(ctx context.Context) (any, error) {
 		var (
 			status   int
 			response string
@@ -74,7 +74,7 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *cont
 			}
 		}
 
-		return data
+		return data, nil
 	})
 
 	mux.HandleFunc("GET "+path, h)

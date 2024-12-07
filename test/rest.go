@@ -9,15 +9,17 @@ import (
 )
 
 // RestNoContent for test.
-func RestNoContent(_ context.Context) any {
-	return nil
+//
+//nolint:nilnil
+func RestNoContent(_ context.Context) (any, error) {
+	return nil, nil
 }
 
 // RestNoContent for test.
-func RestContent(ctx context.Context) any {
+func RestContent(ctx context.Context) (any, error) {
 	req := nc.Request(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}, nil
 }

@@ -12,7 +12,7 @@ import (
 )
 
 // Handler for content.
-type Handler func(ctx context.Context) any
+type Handler func(ctx context.Context) (any, error)
 
 // NewHandler for content.
 func (c *Content) NewHandler(prefix string, handler Handler) func(res http.ResponseWriter, req *http.Request) {
@@ -33,12 +33,14 @@ func (c *Content) NewHandler(prefix string, handler Handler) func(res http.Respo
 		ctx = hc.WithEncoder(ctx, ct.Encoder)
 		res.Header().Add(TypeKey, ct.Media)
 
-		data := handler(ctx)
+		data, err := handler(ctx)
+		runtime.Must(err)
+
 		if data == nil {
 			return
 		}
 
-		err := ct.Encoder.Encode(res, data)
+		err = ct.Encoder.Encode(res, data)
 		runtime.Must(err)
 	}
 
