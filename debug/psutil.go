@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/maps"
 	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/mem"
 )
@@ -13,14 +12,18 @@ import (
 // RegisterPprof for debug.
 func RegisterPsutil(srv *Server, content *content.Content) {
 	mux := srv.ServeMux()
-	h := content.NewHandler("debug", func(ctx context.Context) any {
+	h := content.NewHandler("debug", func(ctx context.Context) (any, error) {
 		data := maps.StringAny{}
 
 		i, err := cpu.InfoWithContext(ctx)
-		runtime.Must(err)
+		if err != nil {
+			return nil, err
+		}
 
 		t, err := cpu.TimesWithContext(ctx, true)
-		runtime.Must(err)
+		if err != nil {
+			return nil, err
+		}
 
 		data["cpu"] = maps.StringAny{
 			"info":  i,
@@ -28,13 +31,19 @@ func RegisterPsutil(srv *Server, content *content.Content) {
 		}
 
 		sm, err := mem.SwapMemoryWithContext(ctx)
-		runtime.Must(err)
+		if err != nil {
+			return nil, err
+		}
 
 		sd, err := mem.SwapDevicesWithContext(ctx)
-		runtime.Must(err)
+		if err != nil {
+			return nil, err
+		}
 
 		vm, err := mem.VirtualMemoryWithContext(ctx)
-		runtime.Must(err)
+		if err != nil {
+			return nil, err
+		}
 
 		data["mem"] = maps.StringAny{
 			"swap":    sm,
@@ -42,7 +51,7 @@ func RegisterPsutil(srv *Server, content *content.Content) {
 			"virtual": vm,
 		}
 
-		return data
+		return data, nil
 	})
 
 	mux.HandleFunc("/debug/psutil", h)
