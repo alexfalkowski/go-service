@@ -51,10 +51,52 @@ func TestRestNoContent(t *testing.T) {
 					rest.WithClientTimeout("10s"),
 				)
 
-				_, err := client.R().Execute(v, url)
+				res, err := client.R().Execute(v, url)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
+					So(rest.Error(res), ShouldBeNil)
+				})
+
+				lc.RequireStop()
+			})
+		})
+	}
+}
+
+func TestRestError(t *testing.T) {
+	for _, v := range methods {
+		Convey("Given I have all the servers", t, func() {
+			mux := http.NewServeMux()
+			lc := fxtest.NewLifecycle(t)
+			logger := test.NewLogger(lc)
+
+			cfg := test.NewInsecureTransportConfig()
+			tc := test.NewOTLPTracerConfig()
+			m := test.NewOTLPMeter(lc)
+
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+			s.Register()
+
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+			rest.Register(mux, test.Content)
+			registerHandlers("/hello", test.RestError)
+
+			lc.RequireStart()
+
+			Convey("When I send data", func() {
+				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				client := rest.NewClient(
+					rest.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rest.WithClientTimeout("10s"),
+				)
+
+				res, err := client.R().Execute(v, url)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have no error", func() {
+					So(rest.Error(res), ShouldBeError)
 				})
 
 				lc.RequireStop()

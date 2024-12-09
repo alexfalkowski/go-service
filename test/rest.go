@@ -23,3 +23,8 @@ func RestContent(ctx context.Context) (any, error) {
 
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}, nil
 }
+
+// RestNoContent for test.
+func RestError(_ context.Context) (any, error) {
+	return nil, ErrInvalidToken
+}

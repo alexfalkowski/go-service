@@ -2,12 +2,25 @@ package rest
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	nh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/net/http/content"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/go-resty/resty/v2"
 )
+
+// Error will return an error if the response from the server is text (as server handlers return text on errors).
+func Error(response *resty.Response) error {
+	ct := cont.NewFromMedia(response.Header().Get(content.TypeKey))
+	if ct.IsText() {
+		return status.Error(response.StatusCode(), strings.TrimSpace(string(response.Body())))
+	}
+
+	return nil
+}
 
 // ClientOption for rest.
 type ClientOption interface {
