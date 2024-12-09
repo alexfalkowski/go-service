@@ -4,6 +4,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// IsStringSet the flag for cmd.
+func IsStringSet(s *string) bool {
+	return s != nil && *s != ""
+}
+
 // String for cmd.
 func String() *string {
 	var s string
@@ -16,8 +21,8 @@ func StringVar(cmd *cobra.Command, p *string, name, shorthand string, value stri
 	cmd.PersistentFlags().StringVarP(p, name, shorthand, value, usage)
 }
 
-// IsSet the flag for cmd.
-func IsSet(b *bool) bool {
+// IsBoolSet the flag for cmd.
+func IsBoolSet(b *bool) bool {
 	return b != nil && *b
 }
 
