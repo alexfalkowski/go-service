@@ -17,12 +17,15 @@ func TestFlags(t *testing.T) {
 			Version: string(test.Version),
 		}
 		b := flags.Bool()
+		s := flags.String()
 
 		Convey("When I add it to the command", func() {
-			flags.BoolVar(c, b, "test", "y", true, "test")
+			flags.BoolVar(c, b, "bool", "y", false, "test")
+			flags.StringVar(c, s, "string", "z", "", "test")
 
-			Convey("Then I should have it set to the default value", func() {
-				So(flags.IsSet(b), ShouldBeTrue)
+			Convey("Then I should unset flags", func() {
+				So(flags.IsBoolSet(b), ShouldBeFalse)
+				So(flags.IsStringSet(s), ShouldBeFalse)
 			})
 		})
 	})
