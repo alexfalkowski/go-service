@@ -1,6 +1,8 @@
 package config
 
 import (
+	"errors"
+
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
@@ -28,16 +30,28 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 )
 
-// NewConfig for config.
-func NewConfig(i *cmd.InputConfig) (*Config, error) {
-	c := &Config{}
+// ErrInvalidConfig when decoding fails.
+var ErrInvalidConfig = errors.New("invalid config")
 
-	return c, i.Decode(c)
+// Validity of config.
+type Validity interface {
+	Valid() error
 }
 
-// IsEnabled for config.
-func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+// NewConfig will decode and check its validity.
+func NewConfig[T Validity](i *cmd.InputConfig) (*T, error) {
+	var c T
+	ptr := &c
+
+	if err := i.Decode(ptr); err != nil {
+		return nil, err
+	}
+
+	if err := c.Valid(); err != nil {
+		return nil, err
+	}
+
+	return ptr, nil
 }
 
 // Config for the service.
@@ -56,8 +70,17 @@ type Config struct {
 	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
 }
 
+// Valid or error.
+func (c Config) Valid() error {
+	if c.Environment.IsEmpty() {
+		return ErrInvalidConfig
+	}
+
+	return nil
+}
+
 func aesConfig(cfg *Config) *aes.Config {
-	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -65,15 +88,11 @@ func aesConfig(cfg *Config) *aes.Config {
 }
 
 func debugConfig(cfg *Config) *debug.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
 	return cfg.Debug
 }
 
 func ed25519Config(cfg *Config) *ed25519.Config {
-	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -81,23 +100,15 @@ func ed25519Config(cfg *Config) *ed25519.Config {
 }
 
 func environmentConfig(cfg *Config) env.Environment {
-	if !IsEnabled(cfg) {
-		return env.Development
-	}
-
 	return cfg.Environment
 }
 
 func featureConfig(cfg *Config) *feature.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
 	return cfg.Feature
 }
 
 func grpcConfig(cfg *Config) *grpc.Config {
-	if !IsEnabled(cfg) || !transport.IsEnabled(cfg.Transport) {
+	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -105,7 +116,7 @@ func grpcConfig(cfg *Config) *grpc.Config {
 }
 
 func hmacConfig(cfg *Config) *hmac.Config {
-	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -113,15 +124,11 @@ func hmacConfig(cfg *Config) *hmac.Config {
 }
 
 func hooksConfig(cfg *Config) *hooks.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
 	return cfg.Hooks
 }
 
 func httpConfig(cfg *Config) *http.Config {
-	if !IsEnabled(cfg) || !transport.IsEnabled(cfg.Transport) {
+	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
 
@@ -129,15 +136,11 @@ func httpConfig(cfg *Config) *http.Config {
 }
 
 func limiterConfig(cfg *Config) *limiter.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
 	return cfg.Limiter
 }
 
 func loggerConfig(cfg *Config) *zap.Config {
-	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 
@@ -145,7 +148,7 @@ func loggerConfig(cfg *Config) *zap.Config {
 }
 
 func metricsConfig(cfg *Config) *metrics.Config {
-	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 
@@ -153,7 +156,7 @@ func metricsConfig(cfg *Config) *metrics.Config {
 }
 
 func rsaConfig(cfg *Config) *rsa.Config {
-	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -161,7 +164,7 @@ func rsaConfig(cfg *Config) *rsa.Config {
 }
 
 func pgConfig(cfg *Config) *pg.Config {
-	if !IsEnabled(cfg) || !sql.IsEnabled(cfg.SQL) {
+	if !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
 
@@ -169,7 +172,7 @@ func pgConfig(cfg *Config) *pg.Config {
 }
 
 func redisConfig(cfg *Config) *redis.Config {
-	if !IsEnabled(cfg) || !cache.IsEnabled(cfg.Cache) {
+	if !cache.IsEnabled(cfg.Cache) {
 		return nil
 	}
 
@@ -177,7 +180,7 @@ func redisConfig(cfg *Config) *redis.Config {
 }
 
 func sshConfig(cfg *Config) *ssh.Config {
-	if !IsEnabled(cfg) || !crypto.IsEnabled(cfg.Crypto) {
+	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
@@ -185,7 +188,7 @@ func sshConfig(cfg *Config) *ssh.Config {
 }
 
 func timeConfig(cfg *Config) *time.Config {
-	if !IsEnabled(cfg) || !time.IsEnabled(cfg.Time) {
+	if !time.IsEnabled(cfg.Time) {
 		return nil
 	}
 
@@ -193,7 +196,7 @@ func timeConfig(cfg *Config) *time.Config {
 }
 
 func tokenConfig(cfg *Config) *token.Config {
-	if !IsEnabled(cfg) || !token.IsEnabled(cfg.Token) {
+	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}
 
@@ -201,7 +204,7 @@ func tokenConfig(cfg *Config) *token.Config {
 }
 
 func tracerConfig(cfg *Config) *tracer.Config {
-	if !IsEnabled(cfg) || !telemetry.IsEnabled(cfg.Telemetry) {
+	if !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}
 

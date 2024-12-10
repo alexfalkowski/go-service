@@ -207,7 +207,7 @@ func redisCache(c *rc.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func configs(_ *redis.Config, _ *pg.Config) {}
+func configs(_ *redis.Config, _ *pg.Config, _ *feature.Config) {}
 
 func meter(_ metric.Meter) {}
 
