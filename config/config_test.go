@@ -36,7 +36,7 @@ func TestValidEnvConfig(t *testing.T) {
 			c := test.NewInputConfig("env:CONFIG_FILE")
 
 			Convey("When I try to parse the configuration file", func() {
-				cfg, err := config.NewConfig(c)
+				cfg, err := config.NewConfig[config.Config](c)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -54,7 +54,7 @@ func TestValidFileConfig(t *testing.T) {
 		c := test.NewInputConfig("file:../test/configs/config.yml")
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg, err := config.NewConfig(c)
+			cfg, err := config.NewConfig[config.Config](c)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -69,11 +69,25 @@ func TestMissingFileConfig(t *testing.T) {
 		c := test.NewInputConfig("file:../test/configs/missing.yml")
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig(c)
+			_, err := config.NewConfig[*config.Config](c)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
 				So(errors.Is(err, os.ErrNotExist), ShouldBeTrue)
+			})
+		})
+	})
+}
+
+func TestInvalidFileConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		c := test.NewInputConfig("file:../test/configs/invalid.yml")
+
+		Convey("When I try to parse the configuration file", func() {
+			_, err := config.NewConfig[config.Config](c)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 	})
@@ -90,7 +104,7 @@ func TestValidMemConfig(t *testing.T) {
 		c := test.NewInputConfig("env:CONFIG_FILE")
 
 		Convey("When I try to parse the configuration file", func() {
-			cfg, err := config.NewConfig(c)
+			cfg, err := config.NewConfig[config.Config](c)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
