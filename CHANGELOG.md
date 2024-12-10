@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.329.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.329.0) - 2024-12-10
+
+- [`6fce124`](https://github.com/alexfalkowski/go-service/commit/6fce12436b5a1a5aed1a5b01825b7b3f925b1cde) feat(config): generic new config (#1064)
+
 ## [v1.328.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.328.1) - 2024-12-10
 
 - [`728310d`](https://github.com/alexfalkowski/go-service/commit/728310d23dd499190524d8f75d9de0fb0d5d2b2a) fix(cmd): error on decode with no encoder (#1062)
