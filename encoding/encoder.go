@@ -10,21 +10,23 @@ import (
 	"github.com/alexfalkowski/go-service/encoding/yaml"
 )
 
-// Encoder allows different types of encoding/decoding.
-type Encoder interface {
-	// Encode any to a writer.
-	Encode(w io.Writer, e any) error
+type (
+	// Encoder allows different types of encoding/decoding.
+	Encoder interface {
+		// Encode any to a writer.
+		Encode(w io.Writer, e any) error
 
-	// Decode any from a reader.
-	Decode(r io.Reader, e any) error
-}
+		// Decode any from a reader.
+		Decode(r io.Reader, e any) error
+	}
 
-type encoders map[string]Encoder
+	encoders map[string]Encoder
 
-// Map of encoding.
-type Map struct {
-	encoders encoders
-}
+	// Map of encoding.
+	Map struct {
+		encoders encoders
+	}
+)
 
 // NewMap for encoding.
 func NewMap() *Map {

@@ -2,11 +2,16 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io/fs"
 
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/errors"
+	se "github.com/alexfalkowski/go-service/errors"
 )
+
+// ErrNoEncoder for cmd.
+var ErrNoEncoder = errors.New("no encoder")
 
 // Config for cmd.
 type Config struct {
@@ -32,13 +37,19 @@ func (c *Config) Kind() string {
 func (c *Config) Decode(data any) error {
 	d, err := c.rw.Read()
 	if err != nil {
-		return errors.Prefix("decode config", err)
+		return se.Prefix("decode config", err)
 	}
 
-	return errors.Prefix("decode config", c.enc.Decode(bytes.NewReader(d), data))
+	if c.enc == nil {
+		err := fmt.Errorf("%s: %w", c.rw.Kind(), ErrNoEncoder)
+
+		return se.Prefix("decode config", err)
+	}
+
+	return se.Prefix("decode config", c.enc.Decode(bytes.NewReader(d), data))
 }
 
 // Write for config.
 func (c *Config) Write(data []byte, mode fs.FileMode) error {
-	return errors.Prefix("write config", c.rw.Write(data, mode))
+	return se.Prefix("write config", c.rw.Write(data, mode))
 }

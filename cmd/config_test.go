@@ -180,13 +180,13 @@ func TestInvalidKindConfig(t *testing.T) {
 
 func TestInvalidConfig(t *testing.T) {
 	Convey("Given I have invalid kind configuration file", t, func() {
-		So(os.Setenv("CONFIG_FILE", "../test/greet/v1/service.proto"), ShouldBeNil)
+		So(os.Setenv("CONFIG_FILE", "../test/config.go"), ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
-			c := test.NewInputConfig("test:test")
+			c := test.NewInputConfig("env:CONFIG_FILE")
 
-			Convey("Then I should have a valid configuration", func() {
-				So(c, ShouldNotBeNil)
+			Convey("Then I should have an error when decoding", func() {
+				So(c.Decode(nil), ShouldBeError)
 			})
 
 			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
