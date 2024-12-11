@@ -30,7 +30,7 @@ require (
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/matthewhartstonge/argon2 v1.0.2
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
-	github.com/open-feature/go-sdk v1.13.1
+	github.com/open-feature/go-sdk v1.14.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.4
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
