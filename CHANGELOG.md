@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.332.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.332.2) - 2024-12-11
+
+- [`b924cf8`](https://github.com/alexfalkowski/go-service/commit/b924cf887ec685e839551d403290b3d7e368bfc2) fix(config): too many prefixes (#1071)
+
 ## [v1.332.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.332.1) - 2024-12-11
 
 - [`00f4cbd`](https://github.com/alexfalkowski/go-service/commit/00f4cbdcd5ee227addd5308ec925c64f094d8caf) fix(config): too many prefixes (#1070)
