@@ -66,7 +66,7 @@ func (a *hmacAlgo) Verify(sig, msg string) error {
 	expectedMAC := mac.Sum(nil)
 
 	if !hmac.Equal(d, expectedMAC) {
-		return errors.ErrMismatch
+		return errors.ErrInvalidMatch
 	}
 
 	return nil

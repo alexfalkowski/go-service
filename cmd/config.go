@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/fs"
 
 	"github.com/alexfalkowski/go-service/encoding"
@@ -11,7 +10,7 @@ import (
 )
 
 // ErrNoEncoder for cmd.
-var ErrNoEncoder = errors.New("no encoder")
+var ErrNoEncoder = errors.New("config: no encoder")
 
 // Config for cmd.
 type Config struct {
@@ -41,9 +40,7 @@ func (c *Config) Decode(data any) error {
 	}
 
 	if c.enc == nil {
-		err := fmt.Errorf("%s: %w", c.rw.Kind(), ErrNoEncoder)
-
-		return se.Prefix("config", err)
+		return ErrNoEncoder
 	}
 
 	return se.Prefix("config", c.enc.Decode(bytes.NewReader(d), data))

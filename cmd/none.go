@@ -6,7 +6,7 @@ import (
 )
 
 // ErrInvalidLocation for cmd.
-var ErrInvalidLocation = errors.New("invalid location: (format kind:location)")
+var ErrInvalidLocation = errors.New("config: invalid location: (format kind:location)")
 
 // None for cmd.
 type None struct{}

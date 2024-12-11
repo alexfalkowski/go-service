@@ -17,7 +17,7 @@ type KeyFunc func(context.Context) meta.Valuer
 
 var (
 	// ErrMissingKey for limiter.
-	ErrMissingKey = errors.New("missing key")
+	ErrMissingKey = errors.New("limiter: missing key")
 
 	keys = map[string]KeyFunc{}
 )
