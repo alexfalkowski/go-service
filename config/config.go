@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
-	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
@@ -45,11 +44,11 @@ func NewConfig[T Validity](i *cmd.InputConfig) (*T, error) {
 	ptr := &c
 
 	if err := i.Decode(ptr); err != nil {
-		return nil, se.Prefix("config", err)
+		return nil, err
 	}
 
 	if err := c.Valid(); err != nil {
-		return nil, se.Prefix("config", err)
+		return nil, err
 	}
 
 	return ptr, nil
