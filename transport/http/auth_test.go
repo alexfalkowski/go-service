@@ -181,7 +181,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(strings.TrimSpace(string(body)), ShouldContainSubstring, `verify token: invalid token`)
+				So(strings.TrimSpace(string(body)), ShouldContainSubstring, `token: invalid match`)
 			})
 
 			lc.RequireStop()
@@ -233,7 +233,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(strings.TrimSpace(string(body)), ShouldContainSubstring, "invalid token")
+				So(strings.TrimSpace(string(body)), ShouldContainSubstring, "invalid match")
 			})
 
 			lc.RequireStop()
@@ -334,7 +334,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
-				So(strings.TrimSpace(string(body)), ShouldContainSubstring, "invalid token")
+				So(strings.TrimSpace(string(body)), ShouldContainSubstring, "invalid match")
 			})
 
 			lc.RequireStop()

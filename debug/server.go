@@ -46,7 +46,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	sv, err := sh.NewServer(s, c)
 	if err != nil {
-		return nil, errors.Prefix("new debug server", err)
+		return nil, errors.Prefix("debug", err)
 	}
 
 	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)

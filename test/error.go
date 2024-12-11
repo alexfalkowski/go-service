@@ -9,7 +9,7 @@ var (
 	ErrGenerate = errors.New("token error")
 
 	// ErrInvalid for test.
-	ErrInvalid = errors.New("invalid token")
+	ErrInvalid = errors.New("invalid match")
 
 	// ErrFailed for test.
 	ErrFailed = errors.New("failed")

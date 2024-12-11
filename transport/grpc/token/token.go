@@ -26,7 +26,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 
 		ctx, err := tt.Verify(ctx, verifier)
 		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
+			return nil, status.Errorf(codes.Unauthenticated, "token: %s", err.Error())
 		}
 
 		return handler(ctx, req)
@@ -45,7 +45,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 
 		ctx, err := tt.Verify(ctx, verifier)
 		if err != nil {
-			return status.Errorf(codes.Unauthenticated, "verify token: %s", err.Error())
+			return status.Errorf(codes.Unauthenticated, "token: %s", err.Error())
 		}
 
 		wrapped := middleware.WrapServerStream(stream)

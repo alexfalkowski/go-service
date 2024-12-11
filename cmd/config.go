@@ -37,19 +37,19 @@ func (c *Config) Kind() string {
 func (c *Config) Decode(data any) error {
 	d, err := c.rw.Read()
 	if err != nil {
-		return se.Prefix("decode config", err)
+		return se.Prefix("config", err)
 	}
 
 	if c.enc == nil {
 		err := fmt.Errorf("%s: %w", c.rw.Kind(), ErrNoEncoder)
 
-		return se.Prefix("decode config", err)
+		return se.Prefix("config", err)
 	}
 
-	return se.Prefix("decode config", c.enc.Decode(bytes.NewReader(d), data))
+	return se.Prefix("config", c.enc.Decode(bytes.NewReader(d), data))
 }
 
 // Write for config.
 func (c *Config) Write(data []byte, mode fs.FileMode) error {
-	return se.Prefix("write config", c.rw.Write(data, mode))
+	return se.Prefix("config", c.rw.Write(data, mode))
 }

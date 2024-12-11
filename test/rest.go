@@ -26,5 +26,5 @@ func RestContent(ctx context.Context) (any, error) {
 
 // RestNoContent for test.
 func RestError(_ context.Context) (any, error) {
-	return nil, ErrInvalidToken
+	return nil, ErrInvalid
 }
