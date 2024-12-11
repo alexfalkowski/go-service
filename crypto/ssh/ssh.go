@@ -74,7 +74,7 @@ func (a *sshAlgo) Verify(sig, msg string) error {
 
 	ok := ed25519.Verify(a.publicKey, []byte(msg), d)
 	if !ok {
-		return errors.ErrMismatch
+		return errors.ErrInvalidMatch
 	}
 
 	return nil

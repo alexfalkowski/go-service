@@ -11,19 +11,19 @@ import (
 
 var (
 	// ErrInvalidMatch for token.
-	ErrInvalidMatch = errors.New("invalid match")
+	ErrInvalidMatch = errors.New("token: invalid match")
 
 	// ErrInvalidAlgorithm for service.
-	ErrInvalidAlgorithm = errors.New("invalid algorithm")
+	ErrInvalidAlgorithm = errors.New("token: invalid algorithm")
 
 	// ErrInvalidIssuer for service.
-	ErrInvalidIssuer = errors.New("invalid issuer")
+	ErrInvalidIssuer = errors.New("token: invalid issuer")
 
 	// ErrInvalidAudience for service.
-	ErrInvalidAudience = errors.New("invalid audience")
+	ErrInvalidAudience = errors.New("token: invalid audience")
 
 	// ErrInvalidTime for service.
-	ErrInvalidTime = errors.New("invalid time")
+	ErrInvalidTime = errors.New("token: invalid time")
 )
 
 type (

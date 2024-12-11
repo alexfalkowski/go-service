@@ -33,7 +33,7 @@ func (a *argon2Algo) Verify(sig, msg string) error {
 	}
 
 	if !ok {
-		return errors.ErrMismatch
+		return errors.ErrInvalidMatch
 	}
 
 	return nil

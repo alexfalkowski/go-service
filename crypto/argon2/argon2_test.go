@@ -35,7 +35,7 @@ func TestAlgo(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then verifying to bob should fail", func() {
-				So(h.Verify(s, "bob"), ShouldBeError, errors.ErrMismatch)
+				So(h.Verify(s, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 

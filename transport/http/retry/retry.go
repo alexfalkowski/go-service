@@ -11,7 +11,7 @@ import (
 )
 
 // ErrInvalidStatusCode for http retry.
-var ErrInvalidStatusCode = errors.New("invalid status code")
+var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
 // NewRoundTripper for retry.
 func NewRoundTripper(cfg *retry.Config, hrt http.RoundTripper) *RoundTripper {

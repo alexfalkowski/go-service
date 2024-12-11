@@ -19,10 +19,10 @@ var (
 	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
 
 	// ErrInvalidAuthorization header.
-	ErrInvalidAuthorization = errors.New("authorization is invalid")
+	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
 
 	// ErrNotSupportedScheme for http.
-	ErrNotSupportedAuthorization = errors.New("authorization is not supported")
+	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
 
 // ParseAuthorization header into type and credentials or error.

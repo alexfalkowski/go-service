@@ -4,5 +4,5 @@ import (
 	"errors"
 )
 
-// ErrMismatch when compared.
-var ErrMismatch = errors.New("mismatch")
+// ErrInvalidMatch when compared.
+var ErrInvalidMatch = errors.New("crypto: invalid match")

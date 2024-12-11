@@ -13,7 +13,7 @@ import (
 )
 
 // ErrLocationMissing for cmd.
-var ErrLocationMissing = errors.New("location is missing")
+var ErrLocationMissing = errors.New("config: location is missing")
 
 // ENV for cmd.
 type ENV struct {

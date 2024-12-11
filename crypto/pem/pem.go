@@ -8,10 +8,10 @@ import (
 
 var (
 	// ErrInvalidBlock of PEM.
-	ErrInvalidBlock = errors.New("invalid block")
+	ErrInvalidBlock = errors.New("pem: invalid block")
 
 	// ErrInvalidKind of PEM block.
-	ErrInvalidKind = errors.New("invalid kind")
+	ErrInvalidKind = errors.New("pem: invalid kind")
 )
 
 // Decode from path.

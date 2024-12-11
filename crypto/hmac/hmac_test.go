@@ -85,7 +85,7 @@ func TestInvalidAlgo(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrMismatch)
+				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})
