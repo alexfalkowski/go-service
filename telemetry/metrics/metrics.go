@@ -49,7 +49,7 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		OnStart: func(_ context.Context) error {
 			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
 
-			return se.Prefix("metrics: start provider", err)
+			return se.Prefix("metrics", err)
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
@@ -84,16 +84,16 @@ func NewReader(cfg *Config) (sm.Reader, error) {
 		return nil, nil
 	case cfg.IsOTLP():
 		if err := cfg.Headers.Secrets(); err != nil {
-			return nil, se.Prefix("metrics: header secrets", err)
+			return nil, se.Prefix("metrics", err)
 		}
 
 		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 
-		return sm.NewPeriodicReader(r), se.Prefix("metrics: otlp error", err)
+		return sm.NewPeriodicReader(r), se.Prefix("metrics", err)
 	case cfg.IsPrometheus():
 		e, err := prometheus.New()
 
-		return e, se.Prefix("metrics: prometheus error", err)
+		return e, se.Prefix("metrics", err)
 	default:
 		return nil, nil
 	}

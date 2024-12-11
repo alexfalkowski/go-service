@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// ErrInvalid for token.
-	ErrInvalid = errors.New("invalid token")
+	// ErrInvalidMatch for token.
+	ErrInvalidMatch = errors.New("invalid match")
 
 	// ErrInvalidAlgorithm for service.
 	ErrInvalidAlgorithm = errors.New("invalid algorithm")
@@ -88,7 +88,7 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 		}
 
 		if !bytes.Equal([]byte(d), token) {
-			return ctx, ErrInvalid
+			return ctx, ErrInvalidMatch
 		}
 
 		return ctx, nil

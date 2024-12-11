@@ -2,14 +2,10 @@ package test
 
 import (
 	"context"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/meta"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
-
-// ErrInvalidToken ...
-var ErrInvalidToken = errors.New("invalid token")
 
 // NewService ...
 func NewService(verifyAuth bool) *Service {
@@ -25,7 +21,7 @@ type Service struct {
 // SayHello ...
 func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	if s.verifyAuth && !meta.IsEqual(Test(ctx), "auth") {
-		return nil, ErrInvalidToken
+		return nil, ErrInvalid
 	}
 
 	return &v1.SayHelloResponse{Message: "Hello " + req.GetName()}, nil
@@ -34,7 +30,7 @@ func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.Sa
 // SayStreamHello ...
 func (s *Service) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
 	if s.verifyAuth && !meta.IsEqual(Test(stream.Context()), "auth") {
-		return ErrInvalidToken
+		return ErrInvalid
 	}
 
 	req, err := stream.Recv()

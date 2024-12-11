@@ -99,7 +99,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	sv, err := sh.NewServer(s, c)
 	if err != nil {
-		return nil, errors.Prefix("new http server", err)
+		return nil, errors.Prefix("http", err)
 	}
 
 	svr := server.NewServer("http", sv, params.Logger, params.Shutdowner)

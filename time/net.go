@@ -41,7 +41,7 @@ type ntpNetwork struct {
 func (n *ntpNetwork) Now() (time.Time, error) {
 	t, err := ntp.Time(n.c.Address)
 
-	return t, errors.Prefix("ntp time", err)
+	return t, errors.Prefix("ntp", err)
 }
 
 type ntsNetwork struct {
@@ -51,17 +51,17 @@ type ntsNetwork struct {
 func (n *ntsNetwork) Now() (time.Time, error) {
 	se, err := nts.NewSession(n.c.Address)
 	if err != nil {
-		return time.Now(), errors.Prefix("nts time", err)
+		return time.Now(), errors.Prefix("nts", err)
 	}
 
 	r, err := se.Query()
 	if err != nil {
-		return time.Now(), errors.Prefix("nts time", err)
+		return time.Now(), errors.Prefix("nts", err)
 	}
 
 	err = r.Validate()
 	if err != nil {
-		return time.Now(), errors.Prefix("nts time", err)
+		return time.Now(), errors.Prefix("nts", err)
 	}
 
 	return time.Now().Add(r.ClockOffset), nil

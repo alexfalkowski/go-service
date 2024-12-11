@@ -336,7 +336,7 @@ func TestDisallowedRPC(t *testing.T) {
 				Convey("Then I should have an error", func() {
 					So(status.IsError(err), ShouldBeTrue)
 					So(status.Code(err), ShouldEqual, http.StatusUnauthorized)
-					So(err.Error(), ShouldContainSubstring, "verify token: invalid token")
+					So(err.Error(), ShouldContainSubstring, "token: invalid match")
 				})
 
 				lc.RequireStop()

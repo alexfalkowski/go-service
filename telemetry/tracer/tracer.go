@@ -35,7 +35,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 	}
 
 	if err := cfg.Headers.Secrets(); err != nil {
-		return nil, se.Prefix("tracer: header secrets", err)
+		return nil, se.Prefix("tracer", err)
 	}
 
 	client := otlp.NewClient(otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
@@ -55,7 +55,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			return se.Prefix("tracer: start error", exporter.Start(ctx))
+			return se.Prefix("tracer", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = p.Shutdown(ctx)
