@@ -16,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
+	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
@@ -31,7 +32,7 @@ import (
 )
 
 // ErrInvalidConfig when decoding fails.
-var ErrInvalidConfig = errors.New("invalid config")
+var ErrInvalidConfig = errors.New("config: invalid format")
 
 // Validity of config.
 type Validity interface {
@@ -44,11 +45,11 @@ func NewConfig[T Validity](i *cmd.InputConfig) (*T, error) {
 	ptr := &c
 
 	if err := i.Decode(ptr); err != nil {
-		return nil, err
+		return nil, se.Prefix("config", err)
 	}
 
 	if err := c.Valid(); err != nil {
-		return nil, err
+		return nil, se.Prefix("config", err)
 	}
 
 	return ptr, nil
