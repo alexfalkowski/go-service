@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.334.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.334.0) - 2024-12-12
+
+- [`133ad61`](https://github.com/alexfalkowski/go-service/commit/133ad616a85d713e94302518c25c8526c3547228) feat(deps): bump github.com/matthewhartstonge/argon2 from 1.0.2 to 1.0.3 (#1073)
+
 ## [v1.333.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.333.0) - 2024-12-12
 
 - [`2191a0c`](https://github.com/alexfalkowski/go-service/commit/2191a0c108b9a88e131d0101e6a2ec42b853808a) feat(deps): bump aidanwoods.dev/go-paseto from 1.5.2 to 1.5.3 (#1075)
