@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.23
 
 require (
-	aidanwoods.dev/go-paseto v1.5.2
+	aidanwoods.dev/go-paseto v1.5.3
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.6.1
 	github.com/alexfalkowski/go-health v1.19.0
@@ -56,7 +56,7 @@ require (
 	go.uber.org/dig v1.18.0
 	go.uber.org/fx v1.23.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.32.0
 	google.golang.org/grpc v1.68.1
 	google.golang.org/protobuf v1.35.2
