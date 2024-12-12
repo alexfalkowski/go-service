@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.336.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.336.0) - 2024-12-12
+
+- [`d71603f`](https://github.com/alexfalkowski/go-service/commit/d71603f5c9936d827c9962a0df40bd7044446724) feat(deps): upgraded google.golang.org/grpc v1.68.1 => v1.69.0 (#1077)
+
 ## [v1.335.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.335.1) - 2024-12-12
 
 - [`4cc86dc`](https://github.com/alexfalkowski/go-service/commit/4cc86dc55eaa552d66df0c80b0d412c127139f5e) fix(deps): upgraded github.com/goccy/go-json v0.10.3 => v0.10.4 (#1076)
