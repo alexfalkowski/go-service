@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.333.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.333.0) - 2024-12-12
+
+- [`2191a0c`](https://github.com/alexfalkowski/go-service/commit/2191a0c108b9a88e131d0101e6a2ec42b853808a) feat(deps): bump aidanwoods.dev/go-paseto from 1.5.2 to 1.5.3 (#1075)
+
 ## [v1.332.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.332.2) - 2024-12-11
 
 - [`b924cf8`](https://github.com/alexfalkowski/go-service/commit/b924cf887ec685e839551d403290b3d7e368bfc2) fix(config): too many prefixes (#1071)
