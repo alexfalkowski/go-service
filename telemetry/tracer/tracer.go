@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
@@ -45,7 +45,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		semconv.SchemaURL,
 		semconv.ServiceName(string(name)),
 		semconv.ServiceVersion(string(ver)),
-		semconv.DeploymentEnvironment(string(env)),
+		semconv.DeploymentEnvironmentName(string(env)),
 	)
 
 	p := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))

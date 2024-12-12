@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/metric/noop"
 	sm "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	"go.uber.org/fx"
 )
 
@@ -41,7 +41,7 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(string(params.Version)),
-		semconv.DeploymentEnvironment(string(params.Environment)),
+		semconv.DeploymentEnvironmentName(string(params.Environment)),
 	)
 	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
 
