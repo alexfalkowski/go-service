@@ -38,18 +38,8 @@ func (c *Command) Root() *cobra.Command {
 	return c.root
 }
 
-// AddServer to the command.
-func (c *Command) AddServer(opts ...fx.Option) *cobra.Command {
-	return c.AddServerCommand("server", "Start the server.", opts...)
-}
-
-// AddClient to the command.
-func (c *Command) AddClient(opts ...fx.Option) *cobra.Command {
-	return c.AddClientCommand("client", "Start the client.", opts...)
-}
-
-// AddServerCommand to root.
-func (c *Command) AddServerCommand(name, description string, opts ...fx.Option) *cobra.Command {
+// AddServer to root.
+func (c *Command) AddServer(name, description string, opts ...fx.Option) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          name,
 		Short:        description,
@@ -65,8 +55,8 @@ func (c *Command) AddServerCommand(name, description string, opts ...fx.Option) 
 	return cmd
 }
 
-// AddClientCommand to root.
-func (c *Command) AddClientCommand(name, description string, opts ...fx.Option) *cobra.Command {
+// AddClient to root.
+func (c *Command) AddClient(name, description string, opts ...fx.Option) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          name,
 		Short:        description,
