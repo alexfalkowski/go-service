@@ -56,7 +56,7 @@ func TestRunWithServer(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
-			c.AddServer(opts()...)
+			c.AddServer("server", "Start the server.", opts()...)
 			c.RegisterInput(c.Root(), "env:IN_CONFIG_FILE")
 			c.RegisterOutput(c.Root(), "env:OUT_CONFIG_FILE")
 
@@ -75,7 +75,7 @@ func TestRun(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
-			c.AddServer(opts()...)
+			c.AddServer("server", "Start the server.", opts()...)
 			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
@@ -98,7 +98,7 @@ func TestInvalid(t *testing.T) {
 		Convey("Given I have an invalid configuration", t, func() {
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
-				c.AddServer(opts()...)
+				c.AddServer("server", "Start the server.", opts()...)
 				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 				Convey("Then I should not see an error", func() {
@@ -116,7 +116,7 @@ func TestDisabled(t *testing.T) {
 	Convey("Given I have invalid HTTP port set", t, func() {
 		Convey("When I try to run an application", func() {
 			c := cmd.New("1.0.0")
-			c.AddServer(opts()...)
+			c.AddServer("server", "Start the server.", opts()...)
 			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should see an error", func() {
@@ -134,7 +134,7 @@ func TestClient(t *testing.T) {
 			opts := []fx.Option{fx.NopLogger}
 
 			c := cmd.New("1.0.0")
-			c.AddClient(opts...)
+			c.AddClient("client", "Start the client.", opts...)
 			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
@@ -156,7 +156,7 @@ func TestInvalidClient(t *testing.T) {
 
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
-				c.AddClient(opts()...)
+				c.AddClient("client", "Start the client.", opts()...)
 				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
 				Convey("Then I should see an error", func() {
