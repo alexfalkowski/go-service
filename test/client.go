@@ -28,7 +28,6 @@ type Client struct {
 	Meter        metric.Meter
 	Generator    token.Generator
 	Compression  bool
-	H2C          bool
 }
 
 // NewHTTP client for test.
@@ -49,10 +48,6 @@ func (c *Client) NewHTTP() *http.Client {
 
 	if c.Compression {
 		opts = append(opts, h.WithClientCompression())
-	}
-
-	if c.H2C {
-		opts = append(opts, h.WithClientH2C())
 	}
 
 	client := h.NewClient(opts...)

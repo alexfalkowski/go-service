@@ -41,7 +41,7 @@ func TestRPCNoContent(t *testing.T) {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
 			s.Register()
 
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
 
 			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.NoContent)
@@ -85,7 +85,7 @@ func TestRPCWithContent(t *testing.T) {
 			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
 			s.Register()
 
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true, H2C: true}
+			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
 
 			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)

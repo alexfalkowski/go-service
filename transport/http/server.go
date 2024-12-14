@@ -26,8 +26,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 )
 
 // ServerParams for HTTP.
@@ -87,7 +85,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	n.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	s := &http.Server{
-		Handler:     h2c.NewHandler(n, &http2.Server{}),
+		Handler:     n,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
