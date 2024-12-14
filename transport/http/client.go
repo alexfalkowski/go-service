@@ -8,7 +8,6 @@ import (
 	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/net/http/h2c"
 	sr "github.com/alexfalkowski/go-service/retry"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
@@ -45,7 +44,6 @@ type clientOpts struct {
 	timeout      time.Duration
 	breaker      bool
 	compression  bool
-	h2c          bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -142,13 +140,6 @@ func WithClientTLS(sec *ct.Config) (ClientOption, error) {
 	return opt, nil
 }
 
-// WithClientH2C for HTTP.
-func WithClientH2C() ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.h2c = true
-	})
-}
-
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 	os := options(opts...)
@@ -204,13 +195,7 @@ func roundTripper(os *clientOpts) http.RoundTripper {
 		return hrt
 	}
 
-	if os.h2c {
-		hrt = h2c.Transport()
-	} else {
-		hrt = nh.Transport(os.tls)
-	}
-
-	return hrt
+	return nh.Transport(os.tls)
 }
 
 func options(opts ...ClientOption) *clientOpts {
