@@ -31,7 +31,7 @@ func (c *Content) NewHandler(prefix string, handler Handler) func(res http.Respo
 		ct := c.NewFromRequest(req)
 
 		ctx = hc.WithEncoder(ctx, ct.Encoder)
-		res.Header().Add(TypeKey, ct.Media)
+		res.Header().Add(TypeKey, ct.Type)
 
 		data, err := handler(ctx)
 		runtime.Must(err)

@@ -61,14 +61,14 @@ func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, 
 		Timeout:   os.timeout,
 	}
 
-	return &Client[Req, Res]{client: client, url: url, ct: os.contentType}
+	return &Client[Req, Res]{client: client, url: url, mediaType: cont.NewFromMedia(os.contentType)}
 }
 
 // Client for rpc.
 type Client[Req any, Res any] struct {
-	client *http.Client
-	ct     string
-	url    string
+	client    *http.Client
+	mediaType *content.Media
+	url       string
 }
 
 // Invoke for rpc.
@@ -84,17 +84,15 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	b := pool.Get()
 	defer pool.Put(b)
 
-	ct := cont.NewFromMedia(c.ct)
-
 	if req != nil {
-		err = ct.Encoder.Encode(b, req)
+		err = c.mediaType.Encoder.Encode(b, req)
 		runtime.Must(err)
 	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, b)
 	runtime.Must(err)
 
-	request.Header.Set(content.TypeKey, ct.Media)
+	request.Header.Set(content.TypeKey, c.mediaType.Type)
 
 	response, err := c.client.Do(request)
 	runtime.Must(err)
@@ -107,14 +105,9 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
-	ct = cont.NewFromMedia(response.Header.Get(content.TypeKey))
+	ct := cont.NewFromMedia(response.Header.Get(content.TypeKey))
 	if ct.IsText() {
 		return nil, status.Error(response.StatusCode, strings.TrimSpace(b.String()))
-	}
-
-	//nolint:nilnil
-	if len(b.Bytes()) == 0 {
-		return nil, nil
 	}
 
 	var rp Res
