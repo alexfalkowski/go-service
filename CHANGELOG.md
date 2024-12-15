@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.340.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.340.0) - 2024-12-15
+
+- [`6a87282`](https://github.com/alexfalkowski/go-service/commit/6a872827ca88481ce97e49a5b7d4dce504dd36e9) feat(http): rename to be media type for content (#1081)
+
 ## [v1.339.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.339.0) - 2024-12-14
 
 - [`3b69263`](https://github.com/alexfalkowski/go-service/commit/3b6926340de993d4eb8b64d2a491350a9f57e770) feat(http): remove h2c (#1080)
