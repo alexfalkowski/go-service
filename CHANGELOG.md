@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.341.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.341.0) - 2024-12-16
+
+- [`7af1b6b`](https://github.com/alexfalkowski/go-service/commit/7af1b6b113a1f950fa307accf8be3558a506a412) feat(deps): bump google.golang.org/protobuf from 1.35.2 to 1.36.0 (#1083)
+- [`ab0bbf4`](https://github.com/alexfalkowski/go-service/commit/ab0bbf4f89a22a45aa99171a7e131e91fe7578f6) docs(diagrams): update diagrams (#1082)
+
 ## [v1.340.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.340.0) - 2024-12-15
 
 - [`6a87282`](https://github.com/alexfalkowski/go-service/commit/6a872827ca88481ce97e49a5b7d4dce504dd36e9) feat(http): rename to be media type for content (#1081)
