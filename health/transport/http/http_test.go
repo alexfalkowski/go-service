@@ -11,6 +11,7 @@ import (
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
+	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/health"
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
@@ -49,6 +50,8 @@ func TestHealth(t *testing.T) {
 			m := noop.Meter{}
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 			client := cl.NewHTTP()
+
+			pg.Register(cl.NewTracer(), logger)
 
 			so, err := observer(lc, "redis", "http://localhost:6000/v1/status/200", client, logger)
 			So(err, ShouldBeNil)
@@ -112,6 +115,8 @@ func TestReadinessNoop(t *testing.T) {
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 
+		pg.Register(cl.NewTracer(), logger)
+
 		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
 
@@ -170,6 +175,8 @@ func TestInvalidHealth(t *testing.T) {
 		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 		client := cl.NewHTTP()
 
+		pg.Register(cl.NewTracer(), logger)
+
 		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
 
@@ -221,8 +228,16 @@ func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *
 		return nil, err
 	}
 
+	db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+	if err != nil {
+		return nil, err
+	}
+
 	rc := shc.NewRedisChecker(r, 1*time.Second)
 	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
+
+	dc := shc.NewDBChecker(db, 1*time.Second)
+	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
 
 	cc := checker.NewHTTPChecker(url, client.Transport, 5*time.Second)
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
@@ -230,7 +245,7 @@ func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *
 	no := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 10*time.Millisecond, no)
 
-	regs := health.Registrations{hr, nr, rr}
+	regs := health.Registrations{hr, nr, rr, dr}
 
 	return health.NewServer(lc, regs), nil
 }

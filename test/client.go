@@ -12,6 +12,7 @@ import (
 	g "github.com/alexfalkowski/go-service/transport/grpc"
 	h "github.com/alexfalkowski/go-service/transport/http"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -30,14 +31,20 @@ type Client struct {
 	Compression  bool
 }
 
+// NewTracer for client.
+func (c *Client) NewTracer() trace.Tracer {
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
+	runtime.Must(err)
+
+	return tracer
+}
+
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
 	sec, err := h.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
-	runtime.Must(err)
-
+	tracer := c.NewTracer()
 	opts := []h.ClientOption{
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
@@ -56,8 +63,7 @@ func (c *Client) NewHTTP() *http.Client {
 }
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
-	runtime.Must(err)
+	tracer := c.NewTracer()
 
 	sec, err := g.WithClientTLS(c.TLS)
 	runtime.Must(err)
