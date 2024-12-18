@@ -19,6 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/structs"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -33,13 +34,8 @@ import (
 // ErrInvalidConfig when decoding fails.
 var ErrInvalidConfig = errors.New("config: invalid format")
 
-// Validity of config.
-type Validity interface {
-	Valid() error
-}
-
 // NewConfig will decode and check its validity.
-func NewConfig[T Validity](i *cmd.InputConfig) (*T, error) {
+func NewConfig[T comparable](i *cmd.InputConfig) (*T, error) {
 	var c T
 	ptr := &c
 
@@ -47,8 +43,8 @@ func NewConfig[T Validity](i *cmd.InputConfig) (*T, error) {
 		return nil, err
 	}
 
-	if err := c.Valid(); err != nil {
-		return nil, err
+	if structs.IsZero(ptr) {
+		return nil, ErrInvalidConfig
 	}
 
 	return ptr, nil
@@ -68,15 +64,6 @@ type Config struct {
 	Token       *token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
 	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
 	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
-}
-
-// Valid or error.
-func (c Config) Valid() error {
-	if c.Environment.IsEmpty() {
-		return ErrInvalidConfig
-	}
-
-	return nil
 }
 
 func aesConfig(cfg *Config) *aes.Config {
