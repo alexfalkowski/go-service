@@ -10,7 +10,6 @@ import (
 const (
 	letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	symbols = "~!@#$%^&*()_+-={}|[]<>?,./"
-	all     = letters + symbols
 )
 
 // GenerateBytes for rand.
@@ -21,17 +20,26 @@ func GenerateBytes(n uint32) ([]byte, error) {
 	return b, err
 }
 
-// GenerateString for rand.
+// GenerateString will generate using letters and symbols.
 func GenerateString(n uint32) (string, error) {
+	return generateString(n, letters+symbols)
+}
+
+// GenerateLetters will generate using letters.
+func GenerateLetters(n uint32) (string, error) {
+	return generateString(n, letters)
+}
+
+func generateString(n uint32, s string) (string, error) {
 	r := make([]byte, n)
 
 	for i := range n {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(all))))
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(s))))
 		if err != nil {
 			return "", err
 		}
 
-		r[i] = all[num.Int64()]
+		r[i] = s[num.Int64()]
 	}
 
 	return string(r), nil

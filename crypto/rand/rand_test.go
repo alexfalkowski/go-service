@@ -21,7 +21,16 @@ func TestRand(t *testing.T) {
 		s, err := rand.GenerateString(32)
 		So(err, ShouldBeNil)
 
-		Convey("Then I should have random bytes", func() {
+		Convey("Then I should have random string", func() {
+			So(s, ShouldHaveLength, 32)
+		})
+	})
+
+	Convey("When I generate random letters", t, func() {
+		s, err := rand.GenerateLetters(32)
+		So(err, ShouldBeNil)
+
+		Convey("Then I should have random letters", func() {
 			So(s, ShouldHaveLength, 32)
 		})
 	})
