@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.346.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.346.0) - 2024-12-21
+
+- [`5a9ead6`](https://github.com/alexfalkowski/go-service/commit/5a9ead60daf7cc9910aba2074b12b3495e298447) feat(http): generic rest methods (#1089)
+
 ## [v1.345.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.345.0) - 2024-12-19
 
 - [`3dcfffc`](https://github.com/alexfalkowski/go-service/commit/3dcfffcae509c445c40d698eccd18cd67e9de669) feat(crypto): add ability to generate random letters (#1088)
