@@ -104,7 +104,7 @@ func TestRPCWithContent(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(*resp.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				lc.RequireStop()
@@ -195,7 +195,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 
 				Convey("Then I should have response", func() {
 					So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
-					So(resp.StatusCode, ShouldEqual, 500)
+					So(resp.StatusCode, ShouldEqual, 400)
 				})
 
 				lc.RequireStop()
@@ -294,7 +294,7 @@ func TestAllowedRPC(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(*resp.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				lc.RequireStop()
@@ -304,7 +304,7 @@ func TestAllowedRPC(t *testing.T) {
 }
 
 func TestDisallowedRPC(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+	for _, mt := range []string{"application/json", "application/yaml", "application/yml", "application/toml", "application/gob", "test"} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
 			verifier := test.NewVerifier("test")
@@ -328,7 +328,7 @@ func TestDisallowedRPC(t *testing.T) {
 			Convey("When I post authenticated data", func() {
 				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 				client := rpc.NewClient[test.Request, test.Response](url,
-					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientContentType(mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
 				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})

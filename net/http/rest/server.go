@@ -8,43 +8,36 @@ import (
 )
 
 // Delete for rest.
-func Delete(path string, handler content.Handler) {
+func Delete[Res any](path string, handler content.ResponseHandler[Res]) {
 	Route(fmt.Sprintf("%s %s", http.MethodDelete, path), handler)
 }
 
 // Get for rest.
-func Get(path string, handler content.Handler) {
+func Get[Res any](path string, handler content.ResponseHandler[Res]) {
 	Route(fmt.Sprintf("%s %s", http.MethodGet, path), handler)
 }
 
 // Post for rest.
-func Post(path string, handler content.Handler) {
-	Route(fmt.Sprintf("%s %s", http.MethodPost, path), handler)
+func Post[Req any, Res any](path string, handler content.RequestResponseHandler[Req, Res]) {
+	RouteRequest(fmt.Sprintf("%s %s", http.MethodPost, path), handler)
 }
 
 // Put for rest.
-func Put(path string, handler content.Handler) {
-	Route(fmt.Sprintf("%s %s", http.MethodPut, path), handler)
+func Put[Req any, Res any](path string, handler content.RequestResponseHandler[Req, Res]) {
+	RouteRequest(fmt.Sprintf("%s %s", http.MethodPut, path), handler)
 }
 
 // Patch for rest.
-func Patch(path string, handler content.Handler) {
-	Route(fmt.Sprintf("%s %s", http.MethodPatch, path), handler)
+func Patch[Req any, Res any](path string, handler content.RequestResponseHandler[Req, Res]) {
+	RouteRequest(fmt.Sprintf("%s %s", http.MethodPatch, path), handler)
 }
 
-// Head for rest.
-func Head(path string, handler content.Handler) {
-	Route(fmt.Sprintf("%s %s", http.MethodHead, path), handler)
-}
-
-// Options for rest.
-func Options(path string, handler content.Handler) {
-	Route(fmt.Sprintf("%s %s", http.MethodOptions, path), handler)
+// RouteRequest for rest.
+func RouteRequest[Req any, Res any](path string, handler content.RequestResponseHandler[Req, Res]) {
+	mux.HandleFunc(path, content.NewRequestResponseHandler(cont, "rest", handler))
 }
 
 // Route for rest.
-func Route(path string, handler content.Handler) {
-	h := cont.NewHandler("rest", handler)
-
-	mux.HandleFunc(path, h)
+func Route[Res any](path string, handler content.ResponseHandler[Res]) {
+	mux.HandleFunc(path, content.NewResponseHandler(cont, "rest", handler))
 }

@@ -19,7 +19,7 @@ type Request struct {
 // Response for test.
 type Response struct {
 	Meta     meta.Map
-	Greeting *string
+	Greeting string
 }
 
 // NoContent for test.
@@ -35,7 +35,7 @@ func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: &s}, nil
+	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: s}, nil
 }
 
 // ProtobufSayHello for test.
