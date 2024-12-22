@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"path"
+	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
@@ -32,9 +33,9 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.U
 		requestID := extractRequestID(ctx, md)
 		ctx = m.WithRequestID(ctx, requestID)
 
-		ip := extractIPAddr(ctx)
+		kind, ip := extractIPAddr(ctx, md)
 		ctx = m.WithIPAddr(ctx, ip)
-		ctx = m.WithIPAddrKind(ctx, meta.String("peer"))
+		ctx = m.WithIPAddrKind(ctx, kind)
 
 		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
@@ -64,9 +65,9 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.
 
 		ctx = m.WithRequestID(ctx, requestID)
 
-		ip := extractIPAddr(ctx)
+		kind, ip := extractIPAddr(ctx, md)
 		ctx = m.WithIPAddr(ctx, ip)
-		ctx = m.WithIPAddrKind(ctx, meta.String("peer"))
+		ctx = m.WithIPAddrKind(ctx, kind)
 
 		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
@@ -116,20 +117,31 @@ func StreamClientInterceptor(userAgent env.UserAgent) grpc.StreamClientIntercept
 	}
 }
 
-func extractIPAddr(ctx context.Context) meta.Valuer {
+func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Valuer) {
+	headers := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
+	for _, k := range headers {
+		if f := md.Get(k); len(f) > 0 {
+			ip, _, _ := strings.Cut(f[0], ",")
+
+			return meta.String(k), meta.String(ip)
+		}
+	}
+
+	peerKind := meta.String("peer")
+
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return meta.Blank()
+		return peerKind, meta.Blank()
 	}
 
 	addr := p.Addr.String()
 
 	host, _, err := net.SplitHostPort(p.Addr.String())
 	if err != nil {
-		return meta.String(addr)
+		return peerKind, meta.String(addr)
 	}
 
-	return meta.String(host)
+	return peerKind, meta.String(host)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Valuer {

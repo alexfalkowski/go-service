@@ -60,6 +60,7 @@ func TestTokenAuthUnary(t *testing.T) {
 				req.Header.Set("Content-Type", "application/json")
 				req.Header.Set("Request-Id", "test")
 				req.Header.Set("X-Forwarded-For", "127.0.0.1")
+				req.Header.Set("Geolocation", "geo:47,11")
 
 				resp, err := client.Do(req)
 				So(err, ShouldBeNil)
