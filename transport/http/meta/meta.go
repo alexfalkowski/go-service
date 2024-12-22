@@ -108,7 +108,9 @@ func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
 	headers := []string{"X-Real-Ip", "CF-Connecting-Ip", "True-Client-Ip", "X-Forwarded-For"}
 	for _, h := range headers {
 		if ip := req.Header.Get(h); ip != "" {
-			return meta.String(strings.ToLower(h)), meta.String(strings.Split(ip, ",")[0])
+			ip, _, _ := strings.Cut(ip, ",")
+
+			return meta.String(strings.ToLower(h)), meta.String(ip)
 		}
 	}
 
