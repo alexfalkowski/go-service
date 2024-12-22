@@ -1,7 +1,6 @@
 package token
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/errors"
@@ -64,7 +63,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	req = req.WithContext(ctx)
-	req.Header.Add("Authorization", fmt.Sprintf("%s %s", header.BearerAuthorization, string(t)))
+	req.Header.Add("Authorization", header.BearerAuthorization+" "+string(t))
 
 	return r.RoundTripper.RoundTrip(req)
 }
