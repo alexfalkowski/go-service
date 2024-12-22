@@ -12,19 +12,18 @@ import (
 )
 
 type (
-	// Handler for content.
-	Handler func(ctx context.Context) (any, error)
+	handler func(ctx context.Context) (any, error)
 
-	// RequestResponseHandler is a handler with a generic request and response.
-	RequestResponseHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
+	// RequestHandler is a handler with a generic request and response.
+	RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
-	// ResponseHandler is a handler with a generic response.
-	ResponseHandler[Res any] func(ctx context.Context) (*Res, error)
+	// Handler is a handler with a generic response.
+	Handler[Res any] func(ctx context.Context) (*Res, error)
 )
 
-// NewRequestResponseHandler for content.
-func NewRequestResponseHandler[Req any, Res any](cont *Content, prefix string, handler RequestResponseHandler[Req, Res]) http.HandlerFunc {
-	return cont.NewHandler(prefix, func(ctx context.Context) (any, error) {
+// NewRequestHandler for content.
+func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
+	return cont.handler(prefix, func(ctx context.Context) (any, error) {
 		var rq Req
 		ptr := &rq
 
@@ -44,15 +43,14 @@ func NewRequestResponseHandler[Req any, Res any](cont *Content, prefix string, h
 	})
 }
 
-// NewResponseHandler for content.
-func NewResponseHandler[Res any](cont *Content, prefix string, handler ResponseHandler[Res]) http.HandlerFunc {
-	return cont.NewHandler(prefix, func(ctx context.Context) (any, error) {
+// NewHandler for content.
+func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) http.HandlerFunc {
+	return cont.handler(prefix, func(ctx context.Context) (any, error) {
 		return handler(ctx)
 	})
 }
 
-// NewHandler for content.
-func (c *Content) NewHandler(prefix string, handler Handler) http.HandlerFunc {
+func (c *Content) handler(prefix string, handler handler) http.HandlerFunc {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)

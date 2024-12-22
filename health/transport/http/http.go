@@ -6,8 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/maps"
-	"github.com/alexfalkowski/go-service/net/http/content"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
+	"github.com/alexfalkowski/go-service/net/http/rest"
 	"go.uber.org/fx"
 )
 
@@ -20,26 +20,20 @@ const (
 type RegisterParams struct {
 	fx.In
 
-	Mux       *http.ServeMux
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver
-	Content   *content.Content
 }
 
 // Register health for HTTP.
-func Register(params RegisterParams) error {
-	mux := params.Mux
-
-	resister("/healthz", mux, params.Health.Observer, params.Content, true)
-	resister("/livez", mux, params.Liveness.Observer, params.Content, false)
-	resister("/readyz", mux, params.Readiness.Observer, params.Content, false)
-
-	return nil
+func Register(params RegisterParams) {
+	resister("/healthz", params.Health.Observer, true)
+	resister("/livez", params.Liveness.Observer, false)
+	resister("/readyz", params.Readiness.Observer, false)
 }
 
-func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *content.Content, withErrors bool) {
-	h := ct.NewHandler("health", func(ctx context.Context) (any, error) {
+func resister(path string, ob *subscriber.Observer, withErrors bool) {
+	rest.Get(path, func(ctx context.Context) (*maps.StringAny, error) {
 		var (
 			status   int
 			response string
@@ -74,8 +68,6 @@ func resister(path string, mux *http.ServeMux, ob *subscriber.Observer, ct *cont
 			}
 		}
 
-		return data, nil
+		return &data, nil
 	})
-
-	mux.HandleFunc("GET "+path, h)
 }

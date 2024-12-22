@@ -10,9 +10,9 @@ import (
 )
 
 // RegisterPprof for debug.
-func RegisterPsutil(srv *Server, content *content.Content) {
+func RegisterPsutil(srv *Server, cont *content.Content) {
 	mux := srv.ServeMux()
-	h := content.NewHandler("debug", func(ctx context.Context) (any, error) {
+	h := content.NewHandler(cont, "debug", func(ctx context.Context) (*maps.StringAny, error) {
 		data := maps.StringAny{}
 
 		i, err := cpu.InfoWithContext(ctx)
@@ -51,7 +51,7 @@ func RegisterPsutil(srv *Server, content *content.Content) {
 			"virtual": vm,
 		}
 
-		return data, nil
+		return &data, nil
 	})
 
 	mux.HandleFunc("/debug/psutil", h)
