@@ -4,6 +4,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service)
 [![Stability: Active](https://masterminds.github.io/stability/active.svg)](https://masterminds.github.io/stability/active.html)
 
+Testing
+
 # Go Service
 
 A framework to build services in go. This came out of out building services over the years and what I have considered good practices in building services. Hence it is highly subjective and opinionated.
