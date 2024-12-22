@@ -1,7 +1,6 @@
 package zap
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -49,7 +48,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	fields = append(fields, zap.Stringer(tm.DurationKey, m.Duration), zap.Int(tm.CodeKey, m.Code))
 	fields = append(fields, tz.Meta(ctx)...)
 
-	tz.LogWithFunc(message(fmt.Sprintf("%s %s", method, path)), nil, codeToLevel(m.Code, h.logger), fields...)
+	tz.LogWithFunc(message(method+" "+path), nil, codeToLevel(m.Code, h.logger), fields...)
 }
 
 // NewRoundTripper for zap.
@@ -87,7 +86,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
 	}
 
-	tz.LogWithFunc(message(fmt.Sprintf("%s %s", method, req.URL.Redacted())), err, respToLevel(resp, r.logger), fields...)
+	tz.LogWithFunc(message(method+" "+req.URL.Redacted()), err, respToLevel(resp, r.logger), fields...)
 
 	return resp, err
 }
