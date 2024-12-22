@@ -284,12 +284,12 @@ func TestRestRequestWithContent(t *testing.T) {
 	}
 }
 
-func registerHandlers[Res any](path string, h content.ResponseHandler[Res]) {
+func registerHandlers[Res any](path string, h content.Handler[Res]) {
 	rest.Delete(path, h)
 	rest.Get(path, h)
 }
 
-func registerBodyHandlers[Req any, Res any](path string, h content.RequestResponseHandler[Req, Res]) {
+func registerBodyHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
 	rest.Post(path, h)
 	rest.Put(path, h)
 	rest.Patch(path, h)

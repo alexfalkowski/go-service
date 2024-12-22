@@ -17,6 +17,7 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -52,6 +53,7 @@ func TestHealth(t *testing.T) {
 			client := cl.NewHTTP()
 
 			pg.Register(cl.NewTracer(), logger)
+			rest.Register(mux, test.Content)
 
 			so, err := observer(lc, "redis", "http://localhost:6000/v1/status/200", client, logger)
 			So(err, ShouldBeNil)
@@ -65,13 +67,11 @@ func TestHealth(t *testing.T) {
 			s.Register()
 
 			params := shh.RegisterParams{
-				Mux: mux, Health: &shh.HealthObserver{Observer: o},
+				Health:   &shh.HealthObserver{Observer: o},
 				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-				Content: test.Content,
 			}
-			err = shh.Register(params)
-			So(err, ShouldBeNil)
 
+			shh.Register(params)
 			lc.RequireStart()
 
 			Convey("When I query "+check, func() {
@@ -116,6 +116,7 @@ func TestReadinessNoop(t *testing.T) {
 		client := cl.NewHTTP()
 
 		pg.Register(cl.NewTracer(), logger)
+		rest.Register(mux, test.Content)
 
 		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
@@ -126,13 +127,11 @@ func TestReadinessNoop(t *testing.T) {
 		s.Register()
 
 		params := shh.RegisterParams{
-			Mux: mux, Health: &shh.HealthObserver{Observer: o},
+			Health:   &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
-			Content: test.Content,
 		}
-		err = shh.Register(params)
-		So(err, ShouldBeNil)
 
+		shh.Register(params)
 		lc.RequireStart()
 
 		Convey("When I query health", func() {
@@ -176,6 +175,7 @@ func TestInvalidHealth(t *testing.T) {
 		client := cl.NewHTTP()
 
 		pg.Register(cl.NewTracer(), logger)
+		rest.Register(mux, test.Content)
 
 		so, err := observer(lc, "redis", "http://localhost:6000/v1/status/500", client, logger)
 		So(err, ShouldBeNil)
@@ -186,13 +186,11 @@ func TestInvalidHealth(t *testing.T) {
 		s.Register()
 
 		params := shh.RegisterParams{
-			Mux: mux, Health: &shh.HealthObserver{Observer: o},
+			Health:   &shh.HealthObserver{Observer: o},
 			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-			Content: test.Content,
 		}
-		err = shh.Register(params)
-		So(err, ShouldBeNil)
 
+		shh.Register(params)
 		lc.RequireStart()
 
 		Convey("When I query health", func() {

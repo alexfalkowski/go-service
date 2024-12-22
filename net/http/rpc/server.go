@@ -5,6 +5,6 @@ import (
 )
 
 // Route for rpc.
-func Route[Req any, Res any](path string, handler content.RequestResponseHandler[Req, Res]) {
-	mux.HandleFunc("POST "+path, content.NewRequestResponseHandler(cont, "rpc", handler))
+func Route[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
+	mux.HandleFunc("POST "+path, content.NewRequestHandler(cont, "rpc", handler))
 }
