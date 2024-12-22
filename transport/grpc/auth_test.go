@@ -166,6 +166,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+			ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
+			ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
 			conn := cl.NewGRPC()
 			defer conn.Close()
