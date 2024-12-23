@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.351.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.351.0) - 2024-12-23
+
+- [`cf0a2bc`](https://github.com/alexfalkowski/go-service/commit/cf0a2bc6591795083f2523a726f3f9557a755072) feat(maps): remove any and use types (#1101)
+- [`f7348d4`](https://github.com/alexfalkowski/go-service/commit/f7348d4e5bba1c596819bea54d23d30f3689b575) build(deps): bump bin from `a433391` to `bde1e44` (#1100)
+
 ## [v1.350.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.350.0) - 2024-12-23
 
 - [`564bf95`](https://github.com/alexfalkowski/go-service/commit/564bf956ecebce4ef65deab31ab597a6f92d1e2a) feat(deps): bump github.com/matthewhartstonge/argon2 from 1.0.3 to 1.1.0 (#1099)
