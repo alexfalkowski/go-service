@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/maps"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"go.uber.org/fx"
@@ -16,14 +15,22 @@ const (
 	notServing = "NOT_SERVING"
 )
 
-// RegisterParams health for HTTP.
-type RegisterParams struct {
-	fx.In
+type (
+	// RegisterParams for health.
+	RegisterParams struct {
+		fx.In
 
-	Health    *HealthObserver
-	Liveness  *LivenessObserver
-	Readiness *ReadinessObserver
-}
+		Health    *HealthObserver
+		Liveness  *LivenessObserver
+		Readiness *ReadinessObserver
+	}
+
+	// Response for health.
+	Response struct {
+		Errors map[string]string `yaml:"errors,omitempty" json:"errors,omitempty" toml:"errors,omitempty"`
+		Status string            `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
+	}
+)
 
 // Register health for HTTP.
 func Register(params RegisterParams) {
@@ -33,7 +40,7 @@ func Register(params RegisterParams) {
 }
 
 func resister(path string, ob *subscriber.Observer, withErrors bool) {
-	rest.Get(path, func(ctx context.Context) (*maps.StringAny, error) {
+	rest.Get(path, func(ctx context.Context) (*Response, error) {
 		var (
 			status   int
 			response string
@@ -50,24 +57,22 @@ func resister(path string, ob *subscriber.Observer, withErrors bool) {
 		res := hc.Response(ctx)
 		res.WriteHeader(status)
 
-		data := maps.StringAny{"status": response}
+		resp := &Response{
+			Status: response,
+		}
 
 		if withErrors {
-			errors := maps.StringAny{}
+			resp.Errors = make(map[string]string)
 
 			for n, e := range ob.Errors() {
 				if e == nil {
 					continue
 				}
 
-				errors[n] = e.Error()
-			}
-
-			if !errors.IsEmpty() {
-				data["errors"] = errors
+				resp.Errors[n] = e.Error()
 			}
 		}
 
-		return &data, nil
+		return resp, nil
 	})
 }
