@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.351.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.351.1) - 2024-12-24
+
+- [`4b96f19`](https://github.com/alexfalkowski/go-service/commit/4b96f19392b3d1184937c6015e757a8b255455ea) fix(deps): upgraded google.golang.org/protobuf v1.36.0 => v1.36.1 (#1105)
+- [`4fbb99c`](https://github.com/alexfalkowski/go-service/commit/4fbb99ce1b285edaf5192daf4d2a4ed35e38c2b9) fix(deps): upgraded github.com/matthewhartstonge/argon2 v1.1.0 => v1.1.1 (#1104)
+
 ## [v1.351.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.351.0) - 2024-12-23
 
 - [`cf0a2bc`](https://github.com/alexfalkowski/go-service/commit/cf0a2bc6591795083f2523a726f3f9557a755072) feat(maps): remove any and use types (#1101)
