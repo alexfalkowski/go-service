@@ -5,14 +5,10 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	hc "github.com/alexfalkowski/go-service/net/http/context"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net/http/rest"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	"go.uber.org/fx"
-)
-
-const (
-	serving    = "SERVING"
-	notServing = "NOT_SERVING"
 )
 
 type (
@@ -27,52 +23,29 @@ type (
 
 	// Response for health.
 	Response struct {
-		Errors map[string]string `yaml:"errors,omitempty" json:"errors,omitempty" toml:"errors,omitempty"`
+		Meta   map[string]string `json:"meta,omitempty"`
 		Status string            `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 	}
 )
 
 // Register health for HTTP.
 func Register(params RegisterParams) {
-	resister("/healthz", params.Health.Observer, true)
-	resister("/livez", params.Liveness.Observer, false)
-	resister("/readyz", params.Readiness.Observer, false)
+	resister("/healthz", params.Health.Observer)
+	resister("/livez", params.Liveness.Observer)
+	resister("/readyz", params.Readiness.Observer)
 }
 
-func resister(path string, ob *subscriber.Observer, withErrors bool) {
+func resister(path string, ob *subscriber.Observer) {
 	rest.Get(path, func(ctx context.Context) (*Response, error) {
-		var (
-			status   int
-			response string
-		)
-
 		if err := ob.Error(); err != nil {
-			status = http.StatusServiceUnavailable
-			response = notServing
-		} else {
-			status = http.StatusOK
-			response = serving
+			return nil, status.Error(http.StatusServiceUnavailable, err.Error())
 		}
 
-		res := hc.Response(ctx)
-		res.WriteHeader(status)
-
-		resp := &Response{
-			Status: response,
+		res := &Response{
+			Status: "SERVING",
+			Meta:   meta.CamelStrings(ctx, ""),
 		}
 
-		if withErrors {
-			resp.Errors = make(map[string]string)
-
-			for n, e := range ob.Errors() {
-				if e == nil {
-					continue
-				}
-
-				resp.Errors[n] = e.Error()
-			}
-		}
-
-		return resp, nil
+		return res, nil
 	})
 }
