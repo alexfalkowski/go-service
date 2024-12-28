@@ -3,26 +3,52 @@ package content
 import (
 	"context"
 	"net/http"
+	"net/url"
 
-	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/runtime"
 )
 
 type (
 	handler func(ctx context.Context) (any, error)
 
-	// RequestHandler is a handler with a generic request and response.
-	RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
-
-	// Handler is a handler with a generic response.
-	Handler[Res any] func(ctx context.Context) (*Res, error)
+	// Handler is a handler with a generic request and response.
+	Handler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 )
 
-// NewRequestHandler for content.
-func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
+// NewQueryHandler for content.
+func NewQueryHandler[Req any, Res any](cont *Content, prefix string, handler Handler[Req, Res]) http.HandlerFunc {
+	return cont.handler(prefix, func(ctx context.Context) (any, error) {
+		e := hc.Encoder(ctx)
+		req := hc.Request(ctx)
+
+		b := pool.Get()
+		defer pool.Put(b)
+
+		q := convertQuery(req.URL.Query())
+
+		if err := e.Encode(b, q); err != nil {
+			return nil, status.Error(http.StatusBadRequest, err.Error())
+		}
+
+		var rq Req
+		ptr := &rq
+
+		if err := e.Decode(b, ptr); err != nil {
+			return nil, status.Error(http.StatusBadRequest, err.Error())
+		}
+
+		rs, err := handler(ctx, ptr)
+		if err != nil {
+			return nil, err
+		}
+
+		return rs, nil
+	})
+}
+
+// NewBodyHandler for content.
+func NewBodyHandler[Req any, Res any](cont *Content, prefix string, handler Handler[Req, Res]) http.HandlerFunc {
 	return cont.handler(prefix, func(ctx context.Context) (any, error) {
 		var rq Req
 		ptr := &rq
@@ -43,37 +69,16 @@ func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler R
 	})
 }
 
-// NewHandler for content.
-func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) http.HandlerFunc {
-	return cont.handler(prefix, func(ctx context.Context) (any, error) {
-		return handler(ctx)
-	})
-}
+func convertQuery(query url.Values) map[string]any {
+	values := make(map[string]any, len(query))
 
-func (c *Content) handler(prefix string, handler handler) http.HandlerFunc {
-	h := func(res http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
-		ctx = hc.WithRequest(ctx, req)
-		ctx = hc.WithResponse(ctx, res)
-
-		defer func() {
-			if r := recover(); r != nil {
-				err := errors.Prefix(prefix, runtime.ConvertRecover(r))
-				nh.WriteError(ctx, res, err, status.Code(err))
-			}
-		}()
-
-		ct := c.NewFromRequest(req)
-
-		ctx = hc.WithEncoder(ctx, ct.Encoder)
-		res.Header().Add(TypeKey, ct.Type)
-
-		data, err := handler(ctx)
-		runtime.Must(err)
-
-		err = ct.Encoder.Encode(res, data)
-		runtime.Must(err)
+	for k, v := range query {
+		if len(v) == 1 {
+			values[k] = v[0]
+		} else {
+			values[k] = v
+		}
 	}
 
-	return h
+	return values
 }

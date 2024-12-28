@@ -7,11 +7,16 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
+
+func init() {
+	content.Register(test.Pool)
+}
 
 func TestInsecureDebug(t *testing.T) {
 	Convey("When I have a all the servers", t, func() {

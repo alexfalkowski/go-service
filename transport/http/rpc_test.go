@@ -56,7 +56,8 @@ func TestRPCNoContent(t *testing.T) {
 					rpc.WithClientTimeout("10s"),
 				)
 
-				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "test"}
+				_, err := client.Invoke(context.Background(), req)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -100,11 +101,13 @@ func TestRPCWithContent(t *testing.T) {
 					rpc.WithClientTimeout("10s"),
 				)
 
-				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "test"}
+
+				resp, err := client.Invoke(context.Background(), req)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(resp.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Greeting, ShouldEqual, "Hello test")
 				})
 
 				lc.RequireStop()
@@ -235,7 +238,9 @@ func TestErrorRPC(t *testing.T) {
 				b := test.Pool.Get()
 				defer test.Pool.Put(b)
 
-				err := enc.Encode(b, test.Request{Name: "Bob"})
+				r := &test.Request{Name: "test"}
+
+				err := enc.Encode(b, r)
 				So(err, ShouldBeNil)
 
 				req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), b)
@@ -290,11 +295,13 @@ func TestAllowedRPC(t *testing.T) {
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
-				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "test"}
+
+				resp, err := client.Invoke(context.Background(), req)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(resp.Greeting, ShouldEqual, "Hello Bob")
+					So(resp.Greeting, ShouldEqual, "Hello test")
 				})
 
 				lc.RequireStop()
@@ -331,7 +338,9 @@ func TestDisallowedRPC(t *testing.T) {
 					rpc.WithClientContentType(mt),
 					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
 
-				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "test"}
+
+				_, err := client.Invoke(context.Background(), req)
 
 				Convey("Then I should have an error", func() {
 					So(status.IsError(err), ShouldBeTrue)
@@ -377,7 +386,9 @@ func BenchmarkRPC(b *testing.B) {
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(t))
 
-				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "test"}
+
+				_, _ = client.Invoke(context.Background(), req)
 			}
 		})
 	}

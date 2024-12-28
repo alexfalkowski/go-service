@@ -11,16 +11,18 @@ import (
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
 
-// Request for test.
-type Request struct {
-	Name string
-}
+type (
+	// Request for test.
+	Request struct {
+		Name string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
+	}
 
-// Response for test.
-type Response struct {
-	Meta     meta.Map
-	Greeting string
-}
+	// Response for test.
+	Response struct {
+		Meta     meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
+		Greeting string   `yaml:"greeting,omitempty" json:"greeting,omitempty" toml:"greeting,omitempty"`
+	}
+)
 
 // NoContent for test.
 //

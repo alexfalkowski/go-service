@@ -21,10 +21,13 @@ type (
 		Readiness *ReadinessObserver
 	}
 
+	// Request for health.
+	Request struct{}
+
 	// Response for health.
 	Response struct {
-		Meta   map[string]string `json:"meta,omitempty"`
-		Status string            `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
+		Meta   meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
+		Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 	}
 )
 
@@ -36,7 +39,7 @@ func Register(params RegisterParams) {
 }
 
 func resister(path string, ob *subscriber.Observer) {
-	rest.Get(path, func(ctx context.Context) (*Response, error) {
+	rest.Get(path, func(ctx context.Context, _ *Request) (*Response, error) {
 		if err := ob.Error(); err != nil {
 			return nil, status.Error(http.StatusServiceUnavailable, err.Error())
 		}

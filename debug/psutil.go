@@ -9,6 +9,9 @@ import (
 )
 
 type (
+	// Request for debug.
+	Request struct{}
+
 	// CPU for debug.
 	CPU struct {
 		Info  []cpu.InfoStat  `yaml:"info,omitempty" json:"info,omitempty" toml:"info,omitempty"`
@@ -32,7 +35,7 @@ type (
 // RegisterPprof for debug.
 func RegisterPsutil(srv *Server, cont *content.Content) {
 	mux := srv.ServeMux()
-	h := content.NewHandler(cont, "debug", func(ctx context.Context) (*Response, error) {
+	h := content.NewQueryHandler(cont, "debug", func(ctx context.Context, _ *Request) (*Response, error) {
 		res := &Response{}
 
 		i, err := cpu.InfoWithContext(ctx)

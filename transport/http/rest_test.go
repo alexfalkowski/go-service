@@ -17,6 +17,7 @@ import (
 
 func init() {
 	tm.RegisterKeys()
+	content.Register(test.Pool)
 }
 
 func TestRestNoContent(t *testing.T) {
@@ -60,7 +61,7 @@ func TestRestNoContent(t *testing.T) {
 	}
 }
 
-func TestRestRequestNoContent(t *testing.T) {
+func TestRestBodyNoContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
@@ -77,7 +78,7 @@ func TestRestRequestNoContent(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rest.Register(mux, test.Content)
-			registerBodyHandlers("/hello", test.RestRequestNoContent)
+			registerBodyHandlers("/hello", test.RestNoContent)
 
 			lc.RequireStart()
 
@@ -146,7 +147,7 @@ func TestRestError(t *testing.T) {
 	}
 }
 
-func TestRestRequestError(t *testing.T) {
+func TestRestBodyError(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
@@ -163,7 +164,7 @@ func TestRestRequestError(t *testing.T) {
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 			rest.Register(mux, test.Content)
-			registerBodyHandlers("/hello", test.RestRequestError)
+			registerBodyHandlers("/hello", test.RestError)
 
 			lc.RequireStart()
 
@@ -211,14 +212,15 @@ func TestRestWithContent(t *testing.T) {
 			lc.RequireStart()
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				url := fmt.Sprintf("http://%s/hello?name=Test&test=1&test=2", cfg.HTTP.Address)
 				client := rest.NewClient()
 
-				resp, err := client.R().Execute(v, url)
+				res, err := client.R().Execute(v, url)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a response", func() {
-					So(resp, ShouldNotBeNil)
+					So(res, ShouldNotBeNil)
+					So(string(res.Body()), ShouldContainSubstring, "Hello Test")
 				})
 
 				lc.RequireStop()
@@ -227,7 +229,7 @@ func TestRestWithContent(t *testing.T) {
 	}
 }
 
-func TestRestRequestWithContent(t *testing.T) {
+func TestRestBodyWithContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			mux := http.NewServeMux()
@@ -242,7 +244,7 @@ func TestRestRequestWithContent(t *testing.T) {
 			s.Register()
 
 			rest.Register(mux, test.Content)
-			registerBodyHandlers("/hello", test.RestRequestContent)
+			registerBodyHandlers("/hello", test.RestContent)
 
 			lc.RequireStart()
 
@@ -284,12 +286,12 @@ func TestRestRequestWithContent(t *testing.T) {
 	}
 }
 
-func registerHandlers[Res any](path string, h content.Handler[Res]) {
+func registerHandlers[Req any, Res any](path string, h content.Handler[Req, Res]) {
 	rest.Delete(path, h)
 	rest.Get(path, h)
 }
 
-func registerBodyHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
+func registerBodyHandlers[Req any, Res any](path string, h content.Handler[Req, Res]) {
 	rest.Post(path, h)
 	rest.Put(path, h)
 	rest.Patch(path, h)

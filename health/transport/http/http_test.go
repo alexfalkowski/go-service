@@ -17,6 +17,7 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
@@ -31,6 +32,7 @@ import (
 func init() {
 	tracer.Register()
 	tm.RegisterKeys()
+	content.Register(test.Pool)
 }
 
 //nolint:funlen
