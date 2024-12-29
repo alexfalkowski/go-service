@@ -23,8 +23,8 @@ type (
 
 	// Response for health.
 	Response struct {
-		Meta   map[string]string `json:"meta,omitempty"`
-		Status string            `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
+		Meta   meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
+		Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 	}
 )
 
