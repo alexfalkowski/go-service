@@ -35,7 +35,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sethvargo/go-limiter v1.0.0
-	github.com/shirou/gopsutil/v4 v4.24.11
+	github.com/shirou/gopsutil/v4 v4.24.12
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
