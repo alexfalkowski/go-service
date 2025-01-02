@@ -85,7 +85,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("std", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
@@ -120,7 +120,7 @@ func BenchmarkHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
@@ -157,7 +157,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("log", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 
@@ -200,7 +200,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("trace", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 			runtime.Must(err)
 

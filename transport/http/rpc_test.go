@@ -372,7 +372,7 @@ func BenchmarkRPC(b *testing.B) {
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		b.Run(mt, func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(t))

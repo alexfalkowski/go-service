@@ -256,7 +256,7 @@ func BenchmarkRoute(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("html", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_, _ = client.Do(req)
 		}
 	})
