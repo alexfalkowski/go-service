@@ -35,11 +35,11 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sethvargo/go-limiter v1.0.0
-	github.com/shirou/gopsutil/v4 v4.24.11
+	github.com/shirou/gopsutil/v4 v4.24.12
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241021195043-f3a49acf8447
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241231132107-9775b90ad9a4
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/instrumentation/host v0.58.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.58.0
