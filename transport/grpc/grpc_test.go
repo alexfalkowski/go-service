@@ -174,7 +174,7 @@ func BenchmarkGRPC(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_, err := client.SayHello(context.Background(), req)
 			runtime.Must(err)
 		}
