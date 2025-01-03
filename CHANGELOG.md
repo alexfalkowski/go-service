@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.353.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.353.0) - 2025-01-03
+
+- [`fa802e6`](https://github.com/alexfalkowski/go-service/commit/fa802e6afb62f7b493a824f080ee460107f88bbf) feat(fmt): remove Sprintf (#1112)
+- [`7bf6c53`](https://github.com/alexfalkowski/go-service/commit/7bf6c53c3c48160686eb1498ad2ce25dd15e0136) build(ci): for loop can be changed to use an integer range (Go 1.22+) (#1111)
+
 ## [v1.352.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.352.2) - 2025-01-02
 
 - [`7086fc4`](https://github.com/alexfalkowski/go-service/commit/7086fc45652ac5937f50b8904352cd584fd941e8) fix(deps): github.com/shirou/gopsutil/v4 v4.24.11 => v4.24.12 (#1110)
