@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/net/http/content"
@@ -9,27 +8,27 @@ import (
 
 // Delete for rest.
 func Delete[Res any](path string, handler content.Handler[Res]) {
-	Route(fmt.Sprintf("%s %s", http.MethodDelete, path), handler)
+	Route(http.MethodDelete+" "+path, handler)
 }
 
 // Get for rest.
 func Get[Res any](path string, handler content.Handler[Res]) {
-	Route(fmt.Sprintf("%s %s", http.MethodGet, path), handler)
+	Route(http.MethodGet+" "+path, handler)
 }
 
 // Post for rest.
 func Post[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(fmt.Sprintf("%s %s", http.MethodPost, path), handler)
+	RouteRequest(http.MethodPost+" "+path, handler)
 }
 
 // Put for rest.
 func Put[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(fmt.Sprintf("%s %s", http.MethodPut, path), handler)
+	RouteRequest(http.MethodPut+" "+path, handler)
 }
 
 // Patch for rest.
 func Patch[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(fmt.Sprintf("%s %s", http.MethodPatch, path), handler)
+	RouteRequest(http.MethodPatch+" "+path, handler)
 }
 
 // RouteRequest for rest.
