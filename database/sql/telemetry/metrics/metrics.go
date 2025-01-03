@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/jmoiron/sqlx"
@@ -53,7 +53,7 @@ func (m *ms) callback(_ context.Context, o metric.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
 		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("master_%d", i)),
+			attribute.Key("db_name").String("master_" + strconv.Itoa(i)),
 		)
 
 		m.collect(ma, o, opts)
@@ -62,7 +62,7 @@ func (m *ms) callback(_ context.Context, o metric.Observer) error {
 	ss, _ := m.dbs.GetAllSlaves()
 	for i, s := range ss {
 		opts := metric.WithAttributes(
-			attribute.Key("db_name").String(fmt.Sprintf("slave_%d", i)),
+			attribute.Key("db_name").String("slave_" + strconv.Itoa(i)),
 		)
 
 		m.collect(s, o, opts)

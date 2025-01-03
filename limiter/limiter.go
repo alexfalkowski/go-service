@@ -3,8 +3,7 @@ package limiter
 import (
 	"context"
 	"errors"
-	"fmt"
-	"time"
+	"strconv"
 
 	"github.com/alexfalkowski/go-service/meta"
 	st "github.com/alexfalkowski/go-service/time"
@@ -48,13 +47,12 @@ func New(cfg *Config) (limiter.Store, KeyFunc, error) {
 
 // Take from the store, returns if successful, info and error.
 func Take(ctx context.Context, store limiter.Store, key KeyFunc) (bool, string, error) {
-	tokens, remaining, reset, ok, err := store.Take(ctx, meta.ValueOrBlank(key(ctx)))
+	tokens, remaining, _, ok, err := store.Take(ctx, meta.ValueOrBlank(key(ctx)))
 	if err != nil {
 		return false, "", err
 	}
 
-	r := time.Until(time.Unix(0, int64(reset))) //nolint:gosec
-	v := fmt.Sprintf("limit=%d, remaining=%d, reset=%s", tokens, remaining, r)
+	v := "limit=" + strconv.FormatUint(tokens, 10) + ", remaining=" + strconv.FormatUint(remaining, 10)
 
 	return ok, v, nil
 }
