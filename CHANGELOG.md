@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.353.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.353.1) - 2025-01-04
+
+- [`f863424`](https://github.com/alexfalkowski/go-service/commit/f86342433690f6049300f3a642a3fb85c6b919b2) fix(deps): upgraded github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241231132107-9775b90ad9a4 => v0.0.0-20250103171228-b75b9ab8ea1e (#1115)
+- [`cfcb0b5`](https://github.com/alexfalkowski/go-service/commit/cfcb0b5d93e50bef5d412c5e0a79e848f813e18b) build(deps): bump bin from `bde1e44` to `08600e7` (#1114)
+- [`967700c`](https://github.com/alexfalkowski/go-service/commit/967700c3429fcea3da82a7affc07b70aa46f4239) docs(diagrams): update with make diagrams (#1113)
+
 ## [v1.353.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.353.0) - 2025-01-03
 
 - [`fa802e6`](https://github.com/alexfalkowski/go-service/commit/fa802e6afb62f7b493a824f080ee460107f88bbf) feat(fmt): remove Sprintf (#1112)
