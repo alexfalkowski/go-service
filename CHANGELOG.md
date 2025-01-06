@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.354.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.354.0) - 2025-01-06
+
+- [`c1979c9`](https://github.com/alexfalkowski/go-service/commit/c1979c9f27338571543482eaa8f00ba90286c748) feat(deps): bump golang.org/x/crypto from 0.31.0 to 0.32.0 (#1117)
+- [`075e7ef`](https://github.com/alexfalkowski/go-service/commit/075e7ef61a70ba8eb14ed2cab43a89f2e9f844a7) build(deps): bump bin from `08600e7` to `a278340` (#1116)
+
 ## [v1.353.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.353.1) - 2025-01-04
 
 - [`f863424`](https://github.com/alexfalkowski/go-service/commit/f86342433690f6049300f3a642a3fb85c6b919b2) fix(deps): upgraded github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20241231132107-9775b90ad9a4 => v0.0.0-20250103171228-b75b9ab8ea1e (#1115)
