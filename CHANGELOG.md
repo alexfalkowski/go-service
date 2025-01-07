@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.356.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.356.1) - 2025-01-07
+
+- [`b081e7d`](https://github.com/alexfalkowski/go-service/commit/b081e7dd3f8284c5931e9b666dab562416c15de1) fix(deps): upgraded google.golang.org/protobuf v1.36.1 => v1.36.2 (#1121)
+
 ## [v1.356.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.356.0) - 2025-01-07
 
 - [`94e7327`](https://github.com/alexfalkowski/go-service/commit/94e73276a00be71b70c4dc0a88ddc7de303fbd3d) feat(deps): bump github.com/KimMachineGun/automemlimit from 0.6.1 to 0.7.0 (#1120)
