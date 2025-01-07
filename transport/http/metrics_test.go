@@ -1,12 +1,10 @@
 package http_test
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
@@ -52,7 +50,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
@@ -120,7 +118,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)

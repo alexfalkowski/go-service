@@ -30,7 +30,7 @@ func TestSetCache(t *testing.T) {
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -67,7 +67,7 @@ func TestSetXXCache(t *testing.T) {
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -99,7 +99,7 @@ func TestSetNXCache(t *testing.T) {
 		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
 		ca, _ := c.NewRedisCache()
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))

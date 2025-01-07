@@ -1,7 +1,6 @@
 package pg_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
@@ -21,7 +20,7 @@ func init() {
 }
 
 func up(db *mssqlx.DBs) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	query := `CREATE TABLE accounts (
@@ -35,7 +34,7 @@ func up(db *mssqlx.DBs) error {
 }
 
 func down(db *mssqlx.DBs) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	query := "DROP TABLE accounts;"
@@ -110,7 +109,7 @@ func TestDBQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I select data with a query", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -157,7 +156,7 @@ func TestDBExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -201,7 +200,7 @@ func TestDBCommitTransExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -254,7 +253,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -304,7 +303,7 @@ func TestStatementQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I select data with a query", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -357,7 +356,7 @@ func TestStatementExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -406,7 +405,7 @@ func TestTransStatementExec(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I insert data into a table", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -464,7 +463,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I select data with an invalid query", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := test.Timeout()
 			defer cancel()
 
 			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))

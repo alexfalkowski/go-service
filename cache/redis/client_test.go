@@ -1,7 +1,6 @@
 package redis_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -24,7 +23,7 @@ func TestClientIncr(t *testing.T) {
 		client, err := c.NewRedisClient()
 		So(err, ShouldBeNil)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "password", meta.Redacted("test-1234"))
