@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.356.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.356.0) - 2025-01-07
+
+- [`94e7327`](https://github.com/alexfalkowski/go-service/commit/94e73276a00be71b70c4dc0a88ddc7de303fbd3d) feat(deps): bump github.com/KimMachineGun/automemlimit from 0.6.1 to 0.7.0 (#1120)
+- [`ab95dca`](https://github.com/alexfalkowski/go-service/commit/ab95dca3e50cbc138e917e2270a3ea0150fedb6a) test(ctx): have a default timeout (#1119)
+
 ## [v1.355.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.355.0) - 2025-01-06
 
 - [`f7ef194`](https://github.com/alexfalkowski/go-service/commit/f7ef194990807c817de08c582ba0b81027886801) feat(deps): bump golang.org/x/net from 0.33.0 to 0.34.0 (#1118)
