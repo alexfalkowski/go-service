@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.357.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.357.0) - 2025-01-08
+
+- [`4466d39`](https://github.com/alexfalkowski/go-service/commit/4466d39671e1cd45d1c27d5b49f718452d05f240) feat(http): remove handler type (#1125)
+- [`b6aae88`](https://github.com/alexfalkowski/go-service/commit/b6aae88b35e9d7cfd5893ad7b6bac0fdd48022e3) build(deps): bump bin from `a00abbe` to `cb313fe` (#1123)
+- [`9694d51`](https://github.com/alexfalkowski/go-service/commit/9694d510e82713fd95ddc372ef68c9e862a280c7) build(deps): bump bin from `a278340` to `a00abbe` (#1122)
+
 ## [v1.356.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.356.1) - 2025-01-07
 
 - [`b081e7d`](https://github.com/alexfalkowski/go-service/commit/b081e7dd3f8284c5931e9b666dab562416c15de1) fix(deps): upgraded google.golang.org/protobuf v1.36.1 => v1.36.2 (#1121)
