@@ -12,8 +12,6 @@ import (
 )
 
 type (
-	handler func(ctx context.Context) (any, error)
-
 	// RequestHandler is a handler with a generic request and response.
 	RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
@@ -50,7 +48,7 @@ func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) htt
 	})
 }
 
-func (c *Content) handler(prefix string, handler handler) http.HandlerFunc {
+func (c *Content) handler(prefix string, handler func(ctx context.Context) (any, error)) http.HandlerFunc {
 	h := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
