@@ -7,25 +7,21 @@ import (
 	"github.com/alexfalkowski/go-service/compress/zstd"
 )
 
-type compressors map[string]Compressor
-
 // Map of compressor.
 type Map struct {
-	compressors compressors
+	compressors map[string]Compressor
 }
 
 // NewMap for compressor.
 func NewMap() *Map {
-	f := &Map{
-		compressors: compressors{
+	return &Map{
+		compressors: map[string]Compressor{
 			"zstd":   zstd.NewCompressor(),
 			"s2":     s2.NewCompressor(),
 			"snappy": snappy.NewCompressor(),
 			"none":   none.NewCompressor(),
 		},
 	}
-
-	return f
 }
 
 // Register kind and compressor.
