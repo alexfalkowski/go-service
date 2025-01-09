@@ -13,34 +13,34 @@ const (
 )
 
 // GenerateBytes for rand.
-func GenerateBytes(n uint32) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
+func GenerateBytes(size uint32) ([]byte, error) {
+	bytes := make([]byte, size)
+	_, err := rand.Read(bytes)
 
-	return b, err
+	return bytes, err
 }
 
 // GenerateString will generate using letters and symbols.
-func GenerateString(n uint32) (string, error) {
-	return generateString(n, letters+symbols)
+func GenerateString(size uint32) (string, error) {
+	return generateString(size, letters+symbols)
 }
 
 // GenerateLetters will generate using letters.
-func GenerateLetters(n uint32) (string, error) {
-	return generateString(n, letters)
+func GenerateLetters(size uint32) (string, error) {
+	return generateString(size, letters)
 }
 
-func generateString(n uint32, s string) (string, error) {
-	r := make([]byte, n)
+func generateString(size uint32, values string) (string, error) {
+	bytes := make([]byte, size)
 
-	for i := range n {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(s))))
+	for i := range size {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(values))))
 		if err != nil {
 			return "", err
 		}
 
-		r[i] = s[num.Int64()]
+		bytes[i] = values[num.Int64()]
 	}
 
-	return string(r), nil
+	return string(bytes), nil
 }

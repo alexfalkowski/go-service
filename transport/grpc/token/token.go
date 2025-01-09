@@ -64,16 +64,16 @@ type tokenPerRPCCredentials struct {
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
-	_, t, err := p.generator.Generate(ctx)
+	_, token, err := p.generator.Generate(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(t) == 0 {
+	if len(token) == 0 {
 		return nil, header.ErrInvalidAuthorization
 	}
 
-	return map[string]string{"authorization": header.BearerAuthorization + " " + string(t)}, nil
+	return map[string]string{"authorization": header.BearerAuthorization + " " + string(token)}, nil
 }
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {

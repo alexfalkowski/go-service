@@ -35,28 +35,28 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 		return opts, nil
 	}
 
-	fm := params.Encoder.Get(params.Config.Encoder)
-	cm := params.Compressor.Get(params.Config.Compressor)
+	enc := params.Encoder.Get(params.Config.Encoder)
+	cmp := params.Compressor.Get(params.Config.Compressor)
 	opts := &cache.Options{
 		Redis:        params.Client,
 		StatsEnabled: true,
 		Marshal: func(v any) ([]byte, error) {
-			b := params.Pool.Get()
-			defer params.Pool.Put(b)
+			buf := params.Pool.Get()
+			defer params.Pool.Put(buf)
 
-			if err := fm.Encode(b, v); err != nil {
+			if err := enc.Encode(buf, v); err != nil {
 				return nil, err
 			}
 
-			return cm.Compress(b.Bytes()), nil
+			return cmp.Compress(buf.Bytes()), nil
 		},
 		Unmarshal: func(b []byte, v any) error {
-			d, err := cm.Decompress(b)
+			d, err := cmp.Decompress(b)
 			if err != nil {
 				return err
 			}
 
-			return fm.Decode(bytes.NewReader(d), v)
+			return enc.Decode(bytes.NewReader(d), v)
 		},
 	}
 
@@ -76,7 +76,7 @@ func NewRingOptions(cfg *Config) (*redis.RingOptions, error) {
 		return nil, err
 	}
 
-	pu, err := redis.ParseURL(u)
+	url, err := redis.ParseURL(u)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func NewRingOptions(cfg *Config) (*redis.RingOptions, error) {
 	opts := &redis.RingOptions{
 		Addrs: cfg.Addresses,
 		NewClient: func(*redis.Options) *redis.Client {
-			return redis.NewClient(pu)
+			return redis.NewClient(url)
 		},
 	}
 

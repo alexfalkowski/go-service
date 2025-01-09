@@ -35,40 +35,40 @@ func RegisterPsutil(srv *Server, cont *content.Content) {
 	handler := content.NewHandler(cont, "debug", func(ctx context.Context) (*Response, error) {
 		res := &Response{}
 
-		i, err := cpu.InfoWithContext(ctx)
+		info, err := cpu.InfoWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		t, err := cpu.TimesWithContext(ctx, true)
+		times, err := cpu.TimesWithContext(ctx, true)
 		if err != nil {
 			return nil, err
 		}
 
 		res.CPU = &CPU{
-			Info:  i,
-			Times: t,
+			Info:  info,
+			Times: times,
 		}
 
-		sm, err := mem.SwapMemoryWithContext(ctx)
+		swapMem, err := mem.SwapMemoryWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		sd, err := mem.SwapDevicesWithContext(ctx)
+		swapDev, err := mem.SwapDevicesWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		vm, err := mem.VirtualMemoryWithContext(ctx)
+		vms, err := mem.VirtualMemoryWithContext(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		res.Mem = &Mem{
-			Swap:    sm,
-			Devices: sd,
-			Virtual: vm,
+			Swap:    swapMem,
+			Devices: swapDev,
+			Virtual: vms,
 		}
 
 		return res, nil

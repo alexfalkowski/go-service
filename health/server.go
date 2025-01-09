@@ -9,22 +9,22 @@ import (
 
 // NewServer for health.
 func NewServer(lc fx.Lifecycle, regs Registrations) *server.Server {
-	s := server.NewServer()
+	server := server.NewServer()
 
-	s.Register(regs...)
+	server.Register(regs...)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			s.Start()
+			server.Start()
 
 			return nil
 		},
 		OnStop: func(_ context.Context) error {
-			s.Stop()
+			server.Stop()
 
 			return nil
 		},
 	})
 
-	return s
+	return server
 }

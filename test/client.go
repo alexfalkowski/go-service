@@ -68,7 +68,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 	sec, err := g.WithClientTLS(c.TLS)
 	runtime.Must(err)
 
-	cl := &client.Config{
+	config := &client.Config{
 		Address: c.Transport.GRPC.Address,
 		Retry:   c.Transport.GRPC.Retry,
 	}
@@ -76,7 +76,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 	opts := []g.ClientOption{
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
-		g.WithClientBreaker(), g.WithClientRetry(cl.Retry),
+		g.WithClientBreaker(), g.WithClientRetry(config.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(c.Generator), g.WithClientTimeout("1m"),
 		g.WithClientDialOption(), sec,
@@ -86,7 +86,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		opts = append(opts, g.WithClientCompression())
 	}
 
-	conn, err := g.NewClient(cl.Address, opts...)
+	conn, err := g.NewClient(config.Address, opts...)
 	runtime.Must(err)
 
 	return conn

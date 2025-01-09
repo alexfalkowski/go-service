@@ -54,15 +54,14 @@ func (n *ntsNetwork) Now() (time.Time, error) {
 		return time.Now(), errors.Prefix("nts", err)
 	}
 
-	r, err := se.Query()
+	res, err := se.Query()
 	if err != nil {
 		return time.Now(), errors.Prefix("nts", err)
 	}
 
-	err = r.Validate()
-	if err != nil {
+	if err := res.Validate(); err != nil {
 		return time.Now(), errors.Prefix("nts", err)
 	}
 
-	return time.Now().Add(r.ClockOffset), nil
+	return time.Now().Add(res.ClockOffset), nil
 }

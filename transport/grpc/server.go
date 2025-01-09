@@ -62,9 +62,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	var ms *metrics.Server
+	var mts *metrics.Server
 	if params.Meter != nil {
-		ms = metrics.NewServer(params.Meter)
+		mts = metrics.NewServer(params.Meter)
 	}
 
 	timeout := timeout(params.Config)
@@ -81,22 +81,25 @@ func NewServer(params ServerParams) (*Server, error) {
 			Time:                  timeout,
 			Timeout:               timeout,
 		}),
-		unaryServerOption(params, ms, params.Unary...),
-		streamServerOption(params, ms, params.Stream...),
+		unaryServerOption(params, mts, params.Unary...),
+		streamServerOption(params, mts, params.Stream...),
 		opt,
 	}
 
-	s := grpc.NewServer(opts...)
-	reflection.Register(s)
+	svr := grpc.NewServer(opts...)
+	reflection.Register(svr)
 
-	sv, err := sg.NewServer(s, config(params.Config))
+	serv, err := sg.NewServer(svr, config(params.Config))
 	if err != nil {
 		return nil, err
 	}
 
-	srv := server.NewServer("grpc", sv, params.Logger, params.Shutdowner)
+	server := &Server{
+		srv:    server.NewServer("grpc", serv, params.Logger, params.Shutdowner),
+		server: svr,
+	}
 
-	return &Server{srv: srv, server: s}, nil
+	return server, nil
 }
 
 // Start the server.

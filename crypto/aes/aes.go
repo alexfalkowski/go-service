@@ -43,41 +43,41 @@ type aesAlgo struct {
 }
 
 func (a *aesAlgo) Encrypt(msg string) (string, error) {
-	g, err := a.aead()
+	aead, err := a.aead()
 	if err != nil {
 		return "", err
 	}
 
-	n, err := rand.GenerateBytes(uint32(g.NonceSize())) //nolint:gosec
+	bytes, err := rand.GenerateBytes(uint32(aead.NonceSize())) //nolint:gosec
 	if err != nil {
 		return "", err
 	}
 
-	s := g.Seal(n, n, []byte(msg), nil)
+	s := aead.Seal(bytes, bytes, []byte(msg), nil)
 
 	return base64.StdEncoding.EncodeToString(s), nil
 }
 
 func (a *aesAlgo) Decrypt(msg string) (string, error) {
-	d, err := base64.StdEncoding.DecodeString(msg)
+	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err
 	}
 
-	g, err := a.aead()
+	aead, err := a.aead()
 	if err != nil {
 		return "", err
 	}
 
-	size := g.NonceSize()
-	if len(d) < size {
+	size := aead.NonceSize()
+	if len(decoded) < size {
 		return "", ErrInvalidLength
 	}
 
-	nonce, c := d[:size], d[size:]
-	d, err = g.Open(nil, nonce, c, nil)
+	nonce, c := decoded[:size], decoded[size:]
+	decoded, err = aead.Open(nil, nonce, c, nil)
 
-	return string(d), err
+	return string(decoded), err
 }
 
 func (a *aesAlgo) aead() (cipher.AEAD, error) {

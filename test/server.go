@@ -40,7 +40,7 @@ func (s *Server) Register() {
 	tracer, err := tracer.NewTracer(s.Lifecycle, Environment, Version, Name, s.Tracer, s.Logger)
 	runtime.Must(err)
 
-	h, err := th.NewServer(th.ServerParams{
+	httpServer, err := th.NewServer(th.ServerParams{
 		Shutdowner: sh, Mux: s.Mux,
 		Config: s.Transport.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
@@ -49,19 +49,19 @@ func (s *Server) Register() {
 	})
 	runtime.Must(err)
 
-	s.HTTP = h
+	s.HTTP = httpServer
 
-	g, err := tg.NewServer(tg.ServerParams{
+	grpcServer, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: sh, Config: s.Transport.GRPC, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter, Key: s.Key,
 		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
 
-	s.GRPC = g
+	s.GRPC = grpcServer
 
-	v1.RegisterGreeterServiceServer(g.Server(), NewService(s.VerifyAuth))
-	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{h, g}})
+	v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
+	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{httpServer, grpcServer}})
 }
 
 type none struct{}

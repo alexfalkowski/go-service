@@ -15,7 +15,7 @@ import (
 )
 
 // UnaryServerInterceptor for tracer.
-func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(tra trace.Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -31,7 +31,7 @@ func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
+		ctx, span := tra.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
 			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
@@ -47,7 +47,7 @@ func UnaryServerInterceptor(t trace.Tracer) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for tracer.
-func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(tra trace.Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -63,7 +63,7 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
+		ctx, span := tra.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
 			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 		defer span.End()
 
@@ -83,7 +83,7 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for tracer.
-func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(tra trace.Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -97,7 +97,7 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := tra.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tracer.WithTraceID(ctx, span)
@@ -114,7 +114,7 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for tracer.
-func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(tra trace.Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -128,7 +128,7 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := tra.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tracer.WithTraceID(ctx, span)

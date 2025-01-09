@@ -20,13 +20,13 @@ type Config struct {
 
 // PublicKey ssh.
 func (c *Config) PublicKey() (ed25519.PublicKey, error) {
-	d, err := os.ReadFile(c.Public)
+	bytes, err := os.ReadFile(c.Public)
 	if err != nil {
 		return nil, err
 	}
 
 	//nolint:dogsled
-	parsed, _, _, _, err := ssh.ParseAuthorizedKey(d)
+	parsed, _, _, _, err := ssh.ParseAuthorizedKey(bytes)
 	if err != nil {
 		return nil, err
 	}

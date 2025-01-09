@@ -144,24 +144,24 @@ func NewInsecureTransportConfig() *transport.Config {
 
 // NewSecureTransportConfig for test.
 func NewSecureTransportConfig() *transport.Config {
-	s := NewTLSServerConfig()
-	r := NewRetry()
+	config := NewTLSServerConfig()
+	retry := NewRetry()
 
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				TLS:     s,
+				TLS:     config,
 				Address: "localhost:" + Port(),
-				Retry:   r,
+				Retry:   retry,
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				TLS:     s,
+				TLS:     config,
 				Address: "localhost:" + Port(),
-				Retry:   r,
+				Retry:   retry,
 			},
 		},
 	}

@@ -24,14 +24,14 @@ type ClientParams struct {
 
 // NewClient for redis.
 func NewClient(params ClientParams) gr.Client {
-	r := params.RingOptions
-	if r == nil {
+	opts := params.RingOptions
+	if opts == nil {
 		return gr.NewNoopClient()
 	}
 
 	redis.SetLogger(gz.NewLogger(params.Logger))
 
-	var client gr.Client = redis.NewRing(r)
+	var client gr.Client = redis.NewRing(opts)
 	client = gz.NewClient(params.Logger, client)
 	client = tracer.NewClient(params.Tracer, client)
 

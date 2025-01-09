@@ -129,14 +129,14 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Value
 
 	peerKind := meta.String("peer")
 
-	p, ok := peer.FromContext(ctx)
+	peer, ok := peer.FromContext(ctx)
 	if !ok {
 		return peerKind, meta.Blank()
 	}
 
-	addr := p.Addr.String()
+	addr := peer.Addr.String()
 
-	host, _, err := net.SplitHostPort(p.Addr.String())
+	host, _, err := net.SplitHostPort(peer.Addr.String())
 	if err != nil {
 		return peerKind, meta.String(addr)
 	}
@@ -174,14 +174,14 @@ func extractAuthorization(ctx context.Context, md metadata.MD) meta.Valuer {
 		return meta.Blank()
 	}
 
-	_, t, err := header.ParseAuthorization(a)
+	_, value, err := header.ParseAuthorization(a)
 	if err != nil {
 		meta.WithAttribute(ctx, "authError", meta.Error(err))
 
 		return meta.Blank()
 	}
 
-	return meta.Ignored(t)
+	return meta.Ignored(value)
 }
 
 func authorization(md metadata.MD) string {
