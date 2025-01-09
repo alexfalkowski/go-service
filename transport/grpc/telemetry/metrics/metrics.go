@@ -52,7 +52,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			kindAttribute.String(string(unary)),
+			kindAttribute.String(string(unaryKind)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
@@ -73,22 +73,21 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 
 // StreamInterceptor for metrics.
 func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
-	return func(srv any, st grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
-			return handler(srv, st)
+			return handler(srv, stream)
 		}
 
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			kindAttribute.String(string(stream)),
+			kindAttribute.String(string(streamKind)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
-		stream := s.Stream(st, opts)
-		err := handler(srv, stream)
-		ctx := st.Context()
+		err := handler(srv, s.Stream(stream, opts))
+		ctx := stream.Context()
 
 		handle(ctx, s.handled, s.handledHistogram, opts, status.Code(err), start)
 
@@ -191,7 +190,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
-			kindAttribute.String(string(unary)),
+			kindAttribute.String(string(unaryKind)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
@@ -221,7 +220,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
-			kindAttribute.String(string(stream)),
+			kindAttribute.String(string(streamKind)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)

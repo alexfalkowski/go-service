@@ -33,7 +33,7 @@ type Server struct {
 func NewServer(params ServerParams) (*Server, error) {
 	mux := http.NewServeMux()
 	timeout := timeout(params.Config)
-	s := &http.Server{
+	svr := &http.Server{
 		Handler:     mux,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
@@ -44,14 +44,17 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	sv, err := sh.NewServer(s, c)
+	serv, err := sh.NewServer(svr, c)
 	if err != nil {
 		return nil, errors.Prefix("debug", err)
 	}
 
-	srv := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
+	server := &Server{
+		Server: server.NewServer("debug", serv, params.Logger, params.Shutdowner),
+		mux:    mux,
+	}
 
-	return &Server{Server: srv, mux: mux}, nil
+	return server, nil
 }
 
 // ServeMux for debug.
@@ -65,18 +68,18 @@ func config(cfg *Config) (*sh.Config, error) {
 		return nil, nil
 	}
 
-	c := &sh.Config{
+	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}
 
 	if !tls.IsEnabled(cfg.TLS) {
-		return c, nil
+		return config, nil
 	}
 
 	t, err := tls.NewConfig(cfg.TLS)
-	c.TLS = t
+	config.TLS = t
 
-	return c, err
+	return config, err
 }
 
 func timeout(cfg *Config) time.Duration {

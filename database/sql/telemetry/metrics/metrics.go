@@ -24,17 +24,18 @@ func Register(dbs *mssqlx.DBs, meter metric.Meter) {
 	maxIdleTimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
 	maxLifetimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
 
-	m := &ms{
+	mts := &Metrics{
 		dbs: dbs, opts: opts,
 		mo: maxOpen, o: open, iu: inUse,
 		i: idle, w: waited, b: blocked,
 		mic: maxIdleClosed, mitc: maxIdleTimeClosed, mlc: maxLifetimeClosed,
 	}
 
-	metrics.MustRegisterCallback(meter, m.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
+	metrics.MustRegisterCallback(meter, mts.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
 }
 
-type ms struct {
+// Metrics for SQL.
+type Metrics struct {
 	dbs  *mssqlx.DBs
 	opts metric.MeasurementOption
 
@@ -49,14 +50,14 @@ type ms struct {
 	mlc  metric.Int64ObservableCounter
 }
 
-func (m *ms) callback(_ context.Context, o metric.Observer) error {
+func (m *Metrics) callback(_ context.Context, observer metric.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
 		opts := metric.WithAttributes(
 			attribute.Key("db_name").String("master_" + strconv.Itoa(i)),
 		)
 
-		m.collect(ma, o, opts)
+		m.collect(ma, observer, opts)
 	}
 
 	ss, _ := m.dbs.GetAllSlaves()
@@ -65,22 +66,22 @@ func (m *ms) callback(_ context.Context, o metric.Observer) error {
 			attribute.Key("db_name").String("slave_" + strconv.Itoa(i)),
 		)
 
-		m.collect(s, o, opts)
+		m.collect(s, observer, opts)
 	}
 
 	return nil
 }
 
-func (m *ms) collect(db *sqlx.DB, o metric.Observer, opts metric.MeasurementOption) {
+func (m *Metrics) collect(db *sqlx.DB, observer metric.Observer, opts metric.MeasurementOption) {
 	stats := db.Stats()
 
-	o.ObserveInt64(m.mo, int64(stats.MaxOpenConnections), m.opts, opts)
-	o.ObserveInt64(m.o, int64(stats.OpenConnections), m.opts, opts)
-	o.ObserveInt64(m.iu, int64(stats.InUse), m.opts, opts)
-	o.ObserveInt64(m.i, int64(stats.Idle), m.opts, opts)
-	o.ObserveInt64(m.w, stats.WaitCount, m.opts, opts)
-	o.ObserveFloat64(m.b, stats.WaitDuration.Seconds(), m.opts, opts)
-	o.ObserveInt64(m.mic, stats.MaxIdleClosed, m.opts, opts)
-	o.ObserveInt64(m.mitc, stats.MaxIdleTimeClosed, m.opts, opts)
-	o.ObserveInt64(m.mlc, stats.MaxLifetimeClosed, m.opts, opts)
+	observer.ObserveInt64(m.mo, int64(stats.MaxOpenConnections), m.opts, opts)
+	observer.ObserveInt64(m.o, int64(stats.OpenConnections), m.opts, opts)
+	observer.ObserveInt64(m.iu, int64(stats.InUse), m.opts, opts)
+	observer.ObserveInt64(m.i, int64(stats.Idle), m.opts, opts)
+	observer.ObserveInt64(m.w, stats.WaitCount, m.opts, opts)
+	observer.ObserveFloat64(m.b, stats.WaitDuration.Seconds(), m.opts, opts)
+	observer.ObserveInt64(m.mic, stats.MaxIdleClosed, m.opts, opts)
+	observer.ObserveInt64(m.mitc, stats.MaxIdleTimeClosed, m.opts, opts)
+	observer.ObserveInt64(m.mlc, stats.MaxLifetimeClosed, m.opts, opts)
 }

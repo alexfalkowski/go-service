@@ -3,6 +3,6 @@ package metrics
 type kind string
 
 const (
-	unary  kind = "unary"
-	stream kind = "stream"
+	unaryKind  kind = "unary"
+	streamKind kind = "stream"
 )

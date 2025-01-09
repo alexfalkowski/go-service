@@ -51,7 +51,7 @@ func (a *hmacAlgo) Sign(msg string) (string, error) {
 }
 
 func (a *hmacAlgo) Verify(sig, msg string) error {
-	d, err := base64.StdEncoding.DecodeString(sig)
+	decoded, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (a *hmacAlgo) Verify(sig, msg string) error {
 
 	expectedMAC := mac.Sum(nil)
 
-	if !hmac.Equal(d, expectedMAC) {
+	if !hmac.Equal(decoded, expectedMAC) {
 		return errors.ErrInvalidMatch
 	}
 

@@ -53,17 +53,17 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	ctx, t, err := r.gen.Generate(req.Context())
+	ctx, token, err := r.gen.Generate(req.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	if len(t) == 0 {
+	if len(token) == 0 {
 		return nil, header.ErrInvalidAuthorization
 	}
 
 	req = req.WithContext(ctx)
-	req.Header.Add("Authorization", header.BearerAuthorization+" "+string(t))
+	req.Header.Add("Authorization", header.BearerAuthorization+" "+string(token))
 
 	return r.RoundTripper.RoundTrip(req)
 }

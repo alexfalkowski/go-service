@@ -60,12 +60,12 @@ func (a *rsaAlgo) Encrypt(msg string) (string, error) {
 }
 
 func (a *rsaAlgo) Decrypt(msg string) (string, error) {
-	d, err := base64.StdEncoding.DecodeString(msg)
+	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err
 	}
 
-	d, err = rsa.DecryptOAEP(sha512.New(), rand.Reader, a.privateKey, d, nil)
+	decoded, err = rsa.DecryptOAEP(sha512.New(), rand.Reader, a.privateKey, decoded, nil)
 
-	return string(d), err
+	return string(decoded), err
 }

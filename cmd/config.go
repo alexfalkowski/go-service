@@ -34,7 +34,7 @@ func (c *Config) Kind() string {
 
 // Decode for config.
 func (c *Config) Decode(data any) error {
-	d, err := c.rw.Read()
+	bts, err := c.rw.Read()
 	if err != nil {
 		return se.Prefix("config", err)
 	}
@@ -43,7 +43,7 @@ func (c *Config) Decode(data any) error {
 		return ErrNoEncoder
 	}
 
-	return se.Prefix("config", c.enc.Decode(bytes.NewReader(d), data))
+	return se.Prefix("config", c.enc.Decode(bytes.NewReader(bts), data))
 }
 
 // Write for config.

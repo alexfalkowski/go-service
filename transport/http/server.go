@@ -55,37 +55,37 @@ type Server struct {
 func NewServer(params ServerParams) (*Server, error) {
 	timeout := timeout(params.Config)
 
-	n := negroni.New()
-	n.Use(meta.NewHandler(params.UserAgent, params.Version))
+	neg := negroni.New()
+	neg.Use(meta.NewHandler(params.UserAgent, params.Version))
 
 	if params.Tracer != nil {
-		n.Use(tracer.NewHandler(params.Tracer))
+		neg.Use(tracer.NewHandler(params.Tracer))
 	}
 
 	if params.Logger != nil {
-		n.Use(logger.NewHandler(params.Logger))
+		neg.Use(logger.NewHandler(params.Logger))
 	}
 
 	if params.Meter != nil {
-		n.Use(metrics.NewHandler(params.Meter))
+		neg.Use(metrics.NewHandler(params.Meter))
 	}
 
 	for _, hd := range params.Handlers {
-		n.Use(hd)
+		neg.Use(hd)
 	}
 
 	if params.Verifier != nil {
-		n.Use(ht.NewHandler(params.Verifier))
+		neg.Use(ht.NewHandler(params.Verifier))
 	}
 
 	if params.Limiter != nil {
-		n.Use(hl.NewHandler(params.Limiter, params.Key))
+		neg.Use(hl.NewHandler(params.Limiter, params.Key))
 	}
 
-	n.UseHandler(gzhttp.GzipHandler(params.Mux))
+	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
 
-	s := &http.Server{
-		Handler:     n,
+	svr := &http.Server{
+		Handler:     neg,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
@@ -95,14 +95,16 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	sv, err := sh.NewServer(s, c)
+	serv, err := sh.NewServer(svr, c)
 	if err != nil {
 		return nil, errors.Prefix("http", err)
 	}
 
-	svr := server.NewServer("http", sv, params.Logger, params.Shutdowner)
+	server := &Server{
+		Server: server.NewServer("http", serv, params.Logger, params.Shutdowner),
+	}
 
-	return &Server{Server: svr}, nil
+	return server, nil
 }
 
 //nolint:nilnil
@@ -111,18 +113,18 @@ func config(cfg *Config) (*sh.Config, error) {
 		return nil, nil
 	}
 
-	c := &sh.Config{
+	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":8080"),
 	}
 
 	if !ct.IsEnabled(cfg.TLS) {
-		return c, nil
+		return config, nil
 	}
 
 	tls, err := ct.NewConfig(cfg.TLS)
-	c.TLS = tls
+	config.TLS = tls
 
-	return c, err
+	return config, err
 }
 
 func timeout(cfg *Config) time.Duration {

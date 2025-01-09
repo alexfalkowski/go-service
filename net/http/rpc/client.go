@@ -81,15 +81,15 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 		}
 	}()
 
-	b := pool.Get()
-	defer pool.Put(b)
+	buffer := pool.Get()
+	defer pool.Put(buffer)
 
 	if req != nil {
-		err = c.mediaType.Encoder.Encode(b, req)
+		err = c.mediaType.Encoder.Encode(buffer, req)
 		runtime.Must(err)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, b)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, buffer)
 	runtime.Must(err)
 
 	request.Header.Set(content.TypeKey, c.mediaType.Type)
@@ -99,21 +99,21 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 
 	defer response.Body.Close()
 
-	b.Reset()
+	buffer.Reset()
 
-	_, err = io.Copy(b, response.Body)
+	_, err = io.Copy(buffer, response.Body)
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
 	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
 	if media.IsText() {
-		return nil, status.Error(response.StatusCode, strings.TrimSpace(b.String()))
+		return nil, status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}
 
 	var rp Res
 	res = &rp
 
-	err = media.Encoder.Decode(b, res)
+	err = media.Encoder.Decode(buffer, res)
 	runtime.Must(err)
 
 	return res, nil

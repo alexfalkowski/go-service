@@ -131,14 +131,14 @@ func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
 		return meta.Blank()
 	}
 
-	_, t, err := header.ParseAuthorization(a)
+	_, value, err := header.ParseAuthorization(a)
 	if err != nil {
 		meta.WithAttribute(ctx, "authError", meta.Error(err))
 
 		return meta.Blank()
 	}
 
-	return meta.Ignored(t)
+	return meta.Ignored(value)
 }
 
 func extractGeolocation(ctx context.Context, req *http.Request) meta.Valuer {

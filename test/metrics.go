@@ -33,18 +33,18 @@ func NewPrometheusMeterProvider(lc fx.Lifecycle) metric.MeterProvider {
 }
 
 // NewMeterProvider for test.
-func NewMeterProvider(lc fx.Lifecycle, c *metrics.Config) metric.MeterProvider {
-	r, err := metrics.NewReader(c)
+func NewMeterProvider(lc fx.Lifecycle, config *metrics.Config) metric.MeterProvider {
+	r, err := metrics.NewReader(config)
 	runtime.Must(err)
 
-	p := metrics.MeterProviderParams{
+	params := metrics.MeterProviderParams{
 		Lifecycle:   lc,
-		Config:      c,
+		Config:      config,
 		Reader:      r,
 		Environment: Environment,
 		Version:     Version,
 		Name:        Name,
 	}
 
-	return metrics.NewMeterProvider(p)
+	return metrics.NewMeterProvider(params)
 }

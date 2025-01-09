@@ -49,15 +49,15 @@ type (
 
 // NewView from fs with patterns.
 func NewViews(params ViewsParams) *Views {
-	var t *template.Template
+	var tpl *template.Template
 
 	if params.FS == nil || params.Patterns == nil {
-		t = template.New("")
+		tpl = template.New("")
 	} else {
-		t = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
+		tpl = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
 	}
 
-	return &Views{template: t, fs: params.FS}
+	return &Views{template: tpl, fs: params.FS}
 }
 
 // NewRouter for mvc.
@@ -74,14 +74,14 @@ func (r *Router) Route(path string, controller Controller) {
 		ctx = hc.WithRequest(ctx, req)
 		ctx = hc.WithResponse(ctx, res)
 
-		v, m := controller(ctx)
+		view, model := controller(ctx)
 
-		if err, ok := m.(error); ok {
+		if err, ok := model.(error); ok {
 			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 		}
 
-		if err := r.views.template.ExecuteTemplate(res, string(v), m); err != nil {
+		if err := r.views.template.ExecuteTemplate(res, string(view), model); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		}
 	}
@@ -99,7 +99,7 @@ func (r *Router) Static(path, name string) {
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		b, err := fs.ReadFile(name)
+		bytes, err := fs.ReadFile(name)
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
@@ -107,7 +107,7 @@ func (r *Router) Static(path, name string) {
 			return
 		}
 
-		if _, err := res.Write(b); err != nil {
+		if _, err := res.Write(bytes); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 
 			return
