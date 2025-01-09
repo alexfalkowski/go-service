@@ -81,7 +81,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.
 
 // UnaryClientInterceptor for meta.
 func UnaryClientInterceptor(userAgent env.UserAgent) grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
@@ -94,13 +94,13 @@ func UnaryClientInterceptor(userAgent env.UserAgent) grpc.UnaryClientInterceptor
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
-		return invoker(ctx, fullMethod, req, resp, cc, opts...)
+		return invoker(ctx, fullMethod, req, resp, conn, opts...)
 	}
 }
 
 // StreamClientInterceptor for meta.
 func StreamClientInterceptor(userAgent env.UserAgent) grpc.StreamClientInterceptor {
-	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
@@ -113,7 +113,7 @@ func StreamClientInterceptor(userAgent env.UserAgent) grpc.StreamClientIntercept
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 
-		return streamer(ctx, desc, cc, fullMethod, opts...)
+		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}
 }
 

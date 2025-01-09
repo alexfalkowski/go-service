@@ -105,15 +105,15 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
-	ct := cont.NewFromMedia(response.Header.Get(content.TypeKey))
-	if ct.IsText() {
+	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
+	if media.IsText() {
 		return nil, status.Error(response.StatusCode, strings.TrimSpace(b.String()))
 	}
 
 	var rp Res
 	res = &rp
 
-	err = ct.Encoder.Decode(b, res)
+	err = media.Encoder.Decode(b, res)
 	runtime.Must(err)
 
 	return res, nil

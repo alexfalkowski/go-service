@@ -57,19 +57,19 @@ func (t *Media) IsText() bool {
 	return t.Subtype == "plain"
 }
 
-func newType(t ct.MediaType, err error, enc *encoding.Map) *Media {
+func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
 	if err != nil {
 		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
 	}
 
-	if t.Subtype == "plain" {
-		return &Media{Type: t.String(), Subtype: t.Subtype}
+	if media.Subtype == "plain" {
+		return &Media{Type: media.String(), Subtype: media.Subtype}
 	}
 
-	e := enc.Get(t.Subtype)
+	e := enc.Get(media.Subtype)
 	if e == nil {
 		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
 	}
 
-	return &Media{Type: t.String(), Subtype: t.Subtype, Encoder: e}
+	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
 }

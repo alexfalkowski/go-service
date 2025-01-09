@@ -26,7 +26,7 @@ func NewConfig(env env.Environment, config *Config) (*zap.Config, error) {
 		return nil, nil
 	}
 
-	l, err := zap.ParseAtomicLevel(config.Level)
+	level, err := zap.ParseAtomicLevel(config.Level)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func NewConfig(env env.Environment, config *Config) (*zap.Config, error) {
 		cfg = zap.NewProductionConfig()
 	}
 
-	cfg.Level = l
+	cfg.Level = level
 	cfg.EncoderConfig.EncodeTime = zapcore.TimeEncoder(func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		enc.AppendString(t.Format(time.RFC3339))
 	})

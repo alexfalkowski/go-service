@@ -94,9 +94,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, err
 	}
 
-	svr := server.NewServer("grpc", sv, params.Logger, params.Shutdowner)
+	srv := server.NewServer("grpc", sv, params.Logger, params.Shutdowner)
 
-	return &Server{srv: svr, server: s}, nil
+	return &Server{srv: srv, server: s}, nil
 }
 
 // Start the server.
@@ -114,7 +114,7 @@ func (s *Server) Server() *grpc.Server {
 	return s.server
 }
 
-func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version)}
 
 	if params.Tracer != nil {
@@ -125,8 +125,8 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
 	}
 
-	if m != nil {
-		uis = append(uis, m.UnaryInterceptor())
+	if server != nil {
+		uis = append(uis, server.UnaryInterceptor())
 	}
 
 	if params.Verifier != nil {
@@ -142,7 +142,7 @@ func unaryServerOption(params ServerParams, m *metrics.Server, interceptors ...g
 	return grpc.ChainUnaryInterceptor(uis...)
 }
 
-func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version)}
 
 	if params.Tracer != nil {
@@ -153,8 +153,8 @@ func streamServerOption(params ServerParams, m *metrics.Server, interceptors ...
 		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
 	}
 
-	if m != nil {
-		sis = append(sis, m.StreamInterceptor())
+	if server != nil {
+		sis = append(sis, server.StreamInterceptor())
 	}
 
 	if params.Verifier != nil {

@@ -9,10 +9,11 @@ import (
 
 // Transport for HTTP.
 func Transport(cfg *tls.Config) http.RoundTripper {
-	d := &net.Dialer{Timeout: time.Minute, KeepAlive: 30 * time.Second}
-	t := &http.Transport{
+	dialer := &net.Dialer{Timeout: time.Minute, KeepAlive: 30 * time.Second}
+
+	return &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
-		DialContext:           d.DialContext,
+		DialContext:           dialer.DialContext,
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
@@ -22,6 +23,4 @@ func Transport(cfg *tls.Config) http.RoundTripper {
 		MaxIdleConnsPerHost:   100,
 		TLSClientConfig:       cfg,
 	}
-
-	return t
 }

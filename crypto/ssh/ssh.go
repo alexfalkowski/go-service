@@ -13,22 +13,22 @@ import (
 
 // Generate key pair with ssh.
 func Generate() (string, string, error) {
-	pu, pr, err := ed25519.GenerateKey(rand.Reader)
+	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return "", "", err
 	}
 
-	ppr, err := ssh.MarshalPrivateKey(pr, "")
+	pri, err := ssh.MarshalPrivateKey(private, "")
 	if err != nil {
 		return "", "", err
 	}
 
-	pub, err := ssh.NewPublicKey(pu)
+	pub, err := ssh.NewPublicKey(public)
 	if err != nil {
 		return "", "", err
 	}
 
-	return string(ssh.MarshalAuthorizedKey(pub)), string(pem.EncodeToMemory(ppr)), nil
+	return string(ssh.MarshalAuthorizedKey(pub)), string(pem.EncodeToMemory(pri)), nil
 }
 
 // Algo for ssh.

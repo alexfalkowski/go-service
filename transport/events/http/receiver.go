@@ -24,16 +24,16 @@ func NewReceiver(mux *http.ServeMux, hook *hooks.Webhook) *Receiver {
 }
 
 // Register a fn under path.
-func (r *Receiver) Register(ctx context.Context, path string, fn ReceiverFunc) error {
+func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverFunc) error {
 	// Error is only returned with options.
-	p, _ := events.NewHTTP()
+	protocol, _ := events.NewHTTP()
 
 	var (
 		handler http.Handler
 		err     error
 	)
 
-	handler, err = events.NewHTTPReceiveHandler(ctx, p, fn)
+	handler, err = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
 	if err != nil {
 		return err
 	}

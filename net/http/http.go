@@ -27,22 +27,22 @@ type (
 
 // NewServer for HTTP.
 func NewServer(server *http.Server, cfg *Config) (*Server, error) {
-	s := &Server{server: server}
+	srv := &Server{server: server}
 
 	if cfg == nil {
-		return s, nil
+		return srv, nil
 	}
 
-	s.tls = cfg.TLS
+	srv.tls = cfg.TLS
 
 	l, err := sn.Listener(cfg.Address)
 	if err != nil {
-		return s, err
+		return srv, err
 	}
 
-	s.listener = l
+	srv.listener = l
 
-	return s, nil
+	return srv, nil
 }
 
 // Serve the underlying server.

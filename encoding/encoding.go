@@ -15,7 +15,7 @@ type Map struct {
 
 // NewMap for encoding.
 func NewMap() *Map {
-	m := &Map{
+	return &Map{
 		encoders: map[string]Encoder{
 			"json":     json.NewEncoder(),
 			"yaml":     yaml.NewEncoder(),
@@ -26,8 +26,6 @@ func NewMap() *Map {
 			"gob":      gob.NewEncoder(),
 		},
 	}
-
-	return m
 }
 
 // Register kind and encoder.

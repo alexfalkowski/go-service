@@ -97,14 +97,14 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 }
 
 // Stream for the server.
-func (s *Server) Stream(st grpc.ServerStream, opts metric.MeasurementOption) grpc.ServerStream {
+func (s *Server) Stream(stream grpc.ServerStream, opts metric.MeasurementOption) grpc.ServerStream {
 	return &serverStream{
 		opts:             opts,
 		received:         s.received,
 		sent:             s.sent,
 		handled:          s.handled,
 		handledHistogram: s.handledHistogram,
-		ServerStream:     st,
+		ServerStream:     stream,
 	}
 }
 
@@ -182,29 +182,29 @@ type Client struct {
 
 // UnaryInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
 func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
-			return invoker(ctx, fullMethod, req, resp, cc, opts...)
+			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
 		start := time.Now()
 		method := path.Base(fullMethod)
-		o := metric.WithAttributes(
+		measurement := metric.WithAttributes(
 			kindAttribute.String(string(unary)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
-		c.started.Add(ctx, 1, o)
-		c.sent.Add(ctx, 1, o)
+		c.started.Add(ctx, 1, measurement)
+		c.sent.Add(ctx, 1, measurement)
 
-		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
+		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 		if err == nil {
-			c.received.Add(ctx, 1, o)
+			c.received.Add(ctx, 1, measurement)
 		}
 
-		handle(ctx, c.handled, c.handledHistogram, o, status.Code(err), start)
+		handle(ctx, c.handled, c.handledHistogram, measurement, status.Code(err), start)
 
 		return err
 	}
@@ -212,40 +212,40 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 
 // StreamInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Streaming RPCs.
 func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
-	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
-			return streamer(ctx, desc, cc, fullMethod, opts...)
+			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
 		start := time.Now()
 		method := path.Base(fullMethod)
-		o := metric.WithAttributes(
+		measurement := metric.WithAttributes(
 			kindAttribute.String(string(stream)),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
-		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 		if err != nil {
-			handle(ctx, c.handled, c.handledHistogram, o, status.Code(err), start)
+			handle(ctx, c.handled, c.handledHistogram, measurement, status.Code(err), start)
 
 			return nil, err
 		}
 
-		return c.Stream(stream, o), nil
+		return c.Stream(stream, measurement), nil
 	}
 }
 
 // Stream fpr client.
-func (c *Client) Stream(st grpc.ClientStream, opts metric.MeasurementOption) grpc.ClientStream {
+func (c *Client) Stream(stream grpc.ClientStream, opts metric.MeasurementOption) grpc.ClientStream {
 	return &clientStream{
 		opts:             opts,
 		received:         c.received,
 		sent:             c.sent,
 		handled:          c.handled,
 		handledHistogram: c.handledHistogram,
-		ClientStream:     st,
+		ClientStream:     stream,
 	}
 }
 

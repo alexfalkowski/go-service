@@ -36,15 +36,15 @@ func NewJWT(kid KID, ed ed25519.Algo) *JWT {
 
 // Generate JWT token.
 func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) {
-	k := j.ed.PrivateKey()
-	t := time.Now()
+	key := j.ed.PrivateKey()
+	now := time.Now()
 
 	claims := &jwt.RegisteredClaims{
-		ExpiresAt: &jwt.NumericDate{Time: t.Add(exp)},
+		ExpiresAt: &jwt.NumericDate{Time: now.Add(exp)},
 		ID:        uuid.NewString(),
-		IssuedAt:  &jwt.NumericDate{Time: t},
+		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    iss,
-		NotBefore: &jwt.NumericDate{Time: t},
+		NotBefore: &jwt.NumericDate{Time: now},
 		Subject:   sub,
 		Audience:  []string{aud},
 	}
@@ -52,7 +52,7 @@ func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 	token.Header["kid"] = j.kid
 
-	return token.SignedString(k)
+	return token.SignedString(key)
 }
 
 // Verify JWT token.
