@@ -48,9 +48,9 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		semconv.DeploymentEnvironmentName(string(env)),
 	)
 
-	p := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
+	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
-	otel.SetTracerProvider(p)
+	otel.SetTracerProvider(provider)
 	otel.SetErrorHandler(&errorHandler{logger: logger})
 
 	lc.Append(fx.Hook{
@@ -58,14 +58,14 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 			return se.Prefix("tracer", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
-			_ = p.Shutdown(ctx)
+			_ = provider.Shutdown(ctx)
 			_ = exporter.Shutdown(ctx)
 
 			return nil
 		},
 	})
 
-	return p.Tracer(string(name)), nil
+	return provider.Tracer(string(name)), nil
 }
 
 type errorHandler struct {

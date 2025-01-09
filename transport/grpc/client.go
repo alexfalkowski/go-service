@@ -203,15 +203,15 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
-		to := t.MustParseDuration(os.retry.Timeout)
-		bo := t.MustParseDuration(os.retry.Backoff)
+		timeout := t.MustParseDuration(os.retry.Timeout)
+		backoff := t.MustParseDuration(os.retry.Backoff)
 
 		unary = append(unary,
 			ri.UnaryClientInterceptor(
 				ri.WithCodes(codes.Unavailable, codes.DataLoss),
 				ri.WithMax(os.retry.Attempts),
-				ri.WithBackoff(ri.BackoffLinear(bo)),
-				ri.WithPerRetryTimeout(to),
+				ri.WithBackoff(ri.BackoffLinear(backoff)),
+				ri.WithPerRetryTimeout(timeout),
 			),
 		)
 	}

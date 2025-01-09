@@ -25,7 +25,7 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	d := time.MustParseDuration(r.cfg.Timeout)
+	timeout := time.MustParseDuration(r.cfg.Timeout)
 
 	var (
 		res *http.Response
@@ -34,7 +34,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	ctx := req.Context()
 	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, d)
+		tctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
 		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx))

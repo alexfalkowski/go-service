@@ -67,7 +67,7 @@ func NewRouter(mux *http.ServeMux, views *Views) *Router {
 
 // Route the path with controller for mvc.
 func (r *Router) Route(path string, controller Controller) {
-	h := func(res http.ResponseWriter, req *http.Request) {
+	handler := func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 		ctx := req.Context()
@@ -86,7 +86,7 @@ func (r *Router) Route(path string, controller Controller) {
 		}
 	}
 
-	r.mux.HandleFunc(path, h)
+	r.mux.HandleFunc(path, handler)
 }
 
 // Static file name to be served via path.
@@ -96,7 +96,7 @@ func (r *Router) Static(path, name string) {
 		return
 	}
 
-	h := func(res http.ResponseWriter, req *http.Request) {
+	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
 		b, err := fs.ReadFile(name)
@@ -114,5 +114,5 @@ func (r *Router) Static(path, name string) {
 		}
 	}
 
-	r.mux.HandleFunc(path, h)
+	r.mux.HandleFunc(path, handler)
 }

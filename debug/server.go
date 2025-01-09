@@ -49,9 +49,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, errors.Prefix("debug", err)
 	}
 
-	svr := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
+	srv := server.NewServer("debug", sv, params.Logger, params.Shutdowner)
 
-	return &Server{Server: svr, mux: mux}, nil
+	return &Server{Server: srv, mux: mux}, nil
 }
 
 // ServeMux for debug.

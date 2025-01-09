@@ -49,7 +49,7 @@ func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) htt
 }
 
 func (c *Content) handler(prefix string, handler func(ctx context.Context) (any, error)) http.HandlerFunc {
-	h := func(res http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
 		ctx = hc.WithResponse(ctx, res)
@@ -61,17 +61,15 @@ func (c *Content) handler(prefix string, handler func(ctx context.Context) (any,
 			}
 		}()
 
-		ct := c.NewFromRequest(req)
+		media := c.NewFromRequest(req)
 
-		ctx = hc.WithEncoder(ctx, ct.Encoder)
-		res.Header().Add(TypeKey, ct.Type)
+		ctx = hc.WithEncoder(ctx, media.Encoder)
+		res.Header().Add(TypeKey, media.Type)
 
 		data, err := handler(ctx)
 		runtime.Must(err)
 
-		err = ct.Encoder.Encode(res, data)
+		err = media.Encoder.Encode(res, data)
 		runtime.Must(err)
 	}
-
-	return h
 }

@@ -20,19 +20,19 @@ func NewPaseto(ed ed25519.Algo) *Paseto {
 
 // Generate Paseto token.
 func (p *Paseto) Generate(sub, aud, iss string, exp time.Duration) (string, error) {
-	k := p.ed.PrivateKey()
-	t := time.Now()
+	key := p.ed.PrivateKey()
+	now := time.Now()
 	token := paseto.NewToken()
 
 	token.SetJti(uuid.NewString())
-	token.SetIssuedAt(t)
-	token.SetNotBefore(t)
-	token.SetExpiration(t.Add(exp))
+	token.SetIssuedAt(now)
+	token.SetNotBefore(now)
+	token.SetExpiration(now.Add(exp))
 	token.SetIssuer(iss)
 	token.SetSubject(sub)
 	token.SetAudience(aud)
 
-	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(k)
+	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(key)
 	if err != nil {
 		return "", err
 	}

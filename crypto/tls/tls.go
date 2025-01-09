@@ -6,31 +6,31 @@ import (
 
 // NewConfig for tls.
 func NewConfig(cfg *Config) (*tls.Config, error) {
-	c := &tls.Config{
+	config := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 
 	if !IsEnabled(cfg) || !cfg.HasKeyPair() {
-		return c, nil
+		return config, nil
 	}
 
-	dc, err := cfg.GetCert()
+	cert, err := cfg.GetCert()
 	if err != nil {
-		return c, err
+		return config, err
 	}
 
-	dk, err := cfg.GetKey()
+	key, err := cfg.GetKey()
 	if err != nil {
-		return c, err
+		return config, err
 	}
 
-	pair, err := tls.X509KeyPair([]byte(dc), []byte(dk))
+	pair, err := tls.X509KeyPair([]byte(cert), []byte(key))
 	if err != nil {
-		return c, err
+		return config, err
 	}
 
-	c.Certificates = []tls.Certificate{pair}
+	config.Certificates = []tls.Certificate{pair}
 
-	return c, nil
+	return config, nil
 }

@@ -13,17 +13,17 @@ import (
 
 // Generate key pair with Ed25519.
 func Generate() (string, string, error) {
-	pu, pr, err := ed25519.GenerateKey(rand.Reader)
+	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return "", "", err
 	}
 
-	mpu, err := x509.MarshalPKIXPublicKey(pu)
+	mpu, err := x509.MarshalPKIXPublicKey(public)
 	if err != nil {
 		return "", "", err
 	}
 
-	mpr, err := x509.MarshalPKCS8PrivateKey(pr)
+	mpr, err := x509.MarshalPKCS8PrivateKey(private)
 	if err != nil {
 		return "", "", err
 	}

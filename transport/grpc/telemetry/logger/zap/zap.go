@@ -76,14 +76,14 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor for zap.
 func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {
-			return invoker(ctx, fullMethod, req, resp, cc, opts...)
+			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
 		start := time.Now()
-		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
+		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 		fields := []zapcore.Field{
 			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
@@ -95,7 +95,7 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(cc.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
+		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return err
 	}
@@ -103,14 +103,14 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor for zap.
 func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
-	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {
-			return streamer(ctx, desc, cc, fullMethod, opts...)
+			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
 		start := time.Now()
-		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 		fields := []zapcore.Field{
 			zap.Stringer(tm.DurationKey, time.Since(start)),
 			zap.String(tm.ServiceKey, service),
@@ -122,7 +122,7 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		code := status.Code(err)
 		fields = append(fields, zap.Any(tm.CodeKey, code))
 
-		tz.LogWithFunc(message(cc.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
+		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 
 		return stream, err
 	}

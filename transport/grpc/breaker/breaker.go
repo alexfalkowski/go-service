@@ -14,9 +14,9 @@ import (
 func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 	cb := breaker.NewCircuitBreaker(breaker.Settings{})
 
-	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		operation := func() (any, error) {
-			return nil, invoker(ctx, fullMethod, req, resp, cc, opts...)
+			return nil, invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
 		_, err := cb.Execute(operation)

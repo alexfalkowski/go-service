@@ -63,17 +63,17 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Body = io.NopCloser(bytes.NewReader(payload))
 
-	ts := time.Now()
+	now := time.Now()
 	id := uuid.New().String()
 
-	signature, err := r.hook.Sign(id, ts, payload)
+	signature, err := r.hook.Sign(id, now, payload)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add(hooks.HeaderWebhookID, id)
 	req.Header.Add(hooks.HeaderWebhookSignature, signature)
-	req.Header.Add(hooks.HeaderWebhookTimestamp, strconv.FormatInt(ts.Unix(), 10))
+	req.Header.Add(hooks.HeaderWebhookTimestamp, strconv.FormatInt(now.Unix(), 10))
 
 	return r.RoundTripper.RoundTrip(req)
 }

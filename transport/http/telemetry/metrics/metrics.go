@@ -21,13 +21,11 @@ func NewHandler(meter metric.Meter) *Handler {
 	handledHist := metrics.MustFloat64Histogram(meter, "http_server_handling_seconds",
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.")
 
-	h := &Handler{
+	return &Handler{
 		started: started, received: received,
 		sent: sent, handled: handled,
 		handledHist: handledHist,
 	}
-
-	return h
 }
 
 // Handler for metrics.
@@ -59,13 +57,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	h.started.Add(ctx, 1, opts)
 	h.received.Add(ctx, 1, opts)
 
-	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
+	metrics := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
-	if m.Code >= 200 && m.Code <= 299 {
+	if metrics.Code >= 200 && metrics.Code <= 299 {
 		h.sent.Add(ctx, 1, opts)
 	}
 
-	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(m.Code))))
+	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(metrics.Code))))
 	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 }
 

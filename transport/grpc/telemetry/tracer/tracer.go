@@ -84,10 +84,10 @@ func StreamServerInterceptor(t trace.Tracer) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor for tracer.
 func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, fullMethod string, req, resp any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
-			return invoker(ctx, fullMethod, req, resp, cc, opts...)
+			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
 		method := path.Base(fullMethod)
@@ -97,13 +97,13 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := t.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
-		err := invoker(ctx, fullMethod, req, resp, cc, opts...)
+		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
@@ -115,10 +115,10 @@ func UnaryClientInterceptor(t trace.Tracer) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor for tracer.
 func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
-	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
-			return streamer(ctx, desc, cc, fullMethod, opts...)
+			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
 		method := path.Base(fullMethod)
@@ -128,13 +128,13 @@ func StreamClientInterceptor(t trace.Tracer) grpc.StreamClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := t.Start(ctx, operationName(cc.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := t.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 		defer span.End()
 
 		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
-		stream, err := streamer(ctx, desc, cc, fullMethod, opts...)
+		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
