@@ -2,6 +2,7 @@
 package http_test
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,7 +17,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		mux := http.NewServeMux()
@@ -51,10 +51,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := test.Timeout()
-			defer cancel()
-
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
@@ -81,7 +78,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	})
 }
 
-//nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		mux := http.NewServeMux()
@@ -119,10 +115,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			client := cl.NewHTTP()
 
-			ctx, cancel := test.Timeout()
-			defer cancel()
-
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)
+			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)
