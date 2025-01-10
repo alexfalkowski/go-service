@@ -42,6 +42,19 @@ func TestGenerate(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have an missing configuration", t, func() {
+		token := token.NewToken(nil, nil, nil)
+
+		Convey("When I try to generate", func() {
+			_, token, err := token.Generate(context.Background())
+
+			Convey("Then I should have no token", func() {
+				So(token, ShouldBeNil)
+				So(err, ShouldBeNil)
+			})
+		})
+	})
 }
 
 func TestVerify(t *testing.T) {
@@ -79,6 +92,18 @@ func TestVerify(t *testing.T) {
 
 	Convey("Given I have an invalid configurionat", t, func() {
 		token := token.NewToken(test.NewToken("none"), nil, nil)
+
+		Convey("When I try to verify", func() {
+			_, err := token.Verify(context.Background(), []byte{})
+
+			Convey("Then I should have no error", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given I have an missing configurionat", t, func() {
+		token := token.NewToken(nil, nil, nil)
 
 		Convey("When I try to verify", func() {
 			_, err := token.Verify(context.Background(), []byte{})
