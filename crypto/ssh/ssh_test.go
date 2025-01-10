@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package ssh_test
 
 import (

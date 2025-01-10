@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package redis_test
 
 import (

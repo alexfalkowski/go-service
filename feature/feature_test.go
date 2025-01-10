@@ -21,13 +21,13 @@ func TestNoop(t *testing.T) {
 			MetricProvider: test.NewPrometheusMeterProvider(lc),
 		})
 
-		c := feature.NewClient(test.Name)
+		client := feature.NewClient(test.Name)
 
 		lc.RequireStart()
 
 		Convey("When I get a flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}
-			v, err := c.BooleanValue(context.Background(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
+			v, err := client.BooleanValue(context.Background(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have missing flag", func() {

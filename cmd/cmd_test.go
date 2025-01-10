@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package cmd_test
 
 import (

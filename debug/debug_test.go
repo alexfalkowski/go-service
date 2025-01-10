@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package debug_test
 
 import (

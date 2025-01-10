@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package gob_test
 
 import (

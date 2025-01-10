@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package ed25519_test
 
 import (

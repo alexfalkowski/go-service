@@ -4,6 +4,22 @@ issues:
 linters-settings:
   lll:
     line-length: 180
+  varnamelen:
+    ignore-names:
+      - k
+      - v
+      - w
+      - i
+      - r
+      - fn
+      - ok
+      - lc
+      - db
+      - id
+      - os
+      - md
+      - fs
+      - sh
 linters:
   enable-all: true
   disable:
@@ -19,6 +35,5 @@ linters:
     - ireturn
     - mnd
     - paralleltest
-    - varnamelen
     - wrapcheck
     - tagliatelle
