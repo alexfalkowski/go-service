@@ -9,6 +9,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
+//nolint:funlen
 func TestValidAlgo(t *testing.T) {
 	Convey("When I generate keys", t, func() {
 		pub, pri, err := ssh.Generate()
@@ -43,6 +44,39 @@ func TestValidAlgo(t *testing.T) {
 			Convey("Then I should compared the data", func() {
 				So(algo.Verify(e, "test"), ShouldBeNil)
 			})
+		})
+	})
+
+	Convey("When I have an invalid public key", t, func() {
+		_, err := ssh.NewAlgo(&ssh.Config{
+			Public:  test.Path("secrets/redis"),
+			Private: test.Path("secrets/ssh_private"),
+		})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I have an invalid private key", t, func() {
+		_, err := ssh.NewAlgo(&ssh.Config{
+			Public:  test.Path("secrets/ssh_public"),
+			Private: test.Path("secrets/redis"),
+		})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I have an missing private key", t, func() {
+		_, err := ssh.NewAlgo(&ssh.Config{
+			Public:  test.Path("secrets/ssh_public"),
+			Private: test.Path("secrets/none"),
+		})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
 		})
 	})
 }

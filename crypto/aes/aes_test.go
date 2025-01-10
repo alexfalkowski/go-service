@@ -8,6 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
+//nolint:funlen
 func TestValidAlgo(t *testing.T) {
 	Convey("When I generate", t, func() {
 		key, err := aes.Generate()
@@ -18,14 +19,25 @@ func TestValidAlgo(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have generated a key", t, func() {
-		Convey("When I create an algo", func() {
-			algo, err := aes.NewAlgo(test.NewAES())
+	Convey("Given I have an algo with invalid key", t, func() {
+		algo, err := aes.NewAlgo(&aes.Config{Key: test.Path("secrets/hooks")})
+		So(err, ShouldBeNil)
 
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-				So(algo, ShouldNotBeNil)
+		Convey("When I encrypt data", func() {
+			_, err := algo.Encrypt("test")
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
+		})
+	})
+
+	Convey("When I create an algo", t, func() {
+		algo, err := aes.NewAlgo(test.NewAES())
+
+		Convey("Then I should not have an error", func() {
+			So(err, ShouldBeNil)
+			So(algo, ShouldNotBeNil)
 		})
 	})
 

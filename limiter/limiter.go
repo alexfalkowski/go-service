@@ -37,10 +37,8 @@ func New(cfg *Config) (limiter.Store, KeyFunc, error) {
 		return nil, nil, ErrMissingKey
 	}
 
-	store, err := memorystore.New(&memorystore.Config{Tokens: cfg.Tokens, Interval: st.MustParseDuration(cfg.Interval)})
-	if err != nil {
-		return nil, nil, err
-	}
+	// Memory store does not return an error.
+	store, _ := memorystore.New(&memorystore.Config{Tokens: cfg.Tokens, Interval: st.MustParseDuration(cfg.Interval)})
 
 	return store, k, nil
 }
