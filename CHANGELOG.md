@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.360.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.360.0) - 2025-01-10
+
+- [`f79ca59`](https://github.com/alexfalkowski/go-service/commit/f79ca591f49c954e0325f5a7ab4db7815c038472) feat(debug): ignore errors (#1138)
+- [`c697caf`](https://github.com/alexfalkowski/go-service/commit/c697cafdcb637ae812fb16e239a96a9e9a4a2f6e) test(crypto): add missing (#1136)
+- [`c2a44a9`](https://github.com/alexfalkowski/go-service/commit/c2a44a95eddeb4061d06ec6f6c72f6f23a91ac9b) test(hooks): add missing (#1135)
+- [`57ece9b`](https://github.com/alexfalkowski/go-service/commit/57ece9b0c08f5298ff234ad43b51d236e67d95b1) docs(diagrams): update with make diagrams (#1134)
+- [`b763992`](https://github.com/alexfalkowski/go-service/commit/b76399280a5c9a6aa10e9662f4bce9e81bb5e0d3) test(all): add missing (#1133)
+- [`a86a8de`](https://github.com/alexfalkowski/go-service/commit/a86a8de41201061e2e0a29ccfbdf30179de2db07) test(varnamelen): add more meaningful variable names (#1132)
+- [`0cbc569`](https://github.com/alexfalkowski/go-service/commit/0cbc569286bc11f554dc29eb530d7fcc3ad0a35f) test(gochecknoinits): remove exclude (#1131)
+- [`91814be`](https://github.com/alexfalkowski/go-service/commit/91814beca4a847980fd2565c45f743df49ad1231) build(fatcontext): remove exclude (#1130)
+- [`d337cd3`](https://github.com/alexfalkowski/go-service/commit/d337cd3ce4cd41a155ac43714255cb28bd37c577) test(varnamelen): remove exclude (#1129)
+
 ## [v1.359.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.359.0) - 2025-01-09
 
 - [`70460f0`](https://github.com/alexfalkowski/go-service/commit/70460f0c859e0ec014ab38a451bbc18a6b1c641c) feat(varnamelen): add more meaningful variable names (#1128)
