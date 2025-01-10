@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package rsa_test
 
 import (
@@ -22,25 +21,25 @@ func TestValidAlgo(t *testing.T) {
 
 	Convey("Given I have generated a key pair", t, func() {
 		Convey("When I create an algo", func() {
-			a, err := rsa.NewAlgo(test.NewRSA())
+			algo, err := rsa.NewAlgo(test.NewRSA())
 
 			Convey("Then I should not have an error", func() {
 				So(err, ShouldBeNil)
-				So(a, ShouldNotBeNil)
+				So(algo, ShouldNotBeNil)
 			})
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := rsa.NewAlgo(test.NewRSA())
+		algo, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
+			e, err := algo.Encrypt("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
-				d, err := a.Decrypt(e)
+				d, err := algo.Decrypt(e)
 				So(err, ShouldBeNil)
 
 				So(d, ShouldEqual, "test")
@@ -49,15 +48,15 @@ func TestValidAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have a missing algo", t, func() {
-		a, err := rsa.NewAlgo(nil)
+		algo, err := rsa.NewAlgo(nil)
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
+			e, err := algo.Encrypt("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
-				d, err := a.Decrypt(e)
+				d, err := algo.Decrypt(e)
 				So(err, ShouldBeNil)
 
 				So(d, ShouldEqual, "test")
@@ -68,37 +67,37 @@ func TestValidAlgo(t *testing.T) {
 
 func TestInvalidAlgo(t *testing.T) {
 	Convey("When I create an invalid algo", t, func() {
-		a, err := rsa.NewAlgo(&rsa.Config{})
+		algo, err := rsa.NewAlgo(&rsa.Config{})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
-			So(a, ShouldBeNil)
+			So(algo, ShouldBeNil)
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := rsa.NewAlgo(test.NewRSA())
+		algo, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			e, err := a.Encrypt("test")
+			enc, err := algo.Encrypt("test")
 			So(err, ShouldBeNil)
 
-			e += "wha"
+			enc += "wha"
 
 			Convey("Then I should have an error", func() {
-				_, err := a.Decrypt(e)
+				_, err := algo.Decrypt(enc)
 				So(err, ShouldBeError)
 			})
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := rsa.NewAlgo(test.NewRSA())
+		algo, err := rsa.NewAlgo(test.NewRSA())
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
-			_, err := a.Decrypt("test")
+			_, err := algo.Decrypt("test")
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)

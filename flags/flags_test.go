@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package flags_test
 
 import (
@@ -13,20 +12,20 @@ import (
 func TestFlags(t *testing.T) {
 	Convey("Given I have a var", t, func() {
 		name := string(test.Name)
-		c := &cobra.Command{
+		command := &cobra.Command{
 			Use: name, Short: name, Long: name,
 			Version: string(test.Version),
 		}
-		b := flags.Bool()
-		s := flags.String()
+		boolFlag := flags.Bool()
+		stringFlag := flags.String()
 
 		Convey("When I add it to the command", func() {
-			flags.BoolVar(c, b, "bool", "y", false, "test")
-			flags.StringVar(c, s, "string", "z", "", "test")
+			flags.BoolVar(command, boolFlag, "bool", "y", false, "test")
+			flags.StringVar(command, stringFlag, "string", "z", "", "test")
 
 			Convey("Then I should unset flags", func() {
-				So(flags.IsBoolSet(b), ShouldBeFalse)
-				So(flags.IsStringSet(s), ShouldBeFalse)
+				So(flags.IsBoolSet(boolFlag), ShouldBeFalse)
+				So(flags.IsStringSet(stringFlag), ShouldBeFalse)
 			})
 		})
 	})

@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package yaml_test
 
 import (
@@ -13,18 +12,18 @@ import (
 
 func TestEncoder(t *testing.T) {
 	Convey("Given I have YAML encoder", t, func() {
-		e := yaml.NewEncoder()
+		encoder := yaml.NewEncoder()
 
-		b := test.Pool.Get()
-		defer test.Pool.Put(b)
+		bytes := test.Pool.Get()
+		defer test.Pool.Put(bytes)
 
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I encode the YAML", func() {
-			err := e.Encode(b, msg)
+			err := encoder.Encode(bytes, msg)
 			So(err, ShouldBeNil)
 
-			s := strings.TrimSpace(b.String())
+			s := strings.TrimSpace(bytes.String())
 
 			Convey("Then I should have valid YAML", func() {
 				So(s, ShouldEqual, "test: test")
@@ -33,12 +32,12 @@ func TestEncoder(t *testing.T) {
 	})
 
 	Convey("Given I have YAML encoder", t, func() {
-		e := yaml.NewEncoder()
+		encoder := yaml.NewEncoder()
 
 		Convey("When I decode the YAML", func() {
 			var msg map[string]string
 
-			err := e.Decode(bytes.NewReader([]byte("test: test")), &msg)
+			err := encoder.Decode(bytes.NewReader([]byte("test: test")), &msg)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid map", func() {

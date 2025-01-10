@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package grpc_test
 
 import (
@@ -16,14 +15,14 @@ import (
 
 func TestServer(t *testing.T) {
 	Convey("Given I have invalid creds", t, func() {
-		c := &grpc.Config{
+		config := &grpc.Config{
 			Config: &server.Config{
 				TLS: &tls.Config{Cert: "bob", Key: "bob"},
 			},
 		}
 
 		Convey("When I create a server", func() {
-			_, err := grpc.NewServer(grpc.ServerParams{Config: c})
+			_, err := grpc.NewServer(grpc.ServerParams{Config: config})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
