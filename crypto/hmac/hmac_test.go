@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package hmac_test
 
 import (
@@ -22,39 +21,39 @@ func TestValidAlgo(t *testing.T) {
 
 	Convey("Given I have generated a key", t, func() {
 		Convey("When I create an algo", func() {
-			a, err := hmac.NewAlgo(test.NewHMAC())
+			algo, err := hmac.NewAlgo(test.NewHMAC())
 
 			Convey("Then I should not have an error", func() {
 				So(err, ShouldBeNil)
-				So(a, ShouldNotBeNil)
+				So(algo, ShouldNotBeNil)
 			})
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := hmac.NewAlgo(test.NewHMAC())
+		algo, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, err := a.Sign("test")
+			e, err := algo.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should compared the data", func() {
-				So(a.Verify(e, "test"), ShouldBeNil)
+				So(algo.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
 
 	Convey("Given I have a missing algo", t, func() {
-		a, err := hmac.NewAlgo(nil)
+		algo, err := hmac.NewAlgo(nil)
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, err := a.Sign("test")
+			e, err := algo.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should compared the data", func() {
-				So(a.Verify(e, "test"), ShouldBeNil)
+				So(algo.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
@@ -62,31 +61,31 @@ func TestValidAlgo(t *testing.T) {
 
 func TestInvalidAlgo(t *testing.T) {
 	Convey("Given I have an algo", t, func() {
-		a, err := hmac.NewAlgo(test.NewHMAC())
+		algo, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, err := a.Sign("test")
+			sign, err := algo.Sign("test")
 			So(err, ShouldBeNil)
 
-			e += "wha"
+			sign += "wha"
 
 			Convey("Then I should have an error", func() {
-				So(a.Verify(e, "test"), ShouldBeError)
+				So(algo.Verify(sign, "test"), ShouldBeError)
 			})
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := hmac.NewAlgo(test.NewHMAC())
+		algo, err := hmac.NewAlgo(test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {
-			e, err := a.Sign("test")
+			e, err := algo.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
+				So(algo.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})

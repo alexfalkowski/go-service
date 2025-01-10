@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package ed25519_test
 
 import (
@@ -22,27 +21,27 @@ func TestValidAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := ed25519.NewAlgo(test.NewEd25519())
+		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, _ := a.Sign("test")
+			e, _ := algo.Sign("test")
 
 			Convey("Then I should compared the data", func() {
-				So(a.Verify(e, "test"), ShouldBeNil)
+				So(algo.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
 
 	Convey("Given I have a missing algo", t, func() {
-		a, err := ed25519.NewAlgo(nil)
+		algo, err := ed25519.NewAlgo(nil)
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, _ := a.Sign("test")
+			e, _ := algo.Sign("test")
 
 			Convey("Then I should compared the data", func() {
-				So(a.Verify(e, "test"), ShouldBeNil)
+				So(algo.Verify(e, "test"), ShouldBeNil)
 			})
 		})
 	})
@@ -58,28 +57,28 @@ func TestInvalidAlgo(t *testing.T) {
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := ed25519.NewAlgo(test.NewEd25519())
+		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, _ := a.Sign("test")
+			e, _ := algo.Sign("test")
 			e += "wha"
 
 			Convey("Then I should have an error", func() {
-				So(a.Verify(e, "test"), ShouldBeError)
+				So(algo.Verify(e, "test"), ShouldBeError)
 			})
 		})
 	})
 
 	Convey("Given I have an algo", t, func() {
-		a, err := ed25519.NewAlgo(test.NewEd25519())
+		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {
-			e, _ := a.Sign("test")
+			e, _ := algo.Sign("test")
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(a.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
+				So(algo.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})

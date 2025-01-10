@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package compress_test
 
 import (
@@ -9,29 +8,29 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	for _, k := range []string{"zstd", "s2", "snappy", "none"} {
+	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
 		Convey("Given I have map", t, func() {
 			Convey("When I create compressor", func() {
-				m := test.Compressor.Get(k)
+				cmp := test.Compressor.Get(kind)
 
 				Convey("Then I should have valid compressor", func() {
-					So(m, ShouldNotBeNil)
+					So(cmp, ShouldNotBeNil)
 				})
 			})
 		})
 
 		Convey("Given I have create a compressor", t, func() {
-			m := test.Compressor.Get(k)
+			cmp := test.Compressor.Get(kind)
 
 			Convey("When I compress the data", func() {
-				s := []byte("hello")
-				d := m.Compress(s)
+				data := []byte("hello")
+				d := cmp.Compress(data)
 
 				Convey("Then I should have the same decompressed data", func() {
-					ns, err := m.Decompress(d)
+					ns, err := cmp.Decompress(d)
 					So(err, ShouldBeNil)
 
-					So(ns, ShouldEqual, s)
+					So(ns, ShouldEqual, data)
 				})
 			})
 		})
@@ -40,26 +39,26 @@ func TestMap(t *testing.T) {
 	for _, k := range []string{"test", "bob"} {
 		Convey("Given I have map", t, func() {
 			Convey("When I create compressor", func() {
-				m := test.Compressor.Get(k)
+				cmp := test.Compressor.Get(k)
 
 				Convey("Then I should have none", func() {
-					So(m, ShouldNotBeNil)
+					So(cmp, ShouldNotBeNil)
 				})
 			})
 		})
 
 		Convey("Given I have create a compressor", t, func() {
-			m := test.Compressor.Get(k)
+			cmp := test.Compressor.Get(k)
 
 			Convey("When I compress the data", func() {
-				s := []byte("hello")
-				d := m.Compress(s)
+				data := []byte("hello")
+				d := cmp.Compress(data)
 
 				Convey("Then I should have the same decompressed data", func() {
-					ns, err := m.Decompress(d)
+					ns, err := cmp.Decompress(d)
 					So(err, ShouldBeNil)
 
-					So(ns, ShouldEqual, s)
+					So(ns, ShouldEqual, data)
 				})
 			})
 		})
