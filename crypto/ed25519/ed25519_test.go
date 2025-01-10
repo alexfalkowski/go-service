@@ -82,4 +82,26 @@ func TestInvalidAlgo(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("When I create an algo with an invalid public key", t, func() {
+		_, err := ed25519.NewAlgo(&ed25519.Config{
+			Public:  test.Path("secrets/rsa_public"),
+			Private: test.Path("secrets/ed25519_private"),
+		})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I create an algo with an invalid private key", t, func() {
+		_, err := ed25519.NewAlgo(&ed25519.Config{
+			Public:  test.Path("secrets/ed25519_public"),
+			Private: test.Path("secrets/rsa_private"),
+		})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
 }
