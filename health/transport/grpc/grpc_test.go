@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+//nolint:gochecknoinits
 func init() {
 	tracer.Register()
 	tm.RegisterKeys()

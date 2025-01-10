@@ -21,6 +21,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//nolint:gochecknoinits
 func init() {
 	tm.RegisterKeys()
 }
