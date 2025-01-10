@@ -29,7 +29,6 @@ linters:
     - bodyclose
     - depguard
     - exhaustruct
-    - fatcontext
     - forcetypeassert
     - gochecknoglobals
     - ireturn
