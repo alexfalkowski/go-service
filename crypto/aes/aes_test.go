@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package aes_test
 
 import (

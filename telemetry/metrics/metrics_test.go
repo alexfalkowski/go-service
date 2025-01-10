@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package metrics_test
 
 import (

@@ -12,14 +12,14 @@ type tuple [2]string
 func TestSplitFlag(t *testing.T) {
 	tuples := []tuple{{"file", "file.yaml"}, {"file", "file.test.yaml"}, {"file", "test/.config/existing.client.yaml"}}
 
-	for _, tu := range tuples {
+	for _, tuple := range tuples {
 		Convey("Given I have a flag", t, func() {
 			Convey("When I split the flag", func() {
-				k, l := cmd.SplitFlag(tu[0] + ":" + tu[1])
+				k, l := cmd.SplitFlag(tuple[0] + ":" + tuple[1])
 
 				Convey("Then I should have a valid split", func() {
-					So(k, ShouldEqual, tu[0])
-					So(l, ShouldEqual, tu[1])
+					So(k, ShouldEqual, tuple[0])
+					So(l, ShouldEqual, tuple[1])
 				})
 			})
 		})

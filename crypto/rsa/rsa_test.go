@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package rsa_test
 
 import (

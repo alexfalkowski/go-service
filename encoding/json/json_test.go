@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package json_test
 
 import (

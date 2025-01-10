@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package toml_test
 
 import (
