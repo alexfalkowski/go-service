@@ -25,7 +25,6 @@ linters:
   disable:
     - exportloopref
     - tagalign
-    - gochecknoinits
     - bodyclose
     - depguard
     - exhaustruct

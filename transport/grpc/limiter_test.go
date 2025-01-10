@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//nolint:gochecknoinits
 func init() {
 	meta.RegisterKeys()
 }

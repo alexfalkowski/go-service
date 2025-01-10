@@ -11,6 +11,7 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+//nolint:gochecknoinits
 func init() {
 	tracer.Register()
 }
