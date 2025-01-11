@@ -209,7 +209,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary,
 			ri.UnaryClientInterceptor(
 				ri.WithCodes(codes.Unavailable, codes.DataLoss),
-				ri.WithMax(os.retry.Attempts),
+				ri.WithMax(uint(os.retry.Attempts)),
 				ri.WithBackoff(ri.BackoffLinear(backoff)),
 				ri.WithPerRetryTimeout(timeout),
 			),

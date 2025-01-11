@@ -1,13 +1,16 @@
 package retry
 
 import (
+	"context"
+
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/avast/retry-go/v3"
+	"github.com/sethvargo/go-retry"
 )
 
 // Try the function.
-func Try(fn retry.RetryableFunc, cfg *Config) error {
-	d := time.MustParseDuration(cfg.Backoff)
+func Try(ctx context.Context, fn retry.RetryFunc, cfg *Config) error {
+	back := retry.NewConstant(time.MustParseDuration(cfg.Backoff))
+	back = retry.WithMaxRetries(cfg.Attempts, back)
 
-	return retry.Do(fn, retry.Attempts(cfg.Attempts), retry.Delay(d))
+	return retry.Do(ctx, back, fn)
 }
