@@ -7,7 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/time"
-	rth "github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // ErrInvalidStatusCode for http retry.
@@ -33,12 +33,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	)
 
 	ctx := req.Context()
-	operation := func() error {
-		tctx, cancel := context.WithTimeout(ctx, timeout)
+	operation := func(ctx context.Context) error {
+		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		res, err = r.RoundTripper.RoundTrip(req.WithContext(tctx))
-		ok, perr := rth.ErrorPropagatedRetryPolicy(tctx, res, err)
+		res, err = r.RoundTripper.RoundTrip(req.WithContext(ctx))
+		ok, perr := retryablehttp.ErrorPropagatedRetryPolicy(ctx, res, err)
 
 		if ok {
 			if perr != nil {
@@ -53,7 +53,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil
 	}
 
-	_ = retry.Try(operation, r.cfg)
+	_ = retry.Try(ctx, operation, r.cfg)
 
 	return res, err
 }

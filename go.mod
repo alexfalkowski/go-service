@@ -8,7 +8,6 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.0
 	github.com/alexfalkowski/go-health v1.20.0
 	github.com/arl/statsviz v0.6.0
-	github.com/avast/retry-go/v3 v3.1.1
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.0
 	github.com/cloudevents/sdk-go/v2 v2.15.2
@@ -35,6 +34,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/sethvargo/go-limiter v1.0.0
+	github.com/sethvargo/go-retry v0.3.0
 	github.com/shirou/gopsutil/v4 v4.24.12
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
