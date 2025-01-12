@@ -10,8 +10,3 @@ var Development = Environment("development")
 func (e Environment) IsDevelopment() bool {
 	return e == "development" || e == "dev"
 }
-
-// IsEmpty environment.
-func (e Environment) IsEmpty() bool {
-	return e == ""
-}
