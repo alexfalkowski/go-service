@@ -47,17 +47,25 @@ type (
 	Controller func(ctx context.Context) (View, Model)
 )
 
+// IsValid verifies the params are present.
+func (p ViewsParams) IsValid() bool {
+	return p.FS != nil && len(p.Patterns) != 0
+}
+
 // NewView from fs with patterns.
 func NewViews(params ViewsParams) *Views {
 	var tpl *template.Template
 
-	if params.FS == nil || params.Patterns == nil {
-		tpl = template.New("")
-	} else {
+	if params.IsValid() {
 		tpl = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
 	}
 
 	return &Views{template: tpl, fs: params.FS}
+}
+
+// IsValid verifies that ut has an fs and template.
+func (v *Views) IsValid() bool {
+	return v.template != nil && v.fs != nil
 }
 
 // NewRouter for mvc.
@@ -66,7 +74,11 @@ func NewRouter(mux *http.ServeMux, views *Views) *Router {
 }
 
 // Route the path with controller for mvc.
-func (r *Router) Route(path string, controller Controller) {
+func (r *Router) Route(path string, controller Controller) bool {
+	if !r.views.IsValid() {
+		return false
+	}
+
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -87,19 +99,20 @@ func (r *Router) Route(path string, controller Controller) {
 	}
 
 	r.mux.HandleFunc(path, handler)
+
+	return true
 }
 
 // Static file name to be served via path.
-func (r *Router) Static(path, name string) {
-	fs := r.views.fs
-	if fs == nil {
-		return
+func (r *Router) Static(path, name string) bool {
+	if !r.views.IsValid() {
+		return false
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		bytes, err := fs.ReadFile(name)
+		bytes, err := r.views.fs.ReadFile(name)
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
@@ -115,4 +128,6 @@ func (r *Router) Static(path, name string) {
 	}
 
 	r.mux.HandleFunc(path, handler)
+
+	return true
 }
