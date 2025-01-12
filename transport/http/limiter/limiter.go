@@ -10,13 +10,13 @@ import (
 )
 
 // Handler for limiter.
-func NewHandler(limiter limiter.Limiter) *Handler {
+func NewHandler(limiter *limiter.Limiter) *Handler {
 	return &Handler{limiter: limiter}
 }
 
 // Handler for tracer.
 type Handler struct {
-	limiter limiter.Limiter
+	limiter *limiter.Limiter
 }
 
 // ServeHTTP for limiter.
