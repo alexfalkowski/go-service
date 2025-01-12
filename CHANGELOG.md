@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.362.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.362.0) - 2025-01-12
+
+- [`631947e`](https://github.com/alexfalkowski/go-service/commit/631947e231429cb7f8e92990d06f0f2e3ba1bb7d) feat(limiter): create an interface to have better abstraction (#1143)
+- [`943fc7f`](https://github.com/alexfalkowski/go-service/commit/943fc7fe00ab28bb9508159f3e62b6a8b798453c) test(redis): add missing (#1142)
+
 ## [v1.361.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.361.2) - 2025-01-12
 
 - [`d1e1f3b`](https://github.com/alexfalkowski/go-service/commit/d1e1f3bdd527c2c4e27758f4370987267e7ea89f) fix(env): remove unused func (#1141)
