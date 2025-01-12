@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.361.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.361.1) - 2025-01-12
+
+- [`eb3ffd2`](https://github.com/alexfalkowski/go-service/commit/eb3ffd27ff4a4094454813e889dc21e025377ad2) fix(net): remove unused func (#1140)
+
 ## [v1.361.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.361.0) - 2025-01-11
 
 - [`bb38b67`](https://github.com/alexfalkowski/go-service/commit/bb38b67205c623c51cc9f10c441f9cdd1ba5b771) feat(retry): migrate to github.com/sethvargo/go-retry (#1139)
