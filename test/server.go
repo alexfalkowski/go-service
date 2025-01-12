@@ -27,7 +27,7 @@ type Server struct {
 	GRPC       *tg.Server
 	Transport  *transport.Config
 	Tracer     *tracer.Config
-	Limiter    limiter.Limiter
+	Limiter    *limiter.Limiter
 	Logger     *zap.Logger
 	VerifyAuth bool
 }

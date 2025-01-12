@@ -13,7 +13,7 @@ import (
 )
 
 // UnaryServerInterceptor for gRPC.
-func UnaryServerInterceptor(limiter limiter.Limiter) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(limiter *limiter.Limiter) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -28,7 +28,7 @@ func UnaryServerInterceptor(limiter limiter.Limiter) grpc.UnaryServerInterceptor
 	}
 }
 
-func limit(ctx context.Context, limiter limiter.Limiter) error {
+func limit(ctx context.Context, limiter *limiter.Limiter) error {
 	ok, info, err := limiter.Take(ctx)
 	if err != nil {
 		return internalError(err)

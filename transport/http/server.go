@@ -39,7 +39,7 @@ type ServerParams struct {
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
-	Limiter    limiter.Limiter   `optional:"true"`
+	Limiter    *limiter.Limiter  `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
 }

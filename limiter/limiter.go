@@ -12,19 +12,8 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	// KeyFunc for the limiter.
-	KeyFunc func(context.Context) meta.Valuer
-
-	// Limiter limits the number of requests.
-	Limiter interface {
-		// Take a request.
-		Take(ctx context.Context) (bool, string, error)
-
-		// Close the limiter.
-		Close(ctx context.Context) error
-	}
-)
+// KeyFunc for the limiter.
+type KeyFunc func(context.Context) meta.Valuer
 
 var (
 	// ErrMissingKey for limiter.
@@ -41,7 +30,7 @@ func RegisterKey(name string, fn KeyFunc) {
 // New limiter.
 //
 //nolint:nilnil
-func New(lc fx.Lifecycle, cfg *Config) (Limiter, error) {
+func New(lc fx.Lifecycle, cfg *Config) (*Limiter, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
@@ -57,7 +46,7 @@ func New(lc fx.Lifecycle, cfg *Config) (Limiter, error) {
 		Interval: st.MustParseDuration(cfg.Interval),
 	})
 
-	limiter := &Memory{
+	limiter := &Limiter{
 		store: store,
 		key:   k,
 	}
@@ -71,15 +60,15 @@ func New(lc fx.Lifecycle, cfg *Config) (Limiter, error) {
 	return limiter, nil
 }
 
-// Memory limiter.
-type Memory struct {
+// Limiter holds a store with a key.
+type Limiter struct {
 	store limiter.Store
 	key   KeyFunc
 }
 
 // Take from the store, returns if successful, info and error.
-func (m *Memory) Take(ctx context.Context) (bool, string, error) {
-	tokens, remaining, _, ok, err := m.store.Take(ctx, meta.ValueOrBlank(m.key(ctx)))
+func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
+	tokens, remaining, _, ok, err := l.store.Take(ctx, meta.ValueOrBlank(l.key(ctx)))
 	if err != nil {
 		return false, "", err
 	}
@@ -90,6 +79,6 @@ func (m *Memory) Take(ctx context.Context) (bool, string, error) {
 }
 
 // Close the limiter.
-func (m *Memory) Close(ctx context.Context) error {
-	return m.store.Close(ctx)
+func (l *Limiter) Close(ctx context.Context) error {
+	return l.store.Close(ctx)
 }
