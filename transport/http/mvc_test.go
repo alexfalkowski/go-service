@@ -224,6 +224,46 @@ func TestStaticError(t *testing.T) {
 	})
 }
 
+func TestMissingViews(t *testing.T) {
+	Convey("Given I have views with missing FS", t, func() {
+		mux := http.NewServeMux()
+
+		v := mvc.NewViews(mvc.ViewsParams{Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
+
+		Convey("When I add routes to an invalid view", func() {
+			routeAdded := r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+				return mvc.View("hello.tmpl"), &test.Model
+			})
+			staticAdded := r.Static("GET /robots.txt", "static/bob.txt")
+
+			Convey("Then they should not be added", func() {
+				So(routeAdded, ShouldBeFalse)
+				So(staticAdded, ShouldBeFalse)
+			})
+		})
+	})
+
+	Convey("Given I have views with missing patterns", t, func() {
+		mux := http.NewServeMux()
+
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views})
+		r := mvc.NewRouter(mux, v)
+
+		Convey("When I add routes to an invalid view", func() {
+			routeAdded := r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+				return mvc.View("hello.tmpl"), &test.Model
+			})
+			staticAdded := r.Static("GET /robots.txt", "static/bob.txt")
+
+			Convey("Then they should not be added", func() {
+				So(routeAdded, ShouldBeFalse)
+				So(staticAdded, ShouldBeFalse)
+			})
+		})
+	})
+}
+
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
