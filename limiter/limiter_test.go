@@ -1,19 +1,24 @@
 package limiter_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	"go.uber.org/fx/fxtest"
 )
 
+//nolint:funlen
 func TestLimiter(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+
 	Convey("Given I have an missing key", t, func() {
-		c := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+		config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
 
 		Convey("When I try to create a limiter", func() {
-			_, _, err := limiter.New(c)
+			_, err := limiter.New(lc, config)
 
 			Convey("Then I should have an invalid limiter", func() {
 				So(err, ShouldBeError)
@@ -25,11 +30,11 @@ func TestLimiter(t *testing.T) {
 		limiter.RegisterKey("user-agent", meta.UserAgent)
 
 		Convey("When I try to create a limiter", func() {
-			c, _, err := limiter.New(nil)
+			limiter, err := limiter.New(lc, nil)
 
-			Convey("Then I should have an invalid limiter", func() {
+			Convey("Then I should have an noop limiter", func() {
 				So(err, ShouldBeNil)
-				So(c, ShouldBeNil)
+				So(limiter, ShouldBeNil)
 			})
 		})
 	})
@@ -37,13 +42,39 @@ func TestLimiter(t *testing.T) {
 	Convey("Given I have a valid format", t, func() {
 		limiter.RegisterKey("user-agent", meta.UserAgent)
 
-		c := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
-
 		Convey("When I try to create a limiter", func() {
-			_, _, err := limiter.New(c)
+			ctx := context.Background()
+
+			config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+			limiter, err := limiter.New(lc, config)
 
 			Convey("Then I should have a valid limiter", func() {
 				So(err, ShouldBeNil)
+			})
+
+			err = limiter.Close(ctx)
+			So(err, ShouldBeNil)
+		})
+	})
+
+	Convey("Given I have a limiter", t, func() {
+		limiter.RegisterKey("user-agent", meta.UserAgent)
+
+		config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+
+		limiter, err := limiter.New(lc, config)
+		So(err, ShouldBeNil)
+
+		Convey("When I try take when the limiter is closed", func() {
+			ctx := context.Background()
+
+			err = limiter.Close(context.Background())
+			So(err, ShouldBeNil)
+
+			_, _, err := limiter.Take(ctx)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 	})

@@ -6,7 +6,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	l "github.com/sethvargo/go-limiter"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -14,14 +13,14 @@ import (
 )
 
 // UnaryServerInterceptor for gRPC.
-func UnaryServerInterceptor(limiter l.Store, key limiter.KeyFunc) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(limiter limiter.Limiter) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
-		if err := limit(ctx, limiter, key); err != nil {
+		if err := limit(ctx, limiter); err != nil {
 			return nil, err
 		}
 
@@ -29,8 +28,8 @@ func UnaryServerInterceptor(limiter l.Store, key limiter.KeyFunc) grpc.UnaryServ
 	}
 }
 
-func limit(ctx context.Context, store l.Store, key limiter.KeyFunc) error {
-	ok, info, err := limiter.Take(ctx, store, key)
+func limit(ctx context.Context, limiter limiter.Limiter) error {
+	ok, info, err := limiter.Take(ctx)
 	if err != nil {
 		return internalError(err)
 	}

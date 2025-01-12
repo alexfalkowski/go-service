@@ -36,7 +36,7 @@ func TestUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("token", "1s", 0))
+		l, err := limiter.New(lc, test.NewLimiterConfig("token", "1s", 0))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -48,7 +48,7 @@ func TestUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: mux,
+			Limiter: l, Mux: mux,
 		}
 		s.Register()
 
@@ -172,7 +172,7 @@ func TestStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("token", "1s", 0))
+		l, err := limiter.New(lc, test.NewLimiterConfig("token", "1s", 0))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -184,7 +184,7 @@ func TestStream(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: mux,
+			Limiter: l, Mux: mux,
 		}
 		s.Register()
 

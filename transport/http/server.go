@@ -8,7 +8,7 @@ import (
 	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
-	lm "github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
 	st "github.com/alexfalkowski/go-service/time"
@@ -20,7 +20,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
-	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -40,8 +39,7 @@ type ServerParams struct {
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
-	Limiter    limiter.Store     `optional:"true"`
-	Key        lm.KeyFunc        `optional:"true"`
+	Limiter    limiter.Limiter   `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
 }
@@ -79,7 +77,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Limiter != nil {
-		neg.Use(hl.NewHandler(params.Limiter, params.Key))
+		neg.Use(hl.NewHandler(params.Limiter))
 	}
 
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))

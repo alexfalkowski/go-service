@@ -27,7 +27,7 @@ func TestGet(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+		l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -36,7 +36,7 @@ func TestGet(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: mux,
+			Limiter: l, Mux: mux,
 		}
 		s.Register()
 
@@ -81,7 +81,7 @@ func TestLimiter(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig(f, "1s", 0))
+			l, err := limiter.New(lc, test.NewLimiterConfig(f, "1s", 0))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
@@ -90,7 +90,7 @@ func TestLimiter(t *testing.T) {
 
 			s := &test.Server{
 				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-				Limiter: l, Key: k, Mux: mux,
+				Limiter: l, Mux: mux,
 			}
 			s.Register()
 
@@ -123,4 +123,55 @@ func TestLimiter(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestClosedLimiter(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		ctx := context.Background()
+
+		l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
+		So(err, ShouldBeNil)
+
+		err = l.Close(ctx)
+		So(err, ShouldBeNil)
+
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Limiter: l, Mux: mux,
+		}
+		s.Register()
+
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+		mux.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
+			_, _ = w.Write([]byte("hello!"))
+		})
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			client := cl.NewHTTP()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+			So(err, ShouldBeNil)
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			Convey("Then I should have an internal error", func() {
+				So(resp.StatusCode, ShouldEqual, http.StatusInternalServerError)
+			})
+
+			lc.RequireStop()
+		})
+	})
 }

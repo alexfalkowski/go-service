@@ -7,7 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
-	lm "github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
 	t "github.com/alexfalkowski/go-service/time"
@@ -18,7 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	tkn "github.com/alexfalkowski/go-service/transport/grpc/token"
-	"github.com/sethvargo/go-limiter"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
@@ -42,8 +41,7 @@ type ServerParams struct {
 	Meter     metric.Meter
 	UserAgent env.UserAgent
 	Version   env.Version
-	Limiter   limiter.Store                  `optional:"true"`
-	Key       lm.KeyFunc                     `optional:"true"`
+	Limiter   limiter.Limiter                `optional:"true"`
 	Verifier  token.Verifier                 `optional:"true"`
 	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
 	Stream    []grpc.StreamServerInterceptor `optional:"true"`
@@ -137,7 +135,7 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 	}
 
 	if params.Limiter != nil {
-		uis = append(uis, gl.UnaryServerInterceptor(params.Limiter, params.Key))
+		uis = append(uis, gl.UnaryServerInterceptor(params.Limiter))
 	}
 
 	uis = append(uis, interceptors...)
