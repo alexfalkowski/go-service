@@ -27,7 +27,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 0))
+		l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 0))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -36,7 +36,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: mux,
+			Limiter: l, Mux: mux,
 		}
 		s.Register()
 
@@ -72,7 +72,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 
-		l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 10))
+		l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 10))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -81,7 +81,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Key: k, Mux: mux,
+			Limiter: l, Mux: mux,
 		}
 		s.Register()
 
@@ -116,7 +116,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 		logger := test.NewLogger(lc)
 		verifier := test.NewVerifier("bob")
 
-		l, k, err := limiter.New(test.NewLimiterConfig("token", "1s", 10))
+		l, err := limiter.New(lc, test.NewLimiterConfig("token", "1s", 10))
 		So(err, ShouldBeNil)
 
 		cfg := test.NewInsecureTransportConfig()
@@ -125,7 +125,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 
 		s := &test.Server{
 			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Limiter: l, Key: k, Verifier: verifier, Mux: mux,
+			Limiter: l, Verifier: verifier, Mux: mux,
 		}
 		s.Register()
 
@@ -153,6 +153,52 @@ func TestLimiterAuthUnary(t *testing.T) {
 
 			Convey("Then I should not have exhausted resources", func() {
 				So(err, ShouldBeNil)
+			})
+		})
+
+		lc.RequireStop()
+	})
+}
+
+func TestClosedLimiterUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		ctx := context.Background()
+
+		l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 10))
+		So(err, ShouldBeNil)
+
+		err = l.Close(ctx)
+		So(err, ShouldBeNil)
+
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
+			Limiter: l, Mux: mux,
+		}
+		s.Register()
+
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+		lc.RequireStart()
+
+		Convey("When  I query for a greet", func() {
+			conn := cl.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			_, err := client.SayHello(ctx, req)
+
+			Convey("Then I should have an internal error", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, codes.Internal)
 			})
 		})
 

@@ -3,7 +3,7 @@ package test
 import (
 	"net/http"
 
-	lm "github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	th "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/sethvargo/go-limiter"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -28,8 +27,7 @@ type Server struct {
 	GRPC       *tg.Server
 	Transport  *transport.Config
 	Tracer     *tracer.Config
-	Limiter    limiter.Store
-	Key        lm.KeyFunc
+	Limiter    limiter.Limiter
 	Logger     *zap.Logger
 	VerifyAuth bool
 }
@@ -44,7 +42,7 @@ func (s *Server) Register() {
 		Shutdowner: sh, Mux: s.Mux,
 		Config: s.Transport.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
-		Limiter: s.Limiter, Key: s.Key, Handlers: []negroni.Handler{&none{}},
+		Limiter: s.Limiter, Handlers: []negroni.Handler{&none{}},
 		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
@@ -53,7 +51,7 @@ func (s *Server) Register() {
 
 	grpcServer, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: sh, Config: s.Transport.GRPC, Logger: s.Logger,
-		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter, Key: s.Key,
+		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
 		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)

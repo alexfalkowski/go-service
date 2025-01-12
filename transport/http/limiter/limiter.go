@@ -7,18 +7,16 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	l "github.com/sethvargo/go-limiter"
 )
 
 // Handler for limiter.
-func NewHandler(limiter l.Store, key limiter.KeyFunc) *Handler {
-	return &Handler{limiter: limiter, key: key}
+func NewHandler(limiter limiter.Limiter) *Handler {
+	return &Handler{limiter: limiter}
 }
 
 // Handler for tracer.
 type Handler struct {
-	limiter l.Store
-	key     limiter.KeyFunc
+	limiter limiter.Limiter
 }
 
 // ServeHTTP for limiter.
@@ -33,7 +31,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 
-	ok, info, err := limiter.Take(ctx, h.limiter, h.key)
+	ok, info, err := h.limiter.Take(ctx)
 	if err != nil {
 		nh.WriteError(ctx, res, err, http.StatusInternalServerError)
 

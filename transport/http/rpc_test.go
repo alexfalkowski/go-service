@@ -33,14 +33,14 @@ func TestRPCNoContent(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
@@ -77,14 +77,14 @@ func TestRPCWithContent(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
@@ -122,14 +122,14 @@ func TestProtobufRPC(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
 			s.Register()
 
 			rpc.Register(mux, test.Content, test.Pool)
@@ -161,14 +161,14 @@ func TestBadUnmarshalRPC(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -213,14 +213,14 @@ func TestErrorRPC(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
 
-			l, k, err := limiter.New(test.NewLimiterConfig("user-agent", "1s", 100))
+			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
 			So(err, ShouldBeNil)
 
 			cfg := test.NewInsecureTransportConfig()
 			tc := test.NewOTLPTracerConfig()
 			m := test.NewOTLPMeter(lc)
 
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Key: k, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
 			s.Register()
 
 			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
