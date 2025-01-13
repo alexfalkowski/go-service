@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/runtime"
 	hooks "github.com/open-feature/go-sdk-contrib/hooks/open-telemetry/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
 	"go.opentelemetry.io/otel/metric"
@@ -22,14 +21,16 @@ type ProviderParams struct {
 }
 
 // Register for feature.
-func Register(params ProviderParams) {
+func Register(params ProviderParams) error {
 	provider := params.FeatureProvider
 	if provider == nil {
 		provider = openfeature.NoopProvider{}
 	}
 
 	h, err := hooks.NewMetricsHookForProvider(params.MetricProvider)
-	runtime.Must(err)
+	if err != nil {
+		return err
+	}
 
 	openfeature.AddHooks(h, hooks.NewTracesHook(hooks.WithErrorStatusEnabled()))
 
@@ -43,6 +44,8 @@ func Register(params ProviderParams) {
 			return nil
 		},
 	})
+
+	return nil
 }
 
 // NewClient for feature.
