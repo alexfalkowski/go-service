@@ -8,30 +8,34 @@ import (
 	"encoding/pem"
 
 	"github.com/alexfalkowski/go-service/crypto/algo"
-	"github.com/alexfalkowski/go-service/crypto/errors"
+	cerr "github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // Generate key pair with Ed25519.
-func Generate() (string, string, error) {
+//
+//nolint:nonamedreturns
+func Generate() (pub string, pri string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Prefix("ed25519", runtime.ConvertRecover(r))
+		}
+	}()
+
 	public, private, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		return "", "", err
-	}
+	runtime.Must(err)
 
 	mpu, err := x509.MarshalPKIXPublicKey(public)
-	if err != nil {
-		return "", "", err
-	}
+	runtime.Must(err)
 
 	mpr, err := x509.MarshalPKCS8PrivateKey(private)
-	if err != nil {
-		return "", "", err
-	}
+	runtime.Must(err)
 
-	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
-	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
+	pub = string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu}))
+	pri = string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr}))
 
-	return string(pub), string(pri), nil
+	return
 }
 
 // Algo for ed25519.
@@ -83,7 +87,7 @@ func (a *ed25519Algo) Verify(sig, msg string) error {
 
 	ok := ed25519.Verify(a.publicKey, []byte(msg), d)
 	if !ok {
-		return errors.ErrInvalidMatch
+		return cerr.ErrInvalidMatch
 	}
 
 	return nil

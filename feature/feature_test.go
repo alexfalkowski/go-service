@@ -15,11 +15,12 @@ func TestNoop(t *testing.T) {
 	Convey("Given I have a flipt client", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
-		feature.Register(feature.ProviderParams{
+		err := feature.Register(feature.ProviderParams{
 			Lifecycle:      lc,
 			Name:           test.Name,
 			MetricProvider: test.NewPrometheusMeterProvider(lc),
 		})
+		So(err, ShouldBeNil)
 
 		client := feature.NewClient(test.Name)
 
