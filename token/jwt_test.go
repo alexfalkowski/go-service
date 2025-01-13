@@ -51,4 +51,19 @@ func TestJWT(t *testing.T) {
 			So(err, ShouldBeError)
 		})
 	})
+
+	tokens := []string{
+		"invalid",
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+	}
+
+	for _, token := range tokens {
+		Convey("When I verify an invalid token", t, func() {
+			_, err := jwt.Verify(token, "test", "test")
+
+			Convey("Then I should have a errror", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	}
 }
