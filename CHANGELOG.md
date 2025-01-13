@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.365.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.365.0) - 2025-01-13
+
+- [`34a7832`](https://github.com/alexfalkowski/go-service/commit/34a783294f228b5937817fd51fd11f6cc61fa2c8) feat(crypto): use recover for ed25519 (#1155)
+- [`264d062`](https://github.com/alexfalkowski/go-service/commit/264d06244ac21967d813300338cd0dd5fbd2397f) test(server): add missing (#1153)
+- [`6288dda`](https://github.com/alexfalkowski/go-service/commit/6288dda798a0c78b6cbaf7721b156af69ed12b5a) test(encoding): add missing (#1152)
+- [`89f18ab`](https://github.com/alexfalkowski/go-service/commit/89f18abfc1cf4678a791cdfc405b5b35bb4ff5c2) test(crypto): add missing (#1151)
+- [`4e944f1`](https://github.com/alexfalkowski/go-service/commit/4e944f193b06ca9bd0dfa6b37ae714498fa3b0e8) test(sql): add missing (#1149)
+- [`46055ae`](https://github.com/alexfalkowski/go-service/commit/46055ae76099a9a1999adcbb3a4e12d0e1bf3544) test(crypto): add missing (#1148)
+
 ## [v1.364.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.364.1) - 2025-01-13
 
 - [`a6d765b`](https://github.com/alexfalkowski/go-service/commit/a6d765b093a5f25bb42bd9384dc252c108414656) fix(deps): upgraded google.golang.org/grpc v1.69.2 => v1.69.4 (#1147)
