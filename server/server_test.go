@@ -30,9 +30,11 @@ func TestServer(t *testing.T) {
 	})
 
 	Convey("Given I have a server", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		l := test.NewLogger(lc)
 		sh := test.NewShutdowner()
 		srv := &test.NoopServer{}
-		server := server.NewServer("test", srv, nil, sh)
+		server := server.NewServer("test", srv, l, sh)
 
 		Convey("When I start", func() {
 			server.Start()
