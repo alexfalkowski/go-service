@@ -2,7 +2,6 @@ package server_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -13,15 +12,15 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	Convey("Given I have a server", t, func() {
+	Convey("Given I have a bad server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		l := test.NewLogger(lc)
 		sh := test.NewShutdowner()
-		srv := &errServe{}
-		s := server.NewServer("test", srv, l, sh)
+		srv := &test.BadServer{}
+		server := server.NewServer("test", srv, l, sh)
 
 		Convey("When I start", func() {
-			s.Start()
+			server.Start()
 			time.Sleep(1 * time.Second)
 
 			Convey("Then it should shutdown", func() {
@@ -29,22 +28,21 @@ func TestServer(t *testing.T) {
 			})
 		})
 	})
-}
 
-type errServe struct{}
+	Convey("Given I have a server", t, func() {
+		sh := test.NewShutdowner()
+		srv := &test.NoopServer{}
+		server := server.NewServer("test", srv, nil, sh)
 
-func (e *errServe) IsEnabled() bool {
-	return true
-}
+		Convey("When I start", func() {
+			server.Start()
+			time.Sleep(1 * time.Second)
 
-func (e *errServe) Serve() error {
-	return os.ErrNotExist
-}
+			Convey("Then it should not shutdown", func() {
+				So(sh.Called(), ShouldBeFalse)
+			})
 
-func (e *errServe) Shutdown(_ context.Context) error {
-	return nil
-}
-
-func (e *errServe) String() string {
-	return "test"
+			server.Stop(context.Background())
+		})
+	})
 }

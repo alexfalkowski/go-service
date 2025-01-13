@@ -1,7 +1,9 @@
 package test
 
 import (
+	"context"
 	"net/http"
+	"os"
 
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -66,4 +68,42 @@ type none struct{}
 
 func (*none) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
+}
+
+// BadServer for test.
+type BadServer struct{}
+
+func (s *BadServer) IsEnabled() bool {
+	return true
+}
+
+func (s *BadServer) Serve() error {
+	return os.ErrNotExist
+}
+
+func (s *BadServer) Shutdown(_ context.Context) error {
+	return nil
+}
+
+func (s *BadServer) String() string {
+	return "test"
+}
+
+// NoopServer for test.
+type NoopServer struct{}
+
+func (s *NoopServer) IsEnabled() bool {
+	return true
+}
+
+func (s *NoopServer) Serve() error {
+	return nil
+}
+
+func (s *NoopServer) Shutdown(_ context.Context) error {
+	return nil
+}
+
+func (s *NoopServer) String() string {
+	return "test"
 }
