@@ -59,13 +59,9 @@ func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) 
 func (j *JWT) Verify(token, aud, iss string) (string, error) {
 	claims := &jwt.RegisteredClaims{}
 
-	t, err := jwt.ParseWithClaims(token, claims, j.validate)
+	_, err := jwt.ParseWithClaims(token, claims, j.validate)
 	if err != nil {
 		return "", err
-	}
-
-	if t.Header["alg"] != "EdDSA" {
-		return "", ErrInvalidAlgorithm
 	}
 
 	if !claims.VerifyIssuer(iss, true) {

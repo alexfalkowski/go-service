@@ -13,9 +13,6 @@ var (
 	// ErrInvalidMatch for token.
 	ErrInvalidMatch = errors.New("token: invalid match")
 
-	// ErrInvalidAlgorithm for service.
-	ErrInvalidAlgorithm = errors.New("token: invalid algorithm")
-
 	// ErrInvalidIssuer for service.
 	ErrInvalidIssuer = errors.New("token: invalid issuer")
 
