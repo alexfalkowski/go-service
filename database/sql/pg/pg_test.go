@@ -65,6 +65,58 @@ func TestOpen(t *testing.T) {
 	})
 }
 
+func TestInvalidOpen(t *testing.T) {
+	Convey("Given I have an invalid master", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		c := &pg.Config{
+			Config: &config.Config{
+				Masters:         []config.DSN{{URL: test.Path("secrets/none")}},
+				Slaves:          []config.DSN{{URL: test.Path("secrets/pg")}},
+				MaxOpenConns:    5,
+				MaxIdleConns:    5,
+				ConnMaxLifetime: time.Hour.String(),
+			},
+		}
+
+		Convey("When I try open the database", func() {
+			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
+
+			lc.RequireStart()
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+
+			lc.RequireStop()
+		})
+	})
+
+	Convey("Given I have an invalid slave", t, func() {
+		lc := fxtest.NewLifecycle(t)
+		c := &pg.Config{
+			Config: &config.Config{
+				Masters:         []config.DSN{{URL: test.Path("secrets/pg")}},
+				Slaves:          []config.DSN{{URL: test.Path("secrets/none")}},
+				MaxOpenConns:    5,
+				MaxIdleConns:    5,
+				ConnMaxLifetime: time.Hour.String(),
+			},
+		}
+
+		Convey("When I try open the database", func() {
+			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
+
+			lc.RequireStart()
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
 		Convey("When I try to get a database", func() {
