@@ -49,4 +49,18 @@ func TestEncoder(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have proto encoder", t, func() {
+		encoder := proto.NewEncoder()
+
+		Convey("When I decode the proto with a bad reader", func() {
+			var msg grpc_health_v1.HealthCheckResponse
+
+			err := encoder.Decode(&test.BadReader{}, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
 }
