@@ -8,12 +8,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestAlgo(t *testing.T) {
+func TestSigner(t *testing.T) {
 	Convey("Given I have a hash", t, func() {
-		algo := argon2.NewAlgo()
+		signer := argon2.NewSigner()
 
 		Convey("When I sign a hash", func() {
-			s, err := algo.Sign("test")
+			s, err := signer.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should a hash", func() {
@@ -22,25 +22,25 @@ func TestAlgo(t *testing.T) {
 		})
 
 		Convey("When I sign a hash for test", func() {
-			s, err := algo.Sign("test")
+			s, err := signer.Sign("test")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should a hash that is equal to test", func() {
-				So(algo.Verify(s, "test"), ShouldBeNil)
+				So(signer.Verify(s, "test"), ShouldBeNil)
 			})
 		})
 
 		Convey("When I sign a hash with the word steve", func() {
-			s, err := algo.Sign("steve")
+			s, err := signer.Sign("steve")
 			So(err, ShouldBeNil)
 
 			Convey("Then verifying to bob should fail", func() {
-				So(algo.Verify(s, "bob"), ShouldBeError, errors.ErrInvalidMatch)
+				So(signer.Verify(s, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 
 		Convey("When I compare a non hashed value", func() {
-			err := algo.Verify("steve", "bob")
+			err := signer.Verify("steve", "bob")
 
 			Convey("Then comparing to bob should fail", func() {
 				So(err, ShouldBeError)

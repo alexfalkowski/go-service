@@ -3,14 +3,17 @@ package hooks_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestHooks(t *testing.T) {
+	gen := hooks.NewGenerator(rand.NewGenerator(rand.NewReader()))
+
 	Convey("When I generate a secret", t, func() {
-		c, err := hooks.Generate()
+		c, err := gen.Generate()
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have random secret", func() {

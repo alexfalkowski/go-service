@@ -8,8 +8,10 @@ import (
 )
 
 func TestRand(t *testing.T) {
+	gen := rand.NewGenerator(rand.NewReader())
+
 	Convey("When I generate random bytes", t, func() {
-		c, err := rand.GenerateBytes(5)
+		c, err := gen.GenerateBytes(5)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have random bytes", func() {
@@ -18,7 +20,7 @@ func TestRand(t *testing.T) {
 	})
 
 	Convey("When I generate random string", t, func() {
-		s, err := rand.GenerateString(32)
+		s, err := gen.GenerateString(32)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have random string", func() {
@@ -27,7 +29,7 @@ func TestRand(t *testing.T) {
 	})
 
 	Convey("When I generate random letters", t, func() {
-		s, err := rand.GenerateLetters(32)
+		s, err := gen.GenerateLetters(32)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have random letters", func() {

@@ -1,7 +1,6 @@
 package rsa
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
@@ -9,11 +8,29 @@ import (
 	"encoding/pem"
 
 	"github.com/alexfalkowski/go-service/crypto/algo"
+	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
-// Generate key pair with RSA.
-func Generate() (string, string, error) {
-	public, err := rsa.GenerateKey(rand.Reader, 4096)
+type (
+	// Generator for rsa.
+	Generator struct {
+		gen *rand.Generator
+	}
+
+	// Cipher for rsa.
+	Cipher interface {
+		algo.Cipher
+	}
+)
+
+// NewGenerator for rsa.
+func NewGenerator(gen *rand.Generator) *Generator {
+	return &Generator{gen: gen}
+}
+
+// Generate key pair with rsa.
+func (g *Generator) Generate() (string, string, error) {
+	public, err := rsa.GenerateKey(g.gen, 4096)
 	if err != nil {
 		return "", "", err
 	}
@@ -24,13 +41,8 @@ func Generate() (string, string, error) {
 	return string(pub), string(pri), nil
 }
 
-// Algo for rsa.
-type Algo interface {
-	algo.Cipher
-}
-
-// NewAlgo for rsa.
-func NewAlgo(cfg *Config) (Algo, error) {
+// NewCipher for rsa.
+func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
 	if !IsEnabled(cfg) {
 		return &algo.NoCipher{}, nil
 	}
@@ -45,27 +57,28 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return nil, err
 	}
 
-	return &rsaAlgo{publicKey: pub, privateKey: pri}, nil
+	return &cipher{gen: gen, publicKey: pub, privateKey: pri}, nil
 }
 
-type rsaAlgo struct {
+type cipher struct {
+	gen        *rand.Generator
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 }
 
-func (a *rsaAlgo) Encrypt(msg string) (string, error) {
-	e, err := rsa.EncryptOAEP(sha512.New(), rand.Reader, a.publicKey, []byte(msg), nil)
+func (a *cipher) Encrypt(msg string) (string, error) {
+	e, err := rsa.EncryptOAEP(sha512.New(), a.gen, a.publicKey, []byte(msg), nil)
 
 	return base64.StdEncoding.EncodeToString(e), err
 }
 
-func (a *rsaAlgo) Decrypt(msg string) (string, error) {
+func (a *cipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err
 	}
 
-	decoded, err = rsa.DecryptOAEP(sha512.New(), rand.Reader, a.privateKey, decoded, nil)
+	decoded, err = rsa.DecryptOAEP(sha512.New(), a.gen, a.privateKey, decoded, nil)
 
 	return string(decoded), err
 }
