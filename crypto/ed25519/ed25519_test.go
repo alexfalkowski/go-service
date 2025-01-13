@@ -24,11 +24,16 @@ func TestValidAlgo(t *testing.T) {
 		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
-		Convey("When I generate data", func() {
+		Convey("When I sign data", func() {
 			e, _ := algo.Sign("test")
 
-			Convey("Then I should compared the data", func() {
+			Convey("Then I should have veirfied the data", func() {
 				So(algo.Verify(e, "test"), ShouldBeNil)
+			})
+
+			Convey("Then I should have keys", func() {
+				So(algo.PrivateKey(), ShouldNotBeNil)
+				So(algo.PublicKey(), ShouldNotBeNil)
 			})
 		})
 	})
@@ -37,11 +42,16 @@ func TestValidAlgo(t *testing.T) {
 		algo, err := ed25519.NewAlgo(nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I generate data", func() {
+		Convey("When I sign data", func() {
 			e, _ := algo.Sign("test")
 
-			Convey("Then I should compared the data", func() {
+			Convey("Then I should have veirfied the data", func() {
 				So(algo.Verify(e, "test"), ShouldBeNil)
+			})
+
+			Convey("Then I should have missing keys", func() {
+				So(algo.PrivateKey(), ShouldBeNil)
+				So(algo.PublicKey(), ShouldBeNil)
 			})
 		})
 	})
@@ -60,7 +70,7 @@ func TestInvalidAlgo(t *testing.T) {
 		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
-		Convey("When I generate data", func() {
+		Convey("When I sign the data", func() {
 			e, _ := algo.Sign("test")
 			e += "wha"
 
@@ -74,7 +84,7 @@ func TestInvalidAlgo(t *testing.T) {
 		algo, err := ed25519.NewAlgo(test.NewEd25519())
 		So(err, ShouldBeNil)
 
-		Convey("When I generate one message", func() {
+		Convey("When I sign one message", func() {
 			e, _ := algo.Sign("test")
 
 			Convey("Then I comparing another message will gave an error", func() {
