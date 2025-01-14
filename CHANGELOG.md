@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.368.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.368.2) - 2025-01-14
+
+- [`b5b40a3`](https://github.com/alexfalkowski/go-service/commit/b5b40a31446da624686c3cd4545015803b0eb08c) fix(feature): use must for metrics (#1164)
+
 ## [v1.368.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.368.1) - 2025-01-14
 
 - [`785814a`](https://github.com/alexfalkowski/go-service/commit/785814adebf8e87f1d583e4d75dccea13d2ec58d) fix(rand): use reader for rand.Int (#1163)
