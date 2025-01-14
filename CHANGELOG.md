@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.367.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.367.0) - 2025-01-14
+
+- [`9f9415a`](https://github.com/alexfalkowski/go-service/commit/9f9415a884d0d42cb721eba74534773c1a736fc7) feat(crypto): add generators (#1158)
+
 ## [v1.366.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.366.0) - 2025-01-13
 
 - [`d6e7221`](https://github.com/alexfalkowski/go-service/commit/d6e722120c648df53f15ceed8c0f1a3f30a9e834) feat(token): no need to check header for jwt (#1157)
