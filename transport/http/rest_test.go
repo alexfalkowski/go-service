@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rest"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -54,6 +55,7 @@ func TestRestNoContent(t *testing.T) {
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
 					So(rest.Error(res), ShouldBeNil)
+					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
 				lc.RequireStop()
