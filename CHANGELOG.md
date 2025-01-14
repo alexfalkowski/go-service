@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.368.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.368.0) - 2025-01-14
+
+- [`110bce2`](https://github.com/alexfalkowski/go-service/commit/110bce28b2001a3b8154e7f8839beb938895af14) feat(rpc): allow errors to occur if request is nil (#1161)
+- [`a7313c5`](https://github.com/alexfalkowski/go-service/commit/a7313c5f56687daaa7878ec738f3e2a2e0ece5d1) test(http): add missing (#1160)
+- [`6c78712`](https://github.com/alexfalkowski/go-service/commit/6c7871296f70322913f6cdffde31fad9738109aa) build(ci): update go:1.5 (#1159)
+
 ## [v1.367.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.367.0) - 2025-01-14
 
 - [`9f9415a`](https://github.com/alexfalkowski/go-service/commit/9f9415a884d0d42cb721eba74534773c1a736fc7) feat(crypto): add generators (#1158)
