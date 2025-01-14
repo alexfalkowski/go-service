@@ -10,36 +10,49 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
-// Code was adapted from github.com/alexellis/hmac/v2.
+type (
+	// Generator for hmac.
+	Generator struct {
+		gen *rand.Generator
+	}
+
+	// Signer for hmac.
+	Signer interface {
+		algo.Signer
+	}
+)
+
+// NewGenerator for hmac.
+func NewGenerator(gen *rand.Generator) *Generator {
+	return &Generator{gen: gen}
+}
 
 // Generate for hmac.
-func Generate() (string, error) {
-	s, err := rand.GenerateBytes(32)
+func (g *Generator) Generate() (string, error) {
+	s, err := g.gen.GenerateBytes(32)
+	if err != nil {
+		return "", err
+	}
 
-	return base64.StdEncoding.EncodeToString(s), err
+	return base64.StdEncoding.EncodeToString(s), nil
 }
 
-// Algo for hmac.
-type Algo interface {
-	algo.Signer
-}
-
-// NewAlgo for hmac.
-func NewAlgo(cfg *Config) (Algo, error) {
+// NewSigner for hmac.
+func NewSigner(cfg *Config) (Signer, error) {
 	if !IsEnabled(cfg) {
 		return &algo.NoSigner{}, nil
 	}
 
 	k, err := cfg.GetKey()
 
-	return &hmacAlgo{key: []byte(k)}, err
+	return &signer{key: []byte(k)}, err
 }
 
-type hmacAlgo struct {
+type signer struct {
 	key []byte
 }
 
-func (a *hmacAlgo) Sign(msg string) (string, error) {
+func (a *signer) Sign(msg string) (string, error) {
 	mac := hmac.New(sha512.New, a.key)
 
 	_, err := mac.Write([]byte(msg))
@@ -50,7 +63,7 @@ func (a *hmacAlgo) Sign(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
 }
 
-func (a *hmacAlgo) Verify(sig, msg string) error {
+func (a *signer) Verify(sig, msg string) error {
 	decoded, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err

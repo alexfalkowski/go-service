@@ -11,7 +11,7 @@ import (
 )
 
 func TestPaseto(t *testing.T) {
-	a, _ := ed25519.NewAlgo(test.NewEd25519())
+	a, _ := ed25519.NewSigner(test.NewEd25519())
 	paseto := token.NewPaseto(a)
 
 	Convey("When I generate a paseto token", t, func() {
@@ -39,4 +39,16 @@ func TestPaseto(t *testing.T) {
 			So(err, ShouldBeError)
 		})
 	})
+
+	tokens := []string{"invalid"}
+
+	for _, token := range tokens {
+		Convey("When I verify an invalid token", t, func() {
+			_, err := paseto.Verify(token, "test", "test")
+
+			Convey("Then I should have a errror", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	}
 }

@@ -14,8 +14,8 @@ import (
 type KID string
 
 // NewKID for JWKSets.
-func NewKID() (KID, error) {
-	b, err := rand.GenerateBytes(10)
+func NewKID(gen *rand.Generator) (KID, error) {
+	b, err := gen.GenerateBytes(10)
 	if err != nil {
 		return "", err
 	}
@@ -25,12 +25,12 @@ func NewKID() (KID, error) {
 
 // JWT token.
 type JWT struct {
-	ed  ed25519.Algo
+	ed  ed25519.Signer
 	kid KID
 }
 
 // NewJWT token.
-func NewJWT(kid KID, ed ed25519.Algo) *JWT {
+func NewJWT(kid KID, ed ed25519.Signer) *JWT {
 	return &JWT{kid: kid, ed: ed}
 }
 

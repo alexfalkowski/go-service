@@ -15,40 +15,56 @@ import (
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
+type (
+	// Generator for aes.
+	Generator struct {
+		gen *rand.Generator
+	}
+
+	// Cipher for aes.
+	Cipher interface {
+		algo.Cipher
+	}
+)
+
+// NewGenerator for aes.
+func NewGenerator(gen *rand.Generator) *Generator {
+	return &Generator{gen: gen}
+}
+
 // Generate for aes.
-func Generate() (string, error) {
-	s, err := rand.GenerateBytes(32)
+func (g *Generator) Generate() (string, error) {
+	s, err := g.gen.GenerateBytes(32)
+	if err != nil {
+		return "", err
+	}
 
-	return base64.StdEncoding.EncodeToString(s), err
+	return base64.StdEncoding.EncodeToString(s), nil
 }
 
-// Algo for aes.
-type Algo interface {
-	algo.Cipher
-}
-
-// NewAlgo for aes.
-func NewAlgo(cfg *Config) (Algo, error) {
+// NewCipher for aes.
+func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
 	if !IsEnabled(cfg) {
 		return &algo.NoCipher{}, nil
 	}
 
 	k, err := cfg.GetKey()
 
-	return &aesAlgo{key: []byte(k)}, err
+	return &aesCipher{gen: gen, key: []byte(k)}, err
 }
 
-type aesAlgo struct {
+type aesCipher struct {
+	gen *rand.Generator
 	key []byte
 }
 
-func (a *aesAlgo) Encrypt(msg string) (string, error) {
+func (a *aesCipher) Encrypt(msg string) (string, error) {
 	aead, err := a.aead()
 	if err != nil {
 		return "", err
 	}
 
-	bytes, err := rand.GenerateBytes(uint32(aead.NonceSize())) //nolint:gosec
+	bytes, err := a.gen.GenerateBytes(uint32(aead.NonceSize())) //nolint:gosec
 	if err != nil {
 		return "", err
 	}
@@ -58,7 +74,7 @@ func (a *aesAlgo) Encrypt(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(s), nil
 }
 
-func (a *aesAlgo) Decrypt(msg string) (string, error) {
+func (a *aesCipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err
@@ -80,7 +96,7 @@ func (a *aesAlgo) Decrypt(msg string) (string, error) {
 	return string(decoded), err
 }
 
-func (a *aesAlgo) aead() (cipher.AEAD, error) {
+func (a *aesCipher) aead() (cipher.AEAD, error) {
 	b, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err

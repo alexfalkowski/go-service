@@ -2,35 +2,60 @@ package rand
 
 import (
 	"crypto/rand"
+	"io"
 	"math/big"
 )
 
-// Code is adapted from https://gist.github.com/dopey/c69559607800d2f2f90b1b1ed4e550fb.
+type (
+	// Reader is just rand.Reader.
+	Reader io.Reader
 
-const (
-	letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	symbols = "~!@#$%^&*()_+-={}|[]<>?,./"
+	// Generator for rand.
+	Generator struct {
+		reader  Reader
+		letters string
+		symbols string
+	}
 )
 
+// NewReader for rand.
+func NewReader() Reader {
+	return rand.Reader
+}
+
+// NewGenerator for rand.
+func NewGenerator(reader Reader) *Generator {
+	return &Generator{
+		letters: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+		symbols: "~!@#$%^&*()_+-={}|[]<>?,./",
+		reader:  reader,
+	}
+}
+
+// Read for rand.
+func (g *Generator) Read(b []byte) (int, error) {
+	return io.ReadFull(g.reader, b)
+}
+
 // GenerateBytes for rand.
-func GenerateBytes(size uint32) ([]byte, error) {
+func (g *Generator) GenerateBytes(size uint32) ([]byte, error) {
 	bytes := make([]byte, size)
-	_, err := rand.Read(bytes)
+	_, err := g.Read(bytes)
 
 	return bytes, err
 }
 
 // GenerateString will generate using letters and symbols.
-func GenerateString(size uint32) (string, error) {
-	return generateString(size, letters+symbols)
+func (g *Generator) GenerateString(size uint32) (string, error) {
+	return g.generate(size, g.letters+g.symbols)
 }
 
 // GenerateLetters will generate using letters.
-func GenerateLetters(size uint32) (string, error) {
-	return generateString(size, letters)
+func (g *Generator) GenerateLetters(size uint32) (string, error) {
+	return g.generate(size, g.letters)
 }
 
-func generateString(size uint32, values string) (string, error) {
+func (g *Generator) generate(size uint32, values string) (string, error) {
 	bytes := make([]byte, size)
 
 	for i := range size {

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
@@ -25,8 +26,8 @@ func TestTokenAuthUnary(t *testing.T) {
 			mux := http.NewServeMux()
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc)
-			kid, _ := token.NewKID()
-			a, _ := ed25519.NewAlgo(test.NewEd25519())
+			kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
+			a, _ := ed25519.NewSigner(test.NewEd25519())
 			jwt := token.NewJWT(kid, a)
 			pas := token.NewPaseto(a)
 			token := token.NewToken(test.NewToken(kind), jwt, pas)

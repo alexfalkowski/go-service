@@ -6,5 +6,6 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(NewAlgo),
+	fx.Provide(NewGenerator),
+	fx.Provide(NewCipher),
 )

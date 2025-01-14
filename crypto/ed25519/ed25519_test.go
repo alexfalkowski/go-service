@@ -5,96 +5,117 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestValidAlgo(t *testing.T) {
-	Convey("When I generate", t, func() {
-		pub, pri, err := ed25519.Generate()
+func TestGenertor(t *testing.T) {
+	Convey("Given I have a bad generator", t, func() {
+		gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeNil)
-			So(pub, ShouldNotBeBlank)
-			So(pri, ShouldNotBeBlank)
-		})
-	})
+		Convey("When I generate keys", func() {
+			pub, pri, err := gen.Generate()
 
-	Convey("Given I have an algo", t, func() {
-		algo, err := ed25519.NewAlgo(test.NewEd25519())
-		So(err, ShouldBeNil)
-
-		Convey("When I sign data", func() {
-			e, _ := algo.Sign("test")
-
-			Convey("Then I should have veirfied the data", func() {
-				So(algo.Verify(e, "test"), ShouldBeNil)
-			})
-
-			Convey("Then I should have keys", func() {
-				So(algo.PrivateKey(), ShouldNotBeNil)
-				So(algo.PublicKey(), ShouldNotBeNil)
+			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
+				So(pub, ShouldNotBeBlank)
+				So(pri, ShouldNotBeBlank)
 			})
 		})
 	})
 
-	Convey("Given I have a missing algo", t, func() {
-		algo, err := ed25519.NewAlgo(nil)
-		So(err, ShouldBeNil)
+	Convey("Given I have a bad generator", t, func() {
+		gen := ed25519.NewGenerator(rand.NewGenerator(&test.BadReader{}))
 
-		Convey("When I sign data", func() {
-			e, _ := algo.Sign("test")
+		Convey("When I generate keys", func() {
+			pub, pri, err := gen.Generate()
 
-			Convey("Then I should have veirfied the data", func() {
-				So(algo.Verify(e, "test"), ShouldBeNil)
-			})
-
-			Convey("Then I should have missing keys", func() {
-				So(algo.PrivateKey(), ShouldBeNil)
-				So(algo.PublicKey(), ShouldBeNil)
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+				So(pub, ShouldBeBlank)
+				So(pri, ShouldBeBlank)
 			})
 		})
 	})
 }
 
-func TestInvalidAlgo(t *testing.T) {
-	Convey("When I create a algo", t, func() {
-		_, err := ed25519.NewAlgo(&ed25519.Config{})
+func TestValidSigner(t *testing.T) {
+	Convey("Given I have an signer", t, func() {
+		signer, err := ed25519.NewSigner(test.NewEd25519())
+		So(err, ShouldBeNil)
+
+		Convey("When I sign data", func() {
+			e, _ := signer.Sign("test")
+
+			Convey("Then I should have veirfied the data", func() {
+				So(signer.Verify(e, "test"), ShouldBeNil)
+			})
+
+			Convey("Then I should have keys", func() {
+				So(signer.PrivateKey(), ShouldNotBeNil)
+				So(signer.PublicKey(), ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given I have a signer with missing configuration", t, func() {
+		signer, err := ed25519.NewSigner(nil)
+		So(err, ShouldBeNil)
+
+		Convey("When I sign data", func() {
+			e, _ := signer.Sign("test")
+
+			Convey("Then I should have veirfied the data", func() {
+				So(signer.Verify(e, "test"), ShouldBeNil)
+			})
+
+			Convey("Then I should have missing keys", func() {
+				So(signer.PrivateKey(), ShouldBeNil)
+				So(signer.PublicKey(), ShouldBeNil)
+			})
+		})
+	})
+}
+
+func TestInvalidSigner(t *testing.T) {
+	Convey("When I create a signer", t, func() {
+		_, err := ed25519.NewSigner(&ed25519.Config{})
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeError)
 		})
 	})
 
-	Convey("Given I have an algo", t, func() {
-		algo, err := ed25519.NewAlgo(test.NewEd25519())
+	Convey("Given I have an signer", t, func() {
+		signer, err := ed25519.NewSigner(test.NewEd25519())
 		So(err, ShouldBeNil)
 
 		Convey("When I sign the data", func() {
-			e, _ := algo.Sign("test")
+			e, _ := signer.Sign("test")
 			e += "wha"
 
 			Convey("Then I should have an error", func() {
-				So(algo.Verify(e, "test"), ShouldBeError)
+				So(signer.Verify(e, "test"), ShouldBeError)
 			})
 		})
 	})
 
-	Convey("Given I have an algo", t, func() {
-		algo, err := ed25519.NewAlgo(test.NewEd25519())
+	Convey("Given I have an signer", t, func() {
+		signer, err := ed25519.NewSigner(test.NewEd25519())
 		So(err, ShouldBeNil)
 
 		Convey("When I sign one message", func() {
-			e, _ := algo.Sign("test")
+			e, _ := signer.Sign("test")
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(algo.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
+				So(signer.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})
 
-	Convey("When I create an algo with an invalid public key", t, func() {
-		_, err := ed25519.NewAlgo(&ed25519.Config{
+	Convey("When I create an signer with an invalid public key", t, func() {
+		_, err := ed25519.NewSigner(&ed25519.Config{
 			Public:  test.Path("secrets/rsa_public"),
 			Private: test.Path("secrets/ed25519_private"),
 		})
@@ -104,8 +125,8 @@ func TestInvalidAlgo(t *testing.T) {
 		})
 	})
 
-	Convey("When I create an algo with an invalid private key", t, func() {
-		_, err := ed25519.NewAlgo(&ed25519.Config{
+	Convey("When I create an signer with an invalid private key", t, func() {
+		_, err := ed25519.NewSigner(&ed25519.Config{
 			Public:  test.Path("secrets/ed25519_public"),
 			Private: test.Path("secrets/rsa_private"),
 		})

@@ -2,42 +2,61 @@ package ssh
 
 import (
 	"crypto/ed25519"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/pem"
 
 	"github.com/alexfalkowski/go-service/crypto/algo"
-	"github.com/alexfalkowski/go-service/crypto/errors"
+	cerr "github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/runtime"
 	"golang.org/x/crypto/ssh"
 )
 
+type (
+	// Generator for ssh.
+	Generator struct {
+		gen *rand.Generator
+	}
+
+	// Signer for ssh.
+	Signer interface {
+		algo.Signer
+	}
+)
+
+// NewGenerator for ssh.
+func NewGenerator(gen *rand.Generator) *Generator {
+	return &Generator{gen: gen}
+}
+
 // Generate key pair with ssh.
-func Generate() (string, string, error) {
-	public, private, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		return "", "", err
-	}
+//
+//nolint:nonamedreturns
+func (g *Generator) Generate() (pub string, pri string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Prefix("ssh", runtime.ConvertRecover(r))
+		}
+	}()
 
-	pri, err := ssh.MarshalPrivateKey(private, "")
-	if err != nil {
-		return "", "", err
-	}
+	public, private, err := ed25519.GenerateKey(g.gen)
+	runtime.Must(err)
 
-	pub, err := ssh.NewPublicKey(public)
-	if err != nil {
-		return "", "", err
-	}
+	mpu, err := ssh.NewPublicKey(public)
+	runtime.Must(err)
 
-	return string(ssh.MarshalAuthorizedKey(pub)), string(pem.EncodeToMemory(pri)), nil
+	mpr, err := ssh.MarshalPrivateKey(private, "")
+	runtime.Must(err)
+
+	pub = string(ssh.MarshalAuthorizedKey(mpu))
+	pri = string(pem.EncodeToMemory(mpr))
+
+	return
 }
 
-// Algo for ssh.
-type Algo interface {
-	algo.Signer
-}
-
-// NewAlgo for ssh.
-func NewAlgo(cfg *Config) (Algo, error) {
+// NewSigner for ssh.
+func NewSigner(cfg *Config) (Signer, error) {
 	if !IsEnabled(cfg) {
 		return &algo.NoSigner{}, nil
 	}
@@ -52,21 +71,21 @@ func NewAlgo(cfg *Config) (Algo, error) {
 		return nil, err
 	}
 
-	return &sshAlgo{publicKey: pub, privateKey: pri}, nil
+	return &signer{publicKey: pub, privateKey: pri}, nil
 }
 
-type sshAlgo struct {
+type signer struct {
 	publicKey  ed25519.PublicKey
 	privateKey ed25519.PrivateKey
 }
 
-func (a *sshAlgo) Sign(msg string) (string, error) {
+func (a *signer) Sign(msg string) (string, error) {
 	m := ed25519.Sign(a.privateKey, []byte(msg))
 
 	return base64.StdEncoding.EncodeToString(m), nil
 }
 
-func (a *sshAlgo) Verify(sig, msg string) error {
+func (a *signer) Verify(sig, msg string) error {
 	d, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
@@ -74,7 +93,7 @@ func (a *sshAlgo) Verify(sig, msg string) error {
 
 	ok := ed25519.Verify(a.publicKey, []byte(msg), d)
 	if !ok {
-		return errors.ErrInvalidMatch
+		return cerr.ErrInvalidMatch
 	}
 
 	return nil

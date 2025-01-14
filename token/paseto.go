@@ -10,11 +10,11 @@ import (
 
 // Paseto token.
 type Paseto struct {
-	ed ed25519.Algo
+	ed ed25519.Signer
 }
 
 // NewPaseto token.
-func NewPaseto(ed ed25519.Algo) *Paseto {
+func NewPaseto(ed ed25519.Signer) *Paseto {
 	return &Paseto{ed: ed}
 }
 
