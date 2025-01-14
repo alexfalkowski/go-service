@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.368.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.368.1) - 2025-01-14
+
+- [`785814a`](https://github.com/alexfalkowski/go-service/commit/785814adebf8e87f1d583e4d75dccea13d2ec58d) fix(rand): use reader for rand.Int (#1163)
+
 ## [v1.368.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.368.0) - 2025-01-14
 
 - [`110bce2`](https://github.com/alexfalkowski/go-service/commit/110bce28b2001a3b8154e7f8839beb938895af14) feat(rpc): allow errors to occur if request is nil (#1161)
