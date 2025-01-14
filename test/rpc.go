@@ -32,6 +32,7 @@ func NoContent(_ context.Context, _ *Request) (*Response, error) {
 // SuccessSayHello for test.
 func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	req := nc.Request(ctx)
+	_ = nc.Response(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 

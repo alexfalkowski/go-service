@@ -84,10 +84,8 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	buffer := pool.Get()
 	defer pool.Put(buffer)
 
-	if req != nil {
-		err = c.mediaType.Encoder.Encode(buffer, req)
-		runtime.Must(err)
-	}
+	err = c.mediaType.Encoder.Encode(buffer, req)
+	runtime.Must(err)
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, buffer)
 	runtime.Must(err)
