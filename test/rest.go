@@ -25,6 +25,7 @@ func RestRequestNoContent(_ context.Context, _ *Request) (*Response, error) {
 // RestNoContent for test.
 func RestContent(ctx context.Context) (*Response, error) {
 	req := nc.Request(ctx)
+	_ = nc.Response(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
