@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/beevik/ntp"
 	"github.com/beevik/nts"
 )
@@ -48,20 +49,24 @@ type ntsNetwork struct {
 	c *Config
 }
 
-func (n *ntsNetwork) Now() (time.Time, error) {
+//nolint:nonamedreturns
+func (n *ntsNetwork) Now() (t time.Time, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Prefix("nts", runtime.ConvertRecover(r))
+		}
+	}()
+
 	se, err := nts.NewSession(n.c.Address)
-	if err != nil {
-		return time.Now(), errors.Prefix("nts", err)
-	}
+	runtime.Must(err)
 
 	res, err := se.Query()
-	if err != nil {
-		return time.Now(), errors.Prefix("nts", err)
-	}
+	runtime.Must(err)
 
-	if err := res.Validate(); err != nil {
-		return time.Now(), errors.Prefix("nts", err)
-	}
+	err = res.Validate()
+	runtime.Must(err)
 
-	return time.Now().Add(res.ClockOffset), nil
+	t = time.Now().Add(res.ClockOffset)
+
+	return
 }
