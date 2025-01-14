@@ -62,6 +62,7 @@ func TestRPCNoContent(t *testing.T) {
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
+					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
 				lc.RequireStop()
