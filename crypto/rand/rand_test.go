@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestRand(t *testing.T) {
+func TestValidRand(t *testing.T) {
 	gen := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I generate random bytes", t, func() {
@@ -34,6 +35,18 @@ func TestRand(t *testing.T) {
 
 		Convey("Then I should have random letters", func() {
 			So(s, ShouldHaveLength, 32)
+		})
+	})
+}
+
+func TestInvalidRand(t *testing.T) {
+	gen := rand.NewGenerator(&test.BadReader{})
+
+	Convey("When I generate random string with a bad reader", t, func() {
+		_, err := gen.GenerateString(5)
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
 		})
 	})
 }

@@ -59,7 +59,7 @@ func (g *Generator) generate(size uint32, values string) (string, error) {
 	bytes := make([]byte, size)
 
 	for i := range size {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(values))))
+		num, err := rand.Int(g.reader, big.NewInt(int64(len(values))))
 		if err != nil {
 			return "", err
 		}
