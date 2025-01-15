@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.369.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.369.1) - 2025-01-15
+
+- [`d3acf6d`](https://github.com/alexfalkowski/go-service/commit/d3acf6dfbca9235825963fb4e0ee24eb1fde8d86) fix(mvc): write header on error (#1169)
+- [`6dbee6e`](https://github.com/alexfalkowski/go-service/commit/6dbee6e2bc7bcf30d75e920d04f9f9312e6b4e68) docs(diagrams): update with make diagrams (#1168)
+- [`80a6bad`](https://github.com/alexfalkowski/go-service/commit/80a6bad95871ce1bc50bff8f714b6e38f5a3e0d4) test(time): simplify (#1167)
+- [`688eec6`](https://github.com/alexfalkowski/go-service/commit/688eec667bb5807b7504b497501bcd623bc51dc8) test(time): add missing (#1166)
+
 ## [v1.369.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.369.0) - 2025-01-14
 
 - [`3b86153`](https://github.com/alexfalkowski/go-service/commit/3b861537edb6be3762bf3474d268290a870d4765) feat(time): use recover for nts (#1165)
