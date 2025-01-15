@@ -20,6 +20,19 @@ func TestSystem(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Given I have a config with invalid kid", t, func() {
+		c := &time.Config{Kind: "none"}
+		n := time.NewNetwork(c)
+
+		Convey("When I get the time", func() {
+			_, err := n.Now()
+
+			Convey("I should not have an error", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+	})
 }
 
 func TestNTP(t *testing.T) {
