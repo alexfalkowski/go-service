@@ -8,31 +8,20 @@ import (
 )
 
 func TestSystem(t *testing.T) {
-	Convey("Given I have a config", t, func() {
-		c := &time.Config{}
-		n := time.NewNetwork(c)
+	configs := []*time.Config{{}, {Kind: "none"}}
+	for _, config := range configs {
+		Convey("Given I have a config", t, func() {
+			n := time.NewNetwork(config)
 
-		Convey("When I get the time", func() {
-			_, err := n.Now()
+			Convey("When I get the time", func() {
+				_, err := n.Now()
 
-			Convey("I should not have an error", func() {
-				So(err, ShouldBeNil)
+				Convey("I should not have an error", func() {
+					So(err, ShouldBeNil)
+				})
 			})
 		})
-	})
-
-	Convey("Given I have a config with invalid kid", t, func() {
-		c := &time.Config{Kind: "none"}
-		n := time.NewNetwork(c)
-
-		Convey("When I get the time", func() {
-			_, err := n.Now()
-
-			Convey("I should not have an error", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-	})
+	}
 }
 
 func TestNTP(t *testing.T) {
