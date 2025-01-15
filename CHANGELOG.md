@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.370.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.1) - 2025-01-15
+
+- [`1f8d4b1`](https://github.com/alexfalkowski/go-service/commit/1f8d4b15c4c15cb367e7153cf153c5e18a505006) fix(deps): upgraded google.golang.org/protobuf v1.36.2 => v1.36.3 (#1175)
+- [`1631e83`](https://github.com/alexfalkowski/go-service/commit/1631e833ecad17a1ffb7b6c457a6ce2b4ab637e1) test(ed25519): add missing (#1174)
+
 ## [v1.370.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.0) - 2025-01-15
 
 - [`849b23d`](https://github.com/alexfalkowski/go-service/commit/849b23d2215829ceb643df592166c7286ec13d06) feat(hmac): writting to a hash does not produce an error (#1173)
