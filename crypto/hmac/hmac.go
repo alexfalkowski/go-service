@@ -54,11 +54,7 @@ type signer struct {
 
 func (a *signer) Sign(msg string) (string, error) {
 	mac := hmac.New(sha512.New, a.key)
-
-	_, err := mac.Write([]byte(msg))
-	if err != nil {
-		return "", err
-	}
+	mac.Write([]byte(msg))
 
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
 }
@@ -70,15 +66,11 @@ func (a *signer) Verify(sig, msg string) error {
 	}
 
 	mac := hmac.New(sha512.New, a.key)
+	mac.Write([]byte(msg))
 
-	_, err = mac.Write([]byte(msg))
-	if err != nil {
-		return err
-	}
+	expected := mac.Sum(nil)
 
-	expectedMAC := mac.Sum(nil)
-
-	if !hmac.Equal(decoded, expectedMAC) {
+	if !hmac.Equal(decoded, expected) {
 		return errors.ErrInvalidMatch
 	}
 
