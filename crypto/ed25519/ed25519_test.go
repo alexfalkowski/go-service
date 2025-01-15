@@ -78,14 +78,23 @@ func TestValidSigner(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestInvalidSigner(t *testing.T) {
-	Convey("When I create a signer", t, func() {
-		_, err := ed25519.NewSigner(&ed25519.Config{})
+	configs := []*ed25519.Config{
+		{},
+		{Public: test.Path("secrets/ed25519_public_invalid"), Private: test.Path("secrets/ed25519_private")},
+		{Public: test.Path("secrets/ed25519_public"), Private: test.Path("secrets/ed25519_private_invalid")},
+	}
 
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeError)
+	for _, config := range configs {
+		Convey("When I create a signer", t, func() {
+			_, err := ed25519.NewSigner(config)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
 		})
-	})
+	}
 
 	Convey("Given I have an signer", t, func() {
 		signer, err := ed25519.NewSigner(test.NewEd25519())
