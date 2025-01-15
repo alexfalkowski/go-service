@@ -75,6 +75,59 @@ func TestRouteSuccess(t *testing.T) {
 	})
 }
 
+func TestRouteMissingView(t *testing.T) {
+	Convey("Given I have setup a route with an missisng view", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+		s.Register()
+
+		lc.RequireStart()
+
+		ctx := context.Background()
+		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
+
+		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
+		r := mvc.NewRouter(mux, v)
+
+		r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+			return mvc.View("none.tmpl"), &test.Model
+		})
+
+		Convey("When I query for hello", func() {
+			client := cl.NewHTTP()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+			So(err, ShouldBeNil)
+
+			req.Header.Set("Content-Type", "text/html")
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have no html", func() {
+				So(resp.StatusCode, ShouldEqual, 500)
+				So(resp.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
+
+				s := string(body)
+				So(s, ShouldBeEmpty)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func TestRouteError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		mux := http.NewServeMux()

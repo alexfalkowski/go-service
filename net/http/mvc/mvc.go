@@ -95,6 +95,7 @@ func (r *Router) Route(path string, controller Controller) bool {
 
 		if err := r.views.template.ExecuteTemplate(res, string(view), model); err != nil {
 			meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
+			res.WriteHeader(status.Code(err))
 		}
 	}
 
@@ -116,14 +117,11 @@ func (r *Router) Static(path, name string) bool {
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
-
-			return
 		}
 
 		if _, err := res.Write(bytes); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
-
-			return
+			res.WriteHeader(status.Code(err))
 		}
 	}
 
