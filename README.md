@@ -269,9 +269,9 @@ token:
 The framework allows you to define a [limiter](https://github.com/sethvargo/go-limiter). This will be applied to the different transports.
 
 The different kinds are:
-- [user-agent](meta/meta.go)
-- [ip](meta/meta.go)
-- [token](transport/grpc/security/token/token.go)
+- [user-agent](transport/meta/key.go)
+- [ip](transport/meta/key.go)
+- [token](transport/meta/key.go)
 
 ### Configuration
 
