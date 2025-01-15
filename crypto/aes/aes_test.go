@@ -1,6 +1,7 @@
 package aes_test
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -39,19 +40,6 @@ func TestGenertor(t *testing.T) {
 
 func TestValidCipher(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
-
-	Convey("Given I have an cipher with invalid key", t, func() {
-		cipher, err := aes.NewCipher(rand, &aes.Config{Key: test.Path("secrets/hooks")})
-		So(err, ShouldBeNil)
-
-		Convey("When I encrypt data", func() {
-			_, err := cipher.Encrypt("test")
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
 
 	Convey("When I create an cipher", t, func() {
 		cipher, err := aes.NewCipher(rand, test.NewAES())
@@ -97,7 +85,32 @@ func TestValidCipher(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestInvalidCipher(t *testing.T) {
+	Convey("Given I have an cipher with invalid key", t, func() {
+		rand := rand.NewGenerator(rand.NewReader())
+
+		cipher, err := aes.NewCipher(rand, &aes.Config{Key: test.Path("secrets/hooks")})
+		So(err, ShouldBeNil)
+
+		Convey("When I encrypt data", func() {
+			_, err := cipher.Encrypt("test")
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		Convey("When I decrypt data", func() {
+			m := base64.StdEncoding.EncodeToString([]byte("test"))
+			_, err := cipher.Decrypt(m)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
 	Convey("Given I have an cipher with a bad rand", t, func() {
 		rand := rand.NewGenerator(&test.BadReader{})
 
