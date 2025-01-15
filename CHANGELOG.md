@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.370.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.0) - 2025-01-15
+
+- [`849b23d`](https://github.com/alexfalkowski/go-service/commit/849b23d2215829ceb643df592166c7286ec13d06) feat(hmac): writting to a hash does not produce an error (#1173)
+- [`dbbef5a`](https://github.com/alexfalkowski/go-service/commit/dbbef5a2122dfaab618660ec6809df697b64f060) docs(limiter): update kinds to point to transport/meta/key.go (#1172)
+- [`e898a31`](https://github.com/alexfalkowski/go-service/commit/e898a31e45c746dfc622e410ba7de6d9928b5787) test(aes): add missing (#1170)
+
 ## [v1.369.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.369.1) - 2025-01-15
 
 - [`d3acf6d`](https://github.com/alexfalkowski/go-service/commit/d3acf6dfbca9235825963fb4e0ee24eb1fde8d86) fix(mvc): write header on error (#1169)
