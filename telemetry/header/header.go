@@ -14,12 +14,7 @@ func (m Map) Secrets() error {
 			continue
 		}
 
-		f, err := os.ReadFile(v)
-		if err != nil {
-			return err
-		}
-
-		m[k] = f
+		m[k] = os.MustReadFile(v)
 	}
 
 	return nil

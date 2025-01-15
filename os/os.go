@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // FileExists for the path provided.
@@ -22,6 +24,14 @@ func ReadFile(path string) (string, error) {
 	b, err := os.ReadFile(filepath.Clean(path))
 
 	return strings.TrimSpace(string(b)), err
+}
+
+// MustReadFile is like ReadFile, though it panics on error.
+func MustReadFile(path string) string {
+	s, err := ReadFile(path)
+	runtime.Must(err)
+
+	return s
 }
 
 // ReadBase64File for the path provided.
