@@ -29,25 +29,25 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/types"
 )
 
 // ErrInvalidConfig when decoding fails.
 var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
-func NewConfig[T comparable](i *cmd.InputConfig) (*T, error) {
-	var c T
-	ptr := &c
+func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
+	config := types.Pointer[T]()
 
-	if err := i.Decode(ptr); err != nil {
+	if err := input.Decode(config); err != nil {
 		return nil, err
 	}
 
-	if structs.IsZero(ptr) {
+	if structs.IsZero(config) {
 		return nil, ErrInvalidConfig
 	}
 
-	return ptr, nil
+	return config, nil
 }
 
 // Config for the service.

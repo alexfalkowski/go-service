@@ -9,6 +9,7 @@ import (
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/types"
 )
 
 type (
@@ -22,17 +23,16 @@ type (
 // NewRequestHandler for content.
 func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return cont.handler(prefix, func(ctx context.Context) (any, error) {
-		var rq Req
-		ptr := &rq
+		request := types.Pointer[Req]()
 
 		e := hc.Encoder(ctx)
 		req := hc.Request(ctx)
 
-		if err := e.Decode(req.Body, ptr); err != nil {
+		if err := e.Decode(req.Body, request); err != nil {
 			return nil, status.Error(http.StatusBadRequest, err.Error())
 		}
 
-		rs, err := handler(ctx, ptr)
+		rs, err := handler(ctx, request)
 		if err != nil {
 			return nil, err
 		}
