@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.370.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.2) - 2025-01-16
+
+- [`60cd87e`](https://github.com/alexfalkowski/go-service/commit/60cd87e5a2c8eb93ccc6ba58590ffc71e0d4cc02) fix(transport): geolocation can only be read from headers (#1178)
+- [`4a603b4`](https://github.com/alexfalkowski/go-service/commit/4a603b4722353c91344e0dfff02e4ad0a7c83a67) test(events): add missing (#1176)
+
 ## [v1.370.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.1) - 2025-01-15
 
 - [`1f8d4b1`](https://github.com/alexfalkowski/go-service/commit/1f8d4b15c4c15cb367e7153cf153c5e18a505006) fix(deps): upgraded google.golang.org/protobuf v1.36.2 => v1.36.3 (#1175)
