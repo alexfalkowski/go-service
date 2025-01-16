@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.371.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.371.0) - 2025-01-16
+
+- [`5cfa016`](https://github.com/alexfalkowski/go-service/commit/5cfa016ff5e5eb7048b23758720637cf52180171) feat(http): handle errors in a testable way (#1179)
+
 ## [v1.370.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.370.2) - 2025-01-16
 
 - [`60cd87e`](https://github.com/alexfalkowski/go-service/commit/60cd87e5a2c8eb93ccc6ba58590ffc71e0d4cc02) fix(transport): geolocation can only be read from headers (#1178)
