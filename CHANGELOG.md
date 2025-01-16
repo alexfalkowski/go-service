@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.372.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.372.0) - 2025-01-16
+
+- [`dca98b1`](https://github.com/alexfalkowski/go-service/commit/dca98b15b7545c3d38c0e1e72ede3e4ae6f23363) feat(types): add a way to get a pointer (#1180)
+
 ## [v1.371.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.371.0) - 2025-01-16
 
 - [`5cfa016`](https://github.com/alexfalkowski/go-service/commit/5cfa016ff5e5eb7048b23758720637cf52180171) feat(http): handle errors in a testable way (#1179)
