@@ -38,9 +38,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 
 		var event *events.Event
 
-		err = r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
-		So(err, ShouldBeNil)
-
+		r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
@@ -93,9 +91,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 
 		var event *events.Event
 
-		err = r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
-		So(err, ShouldBeNil)
-
+		r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
@@ -143,9 +139,7 @@ func TestSendNotReceive(t *testing.T) {
 
 		var event *events.Event
 
-		err = r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
-		So(err, ShouldBeNil)
-
+		r.Register(context.Background(), "/events", func(_ context.Context, e events.Event) { event = &e })
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
