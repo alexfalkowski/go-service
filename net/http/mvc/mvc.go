@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
+	nh "github.com/alexfalkowski/go-service/net/http"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/go-sprout/sprout/sprigin"
@@ -119,10 +120,7 @@ func (r *Router) Static(path, name string) bool {
 			res.WriteHeader(status.Code(err))
 		}
 
-		if _, err := res.Write(bytes); err != nil {
-			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
-			res.WriteHeader(status.Code(err))
-		}
+		nh.WriteResponse(ctx, res, bytes)
 	}
 
 	r.mux.HandleFunc(path, handler)
