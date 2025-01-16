@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.373.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.373.1) - 2025-01-16
+
+- [`19761a3`](https://github.com/alexfalkowski/go-service/commit/19761a3ee40994d10040a644e53610706b927763) build(ci): use alexfalkowski/release:3.4 (#1187)
+- [`d1ff719`](https://github.com/alexfalkowski/go-service/commit/d1ff71955feaf588f9bab5640c31ded7832896ac) fix(server): prefix errors (#1186)
+- [`d4975ef`](https://github.com/alexfalkowski/go-service/commit/d4975ef29d68c44c9c3b070fbeda2060617c3486) test(debug): add missing (#1185)
+- [`4cbf700`](https://github.com/alexfalkowski/go-service/commit/4cbf70037f66d4e61670b7f03c095c382c3f8773) test(meta): add missing (#1184)
+- [`e65dc94`](https://github.com/alexfalkowski/go-service/commit/e65dc943a511791e26e572c1b6e0b78a8ca6875c) test(token): add missing (#1182)
+
 ## [v1.373.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.373.0) - 2025-01-16
 
 - [`6fec3be`](https://github.com/alexfalkowski/go-service/commit/6fec3be192764f5410aa333e54d0649ddba49121) feat(events): ignore error (#1181)
