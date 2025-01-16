@@ -47,7 +47,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx = m.WithIPAddr(ctx, ip)
 	ctx = m.WithIPAddrKind(ctx, kind)
 
-	ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, req))
+	ctx = m.WithGeolocation(ctx, extractGeolocation(req))
 	ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, req))
 
 	next(res, req.WithContext(ctx))
@@ -141,10 +141,6 @@ func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
 	return meta.Ignored(value)
 }
 
-func extractGeolocation(ctx context.Context, req *http.Request) meta.Valuer {
-	if gl := m.Geolocation(ctx); gl != nil {
-		return gl
-	}
-
+func extractGeolocation(req *http.Request) meta.Valuer {
 	return meta.String(req.Header.Get("Geolocation"))
 }

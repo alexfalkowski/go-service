@@ -37,7 +37,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.U
 		ctx = m.WithIPAddr(ctx, ip)
 		ctx = m.WithIPAddrKind(ctx, kind)
 
-		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
+		ctx = m.WithGeolocation(ctx, extractGeolocation(md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		_ = grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", requestID.Value()))
@@ -71,7 +71,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version) grpc.
 		ctx = m.WithIPAddr(ctx, ip)
 		ctx = m.WithIPAddrKind(ctx, kind)
 
-		ctx = m.WithGeolocation(ctx, extractGeolocation(ctx, md))
+		ctx = m.WithGeolocation(ctx, extractGeolocation(md))
 		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
@@ -194,11 +194,7 @@ func authorization(md metadata.MD) string {
 	return ""
 }
 
-func extractGeolocation(ctx context.Context, md metadata.MD) meta.Valuer {
-	if gl := m.Geolocation(ctx); gl != nil {
-		return gl
-	}
-
+func extractGeolocation(md metadata.MD) meta.Valuer {
 	if id := md.Get("geolocation"); len(id) > 0 {
 		return meta.String(id[0])
 	}
