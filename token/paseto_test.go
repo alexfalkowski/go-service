@@ -10,7 +10,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestPaseto(t *testing.T) {
+func TestValidPaseto(t *testing.T) {
 	a, _ := ed25519.NewSigner(test.NewEd25519())
 	paseto := token.NewPaseto(a)
 
@@ -28,6 +28,16 @@ func TestPaseto(t *testing.T) {
 
 			So(sub, ShouldEqual, "test")
 		})
+	})
+}
+
+func TestInvalidPaseto(t *testing.T) {
+	a, _ := ed25519.NewSigner(test.NewEd25519())
+	paseto := token.NewPaseto(a)
+
+	Convey("When I generate a paseto token", t, func() {
+		token, err := paseto.Generate("test", "test", "test", time.Hour)
+		So(err, ShouldBeNil)
 
 		Convey("Then I should have an error due to invalid aud", func() {
 			_, err := paseto.Verify(token, "bob", "test")
@@ -51,4 +61,24 @@ func TestPaseto(t *testing.T) {
 			})
 		})
 	}
+
+	Convey("Given I have paseto with a bad signer.", t, func() {
+		paseto := token.NewPaseto(&test.BadEd25519Signer{})
+
+		Convey("When I generate a token", func() {
+			_, err := paseto.Generate("test", "test", "test", time.Hour)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		Convey("When I verify a token", func() {
+			_, err := paseto.Verify("", "bob", "test")
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
 }
