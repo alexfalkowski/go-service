@@ -12,14 +12,17 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
+//nolint:funlen
 func TestTokenAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "key"} {
 		Convey("Given I have a all the servers", t, func() {
@@ -44,6 +47,8 @@ func TestTokenAuthUnary(t *testing.T) {
 			lc.RequireStart()
 
 			ctx := context.Background()
+			ctx = tm.WithGeolocation(ctx, meta.String("geo:47,11"))
+
 			cl := &test.Client{
 				Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
 				Generator: token,
