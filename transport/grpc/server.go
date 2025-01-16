@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
@@ -57,7 +58,7 @@ type Server struct {
 func NewServer(params ServerParams) (*Server, error) {
 	opt, err := creds(params.Config)
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("grpc", err)
 	}
 
 	var mts *metrics.Server
@@ -89,7 +90,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	serv, err := sg.NewServer(svr, config(params.Config))
 	if err != nil {
-		return nil, err
+		return nil, errors.Prefix("grpc", err)
 	}
 
 	server := &Server{
