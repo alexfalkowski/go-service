@@ -14,22 +14,6 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	Convey("Given I have invalid creds", t, func() {
-		config := &grpc.Config{
-			Config: &server.Config{
-				TLS: &tls.Config{Cert: "bob", Key: "bob"},
-			},
-		}
-
-		Convey("When I create a server", func() {
-			_, err := grpc.NewServer(grpc.ServerParams{Config: config})
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
-
 	Convey("Given I have secure creds", t, func() {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
@@ -48,5 +32,26 @@ func TestServer(t *testing.T) {
 		})
 
 		lc.RequireStop()
+	})
+}
+
+func TestInvalidServer(t *testing.T) {
+	Convey("When I try to create a server with invalid tls configuration", t, func() {
+		cfg := &grpc.Config{
+			Config: &server.Config{
+				Timeout: "5s",
+				TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
+			},
+		}
+		p := grpc.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg,
+		}
+
+		_, err := grpc.NewServer(p)
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
 	})
 }
