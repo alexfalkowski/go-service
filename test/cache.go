@@ -43,7 +43,7 @@ func (c *Cache) NewRedisCache() (*cache.Cache, error) {
 
 // NewRedisClient for test.
 func (c *Cache) NewRedisClient() (gr.Client, error) {
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
+	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, FS, c.Tracer, c.Logger)
 	if err != nil {
 		return nil, err
 	}

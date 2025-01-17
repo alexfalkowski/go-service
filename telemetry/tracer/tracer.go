@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/os"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -29,12 +30,12 @@ func Register() {
 }
 
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
+func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, fs os.FileSystem, cfg *Config, logger *zap.Logger) (trace.Tracer, error) {
 	if !IsEnabled(cfg) {
 		return noop.Tracer{}, nil
 	}
 
-	if err := cfg.Headers.Secrets(); err != nil {
+	if err := cfg.Headers.Secrets(fs); err != nil {
 		return nil, se.Prefix("tracer", err)
 	}
 

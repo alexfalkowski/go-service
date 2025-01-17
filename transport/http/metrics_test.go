@@ -9,22 +9,19 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	ht "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:funlen
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc, tc, logger)
 
 		pg.Register(tracer, logger)
 
@@ -81,15 +78,13 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 	})
 }
 
-//nolint:funlen
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
 		tc := test.NewOTLPTracerConfig()
-		tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
-		So(err, ShouldBeNil)
+		tracer := test.NewTracer(lc, tc, logger)
 
 		pg.Register(tracer, logger)
 

@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/hooks"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
 	sh "github.com/alexfalkowski/go-service/transport/http"
@@ -42,9 +41,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
-			So(err, ShouldBeNil)
-
+			tracer := test.NewTracer(lc, tc, logger)
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 
 			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
@@ -143,9 +140,7 @@ func TestSendNotReceive(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
-			So(err, ShouldBeNil)
-
+			tracer := test.NewTracer(lc, tc, logger)
 			rt := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			rt = &delRoundTripper{rt: rt}
 

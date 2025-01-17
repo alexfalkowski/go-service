@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
@@ -25,6 +26,24 @@ func TestOTLP(t *testing.T) {
 				lc.RequireStop()
 				So(counter, ShouldNotBeNil)
 			})
+		})
+	})
+}
+
+func TestInvalidReader(t *testing.T) {
+	Convey("When I try to create a reader with an invalid reader", t, func() {
+		_, err := metrics.NewReader(&test.BadFS{}, test.NewOTLPMetricsConfig())
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I try to create a reader with an invalid configuration", t, func() {
+		_, err := metrics.NewReader(test.FS, &metrics.Config{Kind: "invalid"})
+
+		Convey("Then I should have no error", func() {
+			So(err, ShouldBeNil)
 		})
 	})
 }

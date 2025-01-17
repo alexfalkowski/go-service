@@ -33,10 +33,7 @@ type Client struct {
 
 // NewTracer for client.
 func (c *Client) NewTracer() trace.Tracer {
-	tracer, err := tracer.NewTracer(c.Lifecycle, Environment, Version, Name, c.Tracer, c.Logger)
-	runtime.Must(err)
-
-	return tracer
+	return NewTracer(c.Lifecycle, c.Tracer, c.Logger)
 }
 
 // NewHTTP client for test.

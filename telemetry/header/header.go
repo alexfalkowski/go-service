@@ -8,13 +8,13 @@ import (
 type Map map[string]string
 
 // Secrets will traverse the map and load any secrets that have been configured.
-func (m Map) Secrets() error {
+func (m Map) Secrets(fs os.FileSystem) error {
 	for k, v := range m {
-		if !os.FileExists(v) {
+		if !fs.FileExists(v) {
 			continue
 		}
 
-		f, err := os.ReadFile(v)
+		f, err := fs.ReadFile(v)
 		if err != nil {
 			return err
 		}
