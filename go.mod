@@ -1,6 +1,7 @@
 module github.com/alexfalkowski/go-service
 
 go 1.23
+toolchain go1.23.5
 
 require (
 	aidanwoods.dev/go-paseto v1.5.3
@@ -16,7 +17,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-redis/cache/v9 v9.0.0
 	github.com/go-resty/resty/v2 v2.16.3
-	github.com/go-sprout/sprout v0.6.0
+	github.com/go-sprout/sprout v1.0.0
 	github.com/goccy/go-json v0.10.4
 	github.com/golang-jwt/jwt/v4 v4.5.1
 	github.com/google/uuid v1.6.0
@@ -65,9 +66,9 @@ require (
 
 require (
 	aidanwoods.dev/go-result v0.1.0 // indirect
-	dario.cat/mergo v1.0.0 // indirect
+	dario.cat/mergo v1.0.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -106,7 +107,7 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
 	github.com/tklauser/numcpus v0.9.0 // indirect
