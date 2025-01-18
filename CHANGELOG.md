@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.375.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.375.1) - 2025-01-18
+
+- [`d42f4a2`](https://github.com/alexfalkowski/go-service/commit/d42f4a20e71b2feac9d89350be8137dda3b0f5b0) fix(deps): upgraded github.com/beevik/nts v0.2.0 => v0.2.1 (#1193)
+
 ## [v1.375.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.375.0) - 2025-01-18
 
 - [`91f816c`](https://github.com/alexfalkowski/go-service/commit/91f816c7aa449d4e8115a08e44a518688973ac26) feat(os): add fs to allow better testability (#1192)
