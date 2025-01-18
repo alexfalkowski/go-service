@@ -1,12 +1,11 @@
 package hooks
 
 import (
-	"bytes"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/alexfalkowski/go-service/io"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/google/uuid"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -24,14 +23,14 @@ func NewHandler(hook *hooks.Webhook) *Handler {
 
 // ServeHTTP for hooks.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	payload, err := io.ReadAll(req.Body)
+	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
 		nh.WriteError(req.Context(), res, err, http.StatusBadRequest)
 
 		return
 	}
 
-	req.Body = io.NopCloser(bytes.NewReader(payload))
+	req.Body = body
 
 	if err := h.hook.Verify(payload, req.Header); err != nil {
 		nh.WriteError(req.Context(), res, err, http.StatusBadRequest)
@@ -56,12 +55,12 @@ type RoundTripper struct {
 
 // RoundTrip for hooks.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	payload, err := io.ReadAll(req.Body)
+	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Body = io.NopCloser(bytes.NewReader(payload))
+	req.Body = body
 
 	now := time.Now()
 	id := uuid.New().String()

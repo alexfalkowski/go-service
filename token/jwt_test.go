@@ -23,7 +23,7 @@ func TestKID(t *testing.T) {
 	})
 
 	Convey("When I generate a bad KID", t, func() {
-		rand := rand.NewGenerator(&test.BadReader{})
+		rand := rand.NewGenerator(&test.BadReaderCloser{})
 		kid, err := token.NewKID(rand)
 
 		Convey("Then I should have an error", func() {
