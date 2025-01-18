@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.380.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.380.0) - 2025-01-18
+
+- [`4150bad`](https://github.com/alexfalkowski/go-service/commit/4150badfbd3a0a2067c65aeab892df6745b5e842) feat(io): add read all with a read closer (#1200)
+- [`df5226c`](https://github.com/alexfalkowski/go-service/commit/df5226ca16b56a096f63ac7a2b1efdb9332671a2) test(grpc): add missing (#1199)
+
 ## [v1.379.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.379.0) - 2025-01-18
 
 - [`4dcb242`](https://github.com/alexfalkowski/go-service/commit/4dcb2423a1c19d9486e0dc1e450f083ebb04c6ea) feat(grpc): peer is always set (#1197)
