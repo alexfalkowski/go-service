@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport"
 	th "github.com/alexfalkowski/go-service/transport/http"
@@ -177,13 +176,9 @@ func BenchmarkTraceHTTP(b *testing.B) {
 
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
-
 	tc := test.NewOTLPTracerConfig()
 	logger := zap.NewNop()
-
-	tracer, err := tracer.NewTracer(lc, test.Environment, test.Version, test.Name, tc, logger)
-	runtime.Must(err)
-
+	tracer := test.NewTracer(lc, tc, logger)
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{

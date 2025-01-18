@@ -12,9 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
-	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/config"
-	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/argon2"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
@@ -24,16 +22,14 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/module"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
-	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -260,12 +256,9 @@ func shutdown(s fx.Shutdowner) {
 
 func opts() []fx.Option {
 	return []fx.Option{
-		fx.NopLogger, env.Module,
-		runtime.Module, cmd.Module, config.Module, debug.Module,
-		sync.Module, feature.Module, st.Module,
-		transport.Module, telemetry.Module, health.Module,
-		sql.Module, hooks.Module, cache.Module,
-		compress.Module, encoding.Module, crypto.Module, token.Module,
+		module.Module, cmd.Module, config.Module, debug.Module,
+		feature.Module, transport.Module, telemetry.Module, health.Module,
+		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
