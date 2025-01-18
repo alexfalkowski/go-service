@@ -38,45 +38,38 @@ func (c *Client) NewTracer() trace.Tracer {
 
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
-	sec, err := h.WithClientTLS(c.TLS)
-	runtime.Must(err)
-
 	tracer := c.NewTracer()
 	opts := []h.ClientOption{
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
-		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), sec,
+		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), h.WithClientTLS(c.TLS),
 	}
 
 	if c.Compression {
 		opts = append(opts, h.WithClientCompression())
 	}
 
-	client := h.NewClient(opts...)
+	client, err := h.NewClient(opts...)
+	runtime.Must(err)
 
 	return client
 }
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
 	tracer := c.NewTracer()
-
-	sec, err := g.WithClientTLS(c.TLS)
-	runtime.Must(err)
-
 	config := &client.Config{
 		Address: c.Transport.GRPC.Address,
 		Retry:   c.Transport.GRPC.Retry,
 	}
-
 	opts := []g.ClientOption{
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
 		g.WithClientBreaker(), g.WithClientRetry(config.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(c.Generator), g.WithClientTimeout("1m"),
-		g.WithClientDialOption(), sec,
+		g.WithClientDialOption(), g.WithClientTLS(c.TLS),
 	}
 
 	if c.Compression {

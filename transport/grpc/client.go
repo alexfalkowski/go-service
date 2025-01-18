@@ -3,7 +3,7 @@ package grpc
 import (
 	"time"
 
-	st "github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/retry"
 	t "github.com/alexfalkowski/go-service/time"
@@ -31,13 +31,10 @@ type ClientOption interface {
 	apply(opts *clientOpts)
 }
 
-var none = clientOptionFunc(func(_ *clientOpts) {
-})
-
 type clientOpts struct {
 	tracer      trace.Tracer
 	meter       metric.Meter
-	security    grpc.DialOption
+	security    *tls.Config
 	gen         token.Generator
 	logger      *zap.Logger
 	retry       *retry.Config
@@ -92,22 +89,10 @@ func WithClientBreaker() ClientOption {
 }
 
 // WithClientTLS for gRPC.
-func WithClientTLS(sec *st.Config) (ClientOption, error) {
-	if !st.IsEnabled(sec) {
-		return none, nil
-	}
-
-	conf, err := st.NewConfig(sec)
-	if err != nil {
-		return none, err
-	}
-
-	creds := credentials.NewTLS(conf)
-	opt := clientOptionFunc(func(o *clientOpts) {
-		o.security = grpc.WithTransportCredentials(creds)
+func WithClientTLS(sec *tls.Config) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.security = sec
 	})
-
-	return opt, nil
 }
 
 // WithClientDialOption for gRPC.
@@ -160,9 +145,25 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 }
 
 // NewDialOptions for gRPC.
-func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
-	cis := UnaryClientInterceptors(opts...)
+func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
+
+	var security grpc.DialOption
+
+	if tls.IsEnabled(os.security) {
+		conf, err := tls.NewConfig(os.security)
+		if err != nil {
+			return nil, err
+		}
+
+		creds := credentials.NewTLS(conf)
+
+		security = grpc.WithTransportCredentials(creds)
+	} else {
+		security = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
+	cis := UnaryClientInterceptors(opts...)
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(string(os.userAgent)),
@@ -171,7 +172,7 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 			Timeout:             os.timeout,
 			PermitWithoutStream: true,
 		}),
-		grpc.WithChainUnaryInterceptor(cis...), sto, os.security,
+		grpc.WithChainUnaryInterceptor(cis...), sto, security,
 	}
 
 	if os.compression {
@@ -184,12 +185,15 @@ func NewDialOptions(opts ...ClientOption) []grpc.DialOption {
 
 	ops = append(ops, os.opts...)
 
-	return ops
+	return ops, nil
 }
 
 // NewClient for gRPC.
 func NewClient(target string, opts ...ClientOption) (*grpc.ClientConn, error) {
-	os := NewDialOptions(opts...)
+	os, err := NewDialOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	return grpc.NewClient(target, os...)
 }
@@ -264,10 +268,6 @@ func options(opts ...ClientOption) *clientOpts {
 
 	if os.timeout == 0 {
 		os.timeout = 30 * time.Second
-	}
-
-	if os.security == nil {
-		os.security = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
 
 	return os
