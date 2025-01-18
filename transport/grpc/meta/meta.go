@@ -2,12 +2,12 @@ package meta
 
 import (
 	"context"
-	"net"
 	"path"
 	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
@@ -130,20 +130,10 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Value
 	}
 
 	peerKind := meta.String("peer")
-
-	peer, ok := peer.FromContext(ctx)
-	if !ok {
-		return peerKind, meta.Blank()
-	}
-
+	peer, _ := peer.FromContext(ctx)
 	addr := peer.Addr.String()
 
-	host, _, err := net.SplitHostPort(peer.Addr.String())
-	if err != nil {
-		return peerKind, meta.String(addr)
-	}
-
-	return peerKind, meta.String(host)
+	return peerKind, meta.String(net.Host(addr))
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Valuer {
