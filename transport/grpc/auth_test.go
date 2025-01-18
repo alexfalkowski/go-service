@@ -166,7 +166,6 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
-			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 			ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
 			ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
@@ -180,6 +179,49 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
+func TestAuthUnaryWithAppend(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc,
+			Transport: cfg, Meter: m, Mux: mux,
+		}
+		s.Register()
+
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc,
+			Transport: cfg, Meter: m,
+		}
+
+		lc.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			ctx := context.Background()
+			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+
+			conn := cl.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			_, err := client.SayHello(ctx, req)
+
+			Convey("Then I should have a reply", func() {
+				So(status.Code(err), ShouldEqual, codes.OK)
 			})
 
 			lc.RequireStop()

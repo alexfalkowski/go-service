@@ -73,6 +73,7 @@ func TestTokenAuthUnary(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid reply", func() {
+					So(resp.StatusCode, ShouldEqual, 200)
 					So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
 				})
 
@@ -129,6 +130,7 @@ func TestValidAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
+				So(resp.StatusCode, ShouldEqual, 200)
 				So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
 			})
 
@@ -173,7 +175,6 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Request-Id", "test")
-			req.Header.Set("Authorization", "What Invalid")
 
 			resp, err := client.Do(req)
 			So(err, ShouldBeNil)
@@ -184,6 +185,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
+				So(resp.StatusCode, ShouldEqual, 401)
 				So(strings.TrimSpace(string(body)), ShouldContainSubstring, `token: invalid match`)
 			})
 
@@ -192,7 +194,57 @@ func TestInvalidAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
+func TestAuthUnaryWithAppend(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(t)
+		logger := test.NewLogger(lc)
+		cfg := test.NewInsecureTransportConfig()
+		tc := test.NewOTLPTracerConfig()
+		m := test.NewOTLPMeter(lc)
+
+		s := &test.Server{
+			Lifecycle: lc, Logger: logger, Tracer: tc,
+			Transport: cfg, Meter: m, Mux: mux,
+		}
+		s.Register()
+
+		lc.RequireStart()
+
+		ctx := context.Background()
+		cl := &test.Client{
+			Lifecycle: lc, Logger: logger, Tracer: tc,
+			Transport: cfg, Meter: m,
+		}
+
+		rpc.Register(mux, test.Content, test.Pool)
+		rpc.Route("/hello", test.SuccessSayHello)
+
+		Convey("When I query for a unauthenticated greet", func() {
+			client := cl.NewHTTP()
+			message := []byte(`{"name":"test"}`)
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewBuffer(message))
+			So(err, ShouldBeNil)
+
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Request-Id", "test")
+			req.Header.Set("Authorization", "What Invalid")
+
+			resp, err := client.Do(req)
+			So(err, ShouldBeNil)
+
+			defer resp.Body.Close()
+
+			Convey("Then I should have a reply", func() {
+				So(resp.StatusCode, ShouldEqual, 200)
+			})
+
+			lc.RequireStop()
+		})
+	})
+}
+
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		mux := http.NewServeMux()
@@ -236,6 +288,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
+				So(resp.StatusCode, ShouldEqual, 401)
 				So(strings.TrimSpace(string(body)), ShouldContainSubstring, "invalid match")
 			})
 
@@ -293,7 +346,6 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		mux := http.NewServeMux()
