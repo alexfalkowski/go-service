@@ -56,7 +56,7 @@ func TestEncoder(t *testing.T) {
 		Convey("When I decode the proto with a bad reader", func() {
 			var msg grpc_health_v1.HealthCheckResponse
 
-			err := encoder.Decode(&test.BadReader{}, &msg)
+			err := encoder.Decode(&test.BadReaderCloser{}, &msg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

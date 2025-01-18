@@ -25,7 +25,7 @@ func TestGenertor(t *testing.T) {
 	})
 
 	Convey("Given I have a bad generator", t, func() {
-		gen := hmac.NewGenerator(rand.NewGenerator(&test.BadReader{}))
+		gen := hmac.NewGenerator(rand.NewGenerator(&test.BadReaderCloser{}))
 
 		Convey("When I generate key", func() {
 			key, err := gen.Generate()
