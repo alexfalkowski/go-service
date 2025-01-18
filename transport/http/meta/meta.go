@@ -2,12 +2,12 @@ package meta
 
 import (
 	"context"
-	"net"
 	"net/http"
 	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
@@ -117,12 +117,7 @@ func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
 	remoteKind := meta.String("remote")
 	addr := req.RemoteAddr
 
-	host, _, err := net.SplitHostPort(addr)
-	if err != nil {
-		return remoteKind, meta.String(addr)
-	}
-
-	return remoteKind, meta.String(host)
+	return remoteKind, meta.String(net.Host(addr))
 }
 
 func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
