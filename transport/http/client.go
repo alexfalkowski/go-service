@@ -1,11 +1,10 @@
 package http
 
 import (
-	"crypto/tls"
 	"net/http"
 	"time"
 
-	ct "github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	sr "github.com/alexfalkowski/go-service/retry"
@@ -28,9 +27,6 @@ import (
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
-
-var none = clientOptionFunc(func(_ *clientOpts) {
-})
 
 type clientOpts struct {
 	tracer       trace.Tracer
@@ -123,27 +119,20 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 }
 
 // WithClientTLS for HTTP.
-func WithClientTLS(sec *ct.Config) (ClientOption, error) {
-	if !ct.IsEnabled(sec) {
-		return none, nil
-	}
-
-	conf, err := ct.NewConfig(sec)
-	if err != nil {
-		return none, err
-	}
-
-	opt := clientOptionFunc(func(o *clientOpts) {
-		o.tls = conf
+func WithClientTLS(sec *tls.Config) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.tls = sec
 	})
-
-	return opt, nil
 }
 
 // NewRoundTripper for HTTP.
-func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
+func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
-	hrt := roundTripper(os)
+
+	hrt, err := roundTripper(os)
+	if err != nil {
+		return nil, err
+	}
 
 	if os.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
@@ -175,27 +164,42 @@ func NewRoundTripper(opts ...ClientOption) http.RoundTripper {
 
 	hrt = meta.NewRoundTripper(os.userAgent, hrt)
 
-	return hrt
+	return hrt, nil
 }
 
 // NewClient for HTTP.
-func NewClient(opts ...ClientOption) *http.Client {
+func NewClient(opts ...ClientOption) (*http.Client, error) {
 	os := options(opts...)
+
+	transport, err := NewRoundTripper(opts...)
+	if err != nil {
+		return nil, err
+	}
+
 	client := &http.Client{
-		Transport: NewRoundTripper(opts...),
+		Transport: transport,
 		Timeout:   os.timeout,
 	}
 
-	return client
+	return client, nil
 }
 
-func roundTripper(os *clientOpts) http.RoundTripper {
+func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 	hrt := os.roundTripper
 	if hrt != nil {
-		return hrt
+		return hrt, nil
 	}
 
-	return nh.Transport(os.tls)
+	if !tls.IsEnabled(os.tls) {
+		return nh.Transport(nil), nil
+	}
+
+	conf, err := tls.NewConfig(os.tls)
+	if err != nil {
+		return nil, err
+	}
+
+	return nh.Transport(conf), nil
 }
 
 func options(opts ...ClientOption) *clientOpts {

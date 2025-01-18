@@ -177,7 +177,7 @@ func registrations(logger *zap.Logger, cfg *http.Config, ua env.UserAgent, trace
 	t := 5 * time.Second
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", t, nc)
-	rt := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(ua))
+	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(ua))
 	hc := checker.NewHTTPChecker("https://google.com", rt, t)
 	hr := server.NewRegistration("http", t, hc)
 
