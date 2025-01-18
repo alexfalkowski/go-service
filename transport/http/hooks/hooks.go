@@ -66,10 +66,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	now := time.Now()
 	id := uuid.New().String()
 
-	signature, err := r.hook.Sign(id, now, payload)
-	if err != nil {
-		return nil, err
-	}
+	// Sign does not return an error.
+	signature, _ := r.hook.Sign(id, now, payload)
 
 	req.Header.Add(hooks.HeaderWebhookID, id)
 	req.Header.Add(hooks.HeaderWebhookSignature, signature)
