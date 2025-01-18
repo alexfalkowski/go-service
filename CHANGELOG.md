@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.377.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.377.0) - 2025-01-18
+
+- [`2b47495`](https://github.com/alexfalkowski/go-service/commit/2b47495dc74abfeec2f42a989ccec8fbd389af9a) feat(transport): client options should not return errors (#1195)
+
 ## [v1.376.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.376.0) - 2025-01-18
 
 - [`d590320`](https://github.com/alexfalkowski/go-service/commit/d5903207280be9b58eaaeae7c8f9e24a4e169ef7) feat(deps): upgraded go.opentelemetry.io/otel v1.33.0 => v1.34.0 (#1194)
