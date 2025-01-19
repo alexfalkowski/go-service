@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/test"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
 	sh "github.com/alexfalkowski/go-service/transport/http"
+	hh "github.com/alexfalkowski/go-service/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -33,7 +34,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
-		r := eh.NewReceiver(mux, h)
+		r := eh.NewReceiver(mux, hh.NewWebhook(h))
 
 		var event *events.Event
 
@@ -46,7 +47,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 			rt, err := sh.NewRoundTripper(sh.WithClientLogger(logger), sh.WithClientTracer(tracer), sh.WithClientMetrics(m))
 			So(err, ShouldBeNil)
 
-			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
+			c, err := eh.NewSender(hh.NewWebhook(h), eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), fmt.Sprintf("http://%s/events", cfg.HTTP.Address))
@@ -86,7 +87,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
-		r := eh.NewReceiver(mux, h)
+		r := eh.NewReceiver(mux, hh.NewWebhook(h))
 
 		var event *events.Event
 
@@ -94,7 +95,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 		lc.RequireStart()
 
 		Convey("When I send an event", func() {
-			c, err := eh.NewSender(h)
+			c, err := eh.NewSender(hh.NewWebhook(h))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), fmt.Sprintf("http://%s/events", cfg.HTTP.Address))
@@ -134,7 +135,7 @@ func TestSendNotReceive(t *testing.T) {
 		h, err := hooks.New(test.NewHook())
 		So(err, ShouldBeNil)
 
-		r := eh.NewReceiver(mux, h)
+		r := eh.NewReceiver(mux, hh.NewWebhook(h))
 
 		var event *events.Event
 
@@ -149,7 +150,7 @@ func TestSendNotReceive(t *testing.T) {
 
 			rt = &delRoundTripper{rt: rt}
 
-			c, err := eh.NewSender(h, eh.WithSenderRoundTripper(rt))
+			c, err := eh.NewSender(hh.NewWebhook(h), eh.WithSenderRoundTripper(rt))
 			So(err, ShouldBeNil)
 
 			ctx := events.ContextWithTarget(context.Background(), fmt.Sprintf("http://%s/events", cfg.HTTP.Address))
