@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	h "github.com/alexfalkowski/go-service/transport/events/http/hooks"
+	hh "github.com/alexfalkowski/go-service/transport/events/http/hooks"
+	"github.com/alexfalkowski/go-service/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
-	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
 // ReceiverFunc for HTTP.
@@ -32,7 +32,7 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 
 	// Error is only returned when an incorrect signature of a function is used (it uses reflection).
 	handler, _ = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
-	handler = h.NewHandler(r.hook, handler)
+	handler = hh.NewHandler(r.hook, handler)
 
 	r.mux.HandleFunc("POST "+path, func(w http.ResponseWriter, r *http.Request) {
 		handler.ServeHTTP(w, r)
