@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.381.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.381.0) - 2025-01-19
+
+- [`65352f1`](https://github.com/alexfalkowski/go-service/commit/65352f10e33de616bab1dbf2269ecfb0f1d95e4f) feat(hooks): move sign and verify to facade (#1201)
+
 ## [v1.380.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.380.0) - 2025-01-18
 
 - [`4150bad`](https://github.com/alexfalkowski/go-service/commit/4150badfbd3a0a2067c65aeab892df6745b5e842) feat(io): add read all with a read closer (#1200)
