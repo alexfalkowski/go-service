@@ -38,3 +38,19 @@ func TestSign(t *testing.T) {
 		})
 	})
 }
+
+func TestRoundTripper(t *testing.T) {
+	Convey("Given I have an invalid request", t, func() {
+		hook := hooks.NewWebhook(nil)
+		rt := hooks.NewRoundTripper(hook, nil)
+		req := &http.Request{Body: &test.BadReaderCloser{}}
+
+		Convey("When I process a request", func() {
+			_, err := rt.RoundTrip(req)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+}
