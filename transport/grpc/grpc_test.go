@@ -1,47 +1,29 @@
-//nolint:varnamelen
 package grpc_test
 
 import (
 	"context"
 	"net"
-	"net/http"
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	"github.com/alexfalkowski/go-service/transport"
-	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
-
-		lc.RequireStart()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Ignored("test"))
 			ctx = meta.WithAttribute(ctx, "ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -60,31 +42,20 @@ func TestInsecureUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewSecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, TLS: test.NewTLSClientConfig()}
-
-		lc.RequireStart()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -97,31 +68,20 @@ func TestSecureUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		lc.RequireStart()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -142,45 +102,7 @@ func TestStream(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
-}
-
-func BenchmarkGRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	lc := fxtest.NewLifecycle(b)
-	cfg := test.NewInsecureTransportConfig()
-
-	g, err := tg.NewServer(tg.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg.GRPC,
-		UserAgent:  test.UserAgent, Version: test.Version,
-	})
-	runtime.Must(err)
-
-	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{g}})
-
-	cl := &client.Config{Address: cfg.GRPC.Address}
-
-	conn, err := tg.NewClient(cl.Address)
-	runtime.Must(err)
-
-	client := v1.NewGreeterServiceClient(conn)
-	req := &v1.SayHelloRequest{Name: "test"}
-
-	lc.RequireStart()
-	b.ResetTimer()
-
-	b.Run("none", func(b *testing.B) {
-		for range b.N {
-			_, err := client.SayHello(context.Background(), req)
-			runtime.Must(err)
-		}
-	})
-
-	b.StopTimer()
-	lc.RequireStop()
 }

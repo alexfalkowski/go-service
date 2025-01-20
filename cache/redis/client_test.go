@@ -5,23 +5,15 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.uber.org/fx/fxtest"
 )
-
-//nolint:gochecknoinits
-func init() {
-	tracer.Register()
-}
 
 func TestClientIncr(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger}
-		client, err := c.NewRedisClient()
+		world := test.NewWorld(t)
+
+		client, err := world.Cache.NewRedisClient()
 		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
@@ -29,7 +21,7 @@ func TestClientIncr(t *testing.T) {
 
 		ctx = meta.WithAttribute(ctx, "password", meta.Redacted("test-1234"))
 
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			cmd := client.Set(ctx, "test-incr", 1, time.Hour)
@@ -49,6 +41,6 @@ func TestClientIncr(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }

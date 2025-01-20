@@ -5,56 +5,30 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.uber.org/fx/fxtest"
-	"go.uber.org/zap"
 )
-
-//nolint:gochecknoinits
-func init() {
-	tm.RegisterKeys()
-}
 
 func TestRPCNoContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.NoContent)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -65,7 +39,7 @@ func TestRPCNoContent(t *testing.T) {
 					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -74,32 +48,17 @@ func TestRPCNoContent(t *testing.T) {
 func TestRPCNoRequest(t *testing.T) {
 	for _, mt := range []string{"gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.NoContent)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -109,7 +68,7 @@ func TestRPCNoRequest(t *testing.T) {
 					So(err, ShouldBeError)
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -118,32 +77,17 @@ func TestRPCNoRequest(t *testing.T) {
 func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Compression: true}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -154,7 +98,7 @@ func TestRPCWithContent(t *testing.T) {
 					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -163,27 +107,14 @@ func TestRPCWithContent(t *testing.T) {
 func TestProtobufRPC(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.ProtobufSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
@@ -193,7 +124,7 @@ func TestProtobufRPC(t *testing.T) {
 					So(resp.GetMessage(), ShouldEqual, "Hello Bob")
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -202,50 +133,24 @@ func TestProtobufRPC(t *testing.T) {
 func TestBadUnmarshalRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				client := cl.NewHTTP()
-				d := []byte("a bad payload")
+				header := http.Header{}
+				header.Set("Content-Type", "application/"+mt)
 
-				req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), bytes.NewReader(d))
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
+				res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString("a bad payload"))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldNotBeBlank)
-					So(resp.StatusCode, ShouldEqual, 400)
+					So(body, ShouldNotBeBlank)
+					So(res.StatusCode, ShouldEqual, 400)
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -254,29 +159,15 @@ func TestBadUnmarshalRPC(t *testing.T) {
 func TestErrorRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			l, err := limiter.New(lc, test.NewLimiterConfig("user-agent", "1s", 100))
-			So(err, ShouldBeNil)
-
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Limiter: l, Mux: mux}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.ErrorSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post data", func() {
-				client := cl.NewHTTP()
+				header := http.Header{}
+				header.Set("Content-Type", "application/"+mt)
+
 				enc := test.Encoder.Get(mt)
 
 				b := test.Pool.Get()
@@ -285,25 +176,15 @@ func TestErrorRPC(t *testing.T) {
 				err := enc.Encode(b, test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
-				req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), b)
-				So(err, ShouldBeNil)
-
-				req.Header.Set("Content-Type", "application/"+mt)
-
-				resp, err := client.Do(req)
-				So(err, ShouldBeNil)
-
-				defer resp.Body.Close()
-
-				body, err := io.ReadAll(resp.Body)
+				res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, b)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(strings.TrimSpace(string(body)), ShouldEqual, "rpc: ohh no")
-					So(resp.StatusCode, ShouldEqual, 503)
+					So(body, ShouldEqual, "rpc: ohh no")
+					So(res.StatusCode, ShouldEqual, 503)
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -312,30 +193,17 @@ func TestErrorRPC(t *testing.T) {
 func TestAllowedRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			verifier := test.NewVerifier("test")
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+			world.Start()
 
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux, Verifier: verifier, VerifyAuth: true}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("test", nil)}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
+					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -344,7 +212,7 @@ func TestAllowedRPC(t *testing.T) {
 					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
@@ -353,30 +221,20 @@ func TestAllowedRPC(t *testing.T) {
 func TestDisallowedRPC(t *testing.T) {
 	for _, mt := range []string{"application/json", "application/yaml", "application/yml", "application/toml", "application/gob", "test"} {
 		Convey("Given I have all the servers", t, func() {
-			mux := http.NewServeMux()
-			verifier := test.NewVerifier("test")
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
+			world := test.NewWorld(t,
+				test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+				test.WithWorldToken(nil, test.NewVerifier("test")),
+			)
+			world.Start()
 
-			cfg := test.NewInsecureTransportConfig()
-			tc := test.NewOTLPTracerConfig()
-			m := test.NewOTLPMeter(lc)
-
-			s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux, Verifier: verifier, VerifyAuth: true}
-			s.Register()
-
-			cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Generator: test.NewGenerator("bob", nil)}
-
-			rpc.Register(mux, test.Content, test.Pool)
 			rpc.Route("/hello", test.SuccessSayHello)
 
-			lc.RequireStart()
-
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+				addr := world.Server.Transport.HTTP.Address
+				url := fmt.Sprintf("http://%s/hello", addr)
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType(mt),
-					rpc.WithClientRoundTripper(cl.NewHTTP().Transport))
+					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport))
 
 				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 
@@ -386,49 +244,8 @@ func TestDisallowedRPC(t *testing.T) {
 					So(err.Error(), ShouldContainSubstring, "token: invalid match")
 				})
 
-				lc.RequireStop()
+				world.Stop()
 			})
 		})
 	}
-}
-
-func BenchmarkRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger := zap.NewNop()
-
-	cfg := test.NewInsecureTransportConfig()
-	tc := test.NewOTLPTracerConfig()
-	m := test.NewOTLPMeter(lc)
-
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-	s.Register()
-
-	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-	t := cl.NewHTTP().Transport
-
-	rpc.Register(mux, test.Content, test.Pool)
-	rpc.Route("/hello", test.SuccessSayHello)
-
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
-	lc.RequireStart()
-	b.ResetTimer()
-
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
-		b.Run(mt, func(b *testing.B) {
-			for range b.N {
-				client := rpc.NewClient[test.Request, test.Response](url,
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(t))
-
-				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
-			}
-		})
-	}
-
-	b.StopTimer()
-	lc.RequireStop()
 }

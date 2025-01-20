@@ -48,7 +48,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithClientBreaker for HTTP.
+// WithClientCompression for HTTP.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.compression = true
@@ -111,7 +111,7 @@ func WithClientMetrics(meter metric.Meter) ClientOption {
 	})
 }
 
-// WithUserAgent for HTTP.
+// WithClientUserAgent for HTTP.
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
@@ -134,6 +134,10 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		return nil, err
 	}
 
+	if os.gen != nil {
+		hrt = ht.NewRoundTripper(os.gen, hrt)
+	}
+
 	if os.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
 	}
@@ -144,10 +148,6 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 
 	if os.breaker {
 		hrt = breaker.NewRoundTripper(hrt)
-	}
-
-	if os.gen != nil {
-		hrt = ht.NewRoundTripper(os.gen, hrt)
 	}
 
 	if os.logger != nil {

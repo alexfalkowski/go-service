@@ -1,15 +1,12 @@
-//nolint:varnamelen
 package grpc_test
 
 import (
 	"context"
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -17,31 +14,16 @@ import (
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("bob", test.ErrGenerate),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("bob", test.ErrGenerate), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -53,38 +35,23 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -96,35 +63,20 @@ func TestEmptyAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		lc.RequireStart()
+		world := test.NewWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")))
+		world.Start()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -136,40 +88,25 @@ func TestMissingClientAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("bob", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 			ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
 			ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -181,38 +118,21 @@ func TestInvalidAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestAuthUnaryWithAppend(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc,
-			Transport: cfg, Meter: m, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc,
-			Transport: cfg, Meter: m,
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -224,38 +144,23 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.OK)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("test", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -268,38 +173,24 @@ func TestValidAuthUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestBreakerAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("bob", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
+			test.WithWorldCompression(),
+		)
+		world.Start()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -311,42 +202,27 @@ func TestBreakerAuthUnary(t *testing.T) {
 				_, err = client.SayHello(ctx, req)
 			}
 
-			Convey("Then I should have a unauthenticated reply", func() {
+			Convey("Then I should have a unavailable reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unavailable)
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestValidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("test", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -364,38 +240,23 @@ func TestValidAuthStream(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestInvalidAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("bob", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -412,38 +273,23 @@ func TestInvalidAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("", nil),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -454,35 +300,23 @@ func TestEmptyAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestMissingClientAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(nil, test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -499,38 +333,23 @@ func TestMissingClientAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }
 
 func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		verifier := test.NewVerifier("test")
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, VerifyAuth: true,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Generator: test.NewGenerator("", test.ErrGenerate),
-		}
-
-		lc.RequireStart()
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
+		)
+		world.Start()
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.Client.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -541,7 +360,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			lc.RequireStop()
+			world.Stop()
 		})
 	})
 }

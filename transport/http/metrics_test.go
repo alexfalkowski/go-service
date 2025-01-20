@@ -1,142 +1,76 @@
-//nolint:varnamelen
 package http_test
 
 import (
-	"fmt"
-	"io"
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/database/sql/pg"
-	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/test"
-	ht "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.uber.org/fx/fxtest"
 )
 
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world.OpenDatabase()
 
-		pg.Register(tracer, logger)
-
-		mc := test.NewPrometheusMetricsConfig()
-		m := test.NewMeter(lc, mc)
-
-		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		_, err := world.Cache.NewRedisCache()
 		So(err, ShouldBeNil)
 
-		sm.Register(dbs, m)
-
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
-		_, _ = c.NewRedisCache()
-		cfg := test.NewInsecureTransportConfig()
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
-
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-		ht.RegisterMetrics(mc, mux)
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I query metrics", func() {
-			client := cl.NewHTTP()
-
 			ctx, cancel := test.Timeout()
 			defer cancel()
 
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://%s/metrics", cfg.HTTP.Address), http.NoBody)
-			So(err, ShouldBeNil)
+			header := http.Header{}
 
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
-
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
+			res, body, err := world.Request(ctx, "http", http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
-				response := string(body)
+				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
-				So(response, ShouldContainSubstring, "go_info")
-				So(response, ShouldContainSubstring, "redis_hits_total")
-				So(response, ShouldContainSubstring, "sql_max_open_total")
-				So(response, ShouldContainSubstring, "system")
-				So(response, ShouldContainSubstring, "process")
-				So(response, ShouldContainSubstring, "runtime")
+				So(body, ShouldContainSubstring, "go_info")
+				So(body, ShouldContainSubstring, "redis_hits_total")
+				So(body, ShouldContainSubstring, "sql_max_open_total")
+				So(body, ShouldContainSubstring, "system")
+				So(body, ShouldContainSubstring, "process")
+				So(body, ShouldContainSubstring, "runtime")
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldSecure())
+		world.OpenDatabase()
 
-		pg.Register(tracer, logger)
-
-		mc := test.NewPrometheusMetricsConfig()
-		m := test.NewMeter(lc, mc)
-
-		dbs, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		_, err := world.Cache.NewRedisCache()
 		So(err, ShouldBeNil)
 
-		sm.Register(dbs, m)
-
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
-		_, _ = c.NewRedisCache()
-		cfg := test.NewSecureTransportConfig()
-
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
-
-		cl := &test.Client{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			TLS: test.NewTLSClientConfig(),
-		}
-
-		ht.RegisterMetrics(mc, mux)
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I query metrics", func() {
-			client := cl.NewHTTP()
-
 			ctx, cancel := test.Timeout()
 			defer cancel()
 
-			req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("https://%s/metrics", cfg.HTTP.Address), http.NoBody)
-			So(err, ShouldBeNil)
+			header := http.Header{}
 
-			resp, err := client.Do(req)
-			So(err, ShouldBeNil)
-
-			defer resp.Body.Close()
-
-			body, err := io.ReadAll(resp.Body)
+			res, body, err := world.Request(ctx, "https", http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
-				response := string(body)
+				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
-				So(response, ShouldContainSubstring, "go_info")
-				So(response, ShouldContainSubstring, "redis_hits_total")
-				So(response, ShouldContainSubstring, "sql_max_open_total")
+				So(body, ShouldContainSubstring, "go_info")
+				So(body, ShouldContainSubstring, "redis_hits_total")
+				So(body, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
