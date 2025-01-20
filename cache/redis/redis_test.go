@@ -7,37 +7,25 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/go-redis/cache/v9"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.opentelemetry.io/otel/metric/noop"
-	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-//nolint:gochecknoinits
-func init() {
-	tracer.Register()
-
-	test.Encoder.Register("error", test.NewEncoder(test.ErrFailed))
-	test.Compressor.Register("error", test.NewCompressor(test.ErrFailed))
-}
-
 func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
+		world := test.NewWorld(t)
+
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -57,24 +45,23 @@ func TestSetCache(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
+		world := test.NewWorld(t)
+
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -89,24 +76,23 @@ func TestSetXXCache(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestSetNXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "proto"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
+		world := test.NewWorld(t)
+
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
 		defer cancel()
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -126,48 +112,44 @@ func TestSetNXCache(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis_invalid", "snappy", "proto"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
-		ctx := context.Background()
+		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis_invalid", "snappy", "proto")))
 
-		lc.RequireStart()
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
+
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: context.Background(), Key: "test", Value: value, TTL: time.Minute})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldNotBeNil)
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "error"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
-		ctx := context.Background()
+		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "snappy", "error")))
 
-		lc.RequireStart()
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
+
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: context.Background(), Key: "test", Value: value, TTL: time.Minute})
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -175,42 +157,39 @@ func TestInvalidMarshallerCache(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestMissingMarshallerCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := test.NewPrometheusMeter(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "snappy", "test"), Logger: logger, Meter: m}
-		_, err := c.NewRedisCache()
+		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "snappy", "test")))
+		world.Start()
 
-		lc.RequireStart()
+		_, err := world.Cache.NewRedisCache()
 
 		Convey("Then I should have no error", func() {
 			So(err, ShouldBeNil)
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := noop.Meter{}
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "error", "proto"), Logger: logger, Meter: m}
-		ca, _ := c.NewRedisCache()
+		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "error", "proto")))
+
+		ca, err := world.Cache.NewRedisCache()
+		So(err, ShouldBeNil)
+
 		ctx := context.Background()
 
-		lc.RequireStart()
+		world.Start()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-			err := ca.Set(&cache.Item{Ctx: ctx, Key: "test", Value: value, TTL: time.Minute})
+			err := ca.Set(&cache.Item{Ctx: context.Background(), Key: "test", Value: value, TTL: time.Minute})
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
@@ -222,24 +201,21 @@ func TestInvalidCompressorCache(t *testing.T) {
 			})
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }
 
 func TestMissingCompressorCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		m := test.NewPrometheusMeter(lc)
-		c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig("redis", "test", "proto"), Logger: logger, Meter: m}
-		_, err := c.NewRedisCache()
+		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "test", "proto")))
+		world.Start()
 
-		lc.RequireStart()
+		_, err := world.Cache.NewRedisCache()
 
 		Convey("Then I should have no error", func() {
 			So(err, ShouldBeNil)
 		})
 
-		lc.RequireStop()
+		world.Stop()
 	})
 }

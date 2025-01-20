@@ -3,7 +3,6 @@ package test
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -59,14 +58,10 @@ func (c *Client) NewHTTP() *http.Client {
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
 	tracer := c.NewTracer()
-	config := &client.Config{
-		Address: c.Transport.GRPC.Address,
-		Retry:   c.Transport.GRPC.Retry,
-	}
 	opts := []g.ClientOption{
 		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
 		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
-		g.WithClientBreaker(), g.WithClientRetry(config.Retry),
+		g.WithClientBreaker(), g.WithClientRetry(c.Transport.GRPC.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(c.Generator), g.WithClientTimeout("1m"),
 		g.WithClientDialOption(), g.WithClientTLS(c.TLS),
@@ -76,7 +71,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		opts = append(opts, g.WithClientCompression())
 	}
 
-	conn, err := g.NewClient(config.Address, opts...)
+	conn, err := g.NewClient(c.Transport.GRPC.Address, opts...)
 	runtime.Must(err)
 
 	return conn
