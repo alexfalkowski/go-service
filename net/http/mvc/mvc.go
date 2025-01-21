@@ -2,8 +2,8 @@ package mvc
 
 import (
 	"context"
-	"embed"
 	"html/template"
+	"io/fs"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -19,14 +19,14 @@ type (
 	ViewsParams struct {
 		fx.In
 
-		FS       *embed.FS `optional:"true"`
-		Patterns Patterns  `optional:"true"`
+		FS       fs.FS    `optional:"true"`
+		Patterns Patterns `optional:"true"`
 	}
 
 	// View for mvc.
 	Views struct {
 		template *template.Template
-		fs       *embed.FS
+		fs       fs.FS
 	}
 
 	// View to render.
@@ -114,7 +114,7 @@ func (r *Router) Static(path, name string) bool {
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		bytes, err := r.views.fs.ReadFile(name)
+		bytes, err := fs.ReadFile(r.views.fs, name)
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))

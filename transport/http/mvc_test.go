@@ -18,7 +18,7 @@ func TestRouteSuccess(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression())
 		world.Start()
 
-		world.Router.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("hello.tmpl"), &test.Model
 		})
 
@@ -48,7 +48,7 @@ func TestRouteMissingView(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Start()
 
-		world.Router.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("none.tmpl"), &test.Model
 		})
 
@@ -75,7 +75,7 @@ func TestRouteError(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport))
 		world.Start()
 
-		world.Router.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
+		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("error.tmpl"), status.Error(http.StatusServiceUnavailable, "ohh no")
 		})
 
@@ -105,7 +105,7 @@ func TestStaticSuccess(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Start()
 
-		world.Router.Static("GET /robots.txt", "static/robots.txt")
+		world.Static("GET /robots.txt", "static/robots.txt")
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
@@ -130,7 +130,7 @@ func TestStaticError(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Start()
 
-		world.Router.Static("GET /robots.txt", "static/bob.txt")
+		world.Static("GET /robots.txt", "static/bob.txt")
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
