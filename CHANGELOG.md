@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.381.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.381.1) - 2025-01-21
+
+- [`f214a3b`](https://github.com/alexfalkowski/go-service/commit/f214a3b35afb9501ed035a37f7c6c6f64b79bd27) fix(deps): upgraded github.com/go-resty/resty/v2 v2.16.3 => v2.16.4 (#1207)
+- [`a886173`](https://github.com/alexfalkowski/go-service/commit/a886173a94324c0d9327641c7d3e7c91453e3754) test(world): simplify test code by borrowing concepts (#1205)
+- [`7a20e0b`](https://github.com/alexfalkowski/go-service/commit/7a20e0b7657686227e0db7740b40deb5c1a5c77c) build(ci): use bitnami/redis:7.4 (#1204)
+- [`341d76b`](https://github.com/alexfalkowski/go-service/commit/341d76b6c1b3888447e13d7a7337082e9a96b141) build(ci): use postgres:17-bullseye (#1203)
+- [`786fca6`](https://github.com/alexfalkowski/go-service/commit/786fca63563df095b70500ed712b748f4806776d) test(hooks): add missing (#1202)
+
 ## [v1.381.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.381.0) - 2025-01-19
 
 - [`65352f1`](https://github.com/alexfalkowski/go-service/commit/65352f10e33de616bab1dbf2269ecfb0f1d95e4f) feat(hooks): move sign and verify to facade (#1201)
