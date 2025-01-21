@@ -14,12 +14,13 @@ import (
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 0)))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query repeatedly", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -34,19 +35,20 @@ func TestLimiterLimitedUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query repeatedly", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -59,7 +61,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
@@ -70,12 +72,13 @@ func TestLimiterAuthUnary(t *testing.T) {
 			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a authenticated greet multiple times", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -92,14 +95,15 @@ func TestLimiterAuthUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestClosedLimiterUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		ctx := context.Background()
 
@@ -107,7 +111,7 @@ func TestClosedLimiterUnary(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When  I query for a greet", func() {
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -121,6 +125,6 @@ func TestClosedLimiterUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }

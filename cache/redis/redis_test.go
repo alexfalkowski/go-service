@@ -16,8 +16,9 @@ import (
 func TestSetCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t)
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
@@ -25,7 +26,7 @@ func TestSetCache(t *testing.T) {
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -45,15 +46,16 @@ func TestSetCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestSetXXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t)
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
@@ -61,7 +63,7 @@ func TestSetXXCache(t *testing.T) {
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -76,15 +78,16 @@ func TestSetXXCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestSetNXCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t)
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
@@ -92,7 +95,7 @@ func TestSetNXCache(t *testing.T) {
 
 		ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -112,18 +115,19 @@ func TestSetNXCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestInvalidHostCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis_invalid", "snappy", "proto")))
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -134,18 +138,19 @@ func TestInvalidHostCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestInvalidMarshallerCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "snappy", "error")))
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -157,35 +162,37 @@ func TestInvalidMarshallerCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestMissingMarshallerCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
 		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "snappy", "test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
-		_, err := world.Cache.NewRedisCache()
+		_, err := world.NewRedisCache()
 
 		Convey("Then I should have no error", func() {
 			So(err, ShouldBeNil)
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestInvalidCompressorCache(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "error", "proto")))
+		world.Register()
 
-		ca, err := world.Cache.NewRedisCache()
+		ca, err := world.NewRedisCache()
 		So(err, ShouldBeNil)
 
 		ctx := context.Background()
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			value := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
@@ -201,21 +208,22 @@ func TestInvalidCompressorCache(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestMissingCompressorCache(t *testing.T) {
 	Convey("When I try to create a cache", t, func() {
 		world := test.NewWorld(t, test.WithWorldRedisConfig(test.NewRedisConfig("redis", "test", "proto")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
-		_, err := world.Cache.NewRedisCache()
+		_, err := world.NewRedisCache()
 
 		Convey("Then I should have no error", func() {
 			So(err, ShouldBeNil)
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }

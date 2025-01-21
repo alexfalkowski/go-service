@@ -18,12 +18,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", test.ErrGenerate), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -35,7 +36,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -46,12 +47,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -63,7 +65,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -71,12 +73,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -88,7 +91,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -99,14 +102,15 @@ func TestInvalidAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
 			ctx := context.Background()
 			ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
 			ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -118,7 +122,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -126,13 +130,14 @@ func TestInvalidAuthUnary(t *testing.T) {
 func TestAuthUnaryWithAppend(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -144,7 +149,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.OK)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -155,12 +160,13 @@ func TestValidAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for an authenticated greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -173,7 +179,7 @@ func TestValidAuthUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -185,12 +191,13 @@ func TestBreakerAuthUnary(t *testing.T) {
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 			test.WithWorldCompression(),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -207,7 +214,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
@@ -217,12 +224,13 @@ func TestValidAuthStream(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -240,7 +248,7 @@ func TestValidAuthStream(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -251,12 +259,13 @@ func TestInvalidAuthStream(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -273,7 +282,7 @@ func TestInvalidAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -284,12 +293,13 @@ func TestEmptyAuthStream(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -300,7 +310,7 @@ func TestEmptyAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -311,12 +321,13 @@ func TestMissingClientAuthStream(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(nil, test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -333,7 +344,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -344,12 +355,13 @@ func TestTokenErrorAuthStream(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			ctx := context.Background()
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -360,7 +372,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }

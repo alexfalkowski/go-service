@@ -16,7 +16,8 @@ import (
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression())
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("hello.tmpl"), &test.Model
@@ -26,7 +27,7 @@ func TestRouteSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid html", func() {
@@ -38,7 +39,7 @@ func TestRouteSuccess(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -46,7 +47,8 @@ func TestRouteSuccess(t *testing.T) {
 func TestRouteMissingView(t *testing.T) {
 	Convey("Given I have setup a route with an missisng view", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("none.tmpl"), &test.Model
@@ -56,7 +58,7 @@ func TestRouteMissingView(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have no html", func() {
@@ -65,7 +67,7 @@ func TestRouteMissingView(t *testing.T) {
 				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -73,7 +75,8 @@ func TestRouteMissingView(t *testing.T) {
 func TestRouteError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		world.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
 			return mvc.View("error.tmpl"), status.Error(http.StatusServiceUnavailable, "ohh no")
@@ -83,7 +86,7 @@ func TestRouteError(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
@@ -95,7 +98,7 @@ func TestRouteError(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -103,7 +106,8 @@ func TestRouteError(t *testing.T) {
 func TestStaticSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		world.Static("GET /robots.txt", "static/robots.txt")
 
@@ -111,7 +115,7 @@ func TestStaticSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodGet, "robots.txt", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid html", func() {
@@ -120,7 +124,7 @@ func TestStaticSuccess(t *testing.T) {
 				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -128,21 +132,22 @@ func TestStaticSuccess(t *testing.T) {
 func TestStaticError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		world.Static("GET /robots.txt", "static/bob.txt")
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
 
-			res, _, err := world.Request(context.Background(), "http", http.MethodGet, "robots.txt", header, http.NoBody)
+			res, _, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
 				So(res.StatusCode, ShouldEqual, 500)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }

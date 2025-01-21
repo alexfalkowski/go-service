@@ -23,7 +23,7 @@ func TestServer(t *testing.T) {
 		c.GRPC.TLS = &tls.Config{}
 
 		Convey("When I create a server", func() {
-			s := &test.Server{Lifecycle: lc, Logger: logger, Transport: c, Meter: noop.Meter{}, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Meter: noop.Meter{}, Mux: mux}
 			s.Register()
 
 			Convey("Then I should start the server", func() {

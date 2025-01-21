@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package grpc_test
 
 import (
@@ -12,48 +11,25 @@ import (
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
-	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 )
 
-//nolint:gochecknoinits
-func init() {
-	tracer.Register()
-	tm.RegisterKeys()
-}
-
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world.Register()
 
-		l, err := limiter.New(lc, test.NewLimiterConfig("token", "1s", 0))
-		So(err, ShouldBeNil)
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
 
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/200", client)
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
 
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Mux: mux,
-		}
-		s.Register()
-
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
@@ -61,7 +37,7 @@ func TestUnary(t *testing.T) {
 			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -70,38 +46,31 @@ func TestUnary(t *testing.T) {
 			resp, err := client.Check(ctx, req)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a healthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }
 
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/500", client)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
+
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -113,42 +82,31 @@ func TestInvalidUnary(t *testing.T) {
 			resp, err := client.Check(ctx, req)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have an unhealthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }
 
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/200", client)
-		verifier := test.NewVerifier("test")
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world.Register()
 
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
+
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -157,45 +115,31 @@ func TestIgnoreAuthUnary(t *testing.T) {
 			resp, err := client.Check(ctx, req)
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a healthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
+		world.Register()
 
-		l, err := limiter.New(lc, test.NewLimiterConfig("token", "1s", 0))
-		So(err, ShouldBeNil)
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
 
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/200", client)
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
 
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Limiter: l, Mux: mux,
-		}
-		s.Register()
-
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -207,38 +151,31 @@ func TestStream(t *testing.T) {
 			resp, err := wc.Recv()
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a healthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }
 
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/500", client)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
-		s.Register()
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
+
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -250,42 +187,31 @@ func TestInvalidStream(t *testing.T) {
 			resp, err := wc.Recv()
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a healthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_NOT_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }
 
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		mux := http.NewServeMux()
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		cfg := test.NewInsecureTransportConfig()
-		tc := test.NewOTLPTracerConfig()
-		m := test.NewOTLPMeter(lc)
-		cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-		client := cl.NewHTTP()
-		o := observer(lc, "http://localhost:6000/v1/status/200", client)
-		verifier := test.NewVerifier("test")
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world.Register()
 
-		s := &test.Server{
-			Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m,
-			Verifier: verifier, Mux: mux,
-		}
-		s.Register()
+		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: s.GRPC, Observer: &shg.Observer{Observer: o}})
-		lc.RequireStart()
+		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		world.RequireStart()
+
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 
-			conn := cl.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
@@ -297,11 +223,11 @@ func TestIgnoreAuthStream(t *testing.T) {
 			resp, err := wc.Recv()
 			So(err, ShouldBeNil)
 
-			lc.RequireStop()
-
 			Convey("Then I should have a healthy response", func() {
 				So(resp.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
+
+			world.RequireStop()
 		})
 	})
 }

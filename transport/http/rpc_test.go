@@ -19,16 +19,16 @@ func TestRPCNoContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.NoContent)
 
 			Convey("When I post data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -39,7 +39,7 @@ func TestRPCNoContent(t *testing.T) {
 					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -49,16 +49,16 @@ func TestRPCNoRequest(t *testing.T) {
 	for _, mt := range []string{"gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.NoContent)
 
 			Convey("When I post data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -68,7 +68,7 @@ func TestRPCNoRequest(t *testing.T) {
 					So(err, ShouldBeError)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -78,16 +78,16 @@ func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport),
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
 
@@ -98,7 +98,7 @@ func TestRPCWithContent(t *testing.T) {
 					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -108,13 +108,13 @@ func TestProtobufRPC(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.ProtobufSayHello)
 
 			Convey("When I post data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
@@ -124,7 +124,7 @@ func TestProtobufRPC(t *testing.T) {
 					So(resp.GetMessage(), ShouldEqual, "Hello Bob")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -134,7 +134,8 @@ func TestBadUnmarshalRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -142,7 +143,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 				header := http.Header{}
 				header.Set("Content-Type", "application/"+mt)
 
-				res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString("a bad payload"))
+				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("a bad payload"))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -150,7 +151,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 					So(res.StatusCode, ShouldEqual, 400)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -160,7 +161,8 @@ func TestErrorRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.ErrorSayHello)
 
@@ -176,7 +178,7 @@ func TestErrorRPC(t *testing.T) {
 				err := enc.Encode(b, test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
-				res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, b)
+				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -184,7 +186,7 @@ func TestErrorRPC(t *testing.T) {
 					So(res.StatusCode, ShouldEqual, 503)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -194,16 +196,16 @@ func TestAllowedRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport))
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
 				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
@@ -212,7 +214,7 @@ func TestAllowedRPC(t *testing.T) {
 					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -225,16 +227,16 @@ func TestDisallowedRPC(t *testing.T) {
 				test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 				test.WithWorldToken(nil, test.NewVerifier("test")),
 			)
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType(mt),
-					rpc.WithClientRoundTripper(world.Client.NewHTTP().Transport))
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
 				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 
@@ -244,7 +246,7 @@ func TestDisallowedRPC(t *testing.T) {
 					So(err.Error(), ShouldContainSubstring, "token: invalid match")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}

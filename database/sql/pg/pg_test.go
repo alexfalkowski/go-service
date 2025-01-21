@@ -9,17 +9,11 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/linxGnu/mssqlx"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 )
-
-//nolint:gochecknoinits
-func init() {
-	tracer.Register()
-}
 
 func up(db *mssqlx.DBs) error {
 	ctx, cancel := test.Timeout()
@@ -48,27 +42,25 @@ func down(db *mssqlx.DBs) error {
 
 func TestOpen(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		c := test.NewPGConfig()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 
 		Convey("When I try open the database", func() {
-			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
+			_, err := world.OpenDatabase()
 
-			lc.RequireStart()
+			world.RequireStart()
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
 			})
 
-			lc.RequireStop()
+			world.RequireStop()
 		})
 	})
 }
 
 func TestInvalidOpen(t *testing.T) {
-	Convey("Given I have an invalid master", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		c := &pg.Config{
+	configs := []*pg.Config{
+		{
 			Config: &config.Config{
 				Masters:         []config.DSN{{URL: test.Path("secrets/none")}},
 				Slaves:          []config.DSN{{URL: test.Path("secrets/pg")}},
@@ -76,24 +68,8 @@ func TestInvalidOpen(t *testing.T) {
 				MaxIdleConns:    5,
 				ConnMaxLifetime: time.Hour.String(),
 			},
-		}
-
-		Convey("When I try open the database", func() {
-			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
-
-			lc.RequireStart()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-
-			lc.RequireStop()
-		})
-	})
-
-	Convey("Given I have an invalid slave", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		c := &pg.Config{
+		},
+		{
 			Config: &config.Config{
 				Masters:         []config.DSN{{URL: test.Path("secrets/pg")}},
 				Slaves:          []config.DSN{{URL: test.Path("secrets/none")}},
@@ -101,60 +77,58 @@ func TestInvalidOpen(t *testing.T) {
 				MaxIdleConns:    5,
 				ConnMaxLifetime: time.Hour.String(),
 			},
-		}
+		},
+	}
 
-		Convey("When I try open the database", func() {
-			_, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: c})
+	for _, config := range configs {
+		Convey("Given I have an invalid config", t, func() {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config))
+			world.Register()
 
-			lc.RequireStart()
+			Convey("When I try open the database", func() {
+				_, err := world.OpenDatabase()
 
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
+				world.RequireStart()
+
+				Convey("Then I should have an error", func() {
+					So(err, ShouldBeError)
+				})
+
+				world.RequireStop()
 			})
-
-			lc.RequireStop()
 		})
-	})
+	}
 }
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
+
 		Convey("When I try to get a database", func() {
-			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc)
-			tc := test.NewOTLPTracerConfig()
-			tracer := test.NewTracer(lc, tc, logger)
-
-			pg.Register(tracer, logger)
-
-			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+			db, err := world.OpenDatabase()
 			So(err, ShouldBeNil)
-			So(db, ShouldNotBeNil)
 
-			lc.RequireStart()
+			world.RequireStart()
 
 			Convey("Then I should have a valid database", func() {
 				So(errors.Join(db.Ping()...), ShouldBeNil)
 			})
 
-			lc.RequireStop()
+			world.RequireStop()
 		})
 	})
 }
 
 func TestDBQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -184,23 +158,19 @@ func TestDBQuery(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestDBExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -227,23 +197,19 @@ func TestDBExec(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestDBCommitTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -279,23 +245,19 @@ func TestDBCommitTransExec(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestDBRollbackTransExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -328,23 +290,19 @@ func TestDBRollbackTransExec(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -380,23 +338,19 @@ func TestStatementQuery(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -428,23 +382,19 @@ func TestStatementExec(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestTransStatementExec(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -485,23 +435,19 @@ func TestTransStatementExec(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 
 func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
-		tc := test.NewOTLPTracerConfig()
-		tracer := test.NewTracer(lc, tc, logger)
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(tracer, logger)
-
-		db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+		db, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		lc.RequireStart()
+		world.RequireStart()
 
 		err = up(db)
 		So(err, ShouldBeNil)
@@ -527,7 +473,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 		err = down(db)
 		So(err, ShouldBeNil)
 
-		lc.RequireStop()
+		world.RequireStop()
 	})
 }
 

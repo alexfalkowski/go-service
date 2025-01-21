@@ -24,7 +24,8 @@ func TestTokenAuthUnary(t *testing.T) {
 			token := token.NewToken(test.NewToken(kind), jwt, pas)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -35,7 +36,7 @@ func TestTokenAuthUnary(t *testing.T) {
 				header.Set("X-Forwarded-For", "127.0.0.1")
 				header.Set("Geolocation", "geo:47,11")
 
-				res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid reply", func() {
@@ -43,7 +44,7 @@ func TestTokenAuthUnary(t *testing.T) {
 					So(body, ShouldNotBeBlank)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -52,7 +53,8 @@ func TestTokenAuthUnary(t *testing.T) {
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -62,7 +64,7 @@ func TestValidAuthUnary(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("X-Forwarded-For", "127.0.0.1")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -70,7 +72,7 @@ func TestValidAuthUnary(t *testing.T) {
 				So(body, ShouldNotBeBlank)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -78,7 +80,8 @@ func TestValidAuthUnary(t *testing.T) {
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -87,7 +90,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -95,7 +98,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 				So(body, ShouldContainSubstring, `token: invalid match`)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -103,7 +106,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 func TestAuthUnaryWithAppend(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -113,7 +117,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("Authorization", "What Invalid")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a reply", func() {
@@ -121,7 +125,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 				So(body, ShouldNotBeBlank)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -129,7 +133,8 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -138,7 +143,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -146,7 +151,7 @@ func TestMissingAuthUnary(t *testing.T) {
 				So(body, ShouldContainSubstring, "invalid match")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -154,7 +159,8 @@ func TestMissingAuthUnary(t *testing.T) {
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -163,14 +169,14 @@ func TestEmptyAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			_, _, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			_, _, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "authorization is invalid")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -178,7 +184,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -187,7 +194,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -195,7 +202,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 				So(body, ShouldContainSubstring, "invalid match")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -203,7 +210,8 @@ func TestMissingClientAuthUnary(t *testing.T) {
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -212,14 +220,14 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			_, _, err := world.Request(context.Background(), "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			_, _, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "token error")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -230,7 +238,8 @@ func TestBreakerAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
 		)
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			ctx := context.Background()
@@ -242,7 +251,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 				header.Set("Content-Type", "application/json")
 				header.Set("Request-Id", "test")
 
-				_, _, err = world.Request(ctx, "http", http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+				_, _, err = world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			}
 
 			Convey("Then I should have an error", func() {
@@ -250,6 +259,6 @@ func TestBreakerAuthUnary(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }

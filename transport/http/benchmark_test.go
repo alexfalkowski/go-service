@@ -77,10 +77,10 @@ func BenchmarkHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
-		for range b.N {
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
-			runtime.Must(err)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		runtime.Must(err)
 
+		for range b.N {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -114,10 +114,10 @@ func BenchmarkLogHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("log", func(b *testing.B) {
-		for range b.N {
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
-			runtime.Must(err)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		runtime.Must(err)
 
+		for range b.N {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -153,10 +153,10 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("trace", func(b *testing.B) {
-		for range b.N {
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
-			runtime.Must(err)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		runtime.Must(err)
 
+		for range b.N {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -176,7 +176,7 @@ func BenchmarkRoute(b *testing.B) {
 	tc := test.NewOTLPTracerConfig()
 	m := test.NewOTLPMeter(lc)
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux}
 	s.Register()
 
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -219,7 +219,7 @@ func BenchmarkRPC(b *testing.B) {
 	tc := test.NewOTLPTracerConfig()
 	m := test.NewOTLPMeter(lc)
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux}
 	s.Register()
 
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -235,11 +235,11 @@ func BenchmarkRPC(b *testing.B) {
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		b.Run(mt, func(b *testing.B) {
-			for range b.N {
-				client := rpc.NewClient[test.Request, test.Response](url,
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(t))
+			client := rpc.NewClient[test.Request, test.Response](url,
+				rpc.WithClientContentType("application/"+mt),
+				rpc.WithClientRoundTripper(t))
 
+			for range b.N {
 				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 			}
 		})
