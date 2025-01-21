@@ -9,13 +9,11 @@ import (
 
 func TestExtension(t *testing.T) {
 	for _, f := range []string{"file.yaml", "file.test.yaml", "test/.config/existing.client.yaml"} {
-		Convey("Given I have a file", t, func() {
-			Convey("When I try to get the extension", func() {
-				e := file.Extension(f)
+		Convey("When I try to get the extension of the file", t, func() {
+			e := file.Extension(f)
 
-				Convey("Then the extension should be yaml", func() {
-					So(e, ShouldEqual, "yaml")
-				})
+			Convey("Then the extension should be yaml", func() {
+				So(e, ShouldEqual, "yaml")
 			})
 		})
 	}
