@@ -9,13 +9,11 @@ import (
 
 func TestMap(t *testing.T) {
 	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
-		Convey("Given I have map", t, func() {
-			Convey("When I create compressor", func() {
-				cmp := test.Compressor.Get(kind)
+		Convey("When I get compressor", t, func() {
+			cmp := test.Compressor.Get(kind)
 
-				Convey("Then I should have valid compressor", func() {
-					So(cmp, ShouldNotBeNil)
-				})
+			Convey("Then I should have a compressor", func() {
+				So(cmp, ShouldNotBeNil)
 			})
 		})
 
@@ -36,19 +34,17 @@ func TestMap(t *testing.T) {
 		})
 	}
 
-	for _, k := range []string{"test", "bob"} {
-		Convey("Given I have map", t, func() {
-			Convey("When I create compressor", func() {
-				cmp := test.Compressor.Get(k)
+	for _, key := range []string{"test", "bob"} {
+		Convey("When I get a compressor", t, func() {
+			cmp := test.Compressor.Get(key)
 
-				Convey("Then I should have none", func() {
-					So(cmp, ShouldNotBeNil)
-				})
+			Convey("Then I should have a compressor", func() {
+				So(cmp, ShouldNotBeNil)
 			})
 		})
 
-		Convey("Given I have create a compressor", t, func() {
-			cmp := test.Compressor.Get(k)
+		Convey("Given I have get a compressor", t, func() {
+			cmp := test.Compressor.Get(key)
 
 			Convey("When I compress the data", func() {
 				data := []byte("hello")

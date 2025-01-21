@@ -10,10 +10,10 @@ import (
 )
 
 func TestNoneConfig(t *testing.T) {
-	for _, r := range []string{"", "env:BOB"} {
+	for _, flag := range []string{"", "env:BOB"} {
 		Convey("Given I have no configuration file", t, func() {
 			Convey("When I read the config", func() {
-				c := test.NewInputConfig(r)
+				c := test.NewInputConfig(flag)
 
 				Convey("Then I should have a valid configuration", func() {
 					So(c.Decode(nil), ShouldBeError)
@@ -21,7 +21,7 @@ func TestNoneConfig(t *testing.T) {
 			})
 
 			Convey("When I write the config", func() {
-				c := test.NewOutputConfig(r)
+				c := test.NewOutputConfig(flag)
 				err := c.Write([]byte("test"), os.ModeAppend)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -139,13 +139,11 @@ func TestValidConfigEnv(t *testing.T) {
 }
 
 func TestMissingConfig(t *testing.T) {
-	Convey("Given I don't have configuration file", t, func() {
-		Convey("When I read the config", func() {
-			c := test.NewInputConfig("env:CONFIG_FILE")
+	Convey("When I read the config", t, func() {
+		c := test.NewInputConfig("env:CONFIG_FILE")
 
-			Convey("Then I should have a valid configuration", func() {
-				So(c, ShouldNotBeNil)
-			})
+		Convey("Then I should have a valid configuration", func() {
+			So(c, ShouldNotBeNil)
 		})
 	})
 }
@@ -167,13 +165,11 @@ func TestNonExistentConfig(t *testing.T) {
 }
 
 func TestInvalidKindConfig(t *testing.T) {
-	Convey("Given I have non existent configuration file", t, func() {
-		Convey("When I try to parse the configuration file", func() {
-			c := test.NewInputConfig("test:test")
+	Convey("When I try to parse the configuration file", t, func() {
+		c := test.NewInputConfig("test:test")
 
-			Convey("Then I should have a valid configuration", func() {
-				So(c, ShouldNotBeNil)
-			})
+		Convey("Then I should have a valid configuration", func() {
+			So(c, ShouldNotBeNil)
 		})
 	})
 }
