@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
@@ -19,8 +20,9 @@ func TestTokenAuthUnary(t *testing.T) {
 		Convey("Given I have a all the servers", t, func() {
 			kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
 			a, _ := ed25519.NewSigner(test.NewEd25519())
-			jwt := token.NewJWT(kid, a)
-			pas := token.NewPaseto(a)
+			id := id.Default
+			jwt := token.NewJWT(kid, a, id)
+			pas := token.NewPaseto(a, id)
 			token := token.NewToken(test.NewToken(kind), jwt, pas)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token))

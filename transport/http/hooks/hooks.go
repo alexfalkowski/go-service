@@ -5,20 +5,21 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/io"
 	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/google/uuid"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
 // Webhook provides a simple facade that signs and verifies the payload.
 type Webhook struct {
 	hook *hooks.Webhook
+	gen  id.Generator
 }
 
 // NewWebhook for http.
-func NewWebhook(hook *hooks.Webhook) *Webhook {
-	return &Webhook{hook: hook}
+func NewWebhook(hook *hooks.Webhook, gen id.Generator) *Webhook {
+	return &Webhook{hook: hook, gen: gen}
 }
 
 // Sign the webhook.
@@ -31,7 +32,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 	req.Body = body
 
 	now := time.Now()
-	id := uuid.New().String()
+	id := h.gen.Generate()
 
 	// Sign does not return an error.
 	signature, _ := h.hook.Sign(id, now, payload)

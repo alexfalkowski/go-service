@@ -139,6 +139,7 @@ func verifyConfig(config *config.Config) {
 	So(tls.IsEnabled(config.Debug.TLS), ShouldBeFalse)
 	So(feature.IsEnabled(config.Feature), ShouldBeTrue)
 	So(config.Feature.Address, ShouldEqual, "localhost:9000")
+	So(config.ID.Kind, ShouldEqual, "uuid")
 	So(config.Hooks.Secret, ShouldEqual, "../test/secrets/hooks")
 	So(config.Cache.Redis.Compressor, ShouldEqual, "snappy")
 	So(config.Cache.Redis.Encoder, ShouldEqual, "proto")

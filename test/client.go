@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
@@ -24,6 +25,7 @@ type Client struct {
 	Tracer       *tracer.Config
 	Transport    *transport.Config
 	TLS          *tls.Config
+	ID           id.Generator
 	RoundTripper http.RoundTripper
 	Meter        metric.Meter
 	Generator    token.Generator
@@ -43,7 +45,8 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
-		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"), h.WithClientTLS(c.TLS),
+		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"),
+		h.WithClientTLS(c.TLS), h.WithClientID(c.ID),
 	}
 
 	if c.Compression {
@@ -64,7 +67,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientBreaker(), g.WithClientRetry(c.Transport.GRPC.Retry),
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(c.Generator), g.WithClientTimeout("1m"),
-		g.WithClientDialOption(), g.WithClientTLS(c.TLS),
+		g.WithClientDialOption(), g.WithClientTLS(c.TLS), g.WithClientID(c.ID),
 	}
 
 	if c.Compression {

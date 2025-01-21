@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
@@ -42,6 +43,7 @@ type ServerParams struct {
 	Meter     metric.Meter
 	UserAgent env.UserAgent
 	Version   env.Version
+	ID        id.Generator
 	Limiter   *limiter.Limiter               `optional:"true"`
 	Verifier  token.Verifier                 `optional:"true"`
 	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
@@ -117,7 +119,7 @@ func (s *Server) Server() *grpc.Server {
 }
 
 func unaryServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
-	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version)}
+	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID)}
 
 	if params.Tracer != nil {
 		uis = append(uis, tracer.UnaryServerInterceptor(params.Tracer))
@@ -145,7 +147,7 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 }
 
 func streamServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
-	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version)}
+	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version, params.ID)}
 
 	if params.Tracer != nil {
 		sis = append(sis, tracer.StreamServerInterceptor(params.Tracer))

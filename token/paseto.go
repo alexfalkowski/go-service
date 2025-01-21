@@ -5,17 +5,18 @@ import (
 
 	"aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/google/uuid"
+	"github.com/alexfalkowski/go-service/id"
 )
 
 // Paseto token.
 type Paseto struct {
-	ed ed25519.Signer
+	ed  ed25519.Signer
+	gen id.Generator
 }
 
 // NewPaseto token.
-func NewPaseto(ed ed25519.Signer) *Paseto {
-	return &Paseto{ed: ed}
+func NewPaseto(ed ed25519.Signer, gen id.Generator) *Paseto {
+	return &Paseto{ed: ed, gen: gen}
 }
 
 // Generate Paseto token.
@@ -23,7 +24,7 @@ func (p *Paseto) Generate(sub, aud, iss string, exp time.Duration) (string, erro
 	now := time.Now()
 
 	token := paseto.NewToken()
-	token.SetJti(uuid.NewString())
+	token.SetJti(p.gen.Generate())
 	token.SetIssuedAt(now)
 	token.SetNotBefore(now)
 	token.SetExpiration(now.Add(exp))

@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -37,7 +38,7 @@ func TestJWT(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 	kid, _ := token.NewKID(rand)
 	a, _ := ed25519.NewSigner(test.NewEd25519())
-	jwt := token.NewJWT(kid, a)
+	jwt := token.NewJWT(kid, a, id.Default)
 
 	Convey("When I generate a JWT token", t, func() {
 		token, err := jwt.Generate("test", "test", "test", time.Hour)

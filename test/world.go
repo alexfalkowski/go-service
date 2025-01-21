@@ -14,6 +14,7 @@ import (
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
@@ -168,6 +169,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	lc := fxtest.NewLifecycle(t)
 	logger := NewLogger(lc)
 	tracer := NewOTLPTracerConfig()
+	id := id.Default
 	os := options(opts...)
 	tranConfig := transportConfig(os)
 	debugConfig := debugConfig(os)
@@ -181,6 +183,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
 		Verifier: os.verfier, VerifyAuth: os.verfier != nil,
+		ID: id,
 	}
 	server.Register()
 
@@ -198,9 +201,9 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	h, err := hooks.New(NewHook())
 	runtime.Must(err)
 
-	receiver := eh.NewReceiver(mux, hh.NewWebhook(h))
+	receiver := eh.NewReceiver(mux, hh.NewWebhook(h, id))
 
-	sender, err := eh.NewSender(hh.NewWebhook(h), eh.WithSenderRoundTripper(os.rt))
+	sender, err := eh.NewSender(hh.NewWebhook(h, id), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
 	cache := redisCache(lc, logger, meter, os)

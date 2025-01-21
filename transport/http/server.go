@@ -8,6 +8,7 @@ import (
 	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
@@ -39,6 +40,7 @@ type ServerParams struct {
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
+	ID         id.Generator
 	Limiter    *limiter.Limiter  `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
@@ -54,7 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	timeout := timeout(params.Config)
 
 	neg := negroni.New()
-	neg.Use(meta.NewHandler(params.UserAgent, params.Version))
+	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
 	if params.Tracer != nil {
 		neg.Use(tracer.NewHandler(params.Tracer))

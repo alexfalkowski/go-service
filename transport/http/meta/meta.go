@@ -6,23 +6,24 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/transport/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
-	"github.com/google/uuid"
 )
 
 // Handler for meta.
 type Handler struct {
+	gen       id.Generator
 	userAgent env.UserAgent
 	version   env.Version
 }
 
 // NewHandler for meta.
-func NewHandler(userAgent env.UserAgent, version env.Version) *Handler {
-	return &Handler{userAgent: userAgent, version: version}
+func NewHandler(userAgent env.UserAgent, version env.Version, gen id.Generator) *Handler {
+	return &Handler{userAgent: userAgent, version: version, gen: gen}
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -38,7 +39,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 
-	requestID := extractRequestID(ctx, req)
+	requestID := extractRequestID(ctx, h.gen, req)
 
 	header.Set("Request-Id", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
@@ -54,12 +55,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for meta.
-func NewRoundTripper(userAgent env.UserAgent, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{userAgent: userAgent, RoundTripper: hrt}
+func NewRoundTripper(userAgent env.UserAgent, gen id.Generator, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{userAgent: userAgent, gen: gen, RoundTripper: hrt}
 }
 
 // RoundTripper for meta.
 type RoundTripper struct {
+	gen id.Generator
 	http.RoundTripper
 	userAgent env.UserAgent
 }
@@ -72,7 +74,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("User-Agent", userAgent.Value())
 	ctx = m.WithUserAgent(ctx, userAgent)
 
-	requestID := extractRequestID(ctx, req)
+	requestID := extractRequestID(ctx, r.gen, req)
 
 	req.Header.Set("Request-Id", requestID.Value())
 	ctx = m.WithRequestID(ctx, requestID)
@@ -92,7 +94,7 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 	return meta.String(userAgent)
 }
 
-func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
+func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Valuer {
 	if id := m.RequestID(ctx); id != nil {
 		return id
 	}
@@ -101,7 +103,7 @@ func extractRequestID(ctx context.Context, req *http.Request) meta.Valuer {
 		return meta.String(id)
 	}
 
-	return meta.ToString(uuid.New())
+	return meta.String(gen.Generate())
 }
 
 func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {

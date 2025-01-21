@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -34,6 +35,7 @@ type Server struct {
 	Tracer          *tracer.Config
 	Limiter         *limiter.Limiter
 	Logger          *zap.Logger
+	ID              id.Generator
 	VerifyAuth      bool
 }
 
@@ -41,12 +43,14 @@ type Server struct {
 func (s *Server) Register() {
 	sh := NewShutdowner()
 	tracer := NewTracer(s.Lifecycle, s.Tracer, s.Logger)
+
 	httpServer, err := th.NewServer(th.ServerParams{
 		Shutdowner: sh, Mux: s.Mux,
 		Config: s.TransportConfig.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
 		Limiter: s.Limiter, Handlers: []negroni.Handler{&none{}},
-		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
+		Verifier: s.Verifier, ID: s.ID,
+		UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
 
@@ -55,7 +59,8 @@ func (s *Server) Register() {
 	grpcServer, err := tg.NewServer(tg.ServerParams{
 		Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
-		Verifier: s.Verifier, UserAgent: UserAgent, Version: Version,
+		Verifier: s.Verifier, ID: s.ID,
+		UserAgent: UserAgent, Version: Version,
 	})
 	runtime.Must(err)
 
