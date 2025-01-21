@@ -9,25 +9,21 @@ import (
 
 func TestEncoder(t *testing.T) {
 	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
-		Convey("Given I have map", t, func() {
-			Convey("When I create encoder", func() {
-				e := test.Encoder.Get(k)
+		Convey("When I get an encoder", t, func() {
+			e := test.Encoder.Get(k)
 
-				Convey("Then I should have valid encoder", func() {
-					So(e, ShouldNotBeNil)
-				})
+			Convey("Then I should have an encoder", func() {
+				So(e, ShouldNotBeNil)
 			})
 		})
 	}
 
 	for _, k := range []string{"test", "bob"} {
-		Convey("Given I have map", t, func() {
-			Convey("When I create encoder", func() {
-				m := test.Encoder.Get(k)
+		Convey("When I get an encoder", t, func() {
+			m := test.Encoder.Get(k)
 
-				Convey("Then I should have none", func() {
-					So(m, ShouldBeNil)
-				})
+			Convey("Then I should have no encoder", func() {
+				So(m, ShouldBeNil)
 			})
 		})
 	}
