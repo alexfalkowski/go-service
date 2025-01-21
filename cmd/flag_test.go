@@ -10,33 +10,37 @@ import (
 type tuple [2]string
 
 func TestSplitFlag(t *testing.T) {
-	tuples := []tuple{{"file", "file.yaml"}, {"file", "file.test.yaml"}, {"file", "test/.config/existing.client.yaml"}}
+	tuples := []tuple{
+		{"file", "file.yaml"},
+		{"file", "file.test.yaml"},
+		{"file", "test/.config/existing.client.yaml"},
+	}
 
 	for _, tuple := range tuples {
-		Convey("Given I have a flag", t, func() {
-			Convey("When I split the flag", func() {
-				k, l := cmd.SplitFlag(tuple[0] + ":" + tuple[1])
+		Convey("When I split the flag", t, func() {
+			k, l := cmd.SplitFlag(tuple[0] + ":" + tuple[1])
 
-				Convey("Then I should have a valid split", func() {
-					So(k, ShouldEqual, tuple[0])
-					So(l, ShouldEqual, tuple[1])
-				})
+			Convey("Then I should have a valid split", func() {
+				So(k, ShouldEqual, tuple[0])
+				So(l, ShouldEqual, tuple[1])
 			})
 		})
 	}
 }
 
 func TestReadWriter(t *testing.T) {
-	tuples := []tuple{{"file", "file.yaml"}, {"file", "file.test.yaml"}, {"file", "test/.config/existing.client.yaml"}}
+	tuples := []tuple{
+		{"file", "file.yaml"},
+		{"file", "file.test.yaml"},
+		{"file", "test/.config/existing.client.yaml"},
+	}
 
-	for _, tu := range tuples {
-		Convey("Given I have a flag", t, func() {
-			Convey("When I get a read writer", func() {
-				rw := cmd.NewReadWriter(tu[0], tu[1])
+	for _, tuple := range tuples {
+		Convey("When I get a read writer", t, func() {
+			rw := cmd.NewReadWriter(tuple[0], tuple[1])
 
-				Convey("Then tI should have a valid split", func() {
-					So(rw.Kind(), ShouldEqual, "yaml")
-				})
+			Convey("Then tI should have a valid split", func() {
+				So(rw.Kind(), ShouldEqual, "yaml")
 			})
 		})
 	}

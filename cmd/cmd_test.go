@@ -91,52 +91,46 @@ func TestInvalid(t *testing.T) {
 		"file:../test/configs/invalid_debug.config.yml",
 	}
 
-	for _, i := range configs {
-		Convey("Given I have an invalid configuration", t, func() {
-			Convey("When I try to run an application", func() {
-				c := cmd.New("1.0.0")
-				c.AddServer("server", "Start the server.", opts()...)
-				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+	for _, config := range configs {
+		Convey("When I try to run an application", t, func() {
+			c := cmd.New("1.0.0")
+			c.AddServer("server", "Start the server.", opts()...)
+			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
-				Convey("Then I should not see an error", func() {
-					err := c.RunWithArgs([]string{"server", "--input", i})
+			Convey("Then I should not see an error", func() {
+				err := c.RunWithArgs([]string{"server", "--input", config})
 
-					So(err, ShouldBeError)
-					So(err.Error(), ShouldContainSubstring, "unknown port")
-				})
+				So(err, ShouldBeError)
+				So(err.Error(), ShouldContainSubstring, "unknown port")
 			})
 		})
 	}
 }
 
 func TestDisabled(t *testing.T) {
-	Convey("Given I have invalid HTTP port set", t, func() {
-		Convey("When I try to run an application", func() {
-			c := cmd.New("1.0.0")
-			c.AddServer("server", "Start the server.", opts()...)
-			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+	Convey("When I try to run an application", t, func() {
+		c := cmd.New("1.0.0")
+		c.AddServer("server", "Start the server.", opts()...)
+		c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
-			Convey("Then I should see an error", func() {
-				err := c.RunWithArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
+		Convey("Then I should see an error", func() {
+			err := c.RunWithArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
 
-				So(err, ShouldBeNil)
-			})
+			So(err, ShouldBeNil)
 		})
 	})
 }
 
 func TestClient(t *testing.T) {
-	Convey("Given I have valid configuration", t, func() {
-		Convey("When I try to run a client", func() {
-			opts := []fx.Option{fx.NopLogger}
+	Convey("When I try to run a client", t, func() {
+		opts := []fx.Option{fx.NopLogger}
 
-			c := cmd.New("1.0.0")
-			c.AddClient("client", "Start the client.", opts...)
-			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+		c := cmd.New("1.0.0")
+		c.AddClient("client", "Start the client.", opts...)
+		c.RegisterInput(c.Root(), "env:CONFIG_FILE")
 
-			Convey("Then I should not see an error", func() {
-				So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
-			})
+		Convey("Then I should not see an error", func() {
+			So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
 		})
 	})
 }
@@ -147,9 +141,9 @@ func TestInvalidClient(t *testing.T) {
 		"../test/configs/invalid_grpc.config.yml",
 	}
 
-	for _, i := range configs {
+	for _, config := range configs {
 		Convey("Given I have invalid configuration", t, func() {
-			os.Setenv("TEST_CONFIG_FILE", i)
+			os.Setenv("TEST_CONFIG_FILE", config)
 
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
