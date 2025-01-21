@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/net/http/content"
@@ -55,6 +56,7 @@ type worldOpts struct {
 	rt          http.RoundTripper
 	limiter     *limiter.Config
 	redis       *redis.Config
+	pg          *pg.Config
 	telemetry   string
 	secure      bool
 	rest        bool
@@ -124,6 +126,13 @@ func WithWorldRedisConfig(config *redis.Config) WorldOption {
 	})
 }
 
+// WithWorldRedisConfig for test.
+func WithWorldPGConfig(config *pg.Config) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.pg = config
+	})
+}
+
 func options(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
@@ -138,6 +147,9 @@ type World struct {
 	t *testing.T
 	*fxtest.Lifecycle
 	*http.ServeMux
+	*zap.Logger
+	Tracer *tracer.Config
+	PG     *pg.Config
 	*Server
 	*Client
 	*mvc.Router
@@ -158,12 +170,15 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	tracer := NewOTLPTracerConfig()
 	os := options(opts...)
 	tranConfig := transportConfig(os)
+	debugConfig := debugConfig(os)
 	tlsConfig := tlsConfig(os)
 	meter := meter(lc, mux, os)
 	limiter := serverLimiter(lc, os)
+	pgConfig := pgConfig(os)
 
 	server := &Server{
-		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
+		Lifecycle: lc, Logger: logger, Tracer: tracer,
+		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
 		Verifier: os.verfier, VerifyAuth: os.verfier != nil,
 	}
@@ -178,10 +193,6 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	views := mvc.NewViews(mvc.ViewsParams{FS: &Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
 	router := mvc.NewRouter(mux, views)
 
-	rest.Register(mux, Content)
-	rpc.Register(mux, Content, Pool)
-	pg.Register(client.NewTracer(), logger)
-
 	restClient := restClient(client, os)
 
 	h, err := hooks.New(NewHook())
@@ -192,16 +203,33 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	sender, err := eh.NewSender(hh.NewWebhook(h), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
-	cache := redisCache(lc, client.Logger, server.Meter, os)
+	cache := redisCache(lc, logger, meter, os)
 
 	return &World{
-		t:         t,
+		t:      t,
+		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
 		Router: router, Rest: restClient,
 		Receiver: receiver, Sender: sender,
-		Cache: cache,
+		Cache: cache, PG: pgConfig,
 	}
+}
+
+func (w *World) Register() {
+	rest.Register(w.ServeMux, Content)
+	rpc.Register(w.ServeMux, Content, Pool)
+	pg.Register(w.NewTracer(), w.Logger)
+}
+
+// ServerHost for world.
+func (w *World) ServerHost() string {
+	return w.Server.TransportConfig.HTTP.Address
+}
+
+// DebugHost for world.
+func (w *World) DebugHost() string {
+	return w.Server.DebugConfig.Address
 }
 
 // RegisterEvents for world.
@@ -211,27 +239,14 @@ func (w *World) RegisterEvents(ctx context.Context) {
 
 // EventsContext for world.
 func (w *World) EventsContext(ctx context.Context) context.Context {
-	addr := w.Server.Transport.HTTP.Address
-
-	return events.ContextWithTarget(ctx, fmt.Sprintf("http://%s/events", addr))
+	return events.ContextWithTarget(ctx, fmt.Sprintf("http://%s/events", w.ServerHost()))
 }
 
-// Start the world.
-func (w *World) Start() {
-	w.Lifecycle.RequireStart()
-}
-
-// Stop the world.
-func (w *World) Stop() {
-	w.Lifecycle.RequireStop()
-}
-
-// Request for the world.
-func (w *World) Request(ctx context.Context, protocol, method, path string, header http.Header, body io.Reader) (*http.Response, string, error) {
+// ResponseWithBody for the world.
+func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, string, error) {
 	client := w.Client.NewHTTP()
-	addr := w.Server.Transport.HTTP.Address
 
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, addr, path), body)
+	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
 	runtime.Must(err)
 
 	req.Header = header
@@ -249,14 +264,35 @@ func (w *World) Request(ctx context.Context, protocol, method, path string, head
 	return res, strings.TrimSpace(string(data)), nil
 }
 
-// OpenDatabase for world.
-func (w *World) OpenDatabase() *mssqlx.DBs {
-	dbs, err := pg.Open(pg.OpenParams{Lifecycle: w.Lifecycle, Config: NewPGConfig()})
+// HTTPResponseNoBody for the world.
+func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, error) {
+	client := w.Client.NewHTTP()
+
+	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
 	runtime.Must(err)
+
+	req.Header = header
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	return res, nil
+}
+
+// OpenDatabase for world.
+func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
+	dbs, err := pg.Open(pg.OpenParams{Lifecycle: w.Lifecycle, Config: w.PG})
+	if err != nil {
+		return nil, err
+	}
 
 	sm.Register(dbs, w.Server.Meter)
 
-	return dbs
+	return dbs, err
 }
 
 // RegisterHandlers for test.
@@ -278,6 +314,14 @@ func transportConfig(os *worldOpts) *transport.Config {
 	}
 
 	return NewInsecureTransportConfig()
+}
+
+func debugConfig(os *worldOpts) *debug.Config {
+	if os.secure {
+		return NewSecureDebugConfig()
+	}
+
+	return NewInsecureDebugConfig()
 }
 
 func tlsConfig(os *worldOpts) *tls.Config {
@@ -332,4 +376,12 @@ func redisCache(lc fx.Lifecycle, logger *zap.Logger, meter metric.Meter, os *wor
 		Logger:    logger,
 		Meter:     meter,
 	}
+}
+
+func pgConfig(os *worldOpts) *pg.Config {
+	if os.pg != nil {
+		return os.pg
+	}
+
+	return NewPGConfig()
 }

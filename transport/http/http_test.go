@@ -12,10 +12,11 @@ import (
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
 		world := test.NewWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query github", func() {
-			client := world.Client.NewHTTP()
+			client := world.NewHTTP()
 
 			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://github.com/alexfalkowski", http.NoBody)
 			So(err, ShouldBeNil)
@@ -30,6 +31,6 @@ func TestSecure(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }

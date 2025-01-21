@@ -17,13 +17,14 @@ import (
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Ignored("test"))
 			ctx = meta.WithAttribute(ctx, "ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -42,7 +43,7 @@ func TestInsecureUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -50,12 +51,13 @@ func TestInsecureUnary(t *testing.T) {
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -68,7 +70,7 @@ func TestSecureUnary(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -76,12 +78,13 @@ func TestSecureUnary(t *testing.T) {
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
 
-			conn := world.Client.NewGRPC()
+			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
@@ -102,7 +105,7 @@ func TestStream(t *testing.T) {
 				So(resp.GetMessage(), ShouldEqual, "Hello test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }

@@ -12,8 +12,9 @@ import (
 func TestClientIncr(t *testing.T) {
 	Convey("Given I have a cache", t, func() {
 		world := test.NewWorld(t)
+		world.Register()
 
-		client, err := world.Cache.NewRedisClient()
+		client, err := world.NewRedisClient()
 		So(err, ShouldBeNil)
 
 		ctx, cancel := test.Timeout()
@@ -21,7 +22,7 @@ func TestClientIncr(t *testing.T) {
 
 		ctx = meta.WithAttribute(ctx, "password", meta.Redacted("test-1234"))
 
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I try to cache an item", func() {
 			cmd := client.Set(ctx, "test-incr", 1, time.Hour)
@@ -41,6 +42,6 @@ func TestClientIncr(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }

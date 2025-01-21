@@ -9,17 +9,14 @@ import (
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/health"
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 func TestHealth(t *testing.T) {
@@ -28,10 +25,9 @@ func TestHealth(t *testing.T) {
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+			world.Register()
 
-			pg.Register(world.Client.NewTracer(), world.Client.Logger)
-
-			so, err := observer(world.Lifecycle, "redis", "http://localhost:6000/v1/status/200", world.NewHTTP(), world.Client.Logger)
+			so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world)
 			So(err, ShouldBeNil)
 
 			o := so.Observe("http")
@@ -43,7 +39,7 @@ func TestHealth(t *testing.T) {
 
 			shh.Register(params)
 
-			world.Start()
+			world.RequireStart()
 
 			Convey("When I query "+check, func() {
 				ctx := context.Background()
@@ -53,7 +49,7 @@ func TestHealth(t *testing.T) {
 				header := http.Header{}
 				header.Set("Content-Type", "application/json")
 
-				res, body, err := world.Request(ctx, "http", http.MethodGet, check, header, http.NoBody)
+				res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, check, header, http.NoBody)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a healthy response", func() {
@@ -61,7 +57,7 @@ func TestHealth(t *testing.T) {
 					So(body, ShouldContainSubstring, "SERVING")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -70,11 +66,9 @@ func TestHealth(t *testing.T) {
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(world.Client.NewTracer(), world.Client.Logger)
-		rest.Register(world.ServeMux, test.Content)
-
-		so, err := observer(world.Lifecycle, "redis", "http://localhost:6000/v1/status/500", world.NewHTTP(), world.Client.Logger)
+		so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
@@ -85,7 +79,7 @@ func TestReadinessNoop(t *testing.T) {
 		}
 
 		shh.Register(params)
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
@@ -95,7 +89,7 @@ func TestReadinessNoop(t *testing.T) {
 			header.Add("User-Agent", "test-user-agent")
 			header.Set("Content-Type", "application/json")
 
-			res, body, err := world.Request(ctx, "http", http.MethodGet, "readyz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "readyz", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a healthy response", func() {
@@ -104,7 +98,7 @@ func TestReadinessNoop(t *testing.T) {
 				So(res.Header.Get("Content-Type"), ShouldEqual, "application/json")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -112,11 +106,9 @@ func TestReadinessNoop(t *testing.T) {
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world.Register()
 
-		pg.Register(world.Client.NewTracer(), world.Client.Logger)
-		rest.Register(world.ServeMux, test.Content)
-
-		so, err := observer(world.Lifecycle, "redis", "http://localhost:6000/v1/status/500", world.NewHTTP(), world.Client.Logger)
+		so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
@@ -127,13 +119,13 @@ func TestInvalidHealth(t *testing.T) {
 		}
 
 		shh.Register(params)
-		world.Start()
+		world.RequireStart()
 
 		Convey("When I query health", func() {
 			ctx := context.Background()
 			header := http.Header{}
 
-			res, body, err := world.Request(ctx, "http", http.MethodGet, "healthz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "healthz", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {
@@ -142,20 +134,18 @@ func TestInvalidHealth(t *testing.T) {
 				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
 
-func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *zap.Logger) (*server.Server, error) {
-	c := &test.Cache{Lifecycle: lc, Redis: test.NewRedisConfig(secret, "snappy", "proto"), Logger: logger}
-
-	r, err := c.NewRedisClient()
+func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, error) {
+	r, err := world.NewRedisClient()
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: test.NewPGConfig()})
+	db, err := world.OpenDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +156,7 @@ func observer(lc fx.Lifecycle, secret, url string, client *http.Client, logger *
 	dc := shc.NewDBChecker(db, 1*time.Second)
 	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
 
-	cc := checker.NewHTTPChecker(url, client.Transport, 5*time.Second)
+	cc := checker.NewHTTPChecker(url, world.NewHTTP().Transport, 5*time.Second)
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 
 	no := checker.NewNoopChecker()

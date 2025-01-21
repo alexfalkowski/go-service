@@ -16,7 +16,8 @@ import (
 func TestSendReceiveWithRoundTripper(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		ctx := context.Background()
 
@@ -40,7 +41,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 				So(string(e.Data()), ShouldEqual, "test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -48,7 +49,8 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		ctx := context.Background()
 
@@ -72,7 +74,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 				So(string(e.Data()), ShouldEqual, "test")
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }
@@ -80,7 +82,8 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 func TestSendNotReceive(t *testing.T) {
 	Convey("Given I have a http event receiver", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}))
-		world.Start()
+		world.Register()
+		world.RequireStart()
 
 		ctx := context.Background()
 
@@ -103,7 +106,7 @@ func TestSendNotReceive(t *testing.T) {
 				So(world.Event, ShouldBeNil)
 			})
 
-			world.Stop()
+			world.RequireStop()
 		})
 	})
 }

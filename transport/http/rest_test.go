@@ -18,14 +18,13 @@ func TestRestNoContent(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterHandlers("/hello", test.RestNoContent)
 
 			Convey("When I send data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
-
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				res, err := world.Rest.R().Execute(v, url)
 
 				Convey("Then I should have no error", func() {
@@ -34,7 +33,7 @@ func TestRestNoContent(t *testing.T) {
 					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -44,13 +43,13 @@ func TestRestRequestNoContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
 
 			Convey("When I send data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				headers := map[string]string{
 					"Content-Type": "application/json",
 					"Accept":       "application/json",
@@ -63,7 +62,7 @@ func TestRestRequestNoContent(t *testing.T) {
 					So(rest.Error(res), ShouldBeNil)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -73,13 +72,13 @@ func TestRestError(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterHandlers("/hello", test.RestError)
 
 			Convey("When I send data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 
 				res, err := world.Rest.R().Execute(v, url)
 				So(err, ShouldBeNil)
@@ -88,7 +87,7 @@ func TestRestError(t *testing.T) {
 					So(rest.Error(res), ShouldBeError)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -98,13 +97,13 @@ func TestRestRequestError(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestError)
 
 			Convey("When I send data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				headers := map[string]string{
 					"Content-Type": "application/json",
 					"Accept":       "application/json",
@@ -117,7 +116,7 @@ func TestRestRequestError(t *testing.T) {
 					So(rest.Error(res), ShouldBeError)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -127,13 +126,13 @@ func TestRestWithContent(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterHandlers("/hello", test.RestContent)
 
 			Convey("When I send data", func() {
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 
 				resp, err := world.Rest.R().Execute(v, url)
 				So(err, ShouldBeNil)
@@ -142,7 +141,7 @@ func TestRestWithContent(t *testing.T) {
 					So(resp, ShouldNotBeNil)
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}
@@ -152,7 +151,8 @@ func TestRestRequestWithContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-			world.Start()
+			world.Register()
+			world.RequireStart()
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
@@ -162,8 +162,7 @@ func TestRestRequestWithContent(t *testing.T) {
 					resp test.Response
 				)
 
-				addr := world.Server.Transport.HTTP.Address
-				url := fmt.Sprintf("http://%s/hello", addr)
+				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				enc := json.NewEncoder()
 				headers := map[string]string{
 					"Content-Type": "application/json",
@@ -188,7 +187,7 @@ func TestRestRequestWithContent(t *testing.T) {
 					So(resp.Greeting, ShouldEqual, "Hello test")
 				})
 
-				world.Stop()
+				world.RequireStop()
 			})
 		})
 	}

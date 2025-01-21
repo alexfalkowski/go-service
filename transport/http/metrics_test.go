@@ -11,12 +11,15 @@ import (
 func TestPrometheusInsecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-		world.OpenDatabase()
+		world.Register()
 
-		_, err := world.Cache.NewRedisCache()
+		_, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		world.Start()
+		_, err = world.NewRedisCache()
+		So(err, ShouldBeNil)
+
+		world.RequireStart()
 
 		Convey("When I query metrics", func() {
 			ctx, cancel := test.Timeout()
@@ -24,7 +27,7 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 
 			header := http.Header{}
 
-			res, body, err := world.Request(ctx, "http", http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
@@ -39,19 +42,22 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
 
 func TestPrometheusSecureHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldSecure())
-		world.OpenDatabase()
+		world.Register()
 
-		_, err := world.Cache.NewRedisCache()
+		_, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		world.Start()
+		_, err = world.NewRedisCache()
+		So(err, ShouldBeNil)
+
+		world.RequireStart()
 
 		Convey("When I query metrics", func() {
 			ctx, cancel := test.Timeout()
@@ -59,7 +65,7 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 
 			header := http.Header{}
 
-			res, body, err := world.Request(ctx, "https", http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "https", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
@@ -71,6 +77,6 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 			})
 		})
 
-		world.Stop()
+		world.RequireStop()
 	})
 }
