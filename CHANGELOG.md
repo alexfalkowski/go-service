@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.383.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.383.0) - 2025-01-21
+
+- [`dee8fa4`](https://github.com/alexfalkowski/go-service/commit/dee8fa455ad09abc51c952d9892e4bb29050ddb9) feat(id): add ability to generate (#1211)
+- [`0f00712`](https://github.com/alexfalkowski/go-service/commit/0f007129dd7c439871a79b286ce18377262ceb2a) test(all): better names (#1210)
+- [`9cd3ec4`](https://github.com/alexfalkowski/go-service/commit/9cd3ec4464bfdf1f9428fde406032657ed46152f) test(world): simplify test code by borrowing concepts (#1209)
+
 ## [v1.382.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.382.0) - 2025-01-21
 
 - [`26ec566`](https://github.com/alexfalkowski/go-service/commit/26ec56696c189e40dcda194f9856d313cf158ed7) feat(mvc): use fs.FS (#1208)
