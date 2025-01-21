@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -42,10 +43,10 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("std", func(b *testing.B) {
-		for range b.N {
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
-			runtime.Must(err)
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		runtime.Must(err)
 
+		for range b.N {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -62,9 +63,12 @@ func BenchmarkHTTP(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(), Mux: mux,
-		Config:    cfg.HTTP,
-		UserAgent: test.UserAgent, Version: test.Version,
+		Shutdowner: test.NewShutdowner(),
+		Mux:        mux,
+		Config:     cfg.HTTP,
+		UserAgent:  test.UserAgent,
+		Version:    test.Version,
+		ID:         id.Default,
 	})
 	runtime.Must(err)
 
@@ -99,9 +103,13 @@ func BenchmarkLogHTTP(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(), Mux: mux,
-		Config: cfg.HTTP, Logger: logger,
-		UserAgent: test.UserAgent, Version: test.Version,
+		Shutdowner: test.NewShutdowner(),
+		Mux:        mux,
+		Config:     cfg.HTTP,
+		Logger:     logger,
+		UserAgent:  test.UserAgent,
+		Version:    test.Version,
+		ID:         id.Default,
 	})
 	runtime.Must(err)
 
@@ -138,9 +146,14 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(), Mux: mux,
-		Config: cfg.HTTP, Logger: logger, Tracer: tracer,
-		UserAgent: test.UserAgent, Version: test.Version,
+		Shutdowner: test.NewShutdowner(),
+		Mux:        mux,
+		Config:     cfg.HTTP,
+		Logger:     logger,
+		Tracer:     tracer,
+		UserAgent:  test.UserAgent,
+		Version:    test.Version,
+		ID:         id.Default,
 	})
 	runtime.Must(err)
 
@@ -190,15 +203,15 @@ func BenchmarkRoute(b *testing.B) {
 
 	client := cl.NewHTTP()
 
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
-	runtime.Must(err)
-
-	req.Header.Set("Content-Type", "text/html")
-
 	lc.RequireStart()
 	b.ResetTimer()
 
 	b.Run("html", func(b *testing.B) {
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+		runtime.Must(err)
+
+		req.Header.Set("Content-Type", "text/html")
+
 		for range b.N {
 			_, _ = client.Do(req)
 		}
@@ -234,11 +247,11 @@ func BenchmarkRPC(b *testing.B) {
 	b.ResetTimer()
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
-		b.Run(mt, func(b *testing.B) {
-			client := rpc.NewClient[test.Request, test.Response](url,
-				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(t))
+		client := rpc.NewClient[test.Request, test.Response](url,
+			rpc.WithClientContentType("application/"+mt),
+			rpc.WithClientRoundTripper(t))
 
+		b.Run(mt, func(b *testing.B) {
 			for range b.N {
 				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
 			}

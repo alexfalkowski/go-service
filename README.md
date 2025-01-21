@@ -121,6 +121,24 @@ hooks:
   secret: path to secret
 ```
 
+## ID
+
+The framework supports the generation of ids. The following are supported:
+- [uuid](https://github.com/google/uuid)
+- [ksuid](https://github.com/segmentio/ksuid)
+- [nanoid](https://github.com/matoous/go-nanoid)
+- [ulid](https://github.com/oklog/ulid)
+- [xid](https://github.com/rs/xid)
+
+### Configuration
+
+To configure, please specify the following:
+
+```yaml
+id:
+  kind: uuid | ksuid | nanoid | ulid | xid
+```
+
 ## Runtime
 
 We enhance the runtime with the following:

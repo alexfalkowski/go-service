@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/id"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	sr "github.com/alexfalkowski/go-service/retry"
 	st "github.com/alexfalkowski/go-service/time"
@@ -36,6 +37,7 @@ type clientOpts struct {
 	logger       *zap.Logger
 	retry        *sr.Config
 	tls          *tls.Config
+	id           id.Generator
 	userAgent    env.UserAgent
 	timeout      time.Duration
 	breaker      bool
@@ -125,6 +127,13 @@ func WithClientTLS(sec *tls.Config) ClientOption {
 	})
 }
 
+// WithClientID for HTTP.
+func WithClientID(gen id.Generator) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.id = gen
+	})
+}
+
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
@@ -162,7 +171,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = tt.NewRoundTripper(os.tracer, hrt)
 	}
 
-	hrt = meta.NewRoundTripper(os.userAgent, hrt)
+	hrt = meta.NewRoundTripper(os.userAgent, os.id, hrt)
 
 	return hrt, nil
 }
@@ -210,6 +219,10 @@ func options(opts ...ClientOption) *clientOpts {
 
 	if os.timeout == 0 {
 		os.timeout = 30 * time.Second
+	}
+
+	if os.id == nil {
+		os.id = id.Default
 	}
 
 	return os

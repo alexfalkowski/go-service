@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/retry"
 	t "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
@@ -39,6 +40,7 @@ type clientOpts struct {
 	logger      *zap.Logger
 	retry       *retry.Config
 	userAgent   env.UserAgent
+	id          id.Generator
 	opts        []grpc.DialOption
 	unary       []grpc.UnaryClientInterceptor
 	stream      []grpc.StreamClientInterceptor
@@ -144,6 +146,13 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	})
 }
 
+// WithClientID for gRPC.
+func WithClientID(gen id.Generator) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.id = gen
+	})
+}
+
 // NewDialOptions for gRPC.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
@@ -236,7 +245,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, gt.UnaryClientInterceptor(os.tracer))
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent))
+	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.id))
 
 	return unary
 }
@@ -255,7 +264,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	}
 
 	stream = append(stream, gt.StreamClientInterceptor(opts.tracer))
-	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent))
+	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.id))
 
 	return grpc.WithChainStreamInterceptor(stream...)
 }
@@ -268,6 +277,10 @@ func options(opts ...ClientOption) *clientOpts {
 
 	if os.timeout == 0 {
 		os.timeout = 30 * time.Second
+	}
+
+	if os.id == nil {
+		os.id = id.Default
 	}
 
 	return os

@@ -32,6 +32,8 @@ feature:
   timeout: 10s
 hooks:
   secret: ../test/secrets/hooks
+id:
+  kind: uuid
 limiter:
   kind: user-agent
   tokens: 10

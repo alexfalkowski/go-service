@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
@@ -12,7 +13,7 @@ import (
 
 func TestValidPaseto(t *testing.T) {
 	a, _ := ed25519.NewSigner(test.NewEd25519())
-	paseto := token.NewPaseto(a)
+	paseto := token.NewPaseto(a, id.Default)
 
 	Convey("When I generate a paseto token", t, func() {
 		token, err := paseto.Generate("test", "test", "test", time.Hour)
@@ -33,7 +34,7 @@ func TestValidPaseto(t *testing.T) {
 
 func TestInvalidPaseto(t *testing.T) {
 	a, _ := ed25519.NewSigner(test.NewEd25519())
-	paseto := token.NewPaseto(a)
+	paseto := token.NewPaseto(a, id.Default)
 
 	Convey("When I generate a paseto token", t, func() {
 		token, err := paseto.Generate("test", "test", "test", time.Hour)
@@ -63,7 +64,7 @@ func TestInvalidPaseto(t *testing.T) {
 	}
 
 	Convey("Given I have paseto with a bad signer.", t, func() {
-		paseto := token.NewPaseto(&test.BadEd25519Signer{})
+		paseto := token.NewPaseto(&test.BadEd25519Signer{}, id.Default)
 
 		Convey("When I generate a token", func() {
 			_, err := paseto.Generate("test", "test", "test", time.Hour)

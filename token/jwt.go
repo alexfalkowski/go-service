@@ -6,8 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 )
 
 // KID is a key ID.
@@ -26,12 +26,13 @@ func NewKID(gen *rand.Generator) (KID, error) {
 // JWT token.
 type JWT struct {
 	ed  ed25519.Signer
+	gen id.Generator
 	kid KID
 }
 
 // NewJWT token.
-func NewJWT(kid KID, ed ed25519.Signer) *JWT {
-	return &JWT{kid: kid, ed: ed}
+func NewJWT(kid KID, ed ed25519.Signer, gen id.Generator) *JWT {
+	return &JWT{kid: kid, ed: ed, gen: gen}
 }
 
 // Generate JWT token.
@@ -41,7 +42,7 @@ func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) 
 
 	claims := &jwt.RegisteredClaims{
 		ExpiresAt: &jwt.NumericDate{Time: now.Add(exp)},
-		ID:        uuid.NewString(),
+		ID:        j.gen.Generate(),
 		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    iss,
 		NotBefore: &jwt.NumericDate{Time: now},

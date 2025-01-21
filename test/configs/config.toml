@@ -42,6 +42,9 @@ attempts = 3
 [hooks]
 secret = "../test/secrets/hooks"
 
+[id]
+kind = "uuid"
+
 [limiter]
 kind = "user-agent"
 tokens = 10

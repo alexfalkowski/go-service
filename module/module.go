@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/sync"
@@ -23,4 +24,5 @@ var Module = fx.Options(
 	crypto.Module,
 	time.Module,
 	sync.Module,
+	id.Module,
 )

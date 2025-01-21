@@ -29,12 +29,16 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/klauspost/compress v1.17.11
 	github.com/linxGnu/mssqlx v1.1.8
+	github.com/matoous/go-nanoid v1.5.1
 	github.com/matthewhartstonge/argon2 v1.1.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
+	github.com/oklog/ulid v1.3.1
 	github.com/open-feature/go-sdk v1.14.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.4
 	github.com/prometheus/client_golang v1.20.5
 	github.com/redis/go-redis/v9 v9.7.0
+	github.com/rs/xid v1.6.0
+	github.com/segmentio/ksuid v1.0.4
 	github.com/sethvargo/go-limiter v1.0.0
 	github.com/sethvargo/go-retry v0.3.0
 	github.com/shirou/gopsutil/v4 v4.24.12

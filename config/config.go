@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/structs"
 	"github.com/alexfalkowski/go-service/telemetry"
@@ -57,6 +58,7 @@ type Config struct {
 	Crypto      *crypto.Config    `yaml:"crypto,omitempty" json:"crypto,omitempty" toml:"crypto,omitempty"`
 	Feature     *feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
 	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
+	ID          *id.Config        `yaml:"id,omitempty" json:"id,omitempty" toml:"id,omitempty"`
 	Limiter     *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
 	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
 	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
@@ -108,6 +110,10 @@ func hmacConfig(cfg *Config) *hmac.Config {
 	}
 
 	return cfg.Crypto.HMAC
+}
+
+func idConfig(cfg *Config) *id.Config {
+	return cfg.ID
 }
 
 func hooksConfig(cfg *Config) *hooks.Config {

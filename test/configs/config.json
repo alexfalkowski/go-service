@@ -1,119 +1,122 @@
 {
-    "environment": "development",
-    "debug": {
-      "address": ":6060",
-      "timeout": "10s"
+  "environment": "development",
+  "debug": {
+    "address": ":6060",
+    "timeout": "10s"
+  },
+  "cache": {
+    "redis": {
+      "encoder": "proto",
+      "compressor": "snappy",
+      "addresses": {
+        "server": "localhost:6379"
+      },
+      "url": "../test/secrets/redis"
+    }
+  },
+  "crypto": {
+    "aes": {
+      "key": "../test/secrets/aes"
     },
-    "cache": {
-      "redis": {
-        "encoder": "proto",
-        "compressor": "snappy",
-        "addresses": {
-          "server": "localhost:6379"
-        },
-        "url": "../test/secrets/redis"
+    "ed25519": {
+      "public": "../test/secrets/ed25519_public",
+      "private": "../test/secrets/ed25519_private"
+    },
+    "hmac": {
+      "key": "../test/secrets/hmac"
+    },
+    "rsa": {
+      "public": "../test/secrets/rsa_public",
+      "private": "../test/secrets/rsa_private"
+    },
+    "ssh": {
+      "public": "../test/secrets/ssh_public",
+      "private": "../test/secrets/ssh_private"
+    }
+  },
+  "feature": {
+    "address": "localhost:9000",
+    "retry": {
+      "backoff": "100ms",
+      "timeout": "1s",
+      "attempts": 3
+    },
+    "timeout": "10s"
+  },
+  "hooks": {
+    "secret": "../test/secrets/hooks"
+  },
+  "id": {
+    "kind": "uuid"
+  },
+  "limiter": {
+    "kind": "user-agent",
+    "tokens": 10,
+    "interval": "1s"
+  },
+  "sql": {
+    "pg": {
+      "masters": [
+        {
+          "url": "../test/secrets/pg"
+        }
+      ],
+      "slaves": [
+        {
+          "url": "../test/secrets/pg"
+        }
+      ],
+      "max_open_conns": 5,
+      "max_idle_conns": 5,
+      "conn_max_lifetime": "1h"
+    }
+  },
+  "telemetry": {
+    "logger": {
+      "level": "info"
+    },
+    "metrics": {
+      "kind": "prometheus"
+    },
+    "tracer": {
+      "kind": "otlp",
+      "url": "http://localhost:4318/v1/traces",
+      "headers": {
+        "Authorization": "../test/secrets/tracer"
       }
-    },
-    "crypto" : {
-      "aes": {
-        "key": "../test/secrets/aes"
-      },
-      "ed25519": {
-        "public": "../test/secrets/ed25519_public",
-        "private": "../test/secrets/ed25519_private"
-      },
-      "hmac": {
-        "key": "../test/secrets/hmac"
-      },
-      "rsa": {
-        "public": "../test/secrets/rsa_public",
-        "private": "../test/secrets/rsa_private"
-      },
-      "ssh": {
-        "public": "../test/secrets/ssh_public",
-        "private": "../test/secrets/ssh_private"
-      }
-    },
-    "feature": {
-      "address": "localhost:9000",
+    }
+  },
+  "time": {
+    "kind": "nts",
+    "address": "time.cloudflare.com"
+  },
+  "token": {
+    "kind": "jwt",
+    "sub": "sub",
+    "aud": "aud",
+    "iss": "iss",
+    "exp": "1h"
+  },
+  "transport": {
+    "http": {
+      "address": ":11000",
       "retry": {
         "backoff": "100ms",
         "timeout": "1s",
         "attempts": 3
       },
+      "user_agent": "Service http/1.0",
       "timeout": "10s"
     },
-    "hooks": {
-      "secret": "../test/secrets/hooks"
-    },
-    "limiter": {
-      "kind": "user-agent",
-      "tokens": 10,
-      "interval": "1s"
-    },
-    "sql": {
-      "pg": {
-        "masters": [
-          {
-            "url": "../test/secrets/pg"
-          }
-        ],
-        "slaves": [
-          {
-            "url": "../test/secrets/pg"
-          }
-        ],
-        "max_open_conns": 5,
-        "max_idle_conns": 5,
-        "conn_max_lifetime": "1h"
-      }
-    },
-    "telemetry": {
-      "logger": {
-        "level": "info"
+    "grpc": {
+      "address": ":12000",
+      "retry": {
+        "backoff": "100ms",
+        "timeout": "1s",
+        "attempts": 3
       },
-      "metrics": {
-        "kind": "prometheus"
-      },
-      "tracer": {
-        "kind": "otlp",
-        "url": "http://localhost:4318/v1/traces",
-        "headers": {
-          "Authorization": "../test/secrets/tracer"
-        }
-      }
-    },
-    "time": {
-      "kind": "nts",
-      "address": "time.cloudflare.com"
-    },
-    "token": {
-      "kind": "jwt",
-      "sub": "sub",
-      "aud": "aud",
-      "iss": "iss",
-      "exp": "1h"
-    },
-    "transport": {
-      "http": {
-        "address": ":11000",
-        "retry": {
-          "backoff": "100ms",
-          "timeout": "1s",
-          "attempts": 3
-        },
-        "user_agent": "Service http/1.0",
-        "timeout": "10s"
-      },
-      "grpc": {
-        "address": ":12000",
-        "retry": {
-          "backoff": "100ms",
-          "timeout": "1s",
-          "attempts": 3
-        },
-        "user_agent": "Service grpc/1.0",
-        "timeout": "10s"
-      }
+      "user_agent": "Service grpc/1.0",
+      "timeout": "10s"
     }
   }
+}

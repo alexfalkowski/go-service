@@ -28,6 +28,7 @@ import (
 	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/hooks"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/module"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/telemetry"
@@ -198,7 +199,7 @@ func redisCache(c *rc.Cache) error {
 	return c.Delete(context.Background(), "test")
 }
 
-func configs(_ *redis.Config, _ *pg.Config, _ *feature.Config) {}
+func configs(_ *redis.Config, _ *pg.Config, _ *feature.Config, _ *id.Config) {}
 
 func meter(_ metric.Meter) {}
 
