@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.383.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.383.1) - 2025-01-22
+
+- [`02490e4`](https://github.com/alexfalkowski/go-service/commit/02490e48b9414fb2d143a1eac9b230fb76e32302) fix(deps): upgraded github.com/open-feature/go-sdk v1.14.0 => v1.14.1 (#1215)
+- [`58ec484`](https://github.com/alexfalkowski/go-service/commit/58ec484e16a3385997f5e32e6568f4e448b3213b) test(all): better names (#1213)
+- [`4c36b37`](https://github.com/alexfalkowski/go-service/commit/4c36b37deb4d4bb96c73856bfec8040e5f7e301e) docs(diagrams): generated with make diagrams (#1212)
+
 ## [v1.383.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.383.0) - 2025-01-21
 
 - [`dee8fa4`](https://github.com/alexfalkowski/go-service/commit/dee8fa455ad09abc51c952d9892e4bb29050ddb9) feat(id): add ability to generate (#1211)
