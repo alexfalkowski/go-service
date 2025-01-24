@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.385.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.385.1) - 2025-01-24
+
+- [`436b501`](https://github.com/alexfalkowski/go-service/commit/436b5014959069e6a7ba4d2a9f0187f00ea08cb3) fix(deps): upgraded google.golang.org/protobuf v1.36.3 => v1.36.4 (#1219)
+
 ## [v1.385.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.385.0) - 2025-01-24
 
 - [`a72f26f`](https://github.com/alexfalkowski/go-service/commit/a72f26f3cce76d9e3bd5449a0cd115a91c197da3) feat(slices): add the ability to append and ignore zero values (#1218)
