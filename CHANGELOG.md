@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.385.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.385.0) - 2025-01-24
+
+- [`a72f26f`](https://github.com/alexfalkowski/go-service/commit/a72f26f3cce76d9e3bd5449a0cd115a91c197da3) feat(slices): add the ability to append and ignore zero values (#1218)
+
 ## [v1.384.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.384.0) - 2025-01-23
 
 - [`b85cf74`](https://github.com/alexfalkowski/go-service/commit/b85cf74d126c0acb68e63225b08dbfce2c1311ad) feat(deps): upgraded google.golang.org/grpc v1.69.4 => v1.70.0 (#1217)
