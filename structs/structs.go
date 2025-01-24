@@ -8,8 +8,12 @@ func Zero[T any]() T {
 }
 
 // IsZero for a specific type.
-func IsZero[T comparable](t *T) bool {
+func IsZero[T comparable](value *T) bool {
+	if value == nil {
+		return true
+	}
+
 	z := Zero[T]()
 
-	return z == *t
+	return z == *value
 }
