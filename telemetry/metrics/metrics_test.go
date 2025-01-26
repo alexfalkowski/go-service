@@ -32,7 +32,7 @@ func TestOTLP(t *testing.T) {
 
 func TestInvalidReader(t *testing.T) {
 	Convey("When I try to create a reader with an invalid reader", t, func() {
-		_, err := metrics.NewReader(&test.BadFS{}, test.NewOTLPMetricsConfig())
+		_, err := metrics.NewReader(&test.ErrFS{}, test.NewOTLPMetricsConfig())
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

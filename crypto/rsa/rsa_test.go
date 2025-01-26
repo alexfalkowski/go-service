@@ -10,7 +10,7 @@ import (
 )
 
 func TestGenertor(t *testing.T) {
-	Convey("Given I have a bad generator", t, func() {
+	Convey("Given I have an erroneous generator", t, func() {
 		gen := rsa.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 		Convey("When I generate keys", func() {
@@ -24,8 +24,8 @@ func TestGenertor(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a bad generator", t, func() {
-		gen := rsa.NewGenerator(rand.NewGenerator(&test.BadReaderCloser{}))
+	Convey("Given I have an erroneous generator", t, func() {
+		gen := rsa.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 
 		Convey("When I generate keys", func() {
 			pub, pri, err := gen.Generate()
