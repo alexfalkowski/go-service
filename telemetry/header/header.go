@@ -10,7 +10,7 @@ type Map map[string]string
 // Secrets will traverse the map and load any secrets that have been configured.
 func (m Map) Secrets(fs os.FileSystem) error {
 	for k, v := range m {
-		if !fs.FileExists(v) {
+		if !fs.PathExists(v) {
 			continue
 		}
 
