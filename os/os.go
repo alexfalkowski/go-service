@@ -8,9 +8,14 @@ import (
 	"strings"
 )
 
-// FileExists for the path provided.
-func FileExists(path string) bool {
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+// IsNotExist if the error is os.ErrNotExist.
+func IsNotExist(err error) bool {
+	return errors.Is(err, os.ErrNotExist)
+}
+
+// PathExists for the path provided.
+func PathExists(path string) bool {
+	if _, err := os.Stat(path); IsNotExist(err) {
 		return false
 	}
 

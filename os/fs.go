@@ -5,8 +5,11 @@ type FileSystem interface {
 	// ReadFile for the path provided.
 	ReadFile(path string) (string, error)
 
-	// FileExists for the path provided.
-	FileExists(path string) bool
+	// PathExists for the path provided.
+	PathExists(path string) bool
+
+	// IsNotExist whether the error is os.ErrNotExist.
+	IsNotExist(err error) bool
 }
 
 // NewFS for os.
@@ -20,6 +23,10 @@ func (f *fs) ReadFile(path string) (string, error) {
 	return ReadFile(path)
 }
 
-func (f *fs) FileExists(name string) bool {
-	return FileExists(name)
+func (f *fs) PathExists(name string) bool {
+	return PathExists(name)
+}
+
+func (f *fs) IsNotExist(err error) bool {
+	return IsNotExist(err)
 }

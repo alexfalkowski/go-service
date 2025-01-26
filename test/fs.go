@@ -14,6 +14,10 @@ func (f *BadFS) ReadFile(_ string) (string, error) {
 	return "", ErrFailed
 }
 
-func (f *BadFS) FileExists(_ string) bool {
+func (f *BadFS) PathExists(_ string) bool {
 	return true
+}
+
+func (f *BadFS) IsNotExist(err error) bool {
+	return os.IsNotExist(err)
 }
