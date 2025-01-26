@@ -7,17 +7,17 @@ import (
 // FS used for tests.
 var FS = os.NewFS()
 
-// BadFS for test.
-type BadFS struct{}
+// ErrFS for test.
+type ErrFS struct{}
 
-func (f *BadFS) ReadFile(_ string) (string, error) {
+func (f *ErrFS) ReadFile(_ string) (string, error) {
 	return "", ErrFailed
 }
 
-func (f *BadFS) PathExists(_ string) bool {
+func (f *ErrFS) PathExists(_ string) bool {
 	return true
 }
 
-func (f *BadFS) IsNotExist(err error) bool {
+func (f *ErrFS) IsNotExist(err error) bool {
 	return os.IsNotExist(err)
 }

@@ -130,7 +130,7 @@ func TestProtobufRPC(t *testing.T) {
 	}
 }
 
-func TestBadUnmarshalRPC(t *testing.T) {
+func TestErroneousUnmarshalRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
@@ -143,7 +143,7 @@ func TestBadUnmarshalRPC(t *testing.T) {
 				header := http.Header{}
 				header.Set("Content-Type", "application/"+mt)
 
-				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("a bad payload"))
+				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {

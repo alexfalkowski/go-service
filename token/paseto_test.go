@@ -63,8 +63,8 @@ func TestInvalidPaseto(t *testing.T) {
 		})
 	}
 
-	Convey("Given I have paseto with a bad signer.", t, func() {
-		paseto := token.NewPaseto(&test.BadEd25519Signer{}, id.Default)
+	Convey("Given I have paseto with an erroneous signer", t, func() {
+		paseto := token.NewPaseto(&test.ErrEd25519Signer{}, id.Default)
 
 		Convey("When I generate a token", func() {
 			_, err := paseto.Generate("test", "test", "test", time.Hour)

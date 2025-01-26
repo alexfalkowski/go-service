@@ -53,10 +53,10 @@ func TestEncoder(t *testing.T) {
 	Convey("Given I have proto encoder", t, func() {
 		encoder := proto.NewEncoder()
 
-		Convey("When I decode the proto with a bad reader", func() {
+		Convey("When I decode the proto with an erroneous reader", func() {
 			var msg grpc_health_v1.HealthCheckResponse
 
-			err := encoder.Decode(&test.BadReaderCloser{}, &msg)
+			err := encoder.Decode(&test.ErrReaderCloser{}, &msg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

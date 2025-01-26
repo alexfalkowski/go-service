@@ -29,8 +29,8 @@ func TestServerClose(t *testing.T) {
 }
 
 func TestWriteResponse(t *testing.T) {
-	Convey("When we write with a bad writer", t, func() {
-		w := &test.BadResponseWriter{}
+	Convey("When we write with an erroneous writer", t, func() {
+		w := &test.ErrResponseWriter{}
 		ctx := context.Background()
 
 		nh.WriteResponse(ctx, w, []byte("test"))

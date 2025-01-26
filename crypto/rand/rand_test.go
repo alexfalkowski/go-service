@@ -40,9 +40,9 @@ func TestValidRand(t *testing.T) {
 }
 
 func TestInvalidRand(t *testing.T) {
-	gen := rand.NewGenerator(&test.BadReaderCloser{})
+	gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
-	Convey("When I generate random string with a bad reader", t, func() {
+	Convey("When I generate random string with an erroneous reader", t, func() {
 		_, err := gen.GenerateString(5)
 
 		Convey("Then I should have an error", func() {

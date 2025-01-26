@@ -1,14 +1,14 @@
 package test
 
-// BadReaderCloser for test.
-type BadReaderCloser struct{}
+// ErrReaderCloser for test.
+type ErrReaderCloser struct{}
 
 // Read returns ErrFailed.
-func (r *BadReaderCloser) Read(_ []byte) (int, error) {
+func (r *ErrReaderCloser) Read(_ []byte) (int, error) {
 	return 0, ErrFailed
 }
 
 // Close returns ErrFailed.
-func (r *BadReaderCloser) Close() error {
+func (r *ErrReaderCloser) Close() error {
 	return ErrFailed
 }

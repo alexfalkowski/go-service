@@ -11,7 +11,7 @@ import (
 )
 
 func TestGenertor(t *testing.T) {
-	Convey("Given I have a bad generator", t, func() {
+	Convey("Given I have an erroneous generator", t, func() {
 		gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 		Convey("When I generate key", func() {
@@ -24,8 +24,8 @@ func TestGenertor(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a bad generator", t, func() {
-		gen := aes.NewGenerator(rand.NewGenerator(&test.BadReaderCloser{}))
+	Convey("Given I have a erroneous generator", t, func() {
+		gen := aes.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
 
 		Convey("When I generate key", func() {
 			key, err := gen.Generate()
@@ -111,8 +111,8 @@ func TestInvalidCipher(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have an cipher with a bad rand", t, func() {
-		rand := rand.NewGenerator(&test.BadReaderCloser{})
+	Convey("Given I have an cipher with an erroneous rand", t, func() {
+		rand := rand.NewGenerator(&test.ErrReaderCloser{})
 
 		cipher, err := aes.NewCipher(rand, test.NewAES())
 		So(err, ShouldBeNil)

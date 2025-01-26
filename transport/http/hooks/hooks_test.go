@@ -12,7 +12,7 @@ import (
 func TestVerify(t *testing.T) {
 	Convey("Given I have an invalid request", t, func() {
 		hook := hooks.NewWebhook(nil, nil)
-		req := &http.Request{Body: &test.BadReaderCloser{}}
+		req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 		Convey("When I process a request", func() {
 			err := hook.Verify(req)
@@ -27,7 +27,7 @@ func TestVerify(t *testing.T) {
 func TestSign(t *testing.T) {
 	Convey("Given I have an invalid request", t, func() {
 		hook := hooks.NewWebhook(nil, nil)
-		req := &http.Request{Body: &test.BadReaderCloser{}}
+		req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 		Convey("When I process a request", func() {
 			err := hook.Sign(req)
@@ -43,7 +43,7 @@ func TestRoundTripper(t *testing.T) {
 	Convey("Given I have an invalid request", t, func() {
 		hook := hooks.NewWebhook(nil, nil)
 		rt := hooks.NewRoundTripper(hook, nil)
-		req := &http.Request{Body: &test.BadReaderCloser{}}
+		req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 		Convey("When I process a request", func() {
 			_, err := rt.RoundTrip(req)

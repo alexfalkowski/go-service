@@ -12,11 +12,11 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	Convey("Given I have a bad server", t, func() {
+	Convey("Given I have an erroneous server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		l := test.NewLogger(lc)
 		sh := test.NewShutdowner()
-		srv := &test.BadServer{}
+		srv := &test.ErrServer{}
 		server := server.NewServer("test", srv, l, sh)
 
 		Convey("When I start", func() {

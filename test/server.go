@@ -92,22 +92,22 @@ func (*none) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.Handle
 	next(rw, r)
 }
 
-// BadServer for test.
-type BadServer struct{}
+// ErrServer for test.
+type ErrServer struct{}
 
-func (s *BadServer) IsEnabled() bool {
+func (s *ErrServer) IsEnabled() bool {
 	return true
 }
 
-func (s *BadServer) Serve() error {
+func (s *ErrServer) Serve() error {
 	return os.ErrNotExist
 }
 
-func (s *BadServer) Shutdown(_ context.Context) error {
+func (s *ErrServer) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (s *BadServer) String() string {
+func (s *ErrServer) String() string {
 	return "test"
 }
 
