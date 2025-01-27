@@ -9,33 +9,33 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/runtime"
-	st "github.com/alexfalkowski/go-service/time"
-	"github.com/google/uuid"
+	"github.com/alexfalkowski/go-service/time"
 )
 
 const underscore = "_"
 
 // Generate a token.
-// The format is os.ExecutableName_uuid.NewV7_crc32(uuid).
-func Generate(name env.Name) string {
-	id, err := uuid.NewV7()
-	runtime.Must(err)
+// The format is name_rand(64)_crc32(id).
+func Generate(name env.Name, gen *rand.Generator) (string, error) {
+	id, err := gen.GenerateLetters(64)
+	if err != nil {
+		return "", err
+	}
 
-	uuid := id.String()
-	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(uuid))), 10)
+	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(id))), 10)
 
 	var builder strings.Builder
 
 	builder.WriteString(string(name))
 	builder.WriteString(underscore)
-	builder.WriteString(uuid)
+	builder.WriteString(id)
 	builder.WriteString(underscore)
 	builder.WriteString(checksum)
 
-	return builder.String()
+	return builder.String(), nil
 }
 
 // Verify if the token matches the segments.
@@ -48,10 +48,6 @@ func Verify(name env.Name, token string) error {
 
 	if segments[0] != string(name) {
 		return fmt.Errorf("invalid prefix: %w", ErrInvalidMatch)
-	}
-
-	if _, err := uuid.Parse(segments[1]); err != nil {
-		return fmt.Errorf("%w: %w", err, ErrInvalidMatch)
 	}
 
 	u64, err := strconv.ParseUint(segments[2], 10, 32)
@@ -122,11 +118,11 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 		return ctx, []byte(d), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
 		return ctx, []byte(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
 		return ctx, []byte(token), err
 	}

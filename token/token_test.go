@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
-	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -106,20 +106,35 @@ func TestVerify(t *testing.T) {
 }
 
 func TestToken(t *testing.T) {
-	Convey("When I generate a token", t, func() {
-		key := token.Generate(test.Name)
+	Convey("When I have a rand generator", t, func() {
+		gen := rand.NewGenerator(rand.NewReader())
 
-		Convey("Then I should have a token", func() {
-			So(key, ShouldNotBeBlank)
-			So(token.Verify(test.Name, key), ShouldBeNil)
+		Convey("When I generate a token", func() {
+			key, err := token.Generate(test.Name, gen)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a token", func() {
+				So(key, ShouldNotBeBlank)
+				So(token.Verify(test.Name, key), ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("When I have a erroneous rand generator", t, func() {
+		gen := rand.NewGenerator(&test.ErrReaderCloser{})
+
+		Convey("When I generate a token", func() {
+			_, err := token.Generate(test.Name, gen)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
 		})
 	})
 
 	keys := []string{
 		"",
 		"none_test_test",
-		string(test.Name) + "_" + uuid.NewString() + "_test",
-		string(test.Name) + "_" + uuid.NewString() + "_1",
 		string(test.Name) + "_test_test",
 		string(test.Name) + "_test_1",
 	}
