@@ -16,14 +16,14 @@ import (
 )
 
 func TestTokenAuthUnary(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "key"} {
+	for _, kind := range []string{"jwt", "paseto", "key", "token"} {
 		Convey("Given I have a all the servers", t, func() {
 			kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
 			a, _ := ed25519.NewSigner(test.NewEd25519())
 			id := id.Default
 			jwt := token.NewJWT(kid, a, id)
 			pas := token.NewPaseto(a, id)
-			token := token.NewToken(test.NewToken(kind), jwt, pas)
+			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, jwt, pas)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token))
 			world.Register()
