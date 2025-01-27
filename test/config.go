@@ -32,10 +32,10 @@ import (
 const timeout = 2 * time.Second
 
 // NewToken for test.
-func NewToken(kind string) *token.Config {
+func NewToken(kind, secret string) *token.Config {
 	return &token.Config{
 		Kind:       kind,
-		Key:        Path("secrets/token"),
+		Secret:     Path(secret),
 		Subject:    "sub",
 		Audience:   "aud",
 		Issuer:     "iss",
