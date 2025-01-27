@@ -8,6 +8,7 @@ require (
 	aidanwoods.dev/go-paseto v1.5.3
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.7.0
+	github.com/agentstation/uuidkey v0.0.0-20250119223047-d45823f28c7b
 	github.com/alexfalkowski/go-health v1.20.1
 	github.com/arl/statsviz v0.6.0
 	github.com/beevik/ntp v1.4.3
@@ -110,6 +111,7 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.61.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
+	github.com/richardlehane/crock32 v1.0.1 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/alexfalkowski/go-service/os"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 )
 
 var (
@@ -35,18 +36,18 @@ type (
 		// Verify a token or error.
 		Verify(ctx context.Context, token []byte) (context.Context, error)
 	}
-
-	// Token will generate and verify based on what is defined in the config.
-	Token struct {
-		cfg *Config
-		jwt *JWT
-		pas *Paseto
-	}
 )
 
 // NewToken based on config.
 func NewToken(cfg *Config, jwt *JWT, pas *Paseto) *Token {
 	return &Token{cfg: cfg, jwt: jwt, pas: pas}
+}
+
+// Token will generate and verify based on what is defined in the config.
+type Token struct {
+	cfg *Config
+	jwt *JWT
+	pas *Paseto
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
@@ -56,15 +57,15 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 	switch {
 	case t.cfg.IsKey():
-		d, err := os.ReadBase64File(t.cfg.Key)
+		d, err := os.ReadFile(t.cfg.Key)
 
 		return ctx, []byte(d), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
 		return ctx, []byte(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, st.MustParseDuration(t.cfg.Expiration))
+		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
 		return ctx, []byte(token), err
 	}
@@ -79,12 +80,16 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 
 	switch {
 	case t.cfg.IsKey():
-		d, err := os.ReadBase64File(t.cfg.Key)
+		file, err := os.ReadFile(t.cfg.Key)
 		if err != nil {
 			return ctx, err
 		}
 
-		if !bytes.Equal([]byte(d), token) {
+		if err := VerifyKey(file); err != nil {
+			return ctx, fmt.Errorf("%w: %w", err, ErrInvalidMatch)
+		}
+
+		if !bytes.Equal([]byte(file), token) {
 			return ctx, ErrInvalidMatch
 		}
 

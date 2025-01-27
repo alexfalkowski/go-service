@@ -1,6 +1,7 @@
 package id
 
 import (
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/google/uuid"
 )
 
@@ -9,5 +10,8 @@ type UUID struct{}
 
 // Generate a UUID.
 func (g *UUID) Generate() string {
-	return uuid.NewString()
+	id, err := uuid.NewV7()
+	runtime.Must(err)
+
+	return id.String()
 }

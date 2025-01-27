@@ -10,6 +10,18 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
+	Convey("When I generate a key", t, func() {
+		key, err := token.GenerateKey()
+		So(err, ShouldBeNil)
+
+		Convey("Then I should have a key", func() {
+			So(key, ShouldNotBeBlank)
+
+			err := token.VerifyKey(key)
+			So(err, ShouldBeNil)
+		})
+	})
+
 	Convey("Given I have a invalid key token", t, func() {
 		config := &token.Config{
 			Kind:       "key",
