@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.390.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.390.1) - 2025-01-28
+
+- [`0df59c2`](https://github.com/alexfalkowski/go-service/commit/0df59c2e5226c3f804968ebc12aab01bf1e31ffc) fix(deps): upgraded github.com/goccy/go-json v0.10.4 => v0.10.5 (#1226)
+
 ## [v1.390.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.390.0) - 2025-01-27
 
 - [`5abb67a`](https://github.com/alexfalkowski/go-service/commit/5abb67a2bc8f40c44f41d78740f96c1d86919378) feat(token): use rand(64) (#1225)
