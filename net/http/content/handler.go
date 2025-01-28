@@ -64,7 +64,7 @@ func (c *Content) handler(prefix string, handler func(ctx context.Context) (any,
 		media := c.NewFromRequest(req)
 
 		ctx = hc.WithEncoder(ctx, media.Encoder)
-		res.Header().Add(TypeKey, media.Type)
+		res.Header().Add(TypeKey.Value(), media.Type)
 
 		data, err := handler(ctx)
 		runtime.Must(err)

@@ -90,7 +90,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, buffer)
 	runtime.Must(err)
 
-	request.Header.Set(content.TypeKey, c.mediaType.Type)
+	request.Header.Set(content.TypeKey.Value(), c.mediaType.Type)
 
 	response, err := c.client.Do(request)
 	runtime.Must(err)
@@ -103,7 +103,7 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	runtime.Must(err)
 
 	// The server handlers return text on errors.
-	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
+	media := cont.NewFromMedia(response.Header.Get(content.TypeKey.Value()))
 	if media.IsText() {
 		return nil, status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}

@@ -8,6 +8,7 @@ import (
 	"hash/crc32"
 	"strconv"
 	"strings"
+	"unique"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/env"
@@ -15,7 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 )
 
-const underscore = "_"
+var underscore = unique.Make("_")
 
 // Generate a token.
 // The format is name_rand(64)_crc32(id).
@@ -29,10 +30,12 @@ func Generate(name env.Name, gen *rand.Generator) (string, error) {
 
 	var builder strings.Builder
 
+	builder.Reset()
+
 	builder.WriteString(string(name))
-	builder.WriteString(underscore)
+	builder.WriteString(underscore.Value())
 	builder.WriteString(id)
-	builder.WriteString(underscore)
+	builder.WriteString(underscore.Value())
 	builder.WriteString(checksum)
 
 	return builder.String(), nil
@@ -40,7 +43,7 @@ func Generate(name env.Name, gen *rand.Generator) (string, error) {
 
 // Verify if the token matches the segments.
 func Verify(name env.Name, token string) error {
-	segments := strings.Split(token, underscore)
+	segments := strings.Split(token, underscore.Value())
 
 	if len(segments) != 3 {
 		return fmt.Errorf("invalid length: %w", ErrInvalidMatch)

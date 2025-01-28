@@ -14,7 +14,7 @@ import (
 
 // Error will return an error if the response from the server is text (as server handlers return text on errors).
 func Error(response *resty.Response) error {
-	ct := cont.NewFromMedia(response.Header().Get(content.TypeKey))
+	ct := cont.NewFromMedia(response.Header().Get(content.TypeKey.Value()))
 	if ct.IsText() {
 		return status.Error(response.StatusCode(), strings.TrimSpace(string(response.Body())))
 	}

@@ -34,14 +34,14 @@ func (s *Server) start() {
 	addr := zap.Stringer("addr", s.srv)
 
 	s.log(func(l *zap.Logger) {
-		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.svc))
+		l.Info("starting server", addr, zap.String(meta.ServiceKey.Value(), s.svc))
 	})
 
 	if err := s.srv.Serve(); err != nil {
 		serr := s.sh.Shutdown()
 
 		s.log(func(l *zap.Logger) {
-			l.Error("could not start server", zap.String(meta.ServiceKey, s.svc), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
+			l.Error("could not start server", zap.String(meta.ServiceKey.Value(), s.svc), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
 		})
 	}
 }
@@ -55,7 +55,7 @@ func (s *Server) Stop(ctx context.Context) {
 	err := s.srv.Shutdown(ctx)
 
 	s.log(func(l *zap.Logger) {
-		l.Info("stopping server", zap.String(meta.ServiceKey, s.svc), zap.Error(err))
+		l.Info("stopping server", zap.String(meta.ServiceKey.Value(), s.svc), zap.Error(err))
 	})
 }
 

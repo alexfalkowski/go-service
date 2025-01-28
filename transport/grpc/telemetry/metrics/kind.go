@@ -1,8 +1,10 @@
 package metrics
 
-type kind string
+import (
+	"unique"
+)
 
-const (
-	unaryKind  kind = "unary"
-	streamKind kind = "stream"
+var (
+	unaryKind  = unique.Make("unary")
+	streamKind = unique.Make("stream")
 )

@@ -2,36 +2,37 @@ package meta
 
 import (
 	"context"
+	"unique"
 
 	"github.com/alexfalkowski/go-service/meta"
 )
 
-const (
+var (
 	// RequestIDKey for meta.
-	RequestIDKey = "requestId"
+	RequestIDKey = unique.Make("requestId")
 
 	// ServiceKey for meta.
-	ServiceKey = "service"
+	ServiceKey = unique.Make("service")
 
 	// PathKey for meta.
-	PathKey = "path"
+	PathKey = unique.Make("path")
 
 	// MethodKey for meta.
-	MethodKey = "method"
+	MethodKey = unique.Make("method")
 
 	// CodeKey for meta.
-	CodeKey = "code"
+	CodeKey = unique.Make("code")
 
 	// DurationKey for meta.
-	DurationKey = "duration"
+	DurationKey = unique.Make("duration")
 )
 
 // WithRequestID for transport.
 func WithRequestID(ctx context.Context, id meta.Valuer) context.Context {
-	return meta.WithAttribute(ctx, RequestIDKey, id)
+	return meta.WithAttribute(ctx, RequestIDKey.Value(), id)
 }
 
 // RequestID for transport.
 func RequestID(ctx context.Context) meta.Valuer {
-	return meta.Attribute(ctx, RequestIDKey)
+	return meta.Attribute(ctx, RequestIDKey.Value())
 }

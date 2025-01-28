@@ -4,6 +4,7 @@ import (
 	"context"
 	"path"
 	"time"
+	"unique"
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -15,9 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	service = "grpc"
-)
+var service = unique.Make("grpc")
 
 // UnaryServerInterceptor for zap.
 func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
@@ -30,15 +29,15 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		start := time.Now()
 		resp, err := handler(ctx, req)
 		fields := []zapcore.Field{
-			zap.Stringer(tm.DurationKey, time.Since(start)),
-			zap.String(tm.ServiceKey, service),
-			zap.String(tm.PathKey, info.FullMethod),
+			zap.Stringer(tm.DurationKey.Value(), time.Since(start)),
+			zap.String(tm.ServiceKey.Value(), service.Value()),
+			zap.String(tm.PathKey.Value(), info.FullMethod),
 		}
 
 		fields = append(fields, tz.Meta(ctx)...)
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(tm.CodeKey, code))
+		fields = append(fields, zap.Any(tm.CodeKey.Value(), code))
 
 		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
 
@@ -58,15 +57,15 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		err := handler(srv, stream)
 		fields := []zapcore.Field{
-			zap.Stringer(tm.DurationKey, time.Since(start)),
-			zap.String(tm.ServiceKey, service),
-			zap.String(tm.PathKey, info.FullMethod),
+			zap.Stringer(tm.DurationKey.Value(), time.Since(start)),
+			zap.String(tm.ServiceKey.Value(), service.Value()),
+			zap.String(tm.PathKey.Value(), info.FullMethod),
 		}
 
 		fields = append(fields, tz.Meta(ctx)...)
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(tm.CodeKey, code))
+		fields = append(fields, zap.Any(tm.CodeKey.Value(), code))
 
 		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
 
@@ -85,15 +84,15 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 		fields := []zapcore.Field{
-			zap.Stringer(tm.DurationKey, time.Since(start)),
-			zap.String(tm.ServiceKey, service),
-			zap.String(tm.PathKey, fullMethod),
+			zap.Stringer(tm.DurationKey.Value(), time.Since(start)),
+			zap.String(tm.ServiceKey.Value(), service.Value()),
+			zap.String(tm.PathKey.Value(), fullMethod),
 		}
 
 		fields = append(fields, tz.Meta(ctx)...)
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(tm.CodeKey, code))
+		fields = append(fields, zap.Any(tm.CodeKey.Value(), code))
 
 		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 
@@ -112,15 +111,15 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 		fields := []zapcore.Field{
-			zap.Stringer(tm.DurationKey, time.Since(start)),
-			zap.String(tm.ServiceKey, service),
-			zap.String(tm.PathKey, fullMethod),
+			zap.Stringer(tm.DurationKey.Value(), time.Since(start)),
+			zap.String(tm.ServiceKey.Value(), service.Value()),
+			zap.String(tm.PathKey.Value(), fullMethod),
 		}
 
 		fields = append(fields, tz.Meta(ctx)...)
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(tm.CodeKey, code))
+		fields = append(fields, zap.Any(tm.CodeKey.Value(), code))
 
 		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
 

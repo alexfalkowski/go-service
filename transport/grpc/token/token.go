@@ -75,7 +75,7 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...st
 		return nil, header.ErrInvalidAuthorization
 	}
 
-	return map[string]string{"authorization": header.BearerAuthorization + " " + string(token)}, nil
+	return map[string]string{"authorization": header.BearerAuthorization.Value() + " " + string(token)}, nil
 }
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {

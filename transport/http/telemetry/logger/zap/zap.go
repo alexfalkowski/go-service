@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unique"
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -13,9 +14,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const (
-	service = "http"
-)
+var service = unique.Make("http")
 
 // NewHandler for zap.
 func NewHandler(logger *zap.Logger) *Handler {
@@ -38,14 +37,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 	fields := []zapcore.Field{
-		zap.String(tm.ServiceKey, service),
-		zap.String(tm.PathKey, path),
-		zap.String(tm.MethodKey, method),
+		zap.String(tm.ServiceKey.Value(), service.Value()),
+		zap.String(tm.PathKey.Value(), path),
+		zap.String(tm.MethodKey.Value(), method),
 	}
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
-	fields = append(fields, zap.Stringer(tm.DurationKey, m.Duration), zap.Int(tm.CodeKey, m.Code))
+	fields = append(fields, zap.Stringer(tm.DurationKey.Value(), m.Duration), zap.Int(tm.CodeKey.Value(), m.Code))
 	fields = append(fields, tz.Meta(ctx)...)
 
 	tz.LogWithFunc(message(method+" "+path), nil, codeToLevel(m.Code, h.logger), fields...)
@@ -74,16 +73,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.Stringer(tm.DurationKey, time.Since(start)),
-		zap.String(tm.ServiceKey, service),
-		zap.String(tm.PathKey, path),
-		zap.String(tm.MethodKey, method),
+		zap.Stringer(tm.DurationKey.Value(), time.Since(start)),
+		zap.String(tm.ServiceKey.Value(), service.Value()),
+		zap.String(tm.PathKey.Value(), path),
+		zap.String(tm.MethodKey.Value(), method),
 	}
 
 	fields = append(fields, tz.Meta(ctx)...)
 
 	if resp != nil {
-		fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
+		fields = append(fields, zap.Int(tm.CodeKey.Value(), resp.StatusCode))
 	}
 
 	tz.LogWithFunc(message(method+" "+req.URL.Redacted()), err, respToLevel(resp, r.logger), fields...)

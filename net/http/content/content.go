@@ -2,17 +2,18 @@ package content
 
 import (
 	"net/http"
+	"unique"
 
 	"github.com/alexfalkowski/go-service/encoding"
 	ct "github.com/elnormous/contenttype"
 )
 
-const (
-	jsonMediaType = "application/json"
-	jsonKind      = "json"
+var (
+	jsonMediaType = unique.Make("application/json")
+	jsonKind      = unique.Make("json")
 
 	// TypeKey for HTTP headers.
-	TypeKey = "Content-Type"
+	TypeKey = unique.Make("Content-Type")
 )
 
 // Content creates types from media types.
@@ -59,17 +60,25 @@ func (t *Media) IsText() bool {
 
 func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
 	if err != nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
+		return &Media{
+			Type:    jsonMediaType.Value(),
+			Subtype: jsonKind.Value(),
+			Encoder: enc.Get(jsonKind.Value()),
+		}
 	}
 
 	if media.Subtype == "plain" {
 		return &Media{Type: media.String(), Subtype: media.Subtype}
 	}
 
-	e := enc.Get(media.Subtype)
-	if e == nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
+	encoder := enc.Get(media.Subtype)
+	if encoder == nil {
+		return &Media{
+			Type:    jsonMediaType.Value(),
+			Subtype: jsonKind.Value(),
+			Encoder: enc.Get(jsonKind.Value()),
+		}
 	}
 
-	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
+	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: encoder}
 }

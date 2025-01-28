@@ -4,19 +4,23 @@ import (
 	"errors"
 	"slices"
 	"strings"
+	"unique"
 )
 
-const (
+var (
 	// BasicAuthorization scheme.
-	BasicAuthorization = "Basic"
+	BasicAuthorization = unique.Make("Basic")
 
 	// BearerAuthorization scheme.
-	BearerAuthorization = "Bearer"
+	BearerAuthorization = unique.Make("Bearer")
 )
 
 var (
 	// AllAuthorizations supported by the header.
-	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
+	AllAuthorizations = []string{
+		BasicAuthorization.Value(),
+		BearerAuthorization.Value(),
+	}
 
 	// ErrInvalidAuthorization header.
 	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
