@@ -5,11 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/sync"
 )
-
-// Pool for tests.
-var Pool = sync.NewBufferPool()
 
 // Encoder for tests.
 var Encoder = encoding.NewMap()
