@@ -23,7 +23,7 @@ func TestEncoder(t *testing.T) {
 			err := encoder.Encode(bytes, msg)
 			So(err, ShouldBeNil)
 
-			s := strings.TrimSpace(bytes.String())
+			s := strings.TrimSpace(string(test.Pool.Copy(bytes)))
 
 			Convey("Then I should have valid JSON", func() {
 				So(s, ShouldEqual, "{\"test\":\"test\"}")
