@@ -2,11 +2,12 @@ package http
 
 import (
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for HTTP.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && server.IsEnabled(cfg.Config)
+	return !structs.IsZero(cfg)
 }
 
 // Config for HTTP.

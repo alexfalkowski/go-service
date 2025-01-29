@@ -2,11 +2,12 @@ package cache
 
 import (
 	"github.com/alexfalkowski/go-service/cache/redis"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for cache.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for cache.

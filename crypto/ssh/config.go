@@ -4,12 +4,13 @@ import (
 	"crypto/ed25519"
 	"os"
 
+	"github.com/alexfalkowski/go-service/structs"
 	"golang.org/x/crypto/ssh"
 )
 
 // IsEnabled for ssh.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for ssh.

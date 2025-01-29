@@ -5,11 +5,12 @@ import (
 	"crypto/x509"
 
 	"github.com/alexfalkowski/go-service/crypto/pem"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for ed25519.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for ed25519.

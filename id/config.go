@@ -1,8 +1,10 @@
 package id
 
+import "github.com/alexfalkowski/go-service/structs"
+
 // IsEnabled the config.
-func IsEnabled(config *Config) bool {
-	return config != nil
+func IsEnabled(cfg *Config) bool {
+	return !structs.IsZero(cfg)
 }
 
 // Config for id.

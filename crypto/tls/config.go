@@ -2,11 +2,12 @@ package tls
 
 import (
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for security.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for tls.

@@ -6,11 +6,12 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for crypto.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for crypto.

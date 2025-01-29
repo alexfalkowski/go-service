@@ -2,11 +2,12 @@ package hmac
 
 import (
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for hmac.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for hmac.

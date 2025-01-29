@@ -2,11 +2,12 @@ package pg
 
 import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for pg.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && config.IsEnabled(cfg.Config)
+	return !structs.IsZero(cfg)
 }
 
 // Config for pg.

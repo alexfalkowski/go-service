@@ -3,11 +3,12 @@ package client
 import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/structs"
 )
 
 // IsEnabled for server.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for client.

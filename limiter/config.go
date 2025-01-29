@@ -1,8 +1,12 @@
 package limiter
 
+import (
+	"github.com/alexfalkowski/go-service/structs"
+)
+
 // IsEnabled limiter.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && cfg.Kind != ""
+	return !structs.IsZero(cfg)
 }
 
 // Config for limiter.

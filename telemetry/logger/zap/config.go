@@ -4,13 +4,14 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/structs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 // IsEnabled for zap.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for zap.

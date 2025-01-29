@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"github.com/alexfalkowski/go-service/structs"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -8,7 +9,7 @@ import (
 
 // IsEnabled for telemetry.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil
+	return !structs.IsZero(cfg)
 }
 
 // Config for telemetry.
