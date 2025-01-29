@@ -12,19 +12,20 @@ import (
 func Register(cache *cache.Cache, meter metric.Meter) {
 	hits := metrics.MustInt64ObservableCounter(meter, "redis_hits_total", "The number of hits in the cache.")
 	misses := metrics.MustInt64ObservableCounter(meter, "redis_misses_total", "The number of misses in the cache.")
-	m := &ms{cache: cache, hit: hits, miss: misses}
+	m := &Metrics{cache: cache, hit: hits, miss: misses}
 
 	metrics.MustRegisterCallback(meter, m.callback, hits, misses)
 }
 
-type ms struct {
+// Metrics for redis.
+type Metrics struct {
 	cache *cache.Cache
 	hit   metric.Int64ObservableCounter
 	miss  metric.Int64ObservableCounter
 }
 
 //nolint:gosec
-func (m *ms) callback(_ context.Context, o metric.Observer) error {
+func (m *Metrics) callback(_ context.Context, o metric.Observer) error {
 	stats := m.cache.Stats()
 	if stats != nil {
 		o.ObserveInt64(m.hit, int64(stats.Hits))

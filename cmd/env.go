@@ -16,17 +16,15 @@ import (
 var ErrLocationMissing = errors.New("location is missing")
 
 // ENV for cmd.
-type ENV struct {
-	location string
-}
+type ENV string
 
 // NewENV for cmd.
-func NewENV(location string) *ENV {
-	return &ENV{location: location}
+func NewENV(location string) ENV {
+	return ENV(location)
 }
 
 // Read for env.
-func (e *ENV) Read() ([]byte, error) {
+func (e ENV) Read() ([]byte, error) {
 	if e.isMem() {
 		_, e := e.split()
 
@@ -41,7 +39,7 @@ func (e *ENV) Read() ([]byte, error) {
 }
 
 // Write for env.
-func (e *ENV) Write(data []byte, mode fs.FileMode) error {
+func (e ENV) Write(data []byte, mode fs.FileMode) error {
 	if e.isMem() {
 		_, e := e.split()
 
@@ -56,7 +54,7 @@ func (e *ENV) Write(data []byte, mode fs.FileMode) error {
 }
 
 // Kind for env.
-func (e *ENV) Kind() string {
+func (e ENV) Kind() string {
 	if e.isMem() {
 		k, _ := e.split()
 
@@ -66,24 +64,24 @@ func (e *ENV) Kind() string {
 	return file.Extension(e.path())
 }
 
-func (e *ENV) path() string {
+func (e ENV) path() string {
 	return filepath.Clean(e.name())
 }
 
-func (e *ENV) name() string {
-	return os.Getenv(e.location)
+func (e ENV) name() string {
+	return os.Getenv(string(e))
 }
 
-func (e *ENV) isMem() bool {
+func (e ENV) isMem() bool {
 	return strings.Contains(e.name(), ":")
 }
 
-func (e *ENV) split() (string, string) {
+func (e ENV) split() (string, string) {
 	s := strings.Split(e.name(), ":")
 
 	return s[0], s[1]
 }
 
-func (e *ENV) missingLocationError() error {
-	return fmt.Errorf("%s: %w", e.location, ErrLocationMissing)
+func (e ENV) missingLocationError() error {
+	return fmt.Errorf("%s: %w", string(e), ErrLocationMissing)
 }
