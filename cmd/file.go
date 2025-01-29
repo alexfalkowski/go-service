@@ -9,30 +9,28 @@ import (
 )
 
 // File for cmd.
-type File struct {
-	location string
-}
+type File string
 
 // NewFile for cmd.
-func NewFile(location string) *File {
-	return &File{location: location}
+func NewFile(location string) File {
+	return File(location)
 }
 
 // Read for file.
-func (f *File) Read() ([]byte, error) {
+func (f File) Read() ([]byte, error) {
 	return os.ReadFile(f.name())
 }
 
 // Write for file.
-func (f *File) Write(data []byte, mode fs.FileMode) error {
+func (f File) Write(data []byte, mode fs.FileMode) error {
 	return os.WriteFile(f.name(), data, mode)
 }
 
 // Kind for file.
-func (f *File) Kind() string {
+func (f File) Kind() string {
 	return file.Extension(f.name())
 }
 
-func (f *File) name() string {
-	return filepath.Clean(f.location)
+func (f File) name() string {
+	return filepath.Clean(string(f))
 }
