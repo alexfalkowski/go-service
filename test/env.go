@@ -4,7 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 )
 
-var (
+const (
 	// Environment for test.
 	Environment = env.Environment("dev")
 

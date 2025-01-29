@@ -4,7 +4,7 @@ package env
 type Environment string
 
 // Development environment.
-var Development = Environment("development")
+const Development = Environment("development")
 
 // IsDevelopment environment.
 func (e Environment) IsDevelopment() bool {

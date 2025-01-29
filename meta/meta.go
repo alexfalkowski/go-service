@@ -6,6 +6,8 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+const meta = contextKey("meta")
+
 type (
 	// Converter for meta.
 	Converter func(string) string
@@ -16,12 +18,8 @@ type (
 	contextKey string
 )
 
-var (
-	// NoneConverter for meta.
-	NoneConverter = func(s string) string { return s }
-
-	meta = contextKey("meta")
-)
+// NoneConverter for meta.
+var NoneConverter = func(s string) string { return s }
 
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key string, value Valuer) context.Context {
