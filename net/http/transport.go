@@ -8,7 +8,7 @@ import (
 )
 
 // Transport for HTTP.
-func Transport(cfg *tls.Config) http.RoundTripper {
+func Transport(cfg *tls.Config) *http.Transport {
 	dialer := &net.Dialer{Timeout: time.Minute, KeepAlive: 30 * time.Second}
 
 	return &http.Transport{

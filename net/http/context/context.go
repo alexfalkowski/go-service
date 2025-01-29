@@ -9,7 +9,7 @@ import (
 
 type contextKey string
 
-var (
+const (
 	requestKey  = contextKey("request")
 	responseKey = contextKey("response")
 	encoderKey  = contextKey("encoder")

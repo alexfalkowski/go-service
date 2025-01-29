@@ -4,7 +4,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-var (
+const (
 	kindAttribute    = attribute.Key("kind")
 	serviceAttribute = attribute.Key("service")
 	methodAttribute  = attribute.Key("method")
