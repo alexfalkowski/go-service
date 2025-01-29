@@ -20,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/proxy"
 	"github.com/alexfalkowski/go-service/structs"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
@@ -60,6 +61,7 @@ type Config struct {
 	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
 	ID          *id.Config        `yaml:"id,omitempty" json:"id,omitempty" toml:"id,omitempty"`
 	Limiter     *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
+	Proxy       *proxy.Config     `yaml:"proxy,omitempty" json:"proxy,omitempty" toml:"proxy,omitempty"`
 	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
 	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
 	Time        *time.Config      `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
@@ -162,6 +164,10 @@ func pgConfig(cfg *Config) *pg.Config {
 	}
 
 	return cfg.SQL.PG
+}
+
+func proxyConfig(cfg *Config) *proxy.Config {
+	return cfg.Proxy
 }
 
 func redisConfig(cfg *Config) *redis.Config {

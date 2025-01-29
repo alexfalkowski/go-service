@@ -8,6 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/proxy"
+	pl "github.com/alexfalkowski/go-service/proxy/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
@@ -15,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	th "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/elazarl/goproxy"
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
@@ -30,8 +33,11 @@ type Server struct {
 	HTTPServer      *th.Server
 	GRPCServer      *tg.Server
 	DebugServer     *debug.Server
+	ProxyServer     *proxy.Server
+	Proxy           *goproxy.ProxyHttpServer
 	TransportConfig *transport.Config
 	DebugConfig     *debug.Config
+	ProxyConfig     *proxy.Config
 	Tracer          *tracer.Config
 	Limiter         *limiter.Limiter
 	Logger          *zap.Logger
@@ -82,8 +88,19 @@ func (s *Server) Register() {
 
 	s.DebugServer = debugServer
 
+	s.Proxy = proxy.NewProxy(pl.NewLogger(s.Logger))
+	proxyServer, err := proxy.NewServer(proxy.ServerParams{
+		Shutdowner: NewShutdowner(),
+		Config:     s.ProxyConfig,
+		Logger:     s.Logger,
+		Server:     s.Proxy,
+	})
+	runtime.Must(err)
+
+	s.ProxyServer = proxyServer
+
 	v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
-	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{httpServer, grpcServer, debugServer}})
+	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{httpServer, grpcServer, debugServer, proxyServer}})
 }
 
 type none struct{}

@@ -13,6 +13,7 @@ require (
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
 	github.com/cloudevents/sdk-go/v2 v2.15.2
+	github.com/elazarl/goproxy v1.7.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.0.4

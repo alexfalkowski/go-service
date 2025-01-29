@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
+	"github.com/alexfalkowski/go-service/proxy"
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/header"
@@ -237,6 +238,29 @@ func NewInsecureDebugConfig() *debug.Config {
 // NewInsecureDebugConfig for test.
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
+		Config: &server.Config{
+			Timeout: "5s",
+			TLS:     NewTLSServerConfig(),
+			Address: "localhost:" + Port(),
+			Retry:   NewRetry(),
+		},
+	}
+}
+
+// NewInsecureProxyConfig for test.
+func NewInsecureProxyConfig() *proxy.Config {
+	return &proxy.Config{
+		Config: &server.Config{
+			Timeout: "5s",
+			Address: "localhost:" + Port(),
+			Retry:   NewRetry(),
+		},
+	}
+}
+
+// NewInsecureDebugConfig for test.
+func NewSecureProxyConfig() *proxy.Config {
+	return &proxy.Config{
 		Config: &server.Config{
 			Timeout: "5s",
 			TLS:     NewTLSServerConfig(),

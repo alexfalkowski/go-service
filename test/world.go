@@ -20,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
+	"github.com/alexfalkowski/go-service/proxy"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
@@ -62,6 +63,7 @@ type worldOpts struct {
 	secure      bool
 	rest        bool
 	compression bool
+	proxy       bool
 }
 
 type worldOptionFunc func(*worldOpts)
@@ -134,6 +136,13 @@ func WithWorldPGConfig(config *pg.Config) WorldOption {
 	})
 }
 
+// WithWorldProxy for test.
+func WithWorldProxy() WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.proxy = true
+	})
+}
+
 func options(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
@@ -173,6 +182,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	os := options(opts...)
 	tranConfig := transportConfig(os)
 	debugConfig := debugConfig(os)
+	proxyConfig := proxyConfig(os)
 	tlsConfig := tlsConfig(os)
 	meter := meter(lc, mux, os)
 	limiter := serverLimiter(lc, os)
@@ -180,17 +190,29 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
-		TransportConfig: tranConfig, DebugConfig: debugConfig,
-		Meter: meter, Mux: mux, Limiter: limiter,
+		TransportConfig: tranConfig,
+		DebugConfig:     debugConfig,
+		ProxyConfig:     proxyConfig,
+		Meter:           meter, Mux: mux, Limiter: limiter,
 		Verifier: os.verfier, VerifyAuth: os.verfier != nil,
 		ID: id,
 	}
 	server.Register()
 
+	var proxy string
+
+	if os.proxy {
+		if os.secure {
+			proxy = "https://" + server.ProxyConfig.Address
+		} else {
+			proxy = "http://" + server.ProxyConfig.Address
+		}
+	}
+
 	client := &Client{
 		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
 		Meter: meter, TLS: tlsConfig, Generator: os.generator,
-		Compression: os.compression, RoundTripper: os.rt,
+		Compression: os.compression, RoundTripper: os.rt, ProxyURL: proxy,
 	}
 
 	views := mvc.NewViews(mvc.ViewsParams{FS: &Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
@@ -325,6 +347,14 @@ func debugConfig(os *worldOpts) *debug.Config {
 	}
 
 	return NewInsecureDebugConfig()
+}
+
+func proxyConfig(os *worldOpts) *proxy.Config {
+	if os.secure {
+		return NewSecureProxyConfig()
+	}
+
+	return NewInsecureProxyConfig()
 }
 
 func tlsConfig(os *worldOpts) *tls.Config {

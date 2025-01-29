@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
@@ -42,6 +43,7 @@ type clientOpts struct {
 	timeout      time.Duration
 	breaker      bool
 	compression  bool
+	proxy        string
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -134,6 +136,13 @@ func WithClientID(gen id.Generator) ClientOption {
 	})
 }
 
+// WithClientID for HTTP.
+func WithClientProxy(url string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.proxy = url
+	})
+}
+
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
@@ -199,16 +208,35 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 		return hrt, nil
 	}
 
-	if !tls.IsEnabled(os.tls) {
-		return nh.Transport(nil), nil
+	return transport(os)
+}
+
+func transport(os *clientOpts) (*http.Transport, error) {
+	var transport *http.Transport
+
+	if tls.IsEnabled(os.tls) {
+		conf, err := tls.NewConfig(os.tls)
+		if err != nil {
+			return nil, err
+		}
+
+		transport = nh.Transport(conf)
+	} else {
+		transport = nh.Transport(nil)
 	}
 
-	conf, err := tls.NewConfig(os.tls)
+	if os.proxy == "" {
+		return transport, nil
+	}
+
+	u, err := url.Parse(os.proxy)
 	if err != nil {
-		return nil, err
+		return transport, err
 	}
 
-	return nh.Transport(conf), nil
+	transport.Proxy = http.ProxyURL(u)
+
+	return transport, nil
 }
 
 func options(opts ...ClientOption) *clientOpts {

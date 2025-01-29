@@ -30,6 +30,7 @@ type Client struct {
 	Meter        metric.Meter
 	Generator    token.Generator
 	Compression  bool
+	ProxyURL     string
 }
 
 // NewTracer for client.
@@ -46,7 +47,7 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
 		h.WithClientTokenGenerator(c.Generator), h.WithClientTimeout("1m"),
-		h.WithClientTLS(c.TLS), h.WithClientID(c.ID),
+		h.WithClientTLS(c.TLS), h.WithClientID(c.ID), h.WithClientProxy(c.ProxyURL),
 	}
 
 	if c.Compression {

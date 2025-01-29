@@ -31,6 +31,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/module"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
+	"github.com/alexfalkowski/go-service/proxy"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -251,8 +252,9 @@ func shutdown(s fx.Shutdowner) {
 
 func opts() []fx.Option {
 	return []fx.Option{
-		module.Module, cmd.Module, config.Module, debug.Module,
-		feature.Module, transport.Module, telemetry.Module, health.Module,
+		module.Module, cmd.Module, config.Module,
+		debug.Module, proxy.Module, transport.Module,
+		feature.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
