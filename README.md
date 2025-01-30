@@ -66,7 +66,6 @@ We support the following:
 - [Proto](https://google.golang.org/protobuf/proto)
 - [GOB](https://pkg.go.dev/encoding/gob)
 
-
 ## Caching
 
 The framework currently supports the following caching solutions:
