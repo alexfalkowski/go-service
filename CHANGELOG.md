@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.399.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.399.0) - 2025-01-30
+
+- [`2212108`](https://github.com/alexfalkowski/go-service/commit/2212108874973cd4cf595ab793bb27eb33d0c12e) feat(structs): add IsNil predicate (#1243)
+
 ## [v1.398.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.398.0) - 2025-01-30
 
 - [`4887c63`](https://github.com/alexfalkowski/go-service/commit/4887c633b832a2400b5b5d769edbb0c99132e6fd) feat(http): move to generic content handler (#1241)
