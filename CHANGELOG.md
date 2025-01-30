@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.394.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.394.0) - 2025-01-30
+
+- [`96ccd4d`](https://github.com/alexfalkowski/go-service/commit/96ccd4d3580c19a361c3be647e470d28c8f55c96) feat(all): improve redability (#1235)
+- [`26eece0`](https://github.com/alexfalkowski/go-service/commit/26eece0e12270a01016c7d533303f2e7d93a74e1) build(deps): bump bin from `cb313fe` to `5b56b0c` (#1234)
+
 ## [v1.393.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.393.0) - 2025-01-29
 
 - [`79269d9`](https://github.com/alexfalkowski/go-service/commit/79269d92345ae94789546f51e522e6b5b8ad9966) feat(cmd): use string instead of struct (#1233)
