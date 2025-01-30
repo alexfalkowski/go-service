@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.396.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.396.0) - 2025-01-30
+
+- [`8fb54a3`](https://github.com/alexfalkowski/go-service/commit/8fb54a3924bb0cb2160db5c7aa94c244469a6bf7) feat(slices): add ability to ignore nil and zero, seperately (#1239)
+- [`64f2009`](https://github.com/alexfalkowski/go-service/commit/64f2009ff980f1f20d669234cc657d5f3f778989) test(http): make sure auth is ignored with metrics (#1238)
+- [`82eeb0b`](https://github.com/alexfalkowski/go-service/commit/82eeb0b8b713b7b5dd9e3aed9ba98434fc26b829) docs(readme): update diagrams (#1237)
+
 ## [v1.395.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.395.0) - 2025-01-30
 
 - [`60bd8be`](https://github.com/alexfalkowski/go-service/commit/60bd8be8d2bb5c7696474db84a28bf94ed5cc03b) feat(encoding): add prototext and protojson (#1236)
