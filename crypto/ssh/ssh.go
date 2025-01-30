@@ -13,21 +13,14 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type (
-	// Generator for ssh.
-	Generator struct {
-		gen *rand.Generator
-	}
-
-	// Signer for ssh.
-	Signer interface {
-		algo.Signer
-	}
-)
-
 // NewGenerator for ssh.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for ssh.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate key pair with ssh.
@@ -74,10 +67,17 @@ func NewSigner(cfg *Config) (Signer, error) {
 	return &signer{publicKey: pub, privateKey: pri}, nil
 }
 
-type signer struct {
-	publicKey  ed25519.PublicKey
-	privateKey ed25519.PrivateKey
-}
+type (
+	// Signer for ssh.
+	Signer interface {
+		algo.Signer
+	}
+
+	signer struct {
+		publicKey  ed25519.PublicKey
+		privateKey ed25519.PrivateKey
+	}
+)
 
 func (a *signer) Sign(msg string) (string, error) {
 	m := ed25519.Sign(a.privateKey, []byte(msg))

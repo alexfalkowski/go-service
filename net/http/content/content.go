@@ -10,19 +10,20 @@ import (
 const (
 	jsonMediaType = "application/json"
 	jsonKind      = "json"
+	plainSubtype  = "plain"
 
 	// TypeKey for HTTP headers.
 	TypeKey = "Content-Type"
 )
 
-// Content creates types from media types.
-type Content struct {
-	enc *encoding.Map
-}
-
 // NewContent with an encoding.
 func NewContent(enc *encoding.Map) *Content {
 	return &Content{enc: enc}
+}
+
+// Content creates types from media types.
+type Content struct {
+	enc *encoding.Map
 }
 
 // NewFromRequest for content.
@@ -54,7 +55,7 @@ type Media struct {
 
 // IsText for type.
 func (t *Media) IsText() bool {
-	return t.Subtype == "plain"
+	return t.Subtype == plainSubtype
 }
 
 func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
@@ -62,7 +63,7 @@ func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
 		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
 	}
 
-	if media.Subtype == "plain" {
+	if media.Subtype == plainSubtype {
 		return &Media{Type: media.String(), Subtype: media.Subtype}
 	}
 

@@ -23,29 +23,8 @@ type (
 		Patterns Patterns `optional:"true"`
 	}
 
-	// View for mvc.
-	Views struct {
-		template *template.Template
-		fs       fs.FS
-	}
-
-	// View to render.
-	View string
-
-	// Model for mvc.
-	Model any
-
 	// Patterns to render views.
 	Patterns []string
-
-	// Router for mvc.
-	Router struct {
-		mux   *http.ServeMux
-		views *Views
-	}
-
-	// Controller for mvc.
-	Controller func(ctx context.Context) (View, Model)
 )
 
 // IsValid verifies the params are present.
@@ -64,6 +43,12 @@ func NewViews(params ViewsParams) *Views {
 	return &Views{template: tpl, fs: params.FS}
 }
 
+// View for mvc.
+type Views struct {
+	template *template.Template
+	fs       fs.FS
+}
+
 // IsValid verifies that ut has an fs and template.
 func (v *Views) IsValid() bool {
 	return v.template != nil && v.fs != nil
@@ -73,6 +58,23 @@ func (v *Views) IsValid() bool {
 func NewRouter(mux *http.ServeMux, views *Views) *Router {
 	return &Router{mux: mux, views: views}
 }
+
+type (
+	// Router for mvc.
+	Router struct {
+		mux   *http.ServeMux
+		views *Views
+	}
+
+	// View to render.
+	View string
+
+	// Model for mvc.
+	Model any
+
+	// Controller for mvc.
+	Controller func(ctx context.Context) (View, Model)
+)
 
 // Route the path with controller for mvc.
 func (r *Router) Route(path string, controller Controller) bool {

@@ -3,7 +3,6 @@ package token
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"hash/crc32"
 	"strconv"
@@ -62,45 +61,17 @@ func Verify(name env.Name, token string) error {
 	return nil
 }
 
-var (
-	// ErrInvalidMatch for token.
-	ErrInvalidMatch = errors.New("token: invalid match")
-
-	// ErrInvalidIssuer for service.
-	ErrInvalidIssuer = errors.New("token: invalid issuer")
-
-	// ErrInvalidAudience for service.
-	ErrInvalidAudience = errors.New("token: invalid audience")
-
-	// ErrInvalidTime for service.
-	ErrInvalidTime = errors.New("token: invalid time")
-)
-
-type (
-	// Generator allows the implementation of different types generators.
-	Generator interface {
-		// Generate a new token or error.
-		Generate(ctx context.Context) (context.Context, []byte, error)
-	}
-
-	// Verifier allows the implementation of different types of verifiers.
-	Verifier interface {
-		// Verify a token or error.
-		Verify(ctx context.Context, token []byte) (context.Context, error)
-	}
-
-	// Token will generate and verify based on what is defined in the config.
-	Token struct {
-		cfg  *Config
-		jwt  *JWT
-		pas  *Paseto
-		name env.Name
-	}
-)
-
 // NewToken based on config.
 func NewToken(cfg *Config, name env.Name, jwt *JWT, pas *Paseto) *Token {
 	return &Token{cfg: cfg, name: name, jwt: jwt, pas: pas}
+}
+
+// Token will generate and verify based on what is defined in the config.
+type Token struct {
+	cfg  *Config
+	jwt  *JWT
+	pas  *Paseto
+	name env.Name
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {

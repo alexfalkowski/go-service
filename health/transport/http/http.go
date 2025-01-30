@@ -11,28 +11,26 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	// RegisterParams for health.
-	RegisterParams struct {
-		fx.In
+// RegisterParams for health.
+type RegisterParams struct {
+	fx.In
 
-		Health    *HealthObserver
-		Liveness  *LivenessObserver
-		Readiness *ReadinessObserver
-	}
-
-	// Response for health.
-	Response struct {
-		Meta   meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
-		Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
-	}
-)
+	Health    *HealthObserver
+	Liveness  *LivenessObserver
+	Readiness *ReadinessObserver
+}
 
 // Register health for HTTP.
 func Register(params RegisterParams) {
 	resister("/healthz", params.Health.Observer)
 	resister("/livez", params.Liveness.Observer)
 	resister("/readyz", params.Readiness.Observer)
+}
+
+// Response for health.
+type Response struct {
+	Meta   meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
+	Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 }
 
 func resister(path string, ob *subscriber.Observer) {

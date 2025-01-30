@@ -6,20 +6,9 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+type contextKey string
+
 const meta = contextKey("meta")
-
-type (
-	// Converter for meta.
-	Converter func(string) string
-
-	// Map for meta.
-	Map map[string]string
-
-	contextKey string
-)
-
-// NoneConverter for meta.
-var NoneConverter = func(s string) string { return s }
 
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key string, value Valuer) context.Context {
@@ -34,6 +23,9 @@ func Attribute(ctx context.Context, key string) Valuer {
 	return attributes(ctx)[key]
 }
 
+// Map for meta.
+type Map map[string]string
+
 // SnakeStrings for meta.
 func SnakeStrings(ctx context.Context, prefix string) Map {
 	return Strings(ctx, prefix, strcase.ToSnake)
@@ -43,6 +35,11 @@ func SnakeStrings(ctx context.Context, prefix string) Map {
 func CamelStrings(ctx context.Context, prefix string) Map {
 	return Strings(ctx, prefix, strcase.ToLowerCamel)
 }
+
+type Converter func(string) string
+
+// NoneConverter for meta.
+var NoneConverter = func(s string) string { return s }
 
 // Strings for meta.
 func Strings(ctx context.Context, prefix string, converter Converter) Map {

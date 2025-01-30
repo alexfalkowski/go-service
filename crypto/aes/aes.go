@@ -15,21 +15,14 @@ import (
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
-type (
-	// Generator for aes.
-	Generator struct {
-		gen *rand.Generator
-	}
-
-	// Cipher for aes.
-	Cipher interface {
-		algo.Cipher
-	}
-)
-
 // NewGenerator for aes.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for aes.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate for aes.
@@ -53,10 +46,17 @@ func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
 	return &aesCipher{gen: gen, key: []byte(k)}, err
 }
 
-type aesCipher struct {
-	gen *rand.Generator
-	key []byte
-}
+type (
+	// Cipher for aes.
+	Cipher interface {
+		algo.Cipher
+	}
+
+	aesCipher struct {
+		gen *rand.Generator
+		key []byte
+	}
+)
 
 func (a *aesCipher) Encrypt(msg string) (string, error) {
 	aead, err := a.aead()

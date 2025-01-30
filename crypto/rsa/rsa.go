@@ -11,21 +11,14 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
-type (
-	// Generator for rsa.
-	Generator struct {
-		gen *rand.Generator
-	}
-
-	// Cipher for rsa.
-	Cipher interface {
-		algo.Cipher
-	}
-)
-
 // NewGenerator for rsa.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for rsa.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate key pair with rsa.
@@ -60,11 +53,18 @@ func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
 	return &cipher{gen: gen, publicKey: pub, privateKey: pri}, nil
 }
 
-type cipher struct {
-	gen        *rand.Generator
-	publicKey  *rsa.PublicKey
-	privateKey *rsa.PrivateKey
-}
+type (
+	// Cipher for rsa.
+	Cipher interface {
+		algo.Cipher
+	}
+
+	cipher struct {
+		gen        *rand.Generator
+		publicKey  *rsa.PublicKey
+		privateKey *rsa.PrivateKey
+	}
+)
 
 func (a *cipher) Encrypt(msg string) (string, error) {
 	e, err := rsa.EncryptOAEP(sha512.New(), a.gen, a.publicKey, []byte(msg), nil)
