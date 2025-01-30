@@ -17,13 +17,15 @@ type Map struct {
 func NewMap() *Map {
 	return &Map{
 		encoders: map[string]Encoder{
-			"json":     json.NewEncoder(),
-			"yaml":     yaml.NewEncoder(),
-			"yml":      yaml.NewEncoder(),
-			"toml":     toml.NewEncoder(),
-			"proto":    proto.NewEncoder(),
-			"protobuf": proto.NewEncoder(),
-			"gob":      gob.NewEncoder(),
+			"json":      json.NewEncoder(),
+			"yaml":      yaml.NewEncoder(),
+			"yml":       yaml.NewEncoder(),
+			"toml":      toml.NewEncoder(),
+			"proto":     proto.NewBinary(),
+			"protobuf":  proto.NewBinary(),
+			"prototext": proto.NewText(),
+			"protojson": proto.NewJSON(),
+			"gob":       gob.NewEncoder(),
 		},
 	}
 }

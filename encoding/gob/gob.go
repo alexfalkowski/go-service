@@ -5,13 +5,13 @@ import (
 	"io"
 )
 
-// Encoder for gob.
-type Encoder struct{}
-
 // NewEncoder for gob.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
+
+// Encoder for gob.
+type Encoder struct{}
 
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return gob.NewEncoder(w).Encode(v)

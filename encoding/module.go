@@ -11,7 +11,9 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(proto.NewEncoder),
+	fx.Provide(proto.NewBinary),
+	fx.Provide(proto.NewText),
+	fx.Provide(proto.NewJSON),
 	fx.Provide(json.NewEncoder),
 	fx.Provide(toml.NewEncoder),
 	fx.Provide(yaml.NewEncoder),

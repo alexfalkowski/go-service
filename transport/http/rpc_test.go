@@ -105,7 +105,7 @@ func TestRPCWithContent(t *testing.T) {
 }
 
 func TestProtobufRPC(t *testing.T) {
-	for _, mt := range []string{"proto", "protobuf"} {
+	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
 			world.Register()

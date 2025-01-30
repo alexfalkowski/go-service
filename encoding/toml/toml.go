@@ -6,13 +6,13 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// Encoder for toml.
-type Encoder struct{}
-
 // NewEncoder for toml.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
+
+// Encoder for toml.
+type Encoder struct{}
 
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return toml.NewEncoder(w).Encode(v)

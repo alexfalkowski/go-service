@@ -6,13 +6,13 @@ import (
 	"github.com/goccy/go-json"
 )
 
-// Encoder for json.
-type Encoder struct{}
-
 // NewEncoder for json.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
+
+// Encoder for json.
+type Encoder struct{}
 
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return json.NewEncoder(w).Encode(v)
