@@ -281,7 +281,7 @@ func BenchmarkProtobuf(b *testing.B) {
 	t := cl.NewHTTP().Transport
 
 	rpc.Register(mux, test.Content, test.Pool)
-	rpc.Route("/hello", test.ProtobufSayHello)
+	rpc.Route("/hello", test.SuccessProtobufSayHello)
 
 	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 
