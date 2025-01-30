@@ -6,13 +6,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Encoder for yaml.
-type Encoder struct{}
-
 // NewEncoder for yaml.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
+
+// Encoder for yaml.
+type Encoder struct{}
 
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return yaml.NewEncoder(w).Encode(v)
