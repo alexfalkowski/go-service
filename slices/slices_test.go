@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestEmptyAppend(t *testing.T) {
+func TestEmptyAppendZero(t *testing.T) {
 	var integer int
 
 	for _, elem := range []*int{nil, &integer} {
@@ -15,7 +15,7 @@ func TestEmptyAppend(t *testing.T) {
 			arr := []*int{}
 
 			Convey("When I try to append a value", func() {
-				arr = slices.Append(arr, elem)
+				arr = slices.AppendNotZero(arr, elem)
 
 				Convey("Then I should not have any elements", func() {
 					So(arr, ShouldBeEmpty)
@@ -25,7 +25,23 @@ func TestEmptyAppend(t *testing.T) {
 	}
 }
 
-func TestAppend(t *testing.T) {
+func TestEmptyAppendNil(t *testing.T) {
+	for _, elem := range []*int{nil} {
+		Convey("Given I have an empty array", t, func() {
+			arr := []*int{}
+
+			Convey("When I try to append a value", func() {
+				arr = slices.AppendNotNil(arr, elem)
+
+				Convey("Then I should not have any elements", func() {
+					So(arr, ShouldBeEmpty)
+				})
+			})
+		})
+	}
+}
+
+func TestAppendZero(t *testing.T) {
 	integer := 2
 
 	for _, elem := range []*int{&integer} {
@@ -33,7 +49,25 @@ func TestAppend(t *testing.T) {
 			arr := []*int{}
 
 			Convey("When I try to append a value", func() {
-				arr = slices.Append(arr, elem)
+				arr = slices.AppendNotZero(arr, elem)
+
+				Convey("Then I should not have any elements", func() {
+					So(arr, ShouldNotBeEmpty)
+				})
+			})
+		})
+	}
+}
+
+func TestAppendNil(t *testing.T) {
+	integer := 2
+
+	for _, elem := range []*int{&integer} {
+		Convey("Given I have an empty array", t, func() {
+			arr := []*int{}
+
+			Convey("When I try to append a value", func() {
+				arr = slices.AppendNotNil(arr, elem)
 
 				Convey("Then I should not have any elements", func() {
 					So(arr, ShouldNotBeEmpty)
