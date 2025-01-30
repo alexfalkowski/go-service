@@ -11,7 +11,7 @@ func AppendNotZero[T comparable](slice []*T, elems ...*T) []*T {
 
 // AppendNotNil elements to the slice, only if the element is not nil.
 func AppendNotNil[T any](slice []*T, elems ...*T) []*T {
-	return Append(slice, func(t *T) bool { return t == nil }, elems...)
+	return Append(slice, structs.IsNil, elems...)
 }
 
 // Append elements to the slice, only if the element is not zero.
