@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/test"
@@ -104,29 +105,63 @@ func TestRPCWithContent(t *testing.T) {
 	}
 }
 
-func TestProtobufRPC(t *testing.T) {
+func TestSuccessProtobufRPC(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
 			world.Register()
 			world.RequireStart()
 
-			rpc.Route("/hello", test.ProtobufSayHello)
+			rpc.Route("/hello", test.SuccessProtobufSayHello)
 
 			Convey("When I post data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
-				resp, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				res, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
-					So(resp.GetMessage(), ShouldEqual, "Hello Bob")
+					So(res.GetMessage(), ShouldEqual, "Hello Bob")
 				})
 
 				world.RequireStop()
 			})
 		})
+	}
+}
+
+func TestErroneousProtobufRPC(t *testing.T) {
+	handlers := []content.RequestHandler[v1.SayHelloRequest, v1.SayHelloResponse]{
+		test.ErrorsProtobufSayHello,
+		test.ErrorsNotMappedProtobufSayHello,
+	}
+
+	for _, handler := range handlers {
+		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
+			Convey("Given I have all the servers", t, func() {
+				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+				world.Register()
+				world.RequireStart()
+
+				rpc.Route("/hello", handler)
+
+				Convey("When I post data", func() {
+					url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+					client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
+
+					_, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+
+					Convey("Then I should have an error", func() {
+						So(err, ShouldBeError)
+						So(status.IsError(err), ShouldBeTrue)
+						So(status.Code(err), ShouldEqual, http.StatusInternalServerError)
+					})
+
+					world.RequireStop()
+				})
+			})
+		}
 	}
 }
 
@@ -148,7 +183,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 
 				Convey("Then I should have response", func() {
 					So(body, ShouldNotBeBlank)
-					So(res.StatusCode, ShouldEqual, 400)
+					So(res.StatusCode, ShouldEqual, http.StatusBadRequest)
 				})
 
 				world.RequireStop()
@@ -158,37 +193,44 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 }
 
 func TestErrorRPC(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
-		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
-			world.Register()
-			world.RequireStart()
+	handlers := []content.RequestHandler[test.Request, test.Response]{
+		test.ErrorSayHello,
+		test.ErrorNotMappedSayHello,
+	}
 
-			rpc.Route("/hello", test.ErrorSayHello)
+	for _, handler := range handlers {
+		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+			Convey("Given I have all the servers", t, func() {
+				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+				world.Register()
+				world.RequireStart()
 
-			Convey("When I post data", func() {
-				header := http.Header{}
-				header.Set("Content-Type", "application/"+mt)
+				rpc.Route("/hello", handler)
 
-				enc := test.Encoder.Get(mt)
+				Convey("When I post data", func() {
+					header := http.Header{}
+					header.Set("Content-Type", "application/"+mt)
 
-				b := test.Pool.Get()
-				defer test.Pool.Put(b)
+					enc := test.Encoder.Get(mt)
 
-				err := enc.Encode(b, test.Request{Name: "Bob"})
-				So(err, ShouldBeNil)
+					b := test.Pool.Get()
+					defer test.Pool.Put(b)
 
-				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
-				So(err, ShouldBeNil)
+					err := enc.Encode(b, test.Request{Name: "Bob"})
+					So(err, ShouldBeNil)
 
-				Convey("Then I should have response", func() {
-					So(body, ShouldEqual, "rpc: ohh no")
-					So(res.StatusCode, ShouldEqual, 503)
+					res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
+					So(err, ShouldBeNil)
+
+					Convey("Then I should have response", func() {
+						So(body, ShouldEqual, "rpc: ohh no")
+						So(res.StatusCode, ShouldEqual, http.StatusInternalServerError)
+					})
+
+					world.RequireStop()
 				})
-
-				world.RequireStop()
 			})
-		})
+		}
 	}
 }
 
