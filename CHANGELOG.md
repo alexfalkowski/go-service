@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.397.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.397.0) - 2025-01-30
+
+- [`a53d86c`](https://github.com/alexfalkowski/go-service/commit/a53d86ca25bef70250555923972da4307f143052) feat(http): allow grpc codes to be treated as http codes (#1240)
+
 ## [v1.396.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.396.0) - 2025-01-30
 
 - [`8fb54a3`](https://github.com/alexfalkowski/go-service/commit/8fb54a3924bb0cb2160db5c7aa94c244469a6bf7) feat(slices): add ability to ignore nil and zero, seperately (#1239)
