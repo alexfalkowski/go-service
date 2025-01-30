@@ -10,21 +10,14 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
-type (
-	// Generator for hmac.
-	Generator struct {
-		gen *rand.Generator
-	}
-
-	// Signer for hmac.
-	Signer interface {
-		algo.Signer
-	}
-)
-
 // NewGenerator for hmac.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for hmac.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate for hmac.
@@ -48,9 +41,16 @@ func NewSigner(cfg *Config) (Signer, error) {
 	return &signer{key: []byte(k)}, err
 }
 
-type signer struct {
-	key []byte
-}
+type (
+	// Signer for hmac.
+	Signer interface {
+		algo.Signer
+	}
+
+	signer struct {
+		key []byte
+	}
+)
 
 func (a *signer) Sign(msg string) (string, error) {
 	mac := hmac.New(sha512.New, a.key)

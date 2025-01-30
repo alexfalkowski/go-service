@@ -12,13 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/types"
 )
 
-type (
-	// RequestHandler is a handler with a generic request and response.
-	RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
-
-	// Handler is a handler with a generic response.
-	Handler[Res any] func(ctx context.Context) (*Res, error)
-)
+// RequestHandler is a handler with a generic request and response.
+type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
 // NewRequestHandler for content.
 func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
@@ -40,6 +35,9 @@ func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler R
 		return rs, nil
 	})
 }
+
+// Handler is a handler with a generic response.
+type Handler[Res any] func(ctx context.Context) (*Res, error)
 
 // NewHandler for content.
 func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) http.HandlerFunc {

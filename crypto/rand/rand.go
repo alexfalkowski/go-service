@@ -6,22 +6,13 @@ import (
 	"math/big"
 )
 
-type (
-	// Reader is just rand.Reader.
-	Reader io.Reader
-
-	// Generator for rand.
-	Generator struct {
-		reader  Reader
-		letters string
-		symbols string
-	}
-)
-
 // NewReader for rand.
 func NewReader() Reader {
 	return rand.Reader
 }
+
+// Reader is just rand.Reader.
+type Reader io.Reader
 
 // NewGenerator for rand.
 func NewGenerator(reader Reader) *Generator {
@@ -30,6 +21,13 @@ func NewGenerator(reader Reader) *Generator {
 		symbols: "~!@#$%^&*()_+-={}|[]<>?,./",
 		reader:  reader,
 	}
+}
+
+// Generator for rand.
+type Generator struct {
+	reader  Reader
+	letters string
+	symbols string
 }
 
 // Read for rand.

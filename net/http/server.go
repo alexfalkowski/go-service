@@ -9,21 +9,6 @@ import (
 	sn "github.com/alexfalkowski/go-service/net"
 )
 
-type (
-	// Server for HTTP.
-	Server struct {
-		server   *http.Server
-		tls      *tls.Config
-		listener net.Listener
-	}
-
-	// Config for HTTP.
-	Config struct {
-		TLS     *tls.Config
-		Address string
-	}
-)
-
 // NewServer for HTTP.
 func NewServer(server *http.Server, cfg *Config) (*Server, error) {
 	srv := &Server{server: server}
@@ -42,6 +27,13 @@ func NewServer(server *http.Server, cfg *Config) (*Server, error) {
 	srv.listener = l
 
 	return srv, nil
+}
+
+// Server for HTTP.
+type Server struct {
+	server   *http.Server
+	tls      *tls.Config
+	listener net.Listener
 }
 
 // Serve the underlying server.

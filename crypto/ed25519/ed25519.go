@@ -13,27 +13,14 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 )
 
-type (
-	// Generator for hmac.
-	Generator struct {
-		gen *rand.Generator
-	}
-
-	// Signer for ed25519.
-	Signer interface {
-		algo.Signer
-
-		// PublicKey for ed25519.
-		PublicKey() ed25519.PublicKey
-
-		// PrivateKey for ed25519.
-		PrivateKey() ed25519.PrivateKey
-	}
-)
-
 // NewGenerator for ed25519.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for hmac.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate key pair with Ed25519.
@@ -80,10 +67,23 @@ func NewSigner(cfg *Config) (Signer, error) {
 	return &signer{publicKey: pub, privateKey: pri}, nil
 }
 
-type signer struct {
-	publicKey  ed25519.PublicKey
-	privateKey ed25519.PrivateKey
-}
+type (
+	// Signer for ed25519.
+	Signer interface {
+		algo.Signer
+
+		// PublicKey for ed25519.
+		PublicKey() ed25519.PublicKey
+
+		// PrivateKey for ed25519.
+		PrivateKey() ed25519.PrivateKey
+	}
+
+	signer struct {
+		publicKey  ed25519.PublicKey
+		privateKey ed25519.PrivateKey
+	}
+)
 
 func (a *signer) Sign(msg string) (string, error) {
 	m := ed25519.Sign(a.privateKey, []byte(msg))
