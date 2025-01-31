@@ -64,8 +64,6 @@ func NewOptions(params OptionsParams) (*cache.Options, error) {
 }
 
 // NewRingOptions for redis.
-//
-//nolint:nilnil
 func NewRingOptions(cfg *Config) (*redis.RingOptions, error) {
 	if cfg == nil {
 		return nil, nil

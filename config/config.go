@@ -31,6 +31,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/validator"
 )
 
 // ErrInvalidConfig when decoding fails.
@@ -96,12 +97,12 @@ func featureConfig(cfg *Config) *feature.Config {
 	return cfg.Feature
 }
 
-func grpcConfig(cfg *Config) *grpc.Config {
+func grpcConfig(cfg *Config) (*grpc.Config, error) {
 	if !transport.IsEnabled(cfg.Transport) {
-		return nil
+		return nil, nil
 	}
 
-	return cfg.Transport.GRPC
+	return cfg.Transport.GRPC, validator.ValidateStruct(cfg.Transport.GRPC)
 }
 
 func hmacConfig(cfg *Config) *hmac.Config {
@@ -120,12 +121,12 @@ func hooksConfig(cfg *Config) *hooks.Config {
 	return cfg.Hooks
 }
 
-func httpConfig(cfg *Config) *http.Config {
+func httpConfig(cfg *Config) (*http.Config, error) {
 	if !transport.IsEnabled(cfg.Transport) {
-		return nil
+		return nil, nil
 	}
 
-	return cfg.Transport.HTTP
+	return cfg.Transport.HTTP, validator.ValidateStruct(cfg.Transport.HTTP)
 }
 
 func limiterConfig(cfg *Config) *limiter.Config {

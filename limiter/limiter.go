@@ -28,8 +28,6 @@ func RegisterKey(name string, fn KeyFunc) {
 }
 
 // New limiter.
-//
-//nolint:nilnil
 func New(lc fx.Lifecycle, cfg *Config) (*Limiter, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil

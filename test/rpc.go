@@ -26,8 +26,6 @@ type Response struct {
 }
 
 // NoContent for test.
-//
-//nolint:nilnil
 func NoContent(_ context.Context, _ *Request) (*Response, error) {
 	return nil, nil
 }

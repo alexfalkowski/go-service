@@ -62,7 +62,6 @@ func (s *Server) ServeMux() *http.ServeMux {
 	return s.mux
 }
 
-//nolint:nilnil
 func config(cfg *Config) (*sh.Config, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
