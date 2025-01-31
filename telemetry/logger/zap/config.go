@@ -19,8 +19,6 @@ type Config struct {
 }
 
 // NewConfig for zap. If disabled returns nil and ignored by logger.
-//
-//nolint:nilnil
 func NewConfig(env env.Environment, config *Config) (*zap.Config, error) {
 	if !IsEnabled(config) {
 		return nil, nil

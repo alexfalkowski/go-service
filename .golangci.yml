@@ -35,3 +35,4 @@ linters:
     - paralleltest
     - wrapcheck
     - tagliatelle
+    - nilnil
