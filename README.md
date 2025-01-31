@@ -1,3 +1,4 @@
+![Gopher](assets/gopher.png)
 [![CircleCI](https://circleci.com/gh/alexfalkowski/go-service.svg?style=shield)](https://circleci.com/gh/alexfalkowski/go-service)
 [![codecov](https://codecov.io/gh/alexfalkowski/go-service/graph/badge.svg?token=AGP01JOTM0)](https://codecov.io/gh/alexfalkowski/go-service)
 [![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service)](https://goreportcard.com/report/github.com/alexfalkowski/go-service)
