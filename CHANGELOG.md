@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.400.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.400.0) - 2025-01-31
+
+- [`befdb78`](https://github.com/alexfalkowski/go-service/commit/befdb78223730c6537c3e2c6c4da8d587c3149df) feat(validate): add ability to validate structs and fields (#1246)
+
 ## [v1.399.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.399.0) - 2025-01-30
 
 - [`2212108`](https://github.com/alexfalkowski/go-service/commit/2212108874973cd4cf595ab793bb27eb33d0c12e) feat(structs): add IsNil predicate (#1243)
