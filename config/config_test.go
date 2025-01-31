@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -120,6 +121,9 @@ func TestValidMemConfig(t *testing.T) {
 //nolint:funlen
 func verifyConfig(config *config.Config) {
 	So(string(config.Environment), ShouldEqual, "development")
+	So(cache.IsEnabled(config.Cache), ShouldBeTrue)
+	So(config.Cache.Kind, ShouldEqual, "redis")
+	So(config.Cache.Options["url"], ShouldEqual, "../test/secrets/redis")
 	So(crypto.IsEnabled(config.Crypto), ShouldBeTrue)
 	So(aes.IsEnabled(config.Crypto.AES), ShouldBeTrue)
 	So(config.Crypto.AES.Key, ShouldNotBeBlank)
@@ -141,8 +145,6 @@ func verifyConfig(config *config.Config) {
 	So(config.Feature.Address, ShouldEqual, "localhost:9000")
 	So(config.ID.Kind, ShouldEqual, "uuid")
 	So(config.Hooks.Secret, ShouldEqual, "../test/secrets/hooks")
-	So(config.Cache.Redis.Compressor, ShouldEqual, "snappy")
-	So(config.Cache.Redis.Encoder, ShouldEqual, "proto")
 	So(len(config.SQL.PG.Masters), ShouldEqual, 1)
 	So(config.SQL.PG.Masters[0].URL, ShouldEqual, "../test/secrets/pg")
 	So(len(config.SQL.PG.Slaves), ShouldEqual, 1)

@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
@@ -243,15 +242,6 @@ func NewSecureDebugConfig() *debug.Config {
 			Address: "localhost:" + Port(),
 			Retry:   NewRetry(),
 		},
-	}
-}
-
-// NewRedisConfig for test.
-func NewRedisConfig(secret, compressor, encoder string) *redis.Config {
-	return &redis.Config{
-		Addresses:  map[string]string{"server": "localhost:6379"},
-		Compressor: compressor, Encoder: encoder,
-		URL: Path("secrets/" + secret),
 	}
 }
 

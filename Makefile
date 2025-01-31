@@ -2,10 +2,7 @@ include bin/build/make/go.mak
 include bin/build/make/git.mak
 
 # Diagrams generated from https://github.com/loov/goda.
-diagrams: crypto-diagram cache-diagram database-diagram telemetry-diagram transport-diagram
-
-cache-diagram:
-	$(MAKE) package=cache create-diagram
+diagrams: crypto-diagram database-diagram telemetry-diagram transport-diagram
 
 crypto-diagram:
 	$(MAKE) package=crypto create-diagram

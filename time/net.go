@@ -49,7 +49,6 @@ type ntsNetwork struct {
 	c *Config
 }
 
-//nolint:nonamedreturns
 func (n *ntsNetwork) Now() (t time.Time, err error) {
 	defer func() {
 		if r := recover(); r != nil {

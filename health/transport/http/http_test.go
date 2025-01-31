@@ -140,18 +140,10 @@ func TestInvalidHealth(t *testing.T) {
 }
 
 func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, error) {
-	r, err := world.NewRedisClient()
-	if err != nil {
-		return nil, err
-	}
-
 	db, err := world.OpenDatabase()
 	if err != nil {
 		return nil, err
 	}
-
-	rc := shc.NewRedisChecker(r, 1*time.Second)
-	rr := server.NewRegistration("redis", 10*time.Millisecond, rc)
 
 	dc := shc.NewDBChecker(db, 1*time.Second)
 	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
@@ -162,7 +154,7 @@ func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, e
 	no := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", 10*time.Millisecond, no)
 
-	regs := health.Registrations{hr, nr, rr, dr}
+	regs := health.Registrations{hr, nr, dr}
 
 	return health.NewServer(lc, regs), nil
 }

@@ -3,11 +3,8 @@ debug:
   address: :6060
   timeout: 10s
 cache:
-  redis:
-    encoder: proto
-    compressor: snappy
-    addresses:
-      server: localhost:6379
+  kind: redis
+  options:
     url: ../test/secrets/redis
 crypto:
   aes:

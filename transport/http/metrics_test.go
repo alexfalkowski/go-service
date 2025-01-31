@@ -31,9 +31,6 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		_, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		_, err = world.NewRedisCache()
-		So(err, ShouldBeNil)
-
 		world.RequireStart()
 
 		Convey("When I query metrics", func() {
@@ -49,7 +46,6 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
 				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "redis_hits_total")
 				So(body, ShouldContainSubstring, "sql_max_open_total")
 				So(body, ShouldContainSubstring, "system")
 				So(body, ShouldContainSubstring, "process")
@@ -69,9 +65,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 		_, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		_, err = world.NewRedisCache()
-		So(err, ShouldBeNil)
-
 		world.RequireStart()
 
 		Convey("When I query metrics", func() {
@@ -87,7 +80,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
 				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "redis_hits_total")
 				So(body, ShouldContainSubstring, "sql_max_open_total")
 				So(body, ShouldContainSubstring, "system")
 				So(body, ShouldContainSubstring, "process")
@@ -107,9 +99,6 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		_, err := world.OpenDatabase()
 		So(err, ShouldBeNil)
 
-		_, err = world.NewRedisCache()
-		So(err, ShouldBeNil)
-
 		world.RequireStart()
 
 		Convey("When I query metrics", func() {
@@ -125,7 +114,6 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
 				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "redis_hits_total")
 				So(body, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})

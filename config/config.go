@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/cache"
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -162,14 +161,6 @@ func pgConfig(cfg *Config) *pg.Config {
 	}
 
 	return cfg.SQL.PG
-}
-
-func redisConfig(cfg *Config) *redis.Config {
-	if !cache.IsEnabled(cfg.Cache) {
-		return nil
-	}
-
-	return cfg.Cache.Redis
 }
 
 func sshConfig(cfg *Config) *ssh.Config {
