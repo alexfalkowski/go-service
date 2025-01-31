@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
@@ -56,7 +55,6 @@ type worldOpts struct {
 	verfier     token.Verifier
 	rt          http.RoundTripper
 	limiter     *limiter.Config
-	redis       *redis.Config
 	pg          *pg.Config
 	telemetry   string
 	secure      bool
@@ -121,13 +119,6 @@ func WithWorldRoundTripper(rt http.RoundTripper) WorldOption {
 }
 
 // WithWorldRedisConfig for test.
-func WithWorldRedisConfig(config *redis.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.redis = config
-	})
-}
-
-// WithWorldRedisConfig for test.
 func WithWorldPGConfig(config *pg.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.pg = config
@@ -156,7 +147,6 @@ type World struct {
 	*mvc.Router
 	*events.Event
 	*eh.Receiver
-	*Cache
 	Sender client.Client
 	Rest   *resty.Client
 }
@@ -206,8 +196,6 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	sender, err := eh.NewSender(hh.NewWebhook(h, id), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
-	cache := redisCache(lc, logger, meter, os)
-
 	return &World{
 		t:      t,
 		Logger: logger, Tracer: tracer,
@@ -215,7 +203,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 		Server: server, Client: client,
 		Router: router, Rest: restClient,
 		Receiver: receiver, Sender: sender,
-		Cache: cache, PG: pgConfig,
+		PG: pgConfig,
 	}
 }
 
@@ -366,19 +354,6 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	}
 
 	return nil
-}
-
-func redisCache(lc fx.Lifecycle, logger *zap.Logger, meter metric.Meter, os *worldOpts) *Cache {
-	if os.redis == nil {
-		os.redis = NewRedisConfig("redis", "snappy", "proto")
-	}
-
-	return &Cache{
-		Lifecycle: lc,
-		Redis:     os.redis,
-		Logger:    logger,
-		Meter:     meter,
-	}
 }
 
 func pgConfig(os *worldOpts) *pg.Config {

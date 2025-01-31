@@ -24,8 +24,6 @@ type Generator struct {
 }
 
 // Generate key pair with Ed25519.
-//
-//nolint:nonamedreturns
 func (g *Generator) Generate() (pub string, pri string, err error) {
 	defer func() {
 		if r := recover(); r != nil {

@@ -1,9 +1,9 @@
-package validate_test
+package valid_test
 
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/validate"
+	"github.com/alexfalkowski/go-service/valid"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -11,12 +11,12 @@ type Config struct {
 	Address string `validate:"hostname_port"`
 }
 
-func TestValidator(t *testing.T) {
+func TestValid(t *testing.T) {
 	Convey("Given I invalid struct", t, func() {
 		cfg := &Config{Address: "what?"}
 
 		Convey("When I validated it", func() {
-			err := validate.Struct(cfg)
+			err := valid.Struct(cfg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -28,7 +28,7 @@ func TestValidator(t *testing.T) {
 		addr := "what?"
 
 		Convey("When I validated it", func() {
-			err := validate.Field(&addr, "hostname_port")
+			err := valid.Field(&addr, "hostname_port")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

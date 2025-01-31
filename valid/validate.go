@@ -1,4 +1,4 @@
-package validate
+package valid
 
 import (
 	"github.com/go-playground/validator/v10"

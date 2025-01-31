@@ -4,9 +4,9 @@ environment = "development"
 address = ":6060"
 timeout = "10s"
 
-[cache.redis]
-encoder = "proto"
-compressor = "snappy"
+[cache]
+kind = "redis"
+[cache.options]
 url = "../test/secrets/redis"
 
 [cache.redis.addresses]

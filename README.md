@@ -68,8 +68,7 @@ We support the following:
 
 ## Caching
 
-The framework currently supports the following caching solutions:
-- [Redis Cache](https://github.com/go-redis/cache)
+The framework currently supports the following caching solutions from the awesome [Cachego](https://github.com/faabiosr/cachego).
 
 ### Configuration
 
@@ -77,17 +76,10 @@ To configure, please specify the following:
 
 ```yaml
 cache:
-  redis:
-    compressor: snappy
-    encoder: proto
-    addresses:
-      server: localhost:6379
+  kind: redis
+  options:
     url: path to url
 ```
-
-### Dependencies
-
-![Dependencies](./assets/cache.png)
 
 ## Feature
 

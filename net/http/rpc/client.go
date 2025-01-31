@@ -72,8 +72,6 @@ type Client[Req any, Res any] struct {
 }
 
 // Invoke for rpc.
-//
-//nolint:nonamedreturns
 func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err error) {
 	defer func() {
 		if r := recover(); r != nil {

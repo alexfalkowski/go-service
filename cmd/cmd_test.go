@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/cache"
-	"github.com/alexfalkowski/go-service/cache/redis"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -38,7 +37,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
-	rc "github.com/go-redis/cache/v9"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -195,11 +193,7 @@ func grpcObserver(healthServer *server.Server) *shg.Observer {
 	return &shg.Observer{Observer: healthServer.Observe("http")}
 }
 
-func redisCache(c *rc.Cache) error {
-	return c.Delete(context.Background(), "test")
-}
-
-func configs(_ *redis.Config, _ *pg.Config, _ *feature.Config, _ *id.Config) {}
+func configs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 
 func meter(_ metric.Meter) {}
 
@@ -257,7 +251,7 @@ func opts() []fx.Option {
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
-		fx.Invoke(redisCache), fx.Provide(ver), fx.Invoke(meter),
+		fx.Provide(ver), fx.Invoke(meter),
 		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment),
 		fx.Invoke(controller), fx.Invoke(tokens),
 	}
