@@ -77,8 +77,6 @@ func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
 }
 
 // NewReader for metrics. A nil reader means disabled.
-//
-//nolint:nilnil
 func NewReader(fs os.FileSystem, cfg *Config) (sm.Reader, error) {
 	switch {
 	case !IsEnabled(cfg):

@@ -107,7 +107,6 @@ func NewServer(params ServerParams) (*Server, error) {
 	return server, nil
 }
 
-//nolint:nilnil
 func config(cfg *Config) (*sh.Config, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
