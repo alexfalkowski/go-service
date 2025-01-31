@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.401.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.401.0) - 2025-01-31
+
+- [`f8126e9`](https://github.com/alexfalkowski/go-service/commit/f8126e9d86c696a576def051b3daa32eb35e02b7) feat(cache): redesign caching to have multiple backends (#1247)
+
 ## [v1.400.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.400.0) - 2025-01-31
 
 - [`befdb78`](https://github.com/alexfalkowski/go-service/commit/befdb78223730c6537c3e2c6c4da8d587c3149df) feat(validate): add ability to validate structs and fields (#1246)
