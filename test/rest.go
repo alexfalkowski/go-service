@@ -9,15 +9,11 @@ import (
 )
 
 // RestNoContent for test.
-//
-//nolint:nilnil
 func RestNoContent(_ context.Context) (*Response, error) {
 	return nil, nil
 }
 
 // RestRequestNoContent for test.
-//
-//nolint:nilnil
 func RestRequestNoContent(_ context.Context, _ *Request) (*Response, error) {
 	return nil, nil
 }
