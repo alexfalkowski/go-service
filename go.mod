@@ -42,11 +42,11 @@ require (
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sethvargo/go-limiter v1.0.0
 	github.com/sethvargo/go-retry v0.3.0
-	github.com/shirou/gopsutil/v4 v4.24.12
+	github.com/shirou/gopsutil/v4 v4.25.1
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/cobra v1.8.1
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20250103171228-b75b9ab8ea1e
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20250130150621-c1b941e3a055
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/instrumentation/host v0.59.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.59.0
