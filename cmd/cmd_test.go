@@ -2,7 +2,6 @@
 package cmd_test
 
 import (
-	"context"
 	"os"
 	"testing"
 	"time"
@@ -29,7 +28,6 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/module"
-	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -227,12 +225,6 @@ func crypt(a argon2.Signer, _ ed25519.Signer, _ rsa.Cipher, _ aes.Cipher, _ hmac
 	return nil
 }
 
-func controller(router *mvc.Router) {
-	router.Route("GET /test", func(_ context.Context) (mvc.View, mvc.Model) {
-		return mvc.View("test.tmpl"), nil
-	})
-}
-
 func tokens(_ token.KID, _ *token.JWT, _ *token.Paseto, _ *token.Token) {}
 
 func shutdown(s fx.Shutdowner) {
@@ -251,8 +243,7 @@ func opts() []fx.Option {
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
 		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
 		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
-		fx.Provide(ver), fx.Invoke(meter),
-		fx.Invoke(netTime), fx.Invoke(crypt), fx.Invoke(environment),
-		fx.Invoke(controller), fx.Invoke(tokens),
+		fx.Provide(ver), fx.Invoke(meter), fx.Invoke(netTime),
+		fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(tokens),
 	}
 }

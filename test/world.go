@@ -144,7 +144,6 @@ type World struct {
 	PG     *pg.Config
 	*Server
 	*Client
-	*mvc.Router
 	*events.Event
 	*eh.Receiver
 	Sender client.Client
@@ -184,7 +183,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	}
 
 	views := mvc.NewViews(mvc.ViewsParams{FS: &Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
-	router := mvc.NewRouter(mux, views)
+	mvc.Register(mux, views)
 
 	restClient := restClient(client, os)
 
@@ -201,7 +200,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
-		Router: router, Rest: restClient,
+		Rest:     restClient,
 		Receiver: receiver, Sender: sender,
 		PG: pgConfig,
 	}

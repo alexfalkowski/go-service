@@ -15,7 +15,7 @@ var Module = fx.Options(
 	fx.Provide(http.NewServeMux),
 	fx.Provide(content.NewContent),
 	fx.Provide(mvc.NewViews),
-	fx.Provide(mvc.NewRouter),
+	fx.Invoke(mvc.Register),
 	fx.Invoke(rpc.Register),
 	fx.Invoke(rest.Register),
 	fx.Provide(NewServer),
