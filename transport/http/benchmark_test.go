@@ -196,10 +196,10 @@ func BenchmarkRoute(b *testing.B) {
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
 
 	v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
-	r := mvc.NewRouter(mux, v)
+	mvc.Register(mux, v)
 
-	r.Route("GET /hello", func(_ context.Context) (mvc.View, mvc.Model) {
-		return mvc.View("hello.tmpl"), &test.Model
+	mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+		return mvc.View("hello.tmpl"), &test.Model, nil
 	})
 
 	client := cl.NewHTTP()
