@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.402.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.402.0) - 2025-02-01
+
+- [`b3e2b37`](https://github.com/alexfalkowski/go-service/commit/b3e2b3714da2867c028a429c02bcbeb134eb4711) feat(mvc): treat errors in an idiomatic way (#1249)
+- [`45a9baf`](https://github.com/alexfalkowski/go-service/commit/45a9bafd3bc5fb6165a73db042ba26e11baf5299) docs(readme): add gopher (#1248)
+
 ## [v1.401.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.401.0) - 2025-01-31
 
 - [`f8126e9`](https://github.com/alexfalkowski/go-service/commit/f8126e9d86c696a576def051b3daa32eb35e02b7) feat(cache): redesign caching to have multiple backends (#1247)
