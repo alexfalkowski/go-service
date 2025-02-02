@@ -6,6 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/types"
+	"github.com/faabiosr/cachego"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -28,16 +30,15 @@ func TestValidCache(t *testing.T) {
 				Pool:       test.Pool,
 			}
 
-			cache, err := cache.New(params)
+			ca, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(ca)
 			world.RequireStart()
 
 			Convey("When I save an item", func() {
-				value, err := cache.EncodeValue("what?")
-				So(err, ShouldBeNil)
-
-				err = cache.Save("test", value, time.Minute)
+				value := "hello?"
+				err := cache.Persist("test", &value, time.Minute)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -45,26 +46,22 @@ func TestValidCache(t *testing.T) {
 			})
 
 			Convey("When I get an item", func() {
-				e, err := cache.EncodeValue("what?")
+				value := "wassup?"
+
+				err := cache.Persist("test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				err = cache.Save("test", e, time.Minute)
-				So(err, ShouldBeNil)
+				ptr := types.Pointer[string]()
 
-				v, err := cache.Fetch("test")
-				So(err, ShouldBeNil)
-
-				var value string
-
-				err = cache.DecodeValue(v, &value)
+				err = cache.Get("test", ptr)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
-					So(value, ShouldEqual, "what?")
+					So(*ptr, ShouldEqual, "wassup?")
 				})
 			})
 
-			err = cache.Delete("test")
+			err = cache.Remove("test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -103,7 +100,7 @@ func TestErroneousCache(t *testing.T) {
 	}
 }
 
-func TestErroneousEncode(t *testing.T) {
+func TestErroneousSave(t *testing.T) {
 	configs := []*cache.Config{
 		{Encoder: "error", Compressor: "snappy"},
 	}
@@ -121,13 +118,15 @@ func TestErroneousEncode(t *testing.T) {
 				Pool:       test.Pool,
 			}
 
-			cache, err := cache.New(params)
+			ca, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(ca)
 			world.RequireStart()
 
-			Convey("When I try to encode a value", func() {
-				_, err := cache.EncodeValue("what?")
+			Convey("When I try to save a value", func() {
+				value := "what?"
+				err := cache.Persist("test", &value, time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -139,16 +138,17 @@ func TestErroneousEncode(t *testing.T) {
 	}
 }
 
-func TestErroneousDecode(t *testing.T) {
+func TestErroneousGet(t *testing.T) {
 	type Tuple struct {
 		Config *cache.Config
-		Value  string
+		cachego.Cache
 	}
 
 	tuples := []*Tuple{
-		{Value: "d2hhdD8=", Config: &cache.Config{Encoder: "error", Compressor: "snappy"}},
-		{Value: "d2hhdD8=", Config: &cache.Config{Encoder: "json", Compressor: "error"}},
-		{Value: "what?", Config: &cache.Config{Encoder: "json", Compressor: "snappy"}},
+		{Config: &cache.Config{Encoder: "error", Compressor: "snappy"}, Cache: &test.Cache{Value: "d2hhdD8="}},
+		{Config: &cache.Config{Encoder: "json", Compressor: "error"}, Cache: &test.Cache{Value: "d2hhdD8="}},
+		{Config: &cache.Config{Encoder: "json", Compressor: "snappy"}, Cache: &test.Cache{Value: "what?"}},
+		{Config: &cache.Config{Encoder: "json", Compressor: "snappy"}, Cache: &test.ErrCache{}},
 	}
 
 	for _, tuple := range tuples {
@@ -164,15 +164,16 @@ func TestErroneousDecode(t *testing.T) {
 				Pool:       test.Pool,
 			}
 
-			cache, err := cache.New(params)
+			ca, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			world.RequireStart()
+			ca.Cache = tuple.Cache
+
+			cache.Register(ca)
 
 			Convey("When I try to encode a value", func() {
-				var str string
-
-				err := cache.DecodeValue(tuple.Value, &str)
+				ptr := types.Pointer[string]()
+				err := cache.Get("test", ptr)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
