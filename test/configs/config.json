@@ -6,6 +6,8 @@
   },
   "cache": {
     "kind": "redis",
+    "encoder": "proto",
+    "compressor": "snappy",
     "options": {
       "url": "../test/secrets/redis"
     }

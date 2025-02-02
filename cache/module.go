@@ -6,5 +6,5 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(NewCache),
+	fx.Provide(New),
 )

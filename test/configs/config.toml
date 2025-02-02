@@ -6,6 +6,8 @@ timeout = "10s"
 
 [cache]
 kind = "redis"
+encoder = "proto"
+compressor = "snappy"
 [cache.options]
 url = "../test/secrets/redis"
 

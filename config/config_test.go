@@ -123,6 +123,8 @@ func verifyConfig(config *config.Config) {
 	So(string(config.Environment), ShouldEqual, "development")
 	So(cache.IsEnabled(config.Cache), ShouldBeTrue)
 	So(config.Cache.Kind, ShouldEqual, "redis")
+	So(config.Cache.Compressor, ShouldEqual, "snappy")
+	So(config.Cache.Encoder, ShouldEqual, "proto")
 	So(config.Cache.Options["url"], ShouldEqual, "../test/secrets/redis")
 	So(crypto.IsEnabled(config.Crypto), ShouldBeTrue)
 	So(aes.IsEnabled(config.Crypto.AES), ShouldBeTrue)
