@@ -151,6 +151,7 @@ func TestErrEncoder(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestErrMessage(t *testing.T) {
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
@@ -196,6 +197,50 @@ func TestErrMessage(t *testing.T) {
 			var msg test.ErrProto
 
 			err := encoder.Encode(bytes, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
+	Convey("Given I have binary encoder", t, func() {
+		encoder := proto.NewBinary()
+
+		bytes := test.Pool.Get()
+		defer test.Pool.Put(bytes)
+
+		msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
+		Convey("When I decode the proto with a erroneous message", func() {
+			err := encoder.Encode(bytes, msg)
+			So(err, ShouldBeNil)
+
+			var msg test.ErrProto
+
+			err = encoder.Decode(bytes, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+
+	Convey("Given I have binary encoder", t, func() {
+		encoder := proto.NewBinary()
+
+		bytes := test.Pool.Get()
+		defer test.Pool.Put(bytes)
+
+		msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
+		Convey("When I decode the proto with a wrong type", func() {
+			err := encoder.Encode(bytes, msg)
+			So(err, ShouldBeNil)
+
+			var msg string
+
+			err = encoder.Decode(bytes, &msg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

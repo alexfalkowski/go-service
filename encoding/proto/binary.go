@@ -3,6 +3,7 @@ package proto
 import (
 	"io"
 
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/runtime"
 	"google.golang.org/protobuf/proto"
 )
@@ -18,7 +19,7 @@ type Binary struct{}
 func (e *Binary) Encode(w io.Writer, v any) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = runtime.ConvertRecover(r)
+			err = errors.Prefix("proto", runtime.ConvertRecover(r))
 		}
 	}()
 
@@ -31,11 +32,18 @@ func (e *Binary) Encode(w io.Writer, v any) (err error) {
 	return
 }
 
-func (e *Binary) Decode(r io.Reader, v any) error {
-	b, err := io.ReadAll(r)
-	if err != nil {
-		return err
-	}
+func (e *Binary) Decode(r io.Reader, v any) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Prefix("proto", runtime.ConvertRecover(r))
+		}
+	}()
 
-	return proto.Unmarshal(b, v.(proto.Message))
+	b, err := io.ReadAll(r)
+	runtime.Must(err)
+
+	err = proto.Unmarshal(b, v.(proto.Message))
+	runtime.Must(err)
+
+	return
 }
