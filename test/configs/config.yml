@@ -4,6 +4,8 @@ debug:
   timeout: 10s
 cache:
   kind: redis
+  encoder: proto
+  compressor: snappy
   options:
     url: ../test/secrets/redis
 crypto:
