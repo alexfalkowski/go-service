@@ -13,8 +13,11 @@ import (
 	"go.uber.org/fx"
 )
 
+// Cache is an alias to cachego.
+type Cache = cachego.Cache
+
 // NewCache from config.
-func NewCache(lc fx.Lifecycle, cfg *Config) (cache cachego.Cache, err error) {
+func NewCache(lc fx.Lifecycle, cfg *Config) (cache Cache, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Prefix("cache", runtime.ConvertRecover(r))
