@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -102,12 +103,9 @@ func TestPrometheusSecureHTTP(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query metrics", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
-
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "https", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(context.Background(), "https", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {

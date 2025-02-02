@@ -75,6 +75,10 @@ func aesConfig(cfg *Config) *aes.Config {
 	return cfg.Crypto.AES
 }
 
+func cacheConfig(cfg *Config) *cache.Config {
+	return cfg.Cache
+}
+
 func debugConfig(cfg *Config) *debug.Config {
 	return cfg.Debug
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"time"
 
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
@@ -17,6 +18,38 @@ import (
 	client "github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
+
+var cache *Cache
+
+// Register a cache.
+func Register(ca *Cache) {
+	cache = ca
+}
+
+// Get a key and decode it to the value.
+func Get[T any](key string, value *T) error {
+	val, err := cache.Fetch(key)
+	if err != nil {
+		return err
+	}
+
+	return cache.DecodeValue(val, value)
+}
+
+// Persist a value to the key with a TTL.
+func Persist[T any](key string, value *T, ttl time.Duration) error {
+	enc, err := cache.EncodeValue(value)
+	if err != nil {
+		return err
+	}
+
+	return cache.Save(key, enc, ttl)
+}
+
+// Remove a key.
+func Remove(key string) error {
+	return cache.Delete(key)
+}
 
 // Params for cache.
 type Params struct {
@@ -37,23 +70,32 @@ func New(params Params) (cache *Cache, err error) {
 		}
 	}()
 
-	cache = &Cache{
-		Compressor: params.Compressor.Get(params.Config.Compressor),
-		Encoder:    params.Encoder.Get(params.Config.Encoder),
-		Pool:       params.Pool,
-	}
+	if !IsEnabled(params.Config) {
+		cache = &Cache{
+			Compressor: params.Compressor.Get("none"),
+			Encoder:    params.Encoder.Get("json"),
+			Pool:       params.Pool,
+			Cache:      cs.New(),
+		}
+	} else {
+		cache = &Cache{
+			Compressor: params.Compressor.Get(params.Config.Compressor),
+			Encoder:    params.Encoder.Get(params.Config.Encoder),
+			Pool:       params.Pool,
+		}
 
-	switch params.Config.Kind {
-	case "redis":
-		url, err := os.ReadFile(params.Config.Options["url"].(string))
-		runtime.Must(err)
+		switch params.Config.Kind {
+		case "redis":
+			url, err := os.ReadFile(params.Config.Options["url"].(string))
+			runtime.Must(err)
 
-		opts, err := client.ParseURL(url)
-		runtime.Must(err)
+			opts, err := client.ParseURL(url)
+			runtime.Must(err)
 
-		cache.Cache = redis.New(client.NewClient(opts))
-	default:
-		cache.Cache = cs.New()
+			cache.Cache = redis.New(client.NewClient(opts))
+		default:
+			cache.Cache = cs.New()
+		}
 	}
 
 	params.Lifecycle.Append(fx.Hook{
