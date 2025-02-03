@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/cache"
+	"github.com/alexfalkowski/go-service/cache/cachego"
+	cc "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
@@ -146,6 +149,7 @@ type World struct {
 	*Client
 	*events.Event
 	*eh.Receiver
+	cc.Cache
 	Sender client.Client
 	Rest   *resty.Client
 }
@@ -195,6 +199,8 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	sender, err := eh.NewSender(hh.NewWebhook(h, id), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
+	cache := redisCache(lc, logger, meter, tracer)
+
 	return &World{
 		t:      t,
 		Logger: logger, Tracer: tracer,
@@ -202,7 +208,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 		Server: server, Client: client,
 		Rest:     restClient,
 		Receiver: receiver, Sender: sender,
-		PG: pgConfig,
+		Cache: cache, PG: pgConfig,
 	}
 }
 
@@ -353,6 +359,30 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	}
 
 	return nil
+}
+
+func redisCache(lc fx.Lifecycle, logger *zap.Logger, meter metric.Meter, tracer *tracer.Config) cc.Cache {
+	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
+
+	cachego, err := cachego.New(cfg)
+	runtime.Must(err)
+
+	params := cache.Params{
+		Lifecycle:  lc,
+		Config:     cfg,
+		Compressor: Compressor,
+		Encoder:    Encoder,
+		Pool:       Pool,
+		Cache:      cachego,
+		Tracer:     NewTracer(lc, tracer, logger),
+		Logger:     logger,
+		Meter:      meter,
+	}
+
+	cache, err := cache.New(params)
+	runtime.Must(err)
+
+	return cache
 }
 
 func pgConfig(os *worldOpts) *pg.Config {

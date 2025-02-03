@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cache"
+	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"

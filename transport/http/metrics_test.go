@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
+	"github.com/alexfalkowski/go-service/types"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -34,10 +35,13 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		world.RequireStart()
 
-		Convey("When I query metrics", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+		ptr := types.Pointer[string]()
+		ctx := context.Background()
 
+		err = world.Get(ctx, "not_existent", ptr)
+		So(err, ShouldBeError)
+
+		Convey("When I query metrics", func() {
 			header := http.Header{}
 
 			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
@@ -47,6 +51,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
 				So(body, ShouldContainSubstring, "go_info")
+				So(body, ShouldContainSubstring, "cache_misses_total")
 				So(body, ShouldContainSubstring, "sql_max_open_total")
 				So(body, ShouldContainSubstring, "system")
 				So(body, ShouldContainSubstring, "process")

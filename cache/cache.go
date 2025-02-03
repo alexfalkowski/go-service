@@ -6,140 +6,119 @@ import (
 	"encoding/base64"
 	"time"
 
+	"github.com/alexfalkowski/go-service/cache/config"
+	cz "github.com/alexfalkowski/go-service/cache/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/cache/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/faabiosr/cachego"
-	"github.com/faabiosr/cachego/redis"
-	cs "github.com/faabiosr/cachego/sync"
-	client "github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
-
-var cache *Cache
-
-// Register a cache.
-func Register(ca *Cache) {
-	cache = ca
-}
-
-// Get a key and decode it to the value.
-func Get[T any](key string, value *T) error {
-	val, err := cache.Fetch(key)
-	if err != nil {
-		return err
-	}
-
-	return cache.DecodeValue(val, value)
-}
-
-// Persist a value to the key with a TTL.
-func Persist[T any](key string, value *T, ttl time.Duration) error {
-	enc, err := cache.EncodeValue(value)
-	if err != nil {
-		return err
-	}
-
-	return cache.Save(key, enc, ttl)
-}
-
-// Remove a key.
-func Remove(key string) error {
-	return cache.Delete(key)
-}
 
 // Params for cache.
 type Params struct {
 	fx.In
 
 	Lifecycle  fx.Lifecycle
-	Config     *Config
+	Config     *config.Config
 	Encoder    *encoding.Map
 	Pool       *sync.BufferPool
 	Compressor *compress.Map
+	Cache      cachego.Cache
+	Tracer     trace.Tracer
+	Logger     *zap.Logger
+	Meter      metric.Meter
 }
 
 // New from config.
-func New(params Params) (cache *Cache, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("cache", runtime.ConvertRecover(r))
-		}
-	}()
-
-	if !IsEnabled(params.Config) {
-		cache = &Cache{
-			Compressor: params.Compressor.Get("none"),
-			Encoder:    params.Encoder.Get("json"),
-			Pool:       params.Pool,
-			Cache:      cs.New(),
-		}
-	} else {
-		cache = &Cache{
-			Compressor: params.Compressor.Get(params.Config.Compressor),
-			Encoder:    params.Encoder.Get(params.Config.Encoder),
-			Pool:       params.Pool,
-		}
-
-		switch params.Config.Kind {
-		case "redis":
-			url, err := os.ReadFile(params.Config.Options["url"].(string))
-			runtime.Must(err)
-
-			opts, err := client.ParseURL(url)
-			runtime.Must(err)
-
-			cache.Cache = redis.New(client.NewClient(opts))
-		default:
-			cache.Cache = cs.New()
-		}
+func New(params Params) (config.Cache, error) {
+	if !config.IsEnabled(params.Config) {
+		return nil, nil
 	}
 
+	cmp := params.Compressor.Get(params.Config.Compressor)
+	enc := params.Encoder.Get(params.Config.Encoder)
+
+	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, cache: params.Cache}
+	cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
+	cache = cz.NewCache(params.Config.Kind, params.Logger, cache)
+	cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
+
 	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(_ context.Context) error {
-			return cache.Flush()
+		OnStop: func(ctx context.Context) error {
+			return cache.Close(ctx)
 		},
 	})
 
-	return
+	return cache, nil
 }
 
 // Cache allows marshaling and compressing items to the cache.
 type Cache struct {
-	Encoder    encoding.Encoder
-	Pool       *sync.BufferPool
-	Compressor compress.Compressor
-	cachego.Cache
+	enc   encoding.Encoder
+	pool  *sync.BufferPool
+	cmp   compress.Compressor
+	cache cachego.Cache
 }
 
-// CreateValue encodes, compresses and base64 the value.
-func (c *Cache) EncodeValue(value any) (string, error) {
-	buf := c.Pool.Get()
-	defer c.Pool.Put(buf)
+// Close the cache.
+func (c *Cache) Close(_ context.Context) error {
+	return c.cache.Flush()
+}
 
-	if err := c.Encoder.Encode(buf, value); err != nil {
+// Remove a cached key.
+func (c *Cache) Remove(_ context.Context, key string) error {
+	return c.cache.Delete(key)
+}
+
+// Get a cached value.
+func (c *Cache) Get(_ context.Context, key string, value any) error {
+	val, err := c.cache.Fetch(key)
+	if err != nil {
+		return err
+	}
+
+	return c.decode(val, value)
+}
+
+// Persist a value with key and TTL.
+func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
+	enc, err := c.encode(value)
+	if err != nil {
+		return err
+	}
+
+	return c.cache.Save(key, enc, ttl)
+}
+
+func (c *Cache) encode(value any) (string, error) {
+	buf := c.pool.Get()
+	defer c.pool.Put(buf)
+
+	if err := c.enc.Encode(buf, value); err != nil {
 		return "", err
 	}
 
-	cmp := c.Compressor.Compress(buf.Bytes())
+	cmp := c.cmp.Compress(buf.Bytes())
 
 	return base64.StdEncoding.EncodeToString(cmp), nil
 }
 
-// DecodeValue base64, uncompresses and decodes.
-func (c *Cache) DecodeValue(value string, field any) error {
+func (c *Cache) decode(value string, field any) error {
 	data, err := base64.URLEncoding.DecodeString(value)
 	if err != nil {
 		return err
 	}
 
-	data, err = c.Compressor.Decompress(data)
+	data, err = c.cmp.Decompress(data)
 	if err != nil {
 		return err
 	}
 
-	return c.Encoder.Decode(bytes.NewReader(data), field)
+	return c.enc.Decode(bytes.NewReader(data), field)
 }

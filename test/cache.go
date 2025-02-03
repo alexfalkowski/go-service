@@ -51,7 +51,7 @@ func (*ErrCache) FetchMulti(_ []string) map[string]string {
 }
 
 func (*ErrCache) Flush() error {
-	return ErrFailed
+	return nil
 }
 
 func (*ErrCache) Save(_, _ string, _ time.Duration) error {

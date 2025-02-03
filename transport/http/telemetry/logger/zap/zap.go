@@ -6,7 +6,7 @@ import (
 	"time"
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.uber.org/zap"
@@ -38,14 +38,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 	fields := []zapcore.Field{
-		zap.String(tm.ServiceKey, service),
-		zap.String(tm.PathKey, path),
-		zap.String(tm.MethodKey, method),
+		zap.String(meta.ServiceKey, service),
+		zap.String(meta.PathKey, path),
+		zap.String(meta.MethodKey, method),
 	}
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
-	fields = append(fields, zap.Stringer(tm.DurationKey, m.Duration), zap.Int(tm.CodeKey, m.Code))
+	fields = append(fields, zap.Stringer(meta.DurationKey, m.Duration), zap.Int(meta.CodeKey, m.Code))
 	fields = append(fields, tz.Meta(ctx)...)
 
 	tz.LogWithFunc(message(method+" "+path), nil, codeToLevel(m.Code, h.logger), fields...)
@@ -74,16 +74,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	fields := []zapcore.Field{
-		zap.Stringer(tm.DurationKey, time.Since(start)),
-		zap.String(tm.ServiceKey, service),
-		zap.String(tm.PathKey, path),
-		zap.String(tm.MethodKey, method),
+		zap.Stringer(meta.DurationKey, time.Since(start)),
+		zap.String(meta.ServiceKey, service),
+		zap.String(meta.PathKey, path),
+		zap.String(meta.MethodKey, method),
 	}
 
 	fields = append(fields, tz.Meta(ctx)...)
 
 	if resp != nil {
-		fields = append(fields, zap.Int(tm.CodeKey, resp.StatusCode))
+		fields = append(fields, zap.Int(meta.CodeKey, resp.StatusCode))
 	}
 
 	tz.LogWithFunc(message(method+" "+req.URL.Redacted()), err, respToLevel(resp, r.logger), fields...)

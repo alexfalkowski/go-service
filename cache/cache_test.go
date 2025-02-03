@@ -1,20 +1,23 @@
 package cache_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-service/cache"
+	"github.com/alexfalkowski/go-service/cache/cachego"
+	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/types"
-	"github.com/faabiosr/cachego"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
+//nolint:funlen
 func TestValidCache(t *testing.T) {
-	configs := []*cache.Config{
-		{Kind: "redis", Encoder: "json", Compressor: "snappy", Options: map[string]any{"url": test.Path("secrets/redis")}},
-		{Encoder: "json", Compressor: "snappy"},
+	configs := []*config.Config{
+		test.NewCacheConfig("redis", "snappy", "json", "redis"),
+		test.NewCacheConfig("sync", "snappy", "json", "redis"),
 	}
 
 	for _, config := range configs {
@@ -22,23 +25,31 @@ func TestValidCache(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
+			cachego, err := cachego.New(config)
+			So(err, ShouldBeNil)
+
 			params := cache.Params{
 				Lifecycle:  world.Lifecycle,
 				Config:     config,
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
+				Cache:      cachego,
+				Tracer:     world.NewTracer(),
+				Logger:     world.Logger,
+				Meter:      world.Server.Meter,
 			}
 
-			ca, err := cache.New(params)
+			cache, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			cache.Register(ca)
 			world.RequireStart()
+
+			ctx := context.Background()
 
 			Convey("When I save an item", func() {
 				value := "hello?"
-				err := cache.Persist("test", &value, time.Minute)
+				err := cache.Persist(ctx, "test", &value, time.Minute)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -48,12 +59,12 @@ func TestValidCache(t *testing.T) {
 			Convey("When I get an item", func() {
 				value := "wassup?"
 
-				err := cache.Persist("test", &value, time.Minute)
+				err := cache.Persist(ctx, "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
 				ptr := types.Pointer[string]()
 
-				err = cache.Get("test", ptr)
+				err = cache.Get(ctx, "test", ptr)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
@@ -61,7 +72,7 @@ func TestValidCache(t *testing.T) {
 				})
 			})
 
-			err = cache.Remove("test")
+			err = cache.Remove(ctx, "test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -70,8 +81,50 @@ func TestValidCache(t *testing.T) {
 }
 
 func TestErroneousCache(t *testing.T) {
-	configs := []*cache.Config{
-		{Kind: "redis", Encoder: "json", Compressor: "snappy", Options: map[string]any{"url": test.Path("secrets/none")}},
+	configs := []*config.Config{
+		test.NewCacheConfig("redis", "snappy", "json", "none"),
+		test.NewCacheConfig("redis", "snappy", "json", "hooks"),
+		test.NewCacheConfig("test", "snappy", "json", "hooks"),
+	}
+
+	for _, config := range configs {
+		Convey("When I create a cache", t, func() {
+			world := test.NewWorld(t)
+			world.Register()
+
+			_, err := cachego.New(config)
+
+			world.RequireStart()
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+
+			world.RequireStop()
+		})
+	}
+}
+
+func TestDisabledCache(t *testing.T) {
+	configs := []*config.Config{
+		nil,
+	}
+
+	for _, config := range configs {
+		Convey("When I create a cache", t, func() {
+			world := test.NewWorld(t)
+			world.Register()
+
+			_, err := cachego.New(config)
+
+			world.RequireStart()
+
+			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
+			})
+
+			world.RequireStop()
+		})
 	}
 
 	for _, config := range configs {
@@ -85,14 +138,18 @@ func TestErroneousCache(t *testing.T) {
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
+				Tracer:     world.NewTracer(),
+				Logger:     world.Logger,
+				Meter:      world.Server.Meter,
+				Cache:      &test.Cache{},
 			}
 
 			_, err := cache.New(params)
 
 			world.RequireStart()
 
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
+			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
 			})
 
 			world.RequireStop()
@@ -101,8 +158,8 @@ func TestErroneousCache(t *testing.T) {
 }
 
 func TestErroneousSave(t *testing.T) {
-	configs := []*cache.Config{
-		{Encoder: "error", Compressor: "snappy"},
+	configs := []*config.Config{
+		test.NewCacheConfig("sync", "snappy", "error", "redis"),
 	}
 
 	for _, config := range configs {
@@ -110,23 +167,31 @@ func TestErroneousSave(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
+			cachego, err := cachego.New(config)
+			So(err, ShouldBeNil)
+
 			params := cache.Params{
 				Lifecycle:  world.Lifecycle,
 				Config:     config,
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
+				Cache:      cachego,
+				Tracer:     world.NewTracer(),
+				Logger:     world.Logger,
+				Meter:      world.Server.Meter,
 			}
 
-			ca, err := cache.New(params)
+			cache, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			cache.Register(ca)
 			world.RequireStart()
+
+			ctx := context.Background()
 
 			Convey("When I try to save a value", func() {
 				value := "what?"
-				err := cache.Persist("test", &value, time.Minute)
+				err := cache.Persist(ctx, "test", &value, time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -140,15 +205,15 @@ func TestErroneousSave(t *testing.T) {
 
 func TestErroneousGet(t *testing.T) {
 	type Tuple struct {
-		Config *cache.Config
+		Config *config.Config
 		cachego.Cache
 	}
 
 	tuples := []*Tuple{
-		{Config: &cache.Config{Encoder: "error", Compressor: "snappy"}, Cache: &test.Cache{Value: "d2hhdD8="}},
-		{Config: &cache.Config{Encoder: "json", Compressor: "error"}, Cache: &test.Cache{Value: "d2hhdD8="}},
-		{Config: &cache.Config{Encoder: "json", Compressor: "snappy"}, Cache: &test.Cache{Value: "what?"}},
-		{Config: &cache.Config{Encoder: "json", Compressor: "snappy"}, Cache: &test.ErrCache{}},
+		{Config: test.NewCacheConfig("sync", "snappy", "error", "redis"), Cache: &test.Cache{Value: "d2hhdD8="}},
+		{Config: test.NewCacheConfig("sync", "error", "json", "redis"), Cache: &test.Cache{Value: "d2hhdD8="}},
+		{Config: test.NewCacheConfig("sync", "snappy", "json", "redis"), Cache: &test.Cache{Value: "what?"}},
+		{Config: test.NewCacheConfig("sync", "snappy", "json", "redis"), Cache: &test.ErrCache{}},
 	}
 
 	for _, tuple := range tuples {
@@ -162,25 +227,29 @@ func TestErroneousGet(t *testing.T) {
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
+				Cache:      tuple.Cache,
+				Tracer:     world.NewTracer(),
+				Logger:     world.Logger,
+				Meter:      world.Server.Meter,
 			}
 
-			ca, err := cache.New(params)
+			cache, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			ca.Cache = tuple.Cache
+			world.RequireStart()
 
-			cache.Register(ca)
+			ctx := context.Background()
 
 			Convey("When I try to encode a value", func() {
 				ptr := types.Pointer[string]()
-				err := cache.Get("test", ptr)
+				err := cache.Get(ctx, "test", ptr)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
 				})
-
-				world.RequireStop()
 			})
+
+			world.RequireStop()
 		})
 	}
 }
