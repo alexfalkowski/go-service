@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.409.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.409.0) - 2025-02-04
+
+- [`78ebef1`](https://github.com/alexfalkowski/go-service/commit/78ebef1e57f528fdd375dae6cb2abc01a8a4c30b) feat(types): move ptr, slices and structs (#1257)
+
 ## [v1.408.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.408.0) - 2025-02-04
 
 - [`04a8c93`](https://github.com/alexfalkowski/go-service/commit/04a8c93d2dd335be7dcf3f73765cafbaccb26fa7) feat(cache): readd convenient funcs (#1256)
