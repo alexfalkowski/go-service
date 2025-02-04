@@ -19,7 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/structs"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -29,7 +28,8 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/types/ptr"
+	"github.com/alexfalkowski/go-service/types/structs"
 )
 
 // ErrInvalidConfig when decoding fails.
@@ -37,8 +37,7 @@ var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
 func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
-	config := types.Pointer[T]()
-
+	config := ptr.Empty[T]()
 	if err := input.Decode(config); err != nil {
 		return nil, err
 	}

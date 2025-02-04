@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/sync"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/faabiosr/cachego"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
@@ -34,7 +34,7 @@ func Get[T any](ctx context.Context, key string) (*T, error) {
 		return nil, nil
 	}
 
-	value := types.Pointer[T]()
+	value := ptr.Empty[T]()
 	err := cache.Get(ctx, key, value)
 
 	return value, err

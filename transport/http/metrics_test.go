@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -35,7 +35,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		world.RequireStart()
 
-		ptr := types.Pointer[string]()
+		ptr := ptr.Empty[string]()
 		ctx := context.Background()
 
 		err = world.Get(ctx, "not_existent", ptr)

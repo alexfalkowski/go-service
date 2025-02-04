@@ -1,7 +1,7 @@
 package slices
 
 import (
-	"github.com/alexfalkowski/go-service/structs"
+	"github.com/alexfalkowski/go-service/types/structs"
 )
 
 // AppendNotZero elements to the slice, only if the element is not zero.
