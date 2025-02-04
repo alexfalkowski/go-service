@@ -3,7 +3,7 @@ package slices_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/slices"
+	"github.com/alexfalkowski/go-service/types/slices"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 

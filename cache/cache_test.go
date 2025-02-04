@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/cachego"
 	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/test"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -205,8 +205,7 @@ func TestErroneousSave(t *testing.T) {
 			ctx := context.Background()
 
 			Convey("When I try to save a value", func() {
-				value := "what?"
-				err := cache.Persist(ctx, "test", &value, time.Minute)
+				err := cache.Persist(ctx, "test", ptr.Value("test"), time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -256,7 +255,7 @@ func TestErroneousGet(t *testing.T) {
 			ctx := context.Background()
 
 			Convey("When I try to encode a value", func() {
-				ptr := types.Pointer[string]()
+				ptr := ptr.Empty[string]()
 				err := cache.Get(ctx, "test", ptr)
 
 				Convey("Then I should have an error", func() {

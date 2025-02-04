@@ -9,7 +9,7 @@ import (
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/types/ptr"
 )
 
 // RequestHandler is a handler with a generic request and response.
@@ -18,7 +18,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // NewRequestHandler for content.
 func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return contentHanler(cont, prefix, func(ctx context.Context) (*Res, error) {
-		request := types.Pointer[Req]()
+		request := ptr.Empty[Req]()
 
 		e := hc.Encoder(ctx)
 		req := hc.Request(ctx)
