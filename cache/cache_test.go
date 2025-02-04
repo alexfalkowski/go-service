@@ -40,9 +40,10 @@ func TestValidCache(t *testing.T) {
 				Meter:      world.Server.Meter,
 			}
 
-			cache, err := cache.New(params)
+			c, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(c)
 			world.RequireStart()
 
 			ctx := context.Background()
@@ -62,13 +63,11 @@ func TestValidCache(t *testing.T) {
 				err := cache.Persist(ctx, "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				ptr := types.Pointer[string]()
-
-				err = cache.Get(ctx, "test", ptr)
+				v, err := cache.Get[string](ctx, "test")
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
-					So(*ptr, ShouldEqual, "wassup?")
+					So(*v, ShouldEqual, "wassup?")
 				})
 			})
 
@@ -105,6 +104,7 @@ func TestErroneousCache(t *testing.T) {
 	}
 }
 
+//nolint:funlen
 func TestDisabledCache(t *testing.T) {
 	configs := []*config.Config{
 		nil,
@@ -144,11 +144,25 @@ func TestDisabledCache(t *testing.T) {
 				Cache:      &test.Cache{},
 			}
 
-			_, err := cache.New(params)
+			c, err := cache.New(params)
+			cache.Register(c)
 
 			world.RequireStart()
 
+			ctx := context.Background()
+
 			Convey("Then I should not have an error", func() {
+				So(err, ShouldBeNil)
+
+				key := "what?"
+
+				_, err = cache.Get[string](ctx, key)
+				So(err, ShouldBeNil)
+
+				err = cache.Remove(ctx, key)
+				So(err, ShouldBeNil)
+
+				err = cache.Persist(ctx, key, &key, time.Minute)
 				So(err, ShouldBeNil)
 			})
 
@@ -182,9 +196,10 @@ func TestErroneousSave(t *testing.T) {
 				Meter:      world.Server.Meter,
 			}
 
-			cache, err := cache.New(params)
+			c, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(c)
 			world.RequireStart()
 
 			ctx := context.Background()
