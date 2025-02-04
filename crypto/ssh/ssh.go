@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
-	"github.com/alexfalkowski/go-service/crypto/algo"
 	cerr "github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
@@ -47,9 +46,9 @@ func (g *Generator) Generate() (pub string, pri string, err error) {
 }
 
 // NewSigner for ssh.
-func NewSigner(cfg *Config) (Signer, error) {
+func NewSigner(cfg *Config) (*Signer, error) {
 	if !IsEnabled(cfg) {
-		return &algo.NoSigner{}, nil
+		return nil, nil
 	}
 
 	pub, err := cfg.PublicKey()
@@ -62,34 +61,28 @@ func NewSigner(cfg *Config) (Signer, error) {
 		return nil, err
 	}
 
-	return &signer{publicKey: pub, privateKey: pri}, nil
+	return &Signer{PublicKey: pub, PrivateKey: pri}, nil
 }
 
-type (
-	// Signer for ssh.
-	Signer interface {
-		algo.Signer
-	}
+// Signer for ssh.
+type Signer struct {
+	PublicKey  ed25519.PublicKey
+	PrivateKey ed25519.PrivateKey
+}
 
-	signer struct {
-		publicKey  ed25519.PublicKey
-		privateKey ed25519.PrivateKey
-	}
-)
-
-func (a *signer) Sign(msg string) (string, error) {
-	m := ed25519.Sign(a.privateKey, []byte(msg))
+func (a *Signer) Sign(msg string) (string, error) {
+	m := ed25519.Sign(a.PrivateKey, []byte(msg))
 
 	return base64.StdEncoding.EncodeToString(m), nil
 }
 
-func (a *signer) Verify(sig, msg string) error {
+func (a *Signer) Verify(sig, msg string) error {
 	d, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
 	}
 
-	ok := ed25519.Verify(a.publicKey, []byte(msg), d)
+	ok := ed25519.Verify(a.PublicKey, []byte(msg), d)
 	if !ok {
 		return cerr.ErrInvalidMatch
 	}

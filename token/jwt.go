@@ -25,19 +25,19 @@ func NewKID(gen *rand.Generator) (KID, error) {
 
 // JWT token.
 type JWT struct {
-	ed  ed25519.Signer
+	ed  *ed25519.Signer
 	gen id.Generator
 	kid KID
 }
 
 // NewJWT token.
-func NewJWT(kid KID, ed ed25519.Signer, gen id.Generator) *JWT {
+func NewJWT(kid KID, ed *ed25519.Signer, gen id.Generator) *JWT {
 	return &JWT{kid: kid, ed: ed, gen: gen}
 }
 
 // Generate JWT token.
 func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) {
-	key := j.ed.PrivateKey()
+	key := j.ed.PrivateKey
 	now := time.Now()
 
 	claims := &jwt.RegisteredClaims{
@@ -77,5 +77,5 @@ func (j *JWT) Verify(token, aud, iss string) (string, error) {
 }
 
 func (j *JWT) validate(_ *jwt.Token) (any, error) {
-	return j.ed.PublicKey(), nil
+	return j.ed.PublicKey, nil
 }

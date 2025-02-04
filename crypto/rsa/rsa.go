@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
-	"github.com/alexfalkowski/go-service/crypto/algo"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
@@ -35,9 +34,9 @@ func (g *Generator) Generate() (string, string, error) {
 }
 
 // NewCipher for rsa.
-func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
+func NewCipher(gen *rand.Generator, cfg *Config) (*Cipher, error) {
 	if !IsEnabled(cfg) {
-		return &algo.NoCipher{}, nil
+		return nil, nil
 	}
 
 	pub, err := cfg.PublicKey()
@@ -50,29 +49,23 @@ func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
 		return nil, err
 	}
 
-	return &cipher{gen: gen, publicKey: pub, privateKey: pri}, nil
+	return &Cipher{gen: gen, publicKey: pub, privateKey: pri}, nil
 }
 
-type (
-	// Cipher for rsa.
-	Cipher interface {
-		algo.Cipher
-	}
+// Cipher for rsa.
+type Cipher struct {
+	gen        *rand.Generator
+	publicKey  *rsa.PublicKey
+	privateKey *rsa.PrivateKey
+}
 
-	cipher struct {
-		gen        *rand.Generator
-		publicKey  *rsa.PublicKey
-		privateKey *rsa.PrivateKey
-	}
-)
-
-func (a *cipher) Encrypt(msg string) (string, error) {
+func (a *Cipher) Encrypt(msg string) (string, error) {
 	e, err := rsa.EncryptOAEP(sha512.New(), a.gen, a.publicKey, []byte(msg), nil)
 
 	return base64.StdEncoding.EncodeToString(e), err
 }
 
-func (a *cipher) Decrypt(msg string) (string, error) {
+func (a *Cipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err

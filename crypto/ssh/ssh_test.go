@@ -54,16 +54,12 @@ func TestValidSigner(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a missing signer", t, func() {
+	Convey("When I try to create a signer with no configuration", t, func() {
 		signer, err := ssh.NewSigner(nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I sign data", func() {
-			e, _ := signer.Sign("test")
-
-			Convey("Then I should compared the data", func() {
-				So(signer.Verify(e, "test"), ShouldBeNil)
-			})
+		Convey("Then I should have no signer", func() {
+			So(signer, ShouldBeNil)
 		})
 	})
 }
@@ -73,7 +69,7 @@ func TestInvalidSigner(t *testing.T) {
 	Convey("When I create a signer", t, func() {
 		_, err := ssh.NewSigner(&ssh.Config{})
 
-		Convey("Then I should not have aned25519 error", func() {
+		Convey("Then I should not have an ed25519 error", func() {
 			So(err, ShouldBeError)
 		})
 	})

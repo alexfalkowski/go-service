@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/alexfalkowski/go-service/crypto/algo"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
@@ -36,29 +35,23 @@ func (g *Generator) Generate() (string, error) {
 }
 
 // NewCipher for aes.
-func NewCipher(gen *rand.Generator, cfg *Config) (Cipher, error) {
+func NewCipher(gen *rand.Generator, cfg *Config) (*Cipher, error) {
 	if !IsEnabled(cfg) {
-		return &algo.NoCipher{}, nil
+		return nil, nil
 	}
 
 	k, err := cfg.GetKey()
 
-	return &aesCipher{gen: gen, key: []byte(k)}, err
+	return &Cipher{gen: gen, key: []byte(k)}, err
 }
 
-type (
-	// Cipher for aes.
-	Cipher interface {
-		algo.Cipher
-	}
+// Cipher for aes.
+type Cipher struct {
+	gen *rand.Generator
+	key []byte
+}
 
-	aesCipher struct {
-		gen *rand.Generator
-		key []byte
-	}
-)
-
-func (a *aesCipher) Encrypt(msg string) (string, error) {
+func (a *Cipher) Encrypt(msg string) (string, error) {
 	aead, err := a.aead()
 	if err != nil {
 		return "", err
@@ -74,7 +67,7 @@ func (a *aesCipher) Encrypt(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(s), nil
 }
 
-func (a *aesCipher) Decrypt(msg string) (string, error) {
+func (a *Cipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
 		return "", err
@@ -96,7 +89,7 @@ func (a *aesCipher) Decrypt(msg string) (string, error) {
 	return string(decoded), err
 }
 
-func (a *aesCipher) aead() (cipher.AEAD, error) {
+func (a *Cipher) aead() (cipher.AEAD, error) {
 	b, err := aes.NewCipher(a.key)
 	if err != nil {
 		return nil, err
