@@ -3,7 +3,7 @@ package config
 import (
 	"errors"
 
-	"github.com/alexfalkowski/go-service/cache"
+	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"

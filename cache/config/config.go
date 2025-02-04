@@ -1,4 +1,4 @@
-package cache
+package config
 
 // IsEnabled for cache.
 func IsEnabled(cfg *Config) bool {

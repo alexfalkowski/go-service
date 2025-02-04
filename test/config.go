@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"time"
 
+	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
@@ -12,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
-	"github.com/alexfalkowski/go-service/database/sql/config"
+	sql "github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/hooks"
@@ -198,9 +199,9 @@ func NewOTLPTracerConfig() *tracer.Config {
 // NewPGConfig for test.
 func NewPGConfig() *pg.Config {
 	return &pg.Config{
-		Config: &config.Config{
-			Masters:         []config.DSN{{URL: Path("secrets/pg")}},
-			Slaves:          []config.DSN{{URL: Path("secrets/pg")}},
+		Config: &sql.Config{
+			Masters:         []sql.DSN{{URL: Path("secrets/pg")}},
+			Slaves:          []sql.DSN{{URL: Path("secrets/pg")}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour.String(),
@@ -241,6 +242,17 @@ func NewSecureDebugConfig() *debug.Config {
 			TLS:     NewTLSServerConfig(),
 			Address: "localhost:" + Port(),
 			Retry:   NewRetry(),
+		},
+	}
+}
+
+// NewCacheConfig for test.
+func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
+	return &cache.Config{
+		Kind:       kind,
+		Compressor: compressor, Encoder: encoder,
+		Options: map[string]any{
+			"url": Path("secrets/" + secret),
 		},
 	}
 }
