@@ -212,7 +212,7 @@ func netTime(n st.Network) {
 	_, _ = n.Now()
 }
 
-func crypt(a argon2.Signer, _ ed25519.Signer, _ rsa.Cipher, _ aes.Cipher, _ hmac.Signer, _ ssh.Signer) error {
+func crypt(a *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
 	msg := "hello"
 
 	e, err := a.Sign(msg)

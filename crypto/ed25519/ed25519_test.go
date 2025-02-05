@@ -53,27 +53,18 @@ func TestValidSigner(t *testing.T) {
 			})
 
 			Convey("Then I should have keys", func() {
-				So(signer.PrivateKey(), ShouldNotBeNil)
-				So(signer.PublicKey(), ShouldNotBeNil)
+				So(signer.PrivateKey, ShouldNotBeNil)
+				So(signer.PublicKey, ShouldNotBeNil)
 			})
 		})
 	})
 
-	Convey("Given I have a signer with missing configuration", t, func() {
+	Convey("When I try to create a signer with no configuration", t, func() {
 		signer, err := ed25519.NewSigner(nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I sign data", func() {
-			e, _ := signer.Sign("test")
-
-			Convey("Then I should have veirfied the data", func() {
-				So(signer.Verify(e, "test"), ShouldBeNil)
-			})
-
-			Convey("Then I should have missing keys", func() {
-				So(signer.PrivateKey(), ShouldBeNil)
-				So(signer.PublicKey(), ShouldBeNil)
-			})
+		Convey("Then I should have no signer", func() {
+			So(signer, ShouldBeNil)
 		})
 	})
 }

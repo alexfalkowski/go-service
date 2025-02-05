@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
-	"github.com/alexfalkowski/go-service/crypto/algo"
 	cerr "github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
@@ -47,9 +46,9 @@ func (g *Generator) Generate() (pub string, pri string, err error) {
 }
 
 // NewSigner for ed25519.
-func NewSigner(cfg *Config) (Signer, error) {
+func NewSigner(cfg *Config) (*Signer, error) {
 	if !IsEnabled(cfg) {
-		return &None{&algo.NoSigner{}}, nil
+		return nil, nil
 	}
 
 	pub, err := cfg.PublicKey()
@@ -62,68 +61,31 @@ func NewSigner(cfg *Config) (Signer, error) {
 		return nil, err
 	}
 
-	return &signer{publicKey: pub, privateKey: pri}, nil
+	return &Signer{PublicKey: pub, PrivateKey: pri}, nil
 }
 
-type (
-	// Signer for ed25519.
-	Signer interface {
-		algo.Signer
+// Signer for ed25519.
+type Signer struct {
+	PublicKey  ed25519.PublicKey
+	PrivateKey ed25519.PrivateKey
+}
 
-		// PublicKey for ed25519.
-		PublicKey() ed25519.PublicKey
-
-		// PrivateKey for ed25519.
-		PrivateKey() ed25519.PrivateKey
-	}
-
-	signer struct {
-		publicKey  ed25519.PublicKey
-		privateKey ed25519.PrivateKey
-	}
-)
-
-func (a *signer) Sign(msg string) (string, error) {
-	m := ed25519.Sign(a.privateKey, []byte(msg))
+func (a *Signer) Sign(msg string) (string, error) {
+	m := ed25519.Sign(a.PrivateKey, []byte(msg))
 
 	return base64.StdEncoding.EncodeToString(m), nil
 }
 
-func (a *signer) Verify(sig, msg string) error {
+func (a *Signer) Verify(sig, msg string) error {
 	d, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {
 		return err
 	}
 
-	ok := ed25519.Verify(a.publicKey, []byte(msg), d)
+	ok := ed25519.Verify(a.PublicKey, []byte(msg), d)
 	if !ok {
 		return cerr.ErrInvalidMatch
 	}
 
-	return nil
-}
-
-// PublicKey for ed25519.
-func (a *signer) PublicKey() ed25519.PublicKey {
-	return a.publicKey
-}
-
-// PrivateKey for ed25519.
-func (a *signer) PrivateKey() ed25519.PrivateKey {
-	return a.privateKey
-}
-
-// None for ed25519.
-type None struct {
-	algo.Signer
-}
-
-// PublicKey for none.
-func (a *None) PublicKey() ed25519.PublicKey {
-	return nil
-}
-
-// PrivateKey for none.
-func (a *None) PrivateKey() ed25519.PrivateKey {
 	return nil
 }

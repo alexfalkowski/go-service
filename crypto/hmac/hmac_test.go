@@ -64,17 +64,12 @@ func TestValidSigner(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a missing signer", t, func() {
+	Convey("When I create a signer with no configuration", t, func() {
 		signer, err := hmac.NewSigner(nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I generate data", func() {
-			e, err := signer.Sign("test")
-			So(err, ShouldBeNil)
-
-			Convey("Then I should compared the data", func() {
-				So(signer.Verify(e, "test"), ShouldBeNil)
-			})
+		Convey("Then I should have no signer", func() {
+			So(signer, ShouldBeNil)
 		})
 	})
 }

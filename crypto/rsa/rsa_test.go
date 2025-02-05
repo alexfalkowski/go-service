@@ -70,20 +70,12 @@ func TestValidCipher(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have a missing cipher", t, func() {
+	Convey("When I try to create a cipher with no configuration", t, func() {
 		cipher, err := rsa.NewCipher(rand, nil)
 		So(err, ShouldBeNil)
 
-		Convey("When I encrypt data", func() {
-			e, err := cipher.Encrypt("test")
-			So(err, ShouldBeNil)
-
-			Convey("Then I should decrypt the data", func() {
-				d, err := cipher.Decrypt(e)
-				So(err, ShouldBeNil)
-
-				So(d, ShouldEqual, "test")
-			})
+		Convey("Then I should have no cipher", func() {
+			So(cipher, ShouldBeNil)
 		})
 	})
 }
