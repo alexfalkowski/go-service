@@ -18,7 +18,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // NewRequestHandler for content.
 func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return contentHanler(cont, prefix, func(ctx context.Context) (*Res, error) {
-		request := ptr.Empty[Req]()
+		request := ptr.Zero[Req]()
 
 		e := hc.Encoder(ctx)
 		req := hc.Request(ctx)

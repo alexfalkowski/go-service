@@ -255,7 +255,7 @@ func TestErroneousGet(t *testing.T) {
 			ctx := context.Background()
 
 			Convey("When I try to encode a value", func() {
-				ptr := ptr.Empty[string]()
+				ptr := ptr.Zero[string]()
 				err := cache.Get(ctx, "test", ptr)
 
 				Convey("Then I should have an error", func() {

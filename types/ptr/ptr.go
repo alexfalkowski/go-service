@@ -1,7 +1,7 @@
 package ptr
 
-// Empty pointer of *T.
-func Empty[T any]() *T {
+// Zero pointer of *T.
+func Zero[T any]() *T {
 	var t T
 
 	return &t

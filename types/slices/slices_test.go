@@ -8,11 +8,23 @@ import (
 )
 
 func TestEmptyAppendZero(t *testing.T) {
-	var integer int
-
-	for _, elem := range []*int{nil, &integer} {
+	for _, elem := range []*int{nil} {
 		Convey("Given I have an empty array", t, func() {
 			arr := []*int{}
+
+			Convey("When I try to append a value", func() {
+				arr = slices.AppendNotZero(arr, elem)
+
+				Convey("Then I should not have any elements", func() {
+					So(arr, ShouldBeEmpty)
+				})
+			})
+		})
+	}
+
+	for _, elem := range []int{0} {
+		Convey("Given I have an empty array", t, func() {
+			arr := []int{}
 
 			Convey("When I try to append a value", func() {
 				arr = slices.AppendNotZero(arr, elem)
