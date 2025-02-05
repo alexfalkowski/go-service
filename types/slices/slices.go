@@ -4,20 +4,10 @@ import (
 	"github.com/alexfalkowski/go-service/types/structs"
 )
 
-// AppendNotZero elements to the slice, only if the element is not zero.
-func AppendNotZero[T comparable](slice []*T, elems ...*T) []*T {
-	return Append(slice, structs.IsZero, elems...)
-}
-
-// AppendNotNil elements to the slice, only if the element is not nil.
-func AppendNotNil[T any](slice []*T, elems ...*T) []*T {
-	return Append(slice, structs.IsNil, elems...)
-}
-
-// Append elements to the slice, only if the element is not zero.
-func Append[T any](slice []*T, eq func(*T) bool, elems ...*T) []*T {
+// Append elements to the slice, only if the element is not nil.
+func Append[T any](slice []*T, elems ...*T) []*T {
 	for _, elem := range elems {
-		if eq(elem) {
+		if structs.IsNil(elem) {
 			continue
 		}
 
