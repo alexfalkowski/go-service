@@ -37,12 +37,12 @@ var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
 func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
-	config := ptr.Empty[T]()
+	config := ptr.Zero[T]()
 	if err := input.Decode(config); err != nil {
 		return nil, err
 	}
 
-	if structs.IsZero(config) {
+	if structs.IsEmpty(config) {
 		return nil, ErrInvalidConfig
 	}
 

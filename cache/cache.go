@@ -34,7 +34,7 @@ func Get[T any](ctx context.Context, key string) (*T, error) {
 		return nil, nil
 	}
 
-	value := ptr.Empty[T]()
+	value := ptr.Zero[T]()
 	err := cache.Get(ctx, key, value)
 
 	return value, err
