@@ -27,7 +27,7 @@ func TestHealth(t *testing.T) {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 			world.Register()
 
-			so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world)
+			so, err := observer(world.Lifecycle, test.StatusURL("200"), world)
 			So(err, ShouldBeNil)
 
 			o := so.Observe("http")
@@ -68,7 +68,7 @@ func TestReadinessNoop(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Register()
 
-		so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world)
+		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
@@ -108,7 +108,7 @@ func TestInvalidHealth(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Register()
 
-		so, err := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world)
+		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)
 		So(err, ShouldBeNil)
 
 		o := so.Observe("http")
