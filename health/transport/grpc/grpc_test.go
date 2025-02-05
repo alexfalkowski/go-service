@@ -25,7 +25,7 @@ func TestUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
@@ -60,7 +60,7 @@ func TestInvalidUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
@@ -96,7 +96,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
@@ -129,7 +129,7 @@ func TestStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
@@ -165,7 +165,7 @@ func TestInvalidStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/500", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
@@ -201,7 +201,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
 		world.Register()
 
-		o := observer(world.Lifecycle, "http://localhost:6000/v1/status/200", world.NewHTTP())
+		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
 		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
 		world.RequireStart()
