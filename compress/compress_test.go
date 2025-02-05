@@ -8,6 +8,8 @@ import (
 )
 
 func TestMap(t *testing.T) {
+	t.Parallel()
+
 	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
 		Convey("When I get compressor", t, func() {
 			cmp := test.Compressor.Get(kind)

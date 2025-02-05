@@ -8,6 +8,8 @@ import (
 )
 
 func TestFS(t *testing.T) {
+	t.Parallel()
+
 	fs := os.NewFS()
 
 	for _, path := range []string{"none"} {

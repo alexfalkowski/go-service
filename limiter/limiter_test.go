@@ -12,6 +12,8 @@ import (
 
 //nolint:funlen
 func TestLimiter(t *testing.T) {
+	t.Parallel()
+
 	lc := fxtest.NewLifecycle(t)
 
 	Convey("Given I have an missing key", t, func() {

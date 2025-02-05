@@ -8,6 +8,8 @@ import (
 )
 
 func TestUserAgent(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have a name and version", t, func() {
 		v := env.Version("v1.0.0")
 		n := env.Name("test")

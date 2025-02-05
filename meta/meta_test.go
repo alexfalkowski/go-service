@@ -9,6 +9,8 @@ import (
 )
 
 func TestSnakeCase(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have some meta values", t, func() {
 		ctx := context.Background()
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
@@ -24,6 +26,8 @@ func TestSnakeCase(t *testing.T) {
 }
 
 func TestCamelCase(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have some meta values", t, func() {
 		ctx := context.Background()
 		ctx = meta.WithAttribute(ctx, "test_id", meta.String("1"))
@@ -39,6 +43,8 @@ func TestCamelCase(t *testing.T) {
 }
 
 func TestNoneCase(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have some meta values", t, func() {
 		ctx := context.Background()
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
@@ -55,6 +61,8 @@ func TestNoneCase(t *testing.T) {
 
 //nolint:funlen
 func TestBlank(t *testing.T) {
+	t.Parallel()
+
 	Convey("When I have a blank value", t, func() {
 		v := meta.String("")
 

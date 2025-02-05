@@ -10,6 +10,8 @@ import (
 )
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	Convey("When I decode invalid path", t, func() {
 		_, err := pem.Decode("non existent", "n/a")
 

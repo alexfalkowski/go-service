@@ -15,6 +15,8 @@ import (
 
 //nolint:funlen
 func TestValidCache(t *testing.T) {
+	t.Parallel()
+
 	configs := []*config.Config{
 		test.NewCacheConfig("redis", "snappy", "json", "redis"),
 		test.NewCacheConfig("sync", "snappy", "json", "redis"),

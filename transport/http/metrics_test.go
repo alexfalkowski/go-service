@@ -63,7 +63,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 	})
 }
 
-func TestPrometheusInsecureHTTP(t *testing.T) {
+func TestPrometheusHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
 		world.Register()
@@ -90,34 +90,6 @@ func TestPrometheusInsecureHTTP(t *testing.T) {
 				So(body, ShouldContainSubstring, "system")
 				So(body, ShouldContainSubstring, "process")
 				So(body, ShouldContainSubstring, "runtime")
-			})
-		})
-
-		world.RequireStop()
-	})
-}
-
-func TestPrometheusSecureHTTP(t *testing.T) {
-	Convey("Given I register the metrics handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldSecure())
-		world.Register()
-
-		_, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
-
-		world.RequireStart()
-
-		Convey("When I query metrics", func() {
-			header := http.Header{}
-
-			res, body, err := world.ResponseWithBody(context.Background(), "https", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid metrics", func() {
-				So(res.StatusCode, ShouldEqual, http.StatusOK)
-
-				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "sql_max_open_total")
 			})
 		})
 

@@ -8,6 +8,8 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
+	t.Parallel()
+
 	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
 		Convey("When I get an encoder", t, func() {
 			e := test.Encoder.Get(k)

@@ -9,6 +9,8 @@ import (
 )
 
 func TestPanic(t *testing.T) {
+	t.Parallel()
+
 	Convey("When I have an error", t, func() {
 		f := func() { runtime.Must(test.ErrFailed) }
 
@@ -27,6 +29,8 @@ func TestPanic(t *testing.T) {
 }
 
 func TestRecover(t *testing.T) {
+	t.Parallel()
+
 	type fun func() (err error)
 
 	errPanic := func() (err error) {

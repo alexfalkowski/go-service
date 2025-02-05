@@ -7,7 +7,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestIDs(t *testing.T) {
+func TestID(t *testing.T) {
+	t.Parallel()
+
 	configs := []*id.Config{
 		nil,
 		{},

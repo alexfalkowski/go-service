@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have TOML encoder", t, func() {
 		encoder := toml.NewEncoder()
 
