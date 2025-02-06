@@ -10,8 +10,6 @@ import (
 )
 
 func TestHooks(t *testing.T) {
-	t.Parallel()
-
 	gen := hooks.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 	Convey("When I generate a secret", t, func() {

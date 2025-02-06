@@ -9,5 +9,4 @@ import (
 var Module = fx.Options(
 	fx.Provide(cachego.New),
 	fx.Provide(New),
-	fx.Invoke(Register),
 )

@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := ssh.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -43,8 +41,6 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValidSigner(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an signer", t, func() {
 		signer, err := ssh.NewSigner(test.NewSSH())
 		So(err, ShouldBeNil)
@@ -70,8 +66,6 @@ func TestValidSigner(t *testing.T) {
 
 //nolint:funlen
 func TestInvalidSigner(t *testing.T) {
-	t.Parallel()
-
 	Convey("When I create a signer", t, func() {
 		_, err := ssh.NewSigner(&ssh.Config{})
 

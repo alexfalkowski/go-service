@@ -9,8 +9,6 @@ import (
 )
 
 func TestValidRand(t *testing.T) {
-	t.Parallel()
-
 	gen := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I generate random bytes", t, func() {
@@ -42,8 +40,6 @@ func TestValidRand(t *testing.T) {
 }
 
 func TestInvalidRand(t *testing.T) {
-	t.Parallel()
-
 	gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
 	Convey("When I generate random string with an erroneous reader", t, func() {

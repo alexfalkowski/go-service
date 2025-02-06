@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -41,8 +39,6 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValidCipher(t *testing.T) {
-	t.Parallel()
-
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I create an cipher", t, func() {
@@ -83,8 +79,6 @@ func TestValidCipher(t *testing.T) {
 
 //nolint:funlen
 func TestInvalidCipher(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an cipher with invalid key", t, func() {
 		rand := rand.NewGenerator(rand.NewReader())
 

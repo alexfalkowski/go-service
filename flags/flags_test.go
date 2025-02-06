@@ -10,8 +10,6 @@ import (
 )
 
 func TestFlags(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have a var", t, func() {
 		name := string(test.Name)
 		command := &cobra.Command{

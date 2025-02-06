@@ -9,8 +9,6 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	t.Parallel()
-
 	configs := []*tls.Config{nil, {}}
 
 	for _, c := range configs {

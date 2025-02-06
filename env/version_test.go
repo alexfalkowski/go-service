@@ -8,8 +8,6 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have a version", t, func() {
 		v := env.Version("v1.0.0")
 

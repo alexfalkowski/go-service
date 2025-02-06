@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := hmac.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -41,8 +39,6 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValidSigner(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have generated a key", t, func() {
 		Convey("When I create an signer", func() {
 			signer, err := hmac.NewSigner(test.NewHMAC())
@@ -79,8 +75,6 @@ func TestValidSigner(t *testing.T) {
 }
 
 func TestInvalidSigner(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an signer", t, func() {
 		signer, err := hmac.NewSigner(test.NewHMAC())
 		So(err, ShouldBeNil)

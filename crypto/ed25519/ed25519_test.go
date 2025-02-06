@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
