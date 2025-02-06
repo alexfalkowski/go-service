@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.413.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.413.0) - 2025-02-06
+
+- [`db2a50f`](https://github.com/alexfalkowski/go-service/commit/db2a50f92ed6cd3affff16f9673b9d7bb3210e6a) feat(cache): remove register (#1267)
+- [`cf014b5`](https://github.com/alexfalkowski/go-service/commit/cf014b5f590402eb8147894791fdc9dea9f3520c) docs(diagrams): update with make (#1266)
+- [`5b4490b`](https://github.com/alexfalkowski/go-service/commit/5b4490bb0419be3de85379e0e03f08bdfccfb74c) test(buf): update to buf.build/protocolbuffers/go:v1.36.4 (#1265)
+- [`8df4bb7`](https://github.com/alexfalkowski/go-service/commit/8df4bb72bbdbc9cdc9e1c7c49801446335630a1e) test(parallel): specify t.Parallel() (#1264)
+- [`c86179d`](https://github.com/alexfalkowski/go-service/commit/c86179daa24c52eee3e274af369f09f1f2269772) test(valid): rename files (#1263)
+
 ## [v1.412.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.412.0) - 2025-02-05
 
 - [`f48b151`](https://github.com/alexfalkowski/go-service/commit/f48b151c144b4fc4088eda7ca1362089939d8e1c) feat(types): remove pointer for comparable with slices (#1262)
