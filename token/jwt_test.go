@@ -13,8 +13,6 @@ import (
 )
 
 func TestKID(t *testing.T) {
-	t.Parallel()
-
 	Convey("When I generate a KID", t, func() {
 		rand := rand.NewGenerator(rand.NewReader())
 		kid, err := token.NewKID(rand)
@@ -37,8 +35,6 @@ func TestKID(t *testing.T) {
 }
 
 func TestJWT(t *testing.T) {
-	t.Parallel()
-
 	rand := rand.NewGenerator(rand.NewReader())
 	kid, _ := token.NewKID(rand)
 	a, _ := ed25519.NewSigner(test.NewEd25519())

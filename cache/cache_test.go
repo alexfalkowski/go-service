@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package cache_test
 
 import (
@@ -15,8 +16,6 @@ import (
 
 //nolint:funlen
 func TestValidCache(t *testing.T) {
-	t.Parallel()
-
 	configs := []*config.Config{
 		test.NewCacheConfig("redis", "snappy", "json", "redis"),
 		test.NewCacheConfig("sync", "snappy", "json", "redis"),
@@ -45,14 +44,13 @@ func TestValidCache(t *testing.T) {
 			c, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			cache.Register(c)
 			world.RequireStart()
 
 			ctx := context.Background()
 
 			Convey("When I save an item", func() {
 				value := "hello?"
-				err := cache.Persist(ctx, "test", &value, time.Minute)
+				err := c.Persist(ctx, "test", &value, time.Minute)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -62,10 +60,10 @@ func TestValidCache(t *testing.T) {
 			Convey("When I get an item", func() {
 				value := "wassup?"
 
-				err := cache.Persist(ctx, "test", &value, time.Minute)
+				err := cache.Persist(ctx, c, "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				v, err := cache.Get[string](ctx, "test")
+				v, err := cache.Get[string](ctx, c, "test")
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
@@ -73,7 +71,7 @@ func TestValidCache(t *testing.T) {
 				})
 			})
 
-			err = cache.Remove(ctx, "test")
+			err = c.Remove(ctx, "test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -106,7 +104,6 @@ func TestErroneousCache(t *testing.T) {
 	}
 }
 
-//nolint:funlen
 func TestDisabledCache(t *testing.T) {
 	configs := []*config.Config{
 		nil,
@@ -146,25 +143,11 @@ func TestDisabledCache(t *testing.T) {
 				Cache:      &test.Cache{},
 			}
 
-			c, err := cache.New(params)
-			cache.Register(c)
+			_, err := cache.New(params)
 
 			world.RequireStart()
 
-			ctx := context.Background()
-
 			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-
-				key := "what?"
-
-				_, err = cache.Get[string](ctx, key)
-				So(err, ShouldBeNil)
-
-				err = cache.Remove(ctx, key)
-				So(err, ShouldBeNil)
-
-				err = cache.Persist(ctx, key, &key, time.Minute)
 				So(err, ShouldBeNil)
 			})
 
@@ -201,13 +184,12 @@ func TestErroneousSave(t *testing.T) {
 			c, err := cache.New(params)
 			So(err, ShouldBeNil)
 
-			cache.Register(c)
 			world.RequireStart()
 
 			ctx := context.Background()
 
 			Convey("When I try to save a value", func() {
-				err := cache.Persist(ctx, "test", ptr.Value("test"), time.Minute)
+				err := cache.Persist(ctx, c, "test", ptr.Value("test"), time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)

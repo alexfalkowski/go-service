@@ -10,8 +10,6 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := rsa.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -42,8 +40,6 @@ func TestGenerator(t *testing.T) {
 }
 
 func TestValidCipher(t *testing.T) {
-	t.Parallel()
-
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("Given I have generated a key pair", t, func() {
@@ -86,8 +82,6 @@ func TestValidCipher(t *testing.T) {
 
 //nolint:funlen
 func TestInvalidCipher(t *testing.T) {
-	t.Parallel()
-
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I create an invalid cipher", t, func() {

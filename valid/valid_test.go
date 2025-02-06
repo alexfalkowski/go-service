@@ -12,8 +12,6 @@ type Config struct {
 }
 
 func TestValid(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I invalid struct", t, func() {
 		cfg := &Config{Address: "what?"}
 

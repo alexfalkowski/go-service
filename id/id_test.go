@@ -8,8 +8,6 @@ import (
 )
 
 func TestID(t *testing.T) {
-	t.Parallel()
-
 	configs := []*id.Config{
 		nil,
 		{},

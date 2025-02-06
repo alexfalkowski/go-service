@@ -21,19 +21,8 @@ import (
 	"go.uber.org/zap"
 )
 
-var cache config.Cache
-
-// Register a cache.
-func Register(ca config.Cache) {
-	cache = ca
-}
-
 // Get a value from key.
-func Get[T any](ctx context.Context, key string) (*T, error) {
-	if cache == nil {
-		return nil, nil
-	}
-
+func Get[T any](ctx context.Context, cache config.Cache, key string) (*T, error) {
 	value := ptr.Zero[T]()
 	err := cache.Get(ctx, key, value)
 
@@ -41,21 +30,8 @@ func Get[T any](ctx context.Context, key string) (*T, error) {
 }
 
 // Persist a value to the key with a TTL.
-func Persist[T any](ctx context.Context, key string, value *T, ttl time.Duration) error {
-	if cache == nil {
-		return nil
-	}
-
+func Persist[T any](ctx context.Context, cache config.Cache, key string, value *T, ttl time.Duration) error {
 	return cache.Persist(ctx, key, value, ttl)
-}
-
-// Remove a key.
-func Remove(ctx context.Context, key string) error {
-	if cache == nil {
-		return nil
-	}
-
-	return cache.Remove(ctx, key)
 }
 
 // Params for cache.

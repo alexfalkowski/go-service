@@ -12,8 +12,6 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	t.Parallel()
-
 	Convey("Given I have an erroneous server", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		l := test.NewLogger(lc)

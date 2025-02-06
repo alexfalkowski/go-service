@@ -8,8 +8,6 @@ import (
 )
 
 func TestMustParseDuration(t *testing.T) {
-	t.Parallel()
-
 	Convey("When I try to parse duration", t, func() {
 		f := func() { time.MustParseDuration("test") }
 
