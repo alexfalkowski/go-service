@@ -51,6 +51,8 @@ func TestValidEnvConfig(t *testing.T) {
 }
 
 func TestValidFileConfig(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have configuration file", t, func() {
 		input := test.NewInputConfig("file:../test/configs/config.yml")
 

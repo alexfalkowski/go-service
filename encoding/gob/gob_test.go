@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have gob encoder", t, func() {
 		encoder := gob.NewEncoder()
 

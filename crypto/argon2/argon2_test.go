@@ -9,6 +9,8 @@ import (
 )
 
 func TestSigner(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have a hash", t, func() {
 		signer := argon2.NewSigner()
 

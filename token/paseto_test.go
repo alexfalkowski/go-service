@@ -12,6 +12,8 @@ import (
 )
 
 func TestValidPaseto(t *testing.T) {
+	t.Parallel()
+
 	a, _ := ed25519.NewSigner(test.NewEd25519())
 	paseto := token.NewPaseto(a, id.Default)
 
@@ -33,6 +35,8 @@ func TestValidPaseto(t *testing.T) {
 }
 
 func TestInvalidPaseto(t *testing.T) {
+	t.Parallel()
+
 	Convey("When I generate a paseto token", t, func() {
 		a, _ := ed25519.NewSigner(test.NewEd25519())
 		paseto := token.NewPaseto(a, id.Default)

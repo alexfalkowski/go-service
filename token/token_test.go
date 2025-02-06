@@ -12,6 +12,8 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
+	t.Parallel()
+
 	for _, kind := range []string{"key", "token"} {
 		Convey("Given I have a invalid key token", t, func() {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
@@ -54,6 +56,8 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
+
 	for _, kind := range []string{"key", "token"} {
 		Convey("Given I have a invalid key token", t, func() {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
@@ -106,6 +110,8 @@ func TestVerify(t *testing.T) {
 }
 
 func TestToken(t *testing.T) {
+	t.Parallel()
+
 	Convey("When I have a rand generator", t, func() {
 		gen := rand.NewGenerator(rand.NewReader())
 

@@ -10,7 +10,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestGenertor(t *testing.T) {
+func TestGenerator(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -48,7 +50,7 @@ func TestValidSigner(t *testing.T) {
 		Convey("When I sign data", func() {
 			e, _ := signer.Sign("test")
 
-			Convey("Then I should have veirfied the data", func() {
+			Convey("Then I should have verified the data", func() {
 				So(signer.Verify(e, "test"), ShouldBeNil)
 			})
 
@@ -93,7 +95,7 @@ func TestInvalidSigner(t *testing.T) {
 
 		Convey("When I sign the data", func() {
 			e, _ := signer.Sign("test")
-			e += "wha"
+			e += "what"
 
 			Convey("Then I should have an error", func() {
 				So(signer.Verify(e, "test"), ShouldBeError)

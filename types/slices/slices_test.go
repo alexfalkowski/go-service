@@ -8,6 +8,8 @@ import (
 )
 
 func TestEmptyAppendZero(t *testing.T) {
+	t.Parallel()
+
 	for _, elem := range []*int{nil} {
 		Convey("Given I have an empty array", t, func() {
 			arr := []*int{}
@@ -38,6 +40,8 @@ func TestEmptyAppendZero(t *testing.T) {
 }
 
 func TestEmptyAppendNil(t *testing.T) {
+	t.Parallel()
+
 	for _, elem := range []*int{nil} {
 		Convey("Given I have an empty array", t, func() {
 			arr := []*int{}
@@ -54,6 +58,8 @@ func TestEmptyAppendNil(t *testing.T) {
 }
 
 func TestAppendZero(t *testing.T) {
+	t.Parallel()
+
 	integer := 2
 
 	for _, elem := range []*int{&integer} {
@@ -72,6 +78,8 @@ func TestAppendZero(t *testing.T) {
 }
 
 func TestAppendNil(t *testing.T) {
+	t.Parallel()
+
 	integer := 2
 
 	for _, elem := range []*int{&integer} {

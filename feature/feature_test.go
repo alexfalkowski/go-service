@@ -12,6 +12,8 @@ import (
 )
 
 func TestNoop(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have a flipt client", t, func() {
 		lc := fxtest.NewLifecycle(t)
 

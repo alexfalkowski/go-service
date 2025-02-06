@@ -11,6 +11,8 @@ import (
 )
 
 func TestBinaryEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
 
@@ -37,6 +39,8 @@ func TestBinaryEncoder(t *testing.T) {
 
 //nolint:dupl
 func TestTextEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have text encoder", t, func() {
 		encoder := proto.NewText()
 
@@ -73,6 +77,8 @@ func TestTextEncoder(t *testing.T) {
 
 //nolint:dupl
 func TestJSONEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have json encoder", t, func() {
 		encoder := proto.NewJSON()
 
@@ -108,6 +114,8 @@ func TestJSONEncoder(t *testing.T) {
 }
 
 func TestErrEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
 
@@ -153,6 +161,8 @@ func TestErrEncoder(t *testing.T) {
 
 //nolint:funlen
 func TestErrMessage(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
 

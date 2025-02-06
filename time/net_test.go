@@ -8,6 +8,8 @@ import (
 )
 
 func TestSystem(t *testing.T) {
+	t.Parallel()
+
 	configs := []*time.Config{{}, {Kind: "none"}}
 	for _, config := range configs {
 		Convey("Given I have a config", t, func() {
@@ -25,6 +27,8 @@ func TestSystem(t *testing.T) {
 }
 
 func TestNTP(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have NTP setup correctly", t, func() {
 		c := &time.Config{Kind: "ntp", Address: "0.beevik-ntp.pool.ntp.org"}
 		n := time.NewNetwork(c)
@@ -53,6 +57,8 @@ func TestNTP(t *testing.T) {
 }
 
 func TestNTS(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have NTS setup correctly", t, func() {
 		c := &time.Config{Kind: "nts", Address: "time.cloudflare.com"}
 		n := time.NewNetwork(c)

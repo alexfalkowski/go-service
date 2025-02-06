@@ -11,6 +11,8 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have YAML encoder", t, func() {
 		encoder := yaml.NewEncoder()
 

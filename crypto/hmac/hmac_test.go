@@ -10,7 +10,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestGenertor(t *testing.T) {
+func TestGenerator(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have an erroneous generator", t, func() {
 		gen := hmac.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
@@ -39,6 +41,8 @@ func TestGenertor(t *testing.T) {
 }
 
 func TestValidSigner(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have generated a key", t, func() {
 		Convey("When I create an signer", func() {
 			signer, err := hmac.NewSigner(test.NewHMAC())
@@ -75,6 +79,8 @@ func TestValidSigner(t *testing.T) {
 }
 
 func TestInvalidSigner(t *testing.T) {
+	t.Parallel()
+
 	Convey("Given I have an signer", t, func() {
 		signer, err := hmac.NewSigner(test.NewHMAC())
 		So(err, ShouldBeNil)
@@ -83,7 +89,7 @@ func TestInvalidSigner(t *testing.T) {
 			sign, err := signer.Sign("test")
 			So(err, ShouldBeNil)
 
-			sign += "wha"
+			sign += "what"
 
 			Convey("Then I should have an error", func() {
 				So(signer.Verify(sign, "test"), ShouldBeError)
