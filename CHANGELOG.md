@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.417.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.417.0) - 2025-02-07
+
+- [`4b2ae5d`](https://github.com/alexfalkowski/go-service/commit/4b2ae5d750cadf6786129813ca268b29eb877a71) feat(meta): add storage (#1273)
+
 ## [v1.416.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.416.0) - 2025-02-07
 
 - [`3f4ad80`](https://github.com/alexfalkowski/go-service/commit/3f4ad80d23833ef25ce44c8e588789e2a92b0876) feat(meta): remove valuer interface (#1272)
