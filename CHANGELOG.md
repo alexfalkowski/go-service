@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.416.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.416.0) - 2025-02-07
+
+- [`3f4ad80`](https://github.com/alexfalkowski/go-service/commit/3f4ad80d23833ef25ce44c8e588789e2a92b0876) feat(meta): remove valuer interface (#1272)
+- [`864503c`](https://github.com/alexfalkowski/go-service/commit/864503c028c5e50249adf87fa12fdbf922454d3f) build(deps): bump bin from `5b56b0c` to `877a42c` (#1271)
+
 ## [v1.415.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.415.0) - 2025-02-06
 
 - [`b689709`](https://github.com/alexfalkowski/go-service/commit/b68970908eb690002c25cee71f0415e803b7e1f1) feat(deps): upgraded google.golang.org/protobuf v1.36.4 => v1.36.5 (#1270)
