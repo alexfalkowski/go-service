@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/meta"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 )
 
@@ -20,7 +19,7 @@ type Service struct {
 
 // SayHello ...
 func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
-	if s.verifyAuth && !meta.IsEqual(Test(ctx), "auth") {
+	if s.verifyAuth && !Test(ctx).IsEqual("auth") {
 		return nil, ErrInvalid
 	}
 
@@ -29,7 +28,7 @@ func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.Sa
 
 // SayStreamHello ...
 func (s *Service) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
-	if s.verifyAuth && !meta.IsEqual(Test(stream.Context()), "auth") {
+	if s.verifyAuth && !Test(stream.Context()).IsEqual("auth") {
 		return ErrInvalid
 	}
 

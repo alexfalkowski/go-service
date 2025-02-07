@@ -11,7 +11,7 @@ type contextKey string
 const meta = contextKey("meta")
 
 // WithAttribute to meta.
-func WithAttribute(ctx context.Context, key string, value Valuer) context.Context {
+func WithAttribute(ctx context.Context, key string, value Value) context.Context {
 	attr := attributes(ctx)
 	attr[key] = value
 
@@ -19,7 +19,7 @@ func WithAttribute(ctx context.Context, key string, value Valuer) context.Contex
 }
 
 // Attribute of meta.
-func Attribute(ctx context.Context, key string) Valuer {
+func Attribute(ctx context.Context, key string) Value {
 	return attributes(ctx)[key]
 }
 
@@ -44,18 +44,17 @@ var NoneConverter = func(s string) string { return s }
 // Strings for meta.
 func Strings(ctx context.Context, prefix string, converter Converter) Map {
 	attrs := attributes(ctx)
-	attrMap := make(Map, len(attrs))
+	attributes := make(Map, len(attrs))
 
 	for k, v := range attrs {
-		s := v.String()
-		if s == "" {
+		if v.IsBlank() {
 			continue
 		}
 
-		attrMap[key(prefix, converter(k))] = s
+		attributes[key(prefix, converter(k))] = v.String()
 	}
 
-	return attrMap
+	return attributes
 }
 
 func key(prefix, key string) string {
@@ -66,11 +65,14 @@ func key(prefix, key string) string {
 	return prefix + key
 }
 
-func attributes(ctx context.Context) map[string]Valuer {
+// Storage stores all the values for meta.
+type Storage map[string]Value
+
+func attributes(ctx context.Context) Storage {
 	m := ctx.Value(meta)
 	if m == nil {
-		return make(map[string]Valuer)
+		return make(Storage)
 	}
 
-	return m.(map[string]Valuer)
+	return m.(Storage)
 }
