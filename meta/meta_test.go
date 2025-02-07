@@ -44,7 +44,7 @@ func TestNoneCase(t *testing.T) {
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
 
 		Convey("When I get the strings", func() {
-			m := meta.Strings(ctx, "", meta.NoneConverter)
+			m := meta.Strings(ctx, "")
 
 			Convey("Then I should have valid strings", func() {
 				So(m, ShouldEqual, meta.Map{"testId": "1"})
