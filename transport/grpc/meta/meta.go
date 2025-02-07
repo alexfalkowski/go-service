@@ -119,7 +119,7 @@ func StreamClientInterceptor(userAgent env.UserAgent, gen id.Generator) grpc.Str
 	}
 }
 
-func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Valuer) {
+func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value) {
 	headers := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
 	for _, k := range headers {
 		if f := md.Get(k); len(f) > 0 {
@@ -136,8 +136,8 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Valuer, meta.Value
 	return peerKind, meta.String(net.Host(addr))
 }
 
-func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Valuer {
-	if ua := m.UserAgent(ctx); ua != nil {
+func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
+	if ua := m.UserAgent(ctx); !ua.IsBlank() {
 		return ua
 	}
 
@@ -145,11 +145,11 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 		return meta.String(ua[0])
 	}
 
-	return meta.String(userAgent)
+	return meta.String(string(userAgent))
 }
 
-func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Valuer {
-	if id := m.RequestID(ctx); id != nil {
+func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Value {
+	if id := m.RequestID(ctx); !id.IsBlank() {
 		return id
 	}
 
@@ -160,7 +160,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) met
 	return meta.String(gen.Generate())
 }
 
-func extractAuthorization(ctx context.Context, md metadata.MD) meta.Valuer {
+func extractAuthorization(ctx context.Context, md metadata.MD) meta.Value {
 	a := authorization(md)
 	if a == "" {
 		return meta.Blank()
@@ -184,7 +184,7 @@ func authorization(md metadata.MD) string {
 	return ""
 }
 
-func extractGeolocation(md metadata.MD) meta.Valuer {
+func extractGeolocation(md metadata.MD) meta.Value {
 	if id := md.Get("geolocation"); len(id) > 0 {
 		return meta.String(id[0])
 	}

@@ -82,8 +82,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
-func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Valuer {
-	if ua := m.UserAgent(ctx); ua != nil {
+func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
+	if ua := m.UserAgent(ctx); !ua.IsBlank() {
 		return ua
 	}
 
@@ -91,11 +91,11 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 		return meta.String(ua)
 	}
 
-	return meta.String(userAgent)
+	return meta.String(string(userAgent))
 }
 
-func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Valuer {
-	if id := m.RequestID(ctx); id != nil {
+func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Value {
+	if id := m.RequestID(ctx); !id.IsBlank() {
 		return id
 	}
 
@@ -106,7 +106,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) 
 	return meta.String(gen.Generate())
 }
 
-func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
+func extractIP(req *http.Request) (meta.Value, meta.Value) {
 	headers := []string{"X-Real-Ip", "CF-Connecting-Ip", "True-Client-Ip", "X-Forwarded-For"}
 	for _, h := range headers {
 		if ip := req.Header.Get(h); ip != "" {
@@ -122,7 +122,7 @@ func extractIP(req *http.Request) (meta.Valuer, meta.Valuer) {
 	return remoteKind, meta.String(net.Host(addr))
 }
 
-func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
+func extractAuthorization(ctx context.Context, req *http.Request) meta.Value {
 	a := req.Header.Get("Authorization")
 	if a == "" {
 		return meta.Blank()
@@ -138,6 +138,6 @@ func extractAuthorization(ctx context.Context, req *http.Request) meta.Valuer {
 	return meta.Ignored(value)
 }
 
-func extractGeolocation(req *http.Request) meta.Valuer {
+func extractGeolocation(req *http.Request) meta.Value {
 	return meta.String(req.Header.Get("Geolocation"))
 }
