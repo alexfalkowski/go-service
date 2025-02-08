@@ -83,7 +83,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); !ua.IsBlank() {
+	if ua := m.UserAgent(ctx); ua.Value() != "" {
 		return ua
 	}
 
@@ -95,7 +95,7 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 }
 
 func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Value {
-	if id := m.RequestID(ctx); !id.IsBlank() {
+	if id := m.RequestID(ctx); id.Value() != "" {
 		return id
 	}
 

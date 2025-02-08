@@ -33,9 +33,6 @@ func CamelStrings(ctx context.Context, prefix string) Map {
 	return attributes(ctx).Strings(prefix, strcase.ToLowerCamel)
 }
 
-// Converter takes a string and creates a new string.
-type Converter func(string) string
-
 // Strings for meta.
 func Strings(ctx context.Context, prefix string) Map {
 	return attributes(ctx).Strings(prefix, func(s string) string { return s })
