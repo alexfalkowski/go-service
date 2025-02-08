@@ -29,12 +29,9 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 	attributes := make(Map, len(s))
 
 	for k, v := range s {
-		str := v.String()
-		if str == "" {
-			continue
+		if v := v.String(); v != "" {
+			attributes[s.key(prefix, converter(k))] = v
 		}
-
-		attributes[s.key(prefix, converter(k))] = str
 	}
 
 	return attributes
