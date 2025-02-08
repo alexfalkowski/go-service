@@ -81,7 +81,7 @@ func (v Value) String() string {
 
 // IsBlank checks for an empty string.
 func (v Value) IsBlank() bool {
-	return v.IsEqual("")
+	return v.String() == ""
 }
 
 // IsEqual is true if values match.
