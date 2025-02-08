@@ -19,7 +19,7 @@ type Service struct {
 
 // SayHello ...
 func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
-	if s.verifyAuth && !Test(ctx).IsEqual("auth") {
+	if s.verifyAuth && Test(ctx).Value() != "auth" {
 		return nil, ErrInvalid
 	}
 
@@ -28,7 +28,7 @@ func (s *Service) SayHello(ctx context.Context, req *v1.SayHelloRequest) (*v1.Sa
 
 // SayStreamHello ...
 func (s *Service) SayStreamHello(stream v1.GreeterService_SayStreamHelloServer) error {
-	if s.verifyAuth && !Test(stream.Context()).IsEqual("auth") {
+	if s.verifyAuth && Test(stream.Context()).Value() != "auth" {
 		return ErrInvalid
 	}
 

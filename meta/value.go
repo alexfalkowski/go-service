@@ -78,13 +78,3 @@ func (v Value) String() string {
 		return v.value
 	}
 }
-
-// IsBlank checks for an empty string.
-func (v Value) IsBlank() bool {
-	return v.String() == ""
-}
-
-// IsEqual is true if values match.
-func (v Value) IsEqual(value string) bool {
-	return v.value == value
-}

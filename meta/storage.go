@@ -4,8 +4,13 @@ import (
 	"context"
 )
 
-// Storage stores all the values for meta.
-type Storage map[string]Value
+type (
+	// Converter takes a string and creates a new string.
+	Converter func(string) string
+
+	// Storage stores all the values for meta.
+	Storage map[string]Value
+)
 
 // Add a value with key.
 func (s Storage) Add(key string, value Value) Storage {
@@ -24,11 +29,12 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 	attributes := make(Map, len(s))
 
 	for k, v := range s {
-		if v.IsBlank() {
+		str := v.String()
+		if str == "" {
 			continue
 		}
 
-		attributes[s.key(prefix, converter(k))] = v.String()
+		attributes[s.key(prefix, converter(k))] = str
 	}
 
 	return attributes

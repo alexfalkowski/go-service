@@ -137,7 +137,7 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); !ua.IsBlank() {
+	if ua := m.UserAgent(ctx); ua.Value() != "" {
 		return ua
 	}
 
@@ -149,7 +149,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 }
 
 func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Value {
-	if id := m.RequestID(ctx); !id.IsBlank() {
+	if id := m.RequestID(ctx); id.Value() != "" {
 		return id
 	}
 
