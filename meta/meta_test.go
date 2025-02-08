@@ -78,6 +78,14 @@ func TestBlank(t *testing.T) {
 		})
 	})
 
+	Convey("When I have a ignored value", t, func() {
+		v := meta.Ignored("redacted")
+
+		Convey("Then it should be blank", func() {
+			So(v.IsBlank(), ShouldBeTrue)
+		})
+	})
+
 	Convey("When I have a blank value", t, func() {
 		v := meta.Blank()
 
