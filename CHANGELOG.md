@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.417.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.417.1) - 2025-02-08
+
+- [`ae02352`](https://github.com/alexfalkowski/go-service/commit/ae02352480dd8237466631e123b8977f09141aeb) fix(meta): redacted should be blank (#1274)
+
 ## [v1.417.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.417.0) - 2025-02-07
 
 - [`4b2ae5d`](https://github.com/alexfalkowski/go-service/commit/4b2ae5d750cadf6786129813ca268b29eb877a71) feat(meta): add storage (#1273)
