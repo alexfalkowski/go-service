@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.419.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.419.0) - 2025-02-08
+
+- [`def303e`](https://github.com/alexfalkowski/go-service/commit/def303ebfbfae59e412688e48860995003076e6c) feat(meta): simplify expression (#1276)
+
 ## [v1.418.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.418.0) - 2025-02-08
 
 - [`beaffe5`](https://github.com/alexfalkowski/go-service/commit/beaffe54338838413f9970ab22d0ea807b9b6c43) feat(meta): remove funcs (#1275)
