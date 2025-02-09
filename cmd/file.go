@@ -1,36 +1,31 @@
 package cmd
 
 import (
-	"io/fs"
-	"os"
-	"path/filepath"
-
-	sos "github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // File for cmd.
-type File string
+type File struct {
+	fs       os.FileSystem
+	location string
+}
 
 // NewFile for cmd.
-func NewFile(location string) File {
-	return File(location)
+func NewFile(location string, fs os.FileSystem) *File {
+	return &File{location: location, fs: fs}
 }
 
 // Read for file.
-func (f File) Read() ([]byte, error) {
-	return os.ReadFile(f.name())
+func (f *File) Read() (string, error) {
+	return f.fs.ReadFile(f.location)
 }
 
 // Write for file.
-func (f File) Write(data []byte, mode fs.FileMode) error {
-	return os.WriteFile(f.name(), data, mode)
+func (f *File) Write(data string, mode os.FileMode) error {
+	return f.fs.WriteFile(f.location, data, mode)
 }
 
 // Kind for file.
-func (f File) Kind() string {
-	return sos.PathExtension(f.name())
-}
-
-func (f File) name() string {
-	return filepath.Clean(string(f))
+func (f *File) Kind() string {
+	return os.PathExtension(f.location)
 }

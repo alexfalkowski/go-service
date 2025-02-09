@@ -4,84 +4,81 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/fs"
-	"os"
-	"path/filepath"
 	"strings"
 
-	sos "github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // ErrLocationMissing for cmd.
 var ErrLocationMissing = errors.New("location is missing")
 
 // ENV for cmd.
-type ENV string
+type ENV struct {
+	fs       os.FileSystem
+	location string
+}
 
 // NewENV for cmd.
-func NewENV(location string) ENV {
-	return ENV(location)
+func NewENV(location string, fs os.FileSystem) *ENV {
+	return &ENV{location: location, fs: fs}
 }
 
 // Read for env.
-func (e ENV) Read() ([]byte, error) {
+func (e *ENV) Read() (string, error) {
 	if e.isMem() {
 		_, e := e.split()
+		d, err := base64.StdEncoding.DecodeString(os.GetVariable(e))
 
-		return base64.StdEncoding.DecodeString(os.Getenv(e))
+		return string(d), err
 	}
 
 	if e.name() == "" {
-		return nil, e.missingLocationError()
+		return "", e.missingLocationError()
 	}
 
-	return os.ReadFile(e.path())
+	return e.fs.ReadFile(e.name())
 }
 
 // Write for env.
-func (e ENV) Write(data []byte, mode fs.FileMode) error {
+func (e *ENV) Write(data string, mode os.FileMode) error {
 	if e.isMem() {
 		_, e := e.split()
 
-		return os.Setenv(e, base64.StdEncoding.EncodeToString(data))
+		return os.SetVariable(e, base64.StdEncoding.EncodeToString([]byte(data)))
 	}
 
 	if e.name() == "" {
 		return e.missingLocationError()
 	}
 
-	return os.WriteFile(e.path(), data, mode)
+	return e.fs.WriteFile(e.name(), data, mode)
 }
 
 // Kind for env.
-func (e ENV) Kind() string {
+func (e *ENV) Kind() string {
 	if e.isMem() {
 		k, _ := e.split()
 
 		return k
 	}
 
-	return sos.PathExtension(e.path())
+	return os.PathExtension(e.name())
 }
 
-func (e ENV) path() string {
-	return filepath.Clean(e.name())
+func (e *ENV) name() string {
+	return os.GetVariable(e.location)
 }
 
-func (e ENV) name() string {
-	return os.Getenv(string(e))
-}
-
-func (e ENV) isMem() bool {
+func (e *ENV) isMem() bool {
 	return strings.Contains(e.name(), ":")
 }
 
-func (e ENV) split() (string, string) {
+func (e *ENV) split() (string, string) {
 	s := strings.Split(e.name(), ":")
 
 	return s[0], s[1]
 }
 
-func (e ENV) missingLocationError() error {
-	return fmt.Errorf("%s: %w", string(e), ErrLocationMissing)
+func (e *ENV) missingLocationError() error {
+	return fmt.Errorf("%s: %w", e.location, ErrLocationMissing)
 }

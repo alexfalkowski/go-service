@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// GetVariable by keys.
+func GetVariable(key string) string {
+	return os.Getenv(key)
+}
+
+// SetVariable of valle by key.
+func SetVariable(key, value string) error {
+	return os.Setenv(key, value)
+}
+
 // PathExtension of the specified path.
 func PathExtension(path string) string {
 	e := filepath.Ext(path)
@@ -49,6 +59,13 @@ func ReadBase64File(path string) (string, error) {
 	dc, err := base64.StdEncoding.DecodeString(s)
 
 	return string(dc), err
+}
+
+// WriteFile writes data to name with perm.
+func WriteFile(name string, data string, perm FileMode) error {
+	data = strings.TrimSpace(data)
+
+	return os.WriteFile(name, []byte(data), perm)
 }
 
 // ExecutableName of the running application.

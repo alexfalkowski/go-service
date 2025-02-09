@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"errors"
-	"io/fs"
+
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // ErrInvalidLocation for cmd.
@@ -17,12 +18,12 @@ func NewNone() *None {
 }
 
 // Read for none.
-func (*None) Read() ([]byte, error) {
-	return nil, ErrInvalidLocation
+func (*None) Read() (string, error) {
+	return "", ErrInvalidLocation
 }
 
 // Write for none.
-func (*None) Write(_ []byte, _ fs.FileMode) error {
+func (*None) Write(_ string, _ os.FileMode) error {
 	return ErrInvalidLocation
 }
 

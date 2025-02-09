@@ -3,10 +3,10 @@ package cmd
 import (
 	"bytes"
 	"errors"
-	"io/fs"
 
 	"github.com/alexfalkowski/go-service/encoding"
 	se "github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // ErrNoEncoder for cmd.
@@ -19,9 +19,9 @@ type Config struct {
 }
 
 // NewConfig for cmd.
-func NewConfig(flag string, enc *encoding.Map) *Config {
+func NewConfig(flag string, enc *encoding.Map, fs os.FileSystem) *Config {
 	k, l := SplitFlag(flag)
-	rw := NewReadWriter(k, l)
+	rw := NewReadWriter(k, l, fs)
 	m := enc.Get(rw.Kind())
 
 	return &Config{rw: rw, enc: m}
@@ -43,10 +43,10 @@ func (c *Config) Decode(data any) error {
 		return ErrNoEncoder
 	}
 
-	return se.Prefix("config", c.enc.Decode(bytes.NewReader(bts), data))
+	return se.Prefix("config", c.enc.Decode(bytes.NewBufferString(bts), data))
 }
 
 // Write for config.
-func (c *Config) Write(data []byte, mode fs.FileMode) error {
+func (c *Config) Write(data string, mode os.FileMode) error {
 	return se.Prefix("config", c.rw.Write(data, mode))
 }

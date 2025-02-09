@@ -21,7 +21,7 @@ func TestNoneConfig(t *testing.T) {
 
 		Convey("When I write the config", t, func() {
 			output := test.NewOutputConfig(flag)
-			err := output.Write([]byte("test"), os.ModeAppend)
+			err := output.Write("test", os.ModeAppend)
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeError)
@@ -66,7 +66,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 		Convey("When I write the config", func() {
 			input := test.NewOutputConfig("env:CONFIG_FILE")
 
-			err := input.Write([]byte("test"), os.ModeAppend)
+			err := input.Write("test", os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -89,7 +89,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 		Convey("When I write the config", func() {
 			output := test.NewOutputConfig("file:" + file)
 
-			err := output.Write([]byte("test"), os.ModeAppend)
+			err := output.Write("test", os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -123,7 +123,7 @@ func TestValidConfigEnv(t *testing.T) {
 		Convey("When I write the config", func() {
 			output := test.NewInputConfig("env:CONFIG_FILE")
 
-			err := output.Write([]byte("test"), os.ModeAppend)
+			err := output.Write("test", os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
