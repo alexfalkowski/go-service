@@ -20,10 +20,10 @@ func TestEncoder(t *testing.T) {
 
 	for _, k := range []string{"test", "bob"} {
 		Convey("When I get an encoder", t, func() {
-			m := test.Encoder.Get(k)
+			e := test.Encoder.Get(k)
 
-			Convey("Then I should have no encoder", func() {
-				So(m, ShouldBeNil)
+			Convey("Then I should have an encoder", func() {
+				So(e, ShouldNotBeNil)
 			})
 		})
 	}

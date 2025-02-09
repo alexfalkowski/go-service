@@ -37,5 +37,10 @@ func (f *Map) Register(kind string, enc Encoder) {
 
 // Get from kind.
 func (f *Map) Get(kind string) Encoder {
-	return f.encoders[kind]
+	e, ok := f.encoders[kind]
+	if !ok {
+		return f.encoders["json"]
+	}
+
+	return e
 }

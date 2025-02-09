@@ -68,9 +68,6 @@ func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
 	}
 
 	e := enc.Get(media.Subtype)
-	if e == nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
-	}
 
 	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
 }
