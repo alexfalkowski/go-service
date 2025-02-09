@@ -1,16 +1,16 @@
 package cmd
 
 import (
-	"io/fs"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // NewReadWriter for cmd.
-func NewReadWriter(kind, location string) ReaderWriter {
+func NewReadWriter(kind, location string, fs os.FileSystem) ReaderWriter {
 	switch kind {
 	case "file":
-		return NewFile(location)
+		return NewFile(location, fs)
 	case "env":
-		return NewENV(location)
+		return NewENV(location, fs)
 	default:
 		return NewNone()
 	}
@@ -19,10 +19,10 @@ func NewReadWriter(kind, location string) ReaderWriter {
 // ReaderWriter for cmd.
 type ReaderWriter interface {
 	// Read bytes.
-	Read() ([]byte, error)
+	Read() (string, error)
 
-	// Write bytes with files's mode.
-	Write(data []byte, mode fs.FileMode) error
+	// Write bytes with file's mode.
+	Write(data string, mode os.FileMode) error
 
 	// Kind of read writer.
 	Kind() string

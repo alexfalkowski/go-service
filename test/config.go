@@ -213,14 +213,14 @@ func NewPGConfig() *pg.Config {
 func NewInputConfig(flag string) *cmd.InputConfig {
 	*cmd.InputFlag = flag
 
-	return cmd.NewInputConfig(Encoder)
+	return cmd.NewInputConfig(Encoder, FS)
 }
 
 // NewOutputConfig for test.
 func NewOutputConfig(flag string) *cmd.OutputConfig {
 	*cmd.OutputFlag = flag
 
-	return cmd.NewOutputConfig(Encoder)
+	return cmd.NewOutputConfig(Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.

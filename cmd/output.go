@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/flags"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/spf13/cobra"
 )
 
@@ -15,8 +16,8 @@ type OutputConfig struct {
 }
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(enc *encoding.Map) *OutputConfig {
-	c := NewConfig(*OutputFlag, enc)
+func NewOutputConfig(enc *encoding.Map, fs os.FileSystem) *OutputConfig {
+	c := NewConfig(*OutputFlag, enc, fs)
 
 	return &OutputConfig{Config: c}
 }

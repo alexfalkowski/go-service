@@ -14,6 +14,10 @@ func (f *ErrFS) ReadFile(_ string) (string, error) {
 	return "", ErrFailed
 }
 
+func (*ErrFS) WriteFile(_ string, _ string, _ os.FileMode) error {
+	return ErrFailed
+}
+
 func (f *ErrFS) PathExists(_ string) bool {
 	return true
 }
