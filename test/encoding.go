@@ -4,11 +4,24 @@ import (
 	"io"
 
 	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/encoding/gob"
+	"github.com/alexfalkowski/go-service/encoding/json"
+	"github.com/alexfalkowski/go-service/encoding/proto"
+	"github.com/alexfalkowski/go-service/encoding/toml"
+	"github.com/alexfalkowski/go-service/encoding/yaml"
 	"github.com/alexfalkowski/go-service/net/http/content"
 )
 
 // Encoder for tests.
-var Encoder = encoding.NewMap()
+var Encoder = encoding.NewMap(encoding.MapParams{
+	JSON:        json.NewEncoder(),
+	YAML:        yaml.NewEncoder(),
+	TOML:        toml.NewEncoder(),
+	ProtoBinary: proto.NewBinary(),
+	ProtoText:   proto.NewText(),
+	ProtoJSON:   proto.NewJSON(),
+	GOB:         gob.NewEncoder(),
+})
 
 // Content for tests.
 var Content = content.NewContent(Encoder)

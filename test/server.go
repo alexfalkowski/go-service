@@ -48,7 +48,7 @@ func (s *Server) Register() {
 		Shutdowner: sh, Mux: s.Mux,
 		Config: s.TransportConfig.HTTP, Logger: s.Logger,
 		Tracer: tracer, Meter: s.Meter,
-		Limiter: s.Limiter, Handlers: []negroni.Handler{&none{}},
+		Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
 		Verifier: s.Verifier, ID: s.ID,
 		UserAgent: UserAgent, Version: Version,
 	})
@@ -86,9 +86,10 @@ func (s *Server) Register() {
 	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{httpServer, grpcServer, debugServer}})
 }
 
-type none struct{}
+// EmptyHandler for test.
+type EmptyHandler struct{}
 
-func (*none) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
 }
 

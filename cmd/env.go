@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/file"
+	sos "github.com/alexfalkowski/go-service/os"
 )
 
 // ErrLocationMissing for cmd.
@@ -61,7 +61,7 @@ func (e ENV) Kind() string {
 		return k
 	}
 
-	return file.Extension(e.path())
+	return sos.PathExtension(e.path())
 }
 
 func (e ENV) path() string {
