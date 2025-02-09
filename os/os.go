@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// PathExtension of the specified path.
+func PathExtension(path string) string {
+	e := filepath.Ext(path)
+	if e == "" {
+		return e
+	}
+
+	return e[1:]
+}
+
 // IsNotExist if the error is os.ErrNotExist.
 func IsNotExist(err error) bool {
 	return errors.Is(err, os.ErrNotExist)

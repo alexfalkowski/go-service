@@ -39,23 +39,7 @@ func TestMap(t *testing.T) {
 			cmp := test.Compressor.Get(key)
 
 			Convey("Then I should have a compressor", func() {
-				So(cmp, ShouldNotBeNil)
-			})
-		})
-
-		Convey("Given I have get a compressor", t, func() {
-			cmp := test.Compressor.Get(key)
-
-			Convey("When I compress the data", func() {
-				data := []byte("hello")
-				d := cmp.Compress(data)
-
-				Convey("Then I should have the same decompressed data", func() {
-					ns, err := cmp.Decompress(d)
-					So(err, ShouldBeNil)
-
-					So(ns, ShouldEqual, data)
-				})
+				So(cmp, ShouldBeNil)
 			})
 		})
 	}

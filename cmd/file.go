@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/alexfalkowski/go-service/file"
+	sos "github.com/alexfalkowski/go-service/os"
 )
 
 // File for cmd.
@@ -28,7 +28,7 @@ func (f File) Write(data []byte, mode fs.FileMode) error {
 
 // Kind for file.
 func (f File) Kind() string {
-	return file.Extension(f.name())
+	return sos.PathExtension(f.name())
 }
 
 func (f File) name() string {
