@@ -4,11 +4,11 @@ import (
 	"context"
 	"net"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	"github.com/alexfalkowski/go-service/time"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

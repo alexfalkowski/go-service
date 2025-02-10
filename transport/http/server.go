@@ -3,7 +3,6 @@ package http
 import (
 	"cmp"
 	"net/http"
-	"time"
 
 	ct "github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
@@ -12,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -131,5 +130,5 @@ func timeout(cfg *Config) time.Duration {
 		return time.Minute
 	}
 
-	return st.MustParseDuration(cfg.Timeout)
+	return time.MustParseDuration(cfg.Timeout)
 }

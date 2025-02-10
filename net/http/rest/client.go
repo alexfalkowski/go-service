@@ -3,12 +3,11 @@ package rest
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -48,7 +47,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 // WithClientTimeout for rest.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = st.MustParseDuration(timeout)
+		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 

@@ -3,9 +3,9 @@ package zap
 import (
 	"context"
 	"database/sql/driver"
-	"time"
 
-	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
 	"go.uber.org/zap"
@@ -43,10 +43,10 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("exec conn"), err, i.logger, fields...)
+	logger.LogWithLogger(message("exec conn"), err, i.logger, fields...)
 
 	return res, err
 }
@@ -58,10 +58,10 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("query conn"), err, i.logger, fields...)
+	logger.LogWithLogger(message("query conn"), err, i.logger, fields...)
 
 	return ctx, res, err
 }
@@ -95,10 +95,10 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("exec statement"), err, i.logger, fields...)
+	logger.LogWithLogger(message("exec statement"), err, i.logger, fields...)
 
 	return res, err
 }
@@ -110,10 +110,10 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("query statement"), err, i.logger, fields...)
+	logger.LogWithLogger(message("query statement"), err, i.logger, fields...)
 
 	return ctx, res, err
 }

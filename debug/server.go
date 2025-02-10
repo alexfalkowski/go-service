@@ -3,13 +3,12 @@ package debug
 import (
 	"cmp"
 	"net/http"
-	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
-	t "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -86,5 +85,5 @@ func timeout(cfg *Config) time.Duration {
 		return time.Minute
 	}
 
-	return t.MustParseDuration(cfg.Timeout)
+	return time.MustParseDuration(cfg.Timeout)
 }

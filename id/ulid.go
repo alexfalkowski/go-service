@@ -2,9 +2,9 @@ package id
 
 import (
 	"crypto/rand"
-	"time"
 
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/oklog/ulid"
 )
 

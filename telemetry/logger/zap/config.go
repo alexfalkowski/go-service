@@ -1,9 +1,8 @@
 package zap
 
 import (
-	"time"
-
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

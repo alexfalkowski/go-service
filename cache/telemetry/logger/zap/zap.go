@@ -2,10 +2,10 @@ package zap
 
 import (
 	"context"
-	"time"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

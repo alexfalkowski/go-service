@@ -3,7 +3,6 @@ package grpc
 import (
 	"cmp"
 	"context"
-	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
@@ -12,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
-	t "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -202,5 +201,5 @@ func timeout(cfg *Config) time.Duration {
 		return time.Minute
 	}
 
-	return t.MustParseDuration(cfg.Timeout)
+	return time.MustParseDuration(cfg.Timeout)
 }

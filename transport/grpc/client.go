@@ -1,13 +1,11 @@
 package grpc
 
 import (
-	"time"
-
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/retry"
-	t "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
@@ -72,7 +70,7 @@ func WithClientTokenGenerator(gen token.Generator) ClientOption {
 // WithClientTimeout for gRPC.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = t.MustParseDuration(timeout)
+		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 
@@ -216,8 +214,8 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
-		timeout := t.MustParseDuration(os.retry.Timeout)
-		backoff := t.MustParseDuration(os.retry.Backoff)
+		timeout := time.MustParseDuration(os.retry.Timeout)
+		backoff := time.MustParseDuration(os.retry.Backoff)
 
 		unary = append(unary,
 			ri.UnaryClientInterceptor(

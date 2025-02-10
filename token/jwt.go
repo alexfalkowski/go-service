@@ -2,11 +2,11 @@ package token
 
 import (
 	"encoding/hex"
-	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/golang-jwt/jwt/v4"
 )
 
