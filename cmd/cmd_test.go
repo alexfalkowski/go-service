@@ -2,7 +2,6 @@
 package cmd_test
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -29,6 +28,7 @@ import (
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/module"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/test"
 	st "github.com/alexfalkowski/go-service/time"
@@ -47,7 +47,7 @@ import (
 
 func TestRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("IN_CONFIG_FILE", "../test/configs/config.yml")
+		So(os.SetVariable("IN_CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
@@ -59,14 +59,14 @@ func TestRunWithServer(t *testing.T) {
 				So(c.RunWithArgs([]string{"server"}), ShouldBeNil)
 			})
 
-			So(os.Unsetenv("IN_CONFIG_FILE"), ShouldBeNil)
+			So(os.UnsetVariable("IN_CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
 
 func TestRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		os.Setenv("CONFIG_FILE", "../test/configs/config.yml")
+		So(os.SetVariable("CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			c := cmd.New("1.0.0")
@@ -77,7 +77,7 @@ func TestRun(t *testing.T) {
 				So(c.Run(), ShouldBeNil)
 			})
 
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -141,7 +141,7 @@ func TestInvalidClient(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("Given I have invalid configuration", t, func() {
-			os.Setenv("TEST_CONFIG_FILE", config)
+			So(os.SetVariable("TEST_CONFIG_FILE", config), ShouldBeNil)
 
 			Convey("When I try to run an application", func() {
 				c := cmd.New("1.0.0")
@@ -155,7 +155,7 @@ func TestInvalidClient(t *testing.T) {
 					So(err.Error(), ShouldContainSubstring, "unknown port")
 				})
 
-				So(os.Unsetenv("TEST_CONFIG_FILE"), ShouldBeNil)
+				So(os.UnsetVariable("TEST_CONFIG_FILE"), ShouldBeNil)
 			})
 		})
 	}

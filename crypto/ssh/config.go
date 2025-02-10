@@ -2,8 +2,8 @@ package ssh
 
 import (
 	"crypto/ed25519"
-	"os"
 
+	"github.com/alexfalkowski/go-service/os"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -20,13 +20,13 @@ type Config struct {
 
 // PublicKey ssh.
 func (c *Config) PublicKey() (ed25519.PublicKey, error) {
-	bytes, err := os.ReadFile(c.Public)
+	file, err := os.ReadFile(c.Public)
 	if err != nil {
 		return nil, err
 	}
 
 	//nolint:dogsled
-	parsed, _, _, _, err := ssh.ParseAuthorizedKey(bytes)
+	parsed, _, _, _, err := ssh.ParseAuthorizedKey([]byte(file))
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +38,12 @@ func (c *Config) PublicKey() (ed25519.PublicKey, error) {
 
 // PrivateKey ssh.
 func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
-	d, err := os.ReadFile(c.Private)
+	file, err := os.ReadFile(c.Private)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := ssh.ParseRawPrivateKey(d)
+	key, err := ssh.ParseRawPrivateKey([]byte(file))
 	if err != nil {
 		return nil, err
 	}
