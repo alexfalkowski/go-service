@@ -4,9 +4,5 @@ import (
 	"os"
 )
 
-func init() {
-	Exit = os.Exit
-}
-
-// Exit will use os.Exit and can be overridden for testing.
-var Exit func(code int)
+// Exit is just an alias to os.Exit.
+var Exit = os.Exit
