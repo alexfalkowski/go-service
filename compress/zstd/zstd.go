@@ -8,17 +8,17 @@ import (
 type Compressor struct{}
 
 // NewNone for zstd.
-func NewCompressor() *Compressor {
-	return &Compressor{}
+func NewCompressor() Compressor {
+	return Compressor{}
 }
 
-func (c *Compressor) Compress(data []byte) []byte {
+func (c Compressor) Compress(data []byte) []byte {
 	e, _ := zstd.NewWriter(nil)
 
 	return e.EncodeAll(data, nil)
 }
 
-func (c *Compressor) Decompress(data []byte) ([]byte, error) {
+func (c Compressor) Decompress(data []byte) ([]byte, error) {
 	d, _ := zstd.NewReader(nil)
 
 	return d.DecodeAll(data, nil)

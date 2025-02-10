@@ -8,14 +8,14 @@ import (
 type Compressor struct{}
 
 // NewNone for s2.
-func NewCompressor() *Compressor {
-	return &Compressor{}
+func NewCompressor() Compressor {
+	return Compressor{}
 }
 
-func (c *Compressor) Compress(data []byte) []byte {
+func (c Compressor) Compress(data []byte) []byte {
 	return s2.Encode(nil, data)
 }
 
-func (c *Compressor) Decompress(data []byte) ([]byte, error) {
+func (c Compressor) Decompress(data []byte) ([]byte, error) {
 	return s2.Decode(nil, data)
 }

@@ -12,10 +12,10 @@ import (
 type MapParams struct {
 	fx.In
 
-	Zstd   *zstd.Compressor
-	S2     *s2.Compressor
-	Snappy *snappy.Compressor
-	None   *none.Compressor
+	Zstd   zstd.Compressor
+	S2     s2.Compressor
+	Snappy snappy.Compressor
+	None   none.Compressor
 }
 
 // NewMap for compressor.
