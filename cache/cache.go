@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"time"
 
 	"github.com/alexfalkowski/go-service/cache/config"
 	cz "github.com/alexfalkowski/go-service/cache/telemetry/logger/zap"
@@ -13,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/sync"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/faabiosr/cachego"
 	"go.opentelemetry.io/otel/metric"

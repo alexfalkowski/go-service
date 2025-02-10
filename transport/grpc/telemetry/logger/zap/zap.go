@@ -3,9 +3,9 @@ package zap
 import (
 	"context"
 	"path"
-	"time"
 
 	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	"go.uber.org/zap"

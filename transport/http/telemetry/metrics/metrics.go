@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/time"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/metric"

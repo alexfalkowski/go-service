@@ -2,10 +2,10 @@ package metrics
 
 import (
 	"context"
-	"time"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/time"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )

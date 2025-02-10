@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"context"
-	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/spf13/cobra"
 	"go.uber.org/dig"
 	"go.uber.org/fx"

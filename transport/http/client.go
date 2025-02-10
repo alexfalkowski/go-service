@@ -2,14 +2,13 @@ package http
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	sr "github.com/alexfalkowski/go-service/retry"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
@@ -67,7 +66,7 @@ func WithClientTokenGenerator(gen token.Generator) ClientOption {
 // WithClientTimeout for HTTP.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = st.MustParseDuration(timeout)
+		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 

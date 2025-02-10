@@ -1,11 +1,10 @@
 package token
 
 import (
-	"time"
-
 	"aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/id"
+	"github.com/alexfalkowski/go-service/time"
 )
 
 // Paseto token.

@@ -3,8 +3,8 @@ package checker
 import (
 	"context"
 	"errors"
-	"time"
 
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/linxGnu/mssqlx"
 )
 

@@ -1,8 +1,6 @@
 package time
 
 import (
-	"time"
-
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/beevik/ntp"
@@ -12,7 +10,7 @@ import (
 // Network for time.
 type Network interface {
 	// Now from the network.
-	Now() (time.Time, error)
+	Now() (Time, error)
 }
 
 // NewNetwork for time.
@@ -31,15 +29,15 @@ func NewNetwork(cfg *Config) Network {
 
 type sysNetwork struct{}
 
-func (*sysNetwork) Now() (time.Time, error) {
-	return time.Now(), nil
+func (*sysNetwork) Now() (Time, error) {
+	return Now(), nil
 }
 
 type ntpNetwork struct {
 	c *Config
 }
 
-func (n *ntpNetwork) Now() (time.Time, error) {
+func (n *ntpNetwork) Now() (Time, error) {
 	t, err := ntp.Time(n.c.Address)
 
 	return t, errors.Prefix("ntp", err)
@@ -49,7 +47,7 @@ type ntsNetwork struct {
 	c *Config
 }
 
-func (n *ntsNetwork) Now() (t time.Time, err error) {
+func (n *ntsNetwork) Now() (t Time, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.Prefix("nts", runtime.ConvertRecover(r))
@@ -65,7 +63,7 @@ func (n *ntsNetwork) Now() (t time.Time, err error) {
 	err = res.Validate()
 	runtime.Must(err)
 
-	t = time.Now().Add(res.ClockOffset)
+	t = Now().Add(res.ClockOffset)
 
 	return
 }

@@ -4,7 +4,8 @@ import (
 	"crypto/tls"
 	"net"
 	"net/http"
-	"time"
+
+	"github.com/alexfalkowski/go-service/time"
 )
 
 // Transport for HTTP.

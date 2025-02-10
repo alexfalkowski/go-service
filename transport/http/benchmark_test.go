@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
@@ -14,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/test"
 	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport"
 	th "github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/fx/fxtest"

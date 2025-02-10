@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 	"path"
-	"time"
 
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/strings"
 	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/grpc"

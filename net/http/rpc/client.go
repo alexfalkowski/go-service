@@ -5,14 +5,13 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/time"
 )
 
 // ClientOption for rpc.
@@ -49,7 +48,7 @@ func WithClientContentType(ct string) ClientOption {
 // WithClientTimeout for rpc.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = st.MustParseDuration(timeout)
+		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 
