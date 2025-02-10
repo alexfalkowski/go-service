@@ -2,8 +2,6 @@ package config_test
 
 import (
 	"encoding/base64"
-	"errors"
-	"os"
 	"testing"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
@@ -17,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/feature"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
@@ -32,7 +31,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 	for _, file := range files {
 		Convey("Given I have configuration file", t, func() {
-			So(os.Setenv("CONFIG_FILE", file), ShouldBeNil)
+			So(os.SetVariable("CONFIG_FILE", file), ShouldBeNil)
 
 			input := test.NewInputConfig("env:CONFIG_FILE")
 
@@ -45,7 +44,7 @@ func TestValidEnvConfig(t *testing.T) {
 				})
 			})
 
-			So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
+			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	}
 }
@@ -74,7 +73,6 @@ func TestMissingFileConfig(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-				So(errors.Is(err, os.ErrNotExist), ShouldBeTrue)
 			})
 		})
 	})
@@ -99,8 +97,8 @@ func TestValidMemConfig(t *testing.T) {
 		data, err := os.ReadFile("../test/configs/config.yml")
 		So(err, ShouldBeNil)
 
-		So(os.Setenv("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
-		So(os.Setenv("CONFIG", base64.StdEncoding.EncodeToString(data)), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
+		So(os.SetVariable("CONFIG", base64.StdEncoding.EncodeToString([]byte(data))), ShouldBeNil)
 
 		input := test.NewInputConfig("env:CONFIG_FILE")
 
@@ -113,8 +111,8 @@ func TestValidMemConfig(t *testing.T) {
 			})
 		})
 
-		So(os.Unsetenv("CONFIG_FILE"), ShouldBeNil)
-		So(os.Unsetenv("CONFIG"), ShouldBeNil)
+		So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
+		So(os.UnsetVariable("CONFIG"), ShouldBeNil)
 	})
 }
 

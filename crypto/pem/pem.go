@@ -3,7 +3,8 @@ package pem
 import (
 	"encoding/pem"
 	"errors"
-	"os"
+
+	"github.com/alexfalkowski/go-service/os"
 )
 
 var (
@@ -21,7 +22,7 @@ func Decode(path, kind string) ([]byte, error) {
 		return nil, err
 	}
 
-	block, _ := pem.Decode(d)
+	block, _ := pem.Decode([]byte(d))
 	if block == nil {
 		return nil, ErrInvalidBlock
 	}

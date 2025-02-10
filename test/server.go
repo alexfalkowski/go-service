@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"net/http"
-	"os"
 
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/id"
@@ -101,7 +100,7 @@ func (s *ErrServer) IsEnabled() bool {
 }
 
 func (s *ErrServer) Serve() error {
-	return os.ErrNotExist
+	return ErrFailed
 }
 
 func (s *ErrServer) Shutdown(_ context.Context) error {

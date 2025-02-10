@@ -4,6 +4,9 @@ import (
 	"os"
 )
 
+// ModeAppend will append to an existing file.
+const ModeAppend = os.ModeAppend
+
 // FileMode is an alias to os.FileMode.
 type FileMode = os.FileMode
 

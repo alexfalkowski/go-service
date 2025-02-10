@@ -18,6 +18,11 @@ func SetVariable(key, value string) error {
 	return os.Setenv(key, value)
 }
 
+// UnsetVariable by key.
+func UnsetVariable(key string) error {
+	return os.Unsetenv(key)
+}
+
 // PathExtension of the specified path.
 func PathExtension(path string) string {
 	e := filepath.Ext(path)
@@ -66,6 +71,11 @@ func WriteFile(name string, data string, perm FileMode) error {
 	data = strings.TrimSpace(data)
 
 	return os.WriteFile(name, []byte(data), perm)
+}
+
+// Remove a file or empty folder.
+func Remove(name string) error {
+	return os.Remove(name)
 }
 
 // ExecutableName of the running application.
