@@ -20,6 +20,7 @@ linters-settings:
       - md
       - fs
       - sh
+      - ua
 linters:
   enable-all: true
   disable:
@@ -38,3 +39,4 @@ linters:
     - nilnil
     - nonamedreturns
     - nakedret
+    - gochecknoinits
