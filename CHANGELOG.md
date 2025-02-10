@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.425.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.425.0) - 2025-02-10
+
+- [`cbd32d3`](https://github.com/alexfalkowski/go-service/commit/cbd32d3504f77a75956bb3ba6c4b4a49387125e7) feat(os): just use alias (#1287)
+
 ## [v1.424.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.424.0) - 2025-02-10
 
 - [`4b88adb`](https://github.com/alexfalkowski/go-service/commit/4b88adb1870a910bedeaca2549975ef3684f174b) feat(cmd): add exit on error (#1286)
