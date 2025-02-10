@@ -11,12 +11,12 @@ type contextKey string
 const meta = contextKey("meta")
 
 // WithAttribute to meta.
-func WithAttribute(ctx context.Context, key string, value Value) context.Context {
+func WithAttribute(ctx context.Context, key string, value *Value) context.Context {
 	return context.WithValue(ctx, meta, attributes(ctx).Add(key, value))
 }
 
 // Attribute of meta.
-func Attribute(ctx context.Context, key string) Value {
+func Attribute(ctx context.Context, key string) *Value {
 	return attributes(ctx).Get(key)
 }
 

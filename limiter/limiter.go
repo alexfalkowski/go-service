@@ -13,7 +13,7 @@ import (
 )
 
 // KeyFunc for the limiter.
-type KeyFunc func(context.Context) meta.Value
+type KeyFunc func(context.Context) *meta.Value
 
 var (
 	// ErrMissingKey for limiter.
@@ -66,7 +66,12 @@ type Limiter struct {
 
 // Take from the store, returns if successful, info and error.
 func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
-	tokens, remaining, _, ok, err := l.store.Take(ctx, l.key(ctx).Value())
+	var key string
+	if k := l.key(ctx); k != nil {
+		key = k.Value()
+	}
+
+	tokens, remaining, _, ok, err := l.store.Take(ctx, key)
 	if err != nil {
 		return false, "", err
 	}

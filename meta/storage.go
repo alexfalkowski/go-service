@@ -9,18 +9,18 @@ type (
 	Converter func(string) string
 
 	// Storage stores all the values for meta.
-	Storage map[string]Value
+	Storage map[string]*Value
 )
 
 // Add a value with key.
-func (s Storage) Add(key string, value Value) Storage {
+func (s Storage) Add(key string, value *Value) Storage {
 	s[key] = value
 
 	return s
 }
 
 // Get a value by key.
-func (s Storage) Get(key string) Value {
+func (s Storage) Get(key string) *Value {
 	return s[key]
 }
 

@@ -27,11 +27,11 @@ const (
 )
 
 // WithRequestID for transport.
-func WithRequestID(ctx context.Context, id meta.Value) context.Context {
+func WithRequestID(ctx context.Context, id *meta.Value) context.Context {
 	return meta.WithAttribute(ctx, RequestIDKey, id)
 }
 
 // RequestID for transport.
-func RequestID(ctx context.Context) meta.Value {
+func RequestID(ctx context.Context) *meta.Value {
 	return meta.Attribute(ctx, RequestIDKey)
 }

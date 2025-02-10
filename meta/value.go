@@ -14,43 +14,45 @@ const (
 	redacted
 )
 
+var blankValue = &Value{kind: blank, value: ""}
+
 // NewIgnored for meta.
-func Ignored(value string) Value {
-	return Value{kind: ignored, value: value}
+func Ignored(value string) *Value {
+	return &Value{kind: ignored, value: value}
 }
 
 // NewRedacted for meta.
-func Redacted(value string) Value {
-	return Value{kind: redacted, value: value}
+func Redacted(value string) *Value {
+	return &Value{kind: redacted, value: value}
 }
 
 // NewBlank for meta.
-func Blank() Value {
-	return Value{kind: blank, value: ""}
+func Blank() *Value {
+	return blankValue
 }
 
 // NewString for meta.
-func String(value string) Value {
-	return Value{kind: normal, value: value}
+func String(value string) *Value {
+	return &Value{kind: normal, value: value}
 }
 
 // Error for meta.
-func Error(err error) Value {
+func Error(err error) *Value {
 	return String(err.Error())
 }
 
 // ToString for meta.
-func ToString(st fmt.Stringer) Value {
+func ToString(st fmt.Stringer) *Value {
 	return String(st.String())
 }
 
 // ToRedacted for meta.
-func ToRedacted(st fmt.Stringer) Value {
+func ToRedacted(st fmt.Stringer) *Value {
 	return Redacted(st.String())
 }
 
 // ToIgnored for meta.
-func ToIgnored(st fmt.Stringer) Value {
+func ToIgnored(st fmt.Stringer) *Value {
 	return Ignored(st.String())
 }
 
@@ -61,14 +63,14 @@ type Value struct {
 }
 
 // Value of meta.
-func (v Value) Value() string {
+func (v *Value) Value() string {
 	return v.value
 }
 
 // String depending on kind.
 //
 //nolint:exhaustive
-func (v Value) String() string {
+func (v *Value) String() string {
 	switch v.kind {
 	case redacted:
 		return strings.Repeat("*", len(v.value))
