@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package cmd_test
 
 import (
@@ -50,13 +49,14 @@ func TestRunWithServer(t *testing.T) {
 		So(os.SetVariable("IN_CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			c := cmd.New("1.0.0")
-			c.AddServer("server", "Start the server.", opts()...)
-			c.RegisterInput(c.Root(), "env:IN_CONFIG_FILE")
-			c.RegisterOutput(c.Root(), "env:OUT_CONFIG_FILE")
+			command := cmd.New("1.0.0")
+			command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(command.Root(), "env:IN_CONFIG_FILE")
+			command.RegisterOutput(command.Root(), "env:OUT_CONFIG_FILE")
+			command.SetArgs([]string{"server"})
 
 			Convey("Then I should not see an error", func() {
-				So(c.RunWithArgs([]string{"server"}), ShouldBeNil)
+				So(command.Run(), ShouldBeNil)
 			})
 
 			So(os.UnsetVariable("IN_CONFIG_FILE"), ShouldBeNil)
@@ -69,12 +69,12 @@ func TestRun(t *testing.T) {
 		So(os.SetVariable("CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			c := cmd.New("1.0.0")
-			c.AddServer("server", "Start the server.", opts()...)
-			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+			command := cmd.New("1.0.0")
+			command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				So(c.Run(), ShouldBeNil)
+				So(command.Run(), ShouldBeNil)
 			})
 
 			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
@@ -91,12 +91,13 @@ func TestInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
-			c := cmd.New("1.0.0")
-			c.AddServer("server", "Start the server.", opts()...)
-			c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+			command := cmd.New("1.0.0")
+			command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+			command.SetArgs([]string{"server", "--input", config})
 
 			Convey("Then I should not see an error", func() {
-				err := c.RunWithArgs([]string{"server", "--input", config})
+				err := command.Run()
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "unknown port")
@@ -107,14 +108,40 @@ func TestInvalid(t *testing.T) {
 
 func TestDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
-		c := cmd.New("1.0.0")
-		c.AddServer("server", "Start the server.", opts()...)
-		c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+		command := cmd.New("1.0.0")
+		command.AddServer("server", "Start the server.", opts()...)
+		command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+		command.SetArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
 
 		Convey("Then I should see an error", func() {
-			err := c.RunWithArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
+			So(command.Run(), ShouldBeNil)
+		})
+	})
+}
 
-			So(err, ShouldBeNil)
+func TestExitOnRun(t *testing.T) {
+	Convey("Given I have invalid configuration", t, func() {
+		So(os.SetVariable("CONFIG_FILE", "../test/configs/invalid_http.config.yml"), ShouldBeNil)
+
+		Convey("When I try to run an application", func() {
+			command := cmd.New("1.0.0")
+			command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+			command.SetArgs([]string{"server"})
+
+			var exitCode int
+
+			os.Exit = func(code int) {
+				exitCode = code
+			}
+
+			command.ExitOnError()
+
+			Convey("Then it should exit with a code of 1", func() {
+				So(exitCode, ShouldEqual, 1)
+			})
+
+			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -123,12 +150,13 @@ func TestClient(t *testing.T) {
 	Convey("When I try to run a client", t, func() {
 		opts := []fx.Option{fx.NopLogger}
 
-		c := cmd.New("1.0.0")
-		c.AddClient("client", "Start the client.", opts...)
-		c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+		command := cmd.New("1.0.0")
+		command.AddClient("client", "Start the client.", opts...)
+		command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+		command.SetArgs([]string{"client"})
 
 		Convey("Then I should not see an error", func() {
-			So(c.RunWithArgs([]string{"client"}), ShouldBeNil)
+			So(command.Run(), ShouldBeNil)
 		})
 	})
 }
@@ -144,12 +172,13 @@ func TestInvalidClient(t *testing.T) {
 			So(os.SetVariable("TEST_CONFIG_FILE", config), ShouldBeNil)
 
 			Convey("When I try to run an application", func() {
-				c := cmd.New("1.0.0")
-				c.AddClient("client", "Start the client.", opts()...)
-				c.RegisterInput(c.Root(), "env:CONFIG_FILE")
+				command := cmd.New("1.0.0")
+				command.AddClient("client", "Start the client.", opts()...)
+				command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+				command.SetArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
 
 				Convey("Then I should see an error", func() {
-					err := c.RunWithArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
+					err := command.Run()
 
 					So(err, ShouldBeError)
 					So(err.Error(), ShouldContainSubstring, "unknown port")
@@ -212,15 +241,15 @@ func netTime(n st.Network) {
 	_, _ = n.Now()
 }
 
-func crypt(a *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
+func crypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
 	msg := "hello"
 
-	e, err := a.Sign(msg)
+	e, err := signer.Sign(msg)
 	if err != nil {
 		return err
 	}
 
-	err = a.Verify(e, msg)
+	err = signer.Verify(e, msg)
 	if err != nil {
 		return err
 	}

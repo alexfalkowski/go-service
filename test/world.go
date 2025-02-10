@@ -40,7 +40,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//nolint:gochecknoinits
 func init() {
 	meta.RegisterKeys()
 	tracer.Register()

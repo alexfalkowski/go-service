@@ -11,11 +11,6 @@ import (
 	"go.uber.org/fx"
 )
 
-// Command for application.
-type Command struct {
-	root *cobra.Command
-}
-
 // New command.
 func New(version string) *Command {
 	name := os.ExecutableName()
@@ -31,6 +26,11 @@ func New(version string) *Command {
 	root.SetErrPrefix(name + ":")
 
 	return &Command{root: root}
+}
+
+// Command for application.
+type Command struct {
+	root *cobra.Command
 }
 
 // Root command.
@@ -72,16 +72,21 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *cobra.
 	return cmd
 }
 
-// Run the command with a an arg.
-func (c *Command) RunWithArgs(args []string) error {
+// SetArgs will set the actual arguments that is run the root command.
+func (c *Command) SetArgs(args []string) {
 	c.root.SetArgs(args)
-
-	return c.root.Execute()
 }
 
 // Run the command.
 func (c *Command) Run() error {
 	return c.root.Execute()
+}
+
+// ExitOnError will run the command and exit on error.
+func (c *Command) ExitOnError() {
+	if err := c.Run(); err != nil {
+		os.Exit(1)
+	}
 }
 
 // RunServer is a long running process.
