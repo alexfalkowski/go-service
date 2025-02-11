@@ -24,9 +24,9 @@ import (
 
 func TestValidEnvConfig(t *testing.T) {
 	files := []string{
-		"../test/configs/config.json",
-		"../test/configs/config.toml",
-		"../test/configs/config.yml",
+		test.Path("configs/config.json"),
+		test.Path("configs/config.toml"),
+		test.Path("configs/config.yml"),
 	}
 
 	for _, file := range files {
@@ -51,7 +51,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestValidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		input := test.NewInputConfig("file:../test/configs/config.yml")
+		input := test.NewInputConfig(test.FilePath("configs/config.yml"))
 
 		Convey("When I try to parse the configuration file", func() {
 			config, err := config.NewConfig[config.Config](input)
@@ -66,7 +66,7 @@ func TestValidFileConfig(t *testing.T) {
 
 func TestMissingFileConfig(t *testing.T) {
 	Convey("Given I have missing configuration file", t, func() {
-		input := test.NewInputConfig("file:../test/configs/missing.yml")
+		input := test.NewInputConfig(test.FilePath("configs/missing.yml"))
 
 		Convey("When I try to parse the configuration file", func() {
 			_, err := config.NewConfig[*config.Config](input)
@@ -80,7 +80,7 @@ func TestMissingFileConfig(t *testing.T) {
 
 func TestInvalidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		input := test.NewInputConfig("file:../test/configs/invalid.yml")
+		input := test.NewInputConfig(test.FilePath("configs/invalid.yml"))
 
 		Convey("When I try to parse the configuration file", func() {
 			_, err := config.NewConfig[config.Config](input)
@@ -94,7 +94,7 @@ func TestInvalidFileConfig(t *testing.T) {
 
 func TestValidMemConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		data, err := os.ReadFile("../test/configs/config.yml")
+		data, err := os.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
 		So(os.SetVariable("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)

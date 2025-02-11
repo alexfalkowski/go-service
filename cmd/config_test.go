@@ -58,7 +58,7 @@ func TestReadValidConfigFile(t *testing.T) {
 
 func TestWriteValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		file := "../test/configs/new_config.yml"
+		file := test.Path("configs/new_config.yml")
 
 		So(os.WriteFile(file, "environment: development", 0o600), ShouldBeNil)
 		So(os.SetVariable("CONFIG_FILE", file), ShouldBeNil)
@@ -82,7 +82,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 	})
 
 	Convey("Given I have configuration file", t, func() {
-		file := "../test/configs/new_config.yml"
+		file := test.Path("configs/new_config.yml")
 
 		So(os.WriteFile(file, "environment: development", 0o600), ShouldBeNil)
 

@@ -46,7 +46,7 @@ import (
 
 func TestRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		So(os.SetVariable("IN_CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
+		So(os.SetVariable("IN_CONFIG_FILE", test.Path("configs/config.yml")), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New("1.0.0")
@@ -66,7 +66,7 @@ func TestRunWithServer(t *testing.T) {
 
 func TestRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../test/configs/config.yml"), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", test.Path("configs/config.yml")), ShouldBeNil)
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New("1.0.0")
@@ -84,9 +84,9 @@ func TestRun(t *testing.T) {
 
 func TestInvalid(t *testing.T) {
 	configs := []string{
-		"file:../test/configs/invalid_http.config.yml",
-		"file:../test/configs/invalid_grpc.config.yml",
-		"file:../test/configs/invalid_debug.config.yml",
+		test.FilePath("configs/invalid_http.config.yml"),
+		test.FilePath("configs/invalid_grpc.config.yml"),
+		test.FilePath("configs/invalid_debug.config.yml"),
 	}
 
 	for _, config := range configs {
@@ -111,7 +111,7 @@ func TestDisabled(t *testing.T) {
 		command := cmd.New("1.0.0")
 		command.AddServer("server", "Start the server.", opts()...)
 		command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-		command.SetArgs([]string{"server", "-i", "file:../test/configs/disabled.config.yml"})
+		command.SetArgs([]string{"server", "-i", test.FilePath("configs/disabled.config.yml")})
 
 		Convey("Then I should see an error", func() {
 			So(command.Run(), ShouldBeNil)
@@ -121,7 +121,7 @@ func TestDisabled(t *testing.T) {
 
 func TestExitOnRun(t *testing.T) {
 	Convey("Given I have invalid configuration", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../test/configs/invalid_http.config.yml"), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", test.Path("configs/invalid_http.config.yml")), ShouldBeNil)
 
 		Convey("When I try to run an application", func() {
 			command := cmd.New("1.0.0")
@@ -163,8 +163,8 @@ func TestClient(t *testing.T) {
 
 func TestInvalidClient(t *testing.T) {
 	configs := []string{
-		"../test/configs/invalid_http.config.yml",
-		"../test/configs/invalid_grpc.config.yml",
+		test.Path("configs/invalid_http.config.yml"),
+		test.Path("configs/invalid_grpc.config.yml"),
 	}
 
 	for _, config := range configs {
