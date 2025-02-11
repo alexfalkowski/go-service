@@ -17,6 +17,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -46,6 +47,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -72,7 +74,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -101,6 +103,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -129,7 +132,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 func TestAuthUnaryWithAppend(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -159,6 +162,7 @@ func TestValidAuthUnary(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -190,6 +194,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 			test.WithWorldCompression(),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -223,6 +228,7 @@ func TestValidAuthStream(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -258,6 +264,7 @@ func TestInvalidAuthStream(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -292,6 +299,7 @@ func TestEmptyAuthStream(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -320,6 +328,7 @@ func TestMissingClientAuthStream(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(nil, test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -354,6 +363,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()

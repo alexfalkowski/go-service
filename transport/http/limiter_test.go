@@ -11,7 +11,7 @@ import (
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -41,7 +41,7 @@ func TestGet(t *testing.T) {
 func TestLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		Convey("Given I have a all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig(f, "1s", 0)))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -71,7 +71,7 @@ func TestLimiter(t *testing.T) {
 
 func TestClosedLimiter(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 

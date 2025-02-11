@@ -22,7 +22,7 @@ import (
 
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
@@ -57,7 +57,7 @@ func TestUnary(t *testing.T) {
 
 func TestInvalidUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
@@ -93,7 +93,7 @@ func TestInvalidUnary(t *testing.T) {
 
 func TestIgnoreAuthUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
@@ -126,7 +126,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
@@ -162,7 +162,7 @@ func TestStream(t *testing.T) {
 
 func TestInvalidStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
@@ -198,7 +198,7 @@ func TestInvalidStream(t *testing.T) {
 
 func TestIgnoreAuthStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())

@@ -9,7 +9,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	Convey("Given I have invalid creds", t, func() {
+	Convey("Given I have invalid credentials", t, func() {
 		c := &tls.Config{Cert: "bob", Key: "bob"}
 
 		Convey("When I create a client", func() {
@@ -21,7 +21,7 @@ func TestClient(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have secure creds", t, func() {
+	Convey("Given I have secure credentials", t, func() {
 		c := &tls.Config{}
 
 		Convey("When I create a client", func() {

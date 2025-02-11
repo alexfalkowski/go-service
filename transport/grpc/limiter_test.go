@@ -13,7 +13,7 @@ import (
 
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 0)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -41,7 +41,7 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -71,6 +71,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
+			test.WithWorldGRPC(),
 		)
 		world.Register()
 		world.RequireStart()
@@ -101,7 +102,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 
 func TestClosedLimiterUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 

@@ -25,7 +25,7 @@ func TestTokenAuthUnary(t *testing.T) {
 			pas := token.NewPaseto(a, id)
 			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, jwt, pas)
 
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -54,7 +54,7 @@ func TestTokenAuthUnary(t *testing.T) {
 
 func TestValidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -81,7 +81,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 func TestInvalidAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -107,7 +107,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 func TestAuthUnaryWithAppend(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -132,9 +132,10 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	})
 }
 
+//nolint:dupl
 func TestMissingAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -160,7 +161,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -183,9 +184,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 	})
 }
 
+//nolint:dupl
 func TestMissingClientAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -211,7 +213,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -239,6 +241,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
 			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldHTTP(),
 		)
 		world.Register()
 		world.RequireStart()

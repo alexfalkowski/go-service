@@ -15,7 +15,7 @@ import (
 
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -46,7 +46,7 @@ func TestRouteSuccess(t *testing.T) {
 
 func TestRouteMissingView(t *testing.T) {
 	Convey("Given I have setup a route with an missisng view", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -74,7 +74,7 @@ func TestRouteMissingView(t *testing.T) {
 
 func TestRouteError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -105,7 +105,7 @@ func TestRouteError(t *testing.T) {
 
 func TestStaticSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -131,7 +131,7 @@ func TestStaticSuccess(t *testing.T) {
 
 func TestStaticError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
