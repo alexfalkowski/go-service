@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.427.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.427.0) - 2025-02-11
+
+- [`2597ebf`](https://github.com/alexfalkowski/go-service/commit/2597ebfc0a4e5fc07d178beeb5f5462c92a33153) feat(deps): bump golang.org/x/net from 0.34.0 to 0.35.0 (#1289)
+- [`b56010f`](https://github.com/alexfalkowski/go-service/commit/b56010fdcb361e118d124b618e4cab1f5545895e) test(address): we can have a complete addr rather than just port (#1290)
+
 ## [v1.426.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.426.0) - 2025-02-10
 
 - [`cc0a8f2`](https://github.com/alexfalkowski/go-service/commit/cc0a8f221a199858de1b6facaf28ba7ebe77d6d0) feat(time): use service package (#1288)
