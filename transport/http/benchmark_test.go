@@ -24,9 +24,9 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	b.ReportAllocs()
 
 	mux := http.NewServeMux()
-	addr := test.Address()
-
 	mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
+
+	addr := test.Address()
 
 	server := &http.Server{
 		Handler:           mux,
@@ -38,12 +38,12 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	//nolint:errcheck
 	go server.ListenAndServe()
 
-	client := &http.Client{Transport: http.DefaultTransport}
-	url := fmt.Sprintf("http://%s/hello", addr)
-
 	b.ResetTimer()
 
 	b.Run("std", func(b *testing.B) {
+		client := &http.Client{Transport: http.DefaultTransport}
+		url := fmt.Sprintf("http://%s/hello", addr)
+
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
@@ -75,13 +75,13 @@ func BenchmarkHTTP(b *testing.B) {
 
 	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
 
-	client := &http.Client{Transport: http.DefaultTransport}
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
 	lc.RequireStart()
 	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
+		client := &http.Client{Transport: http.DefaultTransport}
+		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
@@ -116,13 +116,13 @@ func BenchmarkLogHTTP(b *testing.B) {
 
 	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
 
-	client := &http.Client{Transport: http.DefaultTransport}
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
 	lc.RequireStart()
 	b.ResetTimer()
 
 	b.Run("log", func(b *testing.B) {
+		client := &http.Client{Transport: http.DefaultTransport}
+		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
@@ -160,13 +160,13 @@ func BenchmarkTraceHTTP(b *testing.B) {
 
 	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
 
-	client := &http.Client{Transport: http.DefaultTransport}
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
 	lc.RequireStart()
 	b.ResetTimer()
 
 	b.Run("trace", func(b *testing.B) {
+		client := &http.Client{Transport: http.DefaultTransport}
+		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
 		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
@@ -183,32 +183,21 @@ func BenchmarkTraceHTTP(b *testing.B) {
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger := zap.NewNop()
-	cfg := test.NewInsecureTransportConfig()
-	tc := test.NewOTLPTracerConfig()
-	m := test.NewOTLPMeter(lc)
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	world.Register()
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
-	s.Register()
-
-	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-
-	v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
-	mvc.Register(mux, v)
+	world.RequireStart()
 
 	mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
 		return mvc.View("hello.tmpl"), &test.Model, nil
 	})
 
-	client := cl.NewHTTP()
-
-	lc.RequireStart()
 	b.ResetTimer()
 
 	b.Run("html", func(b *testing.B) {
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", cfg.HTTP.Address), http.NoBody)
+		client := world.NewHTTP()
+
+		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.ServerHost()), http.NoBody)
 		runtime.Must(err)
 
 		req.Header.Set("Content-Type", "text/html")
@@ -220,38 +209,28 @@ func BenchmarkRoute(b *testing.B) {
 	})
 
 	b.StopTimer()
-	lc.RequireStop()
+	world.RequireStop()
 }
 
 func BenchmarkRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger := zap.NewNop()
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	world.Register()
 
-	cfg := test.NewInsecureTransportConfig()
-	tc := test.NewOTLPTracerConfig()
-	m := test.NewOTLPMeter(lc)
+	world.RequireStart()
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
-	s.Register()
-
-	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-	t := cl.NewHTTP().Transport
-
-	rpc.Register(mux, test.Content, test.Pool)
 	rpc.Route("/hello", test.SuccessSayHello)
 
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
-	lc.RequireStart()
 	b.ResetTimer()
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		cl := world.NewHTTP()
+		url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 		client := rpc.NewClient[test.Request, test.Response](url,
 			rpc.WithClientContentType("application/"+mt),
-			rpc.WithClientRoundTripper(t))
+			rpc.WithClientRoundTripper(cl.Transport),
+		)
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
@@ -262,38 +241,27 @@ func BenchmarkRPC(b *testing.B) {
 	}
 
 	b.StopTimer()
-	lc.RequireStop()
+	world.RequireStop()
 }
 
 func BenchmarkProtobuf(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger := zap.NewNop()
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	world.Register()
 
-	cfg := test.NewInsecureTransportConfig()
-	tc := test.NewOTLPTracerConfig()
-	m := test.NewOTLPMeter(lc)
+	world.RequireStart()
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
-	s.Register()
-
-	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
-	t := cl.NewHTTP().Transport
-
-	rpc.Register(mux, test.Content, test.Pool)
 	rpc.Route("/hello", test.SuccessProtobufSayHello)
 
-	url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
-
-	lc.RequireStart()
 	b.ResetTimer()
 
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
+		cl := world.NewHTTP()
+		url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 		client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url,
 			rpc.WithClientContentType("application/"+mt),
-			rpc.WithClientRoundTripper(t))
+			rpc.WithClientRoundTripper(cl.Transport))
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
@@ -304,5 +272,5 @@ func BenchmarkProtobuf(b *testing.B) {
 	}
 
 	b.StopTimer()
-	lc.RequireStop()
+	world.RequireStop()
 }
