@@ -24,13 +24,13 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	b.ReportAllocs()
 
 	mux := http.NewServeMux()
-	p := test.Port()
+	addr := test.Address()
 
 	mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 
 	server := &http.Server{
 		Handler:           mux,
-		Addr:              ":" + p,
+		Addr:              addr,
 		ReadHeaderTimeout: time.Second,
 	}
 	defer server.Close()
@@ -39,7 +39,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	go server.ListenAndServe()
 
 	client := &http.Client{Transport: http.DefaultTransport}
-	url := fmt.Sprintf("http://localhost:%s/hello", p)
+	url := fmt.Sprintf("http://%s/hello", addr)
 
 	b.ResetTimer()
 
