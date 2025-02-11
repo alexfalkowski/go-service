@@ -3,8 +3,8 @@ package http_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )

@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"testing"
 
+	v1 "github.com/alexfalkowski/go-service/internal/greet/v1"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/test"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 

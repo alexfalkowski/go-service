@@ -15,9 +15,9 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/feature"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )

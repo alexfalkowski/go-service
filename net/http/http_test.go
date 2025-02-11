@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/internal/test"
 	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 

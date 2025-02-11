@@ -6,10 +6,10 @@ import (
 	"errors"
 	"net/http"
 
+	v1 "github.com/alexfalkowski/go-service/internal/greet/v1"
 	"github.com/alexfalkowski/go-service/meta"
 	nc "github.com/alexfalkowski/go-service/net/http/context"
 	h "github.com/alexfalkowski/go-service/net/http/status"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"google.golang.org/grpc/codes"
 	g "google.golang.org/grpc/status"
 )

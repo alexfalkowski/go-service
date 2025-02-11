@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
