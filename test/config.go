@@ -273,3 +273,8 @@ func Path(p string) string {
 
 	return filepath.Join(dir, p)
 }
+
+// FilePath for test.
+func FilePath(p string) string {
+	return "file:" + Path(p)
+}
