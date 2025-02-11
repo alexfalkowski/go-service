@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/cachego"
@@ -53,18 +52,19 @@ type WorldOption interface {
 }
 
 type worldOpts struct {
-	generator   token.Generator
 	verfier     token.Verifier
 	rt          http.RoundTripper
+	generator   token.Generator
+	logger      *zap.Logger
 	limiter     *limiter.Config
 	pg          *pg.Config
 	telemetry   string
 	secure      bool
-	rest        bool
 	compression bool
 	http        bool
 	grpc        bool
 	debug       bool
+	rest        bool
 }
 
 type worldOptionFunc func(*worldOpts)
@@ -151,6 +151,13 @@ func WithWorldDebug() WorldOption {
 	})
 }
 
+// WithWorldLogger for test.
+func WithWorldLogger(logger *zap.Logger) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.logger = logger
+	})
+}
+
 func options(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
@@ -162,7 +169,6 @@ func options(opts ...WorldOption) *worldOpts {
 
 // World for test.
 type World struct {
-	t *testing.T
 	*fxtest.Lifecycle
 	*http.ServeMux
 	*zap.Logger
@@ -178,15 +184,17 @@ type World struct {
 }
 
 // NewWorld for test.
-func NewWorld(t *testing.T, opts ...WorldOption) *World {
-	t.Helper()
-
+func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
-	logger := NewLogger(lc)
 	tracer := NewOTLPTracerConfig()
 	id := id.Default
 	os := options(opts...)
+
+	if os.logger == nil {
+		os.logger = NewLogger(lc)
+	}
+
 	tranConfig := transportConfig(os)
 	debugConfig := debugConfig(os)
 	tlsConfig := tlsConfig(os)
@@ -195,7 +203,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	pgConfig := pgConfig(os)
 
 	server := &Server{
-		Lifecycle: lc, Logger: logger, Tracer: tracer,
+		Lifecycle: lc, Logger: os.logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
 		Verifier: os.verfier, VerifyAuth: os.verfier != nil, ID: id,
@@ -204,7 +212,7 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	server.Register()
 
 	client := &Client{
-		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
+		Lifecycle: lc, Logger: os.logger, Tracer: tracer, Transport: tranConfig,
 		Meter: meter, TLS: tlsConfig, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
 	}
@@ -222,11 +230,10 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 	sender, err := eh.NewSender(hh.NewWebhook(h, id), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
-	cache := redisCache(lc, logger, meter, tracer)
+	cache := redisCache(lc, os.logger, meter, tracer)
 
 	return &World{
-		t:      t,
-		Logger: logger, Tracer: tracer,
+		Logger: os.logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
 		Rest:     restClient,
