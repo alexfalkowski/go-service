@@ -7,21 +7,21 @@ cache:
   encoder: proto
   compressor: snappy
   options:
-    url: ../test/secrets/redis
+    url: ../internal/test/secrets/redis
 crypto:
   aes:
-    key: ../test/secrets/aes
+    key: ../internal/test/secrets/aes
   ed25519:
-    public: ../test/secrets/ed25519_public
-    private: ../test/secrets/ed25519_private
+    public: ../internal/test/secrets/ed25519_public
+    private: ../internal/test/secrets/ed25519_private
   hmac:
-    key: ../test/secrets/hmac
+    key: ../internal/test/secrets/hmac
   rsa:
-    public: ../test/secrets/rsa_public
-    private: ../test/secrets/rsa_private
+    public: ../internal/test/secrets/rsa_public
+    private: ../internal/test/secrets/rsa_private
   ssh:
-    public: ../test/secrets/ssh_public
-    private: ../test/secrets/ssh_private
+    public: ../internal/test/secrets/ssh_public
+    private: ../internal/test/secrets/ssh_private
 feature:
   address: localhost:9000
   retry:
@@ -30,7 +30,7 @@ feature:
     attempts: 3
   timeout: 10s
 hooks:
-  secret: ../test/secrets/hooks
+  secret: ../internal/test/secrets/hooks
 id:
   kind: uuid
 limiter:
@@ -43,9 +43,9 @@ time:
 sql:
   pg:
     masters:
-      - url: ../test/secrets/pg
+      - url: ../internal/test/secrets/pg
     slaves:
-      - url: ../test/secrets/pg
+      - url: ../internal/test/secrets/pg
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h
@@ -58,7 +58,7 @@ telemetry:
     kind: otlp
     url: http://localhost:4318/v1/traces
     headers:
-      Authorization: ../test/secrets/tracer
+      Authorization: ../internal/test/secrets/tracer
 token:
   kind: "jwt"
   sub: "sub"

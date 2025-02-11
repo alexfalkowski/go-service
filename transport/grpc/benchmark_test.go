@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/client"
+	"github.com/alexfalkowski/go-service/internal/test"
+	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/test"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	"go.uber.org/fx/fxtest"

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )

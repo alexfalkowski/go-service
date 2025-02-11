@@ -8,8 +8,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/test"
 	"github.com/linxGnu/mssqlx"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
