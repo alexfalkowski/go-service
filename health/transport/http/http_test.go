@@ -12,8 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/health"
 	shc "github.com/alexfalkowski/go-service/health/checker"
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/test"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx"

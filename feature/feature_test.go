@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/feature"
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"

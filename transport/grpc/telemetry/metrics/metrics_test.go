@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.opentelemetry.io/otel/metric"

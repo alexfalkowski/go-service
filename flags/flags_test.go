@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/flags"
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"github.com/spf13/cobra"
 )
