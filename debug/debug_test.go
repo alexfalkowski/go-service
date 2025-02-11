@@ -22,7 +22,7 @@ func TestInsecureDebug(t *testing.T) {
 
 	for _, path := range paths {
 		Convey("When I have a all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
 			world.Register()
 			world.RequireStart()
 
@@ -53,7 +53,7 @@ func TestSecureDebug(t *testing.T) {
 
 	for _, path := range paths {
 		Convey("When I have a all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
 			world.Register()
 			world.RequireStart()
 

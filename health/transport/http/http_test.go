@@ -24,7 +24,7 @@ func TestHealth(t *testing.T) {
 
 	for _, check := range checks {
 		Convey("Given I register the health handler", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
 
 			so, err := observer(world.Lifecycle, test.StatusURL("200"), world)
@@ -65,7 +65,7 @@ func TestHealth(t *testing.T) {
 
 func TestReadinessNoop(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 
 		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)
@@ -105,7 +105,7 @@ func TestReadinessNoop(t *testing.T) {
 
 func TestInvalidHealth(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 
 		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)

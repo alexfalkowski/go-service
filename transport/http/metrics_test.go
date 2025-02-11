@@ -27,6 +27,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 			test.WithWorldTelemetry("prometheus"),
 			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 			test.WithWorldToken(token, token),
+			test.WithWorldHTTP(),
 		)
 		world.Register()
 
@@ -65,7 +66,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 func TestPrometheusHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)))
+		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 
 		_, err := world.OpenDatabase()

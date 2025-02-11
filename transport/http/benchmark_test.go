@@ -190,7 +190,7 @@ func BenchmarkRoute(b *testing.B) {
 	tc := test.NewOTLPTracerConfig()
 	m := test.NewOTLPMeter(lc)
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
 	s.Register()
 
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -214,7 +214,8 @@ func BenchmarkRoute(b *testing.B) {
 		req.Header.Set("Content-Type", "text/html")
 
 		for range b.N {
-			_, _ = client.Do(req)
+			_, err := client.Do(req)
+			runtime.Must(err)
 		}
 	})
 
@@ -233,7 +234,7 @@ func BenchmarkRPC(b *testing.B) {
 	tc := test.NewOTLPTracerConfig()
 	m := test.NewOTLPMeter(lc)
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
 	s.Register()
 
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -254,7 +255,8 @@ func BenchmarkRPC(b *testing.B) {
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
-				_, _ = client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				runtime.Must(err)
 			}
 		})
 	}
@@ -274,7 +276,7 @@ func BenchmarkProtobuf(b *testing.B) {
 	tc := test.NewOTLPTracerConfig()
 	m := test.NewOTLPMeter(lc)
 
-	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux}
+	s := &test.Server{Lifecycle: lc, Logger: logger, Tracer: tc, TransportConfig: cfg, Meter: m, Mux: mux, RegisterHTTP: true}
 	s.Register()
 
 	cl := &test.Client{Lifecycle: lc, Logger: logger, Tracer: tc, Transport: cfg, Meter: m}
@@ -295,7 +297,8 @@ func BenchmarkProtobuf(b *testing.B) {
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
-				_, _ = client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				_, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				runtime.Must(err)
 			}
 		})
 	}

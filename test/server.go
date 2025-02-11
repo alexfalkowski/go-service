@@ -36,6 +36,9 @@ type Server struct {
 	Logger          *zap.Logger
 	ID              id.Generator
 	VerifyAuth      bool
+	RegisterHTTP    bool
+	RegisterGRPC    bool
+	RegisterDebug   bool
 }
 
 // Register server.
@@ -81,8 +84,22 @@ func (s *Server) Register() {
 
 	s.DebugServer = debugServer
 
-	v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
-	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: []transport.Server{httpServer, grpcServer, debugServer}})
+	servers := []transport.Server{}
+
+	if s.RegisterHTTP {
+		servers = append(servers, httpServer)
+	}
+
+	if s.RegisterGRPC {
+		v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
+		servers = append(servers, grpcServer)
+	}
+
+	if s.RegisterDebug {
+		servers = append(servers, debugServer)
+	}
+
+	transport.Register(transport.RegisterParams{Lifecycle: s.Lifecycle, Servers: servers})
 }
 
 // EmptyHandler for test.

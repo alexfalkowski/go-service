@@ -11,7 +11,7 @@ import (
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {
-		world := test.NewWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"))
+		world := test.NewWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 

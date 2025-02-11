@@ -16,7 +16,7 @@ import (
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -50,7 +50,7 @@ func TestInsecureUnary(t *testing.T) {
 
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -77,7 +77,7 @@ func TestSecureUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 

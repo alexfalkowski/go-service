@@ -62,6 +62,9 @@ type worldOpts struct {
 	secure      bool
 	rest        bool
 	compression bool
+	http        bool
+	grpc        bool
+	debug       bool
 }
 
 type worldOptionFunc func(*worldOpts)
@@ -127,6 +130,27 @@ func WithWorldPGConfig(config *pg.Config) WorldOption {
 	})
 }
 
+// WithWorldHTTP for test.
+func WithWorldHTTP() WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.http = true
+	})
+}
+
+// WithWorldGRPC for test.
+func WithWorldGRPC() WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.grpc = true
+	})
+}
+
+// WithWorldDebug for test.
+func WithWorldDebug() WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.debug = true
+	})
+}
+
 func options(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
@@ -174,8 +198,8 @@ func NewWorld(t *testing.T, opts ...WorldOption) *World {
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
-		Verifier: os.verfier, VerifyAuth: os.verfier != nil,
-		ID: id,
+		Verifier: os.verfier, VerifyAuth: os.verfier != nil, ID: id,
+		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	server.Register()
 

@@ -16,7 +16,7 @@ import (
 func TestRestNoContent(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -41,7 +41,7 @@ func TestRestNoContent(t *testing.T) {
 func TestRestRequestNoContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -70,7 +70,7 @@ func TestRestRequestNoContent(t *testing.T) {
 func TestRestError(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -95,7 +95,7 @@ func TestRestError(t *testing.T) {
 func TestRestRequestError(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -124,7 +124,7 @@ func TestRestRequestError(t *testing.T) {
 func TestRestWithContent(t *testing.T) {
 	for _, v := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -149,7 +149,7 @@ func TestRestWithContent(t *testing.T) {
 func TestRestRequestWithContent(t *testing.T) {
 	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
