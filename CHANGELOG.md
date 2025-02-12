@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.428.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.428.0) - 2025-02-12
+
+- [`b2c76ac`](https://github.com/alexfalkowski/go-service/commit/b2c76ac8fb579a6f408c9295471c69d58a5b99bd) feat(test): move to internal (#1297)
+- [`bb83bf6`](https://github.com/alexfalkowski/go-service/commit/bb83bf6bd79f13ba78e2e644d4a59c604d99b7e1) test(test): use test.Path rather than relative path (#1296)
+- [`cdf7d4d`](https://github.com/alexfalkowski/go-service/commit/cdf7d4d2f19636082a0b45dc899a6358f14ca987) docs(diagrams): update with make (#1294)
+- [`2c6a1ff`](https://github.com/alexfalkowski/go-service/commit/2c6a1ff9ca0c6695272af3ded8509bb5988c294c) test(benchmark): allow world to be used with benchmarks (#1293)
+- [`dc20278`](https://github.com/alexfalkowski/go-service/commit/dc202781c16917f4defbfd902cbe318755fcbdb1) test(world): specify which server starts (#1291)
+
 ## [v1.427.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.427.0) - 2025-02-11
 
 - [`2597ebf`](https://github.com/alexfalkowski/go-service/commit/2597ebfc0a4e5fc07d178beeb5f5462c92a33153) feat(deps): bump golang.org/x/net from 0.34.0 to 0.35.0 (#1289)
