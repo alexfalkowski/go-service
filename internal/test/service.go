@@ -3,7 +3,7 @@ package test
 import (
 	"context"
 
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 )
 
 // NewService ...

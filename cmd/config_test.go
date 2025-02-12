@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
@@ -32,7 +32,7 @@ func TestNoneConfig(t *testing.T) {
 
 func TestReadValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../test/config.yml"), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", "config.yml"), ShouldBeNil)
 
 		Convey("When I read the config", func() {
 			input := test.NewInputConfig("env:CONFIG_FILE")
@@ -47,7 +47,7 @@ func TestReadValidConfigFile(t *testing.T) {
 
 	Convey("Given I have configuration file", t, func() {
 		Convey("When I read the config", func() {
-			input := test.NewInputConfig("file:../test/config.yml")
+			input := test.NewInputConfig("file:config.yml")
 
 			Convey("Then I should have a valid configuration", func() {
 				So(input, ShouldNotBeNil)
@@ -148,7 +148,7 @@ func TestMissingConfig(t *testing.T) {
 
 func TestNonExistentConfig(t *testing.T) {
 	Convey("Given I have non existent configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../../test/bob"), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", "../bob"), ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
 			input := test.NewInputConfig("env:CONFIG_FILE")
@@ -174,7 +174,7 @@ func TestInvalidKindConfig(t *testing.T) {
 
 func TestInvalidConfig(t *testing.T) {
 	Convey("Given I have invalid kind configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../test/config.go"), ShouldBeNil)
+		So(os.SetVariable("CONFIG_FILE", "config.go"), ShouldBeNil)
 
 		Convey("When I try to parse the configuration file", func() {
 			input := test.NewInputConfig("env:CONFIG_FILE")

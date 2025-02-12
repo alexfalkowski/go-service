@@ -3,8 +3,8 @@ package zap_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/internal/test"
 	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
-	"github.com/alexfalkowski/go-service/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/zap"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/test"
-	v1 "github.com/alexfalkowski/go-service/test/greet/v1"
+	"github.com/alexfalkowski/go-service/internal/test"
+	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

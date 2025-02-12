@@ -1,8 +1,6 @@
 package test
 
 import (
-	"path/filepath"
-	"runtime"
 	"time"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
@@ -264,17 +262,4 @@ func NewLimiterConfig(kind, interval string, tokens uint64) *limiter.Config {
 		Interval: interval,
 		Tokens:   tokens,
 	}
-}
-
-// Path for test.
-func Path(p string) string {
-	_, b, _, _ := runtime.Caller(0) //nolint:dogsled
-	dir := filepath.Dir(b)
-
-	return filepath.Join(dir, p)
-}
-
-// FilePath for test.
-func FilePath(p string) string {
-	return "file:" + Path(p)
 }

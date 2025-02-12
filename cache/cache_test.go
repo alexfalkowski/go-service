@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/cachego"
 	"github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive

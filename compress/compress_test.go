@@ -3,7 +3,7 @@ package compress_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/test"
+	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
