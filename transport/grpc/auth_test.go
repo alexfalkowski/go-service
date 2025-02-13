@@ -1,7 +1,6 @@
 package grpc_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -23,15 +22,13 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(ctx, req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -53,15 +50,13 @@ func TestEmptyAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(ctx, req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -79,15 +74,13 @@ func TestMissingClientAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(ctx, req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should have a unauthenticated reply", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -109,7 +102,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet", func() {
-			ctx := context.Background()
+			ctx := t.Context()
 			ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
 			ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
@@ -137,7 +130,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
+			ctx := t.Context()
 			ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 			conn := world.NewGRPC()
@@ -168,15 +161,13 @@ func TestValidAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for an authenticated greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			resp, err := client.SayHello(ctx, req)
+			resp, err := client.SayHello(t.Context(), req)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -200,8 +191,6 @@ func TestBreakerAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
@@ -211,7 +200,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 			var err error
 
 			for range 10 {
-				_, err = client.SayHello(ctx, req)
+				_, err = client.SayHello(t.Context(), req)
 			}
 
 			Convey("Then I should have a unavailable reply", func() {
@@ -234,14 +223,12 @@ func TestValidAuthStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			stream, err := client.SayStreamHello(ctx)
+			stream, err := client.SayStreamHello(t.Context())
 			So(err, ShouldBeNil)
 
 			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
@@ -270,14 +257,12 @@ func TestInvalidAuthStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			stream, err := client.SayStreamHello(ctx)
+			stream, err := client.SayStreamHello(t.Context())
 			So(err, ShouldBeNil)
 
 			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
@@ -305,14 +290,12 @@ func TestEmptyAuthStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			_, err := client.SayStreamHello(ctx)
+			_, err := client.SayStreamHello(t.Context())
 
 			Convey("Then I should have an auth error", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)
@@ -334,14 +317,12 @@ func TestMissingClientAuthStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			stream, err := client.SayStreamHello(ctx)
+			stream, err := client.SayStreamHello(t.Context())
 			So(err, ShouldBeNil)
 
 			err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
@@ -369,14 +350,12 @@ func TestTokenErrorAuthStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet that will generate a token error", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 
-			_, err := client.SayStreamHello(ctx)
+			_, err := client.SayStreamHello(t.Context())
 
 			Convey("Then I should have an error", func() {
 				So(status.Code(err), ShouldEqual, codes.Unauthenticated)

@@ -1,7 +1,6 @@
 package server_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -42,7 +41,7 @@ func TestServer(t *testing.T) {
 				So(sh.Called(), ShouldBeFalse)
 			})
 
-			server.Stop(context.Background())
+			server.Stop(t.Context())
 		})
 	})
 }

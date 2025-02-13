@@ -2,7 +2,6 @@
 package grpc_test
 
 import (
-	"context"
 	"net"
 	"testing"
 
@@ -44,7 +43,7 @@ func BenchmarkDefaultGRPC(b *testing.B) {
 		req := &v1.SayHelloRequest{Name: "test"}
 
 		for range b.N {
-			_, err := client.SayHello(context.Background(), req)
+			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
 	})
@@ -81,7 +80,7 @@ func BenchmarkGRPC(b *testing.B) {
 		req := &v1.SayHelloRequest{Name: "test"}
 
 		for range b.N {
-			_, err := client.SayHello(context.Background(), req)
+			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
 	})
@@ -120,7 +119,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 		req := &v1.SayHelloRequest{Name: "test"}
 
 		for range b.N {
-			_, err := client.SayHello(context.Background(), req)
+			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
 	})
@@ -161,7 +160,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 		req := &v1.SayHelloRequest{Name: "test"}
 
 		for range b.N {
-			_, err := client.SayHello(context.Background(), req)
+			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
 	})

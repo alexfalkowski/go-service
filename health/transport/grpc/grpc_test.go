@@ -1,7 +1,6 @@
 package grpc_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -33,7 +32,7 @@ func TestUnary(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
+			ctx := t.Context()
 			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
@@ -68,8 +67,6 @@ func TestInvalidUnary(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
@@ -77,7 +74,7 @@ func TestInvalidUnary(t *testing.T) {
 			req := &grpc_health_v1.HealthCheckRequest{}
 
 			md := metadata.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
-			ctx = metadata.NewOutgoingContext(ctx, md)
+			ctx := metadata.NewOutgoingContext(t.Context(), md)
 
 			resp, err := client.Check(ctx, req)
 			So(err, ShouldBeNil)
@@ -104,15 +101,13 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
 			req := &grpc_health_v1.HealthCheckRequest{}
 
-			resp, err := client.Check(ctx, req)
+			resp, err := client.Check(t.Context(), req)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a healthy response", func() {
@@ -137,15 +132,13 @@ func TestStream(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
 			req := &grpc_health_v1.HealthCheckRequest{}
 
-			wc, err := client.Watch(ctx, req)
+			wc, err := client.Watch(t.Context(), req)
 			So(err, ShouldBeNil)
 
 			resp, err := wc.Recv()
@@ -173,15 +166,13 @@ func TestInvalidStream(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
 			req := &grpc_health_v1.HealthCheckRequest{}
 
-			wc, err := client.Watch(ctx, req)
+			wc, err := client.Watch(t.Context(), req)
 			So(err, ShouldBeNil)
 
 			resp, err := wc.Recv()
@@ -209,15 +200,13 @@ func TestIgnoreAuthStream(t *testing.T) {
 		time.Sleep(1 * time.Second)
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := grpc_health_v1.NewHealthClient(conn)
 			req := &grpc_health_v1.HealthCheckRequest{}
 
-			wc, err := client.Watch(ctx, req)
+			wc, err := client.Watch(t.Context(), req)
 			So(err, ShouldBeNil)
 
 			resp, err := wc.Recv()

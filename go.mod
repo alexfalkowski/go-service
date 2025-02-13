@@ -1,14 +1,12 @@
 module github.com/alexfalkowski/go-service
 
-go 1.23.3
-
-toolchain go1.23.6
+go 1.24.0
 
 require (
 	aidanwoods.dev/go-paseto v1.5.3
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.7.0
-	github.com/alexfalkowski/go-health v1.21.0
+	github.com/alexfalkowski/go-health v1.22.0
 	github.com/arl/statsviz v0.6.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
@@ -88,6 +86,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
+	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect

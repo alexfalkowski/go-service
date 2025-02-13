@@ -24,7 +24,6 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - exportloopref
     - tagalign
     - bodyclose
     - depguard
@@ -40,3 +39,4 @@ linters:
     - nonamedreturns
     - nakedret
     - gochecknoinits
+    - tenv

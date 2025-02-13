@@ -47,8 +47,6 @@ func UnaryServerInterceptor(tra trace.Tracer) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for tracer.
-//
-//nolint:fatcontext
 func StreamServerInterceptor(tra trace.Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]

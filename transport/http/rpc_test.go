@@ -3,7 +3,6 @@ package http_test
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"testing"
@@ -33,7 +32,7 @@ func TestRPCNoContent(t *testing.T) {
 					rpc.WithClientTimeout("10s"),
 				)
 
-				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				_, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -63,7 +62,7 @@ func TestRPCNoRequest(t *testing.T) {
 					rpc.WithClientTimeout("10s"),
 				)
 
-				_, err := client.Invoke(context.Background(), nil)
+				_, err := client.Invoke(t.Context(), nil)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -92,7 +91,7 @@ func TestRPCWithContent(t *testing.T) {
 					rpc.WithClientTimeout("10s"),
 				)
 
-				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				resp, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -118,7 +117,7 @@ func TestSuccessProtobufRPC(t *testing.T) {
 				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
-				res, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				res, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -150,7 +149,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 					url := fmt.Sprintf("http://%s/hello", world.ServerHost())
 					client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
-					_, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+					_, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
 
 					Convey("Then I should have an error", func() {
 						So(err, ShouldBeError)
@@ -178,7 +177,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 				header := http.Header{}
 				header.Set("Content-Type", "application/"+mt)
 
-				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
+				res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -219,7 +218,7 @@ func TestErrorRPC(t *testing.T) {
 					err := enc.Encode(b, test.Request{Name: "Bob"})
 					So(err, ShouldBeNil)
 
-					res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
+					res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
 					So(err, ShouldBeNil)
 
 					Convey("Then I should have response", func() {
@@ -249,7 +248,7 @@ func TestAllowedRPC(t *testing.T) {
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
-				resp, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				resp, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -280,7 +279,7 @@ func TestDisallowedRPC(t *testing.T) {
 					rpc.WithClientContentType(mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
-				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				_, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
 
 				Convey("Then I should have an error", func() {
 					So(status.IsError(err), ShouldBeTrue)

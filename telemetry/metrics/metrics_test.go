@@ -1,7 +1,6 @@
 package metrics_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -20,7 +19,7 @@ func TestOTLP(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
-			counter.Add(context.Background(), 1)
+			counter.Add(t.Context(), 1)
 
 			Convey("Then I should have a metric", func() {
 				lc.RequireStop()

@@ -1,7 +1,6 @@
 package meta_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -10,7 +9,7 @@ import (
 
 func TestSnakeCase(t *testing.T) {
 	Convey("Given I have some meta values", t, func() {
-		ctx := context.Background()
+		ctx := t.Context()
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
 		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
 		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
@@ -27,7 +26,7 @@ func TestSnakeCase(t *testing.T) {
 
 func TestCamelCase(t *testing.T) {
 	Convey("Given I have some meta values", t, func() {
-		ctx := context.Background()
+		ctx := t.Context()
 		ctx = meta.WithAttribute(ctx, "test_id", meta.String("1"))
 		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
 		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
@@ -44,7 +43,7 @@ func TestCamelCase(t *testing.T) {
 
 func TestNoneCase(t *testing.T) {
 	Convey("Given I have some meta values", t, func() {
-		ctx := context.Background()
+		ctx := t.Context()
 		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
 		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
 		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))

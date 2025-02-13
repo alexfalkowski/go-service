@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -37,15 +36,14 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		world.RequireStart()
 
 		ptr := ptr.Zero[string]()
-		ctx := context.Background()
 
-		err = world.Get(ctx, "not_existent", ptr)
+		err = world.Get(t.Context(), "not_existent", ptr)
 		So(err, ShouldBeError)
 
 		Convey("When I query metrics", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {

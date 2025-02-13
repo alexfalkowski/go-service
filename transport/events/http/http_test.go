@@ -2,7 +2,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -19,12 +18,10 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		ctx := context.Background()
-
-		world.RegisterEvents(ctx)
+		world.RegisterEvents(t.Context())
 
 		Convey("When I send an event", func() {
-			ctx := world.EventsContext(ctx)
+			ctx := world.EventsContext(t.Context())
 
 			e := events.NewEvent()
 			e.SetSource("example/uri")
@@ -52,12 +49,10 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		ctx := context.Background()
-
-		world.RegisterEvents(ctx)
+		world.RegisterEvents(t.Context())
 
 		Convey("When I send an event", func() {
-			ctx := world.EventsContext(ctx)
+			ctx := world.EventsContext(t.Context())
 
 			e := events.NewEvent()
 			e.SetSource("example/uri")
@@ -85,12 +80,10 @@ func TestSendNotReceive(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		ctx := context.Background()
-
-		world.RegisterEvents(ctx)
+		world.RegisterEvents(t.Context())
 
 		Convey("When I send an event", func() {
-			ctx := world.EventsContext(ctx)
+			ctx := world.EventsContext(t.Context())
 
 			e := events.NewEvent()
 			e.SetSource("example/uri")

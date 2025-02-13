@@ -1,7 +1,6 @@
 package feature_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/feature"
@@ -27,7 +26,7 @@ func TestNoop(t *testing.T) {
 
 		Convey("When I get a flag", func() {
 			attrs := map[string]any{"favorite_color": "blue"}
-			v, err := client.BooleanValue(context.Background(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
+			v, err := client.BooleanValue(t.Context(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have missing flag", func() {

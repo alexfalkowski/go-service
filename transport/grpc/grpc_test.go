@@ -21,7 +21,7 @@ func TestInsecureUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "test", meta.Ignored("test"))
+			ctx := meta.WithAttribute(t.Context(), "test", meta.Ignored("test"))
 			ctx = meta.WithAttribute(ctx, "ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
 			conn := world.NewGRPC()
@@ -55,7 +55,7 @@ func TestSecureUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
+			ctx := meta.WithAttribute(t.Context(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
 			conn := world.NewGRPC()
 			defer conn.Close()
@@ -82,12 +82,14 @@ func TestStream(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a greet", func() {
-			ctx := meta.WithAttribute(context.Background(), "test", meta.Redacted("test"))
+			ctx := meta.WithAttribute(t.Context(), "test", meta.Redacted("test"))
 
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
+
+			test.Timeout()
 
 			ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
 			defer cancel()
