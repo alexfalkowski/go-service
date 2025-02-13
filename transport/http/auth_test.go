@@ -2,7 +2,6 @@ package http_test
 
 import (
 	"bytes"
-	"context"
 	"net/http"
 	"testing"
 
@@ -38,7 +37,7 @@ func TestTokenAuthUnary(t *testing.T) {
 				header.Set("X-Forwarded-For", "127.0.0.1")
 				header.Set("Geolocation", "geo:47,11")
 
-				res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+				res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid reply", func() {
@@ -66,7 +65,7 @@ func TestValidAuthUnary(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("X-Forwarded-For", "127.0.0.1")
 
-			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid reply", func() {
@@ -92,7 +91,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -119,7 +118,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("Authorization", "What Invalid")
 
-			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a reply", func() {
@@ -146,7 +145,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -172,7 +171,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			_, _, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			_, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
@@ -198,7 +197,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			res, body, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a unauthenticated reply", func() {
@@ -224,7 +223,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			header.Set("Content-Type", "application/json")
 			header.Set("Request-Id", "test")
 
-			_, _, err := world.ResponseWithBody(context.Background(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+			_, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -247,8 +246,6 @@ func TestBreakerAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
-			ctx := context.Background()
-
 			var err error
 
 			for range 10 {
@@ -256,7 +253,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 				header.Set("Content-Type", "application/json")
 				header.Set("Request-Id", "test")
 
-				_, _, err = world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
+				_, _, err = world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
 			}
 
 			Convey("Then I should have an error", func() {

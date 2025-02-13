@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -31,9 +30,8 @@ func TestServerClose(t *testing.T) {
 func TestWriteResponse(t *testing.T) {
 	Convey("When we write with an erroneous writer", t, func() {
 		w := &test.ErrResponseWriter{}
-		ctx := context.Background()
 
-		nh.WriteResponse(ctx, w, []byte("test"))
+		nh.WriteResponse(t.Context(), w, []byte("test"))
 
 		Convey("Then we should record the error", func() {
 			So(w.Code, ShouldEqual, http.StatusInternalServerError)

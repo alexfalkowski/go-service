@@ -1,7 +1,6 @@
 package limiter_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/limiter"
@@ -43,8 +42,6 @@ func TestLimiter(t *testing.T) {
 		limiter.RegisterKey("user-agent", meta.UserAgent)
 
 		Convey("When I try to create a limiter", func() {
-			ctx := context.Background()
-
 			config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
 			limiter, err := limiter.New(lc, config)
 
@@ -53,7 +50,7 @@ func TestLimiter(t *testing.T) {
 				So(limiter, ShouldNotBeNil)
 			})
 
-			err = limiter.Close(ctx)
+			err = limiter.Close(t.Context())
 			So(err, ShouldBeNil)
 		})
 	})
@@ -67,12 +64,10 @@ func TestLimiter(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try take when the limiter is closed", func() {
-			ctx := context.Background()
-
-			err = limiter.Close(context.Background())
+			err = limiter.Close(t.Context())
 			So(err, ShouldBeNil)
 
-			_, _, err := limiter.Take(ctx)
+			_, _, err := limiter.Take(t.Context())
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

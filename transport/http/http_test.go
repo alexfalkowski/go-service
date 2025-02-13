@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -18,7 +17,7 @@ func TestSecure(t *testing.T) {
 		Convey("When I query github", func() {
 			client := world.NewHTTP()
 
-			req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "https://github.com/alexfalkowski", http.NoBody)
+			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://github.com/alexfalkowski", http.NoBody)
 			So(err, ShouldBeNil)
 
 			resp, err := client.Do(req)

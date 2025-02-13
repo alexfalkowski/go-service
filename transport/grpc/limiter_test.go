@@ -1,7 +1,6 @@
 package grpc_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -18,16 +17,14 @@ func TestLimiterLimitedUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query repeatedly", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, _ = client.SayHello(ctx, req)
-			_, err := client.SayHello(ctx, req)
+			_, _ = client.SayHello(t.Context(), req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should have exhausted resources", func() {
 				So(err, ShouldBeError)
@@ -46,15 +43,13 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query repeatedly", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(ctx, req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should not have exhausted resources", func() {
 				So(err, ShouldBeNil)
@@ -77,8 +72,6 @@ func TestLimiterAuthUnary(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query for a authenticated greet multiple times", func() {
-			ctx := context.Background()
-
 			conn := world.NewGRPC()
 			defer conn.Close()
 
@@ -88,7 +81,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 			var err error
 
 			for range 10 {
-				_, err = client.SayHello(ctx, req)
+				_, err = client.SayHello(t.Context(), req)
 			}
 
 			Convey("Then I should not have exhausted resources", func() {
@@ -106,9 +99,7 @@ func TestClosedLimiterUnary(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		ctx := context.Background()
-
-		err := world.Limiter.Close(ctx)
+		err := world.Limiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
 		Convey("When  I query for a greet", func() {
@@ -118,7 +109,7 @@ func TestClosedLimiterUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(ctx, req)
+			_, err := client.SayHello(t.Context(), req)
 
 			Convey("Then I should have an internal error", func() {
 				So(err, ShouldBeError)
