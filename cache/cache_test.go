@@ -2,7 +2,6 @@
 package cache_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cache"
@@ -14,7 +13,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-//nolint:funlen
 func TestValidCache(t *testing.T) {
 	configs := []*config.Config{
 		test.NewCacheConfig("redis", "snappy", "json", "redis"),
@@ -46,11 +44,9 @@ func TestValidCache(t *testing.T) {
 
 			world.RequireStart()
 
-			ctx := context.Background()
-
 			Convey("When I save an item", func() {
 				value := "hello?"
-				err := c.Persist(ctx, "test", &value, time.Minute)
+				err := c.Persist(t.Context(), "test", &value, time.Minute)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -60,10 +56,10 @@ func TestValidCache(t *testing.T) {
 			Convey("When I get an item", func() {
 				value := "wassup?"
 
-				err := cache.Persist(ctx, c, "test", &value, time.Minute)
+				err := cache.Persist(t.Context(), c, "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				v, err := cache.Get[string](ctx, c, "test")
+				v, err := cache.Get[string](t.Context(), c, "test")
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
@@ -71,7 +67,7 @@ func TestValidCache(t *testing.T) {
 				})
 			})
 
-			err = c.Remove(ctx, "test")
+			err = c.Remove(t.Context(), "test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -186,10 +182,8 @@ func TestErroneousSave(t *testing.T) {
 
 			world.RequireStart()
 
-			ctx := context.Background()
-
 			Convey("When I try to save a value", func() {
-				err := cache.Persist(ctx, c, "test", ptr.Value("test"), time.Minute)
+				err := cache.Persist(t.Context(), c, "test", ptr.Value("test"), time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -236,11 +230,9 @@ func TestErroneousGet(t *testing.T) {
 
 			world.RequireStart()
 
-			ctx := context.Background()
-
 			Convey("When I try to encode a value", func() {
 				ptr := ptr.Zero[string]()
-				err := cache.Get(ctx, "test", ptr)
+				err := cache.Get(t.Context(), "test", ptr)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)

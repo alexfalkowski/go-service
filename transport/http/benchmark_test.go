@@ -44,7 +44,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
 		for range b.N {
@@ -82,7 +82,7 @@ func BenchmarkHTTP(b *testing.B) {
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
 		for range b.N {
@@ -123,7 +123,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
 		for range b.N {
@@ -167,7 +167,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
 
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
 		for range b.N {
@@ -197,7 +197,7 @@ func BenchmarkRoute(b *testing.B) {
 	b.Run("html", func(b *testing.B) {
 		client := world.NewHTTP()
 
-		req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.ServerHost()), http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.ServerHost()), http.NoBody)
 		runtime.Must(err)
 
 		req.Header.Set("Content-Type", "text/html")
@@ -234,7 +234,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
-				_, err := client.Invoke(context.Background(), &test.Request{Name: "Bob"})
+				_, err := client.Invoke(b.Context(), &test.Request{Name: "Bob"})
 				runtime.Must(err)
 			}
 		})
@@ -265,7 +265,7 @@ func BenchmarkProtobuf(b *testing.B) {
 
 		b.Run(mt, func(b *testing.B) {
 			for range b.N {
-				_, err := client.Invoke(context.Background(), &v1.SayHelloRequest{Name: "Bob"})
+				_, err := client.Invoke(b.Context(), &v1.SayHelloRequest{Name: "Bob"})
 				runtime.Must(err)
 			}
 		})

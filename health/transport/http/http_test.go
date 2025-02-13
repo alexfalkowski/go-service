@@ -2,7 +2,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -42,7 +41,7 @@ func TestHealth(t *testing.T) {
 			world.RequireStart()
 
 			Convey("When I query "+check, func() {
-				ctx := context.Background()
+				ctx := t.Context()
 				ctx = tm.WithRequestID(ctx, meta.String("test-id"))
 				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
@@ -82,14 +81,12 @@ func TestReadinessNoop(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
-
 			header := http.Header{}
 			header.Add("Request-Id", "test-id")
 			header.Add("User-Agent", "test-user-agent")
 			header.Set("Content-Type", "application/json")
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "readyz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "readyz", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a healthy response", func() {
@@ -122,10 +119,9 @@ func TestInvalidHealth(t *testing.T) {
 		world.RequireStart()
 
 		Convey("When I query health", func() {
-			ctx := context.Background()
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "healthz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "healthz", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {

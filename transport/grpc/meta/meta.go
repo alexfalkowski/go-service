@@ -47,8 +47,6 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, gen id
 }
 
 // StreamServerInterceptor for meta.
-//
-//nolint:fatcontext
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gen id.Generator) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]

@@ -23,7 +23,7 @@ func TestStart(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		cmd.Start(lc, func(_ context.Context) { panic("whoops") })
 
-		err := lc.Start(context.Background())
+		err := lc.Start(t.Context())
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

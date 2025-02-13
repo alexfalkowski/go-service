@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"context"
 	"net/http"
 	"testing"
 
@@ -20,12 +19,10 @@ func TestGet(t *testing.T) {
 		})
 
 		Convey("When I query for a greet", func() {
-			ctx := context.Background()
-
-			_, _, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
+			_, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
 			So(err, ShouldBeNil)
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid greet", func() {
@@ -50,12 +47,10 @@ func TestLimiter(t *testing.T) {
 			})
 
 			Convey("When I query for a greet", func() {
-				ctx := context.Background()
-
-				_, _, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
+				_, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
 				So(err, ShouldBeNil)
 
-				res, _, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
+				res, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have been rate limited", func() {
@@ -75,9 +70,7 @@ func TestClosedLimiter(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		ctx := context.Background()
-
-		err := world.Limiter.Close(ctx)
+		err := world.Limiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
 		world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
@@ -85,7 +78,7 @@ func TestClosedLimiter(t *testing.T) {
 		})
 
 		Convey("When I query for a greet", func() {
-			res, _, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
+			res, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", http.Header{}, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an internal error", func() {

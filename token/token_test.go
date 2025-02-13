@@ -1,7 +1,6 @@
 package token_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -17,7 +16,7 @@ func TestGenerate(t *testing.T) {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
 
 			Convey("When I try to generate", func() {
-				_, _, err := token.Generate(context.Background())
+				_, _, err := token.Generate(t.Context())
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -30,7 +29,7 @@ func TestGenerate(t *testing.T) {
 		token := token.NewToken(test.NewToken("none", "secrets/key"), test.Name, nil, nil)
 
 		Convey("When I try to generate", func() {
-			_, token, err := token.Generate(context.Background())
+			_, token, err := token.Generate(t.Context())
 
 			Convey("Then I should have no token", func() {
 				So(token, ShouldBeNil)
@@ -43,7 +42,7 @@ func TestGenerate(t *testing.T) {
 		token := token.NewToken(nil, test.Name, nil, nil)
 
 		Convey("When I try to generate", func() {
-			_, token, err := token.Generate(context.Background())
+			_, token, err := token.Generate(t.Context())
 
 			Convey("Then I should have no token", func() {
 				So(token, ShouldBeNil)
@@ -59,7 +58,7 @@ func TestVerify(t *testing.T) {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
 
 			Convey("When I try to verify", func() {
-				_, err := token.Verify(context.Background(), nil)
+				_, err := token.Verify(t.Context(), nil)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -71,7 +70,7 @@ func TestVerify(t *testing.T) {
 			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, nil, nil)
 
 			Convey("When I try to verify", func() {
-				_, err := token.Verify(context.Background(), []byte{})
+				_, err := token.Verify(t.Context(), []byte{})
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -80,11 +79,11 @@ func TestVerify(t *testing.T) {
 		})
 	}
 
-	Convey("Given I have an invalid configurionat", t, func() {
+	Convey("Given I have an invalid configuration", t, func() {
 		token := token.NewToken(test.NewToken("none", "secrets/key"), test.Name, nil, nil)
 
 		Convey("When I try to verify", func() {
-			_, err := token.Verify(context.Background(), []byte{})
+			_, err := token.Verify(t.Context(), []byte{})
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
@@ -92,11 +91,11 @@ func TestVerify(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have an missing configurionat", t, func() {
+	Convey("Given I have an missing configuration", t, func() {
 		token := token.NewToken(nil, test.Name, nil, nil)
 
 		Convey("When I try to verify", func() {
-			_, err := token.Verify(context.Background(), []byte{})
+			_, err := token.Verify(t.Context(), []byte{})
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
