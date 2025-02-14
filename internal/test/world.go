@@ -311,7 +311,7 @@ func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, metho
 
 // OpenDatabase for world.
 func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
-	dbs, err := pg.Open(pg.OpenParams{Lifecycle: w.Lifecycle, Config: w.PG})
+	dbs, err := pg.Open(w.Lifecycle, w.PG)
 	if err != nil {
 		return nil, err
 	}

@@ -73,7 +73,7 @@ func BenchmarkHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
+	transport.Register(lc, []transport.Server{h})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -114,7 +114,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
+	transport.Register(lc, []transport.Server{h})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -158,7 +158,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{h}})
+	transport.Register(lc, []transport.Server{h})
 
 	lc.RequireStart()
 	b.ResetTimer()

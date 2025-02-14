@@ -495,7 +495,7 @@ func TestInvalidSQLPort(t *testing.T) {
 
 			pg.Register(tracer, logger)
 
-			db, err := pg.Open(pg.OpenParams{Lifecycle: lc, Config: cfg})
+			db, err := pg.Open(lc, cfg)
 			So(err, ShouldBeNil)
 
 			lc.RequireStart()
