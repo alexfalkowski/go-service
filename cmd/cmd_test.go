@@ -1,7 +1,6 @@
 package cmd_test
 
 import (
-	"runtime/debug"
 	"testing"
 	"time"
 
@@ -232,10 +231,8 @@ func featureClient(_ *openfeature.Client) {}
 
 func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
 
-func info() *debug.BuildInfo {
-	info, _ := debug.ReadBuildInfo()
-
-	return info
+func version() env.Version {
+	return test.Version
 }
 
 func environment(_ env.Name, _ env.UserAgent, _ env.Version) {}
@@ -276,7 +273,7 @@ func opts() []fx.Option {
 		feature.Module, transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Provide(info),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Provide(version),
 		fx.Invoke(shutdown), fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(invokeCache),
 		fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(tokens),
