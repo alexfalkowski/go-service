@@ -65,7 +65,7 @@ func BenchmarkGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{g}})
+	transport.Register(lc, []transport.Server{g})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -104,7 +104,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{g}})
+	transport.Register(lc, []transport.Server{g})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -145,7 +145,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(transport.RegisterParams{Lifecycle: lc, Servers: []transport.Server{g}})
+	transport.Register(lc, []transport.Server{g})
 
 	lc.RequireStart()
 	b.ResetTimer()

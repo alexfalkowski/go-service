@@ -11,21 +11,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// OpenParams for pg.
-type OpenParams struct {
-	fx.In
-
-	Lifecycle fx.Lifecycle
-	Config    *Config
-}
-
 // Open for pg.
-func Open(params OpenParams) (*mssqlx.DBs, error) {
-	if !IsEnabled(params.Config) {
+func Open(lc fx.Lifecycle, cfg *Config) (*mssqlx.DBs, error) {
+	if !IsEnabled(cfg) {
 		return &mssqlx.DBs{}, nil
 	}
 
-	return driver.Open(params.Lifecycle, "pg", params.Config.Config)
+	return driver.Open(lc, "pg", cfg.Config)
 }
 
 var once sync.Once
