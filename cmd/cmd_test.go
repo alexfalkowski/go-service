@@ -1,6 +1,7 @@
 package cmd_test
 
 import (
+	"runtime/debug"
 	"testing"
 	"time"
 
@@ -18,7 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/debug"
+	sd "github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/health"
@@ -231,6 +232,12 @@ func featureClient(_ *openfeature.Client) {}
 
 func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
 
+func info() *debug.BuildInfo {
+	info, _ := debug.ReadBuildInfo()
+
+	return info
+}
+
 func environment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func netTime(n st.Network) {
@@ -265,12 +272,12 @@ func shutdown(s fx.Shutdowner) {
 
 func opts() []fx.Option {
 	return []fx.Option{
-		module.Module, cmd.Module, config.Module, debug.Module,
+		module.Module, cmd.Module, config.Module, sd.Module,
 		feature.Module, transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(shutdown),
-		fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Provide(info),
+		fx.Invoke(shutdown), fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(invokeCache),
 		fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(tokens),
 	}

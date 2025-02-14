@@ -5,9 +5,7 @@ import (
 )
 
 // NewVersion for env.
-func NewVersion() Version {
-	info, _ := debug.ReadBuildInfo()
-
+func NewVersion(info *debug.BuildInfo) Version {
 	return Version(info.Main.Version)
 }
 

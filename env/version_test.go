@@ -1,6 +1,7 @@
 package env_test
 
 import (
+	"runtime/debug"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/env"
@@ -9,7 +10,8 @@ import (
 
 func TestVersion(t *testing.T) {
 	Convey("Given I have a system version", t, func() {
-		v := env.NewVersion()
+		info, _ := debug.ReadBuildInfo()
+		v := env.NewVersion(info)
 
 		Convey("When I get the string representation", func() {
 			s := v.String()
