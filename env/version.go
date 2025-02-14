@@ -1,14 +1,5 @@
 package env
 
-import (
-	"runtime/debug"
-)
-
-// NewVersion for env.
-func NewVersion(info *debug.BuildInfo) Version {
-	return Version(info.Main.Version)
-}
-
 // Version of the application.
 type Version string
 
