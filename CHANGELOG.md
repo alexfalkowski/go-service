@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.430.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.430.0) - 2025-02-14
+
+- [`a277a8d`](https://github.com/alexfalkowski/go-service/commit/a277a8d6b8d284d0c65e921774d412973f5e0c03) feat(all): simply params (#1303)
+- [`75cbea0`](https://github.com/alexfalkowski/go-service/commit/75cbea079444b603e13c7dcae3eddf58ab0a371b) docs(diagrams): update with make (#1302)
+- [`0a997eb`](https://github.com/alexfalkowski/go-service/commit/0a997eb64d067de8577702c46bb1ae23b367e625) test(test): move configs and secrets to folder (#1301)
+
 ## [v1.429.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.429.0) - 2025-02-13
 
 - [`53a649b`](https://github.com/alexfalkowski/go-service/commit/53a649befbd263e46ec978ce68d654cf46cd9c3f) feat(go): update to v1.24.0 (#1300)
