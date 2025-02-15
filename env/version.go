@@ -1,5 +1,16 @@
 package env
 
+import (
+	"runtime/debug"
+)
+
+// NewVersion returns the version of the application.
+func NewVersion() Version {
+	info, _ := debug.ReadBuildInfo()
+
+	return Version(info.Main.Version)
+}
+
 // Version of the application.
 type Version string
 

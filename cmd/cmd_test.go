@@ -231,10 +231,6 @@ func featureClient(_ *openfeature.Client) {}
 
 func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
 
-func version() env.Version {
-	return test.Version
-}
-
 func environment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func netTime(n st.Network) {
@@ -273,7 +269,7 @@ func opts() []fx.Option {
 		feature.Module, transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Provide(version),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver),
 		fx.Invoke(shutdown), fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
 		fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(invokeCache),
 		fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(tokens),

@@ -8,4 +8,5 @@ import (
 var Module = fx.Options(
 	fx.Provide(NewUserAgent),
 	fx.Provide(NewName),
+	fx.Provide(NewVersion),
 )
