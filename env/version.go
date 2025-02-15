@@ -1,14 +1,14 @@
 package env
 
 import (
-	"runtime/debug"
+	"cmp"
+
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // NewVersion returns the version of the application.
 func NewVersion() Version {
-	info, _ := debug.ReadBuildInfo()
-
-	return Version(info.Main.Version)
+	return Version(cmp.Or(os.GetVariable("SERVICE_VERSION"), "development"))
 }
 
 // Version of the application.

@@ -15,7 +15,7 @@ func TestVersion(t *testing.T) {
 			s := v.String()
 
 			Convey("Then I have a valid version", func() {
-				So(s, ShouldEqual, "(devel)")
+				So(s, ShouldEqual, "development")
 			})
 		})
 	})
