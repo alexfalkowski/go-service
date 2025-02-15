@@ -50,13 +50,11 @@ func TestRunWithServer(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New("1.0.0")
-			command.AddServer("server", "Start the server.", opts()...)
-			command.RegisterInput(command.Root(), "env:IN_CONFIG_FILE")
-			command.RegisterOutput(command.Root(), "env:OUT_CONFIG_FILE")
-			command.SetArgs([]string{"server"})
+			cmd := command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(cmd, "env:IN_CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				So(command.Run(), ShouldBeNil)
+				So(command.Run("server"), ShouldBeNil)
 			})
 
 			So(os.UnsetVariable("IN_CONFIG_FILE"), ShouldBeNil)
@@ -70,8 +68,8 @@ func TestRun(t *testing.T) {
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New("1.0.0")
-			command.AddServer("server", "Start the server.", opts()...)
-			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
+			cmd := command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
 				So(command.Run(), ShouldBeNil)
@@ -92,12 +90,11 @@ func TestInvalid(t *testing.T) {
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
 			command := cmd.New("1.0.0")
-			command.AddServer("server", "Start the server.", opts()...)
-			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-			command.SetArgs([]string{"server", "--input", config})
+			cmd := command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				err := command.Run()
+				err := command.Run("server", "-input", config)
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "unknown port")
@@ -109,12 +106,11 @@ func TestInvalid(t *testing.T) {
 func TestDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
 		command := cmd.New("1.0.0")
-		command.AddServer("server", "Start the server.", opts()...)
-		command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-		command.SetArgs([]string{"server", "-i", test.FilePath("configs/disabled.config.yml")})
+		cmd := command.AddServer("server", "Start the server.", opts()...)
+		command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 		Convey("Then I should see an error", func() {
-			So(command.Run(), ShouldBeNil)
+			So(command.Run("server", "-input", test.FilePath("configs/disabled.config.yml")), ShouldBeNil)
 		})
 	})
 }
@@ -125,9 +121,8 @@ func TestExitOnRun(t *testing.T) {
 
 		Convey("When I try to run an application", func() {
 			command := cmd.New("1.0.0")
-			command.AddServer("server", "Start the server.", opts()...)
-			command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-			command.SetArgs([]string{"server"})
+			cmd := command.AddServer("server", "Start the server.", opts()...)
+			command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 			var exitCode int
 
@@ -135,7 +130,7 @@ func TestExitOnRun(t *testing.T) {
 				exitCode = code
 			}
 
-			command.ExitOnError()
+			command.ExitOnError("server")
 
 			Convey("Then it should exit with a code of 1", func() {
 				So(exitCode, ShouldEqual, 1)
@@ -151,12 +146,11 @@ func TestClient(t *testing.T) {
 		opts := []fx.Option{fx.NopLogger}
 
 		command := cmd.New("1.0.0")
-		command.AddClient("client", "Start the client.", opts...)
-		command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-		command.SetArgs([]string{"client"})
+		cmd := command.AddClient("client", "Start the client.", opts...)
+		command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 		Convey("Then I should not see an error", func() {
-			So(command.Run(), ShouldBeNil)
+			So(command.Run("client"), ShouldBeNil)
 		})
 	})
 }
@@ -173,12 +167,11 @@ func TestInvalidClient(t *testing.T) {
 
 			Convey("When I try to run an application", func() {
 				command := cmd.New("1.0.0")
-				command.AddClient("client", "Start the client.", opts()...)
-				command.RegisterInput(command.Root(), "env:CONFIG_FILE")
-				command.SetArgs([]string{"client", "--input", "env:TEST_CONFIG_FILE"})
+				cmd := command.AddClient("client", "Start the client.", opts()...)
+				command.RegisterInput(cmd, "env:CONFIG_FILE")
 
 				Convey("Then I should see an error", func() {
-					err := command.Run()
+					err := command.Run("client", "-input", "env:TEST_CONFIG_FILE")
 
 					So(err, ShouldBeError)
 					So(err.Error(), ShouldContainSubstring, "unknown port")

@@ -25,6 +25,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/types/ptr"
 )
 
 const timeout = 2 * time.Second
@@ -209,14 +210,14 @@ func NewPGConfig() *pg.Config {
 
 // NewInputConfig for test.
 func NewInputConfig(flag string) *cmd.InputConfig {
-	*cmd.InputFlag = flag
+	cmd.InputFlag = ptr.Value(flag)
 
 	return cmd.NewInputConfig(Encoder, FS)
 }
 
 // NewOutputConfig for test.
 func NewOutputConfig(flag string) *cmd.OutputConfig {
-	*cmd.OutputFlag = flag
+	cmd.OutputFlag = ptr.Value(flag)
 
 	return cmd.NewOutputConfig(Encoder, FS)
 }

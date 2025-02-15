@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/spf13/cobra"
+	"github.com/alexfalkowski/go-service/types/ptr"
+	"github.com/leaanthony/clir"
 )
 
 // OutputFlag for cmd.
-var OutputFlag = flags.String()
+var OutputFlag *string
 
 // OutputConfig for cmd.
 type OutputConfig struct {
@@ -23,6 +23,7 @@ func NewOutputConfig(enc *encoding.Map, fs os.FileSystem) *OutputConfig {
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterOutput(cmd *cobra.Command, value string) {
-	flags.StringVar(cmd, OutputFlag, "output", "o", value, "output config location (format kind:location)")
+func (c *Command) RegisterOutput(command *clir.Command, value string) {
+	OutputFlag = ptr.Value(value)
+	command.StringFlag("output", "output config location (format kind:location)", OutputFlag)
 }

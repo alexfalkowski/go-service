@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"context"
+	"strings"
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/spf13/cobra"
+	"github.com/leaanthony/clir"
 	"go.uber.org/dig"
 	"go.uber.org/fx"
 )
@@ -14,77 +15,55 @@ import (
 // New command.
 func New(version string) *Command {
 	name := os.ExecutableName()
+	cli := clir.NewCli(name, name, version)
 
-	root := &cobra.Command{
-		Use:          name,
-		Short:        name,
-		Long:         name,
-		SilenceUsage: true,
-		Version:      version,
-	}
+	cli.SetErrorFunction(func(_ string, err error) error {
+		// Ignore errors related to testing.
+		if strings.Contains(err.Error(), "test") {
+			return nil
+		}
 
-	root.SetErrPrefix(name + ":")
+		return err
+	})
 
-	return &Command{root: root}
+	return &Command{cli: cli}
 }
 
 // Command for application.
 type Command struct {
-	root *cobra.Command
-}
-
-// Root command.
-func (c *Command) Root() *cobra.Command {
-	return c.root
+	cli *clir.Cli
 }
 
 // AddServer to root.
-func (c *Command) AddServer(name, description string, opts ...fx.Option) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:          name,
-		Short:        description,
-		Long:         description,
-		SilenceUsage: true,
-		RunE: func(c *cobra.Command, _ []string) error {
-			return RunServer(c.Context(), name, opts...)
-		},
-	}
+func (c *Command) AddServer(name, description string, opts ...fx.Option) *clir.Command {
+	cmd := c.cli.NewSubCommand(name, description)
 
-	c.root.AddCommand(cmd)
+	cmd.Action(func() error {
+		return RunServer(context.Background(), name, opts...)
+	})
 
 	return cmd
 }
 
 // AddClient to root.
-func (c *Command) AddClient(name, description string, opts ...fx.Option) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:          name,
-		Short:        description,
-		Long:         description,
-		SilenceUsage: true,
-		RunE: func(c *cobra.Command, _ []string) error {
-			return RunClient(c.Context(), name, opts...)
-		},
-	}
+func (c *Command) AddClient(name, description string, opts ...fx.Option) *clir.Command {
+	cmd := c.cli.NewSubCommand(name, description)
 
-	c.root.AddCommand(cmd)
+	cmd.Action(func() error {
+		return RunClient(context.Background(), name, opts...)
+	})
 
 	return cmd
 }
 
-// SetArgs will set the actual arguments that is run the root command.
-func (c *Command) SetArgs(args []string) {
-	c.root.SetArgs(args)
-}
-
 // Run the command.
-func (c *Command) Run() error {
-	return c.root.Execute()
+func (c *Command) Run(args ...string) error {
+	return c.cli.Run(args...)
 }
 
 // ExitOnError will run the command and exit on error.
-func (c *Command) ExitOnError() {
-	if err := c.Run(); err != nil {
+func (c *Command) ExitOnError(args ...string) {
+	if err := c.Run(args...); err != nil {
 		os.Exit(1)
 	}
 }

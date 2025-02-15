@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/spf13/cobra"
+	"github.com/alexfalkowski/go-service/types/ptr"
+	"github.com/leaanthony/clir"
 )
 
 // InputFlag for cmd.
-var InputFlag = flags.String()
+var InputFlag *string
 
 // InputConfig for cmd.
 type InputConfig struct {
@@ -23,6 +23,7 @@ func NewInputConfig(enc *encoding.Map, fs os.FileSystem) *InputConfig {
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterInput(cmd *cobra.Command, value string) {
-	flags.StringVar(cmd, InputFlag, "input", "i", value, "input config location (format kind:location)")
+func (c *Command) RegisterInput(command *clir.Command, value string) {
+	InputFlag = ptr.Value(value)
+	command.StringFlag("input", "input config location (format kind:location)", InputFlag)
 }
