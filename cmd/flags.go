@@ -1,4 +1,4 @@
-package flags
+package cmd
 
 import (
 	"slices"
@@ -29,14 +29,24 @@ func (f *FlagSet) AddOutput(value string) {
 	f.StringP("output", "o", value, "output config location (format kind:location)")
 }
 
-// Flags returns the flag set.
-func (f *FlagSet) Flags() *FlagSet {
+// Provide returns the flag set.
+func (f *FlagSet) Provide() *FlagSet {
 	return f
 }
 
-// Sanitize removes all flags that start with -test.
-func Sanitize(args []string) []string {
+// SanitizeArgs removes all flags that start with -test.
+func SanitizeArgs(args []string) []string {
 	return slices.DeleteFunc(args, func(s string) bool {
 		return strings.HasPrefix(s, "-test")
 	})
+}
+
+// SplitFlag for cmd.
+func SplitFlag(flag string) (string, string) {
+	kind, name, ok := strings.Cut(flag, ":")
+	if !ok {
+		return "none", "not_used"
+	}
+
+	return kind, name
 }

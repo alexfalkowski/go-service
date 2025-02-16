@@ -14,7 +14,6 @@ import (
 	sql "github.com/alexfalkowski/go-service/database/sql/config"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/retry"
@@ -209,12 +208,12 @@ func NewPGConfig() *pg.Config {
 }
 
 // NewInputConfig for test.
-func NewInputConfig(set *flags.FlagSet) *cmd.InputConfig {
+func NewInputConfig(set *cmd.FlagSet) *cmd.InputConfig {
 	return cmd.NewInputConfig(set, Encoder, FS)
 }
 
 // NewOutputConfig for test.
-func NewOutputConfig(set *flags.FlagSet) *cmd.OutputConfig {
+func NewOutputConfig(set *cmd.FlagSet) *cmd.OutputConfig {
 	return cmd.NewOutputConfig(set, Encoder, FS)
 }
 

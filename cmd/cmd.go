@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/cristalhq/acmd"
@@ -27,16 +26,16 @@ type Command struct {
 }
 
 // AddServer to the command.
-func (c *Command) AddServer(name, description string, set *flags.FlagSet, opts ...fx.Option) {
+func (c *Command) AddServer(name, description string, flags *FlagSet, opts ...fx.Option) {
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
-			if err := set.Parse(args); err != nil {
+			if err := flags.Parse(args); err != nil {
 				return err
 			}
 
-			opts = append(opts, fx.Provide(set.Flags))
+			opts = append(opts, fx.Provide(flags.Provide))
 
 			return RunServer(ctx, name, opts...)
 		},
@@ -46,16 +45,16 @@ func (c *Command) AddServer(name, description string, set *flags.FlagSet, opts .
 }
 
 // AddClient to the command.
-func (c *Command) AddClient(name, description string, set *flags.FlagSet, opts ...fx.Option) {
+func (c *Command) AddClient(name, description string, flags *FlagSet, opts ...fx.Option) {
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
-			if err := set.Parse(args); err != nil {
+			if err := flags.Parse(args); err != nil {
 				return err
 			}
 
-			opts = append(opts, fx.Provide(set.Flags))
+			opts = append(opts, fx.Provide(flags.Provide))
 
 			return RunClient(ctx, name, opts...)
 		},
@@ -67,7 +66,7 @@ func (c *Command) AddClient(name, description string, set *flags.FlagSet, opts .
 // Run the command.
 func (c *Command) Run(args ...string) error {
 	if len(args) == 0 {
-		args = flags.Sanitize(os.Args)
+		args = SanitizeArgs(os.Args)
 	}
 
 	runner := acmd.RunnerOf(c.cmds, acmd.Config{

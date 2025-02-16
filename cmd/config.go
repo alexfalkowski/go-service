@@ -20,8 +20,8 @@ type Config struct {
 
 // NewConfig for cmd.
 func NewConfig(flag string, enc *encoding.Map, fs os.FileSystem) *Config {
-	k, l := SplitFlag(flag)
-	rw := NewReadWriter(k, l, fs)
+	kind, location := SplitFlag(flag)
+	rw := NewReadWriter(kind, location, fs)
 	m := enc.Get(rw.Kind())
 
 	return &Config{rw: rw, enc: m}
