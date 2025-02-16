@@ -27,14 +27,16 @@ type Command struct {
 }
 
 // AddServer to the command.
-func (c *Command) AddServer(name, description string, flags *flags.FlagSet, opts ...fx.Option) {
+func (c *Command) AddServer(name, description string, set *flags.FlagSet, opts ...fx.Option) {
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
-			if err := flags.Parse(args); err != nil {
+			if err := set.Parse(args); err != nil {
 				return err
 			}
+
+			opts = append(opts, fx.Provide(set.Flags))
 
 			return RunServer(ctx, name, opts...)
 		},
@@ -44,14 +46,16 @@ func (c *Command) AddServer(name, description string, flags *flags.FlagSet, opts
 }
 
 // AddClient to the command.
-func (c *Command) AddClient(name, description string, flags *flags.FlagSet, opts ...fx.Option) {
+func (c *Command) AddClient(name, description string, set *flags.FlagSet, opts ...fx.Option) {
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
 		ExecFunc: func(ctx context.Context, args []string) error {
-			if err := flags.Parse(args); err != nil {
+			if err := set.Parse(args); err != nil {
 				return err
 			}
+
+			opts = append(opts, fx.Provide(set.Flags))
 
 			return RunClient(ctx, name, opts...)
 		},

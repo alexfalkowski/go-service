@@ -53,8 +53,8 @@ func TestRunWithServer(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:IN_CONFIG_FILE")
-			command.RegisterOutput(flags, "env:OUT_CONFIG_FILE")
+			flags.AddInput("env:IN_CONFIG_FILE")
+			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -75,7 +75,7 @@ func TestRun(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:CONFIG_FILE")
+			flags.AddInput("env:CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -96,8 +96,8 @@ func TestRunWithInvalidFlag(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:IN_CONFIG_FILE")
-			command.RegisterOutput(flags, "env:OUT_CONFIG_FILE")
+			flags.AddInput("env:IN_CONFIG_FILE")
+			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -116,8 +116,8 @@ func TestRunWithInvalidFlag(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("client")
-			command.RegisterInput(flags, "env:IN_CONFIG_FILE")
-			command.RegisterOutput(flags, "env:OUT_CONFIG_FILE")
+			flags.AddInput("env:IN_CONFIG_FILE")
+			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			command.AddClient("client", "Start the client.", flags, opts()...)
 
@@ -138,8 +138,8 @@ func TestRunWithInvalidParams(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:IN_CONFIG_FILE")
-			command.RegisterOutput(flags, "env:OUT_CONFIG_FILE")
+			flags.AddInput("env:IN_CONFIG_FILE")
+			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -164,7 +164,7 @@ func TestInvalid(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:CONFIG_FILE")
+			flags.AddInput("env:CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -183,7 +183,7 @@ func TestDisabled(t *testing.T) {
 		command := cmd.New("1.0.0")
 
 		flags := flags.NewFlagSet("server")
-		command.RegisterInput(flags, "env:CONFIG_FILE")
+		flags.AddInput("env:CONFIG_FILE")
 
 		command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -201,7 +201,7 @@ func TestExitOnRun(t *testing.T) {
 			command := cmd.New("1.0.0")
 
 			flags := flags.NewFlagSet("server")
-			command.RegisterInput(flags, "env:CONFIG_FILE")
+			flags.AddInput("env:CONFIG_FILE")
 
 			command.AddServer("server", "Start the server.", flags, opts()...)
 
@@ -229,7 +229,7 @@ func TestClient(t *testing.T) {
 		command := cmd.New("1.0.0")
 
 		flags := flags.NewFlagSet("client")
-		command.RegisterInput(flags, "env:CONFIG_FILE")
+		flags.AddInput("env:CONFIG_FILE")
 
 		command.AddClient("client", "Start the client.", flags, opts...)
 
@@ -253,7 +253,7 @@ func TestInvalidClient(t *testing.T) {
 				command := cmd.New("1.0.0")
 
 				flags := flags.NewFlagSet("client")
-				command.RegisterInput(flags, "env:CONFIG_FILE")
+				flags.AddInput("env:CONFIG_FILE")
 
 				command.AddClient("client", "Start the client.", flags, opts()...)
 
