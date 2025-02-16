@@ -4,7 +4,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/spf13/pflag"
 )
 
@@ -40,24 +39,4 @@ func Sanitize(args []string) []string {
 	return slices.DeleteFunc(args, func(s string) bool {
 		return strings.HasPrefix(s, "-test")
 	})
-}
-
-// IsStringSet the flag for cmd.
-func IsStringSet(s *string) bool {
-	return s != nil && *s != ""
-}
-
-// String for cmd.
-func String() *string {
-	return ptr.Zero[string]()
-}
-
-// IsBoolSet the flag for cmd.
-func IsBoolSet(b *bool) bool {
-	return b != nil && *b
-}
-
-// Bool for cmd.
-func Bool() *bool {
-	return ptr.Zero[bool]()
 }
