@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.441.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.441.0) - 2025-02-16
+
+- [`eb07444`](https://github.com/alexfalkowski/go-service/commit/eb0744459dd6f01982079df13f96f5ecaeea936e) feat(cmd): move flag set (#1319)
+
 ## [v1.440.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.440.0) - 2025-02-16
 
 - [`64c071b`](https://github.com/alexfalkowski/go-service/commit/64c071b82e0d84b7762a34677bdb5de0adf69fa0) feat(cmd): remove unused funcs (#1318)
