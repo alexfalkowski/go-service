@@ -17,7 +17,7 @@ This framework heavily relies on [DI](https://en.wikipedia.org/wiki/Dependency_i
 
 ## Commands
 
-A service has commands that are configured using [Cobra](github.com/spf13/cobra). Each service has the following commands (you can add more):
+A service has commands that are configured using [acmd](https://github.com/cristalhq/acmd). Each service has the following commands (you can add more):
 - `Server` - This will provide your server needs.
 - `Client` - This will provide your client needs.
 
