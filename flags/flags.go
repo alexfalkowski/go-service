@@ -1,8 +1,26 @@
 package flags
 
 import (
-	"github.com/spf13/cobra"
+	"slices"
+	"strings"
+
+	"github.com/spf13/pflag"
 )
+
+// FlagSet is a type alias for pflag.FlagSet.
+type FlagSet = pflag.FlagSet
+
+// NewFlagSet creates a new flag set with the given name.
+func NewFlagSet(name string) *FlagSet {
+	return pflag.NewFlagSet(name, pflag.ContinueOnError)
+}
+
+// Sanitize removes all flags that start with -test.
+func Sanitize(args []string) []string {
+	return slices.DeleteFunc(args, func(s string) bool {
+		return strings.HasPrefix(s, "-test")
+	})
+}
 
 // IsStringSet the flag for cmd.
 func IsStringSet(s *string) bool {
@@ -16,11 +34,6 @@ func String() *string {
 	return &s
 }
 
-// StringVar for cmd.
-func StringVar(cmd *cobra.Command, p *string, name, shorthand string, value string, usage string) {
-	cmd.PersistentFlags().StringVarP(p, name, shorthand, value, usage)
-}
-
 // IsBoolSet the flag for cmd.
 func IsBoolSet(b *bool) bool {
 	return b != nil && *b
@@ -31,9 +44,4 @@ func Bool() *bool {
 	var b bool
 
 	return &b
-}
-
-// BoolVar for cmd.
-func BoolVar(cmd *cobra.Command, p *bool, name, shorthand string, value bool, usage string) {
-	cmd.PersistentFlags().BoolVarP(p, name, shorthand, value, usage)
 }

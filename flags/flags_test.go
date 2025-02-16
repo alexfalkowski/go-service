@@ -4,29 +4,21 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/flags"
-	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"github.com/spf13/cobra"
 )
 
 func TestFlags(t *testing.T) {
-	Convey("Given I have a var", t, func() {
-		name := string(test.Name)
-		command := &cobra.Command{
-			Use: name, Short: name, Long: name,
-			Version: string(test.Version),
-		}
-		boolFlag := flags.Bool()
-		stringFlag := flags.String()
+	Convey("Then I should have a flag set", t, func() {
+		So(flags.NewFlagSet("test"), ShouldNotBeNil)
+	})
 
-		Convey("When I add it to the command", func() {
-			flags.BoolVar(command, boolFlag, "bool", "y", false, "test")
-			flags.StringVar(command, stringFlag, "string", "z", "", "test")
+	Convey("Then I should unset flags", t, func() {
+		So(flags.IsBoolSet(nil), ShouldBeFalse)
+		So(flags.IsStringSet(nil), ShouldBeFalse)
+	})
 
-			Convey("Then I should unset flags", func() {
-				So(flags.IsBoolSet(boolFlag), ShouldBeFalse)
-				So(flags.IsStringSet(stringFlag), ShouldBeFalse)
-			})
-		})
+	Convey("Then I should unset flags", t, func() {
+		So(flags.IsBoolSet(flags.Bool()), ShouldBeFalse)
+		So(flags.IsStringSet(flags.String()), ShouldBeFalse)
 	})
 }
