@@ -4,7 +4,6 @@ import (
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/spf13/cobra"
 )
 
 // OutputFlag for cmd.
@@ -23,6 +22,6 @@ func NewOutputConfig(enc *encoding.Map, fs os.FileSystem) *OutputConfig {
 }
 
 // RegisterInput for cmd.
-func (c *Command) RegisterOutput(cmd *cobra.Command, value string) {
-	flags.StringVar(cmd, OutputFlag, "output", "o", value, "output config location (format kind:location)")
+func (c *Command) RegisterOutput(flags *flags.FlagSet, value string) {
+	OutputFlag = flags.StringP("output", "o", value, "output config location (format kind:location)")
 }

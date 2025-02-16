@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/spf13/cobra"
+	"github.com/cristalhq/acmd"
 	"go.uber.org/dig"
 	"go.uber.org/fx"
 )
@@ -15,76 +16,69 @@ import (
 func New(version string) *Command {
 	name := os.ExecutableName()
 
-	root := &cobra.Command{
-		Use:          name,
-		Short:        name,
-		Long:         name,
-		SilenceUsage: true,
-		Version:      version,
-	}
-
-	root.SetErrPrefix(name + ":")
-
-	return &Command{root: root}
+	return &Command{name: name, cmds: []acmd.Command{}, version: version}
 }
 
 // Command for application.
 type Command struct {
-	root *cobra.Command
+	name    string
+	version string
+	cmds    []acmd.Command
 }
 
-// Root command.
-func (c *Command) Root() *cobra.Command {
-	return c.root
-}
+// AddServer to the command.
+func (c *Command) AddServer(name, description string, flags *flags.FlagSet, opts ...fx.Option) {
+	cmd := acmd.Command{
+		Name:        name,
+		Description: description,
+		ExecFunc: func(ctx context.Context, args []string) error {
+			if err := flags.Parse(args); err != nil {
+				return err
+			}
 
-// AddServer to root.
-func (c *Command) AddServer(name, description string, opts ...fx.Option) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:          name,
-		Short:        description,
-		Long:         description,
-		SilenceUsage: true,
-		RunE: func(c *cobra.Command, _ []string) error {
-			return RunServer(c.Context(), name, opts...)
+			return RunServer(ctx, name, opts...)
 		},
 	}
 
-	c.root.AddCommand(cmd)
-
-	return cmd
+	c.cmds = append(c.cmds, cmd)
 }
 
-// AddClient to root.
-func (c *Command) AddClient(name, description string, opts ...fx.Option) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:          name,
-		Short:        description,
-		Long:         description,
-		SilenceUsage: true,
-		RunE: func(c *cobra.Command, _ []string) error {
-			return RunClient(c.Context(), name, opts...)
+// AddClient to the command.
+func (c *Command) AddClient(name, description string, flags *flags.FlagSet, opts ...fx.Option) {
+	cmd := acmd.Command{
+		Name:        name,
+		Description: description,
+		ExecFunc: func(ctx context.Context, args []string) error {
+			if err := flags.Parse(args); err != nil {
+				return err
+			}
+
+			return RunClient(ctx, name, opts...)
 		},
 	}
 
-	c.root.AddCommand(cmd)
-
-	return cmd
-}
-
-// SetArgs will set the actual arguments that is run the root command.
-func (c *Command) SetArgs(args []string) {
-	c.root.SetArgs(args)
+	c.cmds = append(c.cmds, cmd)
 }
 
 // Run the command.
-func (c *Command) Run() error {
-	return c.root.Execute()
+func (c *Command) Run(args ...string) error {
+	if len(args) == 0 {
+		args = flags.Sanitize(os.Args)
+	}
+
+	runner := acmd.RunnerOf(c.cmds, acmd.Config{
+		AppName:        c.name,
+		AppDescription: c.name,
+		Version:        c.version,
+		Args:           args,
+	})
+
+	return runner.Run()
 }
 
 // ExitOnError will run the command and exit on error.
-func (c *Command) ExitOnError() {
-	if err := c.Run(); err != nil {
+func (c *Command) ExitOnError(args ...string) {
+	if err := c.Run(args...); err != nil {
 		os.Exit(1)
 	}
 }
