@@ -23,5 +23,5 @@ func NewInputConfig(enc *encoding.Map, fs os.FileSystem) *InputConfig {
 
 // RegisterInput for cmd.
 func (c *Command) RegisterInput(flags *flags.FlagSet, value string) {
-	InputFlag = flags.StringP("input", "i", value, "input config location (format kind:location)")
+	flags.StringVarP(InputFlag, "input", "i", value, "input config location (format kind:location)")
 }

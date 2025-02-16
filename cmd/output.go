@@ -23,5 +23,5 @@ func NewOutputConfig(enc *encoding.Map, fs os.FileSystem) *OutputConfig {
 
 // RegisterInput for cmd.
 func (c *Command) RegisterOutput(flags *flags.FlagSet, value string) {
-	OutputFlag = flags.StringP("output", "o", value, "output config location (format kind:location)")
+	flags.StringVarP(OutputFlag, "output", "o", value, "output config location (format kind:location)")
 }
