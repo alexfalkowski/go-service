@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.438.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.438.0) - 2025-02-16
+
+- [`35460f0`](https://github.com/alexfalkowski/go-service/commit/35460f0f1e27267b300292c69144d8f9de988ba1) feat(cmd): use github.com/cristalhq/acmd (#1314)
+
 ## [v1.437.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.437.1) - 2025-02-15
 
 - [`f510041`](https://github.com/alexfalkowski/go-service/commit/f510041f77688b54cb036f85daea5a175790a7a8) fix(deps): downgrade github.com/spf13/cobra to v1.8.1 (#1312)
