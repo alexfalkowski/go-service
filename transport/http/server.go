@@ -87,6 +87,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		Handler:     neg,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
+		Protocols: sh.Protocols(),
 	}
 
 	c, err := config(params.Config)

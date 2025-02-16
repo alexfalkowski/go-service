@@ -23,5 +23,6 @@ func Transport(cfg *tls.Config) *http.Transport {
 		MaxConnsPerHost:       100,
 		MaxIdleConnsPerHost:   100,
 		TLSClientConfig:       cfg,
+		Protocols:             Protocols(),
 	}
 }
