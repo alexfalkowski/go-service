@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.438.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.438.1) - 2025-02-16
+
+- [`dd33e4c`](https://github.com/alexfalkowski/go-service/commit/dd33e4ce71d18291a051642593b6bd738d5f5a3e) fix(cmd): pass variable with StringVarP (#1316)
+- [`792b3a3`](https://github.com/alexfalkowski/go-service/commit/792b3a3e69f53c4a6d18ca8008933e58233b443a) docs(cmd): mention github.com/cristalhq/acmd (#1315)
+
 ## [v1.438.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.438.0) - 2025-02-16
 
 - [`35460f0`](https://github.com/alexfalkowski/go-service/commit/35460f0f1e27267b300292c69144d8f9de988ba1) feat(cmd): use github.com/cristalhq/acmd (#1314)
