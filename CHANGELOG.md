@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.439.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.439.0) - 2025-02-16
+
+- [`f6db283`](https://github.com/alexfalkowski/go-service/commit/f6db283509973823af053ca0c5e8b48393c293da) feat(cmd): move away from global variables (#1317)
+
 ## [v1.438.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.438.1) - 2025-02-16
 
 - [`dd33e4c`](https://github.com/alexfalkowski/go-service/commit/dd33e4ce71d18291a051642593b6bd738d5f5a3e) fix(cmd): pass variable with StringVarP (#1316)
