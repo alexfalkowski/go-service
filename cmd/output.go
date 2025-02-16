@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/flags"
 	"github.com/alexfalkowski/go-service/os"
 )
 
@@ -12,7 +11,7 @@ type OutputConfig struct {
 }
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(set *flags.FlagSet, enc *encoding.Map, fs os.FileSystem) *OutputConfig {
+func NewOutputConfig(set *FlagSet, enc *encoding.Map, fs os.FileSystem) *OutputConfig {
 	output, _ := set.GetString("output")
 	config := NewConfig(output, enc, fs)
 
