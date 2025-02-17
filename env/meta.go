@@ -1,12 +1,14 @@
 package env
 
 import (
+	"cmp"
+
 	"github.com/alexfalkowski/go-service/os"
 )
 
 // NewName for this service.
 func NewName() Name {
-	return Name(os.ExecutableName())
+	return Name(cmp.Or(os.GetVariable("SERVICE_NAME"), os.ExecutableName()))
 }
 
 // Name of the service.

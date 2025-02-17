@@ -9,7 +9,7 @@ const (
 	Environment = env.Environment("dev")
 
 	// Version for test.
-	Version = env.Version("1.0.0")
+	Version = env.Version("v1.0.0")
 
 	// Name for test.
 	Name = env.Name("test")
