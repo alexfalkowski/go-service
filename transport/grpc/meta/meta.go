@@ -143,7 +143,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 		return meta.String(ua[0])
 	}
 
-	return meta.String(string(userAgent))
+	return meta.String(userAgent.String())
 }
 
 func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Value {

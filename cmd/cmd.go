@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
@@ -12,16 +13,14 @@ import (
 )
 
 // New command.
-func New(version string) *Command {
-	name := os.ExecutableName()
-
+func New(name env.Name, version env.Version) *Command {
 	return &Command{name: name, cmds: []acmd.Command{}, version: version}
 }
 
 // Command for application.
 type Command struct {
-	name    string
-	version string
+	name    env.Name
+	version env.Version
 	cmds    []acmd.Command
 }
 
@@ -69,10 +68,11 @@ func (c *Command) Run(args ...string) error {
 		args = SanitizeArgs(os.Args)
 	}
 
+	name := c.name.String()
 	runner := acmd.RunnerOf(c.cmds, acmd.Config{
-		AppName:        c.name,
-		AppDescription: c.name,
-		Version:        c.version,
+		AppName:        name,
+		AppDescription: name,
+		Version:        c.version.String(),
 		Args:           args,
 	})
 
