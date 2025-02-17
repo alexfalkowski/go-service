@@ -109,24 +109,11 @@ func TestToken(t *testing.T) {
 		gen := rand.NewGenerator(rand.NewReader())
 
 		Convey("When I generate a token", func() {
-			key, err := token.Generate(test.Name, gen)
-			So(err, ShouldBeNil)
+			key := token.Generate(test.Name, gen)
 
 			Convey("Then I should have a token", func() {
 				So(key, ShouldNotBeBlank)
 				So(token.Verify(test.Name, key), ShouldBeNil)
-			})
-		})
-	})
-
-	Convey("When I have a erroneous rand generator", t, func() {
-		gen := rand.NewGenerator(&test.ErrReaderCloser{})
-
-		Convey("When I generate a token", func() {
-			_, err := token.Generate(test.Name, gen)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
 			})
 		})
 	})
