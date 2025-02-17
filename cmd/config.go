@@ -14,17 +14,17 @@ var ErrNoEncoder = errors.New("config: no encoder")
 
 // Config for cmd.
 type Config struct {
-	enc encoding.Encoder
-	rw  ReaderWriter
+	encoder encoding.Encoder
+	rw      ReaderWriter
 }
 
 // NewConfig for cmd.
 func NewConfig(flag string, enc *encoding.Map, fs os.FileSystem) *Config {
 	kind, location := SplitFlag(flag)
 	rw := NewReadWriter(kind, location, fs)
-	m := enc.Get(rw.Kind())
+	encoder := enc.Get(rw.Kind())
 
-	return &Config{rw: rw, enc: m}
+	return &Config{rw: rw, encoder: encoder}
 }
 
 // Kind of config.
@@ -39,11 +39,11 @@ func (c *Config) Decode(data any) error {
 		return se.Prefix("config", err)
 	}
 
-	if c.enc == nil {
+	if c.encoder == nil {
 		return ErrNoEncoder
 	}
 
-	return se.Prefix("config", c.enc.Decode(bytes.NewBufferString(bts), data))
+	return se.Prefix("config", c.encoder.Decode(bytes.NewBufferString(bts), data))
 }
 
 // Write for config.
