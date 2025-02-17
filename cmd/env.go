@@ -74,9 +74,9 @@ func (e *ENV) isMem() bool {
 }
 
 func (e *ENV) split() (string, string) {
-	s := strings.Split(e.name(), ":")
+	kind, env, _ := strings.Cut(e.name(), ":")
 
-	return s[0], s[1]
+	return kind, env
 }
 
 func (e *ENV) missingLocationError() error {
