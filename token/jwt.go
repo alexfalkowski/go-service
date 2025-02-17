@@ -15,12 +15,12 @@ type KID string
 
 // NewKID for JWKSets.
 func NewKID(gen *rand.Generator) (KID, error) {
-	b, err := gen.GenerateBytes(10)
+	b, err := gen.GenerateLetters(10)
 	if err != nil {
 		return "", err
 	}
 
-	return KID(hex.EncodeToString(b)), nil
+	return KID(hex.EncodeToString([]byte(b))), nil
 }
 
 // JWT token.

@@ -35,7 +35,12 @@ func (g *Generator) Read(b []byte) (int, error) {
 	return io.ReadFull(g.reader, b)
 }
 
-// GenerateBytes for rand.
+// Text returns a cryptographically random string.
+func (g *Generator) Text() string {
+	return rand.Text()
+}
+
+// GenerateBytes returns a cryptographically random byte slice of size.
 func (g *Generator) GenerateBytes(size uint32) ([]byte, error) {
 	bytes := make([]byte, size)
 	_, err := g.Read(bytes)

@@ -18,23 +18,19 @@ const underscore = "_"
 
 // Generate a token.
 // The format is name_rand(64)_crc32(id).
-func Generate(name env.Name, gen *rand.Generator) (string, error) {
-	id, err := gen.GenerateLetters(64)
-	if err != nil {
-		return "", err
-	}
-
-	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(id))), 10)
+func Generate(name env.Name, gen *rand.Generator) string {
+	token := gen.Text()
+	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(token))), 10)
 
 	var builder strings.Builder
 
 	builder.WriteString(string(name))
 	builder.WriteString(underscore)
-	builder.WriteString(id)
+	builder.WriteString(token)
 	builder.WriteString(underscore)
 	builder.WriteString(checksum)
 
-	return builder.String(), nil
+	return builder.String()
 }
 
 // Verify if the token matches the segments.
