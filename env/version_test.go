@@ -4,9 +4,12 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
+//nolint:funlen
 func TestVersion(t *testing.T) {
 	Convey("Given I have a system version", t, func() {
 		v := env.NewVersion()
@@ -54,5 +57,19 @@ func TestVersion(t *testing.T) {
 				So(s, ShouldBeBlank)
 			})
 		})
+	})
+
+	Convey("Given I have a version set via a env variable", t, func() {
+		So(os.SetVariable("SERVICE_VERSION", test.Version.String()), ShouldBeNil)
+
+		Convey("When I get a version", func() {
+			version := env.NewVersion()
+
+			Convey("Then I have a valid version", func() {
+				So(version.String(), ShouldEqual, "1.0.0")
+			})
+		})
+
+		So(os.UnsetVariable("SERVICE_VERSION"), ShouldBeNil)
 	})
 }
