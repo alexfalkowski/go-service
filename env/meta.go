@@ -12,6 +12,11 @@ func NewName() Name {
 // Name of the service.
 type Name string
 
+// String representation of the name.
+func (n Name) String() string {
+	return string(n)
+}
+
 // NewUserAgent for this service.
 func NewUserAgent(name Name, ver Version) UserAgent {
 	return UserAgent(string(name) + "/" + ver.String())
@@ -19,3 +24,8 @@ func NewUserAgent(name Name, ver Version) UserAgent {
 
 // UserAgent for this service.
 type UserAgent string
+
+// String representation of the user agent.
+func (ua UserAgent) String() string {
+	return string(ua)
+}
