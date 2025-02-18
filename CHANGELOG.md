@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.449.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.449.0) - 2025-02-18
+
+- [`267fb90`](https://github.com/alexfalkowski/go-service/commit/267fb90f0195a54347c680aee48a8b8465531dc8) feat(os): keys can use strings (#1329)
+
 ## [v1.448.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.448.0) - 2025-02-18
 
 - [`1f1872a`](https://github.com/alexfalkowski/go-service/commit/1f1872ac52b068c09ed56674bdbbc21fc745eb62) feat(token): retire key kind (#1328)
