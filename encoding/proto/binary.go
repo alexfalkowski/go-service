@@ -16,6 +16,7 @@ func NewBinary() *Binary {
 // Binary for proto.
 type Binary struct{}
 
+// Encode for proto.
 func (e *Binary) Encode(w io.Writer, v any) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -32,6 +33,7 @@ func (e *Binary) Encode(w io.Writer, v any) (err error) {
 	return
 }
 
+// Decode for proto.
 func (e *Binary) Decode(r io.Reader, v any) (err error) {
 	defer func() {
 		if r := recover(); r != nil {

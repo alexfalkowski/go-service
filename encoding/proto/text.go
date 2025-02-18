@@ -16,6 +16,7 @@ func NewText() *Text {
 // Text for proto.
 type Text struct{}
 
+// Encode for proto.
 func (e *Text) Encode(w io.Writer, v any) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -32,6 +33,7 @@ func (e *Text) Encode(w io.Writer, v any) (err error) {
 	return
 }
 
+// Decode for proto.
 func (e *Text) Decode(r io.Reader, v any) error {
 	b, err := io.ReadAll(r)
 	if err != nil {
