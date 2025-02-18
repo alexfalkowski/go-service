@@ -21,12 +21,7 @@ type Generator struct {
 
 // Generate for hmac.
 func (g *Generator) Generate() (string, error) {
-	s, err := g.gen.GenerateBytes(32)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(s), nil
+	return g.gen.GenerateText(32)
 }
 
 // NewSigner for hmac.

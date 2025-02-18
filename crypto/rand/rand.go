@@ -6,6 +6,10 @@ import (
 	"math/big"
 )
 
+const (
+	letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+)
+
 // NewReader for rand.
 func NewReader() Reader {
 	return rand.Reader
@@ -16,18 +20,12 @@ type Reader io.Reader
 
 // NewGenerator for rand.
 func NewGenerator(reader Reader) *Generator {
-	return &Generator{
-		letters: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-		symbols: "~!@#$%^&*()_+-={}|[]<>?,./",
-		reader:  reader,
-	}
+	return &Generator{reader: reader}
 }
 
 // Generator for rand.
 type Generator struct {
-	reader  Reader
-	letters string
-	symbols string
+	reader Reader
 }
 
 // Read for rand.
@@ -41,28 +39,24 @@ func (g *Generator) Text() string {
 }
 
 // GenerateBytes returns a cryptographically random byte slice of size.
-func (g *Generator) GenerateBytes(size uint32) ([]byte, error) {
+func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	bytes := make([]byte, size)
 	_, err := g.Read(bytes)
 
 	return bytes, err
 }
 
-// GenerateString will generate using letters and symbols.
-func (g *Generator) GenerateString(size uint32) (string, error) {
-	return g.generate(size, g.letters+g.symbols)
+// GenerateText will generate using letters.
+func (g *Generator) GenerateText(size int) (string, error) {
+	return g.generate(size, letters)
 }
 
-// GenerateLetters will generate using letters.
-func (g *Generator) GenerateLetters(size uint32) (string, error) {
-	return g.generate(size, g.letters)
-}
-
-func (g *Generator) generate(size uint32, values string) (string, error) {
+func (g *Generator) generate(size int, values string) (string, error) {
 	bytes := make([]byte, size)
+	length := int64(len(values))
 
 	for i := range size {
-		num, err := rand.Int(g.reader, big.NewInt(int64(len(values))))
+		num, err := rand.Int(g.reader, big.NewInt(length))
 		if err != nil {
 			return "", err
 		}

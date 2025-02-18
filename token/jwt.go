@@ -1,8 +1,6 @@
 package token
 
 import (
-	"encoding/hex"
-
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
@@ -15,12 +13,9 @@ type KID string
 
 // NewKID for JWKSets.
 func NewKID(gen *rand.Generator) (KID, error) {
-	b, err := gen.GenerateLetters(10)
-	if err != nil {
-		return "", err
-	}
+	text, err := gen.GenerateText(10)
 
-	return KID(hex.EncodeToString([]byte(b))), nil
+	return KID(text), err
 }
 
 // JWT token.

@@ -19,7 +19,7 @@ func NewGenerator(gen *rand.Generator) *Generator {
 
 // Generate for hooks.
 func (g *Generator) Generate() (string, error) {
-	s, err := g.gen.GenerateLetters(32)
+	s, err := g.gen.GenerateText(32)
 
 	return base64.StdEncoding.EncodeToString([]byte(s)), err
 }
