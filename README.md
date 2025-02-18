@@ -183,7 +183,7 @@ Telemetry is broken down in the following sections:
 
 ### Logging
 
-For logging we use [Uber Zap](https://github.com/uber-go/zap).
+For logging we use [Zap](https://github.com/uber-go/zap).
 
 #### Configuration
 
@@ -266,8 +266,8 @@ To configure, please specify the following:
 
 ```yaml
 token:
-  kind: jwt, paseto, token
-  secret: path to a secret token (only used for kind token)
+  kind: jwt, paseto, opaque
+  secret: path to a secret token (only used for kind opaque)
   sub: subject
   aud: audience
   iss: issuer
