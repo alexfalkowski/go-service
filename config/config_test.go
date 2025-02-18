@@ -183,6 +183,7 @@ func verifyConfig(config *config.Config) {
 	So(config.Token.Issuer, ShouldEqual, "iss")
 	So(config.Token.Kind, ShouldEqual, "jwt")
 	So(config.Token.Subject, ShouldEqual, "sub")
+	So(config.Token.KeyID, ShouldEqual, "1234567890")
 	So(server.IsEnabled(config.Transport.GRPC.Config), ShouldBeTrue)
 	So(config.Transport.GRPC.Address, ShouldEqual, ":12000")
 	So(config.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)

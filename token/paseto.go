@@ -7,15 +7,15 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 )
 
-// Paseto token.
-type Paseto struct {
-	ed  *ed25519.Signer
-	gen id.Generator
+// NewPaseto token.
+func NewPaseto(signer *ed25519.Signer, generator id.Generator) *Paseto {
+	return &Paseto{signer: signer, generator: generator}
 }
 
-// NewPaseto token.
-func NewPaseto(ed *ed25519.Signer, gen id.Generator) *Paseto {
-	return &Paseto{ed: ed, gen: gen}
+// Paseto token.
+type Paseto struct {
+	signer    *ed25519.Signer
+	generator id.Generator
 }
 
 // Generate Paseto token.
@@ -23,7 +23,7 @@ func (p *Paseto) Generate(sub, aud, iss string, exp time.Duration) (string, erro
 	now := time.Now()
 
 	token := paseto.NewToken()
-	token.SetJti(p.gen.Generate())
+	token.SetJti(p.generator.Generate())
 	token.SetIssuedAt(now)
 	token.SetNotBefore(now)
 	token.SetExpiration(now.Add(exp))
@@ -31,7 +31,7 @@ func (p *Paseto) Generate(sub, aud, iss string, exp time.Duration) (string, erro
 	token.SetSubject(sub)
 	token.SetAudience(aud)
 
-	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(p.ed.PrivateKey)
+	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(p.signer.PrivateKey)
 	if err != nil {
 		return "", err
 	}
@@ -47,7 +47,7 @@ func (p *Paseto) Verify(token, aud, iss string) (string, error) {
 	parser.AddRule(paseto.ValidAt(time.Now()))
 	parser.AddRule(paseto.ForAudience(aud))
 
-	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(p.ed.PublicKey)
+	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(p.signer.PublicKey)
 	if err != nil {
 		return "", err
 	}

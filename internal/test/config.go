@@ -38,6 +38,7 @@ func NewToken(kind, secret string) *token.Config {
 		Audience:   "aud",
 		Issuer:     "iss",
 		Expiration: "1h",
+		KeyID:      "1234567890",
 	}
 }
 

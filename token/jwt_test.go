@@ -15,7 +15,7 @@ import (
 func TestKID(t *testing.T) {
 	Convey("When I generate a KID", t, func() {
 		rand := rand.NewGenerator(rand.NewReader())
-		kid, err := token.NewKID(rand)
+		kid, err := token.GenerateKID(rand)
 
 		Convey("Then I should a valid KID", func() {
 			So(err, ShouldBeNil)
@@ -25,7 +25,7 @@ func TestKID(t *testing.T) {
 
 	Convey("When I generate an erroneous KID", t, func() {
 		rand := rand.NewGenerator(&test.ErrReaderCloser{})
-		kid, err := token.NewKID(rand)
+		kid, err := token.GenerateKID(rand)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -36,7 +36,7 @@ func TestKID(t *testing.T) {
 
 func TestJWT(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
-	kid, _ := token.NewKID(rand)
+	kid, _ := token.GenerateKID(rand)
 	a, _ := ed25519.NewSigner(test.NewEd25519())
 	jwt := token.NewJWT(kid, a, id.Default)
 

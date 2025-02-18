@@ -8,36 +8,50 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// KID is a key ID.
-type KID string
+const (
+	// EmptyKID is the kid used when no kid is provided.
+	EmptyKID = KID("")
+)
 
-// NewKID for JWKSets.
-func NewKID(gen *rand.Generator) (KID, error) {
-	text, err := gen.GenerateText(10)
+// GenerateKID for JWKSets.
+func GenerateKID(generator *rand.Generator) (KID, error) {
+	text, err := generator.GenerateText(10)
 
 	return KID(text), err
 }
 
-// JWT token.
-type JWT struct {
-	ed  *ed25519.Signer
-	gen id.Generator
-	kid KID
+// NewKID for JWKSets.
+func NewKID(cfg *Config) KID {
+	if !IsEnabled(cfg) {
+		return EmptyKID
+	}
+
+	return KID(cfg.KeyID)
 }
 
+// KID is a key ID.
+type KID string
+
 // NewJWT token.
-func NewJWT(kid KID, ed *ed25519.Signer, gen id.Generator) *JWT {
-	return &JWT{kid: kid, ed: ed, gen: gen}
+func NewJWT(kid KID, signer *ed25519.Signer, generator id.Generator) *JWT {
+	return &JWT{kid: kid, signer: signer, generator: generator}
+}
+
+// JWT token.
+type JWT struct {
+	signer    *ed25519.Signer
+	generator id.Generator
+	kid       KID
 }
 
 // Generate JWT token.
 func (j *JWT) Generate(sub, aud, iss string, exp time.Duration) (string, error) {
-	key := j.ed.PrivateKey
+	key := j.signer.PrivateKey
 	now := time.Now()
 
 	claims := &jwt.RegisteredClaims{
 		ExpiresAt: &jwt.NumericDate{Time: now.Add(exp)},
-		ID:        j.gen.Generate(),
+		ID:        j.generator.Generate(),
 		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    iss,
 		NotBefore: &jwt.NumericDate{Time: now},
@@ -72,5 +86,5 @@ func (j *JWT) Verify(token, aud, iss string) (string, error) {
 }
 
 func (j *JWT) validate(_ *jwt.Token) (any, error) {
-	return j.ed.PublicKey, nil
+	return j.signer.PublicKey, nil
 }

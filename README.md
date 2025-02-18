@@ -272,6 +272,7 @@ token:
   aud: audience
   iss: issuer
   exp: 1h
+  kid: 1234567890
 ```
 
 ## Limiter
