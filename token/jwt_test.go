@@ -5,38 +5,15 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
-func TestKID(t *testing.T) {
-	Convey("When I generate a KID", t, func() {
-		rand := rand.NewGenerator(rand.NewReader())
-		kid, err := token.GenerateKID(rand)
-
-		Convey("Then I should a valid KID", func() {
-			So(err, ShouldBeNil)
-			So(string(kid), ShouldNotBeBlank)
-		})
-	})
-
-	Convey("When I generate an erroneous KID", t, func() {
-		rand := rand.NewGenerator(&test.ErrReaderCloser{})
-		kid, err := token.GenerateKID(rand)
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(string(kid), ShouldBeBlank)
-		})
-	})
-}
-
 func TestJWT(t *testing.T) {
-	rand := rand.NewGenerator(rand.NewReader())
-	kid, _ := token.GenerateKID(rand)
+	cfg := test.NewToken("jwt", "secrets/none")
+	kid := token.NewKID(cfg)
 	a, _ := ed25519.NewSigner(test.NewEd25519())
 	jwt := token.NewJWT(kid, a, id.Default)
 

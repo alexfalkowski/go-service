@@ -1,101 +1,109 @@
 package token_test
 
 import (
-	"errors"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 )
 
 func TestGenerate(t *testing.T) {
-	for _, kind := range []string{"token"} {
-		Convey("Given I have a invalid key token", t, func() {
-			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
+	for _, kind := range []string{"token", "jwt", "paseto", "none"} {
+		cfg := test.NewToken(kind, "secrets/token")
+		kid := token.NewKID(cfg)
+		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		params := token.Params{
+			Config: cfg,
+			Name:   test.Name,
+			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
+			JWT:    token.NewJWT(kid, signer, id.Default),
+			Paseto: token.NewPaseto(signer, id.Default),
+		}
+		token := token.NewToken(params)
 
-			Convey("When I try to generate", func() {
-				_, _, err := token.Generate(t.Context())
+		Convey("When I try to generate", t, func() {
+			_, _, err := token.Generate(t.Context())
 
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-				})
+			Convey("Then I should have no error", func() {
+				So(err, ShouldBeNil)
 			})
 		})
 	}
-
-	Convey("Given I have an invalid configuration", t, func() {
-		token := token.NewToken(test.NewToken("none", "secrets/key"), test.Name, nil, nil)
-
-		Convey("When I try to generate", func() {
-			_, token, err := token.Generate(t.Context())
-
-			Convey("Then I should have no token", func() {
-				So(token, ShouldBeNil)
-				So(err, ShouldBeNil)
-			})
-		})
-	})
-
-	Convey("Given I have an missing configuration", t, func() {
-		token := token.NewToken(nil, test.Name, nil, nil)
-
-		Convey("When I try to generate", func() {
-			_, token, err := token.Generate(t.Context())
-
-			Convey("Then I should have no token", func() {
-				So(token, ShouldBeNil)
-				So(err, ShouldBeNil)
-			})
-		})
-	})
 }
 
 func TestVerify(t *testing.T) {
-	for _, kind := range []string{"token"} {
-		Convey("Given I have a invalid key token", t, func() {
-			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
+	for _, kind := range []string{"token", "jwt", "paseto", "none"} {
+		cfg := test.NewToken(kind, "secrets/token")
+		kid := token.NewKID(cfg)
+		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		params := token.Params{
+			Config: cfg,
+			Name:   test.Name,
+			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
+			JWT:    token.NewJWT(kid, signer, id.Default),
+			Paseto: token.NewPaseto(signer, id.Default),
+		}
+		token := token.NewToken(params)
+
+		Convey("Given I generate a token", t, func() {
+			_, tkn, err := token.Generate(t.Context())
+			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				_, err := token.Verify(t.Context(), nil)
+				_, err := token.Verify(t.Context(), tkn)
 
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-				})
-			})
-		})
-
-		Convey("Given I have a valid key token", t, func() {
-			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, nil, nil)
-
-			Convey("When I try to verify", func() {
-				_, err := token.Verify(t.Context(), []byte{})
-
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
+				Convey("Then I should have no error", func() {
+					So(err, ShouldBeNil)
 				})
 			})
 		})
 	}
+}
 
-	Convey("Given I have an invalid configuration", t, func() {
-		token := token.NewToken(test.NewToken("none", "secrets/key"), test.Name, nil, nil)
+func TestError(t *testing.T) {
+	cfg := test.NewToken("token", "secrets/none")
+	kid := token.NewKID(cfg)
+	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	params := token.Params{
+		Config: cfg,
+		Name:   test.Name,
+		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
+		JWT:    token.NewJWT(kid, signer, id.Default),
+		Paseto: token.NewPaseto(signer, id.Default),
+	}
+	token := token.NewToken(params)
 
-		Convey("When I try to verify", func() {
-			_, err := token.Verify(t.Context(), []byte{})
+	Convey("When I generate a token", t, func() {
+		_, _, err := token.Generate(t.Context())
 
-			Convey("Then I should have no error", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
 		})
 	})
 
-	Convey("Given I have an missing configuration", t, func() {
-		token := token.NewToken(nil, test.Name, nil, nil)
+	Convey("When I verify a token", t, func() {
+		_, err := token.Verify(t.Context(), nil)
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+}
+
+func TestVerifyWithNoConfig(t *testing.T) {
+	params := token.Params{Name: test.Name}
+	token := token.NewToken(params)
+
+	Convey("Given I generate a token", t, func() {
+		_, tkn, err := token.Generate(t.Context())
+		So(err, ShouldBeNil)
 
 		Convey("When I try to verify", func() {
-			_, err := token.Verify(t.Context(), []byte{})
+			_, err := token.Verify(t.Context(), tkn)
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
@@ -104,35 +112,24 @@ func TestVerify(t *testing.T) {
 	})
 }
 
-func TestToken(t *testing.T) {
-	Convey("When I have a rand generator", t, func() {
-		gen := rand.NewGenerator(rand.NewReader())
+func TestVerifyWithMissingToken(t *testing.T) {
+	cfg := test.NewToken("token", "secrets/token")
+	kid := token.NewKID(cfg)
+	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	params := token.Params{
+		Config: cfg,
+		Name:   test.Name,
+		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
+		JWT:    token.NewJWT(kid, signer, id.Default),
+		Paseto: token.NewPaseto(signer, id.Default),
+	}
+	token := token.NewToken(params)
 
-		Convey("When I generate a token", func() {
-			key := token.GenerateToken(test.Name, gen)
+	Convey("When I verify a token", t, func() {
+		_, err := token.Verify(t.Context(), nil)
 
-			Convey("Then I should have a token", func() {
-				So(key, ShouldNotBeBlank)
-				So(token.VerifyToken(test.Name, key), ShouldBeNil)
-			})
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
 		})
 	})
-
-	keys := []string{
-		"",
-		"none_test_test",
-		string(test.Name) + "_test_test",
-		string(test.Name) + "_test_1",
-	}
-
-	for _, key := range keys {
-		Convey("When I generate a token", t, func() {
-			Convey("Then I should have an error", func() {
-				err := token.VerifyToken(test.Name, key)
-
-				So(err, ShouldBeError)
-				So(errors.Is(err, token.ErrInvalidMatch), ShouldBeTrue)
-			})
-		})
-	}
 }

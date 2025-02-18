@@ -15,11 +15,14 @@ import (
 func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		cfg := test.NewToken("jwt", "secrets/jwt")
-		a, _ := ed25519.NewSigner(test.NewEd25519())
-		id := id.Default
-		jwt := token.NewJWT(token.NewKID(cfg), a, id)
-		pas := token.NewPaseto(a, id)
-		token := token.NewToken(test.NewToken("jwt", "secrets/jwt"), test.Name, jwt, pas)
+		kid := token.NewKID(cfg)
+		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		params := token.Params{
+			Config: cfg,
+			Name:   test.Name,
+			JWT:    token.NewJWT(kid, signer, id.Default),
+		}
+		token := token.NewToken(params)
 
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("prometheus"),

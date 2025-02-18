@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
@@ -17,11 +18,16 @@ func TestTokenAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "token"} {
 		Convey("Given I have a all the servers", t, func() {
 			cfg := test.NewToken(kind, "secrets/"+kind)
-			a, _ := ed25519.NewSigner(test.NewEd25519())
-			id := id.Default
-			jwt := token.NewJWT(token.NewKID(cfg), a, id)
-			pas := token.NewPaseto(a, id)
-			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, jwt, pas)
+			kid := token.NewKID(cfg)
+			signer, _ := ed25519.NewSigner(test.NewEd25519())
+			params := token.Params{
+				Config: cfg,
+				Name:   test.Name,
+				Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
+				JWT:    token.NewJWT(kid, signer, id.Default),
+				Paseto: token.NewPaseto(signer, id.Default),
+			}
+			token := token.NewToken(params)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token), test.WithWorldHTTP())
 			world.Register()
