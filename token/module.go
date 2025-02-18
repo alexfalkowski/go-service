@@ -9,5 +9,6 @@ var Module = fx.Options(
 	fx.Provide(NewKID),
 	fx.Provide(NewJWT),
 	fx.Provide(NewPaseto),
+	fx.Provide(NewOpaque),
 	fx.Provide(NewToken),
 )

@@ -3,70 +3,42 @@ package token
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"hash/crc32"
-	"strconv"
-	"strings"
 
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
+	"go.uber.org/fx"
 )
 
-const underscore = "_"
+// Params for token.
+type Params struct {
+	fx.In
 
-// GenerateToken generates a token of format is name_rand(text)_crc32(id).
-func GenerateToken(name env.Name, generator *rand.Generator) string {
-	token := generator.Text()
-	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(token))), 10)
-
-	var builder strings.Builder
-
-	builder.WriteString(string(name))
-	builder.WriteString(underscore)
-	builder.WriteString(token)
-	builder.WriteString(underscore)
-	builder.WriteString(checksum)
-
-	return builder.String()
-}
-
-// VerifyToken verifies if the token matches the segments.
-func VerifyToken(name env.Name, token string) error {
-	segments := strings.Split(token, underscore)
-
-	if len(segments) != 3 {
-		return fmt.Errorf("invalid length: %w", ErrInvalidMatch)
-	}
-
-	if segments[0] != string(name) {
-		return fmt.Errorf("invalid prefix: %w", ErrInvalidMatch)
-	}
-
-	u64, err := strconv.ParseUint(segments[2], 10, 32)
-	if err != nil {
-		return fmt.Errorf("%w: %w", err, ErrInvalidMatch)
-	}
-
-	if crc32.ChecksumIEEE([]byte(segments[1])) != uint32(u64) {
-		return fmt.Errorf("invalid checksum: %w", ErrInvalidMatch)
-	}
-
-	return nil
+	Config *Config
+	JWT    *JWT
+	Paseto *Paseto
+	Opaque *Opaque
+	Name   env.Name
 }
 
 // NewToken based on config.
-func NewToken(cfg *Config, name env.Name, jwt *JWT, pas *Paseto) *Token {
-	return &Token{cfg: cfg, name: name, jwt: jwt, pas: pas}
+func NewToken(params Params) *Token {
+	return &Token{
+		cfg:    params.Config,
+		name:   params.Name,
+		jwt:    params.JWT,
+		paseto: params.Paseto,
+		opaque: params.Opaque,
+	}
 }
 
 // Token will generate and verify based on what is defined in the config.
 type Token struct {
-	cfg  *Config
-	jwt  *JWT
-	pas  *Paseto
-	name env.Name
+	cfg    *Config
+	jwt    *JWT
+	paseto *Paseto
+	opaque *Opaque
+	name   env.Name
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
@@ -84,7 +56,7 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 		return ctx, []byte(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.pas.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
+		token, err := t.paseto.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
 		return ctx, []byte(token), err
 	}
@@ -108,13 +80,13 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 			return ctx, ErrInvalidMatch
 		}
 
-		return ctx, VerifyToken(t.name, string(token))
+		return ctx, t.opaque.Verify(string(token))
 	case t.cfg.IsJWT():
 		_, err := t.jwt.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
 
 		return ctx, err
 	case t.cfg.IsPaseto():
-		_, err := t.pas.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+		_, err := t.paseto.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
 
 		return ctx, err
 	}

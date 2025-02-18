@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/golang-jwt/jwt/v4"
@@ -12,13 +11,6 @@ const (
 	// EmptyKID is the kid used when no kid is provided.
 	EmptyKID = KID("")
 )
-
-// GenerateKID for JWKSets.
-func GenerateKID(generator *rand.Generator) (KID, error) {
-	text, err := generator.GenerateText(10)
-
-	return KID(text), err
-}
 
 // NewKID for JWKSets.
 func NewKID(cfg *Config) KID {
