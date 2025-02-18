@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.447.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.447.0) - 2025-02-18
+
+- [`58483a7`](https://github.com/alexfalkowski/go-service/commit/58483a71857c5ca4e0d683718c12ab0dde853f07) feat(deps): upgraded github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0 => v2.3.0 (#1327)
+- [`5f74282`](https://github.com/alexfalkowski/go-service/commit/5f742823b9466e34b7d884757df5fcf2361b538f) build(deps): bump bin from `dc45d04` to `8592a53` (#1326)
+
 ## [v1.446.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.446.0) - 2025-02-17
 
 - [`1bf2dfd`](https://github.com/alexfalkowski/go-service/commit/1bf2dfd8f6f0d720e7ddc9faafc7a5be3e0d1583) feat(crypto): use rand.Text (#1325)
