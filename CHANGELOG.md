@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.451.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.451.0) - 2025-02-18
+
+- [`08902e7`](https://github.com/alexfalkowski/go-service/commit/08902e7214d088969c44b27f8f180ca49d215d90) feat(token): move to opaque type (#1332)
+- [`c4acc41`](https://github.com/alexfalkowski/go-service/commit/c4acc41780e9863cd3203b5958a78ab969be3f38) docs(all): add comments (#1331)
+
 ## [v1.450.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.450.0) - 2025-02-18
 
 - [`66b48a6`](https://github.com/alexfalkowski/go-service/commit/66b48a637d2df005309eaa6cd4c8b161d3f24a5f) feat(token): key id should be configured (#1330)
