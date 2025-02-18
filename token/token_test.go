@@ -12,8 +12,8 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	for _, kind := range []string{"token", "jwt", "paseto", "none"} {
-		cfg := test.NewToken(kind, "secrets/token")
+	for _, kind := range []string{"opaque", "jwt", "paseto", "none"} {
+		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
 		signer, _ := ed25519.NewSigner(test.NewEd25519())
 		params := token.Params{
@@ -36,8 +36,8 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
-	for _, kind := range []string{"token", "jwt", "paseto", "none"} {
-		cfg := test.NewToken(kind, "secrets/token")
+	for _, kind := range []string{"opaque", "jwt", "paseto", "none"} {
+		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
 		signer, _ := ed25519.NewSigner(test.NewEd25519())
 		params := token.Params{
@@ -65,7 +65,7 @@ func TestVerify(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	cfg := test.NewToken("token", "secrets/none")
+	cfg := test.NewToken("opaque", "secrets/none")
 	kid := token.NewKID(cfg)
 	signer, _ := ed25519.NewSigner(test.NewEd25519())
 	params := token.Params{
@@ -113,7 +113,7 @@ func TestVerifyWithNoConfig(t *testing.T) {
 }
 
 func TestVerifyWithMissingToken(t *testing.T) {
-	cfg := test.NewToken("token", "secrets/token")
+	cfg := test.NewToken("opaque", "secrets/opaque")
 	kid := token.NewKID(cfg)
 	signer, _ := ed25519.NewSigner(test.NewEd25519())
 	params := token.Params{

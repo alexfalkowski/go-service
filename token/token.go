@@ -47,7 +47,7 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	}
 
 	switch {
-	case t.cfg.IsToken():
+	case t.cfg.IsOpaque():
 		d, err := os.ReadFile(t.cfg.Secret)
 
 		return ctx, []byte(d), err
@@ -70,7 +70,7 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 	}
 
 	switch {
-	case t.cfg.IsToken():
+	case t.cfg.IsOpaque():
 		d, err := os.ReadFile(t.cfg.Secret)
 		if err != nil {
 			return ctx, err
