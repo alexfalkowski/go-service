@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.448.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.448.0) - 2025-02-18
+
+- [`1f1872a`](https://github.com/alexfalkowski/go-service/commit/1f1872ac52b068c09ed56674bdbbc21fc745eb62) feat(token): retire key kind (#1328)
+
 ## [v1.447.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.447.0) - 2025-02-18
 
 - [`58483a7`](https://github.com/alexfalkowski/go-service/commit/58483a71857c5ca4e0d683718c12ab0dde853f07) feat(deps): upgraded github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0 => v2.3.0 (#1327)
