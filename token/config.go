@@ -15,11 +15,6 @@ type Config struct {
 	Expiration string `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
 }
 
-// IsKey for configuration.
-func (c *Config) IsKey() bool {
-	return c.Kind == "key"
-}
-
 // IsToken for configuration.
 func (c *Config) IsToken() bool {
 	return c.Kind == "token"

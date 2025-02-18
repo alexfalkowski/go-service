@@ -266,8 +266,8 @@ To configure, please specify the following:
 
 ```yaml
 token:
-  kind: jwt, paseto, key
-  key: path to a key (only used for kind key)
+  kind: jwt, paseto, token
+  secret: path to a secret token (only used for kind token)
   sub: subject
   aud: audience
   iss: issuer

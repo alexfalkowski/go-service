@@ -17,7 +17,7 @@ import (
 const underscore = "_"
 
 // Generate a token.
-// The format is name_rand(64)_crc32(id).
+// The format is name_rand(text)_crc32(id).
 func Generate(name env.Name, gen *rand.Generator) string {
 	token := gen.Text()
 	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(token))), 10)
@@ -76,10 +76,6 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	}
 
 	switch {
-	case t.cfg.IsKey():
-		d, err := os.ReadBase64File(t.cfg.Secret)
-
-		return ctx, []byte(d), err
 	case t.cfg.IsToken():
 		d, err := os.ReadFile(t.cfg.Secret)
 
@@ -103,17 +99,6 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 	}
 
 	switch {
-	case t.cfg.IsKey():
-		d, err := os.ReadBase64File(t.cfg.Secret)
-		if err != nil {
-			return ctx, err
-		}
-
-		if !bytes.Equal([]byte(d), token) {
-			return ctx, ErrInvalidMatch
-		}
-
-		return ctx, nil
 	case t.cfg.IsToken():
 		d, err := os.ReadFile(t.cfg.Secret)
 		if err != nil {
