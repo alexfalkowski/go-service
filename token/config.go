@@ -16,9 +16,9 @@ type Config struct {
 	KeyID      string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
 }
 
-// IsToken for configuration.
-func (c *Config) IsToken() bool {
-	return c.Kind == "token"
+// IsOpaque for configuration.
+func (c *Config) IsOpaque() bool {
+	return c.Kind == "opaque"
 }
 
 // IsJWT for configuration.
