@@ -16,10 +16,9 @@ import (
 
 const underscore = "_"
 
-// Generate a token.
-// The format is name_rand(text)_crc32(id).
-func Generate(name env.Name, gen *rand.Generator) string {
-	token := gen.Text()
+// GenerateToken generates a token of format is name_rand(text)_crc32(id).
+func GenerateToken(name env.Name, generator *rand.Generator) string {
+	token := generator.Text()
 	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(token))), 10)
 
 	var builder strings.Builder
@@ -33,8 +32,8 @@ func Generate(name env.Name, gen *rand.Generator) string {
 	return builder.String()
 }
 
-// Verify if the token matches the segments.
-func Verify(name env.Name, token string) error {
+// VerifyToken verifies if the token matches the segments.
+func VerifyToken(name env.Name, token string) error {
 	segments := strings.Split(token, underscore)
 
 	if len(segments) != 3 {
@@ -109,7 +108,7 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 			return ctx, ErrInvalidMatch
 		}
 
-		return ctx, Verify(t.name, string(token))
+		return ctx, VerifyToken(t.name, string(token))
 	case t.cfg.IsJWT():
 		_, err := t.jwt.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
 

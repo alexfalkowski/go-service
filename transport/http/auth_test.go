@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
@@ -17,10 +16,10 @@ import (
 func TestTokenAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "token"} {
 		Convey("Given I have a all the servers", t, func() {
-			kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
+			cfg := test.NewToken(kind, "secrets/"+kind)
 			a, _ := ed25519.NewSigner(test.NewEd25519())
 			id := id.Default
-			jwt := token.NewJWT(kid, a, id)
+			jwt := token.NewJWT(token.NewKID(cfg), a, id)
 			pas := token.NewPaseto(a, id)
 			token := token.NewToken(test.NewToken(kind, "secrets/"+kind), test.Name, jwt, pas)
 

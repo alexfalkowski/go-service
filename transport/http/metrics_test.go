@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
@@ -15,10 +14,10 @@ import (
 
 func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
+		cfg := test.NewToken("jwt", "secrets/jwt")
 		a, _ := ed25519.NewSigner(test.NewEd25519())
 		id := id.Default
-		jwt := token.NewJWT(kid, a, id)
+		jwt := token.NewJWT(token.NewKID(cfg), a, id)
 		pas := token.NewPaseto(a, id)
 		token := token.NewToken(test.NewToken("jwt", "secrets/jwt"), test.Name, jwt, pas)
 
