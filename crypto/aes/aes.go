@@ -26,12 +26,7 @@ type Generator struct {
 
 // Generate for aes.
 func (g *Generator) Generate() (string, error) {
-	s, err := g.gen.GenerateBytes(32)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(s), nil
+	return g.gen.GenerateText(32)
 }
 
 // NewCipher for aes.
@@ -57,7 +52,7 @@ func (a *Cipher) Encrypt(msg string) (string, error) {
 		return "", err
 	}
 
-	bytes, err := a.gen.GenerateBytes(uint32(aead.NonceSize())) //nolint:gosec
+	bytes, err := a.gen.GenerateBytes(aead.NonceSize())
 	if err != nil {
 		return "", err
 	}

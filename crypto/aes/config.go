@@ -16,5 +16,5 @@ type Config struct {
 
 // GetKey for aes.
 func (c *Config) GetKey() (string, error) {
-	return os.ReadBase64File(c.Key)
+	return os.ReadFile(c.Key)
 }

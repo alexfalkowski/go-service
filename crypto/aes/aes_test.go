@@ -11,7 +11,7 @@ import (
 )
 
 func TestGenerator(t *testing.T) {
-	Convey("Given I have an erroneous generator", t, func() {
+	Convey("Given I have a generator", t, func() {
 		gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 		Convey("When I generate key", func() {
