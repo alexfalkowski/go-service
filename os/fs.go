@@ -33,18 +33,22 @@ func NewFS() FileSystem {
 // SystemFS uses the underlying os.
 type SystemFS struct{}
 
+// ReadFile for os.
 func (*SystemFS) ReadFile(path string) (string, error) {
 	return ReadFile(path)
 }
 
+// WriteFile for os.
 func (*SystemFS) WriteFile(name string, data string, perm FileMode) error {
 	return WriteFile(name, data, perm)
 }
 
+// PathExists for os.
 func (*SystemFS) PathExists(name string) bool {
 	return PathExists(name)
 }
 
+// IsNotExist for os.
 func (*SystemFS) IsNotExist(err error) bool {
 	return IsNotExist(err)
 }

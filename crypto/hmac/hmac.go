@@ -40,6 +40,7 @@ type Signer struct {
 	key []byte
 }
 
+// Sign for hmac.
 func (a *Signer) Sign(msg string) (string, error) {
 	mac := hmac.New(sha512.New, a.key)
 	mac.Write([]byte(msg))
@@ -47,6 +48,7 @@ func (a *Signer) Sign(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
 }
 
+// Verify for hmac.
 func (a *Signer) Verify(sig, msg string) error {
 	decoded, err := base64.StdEncoding.DecodeString(sig)
 	if err != nil {

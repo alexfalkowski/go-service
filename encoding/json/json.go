@@ -14,10 +14,12 @@ func NewEncoder() *Encoder {
 // Encoder for json.
 type Encoder struct{}
 
+// Encode for json.
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
+// Decode for json.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	return json.NewDecoder(r).Decode(v)
 }

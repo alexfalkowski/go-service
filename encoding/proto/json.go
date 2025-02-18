@@ -16,6 +16,7 @@ func NewJSON() *JSON {
 // JSON for proto.
 type JSON struct{}
 
+// Encode for proto.
 func (e *JSON) Encode(w io.Writer, v any) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -32,6 +33,7 @@ func (e *JSON) Encode(w io.Writer, v any) (err error) {
 	return
 }
 
+// Decode for proto.
 func (e *JSON) Decode(r io.Reader, v any) error {
 	b, err := io.ReadAll(r)
 	if err != nil {

@@ -59,12 +59,14 @@ type Cipher struct {
 	privateKey *rsa.PrivateKey
 }
 
+// Encrypt for rsa.
 func (a *Cipher) Encrypt(msg string) (string, error) {
 	e, err := rsa.EncryptOAEP(sha512.New(), a.gen, a.publicKey, []byte(msg), nil)
 
 	return base64.StdEncoding.EncodeToString(e), err
 }
 
+// Decrypt for rsa.
 func (a *Cipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {

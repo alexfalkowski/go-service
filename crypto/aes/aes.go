@@ -46,6 +46,7 @@ type Cipher struct {
 	key []byte
 }
 
+// Encrypt for aes.
 func (a *Cipher) Encrypt(msg string) (string, error) {
 	aead, err := a.aead()
 	if err != nil {
@@ -62,6 +63,7 @@ func (a *Cipher) Encrypt(msg string) (string, error) {
 	return base64.StdEncoding.EncodeToString(s), nil
 }
 
+// Decrypt for aes.
 func (a *Cipher) Decrypt(msg string) (string, error) {
 	decoded, err := base64.StdEncoding.DecodeString(msg)
 	if err != nil {
