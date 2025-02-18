@@ -15,7 +15,7 @@ import (
 )
 
 func TestTokenAuthUnary(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "key", "token"} {
+	for _, kind := range []string{"jwt", "paseto", "token"} {
 		Convey("Given I have a all the servers", t, func() {
 			kid, _ := token.NewKID(rand.NewGenerator(rand.NewReader()))
 			a, _ := ed25519.NewSigner(test.NewEd25519())

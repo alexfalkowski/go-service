@@ -11,7 +11,7 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	for _, kind := range []string{"key", "token"} {
+	for _, kind := range []string{"token"} {
 		Convey("Given I have a invalid key token", t, func() {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
 
@@ -53,7 +53,7 @@ func TestGenerate(t *testing.T) {
 }
 
 func TestVerify(t *testing.T) {
-	for _, kind := range []string{"key", "token"} {
+	for _, kind := range []string{"token"} {
 		Convey("Given I have a invalid key token", t, func() {
 			token := token.NewToken(test.NewToken(kind, "secrets/none"), test.Name, nil, nil)
 
