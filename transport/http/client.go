@@ -8,19 +8,19 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	sr "github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
+	tl "github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	tt "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 )
 
 // ClientOption for HTTP.
@@ -33,7 +33,7 @@ type clientOpts struct {
 	meter        metric.Meter
 	roundTripper http.RoundTripper
 	gen          token.Generator
-	logger       *zap.Logger
+	logger       *logger.Logger
 	retry        *sr.Config
 	tls          *tls.Config
 	id           id.Generator
@@ -92,7 +92,7 @@ func WithClientBreaker() ClientOption {
 }
 
 // WithClientLogger for HTTP.
-func WithClientLogger(logger *zap.Logger) ClientOption {
+func WithClientLogger(logger *logger.Logger) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.logger = logger
 	})
@@ -159,7 +159,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.logger != nil {
-		hrt = logger.NewRoundTripper(os.logger, hrt)
+		hrt = tl.NewRoundTripper(os.logger, hrt)
 	}
 
 	if os.meter != nil {

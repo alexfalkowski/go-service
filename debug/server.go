@@ -8,9 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // ServerParams for debug.
@@ -19,7 +19,7 @@ type ServerParams struct {
 
 	Shutdowner fx.Shutdowner
 	Config     *Config
-	Logger     *zap.Logger
+	Logger     *logger.Logger
 }
 
 // Server for debug.

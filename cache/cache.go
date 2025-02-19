@@ -6,19 +6,19 @@ import (
 	"encoding/base64"
 
 	"github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/cache/telemetry/logger"
+	tl "github.com/alexfalkowski/go-service/cache/telemetry/logger"
 	"github.com/alexfalkowski/go-service/cache/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/sync"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/faabiosr/cachego"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // Get a value from key.
@@ -45,7 +45,7 @@ type Params struct {
 	Compressor *compress.Map
 	Cache      cachego.Cache
 	Tracer     trace.Tracer
-	Logger     *zap.Logger
+	Logger     *logger.Logger
 	Meter      metric.Meter
 }
 
@@ -60,7 +60,7 @@ func New(params Params) (config.Cache, error) {
 
 	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, cache: params.Cache}
 	cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
-	cache = logger.NewCache(params.Config.Kind, params.Logger, cache)
+	cache = tl.NewCache(params.Config.Kind, params.Logger, cache)
 	cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
 
 	params.Lifecycle.Append(fx.Hook{

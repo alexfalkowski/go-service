@@ -21,10 +21,10 @@ type Params struct {
 	Name        env.Name
 }
 
-// NewLogger using logger.
-func NewLogger(params Params) (*zap.Logger, error) {
+// NewLogger using zap.
+func NewLogger(params Params) (*Logger, error) {
 	if !IsEnabled(params.Config) {
-		return zap.NewNop(), nil
+		return &Logger{zap.NewNop()}, nil
 	}
 
 	fields := zap.Fields(
@@ -33,40 +33,47 @@ func NewLogger(params Params) (*zap.Logger, error) {
 		zap.Stringer("version", params.Version),
 	)
 
-	logger, err := params.Logger.Build(fields)
+	log, err := params.Logger.Build(fields)
 	if err != nil {
 		return nil, err
 	}
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(_ context.Context) error {
-			_ = logger.Sync()
+			_ = log.Sync()
 
 			return nil
 		},
 	})
 
-	return logger, nil
+	return &Logger{log}, nil
 }
 
+type (
+	// Logger allows to pass a function to log.
+	Logger struct {
+		*zap.Logger
+	}
+
+	// LogFunc for logger.
+	LogFunc func(msg string, fields ...zapcore.Field)
+)
+
 // LogWithLogger for logger.
-func LogWithLogger(logger *zap.Logger, msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) Log(msg string, err error, fields ...zapcore.Field) {
 	var fn LogFunc
 
 	if err != nil {
-		fn = logger.Error
+		fn = l.Logger.Error
 	} else {
-		fn = logger.Info
+		fn = l.Logger.Info
 	}
 
-	LogWithFunc(fn, msg, err, fields...)
+	l.LogFunc(fn, msg, err, fields...)
 }
 
-// LogFunc for logger.
-type LogFunc func(msg string, fields ...zapcore.Field)
-
 // LogWithFunc for logger.
-func LogWithFunc(fn LogFunc, msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) LogFunc(fn LogFunc, msg string, err error, fields ...zapcore.Field) {
 	fields = append(fields, zap.Error(err))
 
 	fn(msg, fields...)

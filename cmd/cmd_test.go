@@ -30,6 +30,7 @@ import (
 	"github.com/alexfalkowski/go-service/module"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -41,7 +42,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 func TestRunWithServer(t *testing.T) {
@@ -269,7 +269,7 @@ func TestInvalidClient(t *testing.T) {
 	}
 }
 
-func registrations(logger *zap.Logger, cfg *http.Config, ua env.UserAgent, tracer trace.Tracer, _ env.Version) health.Registrations {
+func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tracer trace.Tracer, _ env.Version) health.Registrations {
 	if cfg == nil {
 		return nil
 	}

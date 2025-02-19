@@ -11,11 +11,12 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
+	tl "github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
@@ -24,7 +25,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // ServerParams for HTTP.
@@ -34,7 +34,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 	Mux        *http.ServeMux
 	Config     *Config
-	Logger     *zap.Logger
+	Logger     *logger.Logger
 	Tracer     trace.Tracer
 	Meter      metric.Meter
 	UserAgent  env.UserAgent
@@ -62,7 +62,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Logger != nil {
-		neg.Use(logger.NewHandler(params.Logger))
+		neg.Use(tl.NewHandler(params.Logger))
 	}
 
 	if params.Meter != nil {

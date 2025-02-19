@@ -9,6 +9,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -17,7 +18,6 @@ import (
 	"github.com/urfave/negroni/v3"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // Server for test.
@@ -33,7 +33,7 @@ type Server struct {
 	DebugConfig     *debug.Config
 	Tracer          *tracer.Config
 	Limiter         *limiter.Limiter
-	Logger          *zap.Logger
+	Logger          *logger.Logger
 	ID              id.Generator
 	VerifyAuth      bool
 	RegisterHTTP    bool

@@ -7,21 +7,21 @@ import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	"github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
+	tl "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
 	"github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // Register the driver for SQL.
-func Register(name string, driver driver.Driver, trace trace.Tracer, log *zap.Logger) {
+func Register(name string, driver driver.Driver, trace trace.Tracer, log *logger.Logger) {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
 	interceptor = tracer.NewInterceptor(name, trace, interceptor)
-	interceptor = logger.NewInterceptor(name, log, interceptor)
+	interceptor = tl.NewInterceptor(name, log, interceptor)
 
 	sql.Register(name, sqlmw.Driver(driver, interceptor))
 }

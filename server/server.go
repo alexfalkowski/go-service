@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -12,12 +13,12 @@ import (
 type Server struct {
 	srv    Serverer
 	sh     fx.Shutdowner
-	logger *zap.Logger
+	logger *logger.Logger
 	svc    string
 }
 
 // NewServer that can start and stop an underlying server.
-func NewServer(svc string, srv Serverer, logger *zap.Logger, sh fx.Shutdowner) *Server {
+func NewServer(svc string, srv Serverer, logger *logger.Logger, sh fx.Shutdowner) *Server {
 	return &Server{svc: svc, srv: srv, logger: logger, sh: sh}
 }
 
@@ -33,14 +34,14 @@ func (s *Server) Start() {
 func (s *Server) start() {
 	addr := zap.Stringer("addr", s.srv)
 
-	s.log(func(l *zap.Logger) {
+	s.log(func(l *logger.Logger) {
 		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.svc))
 	})
 
 	if err := s.srv.Serve(); err != nil {
 		serr := s.sh.Shutdown()
 
-		s.log(func(l *zap.Logger) {
+		s.log(func(l *logger.Logger) {
 			l.Error("could not start server", zap.String(meta.ServiceKey, s.svc), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
 		})
 	}
@@ -54,12 +55,12 @@ func (s *Server) Stop(ctx context.Context) {
 
 	err := s.srv.Shutdown(ctx)
 
-	s.log(func(l *zap.Logger) {
+	s.log(func(l *logger.Logger) {
 		l.Info("stopping server", zap.String(meta.ServiceKey, s.svc), zap.Error(err))
 	})
 }
 
-func (s *Server) log(fn func(l *zap.Logger)) {
+func (s *Server) log(fn func(l *logger.Logger)) {
 	if s.logger == nil {
 		return
 	}
