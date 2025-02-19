@@ -11,14 +11,14 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 )
 
-// Handler for tracer.
-type Handler struct {
-	tracer *tracer.Tracer
-}
-
 // NewHandler for tracer.
 func NewHandler(tracer *tracer.Tracer) *Handler {
 	return &Handler{tracer: tracer}
+}
+
+// Handler for tracer.
+type Handler struct {
+	tracer *tracer.Tracer
 }
 
 // ServeHTTP for tracer.

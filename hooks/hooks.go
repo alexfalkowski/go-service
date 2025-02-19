@@ -7,14 +7,14 @@ import (
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
-// Generator for hooks.
-type Generator struct {
-	gen *rand.Generator
-}
-
 // NewGenerator for hooks.
 func NewGenerator(gen *rand.Generator) *Generator {
 	return &Generator{gen: gen}
+}
+
+// Generator for hooks.
+type Generator struct {
+	gen *rand.Generator
 }
 
 // Generate for hooks.
