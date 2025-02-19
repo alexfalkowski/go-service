@@ -15,7 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/token"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	tkn "github.com/alexfalkowski/go-service/transport/grpc/token"

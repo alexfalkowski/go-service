@@ -1,4 +1,4 @@
-package zap
+package logger
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// LoggerParams for zap.
-type LoggerParams struct {
+// Params for logger.
+type Params struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
@@ -21,8 +21,8 @@ type LoggerParams struct {
 	Name        env.Name
 }
 
-// NewLogger using zap.
-func NewLogger(params LoggerParams) (*zap.Logger, error) {
+// NewLogger using logger.
+func NewLogger(params Params) (*zap.Logger, error) {
 	if !IsEnabled(params.Config) {
 		return zap.NewNop(), nil
 	}
@@ -49,8 +49,8 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 	return logger, nil
 }
 
-// LogWithLogger for zap.
-func LogWithLogger(msg string, err error, logger *zap.Logger, fields ...zapcore.Field) {
+// LogWithLogger for logger.
+func LogWithLogger(logger *zap.Logger, msg string, err error, fields ...zapcore.Field) {
 	var fn LogFunc
 
 	if err != nil {
@@ -59,17 +59,15 @@ func LogWithLogger(msg string, err error, logger *zap.Logger, fields ...zapcore.
 		fn = logger.Info
 	}
 
-	LogWithFunc(msg, err, fn, fields...)
+	LogWithFunc(fn, msg, err, fields...)
 }
 
-// LogFunc for zap.
+// LogFunc for logger.
 type LogFunc func(msg string, fields ...zapcore.Field)
 
-// LogWithFunc for zap.
-func LogWithFunc(msg string, err error, fn LogFunc, fields ...zapcore.Field) {
-	if err != nil {
-		fields = append(fields, zap.Error(err))
-	}
+// LogWithFunc for logger.
+func LogWithFunc(fn LogFunc, msg string, err error, fields ...zapcore.Field) {
+	fields = append(fields, zap.Error(err))
 
 	fn(msg, fields...)
 }

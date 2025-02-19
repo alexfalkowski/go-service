@@ -1,10 +1,10 @@
-package zap_test
+package logger_test
 
 import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
-	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	"go.uber.org/fx/fxtest"
 	"go.uber.org/zap"
@@ -17,7 +17,7 @@ func TestLogger(t *testing.T) {
 		c := &zap.Config{}
 
 		Convey("When I try to get a logger", func() {
-			p := logger.LoggerParams{Lifecycle: lc, Config: cfg, Logger: c, Environment: test.Environment, Version: test.Version}
+			p := logger.Params{Lifecycle: lc, Config: cfg, Logger: c, Environment: test.Environment, Version: test.Version}
 			_, err := logger.NewLogger(p)
 
 			Convey("Then I should have an error", func() {

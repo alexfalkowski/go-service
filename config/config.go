@@ -20,7 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/telemetry"
-	"github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
@@ -134,7 +134,7 @@ func limiterConfig(cfg *Config) *limiter.Config {
 	return cfg.Limiter
 }
 
-func loggerConfig(cfg *Config) *zap.Config {
+func loggerConfig(cfg *Config) *logger.Config {
 	if !telemetry.IsEnabled(cfg.Telemetry) {
 		return nil
 	}

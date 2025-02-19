@@ -1,4 +1,4 @@
-package zap
+package logger
 
 import (
 	"github.com/alexfalkowski/go-service/env"
@@ -7,17 +7,17 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// IsEnabled for zap.
+// IsEnabled for logger.
 func IsEnabled(cfg *Config) bool {
 	return cfg != nil
 }
 
-// Config for zap.
+// Config for logger.
 type Config struct {
 	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 
-// NewConfig for zap. If disabled returns nil and ignored by logger.
+// NewConfig for logger. If disabled returns nil and ignored by logger.
 func NewConfig(env env.Environment, config *Config) (*zap.Config, error) {
 	if !IsEnabled(config) {
 		return nil, nil
