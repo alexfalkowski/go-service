@@ -57,8 +57,13 @@ type View string
 
 // Render the view.
 func (v View) Render(ctx context.Context, res http.ResponseWriter, model any) {
-	if err := views.template.ExecuteTemplate(res, string(v), model); err != nil {
+	if err := views.template.ExecuteTemplate(res, v.String(), model); err != nil {
 		meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		res.WriteHeader(status.Code(err))
 	}
+}
+
+// String representation of the view.
+func (v View) String() string {
+	return string(v)
 }

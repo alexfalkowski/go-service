@@ -21,7 +21,7 @@ func (n Name) String() string {
 
 // NewUserAgent for this service.
 func NewUserAgent(name Name, ver Version) UserAgent {
-	return UserAgent(string(name) + "/" + ver.String())
+	return UserAgent(name.String() + "/" + ver.String())
 }
 
 // UserAgent for this service.

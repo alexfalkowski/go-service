@@ -31,11 +31,12 @@ func TestOpaque(t *testing.T) {
 		})
 	})
 
+	name := test.Name.String()
 	keys := []string{
 		"",
 		"none_test_test",
-		string(test.Name) + "_test_test",
-		string(test.Name) + "_test_1",
+		name + "_test_test",
+		name + "_test_1",
 	}
 
 	for _, key := range keys {

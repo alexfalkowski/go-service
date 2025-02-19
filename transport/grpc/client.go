@@ -173,7 +173,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	cis := UnaryClientInterceptors(opts...)
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
-		grpc.WithUserAgent(string(os.userAgent)),
+		grpc.WithUserAgent(os.userAgent.String()),
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                os.timeout,
 			Timeout:             os.timeout,
