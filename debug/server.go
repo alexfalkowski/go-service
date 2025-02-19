@@ -22,12 +22,6 @@ type ServerParams struct {
 	Logger     *logger.Logger
 }
 
-// Server for debug.
-type Server struct {
-	mux *http.ServeMux
-	*server.Server
-}
-
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
 	mux := http.NewServeMux()
@@ -54,6 +48,12 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
+}
+
+// Server for debug.
+type Server struct {
+	mux *http.ServeMux
+	*server.Server
 }
 
 // ServeMux for debug.
