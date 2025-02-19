@@ -1,10 +1,10 @@
-package zap
+package logger
 
 import (
 	"net/http"
 	"strings"
 
-	logger "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
@@ -17,17 +17,17 @@ const (
 	service = "http"
 )
 
-// NewHandler for zap.
+// NewHandler for logger.
 func NewHandler(logger *zap.Logger) *Handler {
 	return &Handler{logger: logger}
 }
 
-// Handler for zap.
+// Handler for logger.
 type Handler struct {
 	logger *zap.Logger
 }
 
-// ServeHTTP or zap.
+// ServeHTTP or logger.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
 	if ts.IsObservable(path) {
@@ -48,22 +48,22 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	fields = append(fields, zap.Stringer(meta.DurationKey, m.Duration), zap.Int(meta.CodeKey, m.Code))
 	fields = append(fields, logger.Meta(ctx)...)
 
-	logger.LogWithFunc(message(method+" "+path), nil, codeToLevel(m.Code, h.logger), fields...)
+	logger.LogWithFunc(codeToLevel(m.Code, h.logger), message(method+" "+path), nil, fields...)
 }
 
-// NewRoundTripper for zap.
+// NewRoundTripper for logger.
 func NewRoundTripper(logger *zap.Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
 
-// RoundTripper for zap.
+// RoundTripper for logger.
 type RoundTripper struct {
 	logger *zap.Logger
 
 	http.RoundTripper
 }
 
-// RoundTrip for zap.
+// RoundTrip for logger.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if ts.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
@@ -86,7 +86,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		fields = append(fields, zap.Int(meta.CodeKey, resp.StatusCode))
 	}
 
-	logger.LogWithFunc(message(method+" "+req.URL.Redacted()), err, respToLevel(resp, r.logger), fields...)
+	logger.LogWithFunc(respToLevel(resp, r.logger), message(method+" "+req.URL.Redacted()), err, fields...)
 
 	return resp, err
 }

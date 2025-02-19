@@ -7,7 +7,7 @@ import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/database/sql/config"
-	logger "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
 	"github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/linxGnu/mssqlx"

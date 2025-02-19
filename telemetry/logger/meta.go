@@ -1,4 +1,4 @@
-package zap
+package logger
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Meta for zap.
+// Meta for logger.
 func Meta(ctx context.Context) []zapcore.Field {
 	strings := meta.CamelStrings(ctx, "")
 	fields := make([]zapcore.Field, len(strings))

@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
-	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
 	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	tt "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
