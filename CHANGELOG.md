@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.458.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.458.0) - 2025-02-19
+
+- [`af1ecd1`](https://github.com/alexfalkowski/go-service/commit/af1ecd1a042f5b315129ff0bb187c6b234a68e08) feat(telemetry): simplfy span expressions for tracer (#1342)
+
 ## [v1.457.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.457.0) - 2025-02-19
 
 - [`6190679`](https://github.com/alexfalkowski/go-service/commit/61906796f17e5bea451298c0ae12b58312bfcec0) feat(telemetry): move to have a concrete type like logger (#1341)
