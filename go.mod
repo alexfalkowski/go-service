@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service
 go 1.24.0
 
 require (
-	aidanwoods.dev/go-paseto v1.5.3
+	aidanwoods.dev/go-paseto v1.5.4
 	github.com/BurntSushi/toml v1.4.0
 	github.com/KimMachineGun/automemlimit v0.7.0
 	github.com/alexfalkowski/go-health v1.22.0
@@ -70,7 +70,7 @@ require (
 )
 
 require (
-	aidanwoods.dev/go-result v0.1.0 // indirect
+	aidanwoods.dev/go-result v0.3.1 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Masterminds/semver/v3 v3.3.1 // indirect
