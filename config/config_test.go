@@ -134,7 +134,7 @@ func TestValidMemConfig(t *testing.T) {
 
 //nolint:funlen
 func verifyConfig(config *config.Config) {
-	So(string(config.Environment), ShouldEqual, "development")
+	So(config.Environment.String(), ShouldEqual, "development")
 	So(cache.IsEnabled(config.Cache), ShouldBeTrue)
 	So(config.Cache.Kind, ShouldEqual, "redis")
 	So(config.Cache.Compressor, ShouldEqual, "snappy")

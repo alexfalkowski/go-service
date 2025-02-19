@@ -47,5 +47,5 @@ func Register(params ProviderParams) {
 
 // NewClient for feature.
 func NewClient(name env.Name) *openfeature.Client {
-	return openfeature.NewClient(string(name))
+	return openfeature.NewClient(name.String())
 }

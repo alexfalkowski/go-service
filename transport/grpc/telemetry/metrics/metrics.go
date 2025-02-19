@@ -52,7 +52,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			kindAttribute.String(string(unaryKind)),
+			kindAttribute.String(UnaryKind.String()),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
@@ -82,7 +82,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		start := time.Now()
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
-			kindAttribute.String(string(streamKind)),
+			kindAttribute.String(StreamKind.String()),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
@@ -190,7 +190,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
-			kindAttribute.String(string(unaryKind)),
+			kindAttribute.String(UnaryKind.String()),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
@@ -220,7 +220,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		start := time.Now()
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
-			kindAttribute.String(string(streamKind)),
+			kindAttribute.String(StreamKind.String()),
 			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)

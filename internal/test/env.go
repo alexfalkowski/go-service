@@ -13,7 +13,7 @@ const (
 
 	// Name for test.
 	Name = env.Name("test")
-
-	// UserAgent for test.
-	UserAgent = env.UserAgent(string(Name) + "/" + string(Version))
 )
+
+// UserAgent for test.
+var UserAgent = env.UserAgent(Name.String() + "/" + Version.String())

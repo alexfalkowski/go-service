@@ -37,12 +37,12 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		return &noop.MeterProvider{}
 	}
 
-	name := string(params.Name)
+	name := params.Name.String()
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
-		semconv.ServiceVersion(string(params.Version)),
-		semconv.DeploymentEnvironmentName(string(params.Environment)),
+		semconv.ServiceVersion(params.Version.String()),
+		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)
 	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
 
@@ -73,7 +73,7 @@ type MeterParams struct {
 
 // NewMeter for metrics.
 func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
-	return provider.Meter(string(name))
+	return provider.Meter(name.String())
 }
 
 // NewReader for metrics. A nil reader means disabled.

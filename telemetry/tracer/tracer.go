@@ -44,9 +44,9 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName(string(name)),
-		semconv.ServiceVersion(string(ver)),
-		semconv.DeploymentEnvironmentName(string(env)),
+		semconv.ServiceName(name.String()),
+		semconv.ServiceVersion(ver.String()),
+		semconv.DeploymentEnvironmentName(env.String()),
 	)
 
 	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
@@ -66,7 +66,7 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		},
 	})
 
-	return provider.Tracer(string(name)), nil
+	return provider.Tracer(name.String()), nil
 }
 
 type errorHandler struct {

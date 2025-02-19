@@ -28,9 +28,9 @@ func NewLogger(params LoggerParams) (*zap.Logger, error) {
 	}
 
 	fields := zap.Fields(
-		zap.String("name", string(params.Name)),
-		zap.String("environment", string(params.Environment)),
-		zap.String("version", string(params.Version)),
+		zap.Stringer("name", params.Name),
+		zap.Stringer("environment", params.Environment),
+		zap.Stringer("version", params.Version),
 	)
 
 	logger, err := params.Logger.Build(fields)
