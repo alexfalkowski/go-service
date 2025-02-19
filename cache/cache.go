@@ -7,17 +7,17 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/config"
 	tl "github.com/alexfalkowski/go-service/cache/telemetry/logger"
-	"github.com/alexfalkowski/go-service/cache/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/cache/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/cache/telemetry/metrics"
+	tt "github.com/alexfalkowski/go-service/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/faabiosr/cachego"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
 
@@ -44,9 +44,9 @@ type Params struct {
 	Pool       *sync.BufferPool
 	Compressor *compress.Map
 	Cache      cachego.Cache
-	Tracer     trace.Tracer
+	Tracer     *tracer.Tracer
 	Logger     *logger.Logger
-	Meter      metric.Meter
+	Meter      *metrics.Meter
 }
 
 // New from config.
@@ -59,9 +59,9 @@ func New(params Params) (config.Cache, error) {
 	enc := params.Encoder.Get(params.Config.Encoder)
 
 	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, cache: params.Cache}
-	cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
+	cache = tt.NewCache(params.Config.Kind, params.Tracer, cache)
 	cache = tl.NewCache(params.Config.Kind, params.Logger, cache)
-	cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
+	cache = tm.NewCache(params.Config.Kind, params.Meter, cache)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

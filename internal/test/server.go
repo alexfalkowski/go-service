@@ -10,20 +10,20 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	th "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/urfave/negroni/v3"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 )
 
 // Server for test.
 type Server struct {
 	Lifecycle       fx.Lifecycle
-	Meter           metric.Meter
+	Meter           *metrics.Meter
 	Verifier        token.Verifier
 	Mux             *http.ServeMux
 	HTTPServer      *th.Server

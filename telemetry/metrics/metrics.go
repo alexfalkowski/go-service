@@ -19,6 +19,28 @@ import (
 	"go.uber.org/fx"
 )
 
+// NewReader for metrics. A nil reader means disabled.
+func NewReader(fs os.FileSystem, cfg *Config) (sm.Reader, error) {
+	switch {
+	case !IsEnabled(cfg):
+		return nil, nil
+	case cfg.IsOTLP():
+		if err := cfg.Headers.Secrets(fs); err != nil {
+			return nil, se.Prefix("metrics", err)
+		}
+
+		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
+
+		return sm.NewPeriodicReader(r), se.Prefix("metrics", err)
+	case cfg.IsPrometheus():
+		e, err := prometheus.New()
+
+		return e, se.Prefix("metrics", err)
+	default:
+		return nil, nil
+	}
+}
+
 // MeterProviderParams for metrics.
 type MeterProviderParams struct {
 	fx.In
@@ -72,28 +94,11 @@ type MeterParams struct {
 }
 
 // NewMeter for metrics.
-func NewMeter(provider om.MeterProvider, name env.Name) om.Meter {
-	return provider.Meter(name.String())
+func NewMeter(provider om.MeterProvider, name env.Name) *Meter {
+	return &Meter{provider.Meter(name.String())}
 }
 
-// NewReader for metrics. A nil reader means disabled.
-func NewReader(fs os.FileSystem, cfg *Config) (sm.Reader, error) {
-	switch {
-	case !IsEnabled(cfg):
-		return nil, nil
-	case cfg.IsOTLP():
-		if err := cfg.Headers.Secrets(fs); err != nil {
-			return nil, se.Prefix("metrics", err)
-		}
-
-		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
-
-		return sm.NewPeriodicReader(r), se.Prefix("metrics", err)
-	case cfg.IsPrometheus():
-		e, err := prometheus.New()
-
-		return e, se.Prefix("metrics", err)
-	default:
-		return nil, nil
-	}
+// Meter using otel.
+type Meter struct {
+	om.Meter
 }

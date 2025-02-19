@@ -12,18 +12,18 @@ import (
 	sh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	tl "github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
+	tt "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/urfave/negroni/v3"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
 
@@ -35,8 +35,8 @@ type ServerParams struct {
 	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *logger.Logger
-	Tracer     trace.Tracer
-	Meter      metric.Meter
+	Tracer     *tracer.Tracer
+	Meter      *metrics.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
 	ID         id.Generator
@@ -58,7 +58,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
 	if params.Tracer != nil {
-		neg.Use(tracer.NewHandler(params.Tracer))
+		neg.Use(tt.NewHandler(params.Tracer))
 	}
 
 	if params.Logger != nil {
@@ -66,7 +66,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Meter != nil {
-		neg.Use(metrics.NewHandler(params.Meter))
+		neg.Use(tm.NewHandler(params.Meter))
 	}
 
 	for _, hd := range params.Handlers {

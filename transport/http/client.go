@@ -9,18 +9,18 @@ import (
 	nh "github.com/alexfalkowski/go-service/net/http"
 	sr "github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
 	"github.com/alexfalkowski/go-service/transport/http/retry"
 	tl "github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
-	hm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
+	tm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	tt "github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // ClientOption for HTTP.
@@ -29,8 +29,8 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	tracer       trace.Tracer
-	meter        metric.Meter
+	tracer       *tracer.Tracer
+	meter        *metrics.Meter
 	roundTripper http.RoundTripper
 	gen          token.Generator
 	logger       *logger.Logger
@@ -99,14 +99,14 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 }
 
 // WithClientTracer for HTTP.
-func WithClientTracer(tracer trace.Tracer) ClientOption {
+func WithClientTracer(tracer *tracer.Tracer) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.tracer = tracer
 	})
 }
 
 // WithClientMetrics for HTTP.
-func WithClientMetrics(meter metric.Meter) ClientOption {
+func WithClientMetrics(meter *metrics.Meter) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.meter = meter
 	})
@@ -163,7 +163,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.meter != nil {
-		hrt = hm.NewRoundTripper(os.meter, hrt)
+		hrt = tm.NewRoundTripper(os.meter, hrt)
 	}
 
 	if os.tracer != nil {

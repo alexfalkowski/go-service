@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
-	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -18,12 +17,13 @@ func TestServer(t *testing.T) {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
 		logger := test.NewLogger(lc)
+		meter := test.NewPrometheusMeter(lc)
 
 		c := test.NewInsecureTransportConfig()
 		c.GRPC.TLS = &tls.Config{}
 
 		Convey("When I create a server", func() {
-			s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Meter: noop.Meter{}, Mux: mux}
+			s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Meter: meter, Mux: mux}
 			s.Register()
 
 			Convey("Then I should start the server", func() {
