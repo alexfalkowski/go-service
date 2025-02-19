@@ -14,11 +14,11 @@ import (
 
 // NewHandler for metrics.
 func NewHandler(meter *metrics.Meter) *Handler {
-	started := metrics.MustInt64Counter(meter, "http_server_started_total", "Total number of RPCs started on the server.")
-	received := metrics.MustInt64Counter(meter, "http_server_msg_received_total", "Total number of RPC messages received on the server.")
-	sent := metrics.MustInt64Counter(meter, "http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
-	handled := metrics.MustInt64Counter(meter, "http_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
-	handledHist := metrics.MustFloat64Histogram(meter, "http_server_handling_seconds",
+	started := meter.MustInt64Counter("http_server_started_total", "Total number of RPCs started on the server.")
+	received := meter.MustInt64Counter("http_server_msg_received_total", "Total number of RPC messages received on the server.")
+	sent := meter.MustInt64Counter("http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
+	handled := meter.MustInt64Counter("http_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
+	handledHist := meter.MustFloat64Histogram("http_server_handling_seconds",
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.")
 
 	return &Handler{
@@ -69,11 +69,11 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 // NewRoundTripper for metrics.
 func NewRoundTripper(meter *metrics.Meter, r http.RoundTripper) *RoundTripper {
-	started := metrics.MustInt64Counter(meter, "http_client_started_total", "Total number of RPCs started on the client.")
-	received := metrics.MustInt64Counter(meter, "http_client_msg_received_total", "Total number of RPC messages received on the client.")
-	sent := metrics.MustInt64Counter(meter, "http_client_msg_sent_total", "Total number of RPC messages sent by the client.")
-	handled := metrics.MustInt64Counter(meter, "http_client_handled_total", "Total number of RPCs completed on the client, regardless of success or failure.")
-	handledHist := metrics.MustFloat64Histogram(meter, "http_client_handling_seconds",
+	started := meter.MustInt64Counter("http_client_started_total", "Total number of RPCs started on the client.")
+	received := meter.MustInt64Counter("http_client_msg_received_total", "Total number of RPC messages received on the client.")
+	sent := meter.MustInt64Counter("http_client_msg_sent_total", "Total number of RPC messages sent by the client.")
+	handled := meter.MustInt64Counter("http_client_handled_total", "Total number of RPCs completed on the client, regardless of success or failure.")
+	handledHist := meter.MustFloat64Histogram("http_client_handling_seconds",
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the client.")
 
 	rt := &RoundTripper{

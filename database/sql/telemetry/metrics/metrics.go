@@ -14,15 +14,15 @@ import (
 // Register for metrics.
 func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 	opts := metric.WithAttributes(attribute.Key("db_driver").String(dbs.DriverName()))
-	maxOpen := metrics.MustInt64ObservableGauge(meter, "sql_max_open_total", "Maximum number of open connections to the database.")
-	open := metrics.MustInt64ObservableGauge(meter, "sql_open_total", "The number of established connections both in use and idle.")
-	inUse := metrics.MustInt64ObservableGauge(meter, "sql_in_use_total", "The number of connections currently in use.")
-	idle := metrics.MustInt64ObservableGauge(meter, "sql_idle_total", "The number of idle connections.")
-	waited := metrics.MustInt64ObservableCounter(meter, "sql_waited_for_total", "The total number of connections waited for.")
-	blocked := metrics.MustFloat64ObservableCounter(meter, "sql_blocked_seconds_total", "The total time blocked waiting for a new connection.")
-	maxIdleClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_idle_total", "The total number of connections closed due to SetMaxIdleConns.")
-	maxIdleTimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
-	maxLifetimeClosed := metrics.MustInt64ObservableCounter(meter, "sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
+	maxOpen := meter.MustInt64ObservableGauge("sql_max_open_total", "Maximum number of open connections to the database.")
+	open := meter.MustInt64ObservableGauge("sql_open_total", "The number of established connections both in use and idle.")
+	inUse := meter.MustInt64ObservableGauge("sql_in_use_total", "The number of connections currently in use.")
+	idle := meter.MustInt64ObservableGauge("sql_idle_total", "The number of idle connections.")
+	waited := meter.MustInt64ObservableCounter("sql_waited_for_total", "The total number of connections waited for.")
+	blocked := meter.MustFloat64ObservableCounter("sql_blocked_seconds_total", "The total time blocked waiting for a new connection.")
+	maxIdleClosed := meter.MustInt64ObservableCounter("sql_closed_max_idle_total", "The total number of connections closed due to SetMaxIdleConns.")
+	maxIdleTimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
+	maxLifetimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
 
 	mts := &Metrics{
 		dbs: dbs, opts: opts,
@@ -31,7 +31,7 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 		mic: maxIdleClosed, mitc: maxIdleTimeClosed, mlc: maxLifetimeClosed,
 	}
 
-	metrics.MustRegisterCallback(meter, mts.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
+	meter.MustRegisterCallback(mts.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
 }
 
 // Metrics for SQL.

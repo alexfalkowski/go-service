@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
@@ -85,6 +86,27 @@ func NewTracer(params Params) (*Tracer, error) {
 // Tracer using otel.
 type Tracer struct {
 	trace.Tracer
+}
+
+// StartClient starts a new client span.
+//
+//nolint:spancheck
+func (t *Tracer) StartClient(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx = WithTraceID(ctx, span)
+
+	return ctx, span
+}
+
+// StartServer starts a new server span.
+//
+//nolint:spancheck
+func (t *Tracer) StartServer(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+	ctx = trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx))
+	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
+	ctx = WithTraceID(ctx, span)
+
+	return ctx, span
 }
 
 type errorHandler struct {

@@ -9,7 +9,6 @@ import (
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
-	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 )
@@ -31,11 +30,9 @@ func UnaryServerInterceptor(tra *tracer.Tracer) grpc.UnaryServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tra.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
-			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
+		ctx, span := tra.StartServer(ctx, operationName(info.FullMethod), attrs...)
 		defer span.End()
 
-		ctx = tracer.WithTraceID(ctx, span)
 		resp, err := handler(ctx, req)
 
 		tracer.Error(err, span)
@@ -63,11 +60,8 @@ func StreamServerInterceptor(tra *tracer.Tracer) grpc.StreamServerInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tra.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(info.FullMethod),
-			trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
+		ctx, span := tra.StartServer(ctx, operationName(info.FullMethod), attrs...)
 		defer span.End()
-
-		ctx = tracer.WithTraceID(ctx, span)
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -97,10 +91,9 @@ func UnaryClientInterceptor(tra *tracer.Tracer) grpc.UnaryClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tra.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := tra.StartClient(ctx, operationName(conn.Target()+fullMethod), attrs...)
 		defer span.End()
 
-		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -128,10 +121,9 @@ func StreamClientInterceptor(tra *tracer.Tracer) grpc.StreamClientInterceptor {
 			semconv.RPCMethod(method),
 		}
 
-		ctx, span := tra.Start(ctx, operationName(conn.Target()+fullMethod), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+		ctx, span := tra.StartClient(ctx, operationName(conn.Target()+fullMethod), attrs...)
 		defer span.End()
 
-		ctx = tracer.WithTraceID(ctx, span)
 		ctx = inject(ctx)
 
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)

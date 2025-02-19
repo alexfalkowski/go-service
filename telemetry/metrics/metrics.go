@@ -83,22 +83,3 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 
 	return provider
 }
-
-// MeterParams for metrics.
-type MeterParams struct {
-	fx.In
-
-	Config   *Config
-	Provider om.MeterProvider
-	Name     env.Name
-}
-
-// NewMeter for metrics.
-func NewMeter(provider om.MeterProvider, name env.Name) *Meter {
-	return &Meter{provider.Meter(name.String())}
-}
-
-// Meter using otel.
-type Meter struct {
-	om.Meter
-}

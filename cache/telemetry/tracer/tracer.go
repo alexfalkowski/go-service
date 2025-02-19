@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // NewCache for tracer.
@@ -34,10 +33,9 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 		attribute.Key("cache.kind").String(c.kind),
 	}
 
-	ctx, span := c.tracer.Start(ctx, operationName("remove"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := c.tracer.StartClient(ctx, operationName("remove"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	err := c.cache.Remove(ctx, key)
 
 	tracer.Error(err, span)
@@ -53,10 +51,9 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 		attribute.Key("cache.kind").String(c.kind),
 	}
 
-	ctx, span := c.tracer.Start(ctx, operationName("get"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := c.tracer.StartClient(ctx, operationName("get"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	err := c.cache.Get(ctx, key, value)
 
 	tracer.Error(err, span)
@@ -73,10 +70,9 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 		attribute.Key("cache.ttl").String(ttl.String()),
 	}
 
-	ctx, span := c.tracer.Start(ctx, operationName("persist"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := c.tracer.StartClient(ctx, operationName("persist"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	err := c.cache.Persist(ctx, key, value, ttl)
 
 	tracer.Error(err, span)

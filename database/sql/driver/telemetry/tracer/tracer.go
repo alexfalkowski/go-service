@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // NewInterceptor for tracer.
@@ -39,10 +38,9 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(ctx, operationName("exec conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := i.tracer.StartClient(ctx, operationName("exec conn"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
 	tracer.Error(err, span)
@@ -56,10 +54,9 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(ctx, operationName("query conn"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := i.tracer.StartClient(ctx, operationName("query conn"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
 	tracer.Error(err, span)
@@ -94,10 +91,9 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(ctx, operationName("exec statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := i.tracer.StartClient(ctx, operationName("exec statement"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
 	tracer.Error(err, span)
@@ -111,10 +107,9 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 		attribute.Key("db.sql.query").String(query),
 	}
 
-	ctx, span := i.tracer.Start(ctx, operationName("query statement"), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := i.tracer.StartClient(ctx, operationName("query statement"), attrs...)
 	defer span.End()
 
-	ctx = tracer.WithTraceID(ctx, span)
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
 	tracer.Error(err, span)

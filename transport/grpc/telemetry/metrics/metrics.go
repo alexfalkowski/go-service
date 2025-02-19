@@ -17,11 +17,11 @@ import (
 
 // NewServer for metrics.
 func NewServer(meter *metrics.Meter) *Server {
-	started := metrics.MustInt64Counter(meter, "grpc_server_started_total", "Total number of RPCs started on the server.")
-	received := metrics.MustInt64Counter(meter, "grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
-	sent := metrics.MustInt64Counter(meter, "grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
-	handled := metrics.MustInt64Counter(meter, "grpc_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
-	handledHist := metrics.MustFloat64Histogram(meter, "grpc_server_handling_seconds",
+	started := meter.MustInt64Counter("grpc_server_started_total", "Total number of RPCs started on the server.")
+	received := meter.MustInt64Counter("grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
+	sent := meter.MustInt64Counter("grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
+	handled := meter.MustInt64Counter("grpc_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
+	handledHist := meter.MustFloat64Histogram("grpc_server_handling_seconds",
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.")
 
 	s := &Server{
@@ -155,11 +155,11 @@ func (s *ServerStream) RecvMsg(m any) error {
 
 // NewClient for metrics.
 func NewClient(meter *metrics.Meter) *Client {
-	started := metrics.MustInt64Counter(meter, "grpc_client_started_total", "Total number of RPCs started on the client.")
-	received := metrics.MustInt64Counter(meter, "grpc_client_msg_received_total", "Total number of RPC messages received on the client.")
-	sent := metrics.MustInt64Counter(meter, "grpc_client_msg_sent_total", "Total number of RPC messages sent by the client.")
-	handled := metrics.MustInt64Counter(meter, "grpc_client_handled_total", "Total number of RPCs completed on the client, regardless of success or failure.")
-	handledHist := metrics.MustFloat64Histogram(meter, "grpc_client_handling_seconds",
+	started := meter.MustInt64Counter("grpc_client_started_total", "Total number of RPCs started on the client.")
+	received := meter.MustInt64Counter("grpc_client_msg_received_total", "Total number of RPC messages received on the client.")
+	sent := meter.MustInt64Counter("grpc_client_msg_sent_total", "Total number of RPC messages sent by the client.")
+	handled := meter.MustInt64Counter("grpc_client_handled_total", "Total number of RPCs completed on the client, regardless of success or failure.")
+	handledHist := meter.MustFloat64Histogram("grpc_client_handling_seconds",
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the client.")
 
 	c := &Client{

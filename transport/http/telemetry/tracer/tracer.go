@@ -9,7 +9,6 @@ import (
 	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // Handler for tracer.
@@ -37,11 +36,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	ctx, span := h.tracer.Start(trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx)), operationName(method+" "+path),
-		trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
+	ctx, span := h.tracer.StartServer(ctx, operationName(method+" "+path), attrs...)
 	defer span.End()
-
-	ctx = tracer.WithTraceID(ctx, span)
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
@@ -73,10 +69,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	ctx, span := r.tracer.Start(ctx, operationName(method+" "+req.URL.Redacted()), trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
+	ctx, span := r.tracer.StartClient(ctx, operationName(method+" "+req.URL.Redacted()), attrs...)
 	defer span.End()
-
-	ctx = tracer.WithTraceID(ctx, span)
 
 	inject(ctx, req)
 
