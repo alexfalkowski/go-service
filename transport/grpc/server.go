@@ -11,18 +11,18 @@ import (
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
+	tl "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	tkn "github.com/alexfalkowski/go-service/transport/grpc/token"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
@@ -37,7 +37,7 @@ type ServerParams struct {
 	Shutdowner fx.Shutdowner
 
 	Config    *Config
-	Logger    *zap.Logger
+	Logger    *logger.Logger
 	Tracer    trace.Tracer
 	Meter     metric.Meter
 	UserAgent env.UserAgent
@@ -125,7 +125,7 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 	}
 
 	if params.Logger != nil {
-		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
+		uis = append(uis, tl.UnaryServerInterceptor(params.Logger))
 	}
 
 	if server != nil {
@@ -153,7 +153,7 @@ func streamServerOption(params ServerParams, server *metrics.Server, interceptor
 	}
 
 	if params.Logger != nil {
-		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
+		sis = append(sis, tl.StreamServerInterceptor(params.Logger))
 	}
 
 	if server != nil {

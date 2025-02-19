@@ -12,13 +12,13 @@ import (
 )
 
 // NewCache for tracer.
-func NewCache(kind string, logger *zap.Logger, cache cache.Cache) *Cache {
+func NewCache(kind string, logger *logger.Logger, cache cache.Cache) *Cache {
 	return &Cache{kind: kind, logger: logger, cache: cache}
 }
 
 // Cache for tracer.
 type Cache struct {
-	logger *zap.Logger
+	logger *logger.Logger
 	cache  cache.Cache
 	kind   string
 }
@@ -40,7 +40,7 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(c.logger, message("remove"), err, fields...)
+	c.logger.Log(message("remove"), err, fields...)
 
 	return err
 }
@@ -57,7 +57,7 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(c.logger, message("get"), err, fields...)
+	c.logger.Log(message("get"), err, fields...)
 
 	return err
 }
@@ -74,7 +74,7 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(c.logger, message("persist"), err, fields...)
+	c.logger.Log(message("persist"), err, fields...)
 
 	return err
 }

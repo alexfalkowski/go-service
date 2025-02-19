@@ -9,10 +9,10 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	"go.uber.org/fx/fxtest"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -92,7 +92,7 @@ func BenchmarkGRPC(b *testing.B) {
 func BenchmarkLogGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := zap.NewNop()
+	logger, _ := logger.NewLogger(logger.Params{})
 	lc := fxtest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -131,7 +131,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 func BenchmarkTraceGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := zap.NewNop()
+	logger, _ := logger.NewLogger(logger.Params{})
 	tc := test.NewOTLPTracerConfig()
 	lc := fxtest.NewLifecycle(b)
 	tracer := test.NewTracer(lc, tc, logger)

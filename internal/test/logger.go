@@ -4,11 +4,10 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // NewLogger for test.
-func NewLogger(lc fx.Lifecycle) *zap.Logger {
+func NewLogger(lc fx.Lifecycle) *logger.Logger {
 	c := &logger.Config{Level: "info"}
 
 	cfg, err := logger.NewConfig(Environment, c)

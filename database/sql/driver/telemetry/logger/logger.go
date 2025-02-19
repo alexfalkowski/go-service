@@ -13,14 +13,14 @@ import (
 )
 
 // NewInterceptor for logger.
-func NewInterceptor(name string, logger *zap.Logger, interceptor sqlmw.Interceptor) *Interceptor {
+func NewInterceptor(name string, logger *logger.Logger, interceptor sqlmw.Interceptor) *Interceptor {
 	return &Interceptor{name: name, logger: logger, interceptor: interceptor}
 }
 
 // Interceptor for logger.
 type Interceptor struct {
 	interceptor sqlmw.Interceptor
-	logger      *zap.Logger
+	logger      *logger.Logger
 	name        string
 }
 
@@ -50,7 +50,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(i.logger, message("exec conn"), err, fields...)
+	i.logger.Log(message("exec conn"), err, fields...)
 
 	return res, err
 }
@@ -66,7 +66,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(i.logger, message("query conn"), err, fields...)
+	i.logger.Log(message("query conn"), err, fields...)
 
 	return ctx, res, err
 }
@@ -110,7 +110,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(i.logger, message("exec statement"), err, fields...)
+	i.logger.Log(message("exec statement"), err, fields...)
 
 	return res, err
 }
@@ -126,7 +126,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	logger.LogWithLogger(i.logger, message("query statement"), err, fields...)
+	i.logger.Log(message("query statement"), err, fields...)
 
 	return ctx, res, err
 }

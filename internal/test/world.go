@@ -22,6 +22,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -36,7 +37,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
-	"go.uber.org/zap"
 )
 
 func init() {
@@ -55,7 +55,7 @@ type worldOpts struct {
 	verfier     token.Verifier
 	rt          http.RoundTripper
 	generator   token.Generator
-	logger      *zap.Logger
+	logger      *logger.Logger
 	limiter     *limiter.Config
 	pg          *pg.Config
 	telemetry   string
@@ -152,7 +152,7 @@ func WithWorldDebug() WorldOption {
 }
 
 // WithWorldLogger for test.
-func WithWorldLogger(logger *zap.Logger) WorldOption {
+func WithWorldLogger(logger *logger.Logger) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.logger = logger
 	})
@@ -171,7 +171,7 @@ func options(opts ...WorldOption) *worldOpts {
 type World struct {
 	*fxtest.Lifecycle
 	*http.ServeMux
-	*zap.Logger
+	*logger.Logger
 	Tracer *tracer.Config
 	PG     *pg.Config
 	*Server
@@ -391,7 +391,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	return nil
 }
 
-func redisCache(lc fx.Lifecycle, logger *zap.Logger, meter metric.Meter, tracer *tracer.Config) cc.Cache {
+func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter metric.Meter, tracer *tracer.Config) cc.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	cachego, err := cachego.New(cfg)

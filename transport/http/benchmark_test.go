@@ -13,11 +13,11 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport"
 	th "github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/fx/fxtest"
-	"go.uber.org/zap"
 )
 
 func BenchmarkDefaultHTTP(b *testing.B) {
@@ -100,7 +100,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
-	logger := zap.NewNop()
+	logger, _ := logger.NewLogger(logger.Params{})
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
@@ -142,7 +142,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	tc := test.NewOTLPTracerConfig()
-	logger := zap.NewNop()
+	logger, _ := logger.NewLogger(logger.Params{})
 	tracer := test.NewTracer(lc, tc, logger)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -183,7 +183,9 @@ func BenchmarkTraceHTTP(b *testing.B) {
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	logger, _ := logger.NewLogger(logger.Params{})
+
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
 
 	world.RequireStart()
@@ -215,7 +217,9 @@ func BenchmarkRoute(b *testing.B) {
 func BenchmarkRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	logger, _ := logger.NewLogger(logger.Params{})
+
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
 
 	world.RequireStart()
@@ -247,7 +251,9 @@ func BenchmarkRPC(b *testing.B) {
 func BenchmarkProtobuf(b *testing.B) {
 	b.ReportAllocs()
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(zap.NewNop()))
+	logger, _ := logger.NewLogger(logger.Params{})
+
+	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
 
 	world.RequireStart()

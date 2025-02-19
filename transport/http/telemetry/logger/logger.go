@@ -18,13 +18,13 @@ const (
 )
 
 // NewHandler for logger.
-func NewHandler(logger *zap.Logger) *Handler {
+func NewHandler(logger *logger.Logger) *Handler {
 	return &Handler{logger: logger}
 }
 
 // Handler for logger.
 type Handler struct {
-	logger *zap.Logger
+	logger *logger.Logger
 }
 
 // ServeHTTP or logger.
@@ -48,17 +48,17 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	fields = append(fields, zap.Stringer(meta.DurationKey, m.Duration), zap.Int(meta.CodeKey, m.Code))
 	fields = append(fields, logger.Meta(ctx)...)
 
-	logger.LogWithFunc(codeToLevel(m.Code, h.logger), message(method+" "+path), nil, fields...)
+	h.logger.LogFunc(codeToLevel(m.Code, h.logger), message(method+" "+path), nil, fields...)
 }
 
 // NewRoundTripper for logger.
-func NewRoundTripper(logger *zap.Logger, r http.RoundTripper) *RoundTripper {
+func NewRoundTripper(logger *logger.Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
 
 // RoundTripper for logger.
 type RoundTripper struct {
-	logger *zap.Logger
+	logger *logger.Logger
 
 	http.RoundTripper
 }
@@ -86,12 +86,12 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		fields = append(fields, zap.Int(meta.CodeKey, resp.StatusCode))
 	}
 
-	logger.LogWithFunc(respToLevel(resp, r.logger), message(method+" "+req.URL.Redacted()), err, fields...)
+	r.logger.LogFunc(respToLevel(resp, r.logger), message(method+" "+req.URL.Redacted()), err, fields...)
 
 	return resp, err
 }
 
-func respToLevel(resp *http.Response, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
+func respToLevel(resp *http.Response, logger *logger.Logger) func(msg string, fields ...zapcore.Field) {
 	var code int
 
 	if resp != nil {
@@ -103,7 +103,7 @@ func respToLevel(resp *http.Response, logger *zap.Logger) func(msg string, field
 	return codeToLevel(code, logger)
 }
 
-func codeToLevel(code int, logger *zap.Logger) func(msg string, fields ...zapcore.Field) {
+func codeToLevel(code int, logger *logger.Logger) func(msg string, fields ...zapcore.Field) {
 	if code >= 400 && code <= 499 {
 		return logger.Warn
 	}

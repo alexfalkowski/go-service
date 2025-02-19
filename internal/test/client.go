@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -14,14 +15,13 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 // Client for test.
 type Client struct {
 	Lifecycle    fx.Lifecycle
-	Logger       *zap.Logger
+	Logger       *logger.Logger
 	Tracer       *tracer.Config
 	Transport    *transport.Config
 	TLS          *tls.Config
