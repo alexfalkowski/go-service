@@ -12,16 +12,16 @@ import (
 	sg "github.com/alexfalkowski/go-service/net/grpc"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	gl "github.com/alexfalkowski/go-service/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
 	tl "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
+	tm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
+	tt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	tkn "github.com/alexfalkowski/go-service/transport/grpc/token"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -38,8 +38,8 @@ type ServerParams struct {
 
 	Config    *Config
 	Logger    *logger.Logger
-	Tracer    trace.Tracer
-	Meter     metric.Meter
+	Tracer    *tracer.Tracer
+	Meter     *metrics.Meter
 	UserAgent env.UserAgent
 	Version   env.Version
 	ID        id.Generator
@@ -62,9 +62,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, errors.Prefix("grpc", err)
 	}
 
-	var mts *metrics.Server
+	var meter *tm.Server
 	if params.Meter != nil {
-		mts = metrics.NewServer(params.Meter)
+		meter = tm.NewServer(params.Meter)
 	}
 
 	timeout := timeout(params.Config)
@@ -81,8 +81,8 @@ func NewServer(params ServerParams) (*Server, error) {
 			Time:                  timeout,
 			Timeout:               timeout,
 		}),
-		unaryServerOption(params, mts, params.Unary...),
-		streamServerOption(params, mts, params.Stream...),
+		unaryServerOption(params, meter, params.Unary...),
+		streamServerOption(params, meter, params.Stream...),
 		opt,
 	}
 
@@ -117,11 +117,11 @@ func (s *Server) Server() *grpc.Server {
 	return s.server
 }
 
-func unaryServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, server *tm.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID)}
 
 	if params.Tracer != nil {
-		uis = append(uis, tracer.UnaryServerInterceptor(params.Tracer))
+		uis = append(uis, tt.UnaryServerInterceptor(params.Tracer))
 	}
 
 	if params.Logger != nil {
@@ -145,11 +145,11 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 	return grpc.ChainUnaryInterceptor(uis...)
 }
 
-func streamServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, server *tm.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version, params.ID)}
 
 	if params.Tracer != nil {
-		sis = append(sis, tracer.StreamServerInterceptor(params.Tracer))
+		sis = append(sis, tt.StreamServerInterceptor(params.Tracer))
 	}
 
 	if params.Logger != nil {

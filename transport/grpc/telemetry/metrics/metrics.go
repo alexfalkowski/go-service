@@ -16,7 +16,7 @@ import (
 )
 
 // NewServer for metrics.
-func NewServer(meter metric.Meter) *Server {
+func NewServer(meter *metrics.Meter) *Server {
 	started := metrics.MustInt64Counter(meter, "grpc_server_started_total", "Total number of RPCs started on the server.")
 	received := metrics.MustInt64Counter(meter, "grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := metrics.MustInt64Counter(meter, "grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -154,7 +154,7 @@ func (s *ServerStream) RecvMsg(m any) error {
 }
 
 // NewClient for metrics.
-func NewClient(meter metric.Meter) *Client {
+func NewClient(meter *metrics.Meter) *Client {
 	started := metrics.MustInt64Counter(meter, "grpc_client_started_total", "Total number of RPCs started on the client.")
 	received := metrics.MustInt64Counter(meter, "grpc_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := metrics.MustInt64Counter(meter, "grpc_client_msg_sent_total", "Total number of RPC messages sent by the client.")

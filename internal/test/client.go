@@ -7,13 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
 	g "github.com/alexfalkowski/go-service/transport/grpc"
 	h "github.com/alexfalkowski/go-service/transport/http"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
@@ -27,13 +26,13 @@ type Client struct {
 	TLS          *tls.Config
 	ID           id.Generator
 	RoundTripper http.RoundTripper
-	Meter        metric.Meter
+	Meter        *metrics.Meter
 	Generator    token.Generator
 	Compression  bool
 }
 
 // NewTracer for client.
-func (c *Client) NewTracer() trace.Tracer {
+func (c *Client) NewTracer() *tracer.Tracer {
 	return NewTracer(c.Lifecycle, c.Tracer, c.Logger)
 }
 

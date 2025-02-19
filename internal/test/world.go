@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -34,7 +35,6 @@ import (
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/go-resty/resty/v2"
 	"github.com/linxGnu/mssqlx"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
@@ -358,7 +358,7 @@ func tlsConfig(os *worldOpts) *tls.Config {
 	return nil
 }
 
-func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) metric.Meter {
+func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
 	if os.telemetry == "otlp" {
 		return NewOTLPMeter(lc)
 	}
@@ -391,7 +391,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	return nil
 }
 
-func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter metric.Meter, tracer *tracer.Config) cc.Cache {
+func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cc.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	cachego, err := cachego.New(cfg)

@@ -15,7 +15,7 @@ import (
 )
 
 // UnaryServerInterceptor for tracer.
-func UnaryServerInterceptor(tra trace.Tracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(tra *tracer.Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -47,7 +47,7 @@ func UnaryServerInterceptor(tra trace.Tracer) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for tracer.
-func StreamServerInterceptor(tra trace.Tracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(tra *tracer.Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -83,7 +83,7 @@ func StreamServerInterceptor(tra trace.Tracer) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for tracer.
-func UnaryClientInterceptor(tra trace.Tracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(tra *tracer.Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -114,7 +114,7 @@ func UnaryClientInterceptor(tra trace.Tracer) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for tracer.
-func StreamClientInterceptor(tra trace.Tracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(tra *tracer.Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {

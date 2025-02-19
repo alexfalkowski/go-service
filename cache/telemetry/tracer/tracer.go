@@ -11,13 +11,13 @@ import (
 )
 
 // NewCache for tracer.
-func NewCache(kind string, tracer trace.Tracer, cache cache.Cache) *Cache {
+func NewCache(kind string, tracer *tracer.Tracer, cache cache.Cache) *Cache {
 	return &Cache{kind: kind, tracer: tracer, cache: cache}
 }
 
 // Cache for tracer.
 type Cache struct {
-	tracer trace.Tracer
+	tracer *tracer.Tracer
 	cache  cache.Cache
 	kind   string
 }

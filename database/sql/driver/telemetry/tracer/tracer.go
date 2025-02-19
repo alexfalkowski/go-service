@@ -11,13 +11,13 @@ import (
 )
 
 // NewInterceptor for tracer.
-func NewInterceptor(driver string, tracer trace.Tracer, interceptor sqlmw.Interceptor) *Interceptor {
+func NewInterceptor(driver string, tracer *tracer.Tracer, interceptor sqlmw.Interceptor) *Interceptor {
 	return &Interceptor{driver: driver, tracer: tracer, interceptor: interceptor}
 }
 
 // Interceptor for tracer.
 type Interceptor struct {
-	tracer      trace.Tracer
+	tracer      *tracer.Tracer
 	interceptor sqlmw.Interceptor
 	driver      string
 }

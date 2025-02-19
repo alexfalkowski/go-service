@@ -13,7 +13,7 @@ import (
 const kindAttribute = attribute.Key("kind")
 
 // NewCache for metrics.
-func NewCache(kind string, meter metric.Meter, cache cache.Cache) *Cache {
+func NewCache(kind string, meter *metrics.Meter, cache cache.Cache) *Cache {
 	hits := metrics.MustInt64Counter(meter, "cache_hits_total", "The number of hits in the cache.")
 	misses := metrics.MustInt64Counter(meter, "cache_misses_total", "The number of misses in the cache.")
 

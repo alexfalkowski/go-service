@@ -13,7 +13,7 @@ import (
 )
 
 // NewHandler for metrics.
-func NewHandler(meter metric.Meter) *Handler {
+func NewHandler(meter *metrics.Meter) *Handler {
 	started := metrics.MustInt64Counter(meter, "http_server_started_total", "Total number of RPCs started on the server.")
 	received := metrics.MustInt64Counter(meter, "http_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := metrics.MustInt64Counter(meter, "http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -68,7 +68,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for metrics.
-func NewRoundTripper(meter metric.Meter, r http.RoundTripper) *RoundTripper {
+func NewRoundTripper(meter *metrics.Meter, r http.RoundTripper) *RoundTripper {
 	started := metrics.MustInt64Counter(meter, "http_client_started_total", "Total number of RPCs started on the client.")
 	received := metrics.MustInt64Counter(meter, "http_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := metrics.MustInt64Counter(meter, "http_client_msg_sent_total", "Total number of RPC messages sent by the client.")

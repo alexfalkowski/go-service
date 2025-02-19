@@ -31,6 +31,8 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
@@ -39,8 +41,6 @@ import (
 	"github.com/open-feature/go-sdk/openfeature"
 	. "github.com/smartystreets/goconvey/convey" //nolint:revive
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
 
@@ -269,7 +269,7 @@ func TestInvalidClient(t *testing.T) {
 	}
 }
 
-func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tracer trace.Tracer, _ env.Version) health.Registrations {
+func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tracer *tracer.Tracer, _ env.Version) health.Registrations {
 	if cfg == nil {
 		return nil
 	}
@@ -304,7 +304,7 @@ func invokeCache(_ cc.Cache) {}
 
 func configs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 
-func meter(_ metric.Meter) {}
+func meter(_ *metrics.Meter) {}
 
 func featureClient(_ *openfeature.Client) {}
 

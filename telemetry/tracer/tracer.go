@@ -30,32 +30,44 @@ func Register() {
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 }
 
+// Params for tracer.
+type Params struct {
+	fx.In
+	Lifecycle   fx.Lifecycle
+	FileSystem  os.FileSystem
+	Config      *Config
+	Logger      *logger.Logger
+	Environment env.Environment
+	Version     env.Version
+	Name        env.Name
+}
+
 // NewTracer for tracer.
-func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.Name, fs os.FileSystem, cfg *Config, logger *logger.Logger) (trace.Tracer, error) {
-	if !IsEnabled(cfg) {
-		return noop.Tracer{}, nil
+func NewTracer(params Params) (*Tracer, error) {
+	if !IsEnabled(params.Config) {
+		return &Tracer{noop.Tracer{}}, nil
 	}
 
-	if err := cfg.Headers.Secrets(fs); err != nil {
+	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
 		return nil, se.Prefix("tracer", err)
 	}
 
-	client := otlp.NewClient(otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
+	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
 	exporter := otlptrace.NewUnstarted(client)
 
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName(name.String()),
-		semconv.ServiceVersion(ver.String()),
-		semconv.DeploymentEnvironmentName(env.String()),
+		semconv.ServiceName(params.Name.String()),
+		semconv.ServiceVersion(params.Version.String()),
+		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)
 
 	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(provider)
-	otel.SetErrorHandler(&errorHandler{logger: logger})
+	otel.SetErrorHandler(&errorHandler{logger: params.Logger})
 
-	lc.Append(fx.Hook{
+	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			return se.Prefix("tracer", exporter.Start(ctx))
 		},
@@ -67,7 +79,12 @@ func NewTracer(lc fx.Lifecycle, env env.Environment, ver env.Version, name env.N
 		},
 	})
 
-	return provider.Tracer(name.String()), nil
+	return &Tracer{provider.Tracer(params.Name.String())}, nil
+}
+
+// Tracer using otel.
+type Tracer struct {
+	trace.Tracer
 }
 
 type errorHandler struct {

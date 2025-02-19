@@ -14,11 +14,11 @@ import (
 
 // Handler for tracer.
 type Handler struct {
-	tracer trace.Tracer
+	tracer *tracer.Tracer
 }
 
 // NewHandler for tracer.
-func NewHandler(tracer trace.Tracer) *Handler {
+func NewHandler(tracer *tracer.Tracer) *Handler {
 	return &Handler{tracer: tracer}
 }
 
@@ -50,13 +50,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for tracer.
-func NewRoundTripper(tracer trace.Tracer, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(tracer *tracer.Tracer, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for tracer.
 type RoundTripper struct {
-	tracer trace.Tracer
+	tracer *tracer.Tracer
 	http.RoundTripper
 }
 
