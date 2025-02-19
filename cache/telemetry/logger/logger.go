@@ -1,10 +1,10 @@
-package zap
+package logger
 
 import (
 	"context"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
-	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/zap"
@@ -37,10 +37,10 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 	}
 
 	err := c.cache.Remove(ctx, key)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("remove"), err, c.logger, fields...)
+	logger.LogWithLogger(c.logger, message("remove"), err, fields...)
 
 	return err
 }
@@ -54,10 +54,10 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	}
 
 	err := c.cache.Get(ctx, key, value)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("get"), err, c.logger, fields...)
+	logger.LogWithLogger(c.logger, message("get"), err, fields...)
 
 	return err
 }
@@ -71,10 +71,10 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	}
 
 	err := c.cache.Persist(ctx, key, value, ttl)
-	fields = append(fields, tz.Meta(ctx)...)
+	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	tz.LogWithLogger(message("persist"), err, c.logger, fields...)
+	logger.LogWithLogger(c.logger, message("persist"), err, fields...)
 
 	return err
 }

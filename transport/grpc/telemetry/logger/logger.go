@@ -1,10 +1,10 @@
-package zap
+package logger
 
 import (
 	"context"
 	"path"
 
-	tz "github.com/alexfalkowski/go-service/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
@@ -19,8 +19,8 @@ const (
 	service = "grpc"
 )
 
-// UnaryServerInterceptor for zap.
-func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
+// UnaryServerInterceptor for logger.
+func UnaryServerInterceptor(log *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -35,19 +35,19 @@ func UnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 			zap.String(meta.PathKey, info.FullMethod),
 		}
 
-		fields = append(fields, tz.Meta(ctx)...)
+		fields = append(fields, logger.Meta(ctx)...)
 
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
+		logger.LogWithFunc(CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
 
 		return resp, err
 	}
 }
 
-// StreamServerInterceptor for zap.
-func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
+// StreamServerInterceptor for logger.
+func StreamServerInterceptor(log *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -63,19 +63,19 @@ func StreamServerInterceptor(logger *zap.Logger) grpc.StreamServerInterceptor {
 			zap.String(meta.PathKey, info.FullMethod),
 		}
 
-		fields = append(fields, tz.Meta(ctx)...)
+		fields = append(fields, logger.Meta(ctx)...)
 
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		tz.LogWithFunc(message(info.FullMethod), err, CodeToLogFunc(code, logger), fields...)
+		logger.LogWithFunc(CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
 
 		return err
 	}
 }
 
-// UnaryClientInterceptor for zap.
-func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
+// UnaryClientInterceptor for logger.
+func UnaryClientInterceptor(log *zap.Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -90,19 +90,19 @@ func UnaryClientInterceptor(logger *zap.Logger) grpc.UnaryClientInterceptor {
 			zap.String(meta.PathKey, fullMethod),
 		}
 
-		fields = append(fields, tz.Meta(ctx)...)
+		fields = append(fields, logger.Meta(ctx)...)
 
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
+		logger.LogWithFunc(CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
 
 		return err
 	}
 }
 
-// StreamClientInterceptor for zap.
-func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
+// StreamClientInterceptor for logger.
+func StreamClientInterceptor(log *zap.Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -117,21 +117,21 @@ func StreamClientInterceptor(logger *zap.Logger) grpc.StreamClientInterceptor {
 			zap.String(meta.PathKey, fullMethod),
 		}
 
-		fields = append(fields, tz.Meta(ctx)...)
+		fields = append(fields, logger.Meta(ctx)...)
 
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		tz.LogWithFunc(message(conn.Target()+fullMethod), err, CodeToLogFunc(code, logger), fields...)
+		logger.LogWithFunc(CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
 
 		return stream, err
 	}
 }
 
-// CodeToLogFunc for zap.
+// CodeToLogFunc for logger.
 //
 //nolint:exhaustive
-func CodeToLogFunc(code codes.Code, logger *zap.Logger) tz.LogFunc {
+func CodeToLogFunc(code codes.Code, logger *zap.Logger) logger.LogFunc {
 	switch code {
 	case codes.OK:
 		return logger.Info

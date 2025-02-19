@@ -15,7 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/token"
 	hl "github.com/alexfalkowski/go-service/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/transport/http/meta"
-	logger "github.com/alexfalkowski/go-service/transport/http/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/http/telemetry/tracer"
 	ht "github.com/alexfalkowski/go-service/transport/http/token"

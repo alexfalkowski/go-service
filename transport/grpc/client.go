@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/transport/grpc/meta"
-	logger "github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
 	gm "github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
 	gt "github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
 	tkn "github.com/alexfalkowski/go-service/transport/grpc/token"

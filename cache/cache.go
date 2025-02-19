@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 
 	"github.com/alexfalkowski/go-service/cache/config"
-	cz "github.com/alexfalkowski/go-service/cache/telemetry/logger/zap"
+	"github.com/alexfalkowski/go-service/cache/telemetry/logger"
 	"github.com/alexfalkowski/go-service/cache/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/compress"
@@ -60,7 +60,7 @@ func New(params Params) (config.Cache, error) {
 
 	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, cache: params.Cache}
 	cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
-	cache = cz.NewCache(params.Config.Kind, params.Logger, cache)
+	cache = logger.NewCache(params.Config.Kind, params.Logger, cache)
 	cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
 
 	params.Lifecycle.Append(fx.Hook{
