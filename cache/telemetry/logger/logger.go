@@ -37,10 +37,9 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 	}
 
 	err := c.cache.Remove(ctx, key)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	c.logger.Log(message("remove"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	c.logger.Log(ctx, message("remove"), err, fields...)
 
 	return err
 }
@@ -54,10 +53,9 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	}
 
 	err := c.cache.Get(ctx, key, value)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	c.logger.Log(message("get"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	c.logger.Log(ctx, message("get"), err, fields...)
 
 	return err
 }
@@ -71,10 +69,9 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	}
 
 	err := c.cache.Persist(ctx, key, value, ttl)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	c.logger.Log(message("persist"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	c.logger.Log(ctx, message("persist"), err, fields...)
 
 	return err
 }

@@ -47,10 +47,9 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	i.logger.Log(message("exec conn"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	i.logger.Log(ctx, message("exec conn"), err, fields...)
 
 	return res, err
 }
@@ -63,10 +62,9 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	i.logger.Log(message("query conn"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	i.logger.Log(ctx, message("query conn"), err, fields...)
 
 	return ctx, res, err
 }
@@ -107,10 +105,8 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
-	fields = append(fields, logger.Meta(ctx)...)
 	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
-
-	i.logger.Log(message("exec statement"), err, fields...)
+	i.logger.Log(ctx, message("exec statement"), err, fields...)
 
 	return res, err
 }
@@ -123,10 +119,9 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-	fields = append(fields, logger.Meta(ctx)...)
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
 
-	i.logger.Log(message("query statement"), err, fields...)
+	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	i.logger.Log(ctx, message("query statement"), err, fields...)
 
 	return ctx, res, err
 }

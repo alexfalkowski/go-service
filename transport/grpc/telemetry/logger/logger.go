@@ -35,12 +35,10 @@ func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
 			zap.String(meta.PathKey, info.FullMethod),
 		}
 
-		fields = append(fields, logger.Meta(ctx)...)
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		log.LogFunc(CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
+		log.LogFunc(ctx, CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
 
 		return resp, err
 	}
@@ -63,12 +61,10 @@ func StreamServerInterceptor(log *logger.Logger) grpc.StreamServerInterceptor {
 			zap.String(meta.PathKey, info.FullMethod),
 		}
 
-		fields = append(fields, logger.Meta(ctx)...)
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		log.LogFunc(CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
+		log.LogFunc(ctx, CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
 
 		return err
 	}
@@ -90,12 +86,10 @@ func UnaryClientInterceptor(log *logger.Logger) grpc.UnaryClientInterceptor {
 			zap.String(meta.PathKey, fullMethod),
 		}
 
-		fields = append(fields, logger.Meta(ctx)...)
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		log.LogFunc(CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
+		log.LogFunc(ctx, CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
 
 		return err
 	}
@@ -117,12 +111,10 @@ func StreamClientInterceptor(log *logger.Logger) grpc.StreamClientInterceptor {
 			zap.String(meta.PathKey, fullMethod),
 		}
 
-		fields = append(fields, logger.Meta(ctx)...)
-
 		code := status.Code(err)
 		fields = append(fields, zap.Any(meta.CodeKey, code))
 
-		log.LogFunc(CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
+		log.LogFunc(ctx, CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
 
 		return stream, err
 	}
