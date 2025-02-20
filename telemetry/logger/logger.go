@@ -60,7 +60,7 @@ type (
 )
 
 // LogWithLogger for logger.
-func (l *Logger) Log(msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) Log(ctx context.Context, msg string, err error, fields ...zapcore.Field) {
 	var fn LogFunc
 
 	if err != nil {
@@ -69,11 +69,12 @@ func (l *Logger) Log(msg string, err error, fields ...zapcore.Field) {
 		fn = l.Logger.Info
 	}
 
-	l.LogFunc(fn, msg, err, fields...)
+	l.LogFunc(ctx, fn, msg, err, fields...)
 }
 
 // LogWithFunc for logger.
-func (l *Logger) LogFunc(fn LogFunc, msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) LogFunc(ctx context.Context, fn LogFunc, msg string, err error, fields ...zapcore.Field) {
+	fields = append(fields, Meta(ctx)...)
 	fields = append(fields, zap.Error(err))
 
 	fn(msg, fields...)
