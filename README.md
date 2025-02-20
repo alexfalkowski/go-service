@@ -78,6 +78,8 @@ To configure, please specify the following:
 ```yaml
 cache:
   kind: redis
+  compressor: none | s2 | zstd | snappy
+  encoder: json | toml | yaml | proto | gob
   options:
     url: path to url
 ```
