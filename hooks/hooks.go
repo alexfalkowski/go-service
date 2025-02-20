@@ -18,10 +18,8 @@ type Generator struct {
 }
 
 // Generate for hooks.
-func (g *Generator) Generate() (string, error) {
-	s, err := g.gen.GenerateText(32)
-
-	return base64.StdEncoding.EncodeToString([]byte(s)), err
+func (g *Generator) Generate() string {
+	return base64.StdEncoding.EncodeToString([]byte(g.gen.GenerateText(32)))
 }
 
 // New hook from config.

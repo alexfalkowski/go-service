@@ -3,10 +3,9 @@ package rand
 import (
 	"crypto/rand"
 	"io"
-	"math/big"
-)
 
-const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	"github.com/samber/lo"
+)
 
 // NewReader for rand.
 func NewReader() Reader {
@@ -44,23 +43,7 @@ func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	return bytes, err
 }
 
-// GenerateText will generate using letters.
-func (g *Generator) GenerateText(size int) (string, error) {
-	return g.generate(size, letters)
-}
-
-func (g *Generator) generate(size int, values string) (string, error) {
-	bytes := make([]byte, size)
-	length := int64(len(values))
-
-	for i := range size {
-		num, err := rand.Int(g.reader, big.NewInt(length))
-		if err != nil {
-			return "", err
-		}
-
-		bytes[i] = values[num.Int64()]
-	}
-
-	return string(bytes), nil
+// GenerateText will generate using alphanumeric charset.
+func (g *Generator) GenerateText(size int) string {
+	return lo.RandomString(size, lo.AlphanumericCharset)
 }

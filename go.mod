@@ -24,7 +24,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
-	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/klauspost/compress v1.18.0
@@ -38,6 +37,7 @@ require (
 	github.com/prometheus/client_golang v1.21.0
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/rs/xid v1.6.0
+	github.com/samber/lo v1.49.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sethvargo/go-limiter v1.0.0
 	github.com/sethvargo/go-retry v0.3.0

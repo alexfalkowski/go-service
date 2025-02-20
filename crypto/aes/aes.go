@@ -25,7 +25,7 @@ type Generator struct {
 }
 
 // Generate for aes.
-func (g *Generator) Generate() (string, error) {
+func (g *Generator) Generate() string {
 	return g.gen.GenerateText(32)
 }
 

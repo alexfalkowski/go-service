@@ -3,7 +3,7 @@ package meta
 import (
 	"context"
 
-	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 )
 
 type contextKey string
@@ -25,12 +25,12 @@ type Map map[string]string
 
 // SnakeStrings for meta.
 func SnakeStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strcase.ToSnake)
+	return attributes(ctx).Strings(prefix, lo.SnakeCase)
 }
 
 // CamelStrings for meta.
 func CamelStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strcase.ToLowerCamel)
+	return attributes(ctx).Strings(prefix, lo.CamelCase)
 }
 
 // Strings for meta.

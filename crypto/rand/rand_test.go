@@ -21,8 +21,7 @@ func TestValidRand(t *testing.T) {
 	})
 
 	Convey("When I generate random letters", t, func() {
-		s, err := gen.GenerateText(32)
-		So(err, ShouldBeNil)
+		s := gen.GenerateText(32)
 
 		Convey("Then I should have random letters", func() {
 			So(s, ShouldHaveLength, 32)
@@ -33,8 +32,8 @@ func TestValidRand(t *testing.T) {
 func TestInvalidRand(t *testing.T) {
 	gen := rand.NewGenerator(&test.ErrReaderCloser{})
 
-	Convey("When I generate random string with an erroneous reader", t, func() {
-		_, err := gen.GenerateText(5)
+	Convey("When I generate random bytes with an erroneous reader", t, func() {
+		_, err := gen.GenerateBytes(5)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

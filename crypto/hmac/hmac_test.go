@@ -15,24 +15,10 @@ func TestGenerator(t *testing.T) {
 		gen := hmac.NewGenerator(rand.NewGenerator(rand.NewReader()))
 
 		Convey("When I generate key", func() {
-			key, err := gen.Generate()
+			key := gen.Generate()
 
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
+			Convey("Then I should have a key", func() {
 				So(key, ShouldNotBeBlank)
-			})
-		})
-	})
-
-	Convey("Given I have an erroneous generator", t, func() {
-		gen := hmac.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
-
-		Convey("When I generate key", func() {
-			key, err := gen.Generate()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-				So(key, ShouldBeBlank)
 			})
 		})
 	})
