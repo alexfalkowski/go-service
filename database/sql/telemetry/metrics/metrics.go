@@ -24,14 +24,13 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 	maxIdleTimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
 	maxLifetimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
 
-	mts := &Metrics{
-		dbs: dbs, opts: opts,
-		mo: maxOpen, o: open, iu: inUse,
-		i: idle, w: waited, b: blocked,
-		mic: maxIdleClosed, mitc: maxIdleTimeClosed, mlc: maxLifetimeClosed,
+	metrics := &Metrics{
+		dbs: dbs, opts: opts, maxOpen: maxOpen, open: open,
+		inUse: inUse, idle: idle, waited: waited, blocked: blocked,
+		maxIdleClosed: maxIdleClosed, maxIdleTimeClosed: maxIdleTimeClosed, maxLifetimeClosed: maxLifetimeClosed,
 	}
 
-	meter.MustRegisterCallback(mts.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
+	meter.MustRegisterCallback(metrics.callback, maxOpen, open, inUse, idle, waited, blocked, maxIdleClosed, maxIdleTimeClosed, maxLifetimeClosed)
 }
 
 // Metrics for SQL.
@@ -39,15 +38,15 @@ type Metrics struct {
 	dbs  *mssqlx.DBs
 	opts metric.MeasurementOption
 
-	mo   metric.Int64ObservableGauge
-	o    metric.Int64ObservableGauge
-	iu   metric.Int64ObservableGauge
-	i    metric.Int64ObservableGauge
-	w    metric.Int64ObservableCounter
-	b    metric.Float64ObservableCounter
-	mic  metric.Int64ObservableCounter
-	mitc metric.Int64ObservableCounter
-	mlc  metric.Int64ObservableCounter
+	maxOpen           metric.Int64ObservableGauge
+	open              metric.Int64ObservableGauge
+	inUse             metric.Int64ObservableGauge
+	idle              metric.Int64ObservableGauge
+	waited            metric.Int64ObservableCounter
+	blocked           metric.Float64ObservableCounter
+	maxIdleClosed     metric.Int64ObservableCounter
+	maxIdleTimeClosed metric.Int64ObservableCounter
+	maxLifetimeClosed metric.Int64ObservableCounter
 }
 
 func (m *Metrics) callback(_ context.Context, observer metric.Observer) error {
@@ -75,13 +74,13 @@ func (m *Metrics) callback(_ context.Context, observer metric.Observer) error {
 func (m *Metrics) collect(db *sqlx.DB, observer metric.Observer, opts metric.MeasurementOption) {
 	stats := db.Stats()
 
-	observer.ObserveInt64(m.mo, int64(stats.MaxOpenConnections), m.opts, opts)
-	observer.ObserveInt64(m.o, int64(stats.OpenConnections), m.opts, opts)
-	observer.ObserveInt64(m.iu, int64(stats.InUse), m.opts, opts)
-	observer.ObserveInt64(m.i, int64(stats.Idle), m.opts, opts)
-	observer.ObserveInt64(m.w, stats.WaitCount, m.opts, opts)
-	observer.ObserveFloat64(m.b, stats.WaitDuration.Seconds(), m.opts, opts)
-	observer.ObserveInt64(m.mic, stats.MaxIdleClosed, m.opts, opts)
-	observer.ObserveInt64(m.mitc, stats.MaxIdleTimeClosed, m.opts, opts)
-	observer.ObserveInt64(m.mlc, stats.MaxLifetimeClosed, m.opts, opts)
+	observer.ObserveInt64(m.maxOpen, int64(stats.MaxOpenConnections), m.opts, opts)
+	observer.ObserveInt64(m.open, int64(stats.OpenConnections), m.opts, opts)
+	observer.ObserveInt64(m.inUse, int64(stats.InUse), m.opts, opts)
+	observer.ObserveInt64(m.idle, int64(stats.Idle), m.opts, opts)
+	observer.ObserveInt64(m.waited, stats.WaitCount, m.opts, opts)
+	observer.ObserveFloat64(m.blocked, stats.WaitDuration.Seconds(), m.opts, opts)
+	observer.ObserveInt64(m.maxIdleClosed, stats.MaxIdleClosed, m.opts, opts)
+	observer.ObserveInt64(m.maxIdleTimeClosed, stats.MaxIdleTimeClosed, m.opts, opts)
+	observer.ObserveInt64(m.maxLifetimeClosed, stats.MaxLifetimeClosed, m.opts, opts)
 }

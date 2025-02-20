@@ -10,8 +10,6 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-const kindAttribute = attribute.Key("kind")
-
 // NewCache for metrics.
 func NewCache(kind string, meter *metrics.Meter, cache cache.Cache) *Cache {
 	hits := meter.MustInt64Counter("cache_hits_total", "The number of hits in the cache.")
@@ -40,7 +38,8 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 
 // Get a cached value.
 func (c *Cache) Get(ctx context.Context, key string, value any) error {
-	opts := metric.WithAttributes(kindAttribute.String(c.kind))
+	kind := attribute.Key("kind")
+	opts := metric.WithAttributes(kind.String(c.kind))
 
 	err := c.cache.Get(ctx, key, value)
 	if err != nil {
