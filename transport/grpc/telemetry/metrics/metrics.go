@@ -24,12 +24,10 @@ func NewServer(meter *metrics.Meter) *Server {
 	handledHist := meter.MustFloat64Histogram("grpc_server_handling_seconds",
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.")
 
-	s := &Server{
+	return &Server{
 		started: started, received: received, sent: sent,
 		handled: handled, handledHistogram: handledHist,
 	}
-
-	return s
 }
 
 // Server for metrics.
@@ -162,12 +160,10 @@ func NewClient(meter *metrics.Meter) *Client {
 	handledHist := meter.MustFloat64Histogram("grpc_client_handling_seconds",
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the client.")
 
-	c := &Client{
+	return &Client{
 		started: started, received: received, sent: sent,
 		handled: handled, handledHistogram: handledHist,
 	}
-
-	return c
 }
 
 // Client for metrics.

@@ -76,12 +76,10 @@ func NewRoundTripper(meter *metrics.Meter, r http.RoundTripper) *RoundTripper {
 	handledHist := meter.MustFloat64Histogram("http_client_handling_seconds",
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the client.")
 
-	rt := &RoundTripper{
+	return &RoundTripper{
 		started: started, received: received, sent: sent, handled: handled, handledHist: handledHist,
 		RoundTripper: r,
 	}
-
-	return rt
 }
 
 // RoundTripper for metrics.
