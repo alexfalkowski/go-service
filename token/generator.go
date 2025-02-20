@@ -1,8 +1,6 @@
 package token
 
-import (
-	"context"
-)
+import "context"
 
 // Generator allows the implementation of different types generators.
 type Generator interface {

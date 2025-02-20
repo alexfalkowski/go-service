@@ -1,8 +1,6 @@
 package token
 
-import (
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrInvalidMatch for token.

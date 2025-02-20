@@ -1,8 +1,6 @@
 package encoding
 
-import (
-	"io"
-)
+import "io"
 
 // Encoder allows different types of encoding/decoding.
 type Encoder interface {

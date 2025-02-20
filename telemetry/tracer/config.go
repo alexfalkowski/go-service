@@ -1,8 +1,6 @@
 package tracer
 
-import (
-	"github.com/alexfalkowski/go-service/telemetry/header"
-)
+import "github.com/alexfalkowski/go-service/telemetry/header"
 
 // IsEnabled for tracer.
 func IsEnabled(cfg *Config) bool {

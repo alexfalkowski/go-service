@@ -1,8 +1,6 @@
 package test
 
-import (
-	"embed"
-)
+import "embed"
 
 type (
 	// Todo for test.

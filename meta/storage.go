@@ -1,8 +1,6 @@
 package meta
 
-import (
-	"context"
-)
+import "context"
 
 type (
 	// Converter takes a string and creates a new string.

@@ -1,8 +1,6 @@
 package test
 
-import (
-	"net/http"
-)
+import "net/http"
 
 // ErrResponseWriter for test.
 type ErrResponseWriter struct {

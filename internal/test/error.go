@@ -1,8 +1,6 @@
 package test
 
-import (
-	"errors"
-)
+import "errors"
 
 var (
 	// ErrGenerate for test.

@@ -1,8 +1,6 @@
 package debug
 
-import (
-	"net/http/pprof"
-)
+import "net/http/pprof"
 
 // RegisterPprof for debug.
 func RegisterPprof(srv *Server) {

@@ -1,8 +1,6 @@
 package sql
 
-import (
-	"github.com/alexfalkowski/go-service/database/sql/pg"
-)
+import "github.com/alexfalkowski/go-service/database/sql/pg"
 
 // IsEnabled for SQL.
 func IsEnabled(cfg *Config) bool {

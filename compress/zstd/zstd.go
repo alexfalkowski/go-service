@@ -1,8 +1,6 @@
 package zstd
 
-import (
-	"github.com/klauspost/compress/zstd"
-)
+import "github.com/klauspost/compress/zstd"
 
 // Compressor for zstd.
 type Compressor struct{}

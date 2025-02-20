@@ -1,8 +1,6 @@
 package sync
 
-import (
-	"sync"
-)
+import "sync"
 
 // NewPool of type T.
 func NewPool[T any]() *Pool[T] {

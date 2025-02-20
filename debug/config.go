@@ -1,8 +1,6 @@
 package debug
 
-import (
-	"github.com/alexfalkowski/go-service/server"
-)
+import "github.com/alexfalkowski/go-service/server"
 
 // IsEnabled for HTTP.
 func IsEnabled(cfg *Config) bool {

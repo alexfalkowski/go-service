@@ -1,8 +1,6 @@
 package mvc
 
-import (
-	"net/http"
-)
+import "net/http"
 
 var (
 	mux   *http.ServeMux

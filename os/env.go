@@ -1,8 +1,6 @@
 package os
 
-import (
-	"os"
-)
+import "os"
 
 // GetVariable by key.
 func GetVariable(key string) string {

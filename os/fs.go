@@ -1,8 +1,6 @@
 package os
 
-import (
-	"os"
-)
+import "os"
 
 // ModeAppend will append to an existing file.
 const ModeAppend = os.ModeAppend
