@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.460.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.460.0) - 2025-02-20
+
+- [`fdcfb8f`](https://github.com/alexfalkowski/go-service/commit/fdcfb8f25179702e48dcfa1bcc3d2d1b0eb96d73) feat(telemetry): move meta to log func (#1349)
+- [`fc60a7d`](https://github.com/alexfalkowski/go-service/commit/fc60a7d197e9181ccc303f48008d4ec8d88d1916) refactor(grpc): rename var (#1347)
+- [`a4c985f`](https://github.com/alexfalkowski/go-service/commit/a4c985f04f7e0237bf281911a557d170365d903f) docs(cache): add compressor and encoder (#1346)
+
 ## [v1.459.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.459.0) - 2025-02-20
 
 - [`5077e9b`](https://github.com/alexfalkowski/go-service/commit/5077e9bde03ce765596e0d5df03c84ba23ec9a7e) feat(deps): bump github.com/klauspost/compress from 1.17.11 to 1.18.0 (#1345)
