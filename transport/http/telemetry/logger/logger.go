@@ -13,9 +13,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const (
-	service = "http"
-)
+const service = "http"
 
 // NewHandler for logger.
 func NewHandler(logger *logger.Logger) *Handler {

@@ -6,9 +6,7 @@ import (
 	"math/big"
 )
 
-const (
-	letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-)
+const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 // NewReader for rand.
 func NewReader() Reader {

@@ -15,9 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const (
-	service = "grpc"
-)
+const service = "grpc"
 
 // UnaryServerInterceptor for logger.
 func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
