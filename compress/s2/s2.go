@@ -1,8 +1,6 @@
 package s2
 
-import (
-	"github.com/klauspost/compress/s2"
-)
+import "github.com/klauspost/compress/s2"
 
 // Compressor for s2.
 type Compressor struct{}

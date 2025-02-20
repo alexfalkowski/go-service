@@ -1,8 +1,6 @@
 package net
 
-import (
-	"net"
-)
+import "net"
 
 // Listener for net.
 func Listener(address string) (net.Listener, error) {

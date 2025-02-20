@@ -1,8 +1,6 @@
 package id
 
-import (
-	"github.com/rs/xid"
-)
+import "github.com/rs/xid"
 
 // XID generator.
 type XID struct{}

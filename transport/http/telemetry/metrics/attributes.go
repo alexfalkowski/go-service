@@ -1,8 +1,6 @@
 package metrics
 
-import (
-	"go.opentelemetry.io/otel/attribute"
-)
+import "go.opentelemetry.io/otel/attribute"
 
 const (
 	serviceAttribute    = attribute.Key("service")

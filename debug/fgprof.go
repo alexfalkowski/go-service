@@ -1,8 +1,6 @@
 package debug
 
-import (
-	"github.com/felixge/fgprof"
-)
+import "github.com/felixge/fgprof"
 
 // RegisterFgprof for debug.
 func RegisterFgprof(srv *Server) {

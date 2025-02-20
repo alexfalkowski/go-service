@@ -1,8 +1,6 @@
 package test
 
-import (
-	"github.com/alexfalkowski/go-service/env"
-)
+import "github.com/alexfalkowski/go-service/env"
 
 const (
 	// Environment for test.

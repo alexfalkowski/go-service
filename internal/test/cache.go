@@ -1,8 +1,6 @@
 package test
 
-import (
-	"github.com/alexfalkowski/go-service/time"
-)
+import "github.com/alexfalkowski/go-service/time"
 
 type Cache struct {
 	Value string

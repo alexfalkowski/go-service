@@ -1,8 +1,6 @@
 package header
 
-import (
-	"github.com/alexfalkowski/go-service/os"
-)
+import "github.com/alexfalkowski/go-service/os"
 
 // Map for tracer.
 type Map map[string]string

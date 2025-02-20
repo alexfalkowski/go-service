@@ -1,8 +1,6 @@
 package sync
 
-import (
-	"bytes"
-)
+import "bytes"
 
 // BufferPool for sync.
 type BufferPool struct {

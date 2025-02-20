@@ -1,8 +1,6 @@
 package debug
 
-import (
-	"github.com/arl/statsviz"
-)
+import "github.com/arl/statsviz"
 
 // RegisterStatsviz for debug.
 func RegisterStatsviz(srv *Server) error {

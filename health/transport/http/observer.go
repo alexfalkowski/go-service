@@ -1,8 +1,6 @@
 package http
 
-import (
-	"github.com/alexfalkowski/go-health/subscriber"
-)
+import "github.com/alexfalkowski/go-health/subscriber"
 
 // HealthObserver for HTTP.
 type HealthObserver struct {

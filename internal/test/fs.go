@@ -1,8 +1,6 @@
 package test
 
-import (
-	"github.com/alexfalkowski/go-service/os"
-)
+import "github.com/alexfalkowski/go-service/os"
 
 // FS used for tests.
 var FS = os.NewFS()

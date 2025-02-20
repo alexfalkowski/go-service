@@ -1,8 +1,6 @@
 package test
 
-import (
-	"google.golang.org/protobuf/reflect/protoreflect"
-)
+import "google.golang.org/protobuf/reflect/protoreflect"
 
 // ErrProto for test.
 type ErrProto struct{}

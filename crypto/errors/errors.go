@@ -1,8 +1,6 @@
 package errors
 
-import (
-	"errors"
-)
+import "errors"
 
 // ErrInvalidMatch when compared.
 var ErrInvalidMatch = errors.New("crypto: invalid match")

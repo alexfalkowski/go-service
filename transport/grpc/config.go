@@ -1,8 +1,6 @@
 package grpc
 
-import (
-	"github.com/alexfalkowski/go-service/server"
-)
+import "github.com/alexfalkowski/go-service/server"
 
 // IsEnabled for gRPC.
 func IsEnabled(cfg *Config) bool {

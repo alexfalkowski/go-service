@@ -1,8 +1,6 @@
 package http
 
-import (
-	"crypto/tls"
-)
+import "crypto/tls"
 
 // Config for HTTP.
 type Config struct {

@@ -1,8 +1,6 @@
 package errors
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Prefix an error.
 func Prefix(p string, err error) error {

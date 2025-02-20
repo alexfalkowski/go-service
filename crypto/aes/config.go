@@ -1,8 +1,6 @@
 package aes
 
-import (
-	"github.com/alexfalkowski/go-service/os"
-)
+import "github.com/alexfalkowski/go-service/os"
 
 // IsEnabled for aes.
 func IsEnabled(cfg *Config) bool {

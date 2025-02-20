@@ -1,8 +1,6 @@
 package strings
 
-import (
-	"strings"
-)
+import "strings"
 
 var observables = []string{
 	"health",

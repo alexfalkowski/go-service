@@ -1,8 +1,6 @@
 package hooks
 
-import (
-	"github.com/alexfalkowski/go-service/os"
-)
+import "github.com/alexfalkowski/go-service/os"
 
 // Config for hooks.
 type Config struct {

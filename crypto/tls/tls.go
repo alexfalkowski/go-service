@@ -1,8 +1,6 @@
 package tls
 
-import (
-	"crypto/tls"
-)
+import "crypto/tls"
 
 // NewConfig for tls.
 func NewConfig(cfg *Config) (*tls.Config, error) {

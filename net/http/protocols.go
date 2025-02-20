@@ -1,8 +1,6 @@
 package http
 
-import (
-	"net/http"
-)
+import "net/http"
 
 // Protocols returns all the protocols supported.
 func Protocols() *http.Protocols {

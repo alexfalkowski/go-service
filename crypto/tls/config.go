@@ -1,8 +1,6 @@
 package tls
 
-import (
-	"github.com/alexfalkowski/go-service/os"
-)
+import "github.com/alexfalkowski/go-service/os"
 
 // IsEnabled for security.
 func IsEnabled(cfg *Config) bool {

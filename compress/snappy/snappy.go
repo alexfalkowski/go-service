@@ -1,8 +1,6 @@
 package snappy
 
-import (
-	"github.com/klauspost/compress/snappy"
-)
+import "github.com/klauspost/compress/snappy"
 
 // Compressor for snappy.
 type Compressor struct{}
