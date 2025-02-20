@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.459.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.459.0) - 2025-02-20
+
+- [`5077e9b`](https://github.com/alexfalkowski/go-service/commit/5077e9bde03ce765596e0d5df03c84ba23ec9a7e) feat(deps): bump github.com/klauspost/compress from 1.17.11 to 1.18.0 (#1345)
+- [`6b2be09`](https://github.com/alexfalkowski/go-service/commit/6b2be097a65f171110e6b5d8218765b28a84988e) docs(diagrams): update with make (#1344)
+- [`e4e0ba1`](https://github.com/alexfalkowski/go-service/commit/e4e0ba1e952dfb4a182cc822ab54df093923a701) refactor(all): move types (#1343)
+
 ## [v1.458.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.458.0) - 2025-02-19
 
 - [`af1ecd1`](https://github.com/alexfalkowski/go-service/commit/af1ecd1a042f5b315129ff0bb187c6b234a68e08) feat(telemetry): simplfy span expressions for tracer (#1342)
