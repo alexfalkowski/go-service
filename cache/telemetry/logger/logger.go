@@ -7,8 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // NewCache for tracer.
@@ -31,14 +29,14 @@ func (c *Cache) Close(ctx context.Context) error {
 // Remove a cached key.
 func (c *Cache) Remove(ctx context.Context, key string) error {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, c.kind),
-		zap.String(meta.PathKey, key),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, c.kind),
+		logger.String(meta.PathKey, key),
 	}
 
 	err := c.cache.Remove(ctx, key)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	c.logger.Log(ctx, message("remove"), err, fields...)
 
 	return err
@@ -47,14 +45,14 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 // Get a cached value.
 func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, c.kind),
-		zap.String(meta.PathKey, key),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, c.kind),
+		logger.String(meta.PathKey, key),
 	}
 
 	err := c.cache.Get(ctx, key, value)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	c.logger.Log(ctx, message("get"), err, fields...)
 
 	return err
@@ -63,14 +61,14 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 // Persist a value with key and TTL.
 func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Duration) error {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, c.kind),
-		zap.String(meta.PathKey, key),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, c.kind),
+		logger.String(meta.PathKey, key),
 	}
 
 	err := c.cache.Persist(ctx, key, value, ttl)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	c.logger.Log(ctx, message("persist"), err, fields...)
 
 	return err

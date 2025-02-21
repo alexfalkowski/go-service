@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // NewServer that can start and stop an underlying server.
@@ -32,17 +31,17 @@ func (s *Server) Start() {
 }
 
 func (s *Server) start() {
-	addr := zap.Stringer("addr", s.serverer)
+	addr := logger.Stringer("addr", s.serverer)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.name))
+		l.Info("starting server", addr, logger.String(meta.ServiceKey, s.name))
 	})
 
 	if err := s.serverer.Serve(); err != nil {
 		serr := s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", zap.String(meta.ServiceKey, s.name), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
+			l.Error("could not start server", logger.String(meta.ServiceKey, s.name), addr, logger.Error(err), logger.NamedError("shutdown_error", serr))
 		})
 	}
 }
@@ -56,7 +55,7 @@ func (s *Server) Stop(ctx context.Context) {
 	err := s.serverer.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("stopping server", zap.String(meta.ServiceKey, s.name), zap.Error(err))
+		l.Info("stopping server", logger.String(meta.ServiceKey, s.name), logger.Error(err))
 	})
 }
 

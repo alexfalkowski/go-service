@@ -8,8 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/ngrok/sqlmw"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // NewInterceptor for logger.
@@ -42,13 +40,13 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 // ConnExecContext for logger.
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, i.name),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, i.name),
 	}
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	i.logger.Log(ctx, message("exec conn"), err, fields...)
 
 	return res, err
@@ -57,13 +55,13 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 // ConnQueryContext for logger.
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, i.name),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, i.name),
 	}
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	i.logger.Log(ctx, message("query conn"), err, fields...)
 
 	return ctx, res, err
@@ -99,13 +97,13 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 // StmtExecContext for logger.
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, i.name),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, i.name),
 	}
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	i.logger.Log(ctx, message("exec statement"), err, fields...)
 
 	return res, err
@@ -114,13 +112,13 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 // StmtQueryContext for logger.
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now()
-	fields := []zapcore.Field{
-		zap.String(meta.ServiceKey, i.name),
+	fields := []logger.Field{
+		logger.String(meta.ServiceKey, i.name),
 	}
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
-	fields = append(fields, zap.Stringer(meta.DurationKey, time.Since(start)))
+	fields = append(fields, logger.Stringer(meta.DurationKey, time.Since(start)))
 	i.logger.Log(ctx, message("query statement"), err, fields...)
 
 	return ctx, res, err

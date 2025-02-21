@@ -9,6 +9,29 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Field for logger.
+type Field = zapcore.Field
+
+var (
+	// Stringer for logger.
+	Stringer = zap.Stringer
+
+	// String for logger.
+	String = zap.String
+
+	// Int for logger.
+	Int = zap.Int
+
+	// Any for logger.
+	Any = zap.Any
+
+	// Err for logger.
+	Error = zap.Error
+
+	// NamedError for logger.
+	NamedError = zap.NamedError
+)
+
 // Params for logger.
 type Params struct {
 	fx.In
@@ -56,11 +79,11 @@ type (
 	}
 
 	// LogFunc for logger.
-	LogFunc func(msg string, fields ...zapcore.Field)
+	LogFunc func(msg string, fields ...Field)
 )
 
 // LogWithLogger for logger.
-func (l *Logger) Log(ctx context.Context, msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) Log(ctx context.Context, msg string, err error, fields ...Field) {
 	var fn LogFunc
 
 	if err != nil {
@@ -73,7 +96,7 @@ func (l *Logger) Log(ctx context.Context, msg string, err error, fields ...zapco
 }
 
 // LogWithFunc for logger.
-func (l *Logger) LogFunc(ctx context.Context, fn LogFunc, msg string, err error, fields ...zapcore.Field) {
+func (l *Logger) LogFunc(ctx context.Context, fn LogFunc, msg string, err error, fields ...Field) {
 	fields = append(fields, Meta(ctx)...)
 	fields = append(fields, zap.Error(err))
 
