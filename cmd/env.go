@@ -12,15 +12,15 @@ import (
 // ErrLocationMissing for cmd.
 var ErrLocationMissing = errors.New("location is missing")
 
+// NewENV for cmd.
+func NewENV(location string, fs os.FileSystem) *ENV {
+	return &ENV{location: location, fs: fs}
+}
+
 // ENV for cmd.
 type ENV struct {
 	fs       os.FileSystem
 	location string
-}
-
-// NewENV for cmd.
-func NewENV(location string, fs os.FileSystem) *ENV {
-	return &ENV{location: location, fs: fs}
 }
 
 // Read for env.

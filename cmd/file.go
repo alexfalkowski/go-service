@@ -4,15 +4,15 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 )
 
+// NewFile for cmd.
+func NewFile(location string, fs os.FileSystem) *File {
+	return &File{location: location, fs: fs}
+}
+
 // File for cmd.
 type File struct {
 	fs       os.FileSystem
 	location string
-}
-
-// NewFile for cmd.
-func NewFile(location string, fs os.FileSystem) *File {
-	return &File{location: location, fs: fs}
 }
 
 // Read for file.

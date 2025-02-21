@@ -9,22 +9,22 @@ import (
 	"go.uber.org/zap"
 )
 
-// Server is a generic server.
-type Server struct {
-	srv    Serverer
-	sh     fx.Shutdowner
-	logger *logger.Logger
-	svc    string
-}
-
 // NewServer that can start and stop an underlying server.
 func NewServer(svc string, srv Serverer, logger *logger.Logger, sh fx.Shutdowner) *Server {
-	return &Server{svc: svc, srv: srv, logger: logger, sh: sh}
+	return &Server{name: svc, serverer: srv, logger: logger, sh: sh}
+}
+
+// Server is a generic server.
+type Server struct {
+	serverer Serverer
+	sh       fx.Shutdowner
+	logger   *logger.Logger
+	name     string
 }
 
 // Start the server.
 func (s *Server) Start() {
-	if !s.srv.IsEnabled() {
+	if !s.serverer.IsEnabled() {
 		return
 	}
 
@@ -32,31 +32,31 @@ func (s *Server) Start() {
 }
 
 func (s *Server) start() {
-	addr := zap.Stringer("addr", s.srv)
+	addr := zap.Stringer("addr", s.serverer)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.svc))
+		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.name))
 	})
 
-	if err := s.srv.Serve(); err != nil {
+	if err := s.serverer.Serve(); err != nil {
 		serr := s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", zap.String(meta.ServiceKey, s.svc), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
+			l.Error("could not start server", zap.String(meta.ServiceKey, s.name), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
 		})
 	}
 }
 
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) {
-	if !s.srv.IsEnabled() {
+	if !s.serverer.IsEnabled() {
 		return
 	}
 
-	err := s.srv.Shutdown(ctx)
+	err := s.serverer.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("stopping server", zap.String(meta.ServiceKey, s.svc), zap.Error(err))
+		l.Info("stopping server", zap.String(meta.ServiceKey, s.name), zap.Error(err))
 	})
 }
 

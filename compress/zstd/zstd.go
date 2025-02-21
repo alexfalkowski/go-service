@@ -2,13 +2,13 @@ package zstd
 
 import "github.com/klauspost/compress/zstd"
 
-// Compressor for zstd.
-type Compressor struct{}
-
 // NewNone for zstd.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
+
+// Compressor for zstd.
+type Compressor struct{}
 
 func (c *Compressor) Compress(data []byte) []byte {
 	e, _ := zstd.NewWriter(nil)

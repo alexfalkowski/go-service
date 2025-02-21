@@ -4,18 +4,6 @@ import (
 	"github.com/alexfalkowski/go-service/os"
 )
 
-// NewReadWriter for cmd.
-func NewReadWriter(kind, location string, fs os.FileSystem) ReaderWriter {
-	switch kind {
-	case "file":
-		return NewFile(location, fs)
-	case "env":
-		return NewENV(location, fs)
-	default:
-		return NewNone()
-	}
-}
-
 // ReaderWriter for cmd.
 type ReaderWriter interface {
 	// Read bytes.
@@ -26,4 +14,16 @@ type ReaderWriter interface {
 
 	// Kind of read writer.
 	Kind() string
+}
+
+// NewReadWriter for cmd.
+func NewReadWriter(kind, location string, fs os.FileSystem) ReaderWriter {
+	switch kind {
+	case "file":
+		return NewFile(location, fs)
+	case "env":
+		return NewENV(location, fs)
+	default:
+		return NewNone()
+	}
 }
