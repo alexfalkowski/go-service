@@ -86,11 +86,19 @@ func stdoutLogger(params Params) *slog.Logger {
 		},
 	}
 
+	var handler slog.Handler
+
 	if params.Environment.IsDevelopment() {
-		return slog.New(slog.NewTextHandler(os.Stdout, opts))
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
 	}
 
-	return slog.New(slog.NewJSONHandler(os.Stdout, opts))
+	return slog.New(handler).With(
+		slog.String("name", params.Name.String()),
+		slog.String("version", params.Version.String()),
+		slog.String("environment", params.Environment.String()),
+	)
 }
 
 func otlpLogger(params Params) (*slog.Logger, error) {
@@ -120,12 +128,5 @@ func otlpLogger(params Params) (*slog.Logger, error) {
 		},
 	})
 
-	logger := otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider))
-	logger = logger.With(
-		slog.String("name", params.Name.String()),
-		slog.String("version", params.Version.String()),
-		slog.String("environment", params.Environment.String()),
-	)
-
-	return logger, nil
+	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
 }
