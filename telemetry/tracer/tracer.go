@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
-	se "github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"go.opentelemetry.io/otel"
@@ -49,7 +49,7 @@ func NewTracer(params Params) (*Tracer, error) {
 	}
 
 	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
-		return nil, se.Prefix("tracer", err)
+		return nil, errors.Prefix("tracer", err)
 	}
 
 	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
@@ -69,7 +69,7 @@ func NewTracer(params Params) (*Tracer, error) {
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			return se.Prefix("tracer", exporter.Start(ctx))
+			return errors.Prefix("tracer", exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)

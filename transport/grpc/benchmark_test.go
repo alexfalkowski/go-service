@@ -42,7 +42,7 @@ func BenchmarkDefaultGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
-		for range b.N {
+		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
@@ -79,7 +79,7 @@ func BenchmarkGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
-		for range b.N {
+		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
@@ -92,7 +92,7 @@ func BenchmarkGRPC(b *testing.B) {
 func BenchmarkLogGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 	lc := fxtest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -118,7 +118,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
-		for range b.N {
+		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
@@ -131,7 +131,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 func BenchmarkTraceGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 	tc := test.NewOTLPTracerConfig()
 	lc := fxtest.NewLifecycle(b)
 	tracer := test.NewTracer(lc, tc, logger)
@@ -159,7 +159,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
-		for range b.N {
+		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}

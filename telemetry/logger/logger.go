@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/io"
 	"github.com/alexfalkowski/go-service/os"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
@@ -29,6 +30,7 @@ type Params struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
+	FileSystem  os.FileSystem
 	Config      *Config
 	Environment env.Environment
 	Version     env.Version
@@ -36,17 +38,24 @@ type Params struct {
 }
 
 // NewLogger using zap.
-func NewLogger(params Params) *Logger {
-	if !IsEnabled(params.Config) {
-		return &Logger{noopLogger()}
+func NewLogger(params Params) (*Logger, error) {
+	var logger *slog.Logger
+
+	switch {
+	case !IsEnabled(params.Config):
+		logger = noopLogger()
+	case params.Config.IsOTLP():
+		l, err := otlpLogger(params)
+		if err != nil {
+			return nil, err
+		}
+
+		logger = l
+	case params.Config.IsStdout():
+		logger = stdoutLogger(params)
 	}
 
-	switch params.Config.Kind {
-	case "otlp":
-		return &Logger{otlpLogger(params)}
-	default:
-		return &Logger{stdoutLogger(params)}
-	}
+	return &Logger{logger}, nil
 }
 
 // Logger allows to pass a function to log.
@@ -102,7 +111,11 @@ func stdoutLogger(params Params) *slog.Logger {
 	return slog.New(slog.NewJSONHandler(os.Stdout, opts))
 }
 
-func otlpLogger(params Params) *slog.Logger {
+func otlpLogger(params Params) (*slog.Logger, error) {
+	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
+		return nil, errors.Prefix("tracer", err)
+	}
+
 	client, _ := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
@@ -125,5 +138,5 @@ func otlpLogger(params Params) *slog.Logger {
 		},
 	})
 
-	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider))
+	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
 }

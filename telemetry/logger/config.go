@@ -16,3 +16,13 @@ type Config struct {
 	URL     string     `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 	Level   string     `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
+
+// IsOTLP configuration.
+func (c *Config) IsOTLP() bool {
+	return c.Kind == "otlp"
+}
+
+// IsStdout configuration.
+func (c *Config) IsStdout() bool {
+	return c.Kind == "stdout"
+}

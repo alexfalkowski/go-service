@@ -47,7 +47,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
-		for range b.N {
+		for b.Loop() {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -85,7 +85,7 @@ func BenchmarkHTTP(b *testing.B) {
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
-		for range b.N {
+		for b.Loop() {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -100,7 +100,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
@@ -126,7 +126,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
-		for range b.N {
+		for b.Loop() {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -142,7 +142,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	tc := test.NewOTLPTracerConfig()
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 	tracer := test.NewTracer(lc, tc, logger)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -170,7 +170,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
-		for range b.N {
+		for b.Loop() {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
@@ -183,7 +183,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -204,7 +204,7 @@ func BenchmarkRoute(b *testing.B) {
 
 		req.Header.Set("Content-Type", "text/html")
 
-		for range b.N {
+		for b.Loop() {
 			_, err := client.Do(req)
 			runtime.Must(err)
 		}
@@ -217,7 +217,7 @@ func BenchmarkRoute(b *testing.B) {
 func BenchmarkRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -237,7 +237,7 @@ func BenchmarkRPC(b *testing.B) {
 		)
 
 		b.Run(mt, func(b *testing.B) {
-			for range b.N {
+			for b.Loop() {
 				_, err := client.Invoke(b.Context(), &test.Request{Name: "Bob"})
 				runtime.Must(err)
 			}
@@ -251,7 +251,7 @@ func BenchmarkRPC(b *testing.B) {
 func BenchmarkProtobuf(b *testing.B) {
 	b.ReportAllocs()
 
-	logger := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -270,7 +270,7 @@ func BenchmarkProtobuf(b *testing.B) {
 			rpc.WithClientRoundTripper(cl.Transport))
 
 		b.Run(mt, func(b *testing.B) {
-			for range b.N {
+			for b.Loop() {
 				_, err := client.Invoke(b.Context(), &v1.SayHelloRequest{Name: "Bob"})
 				runtime.Must(err)
 			}
