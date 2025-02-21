@@ -18,13 +18,6 @@ import (
 	"go.uber.org/fx"
 )
 
-var levels = map[string]slog.Level{
-	"debug": slog.LevelDebug,
-	"info":  slog.LevelInfo,
-	"warn":  slog.LevelWarn,
-	"error": slog.LevelError,
-}
-
 // Params for logger.
 type Params struct {
 	fx.In
@@ -64,27 +57,16 @@ type Logger struct {
 }
 
 // Log attrs for logger.
-func (l *Logger) Log(ctx context.Context, msg string, err error, attrs ...slog.Attr) {
-	var level slog.Level
-
-	if err != nil {
-		level = slog.LevelError
-	} else {
-		level = slog.LevelInfo
-	}
-
-	l.LogAttrs(ctx, level, msg, err, attrs...)
+func (l *Logger) Log(ctx context.Context, msg Message, attrs ...slog.Attr) {
+	l.LogAttrs(ctx, msg.Level(), msg, attrs...)
 }
 
 // LogAttrs for logger.
-func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg string, err error, attrs ...slog.Attr) {
+func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, attrs ...slog.Attr) {
 	attrs = append(attrs, Meta(ctx)...)
+	attrs = append(attrs, Error(msg.Error))
 
-	if err != nil {
-		attrs = append(attrs, slog.String("error", err.Error()))
-	}
-
-	l.Logger.LogAttrs(ctx, level, msg, attrs...)
+	l.Logger.LogAttrs(ctx, level, msg.Text, attrs...)
 }
 
 func noopLogger() *slog.Logger {
@@ -138,5 +120,12 @@ func otlpLogger(params Params) (*slog.Logger, error) {
 		},
 	})
 
-	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
+	logger := otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider))
+	logger = logger.With(
+		slog.String("name", params.Name.String()),
+		slog.String("version", params.Version.String()),
+		slog.String("environment", params.Environment.String()),
+	)
+
+	return logger, nil
 }

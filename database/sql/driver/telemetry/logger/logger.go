@@ -48,7 +48,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 
 	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, message("exec conn"), err, attrs...)
+	i.logger.Log(ctx, logger.NewMessage(message("exec conn"), err), attrs...)
 
 	return res, err
 }
@@ -63,7 +63,7 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 
 	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, message("query conn"), err, attrs...)
+	i.logger.Log(ctx, logger.NewMessage(message("query conn"), err), attrs...)
 
 	return ctx, res, err
 }
@@ -105,7 +105,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 
 	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, message("exec statement"), err, attrs...)
+	i.logger.Log(ctx, logger.NewMessage(message("exec statement"), err), attrs...)
 
 	return res, err
 }
@@ -120,7 +120,7 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 
 	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, message("query statement"), err, attrs...)
+	i.logger.Log(ctx, logger.NewMessage(message("query statement"), err), attrs...)
 
 	return ctx, res, err
 }

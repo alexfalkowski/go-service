@@ -35,7 +35,7 @@ func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), message(info.FullMethod), err, attrs...)
+		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
 		return resp, err
 	}
@@ -61,7 +61,7 @@ func StreamServerInterceptor(log *logger.Logger) grpc.StreamServerInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), message(info.FullMethod), err, attrs...)
+		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
 		return err
 	}
@@ -86,7 +86,7 @@ func UnaryClientInterceptor(log *logger.Logger) grpc.UnaryClientInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), message(conn.Target()+fullMethod), err, attrs...)
+		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
 		return err
 	}
@@ -111,7 +111,7 @@ func StreamClientInterceptor(log *logger.Logger) grpc.StreamClientInterceptor {
 		code := status.Code(err)
 		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogAttrs(ctx, CodeToLevel(code), message(conn.Target()+fullMethod), err, attrs...)
+		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
 		return stream, err
 	}
