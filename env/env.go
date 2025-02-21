@@ -1,8 +1,5 @@
 package env
 
-// Development environment.
-const Development = Environment("development")
-
 // Environment of the application.
 type Environment string
 

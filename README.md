@@ -185,16 +185,35 @@ Telemetry is broken down in the following sections:
 
 ### Logging
 
-For logging we use [Zap](https://github.com/uber-go/zap).
+For logging we use [slog](https://pkg.go.dev/log/slog).
 
 #### Configuration
+
+We have multiple options for logging.
+
+##### Stdout
 
 To configure, please specify the following:
 
 ```yaml
 telemetry:
   logger:
+    kind: stdout
     level: info
+```
+
+##### OpenTelemetry
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  logger:
+    kind: otlp
+    level: info
+    url: http://localhost:3100/loki/api/v1/push
+    headers:
+      Authorization: path to key
 ```
 
 ### Metrics

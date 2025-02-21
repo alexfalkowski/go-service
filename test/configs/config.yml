@@ -51,6 +51,7 @@ sql:
     conn_max_lifetime: 1h
 telemetry:
   logger:
+    kind: stdout
     level: info
   metrics:
     kind: prometheus
@@ -58,7 +59,7 @@ telemetry:
     kind: otlp
     url: http://localhost:4318/v1/traces
     headers:
-      Authorization: ../test/secrets/tracer
+      Authorization: ../test/secrets/telemetry
 token:
   kind: "jwt"
   sub: "sub"

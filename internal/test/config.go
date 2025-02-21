@@ -19,6 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/retry"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/header"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
@@ -166,6 +167,26 @@ func NewSecureTransportConfig() *transport.Config {
 	}
 }
 
+// NewOTLPLoggerConfig for test.
+func NewOTLPLoggerConfig() *logger.Config {
+	return &logger.Config{
+		Kind:  "otlp",
+		Level: "debug",
+		URL:   "http://localhost:3100/loki/api/v1/push",
+		Headers: header.Map{
+			"Authorization": Path("secrets/telemetry"),
+		},
+	}
+}
+
+// NewStdoutLoggerConfig for test.
+func NewStdoutLoggerConfig() *logger.Config {
+	return &logger.Config{
+		Kind:  "stdout",
+		Level: "debug",
+	}
+}
+
 // NewPrometheusMetricsConfig for test.
 func NewPrometheusMetricsConfig() *metrics.Config {
 	return &metrics.Config{
@@ -179,7 +200,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 		Kind: "otlp",
 		URL:  "http://localhost:9009/otlp/v1/metrics",
 		Headers: header.Map{
-			"Authorization": Path("secrets/metrics"),
+			"Authorization": Path("secrets/telemetry"),
 		},
 	}
 }
@@ -188,9 +209,9 @@ func NewOTLPMetricsConfig() *metrics.Config {
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
-		URL:  "localhost:4318",
+		URL:  "http://localhost:4318/v1/traces",
 		Headers: header.Map{
-			"Authorization": Path("secrets/tracer"),
+			"Authorization": Path("secrets/telemetry"),
 		},
 	}
 }

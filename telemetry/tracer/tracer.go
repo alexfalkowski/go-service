@@ -18,7 +18,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // OperationName for tracer.
@@ -114,5 +113,5 @@ type errorHandler struct {
 }
 
 func (e *errorHandler) Handle(err error) {
-	e.logger.Error("tracer: global error", zap.Error(err))
+	e.logger.Error("tracer: global error", "error", err)
 }

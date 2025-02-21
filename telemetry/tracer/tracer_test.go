@@ -12,7 +12,7 @@ import (
 func TestInvalidReader(t *testing.T) {
 	Convey("When I try to create a tracer with an invalid fs", t, func() {
 		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc)
+		logger := test.NewLogger(lc, test.NewStdoutLoggerConfig())
 		params := tracer.Params{
 			Lifecycle:   lc,
 			Environment: test.Environment,

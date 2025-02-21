@@ -2,14 +2,13 @@ package logger
 
 import (
 	"context"
+	"log/slog"
 	"path"
 
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,16 +26,16 @@ func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
 
 		start := time.Now()
 		resp, err := handler(ctx, req)
-		fields := []zapcore.Field{
-			zap.Stringer(meta.DurationKey, time.Since(start)),
-			zap.String(meta.ServiceKey, service),
-			zap.String(meta.PathKey, info.FullMethod),
+		attrs := []slog.Attr{
+			slog.String(meta.DurationKey, time.Since(start).String()),
+			slog.String(meta.ServiceKey, service),
+			slog.String(meta.PathKey, info.FullMethod),
 		}
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(meta.CodeKey, code))
+		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogFunc(ctx, CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
+		log.LogAttrs(ctx, CodeToLevel(code), message(info.FullMethod), err, attrs...)
 
 		return resp, err
 	}
@@ -53,16 +52,16 @@ func StreamServerInterceptor(log *logger.Logger) grpc.StreamServerInterceptor {
 		start := time.Now()
 		ctx := stream.Context()
 		err := handler(srv, stream)
-		fields := []zapcore.Field{
-			zap.Stringer(meta.DurationKey, time.Since(start)),
-			zap.String(meta.ServiceKey, service),
-			zap.String(meta.PathKey, info.FullMethod),
+		attrs := []slog.Attr{
+			slog.String(meta.DurationKey, time.Since(start).String()),
+			slog.String(meta.ServiceKey, service),
+			slog.String(meta.PathKey, info.FullMethod),
 		}
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(meta.CodeKey, code))
+		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogFunc(ctx, CodeToLogFunc(code, log), message(info.FullMethod), err, fields...)
+		log.LogAttrs(ctx, CodeToLevel(code), message(info.FullMethod), err, attrs...)
 
 		return err
 	}
@@ -78,16 +77,16 @@ func UnaryClientInterceptor(log *logger.Logger) grpc.UnaryClientInterceptor {
 
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
-		fields := []zapcore.Field{
-			zap.Stringer(meta.DurationKey, time.Since(start)),
-			zap.String(meta.ServiceKey, service),
-			zap.String(meta.PathKey, fullMethod),
+		attrs := []slog.Attr{
+			slog.String(meta.DurationKey, time.Since(start).String()),
+			slog.String(meta.ServiceKey, service),
+			slog.String(meta.PathKey, fullMethod),
 		}
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(meta.CodeKey, code))
+		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogFunc(ctx, CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
+		log.LogAttrs(ctx, CodeToLevel(code), message(conn.Target()+fullMethod), err, attrs...)
 
 		return err
 	}
@@ -103,33 +102,33 @@ func StreamClientInterceptor(log *logger.Logger) grpc.StreamClientInterceptor {
 
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
-		fields := []zapcore.Field{
-			zap.Stringer(meta.DurationKey, time.Since(start)),
-			zap.String(meta.ServiceKey, service),
-			zap.String(meta.PathKey, fullMethod),
+		attrs := []slog.Attr{
+			slog.String(meta.DurationKey, time.Since(start).String()),
+			slog.String(meta.ServiceKey, service),
+			slog.String(meta.PathKey, fullMethod),
 		}
 
 		code := status.Code(err)
-		fields = append(fields, zap.Any(meta.CodeKey, code))
+		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
 
-		log.LogFunc(ctx, CodeToLogFunc(code, log), message(conn.Target()+fullMethod), err, fields...)
+		log.LogAttrs(ctx, CodeToLevel(code), message(conn.Target()+fullMethod), err, attrs...)
 
 		return stream, err
 	}
 }
 
-// CodeToLogFunc for logger.
+// CodeToLevel translates a gRPC status code to a slog.Level.
 //
 //nolint:exhaustive
-func CodeToLogFunc(code codes.Code, logger *logger.Logger) logger.LogFunc {
+func CodeToLevel(code codes.Code) slog.Level {
 	switch code {
 	case codes.OK:
-		return logger.Info
+		return slog.LevelInfo
 	case codes.Canceled, codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.Unauthenticated,
 		codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange:
-		return logger.Warn
+		return slog.LevelWarn
 	default:
-		return logger.Error
+		return slog.LevelError
 	}
 }
 

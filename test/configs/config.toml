@@ -64,6 +64,7 @@ url = "../test/secrets/pg"
 url = "../test/secrets/pg"
 
 [telemetry.logger]
+kind = "stdout"
 level = "info"
 
 [telemetry.metrics]
@@ -74,7 +75,7 @@ kind = "otlp"
 url = "http://localhost:4318/v1/traces"
 
 [telemetry.tracer.headers]
-Authorization = "../test/secrets/tracer"
+Authorization = "../test/secrets/telemetry"
 
 [time]
 kind = "nts"

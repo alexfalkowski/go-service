@@ -192,7 +192,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	os := options(opts...)
 
 	if os.logger == nil {
-		os.logger = NewLogger(lc)
+		os.logger = NewLogger(lc, NewOTLPLoggerConfig())
 	}
 
 	tranConfig := transportConfig(os)

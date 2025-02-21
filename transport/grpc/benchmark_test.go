@@ -92,7 +92,7 @@ func BenchmarkGRPC(b *testing.B) {
 func BenchmarkLogGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 	lc := fxtest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -131,7 +131,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 func BenchmarkTraceGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 	tc := test.NewOTLPTracerConfig()
 	lc := fxtest.NewLifecycle(b)
 	tracer := test.NewTracer(lc, tc, logger)
