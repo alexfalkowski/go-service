@@ -2,16 +2,16 @@ package sync
 
 import "bytes"
 
-// BufferPool for sync.
-type BufferPool struct {
-	pool *Pool[bytes.Buffer]
-}
-
 // NewBufferPool for sync.
 func NewBufferPool() *BufferPool {
 	pool := NewPool[bytes.Buffer]()
 
 	return &BufferPool{pool: pool}
+}
+
+// BufferPool for sync.
+type BufferPool struct {
+	pool *Pool[bytes.Buffer]
 }
 
 // Get a new buffer.

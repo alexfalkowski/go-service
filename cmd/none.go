@@ -9,13 +9,13 @@ import (
 // ErrInvalidLocation for cmd.
 var ErrInvalidLocation = errors.New("invalid location (format kind:location)")
 
-// None for cmd.
-type None struct{}
-
 // NewNone for cmd.
 func NewNone() *None {
 	return &None{}
 }
+
+// None for cmd.
+type None struct{}
 
 // Read for none.
 func (*None) Read() (string, error) {
