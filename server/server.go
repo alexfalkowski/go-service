@@ -2,16 +2,16 @@ package server
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 // NewServer that can start and stop an underlying server.
-func NewServer(svc string, srv Serverer, logger *logger.Logger, sh fx.Shutdowner) *Server {
-	return &Server{name: svc, serverer: srv, logger: logger, sh: sh}
+func NewServer(name string, serverer Serverer, logger *logger.Logger, sh fx.Shutdowner) *Server {
+	return &Server{name: name, serverer: serverer, logger: logger, sh: sh}
 }
 
 // Server is a generic server.
@@ -32,17 +32,17 @@ func (s *Server) Start() {
 }
 
 func (s *Server) start() {
-	addr := zap.Stringer("addr", s.serverer)
+	addr := slog.String("addr", s.serverer.String())
 
 	s.log(func(l *logger.Logger) {
-		l.Info("starting server", addr, zap.String(meta.ServiceKey, s.name))
+		l.Info("starting server", addr, slog.String(meta.ServiceKey, s.name))
 	})
 
 	if err := s.serverer.Serve(); err != nil {
-		serr := s.sh.Shutdown()
+		_ = s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", zap.String(meta.ServiceKey, s.name), addr, zap.Error(err), zap.NamedError("shutdown_error", serr))
+			l.Error("could not start server", slog.String(meta.ServiceKey, s.name), addr, slog.String("error", err.Error()))
 		})
 	}
 }
@@ -53,10 +53,10 @@ func (s *Server) Stop(ctx context.Context) {
 		return
 	}
 
-	err := s.serverer.Shutdown(ctx)
+	_ = s.serverer.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("stopping server", zap.String(meta.ServiceKey, s.name), zap.Error(err))
+		l.Info("stopping server", slog.String(meta.ServiceKey, s.name))
 	})
 }
 

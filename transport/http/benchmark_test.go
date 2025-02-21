@@ -100,7 +100,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
@@ -142,7 +142,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	tc := test.NewOTLPTracerConfig()
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 	tracer := test.NewTracer(lc, tc, logger)
 	cfg := test.NewInsecureTransportConfig()
 
@@ -183,7 +183,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 func BenchmarkRoute(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -217,7 +217,7 @@ func BenchmarkRoute(b *testing.B) {
 func BenchmarkRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -251,7 +251,7 @@ func BenchmarkRPC(b *testing.B) {
 func BenchmarkProtobuf(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger := logger.NewLogger(logger.Params{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()

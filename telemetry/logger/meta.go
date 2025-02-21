@@ -2,20 +2,19 @@ package logger
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/alexfalkowski/go-service/meta"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // Meta for logger.
-func Meta(ctx context.Context) []zapcore.Field {
+func Meta(ctx context.Context) []slog.Attr {
 	strings := meta.CamelStrings(ctx, "")
-	fields := make([]zapcore.Field, len(strings))
+	fields := make([]slog.Attr, len(strings))
 	index := 0
 
 	for k, v := range strings {
-		fields[index] = zap.String(k, v)
+		fields[index] = slog.String(k, v)
 		index++
 	}
 

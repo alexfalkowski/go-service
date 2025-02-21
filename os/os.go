@@ -5,8 +5,13 @@ import (
 	"path/filepath"
 )
 
-// Args is an alias for os.Args.
-var Args = os.Args
+var (
+	// Args is an alias for os.Args.
+	Args = os.Args
+
+	// Stdout is an alias for os.Stdout.
+	Stdout = os.Stdout
+)
 
 // ExecutableName of the running application.
 func ExecutableName() string {

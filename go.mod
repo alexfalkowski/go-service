@@ -47,21 +47,24 @@ require (
 	github.com/spf13/pflag v1.0.6
 	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20250216154903-8707e00bdbae
 	github.com/urfave/negroni/v3 v3.1.1
+	go.opentelemetry.io/contrib/bridges/otelslog v0.9.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.59.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.59.0
 	go.opentelemetry.io/otel v1.34.0
+	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.10.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.34.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.34.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.34.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.56.0
+	go.opentelemetry.io/otel/log v0.10.0
 	go.opentelemetry.io/otel/metric v1.34.0
 	go.opentelemetry.io/otel/sdk v1.34.0
+	go.opentelemetry.io/otel/sdk/log v0.10.0
 	go.opentelemetry.io/otel/sdk/metric v1.34.0
 	go.opentelemetry.io/otel/trace v1.34.0
 	go.uber.org/automaxprocs v1.6.0
 	go.uber.org/dig v1.18.0
 	go.uber.org/fx v1.23.0
-	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.33.0
 	golang.org/x/net v0.35.0
 	google.golang.org/grpc v1.70.0
@@ -122,6 +125,7 @@ require (
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
