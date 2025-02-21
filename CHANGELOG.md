@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.461.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.461.0) - 2025-02-21
+
+- [`4040dc3`](https://github.com/alexfalkowski/go-service/commit/4040dc3bac6c377c83cba6839737d30d2a09e948) feat(telemetry): use log/slog (#1357)
+- [`18e2f3c`](https://github.com/alexfalkowski/go-service/commit/18e2f3c7607a40c8bc7a42506dc26054753a90d5) refactor(all): move types (#1355)
+- [`94b300b`](https://github.com/alexfalkowski/go-service/commit/94b300beea11bd8a1c21bde70f68b0edc203d929) docs(diagrams): update with make (#1354)
+- [`49628f4`](https://github.com/alexfalkowski/go-service/commit/49628f48f6a38f5b6863bcd8d8700bce3915b4d5) refactor(all): use single line import (#1353)
+- [`78f4736`](https://github.com/alexfalkowski/go-service/commit/78f473631456a396ba8d59a5bd7ba42560fec1cc) refactor(telemetry): rename variables (#1351)
+- [`f0d0969`](https://github.com/alexfalkowski/go-service/commit/f0d09696d44e3d50dd90677318a0d5dcb976e5b1) refactor(telemetry): move to one line (#1350)
+- [`d8c263a`](https://github.com/alexfalkowski/go-service/commit/d8c263a14715a9e981cd920fcd64de80e97622a5) build(deps): bump bin from `8592a53` to `c8030a1` (#1348)
+
 ## [v1.460.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.460.0) - 2025-02-20
 
 - [`fdcfb8f`](https://github.com/alexfalkowski/go-service/commit/fdcfb8f25179702e48dcfa1bcc3d2d1b0eb96d73) feat(telemetry): move meta to log func (#1349)
