@@ -3,18 +3,9 @@ package logger
 import (
 	"context"
 	"log/slog"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/io"
 	"github.com/alexfalkowski/go-service/os"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
-	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
-	"go.opentelemetry.io/otel/log/global"
-	"go.opentelemetry.io/otel/sdk/log"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	"go.uber.org/fx"
 )
 
@@ -36,16 +27,16 @@ func NewLogger(params Params) (*Logger, error) {
 
 	switch {
 	case !IsEnabled(params.Config):
-		logger = noopLogger()
+		logger = newNoopLogger()
 	case params.Config.IsOTLP():
-		l, err := otlpLogger(params)
+		l, err := newOtlpLogger(params)
 		if err != nil {
 			return nil, err
 		}
 
 		logger = l
 	case params.Config.IsStdout():
-		logger = stdoutLogger(params)
+		logger = newStdoutLogger(params)
 	}
 
 	return &Logger{logger}, nil
@@ -67,66 +58,4 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, at
 	attrs = append(attrs, Error(msg.Error))
 
 	l.Logger.LogAttrs(ctx, level, msg.Text, attrs...)
-}
-
-func noopLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(&io.NoopWriter{}, nil))
-}
-
-func stdoutLogger(params Params) *slog.Logger {
-	opts := &slog.HandlerOptions{
-		Level: levels[params.Config.Level],
-		ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
-			if attr.Key == slog.LevelKey {
-				level := attr.Value.Any().(slog.Level)
-				attr.Value = slog.StringValue(strings.ToLower(level.String()))
-			}
-
-			return attr
-		},
-	}
-
-	var handler slog.Handler
-
-	if params.Environment.IsDevelopment() {
-		handler = slog.NewTextHandler(os.Stdout, opts)
-	} else {
-		handler = slog.NewJSONHandler(os.Stdout, opts)
-	}
-
-	return slog.New(handler).With(
-		slog.String("name", params.Name.String()),
-		slog.String("version", params.Version.String()),
-		slog.String("environment", params.Environment.String()),
-	)
-}
-
-func otlpLogger(params Params) (*slog.Logger, error) {
-	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
-		return nil, errors.Prefix("tracer", err)
-	}
-
-	client, _ := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
-	attrs := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceName(params.Name.String()),
-		semconv.ServiceVersion(params.Version.String()),
-		semconv.DeploymentEnvironmentName(params.Environment.String()),
-	)
-
-	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(client)), log.WithResource(attrs))
-
-	global.SetLoggerProvider(provider)
-	slog.SetLogLoggerLevel(levels[params.Config.Level])
-
-	params.Lifecycle.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			_ = provider.Shutdown(ctx)
-			_ = client.Shutdown(ctx)
-
-			return nil
-		},
-	})
-
-	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
 }

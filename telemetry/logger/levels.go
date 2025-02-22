@@ -8,3 +8,7 @@ var levels = map[string]slog.Level{
 	"warn":  slog.LevelWarn,
 	"error": slog.LevelError,
 }
+
+func level(cfg *Config) slog.Level {
+	return levels[cfg.Level]
+}
