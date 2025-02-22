@@ -1,6 +1,7 @@
 package telemetry
 
 import (
+	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -12,4 +13,5 @@ var Module = fx.Options(
 	logger.Module,
 	metrics.Module,
 	tracer.Module,
+	errors.Module,
 )
