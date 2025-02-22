@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
@@ -105,6 +106,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
 	transport.Register(lc, []transport.Server{g})
+	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -132,9 +134,8 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	b.ReportAllocs()
 
 	logger, _ := logger.NewLogger(logger.Params{})
-	tc := test.NewOTLPTracerConfig()
 	lc := fxtest.NewLifecycle(b)
-	tracer := test.NewTracer(lc, tc, logger)
+	tracer := test.NewTracer(lc, nil)
 	cfg := test.NewInsecureTransportConfig()
 
 	g, err := tg.NewServer(tg.ServerParams{
@@ -146,6 +147,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
 	transport.Register(lc, []transport.Server{g})
+	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
 	b.ResetTimer()

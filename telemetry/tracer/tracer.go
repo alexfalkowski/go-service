@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -36,7 +35,6 @@ type Params struct {
 	Lifecycle   fx.Lifecycle
 	FileSystem  os.FileSystem
 	Config      *Config
-	Logger      *logger.Logger
 	Environment env.Environment
 	Version     env.Version
 	Name        env.Name
@@ -65,7 +63,6 @@ func NewTracer(params Params) (*Tracer, error) {
 	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(provider)
-	otel.SetErrorHandler(&errorHandler{logger: params.Logger})
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -106,12 +103,4 @@ func (t *Tracer) StartServer(ctx context.Context, spanName string, attrs ...attr
 	ctx = WithTraceID(ctx, span)
 
 	return ctx, span
-}
-
-type errorHandler struct {
-	logger *logger.Logger
-}
-
-func (e *errorHandler) Handle(err error) {
-	e.logger.Error("tracer: global error", "error", err)
 }

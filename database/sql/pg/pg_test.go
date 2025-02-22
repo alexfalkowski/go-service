@@ -491,7 +491,7 @@ func TestInvalidSQLPort(t *testing.T) {
 			lc := fxtest.NewLifecycle(t)
 			logger := test.NewLogger(lc, test.NewStdoutLoggerConfig())
 			tc := test.NewOTLPTracerConfig()
-			tracer := test.NewTracer(lc, tc, logger)
+			tracer := test.NewTracer(lc, tc)
 
 			pg.Register(tracer, logger)
 

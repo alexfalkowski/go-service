@@ -22,6 +22,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -246,6 +247,7 @@ func (w *World) Register() {
 	rest.Register(w.ServeMux, Content)
 	rpc.Register(w.ServeMux, Content, Pool)
 	pg.Register(w.NewTracer(), w.Logger)
+	errors.Register(errors.NewHandler(w.Logger))
 }
 
 // ServerHost for world.
@@ -404,7 +406,7 @@ func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tr
 		Encoder:    Encoder,
 		Pool:       Pool,
 		Cache:      cachego,
-		Tracer:     NewTracer(lc, tracer, logger),
+		Tracer:     NewTracer(lc, tracer),
 		Logger:     logger,
 		Meter:      meter,
 	}

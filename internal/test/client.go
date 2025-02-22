@@ -33,7 +33,7 @@ type Client struct {
 
 // NewTracer for client.
 func (c *Client) NewTracer() *tracer.Tracer {
-	return NewTracer(c.Lifecycle, c.Tracer, c.Logger)
+	return NewTracer(c.Lifecycle, c.Tracer)
 }
 
 // NewHTTP client for test.
