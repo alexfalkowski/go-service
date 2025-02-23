@@ -31,7 +31,7 @@ func NewLogger(params Params) (*Logger, error) {
 	case params.Config.IsOTLP():
 		l, err := newOtlpLogger(params)
 		if err != nil {
-			return nil, err
+			return nil, prefix(err)
 		}
 
 		logger = l
