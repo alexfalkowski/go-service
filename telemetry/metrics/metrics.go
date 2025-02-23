@@ -1,85 +1,65 @@
 package metrics
 
 import (
-	"context"
-	"errors"
-
 	"github.com/alexfalkowski/go-service/env"
-	se "github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/os"
-	"go.opentelemetry.io/contrib/instrumentation/host"
-	"go.opentelemetry.io/contrib/instrumentation/runtime"
-	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
-	"go.opentelemetry.io/otel/exporters/prometheus"
-	om "go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/metric/noop"
-	sm "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/runtime"
+	"go.opentelemetry.io/otel/metric"
 )
 
-// NewReader for metrics. A nil reader means disabled.
-func NewReader(fs os.FileSystem, cfg *Config) (sm.Reader, error) {
-	switch {
-	case !IsEnabled(cfg):
-		return nil, nil
-	case cfg.IsOTLP():
-		if err := cfg.Headers.Secrets(fs); err != nil {
-			return nil, se.Prefix("metrics", err)
-		}
-
-		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
-
-		return sm.NewPeriodicReader(r), se.Prefix("metrics", err)
-	case cfg.IsPrometheus():
-		e, err := prometheus.New()
-
-		return e, se.Prefix("metrics", err)
-	default:
-		return nil, nil
-	}
+// NewMeter for metrics.
+func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
+	return &Meter{provider.Meter(name.String())}
 }
 
-// MeterProviderParams for metrics.
-type MeterProviderParams struct {
-	fx.In
-
-	Lifecycle   fx.Lifecycle
-	Config      *Config
-	Reader      sm.Reader
-	Environment env.Environment
-	Version     env.Version
-	Name        env.Name
+// Meter using otel.
+type Meter struct {
+	metric.Meter
 }
 
-// NewMeterProvider for metrics.
-func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
-	if !IsEnabled(params.Config) || params.Reader == nil {
-		return &noop.MeterProvider{}
-	}
+// MustInt64ObservableCounter for metrics.
+func (m *Meter) MustInt64ObservableCounter(name, description string) metric.Int64ObservableCounter {
+	c, err := m.Int64ObservableCounter(name, metric.WithDescription(description))
+	runtime.Must(err)
 
-	name := params.Name.String()
-	attrs := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.ServiceName(name),
-		semconv.ServiceVersion(params.Version.String()),
-		semconv.DeploymentEnvironmentName(params.Environment.String()),
-	)
-	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
+	return c
+}
 
-	params.Lifecycle.Append(fx.Hook{
-		OnStart: func(_ context.Context) error {
-			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
+// MustFloat64ObservableCounter for metrics.
+func (m *Meter) MustFloat64ObservableCounter(name, description string) metric.Float64ObservableCounter {
+	c, err := m.Float64ObservableCounter(name, metric.WithDescription(description))
+	runtime.Must(err)
 
-			return se.Prefix("metrics", err)
-		},
-		OnStop: func(ctx context.Context) error {
-			_ = provider.Shutdown(ctx)
+	return c
+}
 
-			return nil
-		},
-	})
+// MustInt64Counter for metrics.
+func (m *Meter) MustInt64Counter(name, description string) metric.Int64Counter {
+	c, err := m.Int64Counter(name, metric.WithDescription(description))
+	runtime.Must(err)
 
-	return provider
+	return c
+}
+
+// MustFloat64Histogram for metrics.
+func (m *Meter) MustFloat64Histogram(name, description string) metric.Float64Histogram {
+	h, err := m.Float64Histogram(name, metric.WithDescription(description), metric.WithUnit("s"))
+	runtime.Must(err)
+
+	return h
+}
+
+// MustFloat64Histogram for metrics.
+func (m *Meter) MustInt64ObservableGauge(name, description string) metric.Int64ObservableGauge {
+	g, err := m.Int64ObservableGauge(name, metric.WithDescription(description))
+	runtime.Must(err)
+
+	return g
+}
+
+// MustRegisterCallback for metrics.
+func (m *Meter) MustRegisterCallback(f metric.Callback, instruments ...metric.Observable) metric.Registration {
+	reg, err := m.RegisterCallback(f, instruments...)
+	runtime.Must(err)
+
+	return reg
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/errors"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
@@ -16,7 +15,7 @@ import (
 
 func newOtlpLogger(params Params) (*slog.Logger, error) {
 	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
-		return nil, errors.Prefix("logger", err)
+		return nil, err
 	}
 
 	client, _ := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
