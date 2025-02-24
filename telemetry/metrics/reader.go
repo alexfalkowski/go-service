@@ -1,11 +1,7 @@
 package metrics
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-service/os"
-	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
-	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
@@ -19,13 +15,9 @@ func NewReader(fs os.FileSystem, cfg *Config) (metric.Reader, error) {
 			return nil, prefix(err)
 		}
 
-		r, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
-
-		return metric.NewPeriodicReader(r), prefix(err)
+		return metric.NewPeriodicReader(newOtlpExporter(cfg)), nil
 	case cfg.IsPrometheus():
-		e, err := prometheus.New()
-
-		return e, prefix(err)
+		return newPrometheusExporter(), nil
 	default:
 		return nil, nil
 	}
