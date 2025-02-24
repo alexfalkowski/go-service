@@ -34,13 +34,14 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 	}
 
 	name := params.Name.String()
+	reader := params.Reader
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(name),
 		semconv.ServiceVersion(params.Version.String()),
 		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)
-	provider := sm.NewMeterProvider(sm.WithReader(params.Reader), sm.WithResource(attrs))
+	provider := sm.NewMeterProvider(sm.WithReader(reader), sm.WithResource(attrs))
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
@@ -50,6 +51,7 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		},
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
+			_ = reader.Shutdown(ctx)
 
 			return nil
 		},

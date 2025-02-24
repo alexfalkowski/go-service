@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/runtime"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
@@ -18,7 +19,7 @@ func newOtlpLogger(params Params) (*slog.Logger, error) {
 		return nil, err
 	}
 
-	client, _ := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
+	exporter := newLogExporter(params.Config)
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(params.Name.String()),
@@ -26,17 +27,24 @@ func newOtlpLogger(params Params) (*slog.Logger, error) {
 		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)
 
-	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(client)), log.WithResource(attrs))
+	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter)), log.WithResource(attrs))
 	global.SetLoggerProvider(provider)
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
-			_ = client.Shutdown(ctx)
+			_ = exporter.Shutdown(ctx)
 
 			return nil
 		},
 	})
 
 	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
+}
+
+func newLogExporter(cfg *Config) log.Exporter {
+	exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
+	runtime.Must(prefix(err))
+
+	return exporter
 }
