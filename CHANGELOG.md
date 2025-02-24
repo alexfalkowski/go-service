@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.463.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.463.0) - 2025-02-24
+
+- [`1540d3c`](https://github.com/alexfalkowski/go-service/commit/1540d3c5f30801a48fc7e6e32c5c64e2308defcc) feat(deps): bump github.com/KimMachineGun/automemlimit from 0.7.0 to 0.7.1 (#1367)
+- [`3e52a13`](https://github.com/alexfalkowski/go-service/commit/3e52a13b6423685293d3e462a2e261e5a2e076d8) refactor(tracer): remove unused file (#1364)
+- [`4c2d03e`](https://github.com/alexfalkowski/go-service/commit/4c2d03e4d0d331aafdf4b4b7d487713c8eab0536) refactor(telemetry): split files (#1363)
+
 ## [v1.462.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.462.0) - 2025-02-22
 
 - [`f9ff2b6`](https://github.com/alexfalkowski/go-service/commit/f9ff2b668ef4b04222bbffd97c47b339a961d670) feat(telemetry): separate error handling (#1362)
