@@ -115,6 +115,6 @@ func options(opts []fx.Option) []fx.Option {
 	return append(opts, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
 }
 
-func prefix(p string, err error) error {
-	return errors.Prefix(p, dig.RootCause(err))
+func prefix(prefix string, err error) error {
+	return errors.Prefix(prefix, dig.RootCause(err))
 }
