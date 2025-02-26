@@ -111,8 +111,8 @@ func RunClient(ctx context.Context, name string, opts ...fx.Option) error {
 	return prefix(name, app.Stop(ctx))
 }
 
-func options(opts []fx.Option) []fx.Option {
-	return append(opts, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
+func options(options []fx.Option) []fx.Option {
+	return append(options, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger, fx.RecoverFromPanics())
 }
 
 func prefix(prefix string, err error) error {
