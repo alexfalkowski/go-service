@@ -15,7 +15,6 @@ import (
 
 // Module for packages in this library.
 var Module = fx.Options(
-	fx.NopLogger,
 	os.Module,
 	env.Module,
 	runtime.Module,
