@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.469.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.469.0) - 2025-02-26
+
+- [`d5c491c`](https://github.com/alexfalkowski/go-service/commit/d5c491c128788612a39533e725ab2a491e9478eb) feat(cache): register a var (#1373)
+- [`5f75752`](https://github.com/alexfalkowski/go-service/commit/5f75752e20ba8492e21ce58d67e41c06dbcc8410) docs(diagrams): update with make (#1372)
+
 ## [v1.468.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.468.0) - 2025-02-26
 
 - [`fd6c684`](https://github.com/alexfalkowski/go-service/commit/fd6c684a22bdf3ad88f9941eb5495eaee5bdd3c9) feat(cmd): since we panic, we should let fx handle it (#1371)
