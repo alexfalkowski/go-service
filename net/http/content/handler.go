@@ -17,7 +17,7 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 
 // NewRequestHandler for content.
 func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler RequestHandler[Req, Res]) http.HandlerFunc {
-	return contentHanler(cont, prefix, func(ctx context.Context) (*Res, error) {
+	return newHandler(cont, prefix, func(ctx context.Context) (*Res, error) {
 		request := ptr.Zero[Req]()
 
 		e := hc.Encoder(ctx)
@@ -41,12 +41,12 @@ type Handler[Res any] func(ctx context.Context) (*Res, error)
 
 // NewHandler for content.
 func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) http.HandlerFunc {
-	return contentHanler(cont, prefix, func(ctx context.Context) (*Res, error) {
+	return newHandler(cont, prefix, func(ctx context.Context) (*Res, error) {
 		return handler(ctx)
 	})
 }
 
-func contentHanler[Res any](cont *Content, prefix string, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
+func newHandler[Res any](cont *Content, prefix string, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
