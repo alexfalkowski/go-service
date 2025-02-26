@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.468.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.468.0) - 2025-02-26
+
+- [`fd6c684`](https://github.com/alexfalkowski/go-service/commit/fd6c684a22bdf3ad88f9941eb5495eaee5bdd3c9) feat(cmd): since we panic, we should let fx handle it (#1371)
+- [`034b366`](https://github.com/alexfalkowski/go-service/commit/034b366bdfbf572dc09bf12d3c93459e3032db05) refactor(cmd): rename var from p to prefix (#1370)
+
 ## [v1.467.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.467.0) - 2025-02-25
 
 - [`74a6f12`](https://github.com/alexfalkowski/go-service/commit/74a6f121bb2ef25f72ffeb8bc6d0b61bab5de718) feat(deps): bump golang.org/x/crypto from 0.34.0 to 0.35.0 (#1369)
