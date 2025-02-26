@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package cache_test
 
 import (
@@ -39,14 +38,15 @@ func TestValidCache(t *testing.T) {
 				Meter:      world.Server.Meter,
 			}
 
-			c, err := cache.New(params)
+			kind, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(kind)
 			world.RequireStart()
 
 			Convey("When I save an item", func() {
 				value := "hello?"
-				err := c.Persist(t.Context(), "test", &value, time.Minute)
+				err := kind.Persist(t.Context(), "test", &value, time.Minute)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -56,10 +56,10 @@ func TestValidCache(t *testing.T) {
 			Convey("When I get an item", func() {
 				value := "wassup?"
 
-				err := cache.Persist(t.Context(), c, "test", &value, time.Minute)
+				err := cache.Persist(t.Context(), "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				v, err := cache.Get[string](t.Context(), c, "test")
+				v, err := cache.Get[string](t.Context(), "test")
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a value", func() {
@@ -67,7 +67,7 @@ func TestValidCache(t *testing.T) {
 				})
 			})
 
-			err = c.Remove(t.Context(), "test")
+			err = kind.Remove(t.Context(), "test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -177,13 +177,14 @@ func TestErroneousSave(t *testing.T) {
 				Meter:      world.Server.Meter,
 			}
 
-			c, err := cache.New(params)
+			kind, err := cache.New(params)
 			So(err, ShouldBeNil)
 
+			cache.Register(kind)
 			world.RequireStart()
 
 			Convey("When I try to save a value", func() {
-				err := cache.Persist(t.Context(), c, "test", ptr.Value("test"), time.Minute)
+				err := cache.Persist(t.Context(), "test", ptr.Value("test"), time.Minute)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)

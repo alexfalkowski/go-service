@@ -16,23 +16,9 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/faabiosr/cachego"
 	"go.uber.org/fx"
 )
-
-// Get a value from key.
-func Get[T any](ctx context.Context, cache config.Cache, key string) (*T, error) {
-	value := ptr.Zero[T]()
-	err := cache.Get(ctx, key, value)
-
-	return value, err
-}
-
-// Persist a value to the key with a TTL.
-func Persist[T any](ctx context.Context, cache config.Cache, key string, value *T, ttl time.Duration) error {
-	return cache.Persist(ctx, key, value, ttl)
-}
 
 // Params for cache.
 type Params struct {
