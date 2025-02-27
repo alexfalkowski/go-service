@@ -45,6 +45,10 @@ func init() {
 	tracer.Register()
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
+
+	tracer, _ := tracer.NewTracer(tracer.Params{})
+	logger, _ := logger.NewLogger(logger.Params{})
+	pg.Register(tracer, logger)
 }
 
 // WorldOption for test.
@@ -246,7 +250,6 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 func (w *World) Register() {
 	rest.Register(w.ServeMux, Content)
 	rpc.Register(w.ServeMux, Content, Pool)
-	pg.Register(w.NewTracer(), w.Logger)
 	errors.Register(errors.NewHandler(w.Logger))
 }
 
