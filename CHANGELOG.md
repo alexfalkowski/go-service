@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.470.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.470.0) - 2025-02-28
+
+- [`07eb231`](https://github.com/alexfalkowski/go-service/commit/07eb2311d3590fb4592813e7318082a40188c725) feat(pg): allow register to be called multiple times (#1377)
+- [`1928bf4`](https://github.com/alexfalkowski/go-service/commit/1928bf45645a953c661e620f65fffde50c30ff4b) refactor(content): rename func to solve spelling mistake (#1375)
+
 ## [v1.469.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.469.0) - 2025-02-26
 
 - [`d5c491c`](https://github.com/alexfalkowski/go-service/commit/d5c491c128788612a39533e725ab2a491e9478eb) feat(cache): register a var (#1373)
