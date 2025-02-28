@@ -1,9 +1,10 @@
-package pg
+package metrics
 
-import "go.uber.org/fx"
+import (
+	"go.uber.org/fx"
+)
 
 // Module for fx.
 var Module = fx.Options(
 	fx.Invoke(Register),
-	fx.Provide(Open),
 )
