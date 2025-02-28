@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
@@ -17,13 +18,29 @@ import (
 	"go.uber.org/fx"
 )
 
-// Register the driver for SQL.
-func Register(name string, driver driver.Driver, trace *tracer.Tracer, log *logger.Logger) {
+// Driver is an alias for the driver.Driver type.
+type Driver = driver.Driver
+
+// Register registers a new driver.
+func Register(name string, driver Driver) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = runtime.ConvertRecover(r)
+		}
+	}()
+
+	sql.Register(name, driver)
+
+	return
+}
+
+// New creates a new driver.
+func New(name string, driver Driver, trace *tracer.Tracer, log *logger.Logger) Driver {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
 	interceptor = tt.NewInterceptor(name, trace, interceptor)
 	interceptor = tl.NewInterceptor(name, log, interceptor)
 
-	sql.Register(name, sqlmw.Driver(driver, interceptor))
+	return sqlmw.Driver(driver, interceptor)
 }
 
 // Open a DB pool.

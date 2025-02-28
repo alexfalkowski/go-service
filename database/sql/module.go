@@ -2,12 +2,12 @@ package sql
 
 import (
 	"github.com/alexfalkowski/go-service/database/sql/pg"
-	"github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/database/sql/telemetry"
 	"go.uber.org/fx"
 )
 
 // Module for fx.
 var Module = fx.Options(
 	pg.Module,
-	fx.Invoke(metrics.Register),
+	telemetry.Module,
 )
