@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.471.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.471.0) - 2025-03-01
+
+- [`90505ae`](https://github.com/alexfalkowski/go-service/commit/90505ae5c7d67e6fe96cd9fbd3c1246b6542016c) feat(deps): upgraded github.com/shirou/gopsutil/v4 v4.25.1 => v4.25.2 (#1379)
+- [`6a973dd`](https://github.com/alexfalkowski/go-service/commit/6a973ddd5550ac033cf55a2dfaf9b24e7c09323d) build(deps): bump bin from `c8030a1` to `637442f` (#1378)
+
 ## [v1.470.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.470.0) - 2025-02-28
 
 - [`07eb231`](https://github.com/alexfalkowski/go-service/commit/07eb2311d3590fb4592813e7318082a40188c725) feat(pg): allow register to be called multiple times (#1377)
