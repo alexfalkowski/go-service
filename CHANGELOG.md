@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.472.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.472.0) - 2025-03-02
+
+- [`641d582`](https://github.com/alexfalkowski/go-service/commit/641d582207c4fb0222dc802dacae46b12de02696) feat(runtime): pass logger to memlimit (#1380)
+
 ## [v1.471.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.471.0) - 2025-03-01
 
 - [`90505ae`](https://github.com/alexfalkowski/go-service/commit/90505ae5c7d67e6fe96cd9fbd3c1246b6542016c) feat(deps): upgraded github.com/shirou/gopsutil/v4 v4.25.1 => v4.25.2 (#1379)
