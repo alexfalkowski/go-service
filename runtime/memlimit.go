@@ -1,8 +1,14 @@
 package runtime
 
-import "github.com/KimMachineGun/automemlimit/memlimit"
+import (
+	"log/slog"
+
+	"github.com/KimMachineGun/automemlimit/memlimit"
+)
 
 // RegisterMemLimit for runtime.
-func RegisterMemLimit() {
-	memlimit.SetGoMemLimitWithEnv()
+func RegisterMemLimit(logger *slog.Logger) error {
+	_, err := memlimit.SetGoMemLimitWithOpts(memlimit.WithLogger(logger))
+
+	return err
 }
