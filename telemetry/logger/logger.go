@@ -40,8 +40,10 @@ func NewLogger(params Params) (*Logger, error) {
 		}
 
 		logger = l
-	case params.Config.IsStdout():
-		logger = newStdoutLogger(params)
+	case params.Config.IsJSON():
+		logger = newJSONLogger(params)
+	case params.Config.IsText():
+		logger = newTextLogger(params)
 	}
 
 	return &Logger{logger}, nil

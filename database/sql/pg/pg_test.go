@@ -489,7 +489,7 @@ func TestInvalidSQLPort(t *testing.T) {
 
 		Convey("When I try to get a database", func() {
 			lc := fxtest.NewLifecycle(t)
-			logger := test.NewLogger(lc, test.NewStdoutLoggerConfig())
+			logger := test.NewLogger(lc, test.NewTextLoggerConfig())
 			tc := test.NewOTLPTracerConfig()
 			tracer := test.NewTracer(lc, tc)
 

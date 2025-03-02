@@ -179,10 +179,18 @@ func NewOTLPLoggerConfig() *logger.Config {
 	}
 }
 
-// NewStdoutLoggerConfig for test.
-func NewStdoutLoggerConfig() *logger.Config {
+// NewTextLoggerConfig for test.
+func NewTextLoggerConfig() *logger.Config {
 	return &logger.Config{
-		Kind:  "stdout",
+		Kind:  "text",
+		Level: "debug",
+	}
+}
+
+// NewJSONLoggerConfig for test.
+func NewJSONLoggerConfig() *logger.Config {
+	return &logger.Config{
+		Kind:  "json",
 		Level: "debug",
 	}
 }

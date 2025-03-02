@@ -171,7 +171,7 @@ func verifyConfig(config *config.Config) {
 	So(config.Limiter.Kind, ShouldEqual, "user-agent")
 	So(config.Limiter.Tokens, ShouldEqual, 10)
 	So(config.Limiter.Interval, ShouldEqual, "1s")
-	So(config.Telemetry.Logger.Kind, ShouldEqual, "stdout")
+	So(config.Telemetry.Logger.Kind, ShouldEqual, "text")
 	So(config.Telemetry.Logger.Level, ShouldEqual, "info")
 	So(config.Telemetry.Metrics.Kind, ShouldEqual, "prometheus")
 	So(config.Time.Kind, ShouldEqual, "nts")

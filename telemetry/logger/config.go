@@ -22,7 +22,12 @@ func (c *Config) IsOTLP() bool {
 	return c.Kind == "otlp"
 }
 
-// IsStdout configuration.
-func (c *Config) IsStdout() bool {
-	return c.Kind == "stdout"
+// IsJSON configuration.
+func (c *Config) IsJSON() bool {
+	return c.Kind == "json"
+}
+
+// IsText configuration.
+func (c *Config) IsText() bool {
+	return c.Kind == "text"
 }
