@@ -21,6 +21,11 @@ type Params struct {
 	Name        env.Name
 }
 
+// NewSlogger returns a new slog.Logger.
+func NewSlogger(logger *Logger) *slog.Logger {
+	return logger.Logger
+}
+
 // NewLogger using zap.
 func NewLogger(params Params) (*Logger, error) {
 	var logger *slog.Logger
