@@ -51,7 +51,7 @@ sql:
     conn_max_lifetime: 1h
 telemetry:
   logger:
-    kind: stdout
+    kind: text
     level: info
   metrics:
     kind: prometheus

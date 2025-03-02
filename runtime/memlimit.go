@@ -7,8 +7,6 @@ import (
 )
 
 // RegisterMemLimit for runtime.
-func RegisterMemLimit(logger *slog.Logger) error {
-	_, err := memlimit.SetGoMemLimitWithOpts(memlimit.WithLogger(logger))
-
-	return err
+func RegisterMemLimit(logger *slog.Logger) {
+	_, _ = memlimit.SetGoMemLimitWithOpts(memlimit.WithLogger(logger))
 }

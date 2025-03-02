@@ -191,14 +191,25 @@ For logging we use [slog](https://pkg.go.dev/log/slog).
 
 We have multiple options for logging.
 
-##### Stdout
+##### JSON
 
 To configure, please specify the following:
 
 ```yaml
 telemetry:
   logger:
-    kind: stdout
+    kind: json
+    level: info
+```
+
+##### Text
+
+To configure, please specify the following:
+
+```yaml
+telemetry:
+  logger:
+    kind: text
     level: info
 ```
 

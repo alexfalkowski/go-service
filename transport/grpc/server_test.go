@@ -16,7 +16,7 @@ func TestServer(t *testing.T) {
 	Convey("Given I have secure credentials", t, func() {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(t)
-		logger := test.NewLogger(lc, test.NewStdoutLoggerConfig())
+		logger := test.NewLogger(lc, test.NewTextLoggerConfig())
 		meter := test.NewPrometheusMeter(lc)
 
 		c := test.NewInsecureTransportConfig()
