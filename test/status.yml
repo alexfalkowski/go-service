@@ -1,9 +1,10 @@
-environment: production
+environment: development
 health:
   duration: 1s
   timeout: 1s
 telemetry:
   logger:
+    kind: text
     level: info
 transport:
   http:
