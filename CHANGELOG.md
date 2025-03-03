@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.476.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.476.0) - 2025-03-03
+
+- [`7f3132f`](https://github.com/alexfalkowski/go-service/commit/7f3132f4ffcbbca9e0fbfa0efb9181ab60b9da53) feat(header): use slices.Contains (#1386)
+
 ## [v1.475.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.475.0) - 2025-03-03
 
 - [`c6b1464`](https://github.com/alexfalkowski/go-service/commit/c6b14647390ca79c2ec5fbae154a9de66ef3776e) feat(os): use []byte for fs operations (#1385)
