@@ -20,7 +20,7 @@ func Attribute(ctx context.Context, key string) Value {
 	return attributes(ctx).Get(key)
 }
 
-// Map for meta.
+// Map is a key-value map.
 type Map map[string]string
 
 // SnakeStrings for meta.
