@@ -11,13 +11,13 @@ type FileMode = os.FileMode
 // FileSystem borrows concepts from io/fs.
 type FileSystem interface {
 	// ReadFile for the path provided.
-	ReadFile(path string) (string, error)
+	ReadFile(name string) ([]byte, error)
 
 	// WriteFile writes data to name.
-	WriteFile(name string, data string, perm FileMode) error
+	WriteFile(name string, data []byte, perm FileMode) error
 
 	// PathExists for the path provided.
-	PathExists(path string) bool
+	PathExists(name string) bool
 
 	// IsNotExist whether the error is os.ErrNotExist.
 	IsNotExist(err error) bool
@@ -32,12 +32,12 @@ func NewFS() FileSystem {
 type SystemFS struct{}
 
 // ReadFile for os.
-func (*SystemFS) ReadFile(path string) (string, error) {
+func (*SystemFS) ReadFile(path string) ([]byte, error) {
 	return ReadFile(path)
 }
 
 // WriteFile for os.
-func (*SystemFS) WriteFile(name string, data string, perm FileMode) error {
+func (*SystemFS) WriteFile(name string, data []byte, perm FileMode) error {
 	return WriteFile(name, data, perm)
 }
 

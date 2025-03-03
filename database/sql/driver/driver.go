@@ -53,7 +53,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 			return nil, err
 		}
 
-		masters[i] = u
+		masters[i] = string(u)
 	}
 
 	slaves := make([]string, len(cfg.Slaves))
@@ -64,7 +64,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 			return nil, err
 		}
 
-		slaves[i] = u
+		slaves[i] = string(u)
 	}
 
 	db, err := connect(name, masters, slaves)

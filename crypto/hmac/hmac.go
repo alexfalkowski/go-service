@@ -32,7 +32,7 @@ func NewSigner(cfg *Config) (*Signer, error) {
 
 	k, err := cfg.GetKey()
 
-	return &Signer{key: []byte(k)}, err
+	return &Signer{key: k}, err
 }
 
 // Signer for hmac.

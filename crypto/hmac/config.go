@@ -15,6 +15,6 @@ type Config struct {
 }
 
 // GetKey for hmac.
-func (c *Config) GetKey() (string, error) {
+func (c *Config) GetKey() ([]byte, error) {
 	return os.ReadFile(c.Key)
 }

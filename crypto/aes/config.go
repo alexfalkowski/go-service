@@ -13,6 +13,6 @@ type Config struct {
 }
 
 // GetKey for aes.
-func (c *Config) GetKey() (string, error) {
+func (c *Config) GetKey() ([]byte, error) {
 	return os.ReadFile(c.Key)
 }

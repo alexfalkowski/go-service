@@ -1,23 +1,23 @@
 package os
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // ReadFile for the path provided.
-func ReadFile(path string) (string, error) {
-	b, err := os.ReadFile(filepath.Clean(path))
+func ReadFile(name string) ([]byte, error) {
+	b, err := os.ReadFile(filepath.Clean(name))
 
-	return strings.TrimSpace(string(b)), err
+	return bytes.TrimSpace(b), err
 }
 
 // WriteFile writes data to name with perm.
-func WriteFile(name string, data string, perm FileMode) error {
-	data = strings.TrimSpace(data)
+func WriteFile(name string, data []byte, perm FileMode) error {
+	data = bytes.TrimSpace(data)
 
-	return os.WriteFile(name, []byte(data), perm)
+	return os.WriteFile(name, data, perm)
 }
 
 // Remove a file or empty folder.

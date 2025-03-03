@@ -18,12 +18,12 @@ func NewNone() *None {
 type None struct{}
 
 // Read for none.
-func (*None) Read() (string, error) {
-	return "", ErrInvalidLocation
+func (*None) Read() ([]byte, error) {
+	return nil, ErrInvalidLocation
 }
 
 // Write for none.
-func (*None) Write(_ string, _ os.FileMode) error {
+func (*None) Write(_ []byte, _ os.FileMode) error {
 	return ErrInvalidLocation
 }
 

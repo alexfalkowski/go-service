@@ -37,7 +37,7 @@ func NewCipher(gen *rand.Generator, cfg *Config) (*Cipher, error) {
 
 	k, err := cfg.GetKey()
 
-	return &Cipher{gen: gen, key: []byte(k)}, err
+	return &Cipher{gen: gen, key: k}, err
 }
 
 // Cipher for aes.

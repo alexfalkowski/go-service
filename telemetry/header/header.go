@@ -17,7 +17,7 @@ func (m Map) Secrets(fs os.FileSystem) error {
 			return err
 		}
 
-		m[k] = f
+		m[k] = string(f)
 	}
 
 	return nil

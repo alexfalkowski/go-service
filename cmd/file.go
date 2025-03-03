@@ -16,12 +16,12 @@ type File struct {
 }
 
 // Read for file.
-func (f *File) Read() (string, error) {
+func (f *File) Read() ([]byte, error) {
 	return f.fs.ReadFile(f.location)
 }
 
 // Write for file.
-func (f *File) Write(data string, mode os.FileMode) error {
+func (f *File) Write(data []byte, mode os.FileMode) error {
 	return f.fs.WriteFile(f.location, data, mode)
 }
 
