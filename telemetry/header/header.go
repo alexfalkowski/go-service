@@ -2,22 +2,22 @@ package header
 
 import "github.com/alexfalkowski/go-service/os"
 
-// Map for tracer.
+// Map is a key-value map.
 type Map map[string]string
 
 // Secrets will traverse the map and load any secrets that have been configured.
 func (m Map) Secrets(fs os.FileSystem) error {
-	for k, v := range m {
-		if !fs.PathExists(v) {
+	for key, name := range m {
+		if !fs.PathExists(name) {
 			continue
 		}
 
-		f, err := fs.ReadFile(v)
+		bytes, err := fs.ReadFile(name)
 		if err != nil {
 			return err
 		}
 
-		m[k] = string(f)
+		m[key] = string(bytes)
 	}
 
 	return nil

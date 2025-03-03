@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-type kind int
+type kind uint8
 
 const (
 	normal kind = iota

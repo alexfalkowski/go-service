@@ -40,5 +40,5 @@ func ParseAuthorization(header string) (string, string, error) {
 }
 
 func containsAuthorization(scheme string) bool {
-	return slices.ContainsFunc(AllAuthorizations, func(s string) bool { return s == scheme })
+	return slices.Contains(AllAuthorizations, scheme)
 }
