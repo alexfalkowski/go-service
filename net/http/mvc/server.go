@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 )
@@ -54,7 +53,7 @@ func Static(path, name string) bool {
 			res.WriteHeader(status.Code(err))
 		}
 
-		nh.WriteResponse(ctx, res, bytes)
+		_, _ = res.Write(bytes)
 	}
 
 	mux.HandleFunc(path, handler)

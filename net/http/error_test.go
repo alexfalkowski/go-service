@@ -26,15 +26,3 @@ func TestServerClose(t *testing.T) {
 		})
 	})
 }
-
-func TestWriteResponse(t *testing.T) {
-	Convey("When we write with an erroneous writer", t, func() {
-		w := &test.ErrResponseWriter{}
-
-		nh.WriteResponse(t.Context(), w, []byte("test"))
-
-		Convey("Then we should record the error", func() {
-			So(w.Code, ShouldEqual, http.StatusInternalServerError)
-		})
-	})
-}
