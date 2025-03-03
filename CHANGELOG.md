@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.474.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.474.0) - 2025-03-03
+
+- [`c4502bb`](https://github.com/alexfalkowski/go-service/commit/c4502bbc949b65b20b33660c1817cc0e79843a33) feat(http): ignore error as we can't do anything about it (#1383)
+- [`40b1310`](https://github.com/alexfalkowski/go-service/commit/40b13103a593932dedc6e3907e05e405e0b0cc8f) refactor(http): move func to errors (#1382)
+
 ## [v1.473.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.473.0) - 2025-03-02
 
 - [`c23238c`](https://github.com/alexfalkowski/go-service/commit/c23238c0b2a93cd2bd651ac7db9b4e485fcf1078) feat(logger): change to have text or json, rather than stdout (#1381)
