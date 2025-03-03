@@ -28,7 +28,7 @@ func TestNoneConfig(t *testing.T) {
 			set.AddOutput(flag)
 
 			output := test.NewOutputConfig(set)
-			err := output.Write("test", os.ModeAppend)
+			err := output.Write([]byte("test"), os.ModeAppend)
 
 			Convey("Then I should have a valid configuration", func() {
 				So(err, ShouldBeError)
@@ -73,7 +73,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		file := test.Path("configs/new_config.yml")
 
-		So(os.WriteFile(file, "environment: development", 0o600), ShouldBeNil)
+		So(os.WriteFile(file, []byte("environment: development"), 0o600), ShouldBeNil)
 		So(os.SetVariable("CONFIG_FILE", file), ShouldBeNil)
 
 		set := cmd.NewFlagSet("test")
@@ -82,14 +82,14 @@ func TestWriteValidConfigFile(t *testing.T) {
 		Convey("When I write the config", func() {
 			input := test.NewOutputConfig(set)
 
-			err := input.Write("test", os.ModeAppend)
+			err := input.Write([]byte("test"), os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				file, err := os.ReadFile(file)
+				d, err := os.ReadFile(file)
 				So(err, ShouldBeNil)
 
-				So(file, ShouldEqual, "test")
+				So(string(d), ShouldEqual, "test")
 			})
 
 			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
@@ -100,7 +100,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		file := test.Path("configs/new_config.yml")
 
-		So(os.WriteFile(file, "environment: development", 0o600), ShouldBeNil)
+		So(os.WriteFile(file, []byte("environment: development"), 0o600), ShouldBeNil)
 
 		set := cmd.NewFlagSet("test")
 		set.AddOutput("file:" + file)
@@ -108,14 +108,14 @@ func TestWriteValidConfigFile(t *testing.T) {
 		Convey("When I write the config", func() {
 			output := test.NewOutputConfig(set)
 
-			err := output.Write("test", os.ModeAppend)
+			err := output.Write([]byte("test"), os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				file, err := os.ReadFile(file)
+				d, err := os.ReadFile(file)
 				So(err, ShouldBeNil)
 
-				So(file, ShouldEqual, "test")
+				So(string(d), ShouldEqual, "test")
 			})
 
 			So(os.Remove(file), ShouldBeNil)
@@ -145,7 +145,7 @@ func TestValidConfigEnv(t *testing.T) {
 		Convey("When I write the config", func() {
 			output := test.NewInputConfig(set)
 
-			err := output.Write("test", os.ModeAppend)
+			err := output.Write([]byte("test"), os.ModeAppend)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {

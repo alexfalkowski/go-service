@@ -8,11 +8,11 @@ var FS = os.NewFS()
 // ErrFS for test.
 type ErrFS struct{}
 
-func (f *ErrFS) ReadFile(_ string) (string, error) {
-	return "", ErrFailed
+func (f *ErrFS) ReadFile(_ string) ([]byte, error) {
+	return nil, ErrFailed
 }
 
-func (*ErrFS) WriteFile(_ string, _ string, _ os.FileMode) error {
+func (*ErrFS) WriteFile(_ string, _ []byte, _ os.FileMode) error {
 	return ErrFailed
 }
 

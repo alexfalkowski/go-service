@@ -7,10 +7,10 @@ import (
 // ReaderWriter for cmd.
 type ReaderWriter interface {
 	// Read bytes.
-	Read() (string, error)
+	Read() ([]byte, error)
 
 	// Write bytes with file's mode.
-	Write(data string, mode os.FileMode) error
+	Write(data []byte, mode os.FileMode) error
 
 	// Kind of read writer.
 	Kind() string

@@ -17,12 +17,12 @@ var (
 
 // Decode from path.
 func Decode(path, kind string) ([]byte, error) {
-	d, err := os.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
 
-	block, _ := pem.Decode([]byte(d))
+	block, _ := pem.Decode(b)
 	if block == nil {
 		return nil, ErrInvalidBlock
 	}

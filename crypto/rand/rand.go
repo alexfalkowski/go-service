@@ -38,10 +38,9 @@ func (g *Generator) Text() string {
 
 // GenerateBytes returns a cryptographically random byte slice of size.
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
-	bytes := make([]byte, size)
-	_, err := g.Read(bytes)
+	s, err := g.generate(size, letters)
 
-	return bytes, err
+	return []byte(s), err
 }
 
 // GenerateText will generate using letters.

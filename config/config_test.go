@@ -107,11 +107,11 @@ func TestInvalidFileConfig(t *testing.T) {
 
 func TestValidMemConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		data, err := os.ReadFile(test.Path("configs/config.yml"))
+		d, err := os.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
 		So(os.SetVariable("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
-		So(os.SetVariable("CONFIG", base64.StdEncoding.EncodeToString([]byte(data))), ShouldBeNil)
+		So(os.SetVariable("CONFIG", base64.StdEncoding.EncodeToString(d)), ShouldBeNil)
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")

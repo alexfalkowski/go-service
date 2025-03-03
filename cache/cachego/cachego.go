@@ -26,7 +26,7 @@ func New(cfg *cache.Config) (Cache, error) {
 			return nil, err
 		}
 
-		opts, err := client.ParseURL(url)
+		opts, err := client.ParseURL(string(url))
 		if err != nil {
 			return nil, err
 		}

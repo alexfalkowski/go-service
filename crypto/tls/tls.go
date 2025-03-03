@@ -23,7 +23,7 @@ func NewConfig(cfg *Config) (*tls.Config, error) {
 		return config, err
 	}
 
-	pair, err := tls.X509KeyPair([]byte(cert), []byte(key))
+	pair, err := tls.X509KeyPair(cert, key)
 	if err != nil {
 		return config, err
 	}

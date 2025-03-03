@@ -21,9 +21,9 @@ func IsNotExist(err error) bool {
 	return errors.Is(err, os.ErrNotExist)
 }
 
-// PathExists for the path provided.
-func PathExists(path string) bool {
-	if _, err := os.Stat(path); IsNotExist(err) {
+// PathExists for the name provided.
+func PathExists(name string) bool {
+	if _, err := os.Stat(name); IsNotExist(err) {
 		return false
 	}
 

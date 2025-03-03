@@ -24,27 +24,26 @@ type ENV struct {
 }
 
 // Read for env.
-func (e *ENV) Read() (string, error) {
+func (e *ENV) Read() ([]byte, error) {
 	if e.isMem() {
 		_, e := e.split()
-		d, err := base64.StdEncoding.DecodeString(os.GetVariable(e))
 
-		return string(d), err
+		return base64.StdEncoding.DecodeString(os.GetVariable(e))
 	}
 
 	if e.name() == "" {
-		return "", e.missingLocationError()
+		return nil, e.missingLocationError()
 	}
 
 	return e.fs.ReadFile(e.name())
 }
 
 // Write for env.
-func (e *ENV) Write(data string, mode os.FileMode) error {
+func (e *ENV) Write(data []byte, mode os.FileMode) error {
 	if e.isMem() {
 		_, e := e.split()
 
-		return os.SetVariable(e, base64.StdEncoding.EncodeToString([]byte(data)))
+		return os.SetVariable(e, base64.StdEncoding.EncodeToString(data))
 	}
 
 	if e.name() == "" {

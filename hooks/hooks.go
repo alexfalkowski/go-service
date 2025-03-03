@@ -19,9 +19,9 @@ type Generator struct {
 
 // Generate for hooks.
 func (g *Generator) Generate() (string, error) {
-	s, err := g.gen.GenerateText(32)
+	b, err := g.gen.GenerateBytes(32)
 
-	return base64.StdEncoding.EncodeToString([]byte(s)), err
+	return base64.StdEncoding.EncodeToString(b), err
 }
 
 // New hook from config.
@@ -30,10 +30,10 @@ func New(cfg *Config) (*hooks.Webhook, error) {
 		return hooks.NewWebhookRaw(nil)
 	}
 
-	s, err := cfg.GetSecret()
+	b, err := cfg.GetSecret()
 	if err != nil {
 		return nil, err
 	}
 
-	return hooks.NewWebhook(s)
+	return hooks.NewWebhook(string(b))
 }

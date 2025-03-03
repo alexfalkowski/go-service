@@ -48,9 +48,9 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 	switch {
 	case t.cfg.IsOpaque():
-		d, err := os.ReadFile(t.cfg.Secret)
+		b, err := os.ReadFile(t.cfg.Secret)
 
-		return ctx, []byte(d), err
+		return ctx, b, err
 	case t.cfg.IsJWT():
 		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
 
@@ -71,12 +71,12 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 
 	switch {
 	case t.cfg.IsOpaque():
-		d, err := os.ReadFile(t.cfg.Secret)
+		b, err := os.ReadFile(t.cfg.Secret)
 		if err != nil {
 			return ctx, err
 		}
 
-		if !bytes.Equal([]byte(d), token) {
+		if !bytes.Equal(b, token) {
 			return ctx, ErrInvalidMatch
 		}
 

@@ -8,6 +8,6 @@ type Config struct {
 }
 
 // GetCert for hooks.
-func (c *Config) GetSecret() (string, error) {
+func (c *Config) GetSecret() ([]byte, error) {
 	return os.ReadFile(c.Secret)
 }

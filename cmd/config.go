@@ -43,10 +43,10 @@ func (c *Config) Decode(data any) error {
 		return ErrNoEncoder
 	}
 
-	return se.Prefix("config", c.encoder.Decode(bytes.NewBufferString(bts), data))
+	return se.Prefix("config", c.encoder.Decode(bytes.NewBuffer(bts), data))
 }
 
 // Write for config.
-func (c *Config) Write(data string, mode os.FileMode) error {
+func (c *Config) Write(data []byte, mode os.FileMode) error {
 	return se.Prefix("config", c.rw.Write(data, mode))
 }
