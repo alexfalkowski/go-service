@@ -76,7 +76,7 @@ workflows:
     jobs:
       - build
       - release:
-          serial-group: << pipeline.git.branch >>
+          serial-group: release
           context: gh
           requires:
             - build
