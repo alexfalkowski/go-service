@@ -1,13 +1,13 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/cache/cachego"
+	"github.com/alexfalkowski/go-service/cache/driver"
 	"go.uber.org/fx"
 )
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(cachego.New),
-	fx.Provide(New),
+	fx.Provide(driver.NewDriver),
+	fx.Provide(NewCache),
 	fx.Invoke(Register),
 )

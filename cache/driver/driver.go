@@ -1,4 +1,4 @@
-package cachego
+package driver
 
 import (
 	cache "github.com/alexfalkowski/go-service/cache/config"
@@ -10,11 +10,11 @@ import (
 	client "github.com/redis/go-redis/v9"
 )
 
-// Cache is a alias of cachego.
-type Cache = cachego.Cache
+// Driver is a alias of cachego.
+type Driver = cachego.Cache
 
-// New cache from config.
-func New(cfg *cache.Config) (Cache, error) {
+// NewDriver for different driver implementations.
+func NewDriver(cfg *cache.Config) (Driver, error) {
 	if !cache.IsEnabled(cfg) {
 		return nil, nil
 	}
