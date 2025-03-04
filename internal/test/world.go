@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/cache"
-	"github.com/alexfalkowski/go-service/cache/cachego"
 	cc "github.com/alexfalkowski/go-service/cache/config"
+	"github.com/alexfalkowski/go-service/cache/driver"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sm "github.com/alexfalkowski/go-service/database/sql/telemetry/metrics"
@@ -396,7 +396,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cc.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	cachego, err := cachego.New(cfg)
+	driver, err := driver.NewDriver(cfg)
 	runtime.Must(err)
 
 	params := cache.Params{
@@ -405,16 +405,13 @@ func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tr
 		Compressor: Compressor,
 		Encoder:    Encoder,
 		Pool:       Pool,
-		Cache:      cachego,
+		Driver:     driver,
 		Tracer:     NewTracer(lc, tracer),
 		Logger:     logger,
 		Meter:      meter,
 	}
 
-	cache, err := cache.New(params)
-	runtime.Must(err)
-
-	return cache
+	return cache.NewCache(params)
 }
 
 func pgConfig(os *worldOpts) *pg.Config {
