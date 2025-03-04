@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.478.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.478.0) - 2025-03-04
+
+- [`2d3cda6`](https://github.com/alexfalkowski/go-service/commit/2d3cda6f58342a60b38b16d60bdf0f9abe4e875d) feat(cache): remove unused error (#1390)
+- [`b7f634e`](https://github.com/alexfalkowski/go-service/commit/b7f634e8b007db46e9907b4f12b93cf67b7183b1) build(ci): use release as serial-group as it runs only on master (#1389)
+
 ## [v1.477.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.477.0) - 2025-03-04
 
 - [`0f19adf`](https://github.com/alexfalkowski/go-service/commit/0f19adfc987508b12ecf5052473d9a19c9083a7a) feat(deps): bump go.uber.org/dig from 1.18.0 to 1.18.1 (#1387)
