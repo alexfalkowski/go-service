@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.477.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.477.0) - 2025-03-04
+
+- [`0f19adf`](https://github.com/alexfalkowski/go-service/commit/0f19adfc987508b12ecf5052473d9a19c9083a7a) feat(deps): bump go.uber.org/dig from 1.18.0 to 1.18.1 (#1387)
+- [`980f811`](https://github.com/alexfalkowski/go-service/commit/980f811f66cd77b3f88b370390b0e3e075cca393) build(ci): use serial-group (#1388)
+
 ## [v1.476.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.476.0) - 2025-03-03
 
 - [`7f3132f`](https://github.com/alexfalkowski/go-service/commit/7f3132f4ffcbbca9e0fbfa0efb9181ab60b9da53) feat(header): use slices.Contains (#1386)
