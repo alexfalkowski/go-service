@@ -40,3 +40,4 @@ linters:
     - nakedret
     - gochecknoinits
     - tenv
+    - revive

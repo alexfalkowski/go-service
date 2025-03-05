@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/encoding/proto"
 	"github.com/alexfalkowski/go-service/internal/test"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 

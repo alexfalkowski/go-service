@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
