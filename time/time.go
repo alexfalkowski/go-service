@@ -8,11 +8,9 @@ import (
 
 const (
 	// Minute represents 60 seconds.
-	//nolint:revive
 	Minute = time.Minute
 
 	// Second represents 1 second.
-	//nolint:revive
 	Second = time.Second
 
 	// RFC3339 formats time to 2006-01-02T15:04:05Z07:00.

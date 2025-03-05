@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/meta"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSnakeCase(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/hooks"
 	"github.com/alexfalkowski/go-service/internal/test"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestHooks(t *testing.T) {

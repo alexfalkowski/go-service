@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/server"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestInsecureDebug(t *testing.T) {

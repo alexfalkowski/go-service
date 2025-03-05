@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/meta"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"

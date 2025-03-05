@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/transport/header"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestValidParseAuthorization(t *testing.T) {

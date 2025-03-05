@@ -39,7 +39,7 @@ import (
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/open-feature/go-sdk/openfeature"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"go.uber.org/fx"
 )

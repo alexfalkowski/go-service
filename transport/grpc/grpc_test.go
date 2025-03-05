@@ -9,7 +9,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

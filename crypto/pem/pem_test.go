@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/pem"
 	"github.com/alexfalkowski/go-service/internal/test"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestDecode(t *testing.T) {

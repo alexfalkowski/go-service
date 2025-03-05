@@ -8,7 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc/metadata"
