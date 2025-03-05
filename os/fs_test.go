@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/os"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestFS(t *testing.T) {

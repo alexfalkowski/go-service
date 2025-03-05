@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/types/ptr"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestPrometheusAuthHTTP(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/argon2"
 	"github.com/alexfalkowski/go-service/crypto/errors"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSigner(t *testing.T) {

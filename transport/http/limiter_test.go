@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGet(t *testing.T) {

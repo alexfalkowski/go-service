@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 )
 

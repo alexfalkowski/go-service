@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/internal/test"
 	nh "github.com/alexfalkowski/go-service/net/http"
-	. "github.com/smartystreets/goconvey/convey" //nolint:revive
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestServerClose(t *testing.T) {
