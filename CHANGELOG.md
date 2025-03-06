@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.482.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.482.0) - 2025-03-06
+
+- [`a583428`](https://github.com/alexfalkowski/go-service/commit/a583428c10d19e868df1aa0dc5dda53c32185fe5) feat(deps): upgraded golang.org/x/crypto v0.35.0 => v0.36.0 (#1402)
+- [`d16cf25`](https://github.com/alexfalkowski/go-service/commit/d16cf25bbcb53a743b7baf4d3c98eafe7641ee20) build(ci): update to alexfalkowski/go:1.22 (#1396)
+- [`10c1391`](https://github.com/alexfalkowski/go-service/commit/10c1391f707d0b1a0a63f9bbf0f81bc3a6ffeee0) build(deps): bump bin from `637442f` to `8e1a9ac` (#1394)
+
 ## [v1.481.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.481.0) - 2025-03-04
 
 - [`37df690`](https://github.com/alexfalkowski/go-service/commit/37df69018c63ca0f041e66a83cc231fc676149f0) feat(deps): bump golang.org/x/net from 0.35.0 to 0.36.0 (#1391)
