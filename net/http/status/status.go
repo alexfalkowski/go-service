@@ -37,19 +37,19 @@ func WriteError(res http.ResponseWriter, err error) {
 	http.Error(res, err.Error(), status)
 }
 
-// FromError creates an error from an error.
-func FromError(code int, err error) error {
-	return &statusError{code: code, msg: err.Error()}
-}
-
 // Error representing code and msg.
 func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
 }
 
+// FromError creates an error from an error.
+func FromError(code int, err error) error {
+	return Error(code, err.Error())
+}
+
 // Errorf representing code and a formatted message.
 func Errorf(code int, format string, a ...any) error {
-	return &statusError{code: code, msg: fmt.Sprintf(format, a...)}
+	return Error(code, fmt.Sprintf(format, a...))
 }
 
 // IsError verifies if the package created this error.
