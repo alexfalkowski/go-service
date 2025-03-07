@@ -13,15 +13,13 @@ func Must(err error) {
 }
 
 // ConvertRecover to an error.
-//
-//nolint:err113
-func ConvertRecover(rec any) error {
-	switch recType := rec.(type) {
+func ConvertRecover(value any) error {
+	switch kind := value.(type) {
 	case string:
-		return errors.New(recType)
+		return errors.New(kind)
 	case error:
-		return recType
+		return kind
 	default:
-		return errors.New(fmt.Sprint(recType))
+		return errors.New(fmt.Sprint(kind))
 	}
 }

@@ -20,8 +20,6 @@ type Handler struct {
 }
 
 // ServeHTTP for limiter.
-//
-//nolint:err113
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsObservable(req.URL.Path) {
 		next(res, req)

@@ -41,3 +41,4 @@ linters:
     - gochecknoinits
     - tenv
     - revive
+    - err113

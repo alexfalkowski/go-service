@@ -51,8 +51,6 @@ func ErrorSayHello(_ context.Context, _ *Request) (*Response, error) {
 }
 
 // ErrorNotMappedSayHello for test.
-//
-//nolint:err113
 func ErrorNotMappedSayHello(_ context.Context, _ *Request) (*Response, error) {
 	return nil, errors.New("ohh no")
 }
@@ -63,8 +61,6 @@ func ErrorsProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHe
 }
 
 // ErrorsNotMappedProtobufSayHello for test.
-//
-//nolint:err113
 func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, errors.New("ohh no")
 }
