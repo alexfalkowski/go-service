@@ -6,7 +6,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/io"
-	nh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/time"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
@@ -73,7 +73,8 @@ func NewHandler(hook *Webhook) *Handler {
 // ServeHTTP for hooks.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if err := h.hook.Verify(req); err != nil {
-		nh.WriteError(req.Context(), res, err, http.StatusBadRequest)
+		err := status.FromError(http.StatusBadRequest, err)
+		status.WriteError(res, err)
 
 		return
 	}

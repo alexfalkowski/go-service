@@ -2,6 +2,7 @@ package status
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"google.golang.org/grpc/codes"
@@ -29,9 +30,26 @@ var statusCodes = map[codes.Code]int{
 	codes.DataLoss:           http.StatusInternalServerError,
 }
 
+// WriteError will write the error to the response writer.
+func WriteError(res http.ResponseWriter, err error) {
+	status := Code(err)
+
+	http.Error(res, err.Error(), status)
+}
+
+// FromError creates an error from an error.
+func FromError(code int, err error) error {
+	return &statusError{code: code, msg: err.Error()}
+}
+
 // Error representing code and msg.
 func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
+}
+
+// Errorf representing code and a formatted message.
+func Errorf(code int, format string, a ...any) error {
+	return &statusError{code: code, msg: fmt.Sprintf(format, a...)}
 }
 
 // IsError verifies if the package created this error.

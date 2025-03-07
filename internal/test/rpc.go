@@ -3,7 +3,6 @@ package test
 import (
 	"cmp"
 	"context"
-	"errors"
 	"net/http"
 
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
@@ -52,7 +51,7 @@ func ErrorSayHello(_ context.Context, _ *Request) (*Response, error) {
 
 // ErrorNotMappedSayHello for test.
 func ErrorNotMappedSayHello(_ context.Context, _ *Request) (*Response, error) {
-	return nil, errors.New("ohh no")
+	return nil, ErrFailed
 }
 
 // ErrorsProtobufSayHello for test.
@@ -62,5 +61,5 @@ func ErrorsProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHe
 
 // ErrorsNotMappedProtobufSayHello for test.
 func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
-	return nil, errors.New("ohh no")
+	return nil, ErrFailed
 }

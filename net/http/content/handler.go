@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -50,7 +49,7 @@ func newHandler[Res any](cont *Content, prefix string, handler func(ctx context.
 		defer func() {
 			if r := recover(); r != nil {
 				err := errors.Prefix(prefix, runtime.ConvertRecover(r))
-				nh.WriteError(ctx, res, err, status.Code(err))
+				status.WriteError(res, err)
 			}
 		}()
 
