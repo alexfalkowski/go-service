@@ -79,7 +79,7 @@ func TestRouteError(t *testing.T) {
 		world.RequireStart()
 
 		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
-			return mvc.View("error.tmpl"), &test.Model, status.Error(http.StatusServiceUnavailable, "ohh no")
+			return mvc.View("error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
 		})
 
 		Convey("When I query for hello", func() {

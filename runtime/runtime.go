@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var ErrRecovered = errors.New("recovered")
+
 // Must panics if we have an error.
 func Must(err error) {
 	if err != nil {
@@ -15,11 +17,11 @@ func Must(err error) {
 // ConvertRecover to an error.
 func ConvertRecover(value any) error {
 	switch kind := value.(type) {
-	case string:
-		return errors.New(kind)
 	case error:
 		return kind
+	case string:
+		return fmt.Errorf("%w: %s", ErrRecovered, kind)
 	default:
-		return errors.New(fmt.Sprint(kind))
+		return fmt.Errorf("%w: %s", ErrRecovered, kind)
 	}
 }
