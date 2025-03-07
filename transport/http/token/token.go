@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
 	"github.com/alexfalkowski/go-service/transport/strings"
@@ -32,7 +32,8 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx, err := tt.Verify(ctx, h.verifier)
 	if err != nil {
-		nh.WriteError(req.Context(), res, errors.Prefix("token", err), http.StatusUnauthorized)
+		err := status.FromError(http.StatusUnauthorized, errors.Prefix("token", err))
+		status.WriteError(res, err)
 
 		return
 	}
