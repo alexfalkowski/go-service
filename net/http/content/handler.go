@@ -48,8 +48,7 @@ func newHandler[Res any](cont *Content, prefix string, handler func(ctx context.
 
 		defer func() {
 			if r := recover(); r != nil {
-				err := errors.Prefix(prefix, runtime.ConvertRecover(r))
-				status.WriteError(res, err)
+				status.WriteError(res, errors.Prefix(prefix, runtime.ConvertRecover(r)))
 			}
 		}()
 
