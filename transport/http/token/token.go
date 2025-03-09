@@ -32,8 +32,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx, err := tt.Verify(ctx, h.verifier)
 	if err != nil {
-		err := status.FromError(http.StatusUnauthorized, errors.Prefix("token", err))
-		status.WriteError(res, err)
+		status.WriteError(res, status.FromError(http.StatusUnauthorized, errors.Prefix("token", err)))
 
 		return
 	}
