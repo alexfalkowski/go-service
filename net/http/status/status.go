@@ -61,18 +61,14 @@ func IsError(err error) bool {
 
 // Code from the error. If nil 200, otherwise 500.
 func Code(err error) int {
-	if err == nil {
-		return http.StatusOK
+	e := &statusError{}
+	if errors.As(err, &e) {
+		return e.code
 	}
 
 	s, ok := status.FromError(err)
 	if ok {
 		return statusCodes[s.Code()]
-	}
-
-	e := &statusError{}
-	if errors.As(err, &e) {
-		return e.code
 	}
 
 	return http.StatusInternalServerError
