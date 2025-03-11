@@ -13,8 +13,8 @@ import (
 // Driver is a alias of cachego.
 type Driver = cachego.Cache
 
-// NewDriver for different driver implementations.
-func NewDriver(cfg *cache.Config) (Driver, error) {
+// New for different driver implementations.
+func New(cfg *cache.Config) (Driver, error) {
 	if !cache.IsEnabled(cfg) {
 		return nil, nil
 	}

@@ -7,7 +7,7 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Provide(driver.NewDriver),
+	fx.Provide(driver.New),
 	fx.Provide(NewCache),
 	fx.Invoke(Register),
 )
