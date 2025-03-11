@@ -23,7 +23,7 @@ func TestValidCache(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			driver, err := driver.NewDriver(config)
+			driver, err := driver.New(config)
 			So(err, ShouldBeNil)
 
 			params := cache.Params{
@@ -86,7 +86,7 @@ func TestErroneousCache(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			_, err := driver.NewDriver(config)
+			_, err := driver.New(config)
 
 			world.RequireStart()
 
@@ -109,7 +109,7 @@ func TestDisabledCache(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			_, err := driver.NewDriver(config)
+			_, err := driver.New(config)
 
 			world.RequireStart()
 
@@ -162,7 +162,7 @@ func TestErroneousSave(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			driver, err := driver.NewDriver(config)
+			driver, err := driver.New(config)
 			So(err, ShouldBeNil)
 
 			params := cache.Params{

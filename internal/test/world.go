@@ -396,7 +396,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cc.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	driver, err := driver.NewDriver(cfg)
+	driver, err := driver.New(cfg)
 	runtime.Must(err)
 
 	params := cache.Params{
