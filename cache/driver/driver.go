@@ -1,8 +1,9 @@
 package driver
 
 import (
+	"errors"
+
 	cache "github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/cache/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/redis"
@@ -10,10 +11,10 @@ import (
 	client "github.com/redis/go-redis/v9"
 )
 
-// Driver is a alias of cachego.
-type Driver = cachego.Cache
+// ErrNotFound for driver.
+var ErrNotFound = errors.New("cache: driver not found")
 
-// New for different driver implementations.
+// New creates a new cache driver with different backends.
 func New(cfg *cache.Config) (Driver, error) {
 	if !cache.IsEnabled(cfg) {
 		return nil, nil
@@ -35,6 +36,9 @@ func New(cfg *cache.Config) (Driver, error) {
 	case "sync":
 		return sync.New(), nil
 	default:
-		return nil, errors.ErrNotFound
+		return nil, ErrNotFound
 	}
 }
+
+// Driver is a alias of cachego.
+type Driver = cachego.Cache
