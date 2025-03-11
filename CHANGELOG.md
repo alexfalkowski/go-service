@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.488.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.488.0) - 2025-03-11
+
+- [`03f51ba`](https://github.com/alexfalkowski/go-service/commit/03f51bac30e80ec33cb412ab9fe35244297ab3ee) feat(cache): move err to driver (#1414)
+- [`2e4b1a9`](https://github.com/alexfalkowski/go-service/commit/2e4b1a990370d5137a5df921f180accdaab84f48) refactor(cache): rename constructor (#1413)
+- [`a9f3f39`](https://github.com/alexfalkowski/go-service/commit/a9f3f39f04dad81fa81d2d0b28ff11a7117fe8c2) refactor(http): move to a one liner (#1412)
+- [`fa75eb6`](https://github.com/alexfalkowski/go-service/commit/fa75eb67cc8c7e32a0f8b6ac876130a576d56bd4) refactor(status): nil is handled by others (#1411)
+- [`6a600fa`](https://github.com/alexfalkowski/go-service/commit/6a600fae7bde0d13e4cf6f0ff6b81678c9d9ad1f) refactor(status): reuse error func (#1410)
+
 ## [v1.487.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.487.0) - 2025-03-07
 
 - [`c2c96de`](https://github.com/alexfalkowski/go-service/commit/c2c96deb204703be6be1182311f3d3002ba70350) feat(http): use status to write error (#1409)
