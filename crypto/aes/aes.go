@@ -3,7 +3,6 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"encoding/base64"
 	"errors"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
@@ -47,47 +46,39 @@ type Cipher struct {
 }
 
 // Encrypt for aes.
-func (a *Cipher) Encrypt(msg string) (string, error) {
-	aead, err := a.aead()
+func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
+	aead, err := c.aead()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	bytes, err := a.gen.GenerateBytes(aead.NonceSize())
+	bytes, err := c.gen.GenerateBytes(aead.NonceSize())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	s := aead.Seal(bytes, bytes, []byte(msg), nil)
-
-	return base64.StdEncoding.EncodeToString(s), nil
+	return aead.Seal(bytes, bytes, msg, nil), nil
 }
 
 // Decrypt for aes.
-func (a *Cipher) Decrypt(msg string) (string, error) {
-	decoded, err := base64.StdEncoding.DecodeString(msg)
+func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
+	aead, err := c.aead()
 	if err != nil {
-		return "", err
-	}
-
-	aead, err := a.aead()
-	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	size := aead.NonceSize()
-	if len(decoded) < size {
-		return "", ErrInvalidLength
+	if len(msg) < size {
+		return nil, ErrInvalidLength
 	}
 
-	nonce, c := decoded[:size], decoded[size:]
-	decoded, err = aead.Open(nil, nonce, c, nil)
+	nonce, text := msg[:size], msg[size:]
 
-	return string(decoded), err
+	return aead.Open(nil, nonce, text, nil)
 }
 
-func (a *Cipher) aead() (cipher.AEAD, error) {
-	b, err := aes.NewCipher(a.key)
+func (c *Cipher) aead() (cipher.AEAD, error) {
+	b, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
 	}

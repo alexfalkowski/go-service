@@ -1,7 +1,6 @@
 package aes_test
 
 import (
-	"encoding/base64"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -55,14 +54,14 @@ func TestValidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt("test")
+			enc, err := cipher.Encrypt([]byte("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
 				d, err := cipher.Decrypt(enc)
 				So(err, ShouldBeNil)
 
-				So(d, ShouldEqual, "test")
+				So(string(d), ShouldEqual, "test")
 			})
 		})
 	})
@@ -86,7 +85,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			_, err := cipher.Encrypt("test")
+			_, err := cipher.Encrypt([]byte("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -94,8 +93,7 @@ func TestInvalidCipher(t *testing.T) {
 		})
 
 		Convey("When I decrypt data", func() {
-			m := base64.StdEncoding.EncodeToString([]byte("test"))
-			_, err := cipher.Decrypt(m)
+			_, err := cipher.Decrypt([]byte("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -110,7 +108,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to encrypt data", func() {
-			_, err := cipher.Encrypt("test")
+			_, err := cipher.Encrypt([]byte("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -125,10 +123,10 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt("test")
+			enc, err := cipher.Encrypt([]byte("test"))
 			So(err, ShouldBeNil)
 
-			enc += "wha"
+			enc = append(enc, byte('w'))
 
 			Convey("Then I should have an error", func() {
 				_, err := cipher.Decrypt(enc)
@@ -142,7 +140,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
-			_, err := cipher.Decrypt("test")
+			_, err := cipher.Decrypt([]byte("test"))
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)

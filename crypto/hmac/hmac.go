@@ -3,7 +3,6 @@ package hmac
 import (
 	"crypto/hmac"
 	"crypto/sha512"
-	"encoding/base64"
 
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
@@ -41,26 +40,19 @@ type Signer struct {
 }
 
 // Sign for hmac.
-func (a *Signer) Sign(msg string) (string, error) {
-	mac := hmac.New(sha512.New, a.key)
-	mac.Write([]byte(msg))
+func (s *Signer) Sign(msg []byte) ([]byte, error) {
+	mac := hmac.New(sha512.New, s.key)
+	mac.Write(msg)
 
-	return base64.StdEncoding.EncodeToString(mac.Sum(nil)), nil
+	return mac.Sum(nil), nil
 }
 
 // Verify for hmac.
-func (a *Signer) Verify(sig, msg string) error {
-	decoded, err := base64.StdEncoding.DecodeString(sig)
-	if err != nil {
-		return err
-	}
+func (s *Signer) Verify(sig, msg []byte) error {
+	mac := hmac.New(sha512.New, s.key)
+	mac.Write(msg)
 
-	mac := hmac.New(sha512.New, a.key)
-	mac.Write([]byte(msg))
-
-	expected := mac.Sum(nil)
-
-	if !hmac.Equal(decoded, expected) {
+	if !hmac.Equal(sig, mac.Sum(nil)) {
 		return errors.ErrInvalidMatch
 	}
 

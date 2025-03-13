@@ -58,14 +58,14 @@ func TestValidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			e, err := cipher.Encrypt("test")
+			e, err := cipher.Encrypt([]byte("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
 				d, err := cipher.Decrypt(e)
 				So(err, ShouldBeNil)
 
-				So(d, ShouldEqual, "test")
+				So(string(d), ShouldEqual, "test")
 			})
 		})
 	})
@@ -98,10 +98,10 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt("test")
+			enc, err := cipher.Encrypt([]byte("test"))
 			So(err, ShouldBeNil)
 
-			enc += "wha"
+			enc = append(enc, byte('w'))
 
 			Convey("Then I should have an error", func() {
 				_, err := cipher.Decrypt(enc)
@@ -115,7 +115,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
-			_, err := cipher.Decrypt("test")
+			_, err := cipher.Decrypt([]byte("test"))
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)

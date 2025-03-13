@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
@@ -60,20 +59,11 @@ type Cipher struct {
 }
 
 // Encrypt for rsa.
-func (a *Cipher) Encrypt(msg string) (string, error) {
-	e, err := rsa.EncryptOAEP(sha512.New(), a.gen, a.publicKey, []byte(msg), nil)
-
-	return base64.StdEncoding.EncodeToString(e), err
+func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
+	return rsa.EncryptOAEP(sha512.New(), c.gen, c.publicKey, msg, nil)
 }
 
 // Decrypt for rsa.
-func (a *Cipher) Decrypt(msg string) (string, error) {
-	decoded, err := base64.StdEncoding.DecodeString(msg)
-	if err != nil {
-		return "", err
-	}
-
-	decoded, err = rsa.DecryptOAEP(sha512.New(), a.gen, a.privateKey, decoded, nil)
-
-	return string(decoded), err
+func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
+	return rsa.DecryptOAEP(sha512.New(), c.gen, c.privateKey, msg, nil)
 }
