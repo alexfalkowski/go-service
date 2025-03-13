@@ -3,7 +3,6 @@ package ed25519
 import (
 	"crypto/ed25519"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 
 	cerr "github.com/alexfalkowski/go-service/crypto/errors"
@@ -71,20 +70,13 @@ type Signer struct {
 }
 
 // Sign for ed25519.
-func (a *Signer) Sign(msg string) (string, error) {
-	m := ed25519.Sign(a.PrivateKey, []byte(msg))
-
-	return base64.StdEncoding.EncodeToString(m), nil
+func (s *Signer) Sign(msg []byte) ([]byte, error) {
+	return ed25519.Sign(s.PrivateKey, msg), nil
 }
 
 // Verify for ed25519.
-func (a *Signer) Verify(sig, msg string) error {
-	d, err := base64.StdEncoding.DecodeString(sig)
-	if err != nil {
-		return err
-	}
-
-	ok := ed25519.Verify(a.PublicKey, []byte(msg), d)
+func (s *Signer) Verify(sig, msg []byte) error {
+	ok := ed25519.Verify(s.PublicKey, msg, sig)
 	if !ok {
 		return cerr.ErrInvalidMatch
 	}

@@ -16,15 +16,13 @@ type Signer struct {
 }
 
 // Sign for argon2.
-func (a *Signer) Sign(msg string) (string, error) {
-	e, err := a.argon.HashEncoded([]byte(msg))
-
-	return string(e), err
+func (s *Signer) Sign(msg []byte) ([]byte, error) {
+	return s.argon.HashEncoded(msg)
 }
 
 // Verify for argon2.
-func (a *Signer) Verify(sig, msg string) error {
-	ok, err := argon2.VerifyEncoded([]byte(msg), []byte(sig))
+func (s *Signer) Verify(sig, msg []byte) error {
+	ok, err := argon2.VerifyEncoded(msg, sig)
 	if err != nil {
 		return err
 	}

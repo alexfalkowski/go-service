@@ -55,11 +55,11 @@ func TestValidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, err := signer.Sign("test")
+			e, err := signer.Sign([]byte("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should compared the data", func() {
-				So(signer.Verify(e, "test"), ShouldBeNil)
+				So(signer.Verify(e, []byte("test")), ShouldBeNil)
 			})
 		})
 	})
@@ -80,13 +80,13 @@ func TestInvalidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			sign, err := signer.Sign("test")
+			sign, err := signer.Sign([]byte("test"))
 			So(err, ShouldBeNil)
 
-			sign += "what"
+			sign = append(sign, byte('w'))
 
 			Convey("Then I should have an error", func() {
-				So(signer.Verify(sign, "test"), ShouldBeError)
+				So(signer.Verify(sign, []byte("test")), ShouldBeError)
 			})
 		})
 	})
@@ -96,11 +96,11 @@ func TestInvalidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {
-			e, err := signer.Sign("test")
+			e, err := signer.Sign([]byte("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(signer.Verify(e, "bob"), ShouldBeError, errors.ErrInvalidMatch)
+				So(signer.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})

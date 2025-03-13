@@ -317,7 +317,7 @@ func netTime(n st.Network) {
 }
 
 func crypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
-	msg := "hello"
+	msg := []byte("hello")
 
 	e, err := signer.Sign(msg)
 	if err != nil {
