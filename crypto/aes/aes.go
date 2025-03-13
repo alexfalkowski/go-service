@@ -8,8 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
-// Code is adapted from https://gist.github.com/fracasula/38aa1a4e7481f9cedfa78a0cdd5f1865.
-
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 

@@ -4,7 +4,7 @@ import (
 	"crypto/ed25519"
 	"encoding/pem"
 
-	cerr "github.com/alexfalkowski/go-service/crypto/errors"
+	crypto "github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/runtime"
@@ -78,7 +78,7 @@ func (s *Signer) Sign(msg []byte) ([]byte, error) {
 func (s *Signer) Verify(sig, msg []byte) error {
 	ok := ed25519.Verify(s.PublicKey, msg, sig)
 	if !ok {
-		return cerr.ErrInvalidMatch
+		return crypto.ErrInvalidMatch
 	}
 
 	return nil
