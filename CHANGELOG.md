@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.489.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.489.0) - 2025-03-13
+
+- [`d8ca2a1`](https://github.com/alexfalkowski/go-service/commit/d8ca2a107fb33ea3af57db0de843d33d2f52e624) feat(crypto): no need for base64 (#1415)
+
 ## [v1.488.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.488.0) - 2025-03-11
 
 - [`03f51ba`](https://github.com/alexfalkowski/go-service/commit/03f51bac30e80ec33cb412ab9fe35244297ab3ee) feat(cache): move err to driver (#1414)
