@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	// ErrInvalidBlock of PEM.
+	// ErrInvalidBlock of pem.
 	ErrInvalidBlock = errors.New("pem: invalid block")
 
-	// ErrInvalidKind of PEM block.
+	// ErrInvalidKind of pem block.
 	ErrInvalidKind = errors.New("pem: invalid kind")
 )
 
