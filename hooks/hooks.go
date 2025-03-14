@@ -26,8 +26,8 @@ func (g *Generator) Generate() (string, error) {
 
 // New hook from config.
 func New(cfg *Config) (*hooks.Webhook, error) {
-	if cfg == nil {
-		return hooks.NewWebhookRaw(nil)
+	if !IsEnabled(cfg) {
+		return nil, nil
 	}
 
 	b, err := cfg.GetSecret()
