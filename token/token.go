@@ -23,6 +23,10 @@ type Params struct {
 
 // NewToken based on config.
 func NewToken(params Params) *Token {
+	if !IsEnabled(params.Config) {
+		return nil
+	}
+
 	return &Token{
 		cfg:    params.Config,
 		name:   params.Name,
@@ -42,10 +46,6 @@ type Token struct {
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
-	if t.cfg == nil {
-		return ctx, nil, nil
-	}
-
 	switch {
 	case t.cfg.IsOpaque():
 		b, err := os.ReadFile(t.cfg.Secret)
@@ -65,10 +65,6 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 }
 
 func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	if t.cfg == nil {
-		return ctx, nil
-	}
-
 	switch {
 	case t.cfg.IsOpaque():
 		b, err := os.ReadFile(t.cfg.Secret)
