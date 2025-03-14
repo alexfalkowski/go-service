@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.490.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.490.0) - 2025-03-14
+
+- [`83a0ae9`](https://github.com/alexfalkowski/go-service/commit/83a0ae9e77cdc7a14671128f20c8c21eef70fd39) feat(hooks): follow the pattern of nil with disabled config (#1418)
+- [`0c8d935`](https://github.com/alexfalkowski/go-service/commit/0c8d935fe53f4abd6b635816c1bb456739b0633f) docs(crypto): copy paste comment (#1417)
+- [`15c7e89`](https://github.com/alexfalkowski/go-service/commit/15c7e8921933cc4e8a35df7ecad6e74532893a08) build(ci): update to alexfalkowski/go:1.25 (#1416)
+
 ## [v1.489.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.489.0) - 2025-03-13
 
 - [`d8ca2a1`](https://github.com/alexfalkowski/go-service/commit/d8ca2a107fb33ea3af57db0de843d33d2f52e624) feat(crypto): no need for base64 (#1415)
