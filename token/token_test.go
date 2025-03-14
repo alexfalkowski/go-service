@@ -94,20 +94,13 @@ func TestError(t *testing.T) {
 	})
 }
 
-func TestVerifyWithNoConfig(t *testing.T) {
-	params := token.Params{Name: test.Name}
-	token := token.NewToken(params)
+func TestWithNoConfig(t *testing.T) {
+	Convey("When I try to create a token with no config", t, func() {
+		params := token.Params{Name: test.Name}
+		token := token.NewToken(params)
 
-	Convey("Given I generate a token", t, func() {
-		_, tkn, err := token.Generate(t.Context())
-		So(err, ShouldBeNil)
-
-		Convey("When I try to verify", func() {
-			_, err := token.Verify(t.Context(), tkn)
-
-			Convey("Then I should have no error", func() {
-				So(err, ShouldBeNil)
-			})
+		Convey("Then I should have bo token", func() {
+			So(token, ShouldBeNil)
 		})
 	})
 }
