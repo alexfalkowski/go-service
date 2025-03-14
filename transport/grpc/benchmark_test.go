@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/transport"
 	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
@@ -59,6 +58,7 @@ func BenchmarkGRPC(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	g, err := tg.NewServer(tg.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Config:     cfg.GRPC,
 		UserAgent:  test.UserAgent, Version: test.Version,
@@ -66,7 +66,6 @@ func BenchmarkGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -98,6 +97,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	g, err := tg.NewServer(tg.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Config:     cfg.GRPC, Logger: logger,
 		UserAgent: test.UserAgent, Version: test.Version,
@@ -105,7 +105,6 @@ func BenchmarkLogGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
@@ -139,6 +138,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	cfg := test.NewInsecureTransportConfig()
 
 	g, err := tg.NewServer(tg.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Config:     cfg.GRPC, Logger: logger, Tracer: tracer,
 		UserAgent: test.UserAgent, Version: test.Version,
@@ -146,7 +146,6 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	runtime.Must(err)
 
 	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()

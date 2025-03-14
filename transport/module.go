@@ -16,6 +16,4 @@ var Module = fx.Options(
 	events.Module,
 	meta.Module,
 	limiter.Module,
-	fx.Provide(NewServers),
-	fx.Invoke(Register),
 )

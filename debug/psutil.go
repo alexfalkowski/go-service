@@ -30,8 +30,7 @@ type (
 )
 
 // RegisterPprof for debug.
-func RegisterPsutil(srv *Server, cont *content.Content) {
-	mux := srv.ServeMux()
+func RegisterPsutil(mux *ServeMux, cont *content.Content) {
 	handler := content.NewHandler(cont, "debug", func(ctx context.Context) (*Response, error) {
 		info, _ := cpu.InfoWithContext(ctx)
 		times, _ := cpu.TimesWithContext(ctx, true)

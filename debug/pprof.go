@@ -3,9 +3,7 @@ package debug
 import "net/http/pprof"
 
 // RegisterPprof for debug.
-func RegisterPprof(srv *Server) {
-	mux := srv.ServeMux()
-
+func RegisterPprof(mux *ServeMux) {
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)

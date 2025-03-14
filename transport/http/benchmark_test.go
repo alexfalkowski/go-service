@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport"
 	th "github.com/alexfalkowski/go-service/transport/http"
 	"go.uber.org/fx/fxtest"
 )
@@ -64,7 +63,8 @@ func BenchmarkHTTP(b *testing.B) {
 	lc := fxtest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 
-	h, err := th.NewServer(th.ServerParams{
+	_, err := th.NewServer(th.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Mux:        mux,
 		Config:     cfg.HTTP,
@@ -73,8 +73,6 @@ func BenchmarkHTTP(b *testing.B) {
 		ID:         id.Default,
 	})
 	runtime.Must(err)
-
-	transport.Register(lc, []transport.Server{h})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -104,7 +102,8 @@ func BenchmarkLogHTTP(b *testing.B) {
 	logger, _ := logger.NewLogger(logger.Params{})
 	cfg := test.NewInsecureTransportConfig()
 
-	h, err := th.NewServer(th.ServerParams{
+	_, err := th.NewServer(th.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Mux:        mux,
 		Config:     cfg.HTTP,
@@ -115,7 +114,6 @@ func BenchmarkLogHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(lc, []transport.Server{h})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
@@ -147,7 +145,8 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	tracer := test.NewTracer(lc, nil)
 	cfg := test.NewInsecureTransportConfig()
 
-	h, err := th.NewServer(th.ServerParams{
+	_, err := th.NewServer(th.ServerParams{
+		Lifecycle:  lc,
 		Shutdowner: test.NewShutdowner(),
 		Mux:        mux,
 		Config:     cfg.HTTP,
@@ -159,7 +158,6 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(lc, []transport.Server{h})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()

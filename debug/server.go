@@ -2,6 +2,7 @@ package debug
 
 import (
 	"cmp"
+	"context"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
@@ -17,17 +18,22 @@ import (
 type ServerParams struct {
 	fx.In
 
+	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
+	Mux        *ServeMux
 	Config     *Config
 	Logger     *logger.Logger
 }
 
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
-	mux := http.NewServeMux()
-	timeout := timeout(params.Config)
+	if !IsEnabled(params.Config) {
+		return nil, nil
+	}
+
+	timeout := time.MustParseDuration(params.Config.Timeout)
 	svr := &http.Server{
-		Handler:     mux,
+		Handler:     params.Mux,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
@@ -44,28 +50,30 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	server := &Server{
 		Server: server.NewServer("debug", serv, params.Logger, params.Shutdowner),
-		mux:    mux,
 	}
+
+	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			server.Start()
+
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			server.Stop(ctx)
+
+			return nil
+		},
+	})
 
 	return server, nil
 }
 
 // Server for debug.
 type Server struct {
-	mux *http.ServeMux
 	*server.Server
 }
 
-// ServeMux for debug.
-func (s *Server) ServeMux() *http.ServeMux {
-	return s.mux
-}
-
 func config(cfg *Config) (*sh.Config, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}
@@ -78,12 +86,4 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = t
 
 	return config, err
-}
-
-func timeout(cfg *Config) time.Duration {
-	if !IsEnabled(cfg) {
-		return time.Minute
-	}
-
-	return time.MustParseDuration(cfg.Timeout)
 }

@@ -11,13 +11,7 @@ import (
 
 // NewServer for HTTP.
 func NewServer(server *http.Server, cfg *Config) (*Server, error) {
-	srv := &Server{server: server}
-
-	if cfg == nil {
-		return srv, nil
-	}
-
-	srv.tls = cfg.TLS
+	srv := &Server{server: server, tls: cfg.TLS}
 
 	l, err := sn.Listener(cfg.Address)
 	if err != nil {
@@ -48,11 +42,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 func (s *Server) String() string {
 	return s.listener.Addr().String()
-}
-
-// IsEnabled for server.
-func (s *Server) IsEnabled() bool {
-	return s.listener != nil
 }
 
 func (s *Server) serve() error {

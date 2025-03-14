@@ -16,8 +16,9 @@ type RegisterParams struct {
 
 // Register health for gRPC.
 func Register(params RegisterParams) {
-	ob := params.Observer
-	if ob != nil {
-		health.RegisterHealthServer(params.Server.Server(), &server{ob: ob})
+	if params.Server == nil || params.Observer == nil {
+		return
 	}
+
+	health.RegisterHealthServer(params.Server.Server(), &server{ob: params.Observer})
 }

@@ -34,19 +34,19 @@ import (
 type ServerParams struct {
 	fx.In
 
+	Lifecycle  fx.Lifecycle
 	Shutdowner fx.Shutdowner
-
-	Config    *Config
-	Logger    *logger.Logger
-	Tracer    *tracer.Tracer
-	Meter     *metrics.Meter
-	UserAgent env.UserAgent
-	Version   env.Version
-	ID        id.Generator
-	Limiter   *limiter.Limiter               `optional:"true"`
-	Verifier  token.Verifier                 `optional:"true"`
-	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
-	Stream    []grpc.StreamServerInterceptor `optional:"true"`
+	Config     *Config
+	Logger     *logger.Logger
+	Tracer     *tracer.Tracer
+	Meter      *metrics.Meter
+	UserAgent  env.UserAgent
+	Version    env.Version
+	ID         id.Generator
+	Limiter    *limiter.Limiter               `optional:"true"`
+	Verifier   token.Verifier                 `optional:"true"`
+	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
+	Stream     []grpc.StreamServerInterceptor `optional:"true"`
 }
 
 // Server for gRPC.
@@ -57,6 +57,10 @@ type Server struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
+	if !IsEnabled(params.Config) {
+		return nil, nil
+	}
+
 	opt, err := creds(params.Config)
 	if err != nil {
 		return nil, errors.Prefix("grpc", err)
@@ -67,7 +71,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		meter = tm.NewServer(params.Meter)
 	}
 
-	timeout := timeout(params.Config)
+	timeout := time.MustParseDuration(params.Config.Timeout)
 
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
@@ -89,7 +93,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	svr := grpc.NewServer(opts...)
 	reflection.Register(svr)
 
-	serv, err := sg.NewServer(svr, config(params.Config))
+	serv, err := sg.NewServer(svr, &sg.Config{Address: cmp.Or(params.Config.Address, ":9090")})
 	if err != nil {
 		return nil, errors.Prefix("grpc", err)
 	}
@@ -98,6 +102,19 @@ func NewServer(params ServerParams) (*Server, error) {
 		srv:    server.NewServer("grpc", serv, params.Logger, params.Shutdowner),
 		server: svr,
 	}
+
+	params.Lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			server.Start()
+
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			server.Stop(ctx)
+
+			return nil
+		},
+	})
 
 	return server, nil
 }
@@ -170,7 +187,7 @@ func streamServerOption(params ServerParams, server *tm.Server, interceptors ...
 }
 
 func creds(cfg *Config) (grpc.ServerOption, error) {
-	if !IsEnabled(cfg) || !tls.IsEnabled(cfg.TLS) {
+	if !tls.IsEnabled(cfg.TLS) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
@@ -184,22 +201,6 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 	return grpc.Creds(creds), nil
 }
 
-func config(cfg *Config) *sg.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
-	c := &sg.Config{
-		Address: cmp.Or(cfg.Address, ":9090"),
-	}
-
-	return c
-}
-
-func timeout(cfg *Config) time.Duration {
-	if !IsEnabled(cfg) {
-		return time.Minute
-	}
-
-	return time.MustParseDuration(cfg.Timeout)
+func grpcServer(server *Server) *grpc.Server {
+	return server.Server()
 }
