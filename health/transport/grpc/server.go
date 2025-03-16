@@ -3,16 +3,24 @@ package grpc
 import (
 	"context"
 
+	"go.uber.org/fx"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// ServerParams for health.
+type ServerParams struct {
+	fx.In
+
+	Observer *Observer `optional:"true"`
+}
+
 // NewServer creates a new gRPC health server.
-func NewServer(ob *Observer) *Server {
-	if ob == nil {
+func NewServer(params ServerParams) *Server {
+	if params.Observer == nil {
 		return nil
 	}
 
-	return &Server{ob: ob}
+	return &Server{ob: params.Observer}
 }
 
 // Server represents a gRPC health server.
