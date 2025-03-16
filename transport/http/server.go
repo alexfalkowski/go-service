@@ -52,7 +52,11 @@ type Server struct {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
-	timeout := timeout(params.Config)
+	if !IsEnabled(params.Config) {
+		return nil, nil
+	}
+
+	timeout := time.MustParseDuration(params.Config.Timeout)
 
 	neg := negroni.New()
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
@@ -108,10 +112,6 @@ func NewServer(params ServerParams) (*Server, error) {
 }
 
 func config(cfg *Config) (*sh.Config, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":8080"),
 	}
@@ -124,12 +124,4 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = tls
 
 	return config, err
-}
-
-func timeout(cfg *Config) time.Duration {
-	if !IsEnabled(cfg) {
-		return time.Minute
-	}
-
-	return time.MustParseDuration(cfg.Timeout)
 }

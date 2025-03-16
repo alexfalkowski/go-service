@@ -45,57 +45,53 @@ type Server struct {
 func (s *Server) Register() {
 	sh := NewShutdowner()
 	tracer := NewTracer(s.Lifecycle, s.Tracer)
-
-	httpServer, err := th.NewServer(th.ServerParams{
-		Shutdowner: sh, Mux: s.Mux,
-		Config: s.TransportConfig.HTTP, Logger: s.Logger,
-		Tracer: tracer, Meter: s.Meter,
-		Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
-		Verifier: s.Verifier, ID: s.ID,
-		UserAgent: UserAgent, Version: Version,
-	})
-	runtime.Must(err)
-
-	s.HTTPServer = httpServer
-
-	grpcServer, err := tg.NewServer(tg.ServerParams{
-		Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
-		Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
-		Verifier: s.Verifier, ID: s.ID,
-		UserAgent: UserAgent, Version: Version,
-	})
-	runtime.Must(err)
-
-	s.GRPCServer = grpcServer
-
-	debugServer, err := debug.NewServer(debug.ServerParams{
-		Shutdowner: NewShutdowner(),
-		Config:     s.DebugConfig,
-		Logger:     s.Logger,
-	})
-	runtime.Must(err)
-
-	debug.RegisterPprof(debugServer)
-	debug.RegisterFgprof(debugServer)
-	debug.RegisterPsutil(debugServer, Content)
-
-	err = debug.RegisterStatsviz(debugServer)
-	runtime.Must(err)
-
-	s.DebugServer = debugServer
-
 	servers := []transport.Server{}
 
 	if s.RegisterHTTP {
+		httpServer, err := th.NewServer(th.ServerParams{
+			Shutdowner: sh, Mux: s.Mux,
+			Config: s.TransportConfig.HTTP, Logger: s.Logger,
+			Tracer: tracer, Meter: s.Meter,
+			Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
+			Verifier: s.Verifier, ID: s.ID,
+			UserAgent: UserAgent, Version: Version,
+		})
+		runtime.Must(err)
+
+		s.HTTPServer = httpServer
 		servers = append(servers, httpServer)
 	}
 
 	if s.RegisterGRPC {
+		grpcServer, err := tg.NewServer(tg.ServerParams{
+			Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
+			Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
+			Verifier: s.Verifier, ID: s.ID,
+			UserAgent: UserAgent, Version: Version,
+		})
+		runtime.Must(err)
+
+		s.GRPCServer = grpcServer
 		v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
 		servers = append(servers, grpcServer)
 	}
 
 	if s.RegisterDebug {
+		debugServer, err := debug.NewServer(debug.ServerParams{
+			Shutdowner: NewShutdowner(),
+			Config:     s.DebugConfig,
+			Logger:     s.Logger,
+		})
+		runtime.Must(err)
+
+		debug.RegisterPprof(debugServer)
+		debug.RegisterFgprof(debugServer)
+		debug.RegisterPsutil(debugServer, Content)
+
+		err = debug.RegisterStatsviz(debugServer)
+		runtime.Must(err)
+
+		s.DebugServer = debugServer
 		servers = append(servers, debugServer)
 	}
 
@@ -112,10 +108,6 @@ func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next htt
 // ErrServer for test.
 type ErrServer struct{}
 
-func (s *ErrServer) IsEnabled() bool {
-	return true
-}
-
 func (s *ErrServer) Serve() error {
 	return ErrFailed
 }
@@ -130,10 +122,6 @@ func (s *ErrServer) String() string {
 
 // NoopServer for test.
 type NoopServer struct{}
-
-func (s *NoopServer) IsEnabled() bool {
-	return true
-}
 
 func (s *NoopServer) Serve() error {
 	return nil

@@ -50,7 +50,7 @@ func TestInsecureUnary(t *testing.T) {
 
 func TestSecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
 		world.Register()
 		world.RequireStart()
 

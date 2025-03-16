@@ -10,14 +10,15 @@ import (
 type RegisterParams struct {
 	fx.In
 
-	Server   *grpc.Server
-	Observer *Observer `optional:"true"`
+	GRPC   *grpc.Server
+	Server *Server
 }
 
 // Register health for gRPC.
 func Register(params RegisterParams) {
-	ob := params.Observer
-	if ob != nil {
-		health.RegisterHealthServer(params.Server.Server(), &server{ob: ob})
+	if params.GRPC == nil || params.Server == nil {
+		return
 	}
+
+	health.RegisterHealthServer(params.GRPC.Server(), params.Server)
 }

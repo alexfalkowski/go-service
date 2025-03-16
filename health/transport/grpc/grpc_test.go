@@ -26,7 +26,7 @@ func TestUnary(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -61,7 +61,7 @@ func TestInvalidUnary(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -95,7 +95,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -126,7 +126,7 @@ func TestStream(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -160,7 +160,7 @@ func TestInvalidStream(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -194,7 +194,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
 
-		shg.Register(shg.RegisterParams{Server: world.GRPCServer, Observer: &shg.Observer{Observer: o}})
+		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)

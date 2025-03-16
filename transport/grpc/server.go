@@ -57,6 +57,10 @@ type Server struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
+	if !IsEnabled(params.Config) {
+		return nil, nil
+	}
+
 	opt, err := creds(params.Config)
 	if err != nil {
 		return nil, errors.Prefix("grpc", err)
@@ -67,8 +71,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		meter = tm.NewServer(params.Meter)
 	}
 
-	timeout := timeout(params.Config)
-
+	timeout := time.MustParseDuration(params.Config.Timeout)
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             timeout,
@@ -89,7 +92,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	svr := grpc.NewServer(opts...)
 	reflection.Register(svr)
 
-	serv, err := sg.NewServer(svr, config(params.Config))
+	serv, err := sg.NewServer(svr, &sg.Config{Address: cmp.Or(params.Config.Address, ":9090")})
 	if err != nil {
 		return nil, errors.Prefix("grpc", err)
 	}
@@ -170,7 +173,7 @@ func streamServerOption(params ServerParams, server *tm.Server, interceptors ...
 }
 
 func creds(cfg *Config) (grpc.ServerOption, error) {
-	if !IsEnabled(cfg) || !tls.IsEnabled(cfg.TLS) {
+	if !tls.IsEnabled(cfg.TLS) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
@@ -182,24 +185,4 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 	creds := credentials.NewTLS(conf)
 
 	return grpc.Creds(creds), nil
-}
-
-func config(cfg *Config) *sg.Config {
-	if !IsEnabled(cfg) {
-		return nil
-	}
-
-	c := &sg.Config{
-		Address: cmp.Or(cfg.Address, ":9090"),
-	}
-
-	return c
-}
-
-func timeout(cfg *Config) time.Duration {
-	if !IsEnabled(cfg) {
-		return time.Minute
-	}
-
-	return time.MustParseDuration(cfg.Timeout)
 }
