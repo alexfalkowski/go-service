@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/health"
-	shg "github.com/alexfalkowski/go-service/health/transport/grpc"
+	"github.com/alexfalkowski/go-service/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/meta"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
@@ -25,8 +25,9 @@ func TestUnary(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -60,8 +61,9 @@ func TestInvalidUnary(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -94,8 +96,9 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -125,8 +128,9 @@ func TestStream(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -159,8 +163,9 @@ func TestInvalidStream(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
@@ -193,8 +198,9 @@ func TestIgnoreAuthStream(t *testing.T) {
 		world.Register()
 
 		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
+		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
+		grpc.Register(grpc.RegisterParams{GRPC: world.GRPCServer, Server: server})
 
-		shg.Register(shg.RegisterParams{GRPC: world.GRPCServer, Server: shg.NewServer(&shg.Observer{Observer: o})})
 		world.RequireStart()
 
 		time.Sleep(1 * time.Second)
