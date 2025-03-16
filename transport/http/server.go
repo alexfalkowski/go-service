@@ -45,11 +45,6 @@ type ServerParams struct {
 	Handlers   []negroni.Handler `optional:"true"`
 }
 
-// Server for HTTP.
-type Server struct {
-	*server.Server
-}
-
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
 	if !IsEnabled(params.Config) {
@@ -109,6 +104,20 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	return server, nil
+}
+
+// Server for HTTP.
+type Server struct {
+	*server.Server
+}
+
+// GetServer returns the server, if defined.
+func (s *Server) GetServer() *server.Server {
+	if s == nil {
+		return nil
+	}
+
+	return s.Server
 }
 
 func config(cfg *Config) (*sh.Config, error) {
