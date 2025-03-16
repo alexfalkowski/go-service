@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
@@ -74,7 +75,7 @@ func BenchmarkHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(lc, []transport.Server{h})
+	transport.Register(lc, []*server.Server{h.GetServer()})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -115,7 +116,7 @@ func BenchmarkLogHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(lc, []transport.Server{h})
+	transport.Register(lc, []*server.Server{h.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
@@ -159,7 +160,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	transport.Register(lc, []transport.Server{h})
+	transport.Register(lc, []*server.Server{h.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()

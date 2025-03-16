@@ -9,6 +9,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/limiter"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -45,7 +46,7 @@ type Server struct {
 func (s *Server) Register() {
 	sh := NewShutdowner()
 	tracer := NewTracer(s.Lifecycle, s.Tracer)
-	servers := []transport.Server{}
+	servers := []*server.Server{}
 
 	if s.RegisterHTTP {
 		httpServer, err := th.NewServer(th.ServerParams{
@@ -59,7 +60,7 @@ func (s *Server) Register() {
 		runtime.Must(err)
 
 		s.HTTPServer = httpServer
-		servers = append(servers, httpServer)
+		servers = append(servers, httpServer.GetServer())
 	}
 
 	if s.RegisterGRPC {
@@ -72,8 +73,8 @@ func (s *Server) Register() {
 		runtime.Must(err)
 
 		s.GRPCServer = grpcServer
-		v1.RegisterGreeterServiceServer(grpcServer.Server(), NewService(s.VerifyAuth))
-		servers = append(servers, grpcServer)
+		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService(s.VerifyAuth))
+		servers = append(servers, grpcServer.GetServer())
 	}
 
 	if s.RegisterDebug {
@@ -92,7 +93,7 @@ func (s *Server) Register() {
 		runtime.Must(err)
 
 		s.DebugServer = debugServer
-		servers = append(servers, debugServer)
+		servers = append(servers, debugServer.GetServer())
 	}
 
 	transport.Register(s.Lifecycle, servers)

@@ -65,6 +65,15 @@ func (s *Server) ServeMux() *http.ServeMux {
 	return s.mux
 }
 
+// GetServer returns the server, if defined.
+func (s *Server) GetServer() *server.Server {
+	if s == nil {
+		return nil
+	}
+
+	return s.Server
+}
+
 func config(cfg *Config) (*sh.Config, error) {
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),

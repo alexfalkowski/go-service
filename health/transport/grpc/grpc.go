@@ -20,5 +20,5 @@ func Register(params RegisterParams) {
 		return
 	}
 
-	health.RegisterHealthServer(params.GRPC.Server(), params.Server)
+	health.RegisterHealthServer(params.GRPC.ServiceRegistrar(), params.Server)
 }

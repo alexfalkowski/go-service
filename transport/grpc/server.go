@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"cmp"
-	"context"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/env"
@@ -49,12 +48,6 @@ type ServerParams struct {
 	Stream    []grpc.StreamServerInterceptor `optional:"true"`
 }
 
-// Server for gRPC.
-type Server struct {
-	server *grpc.Server
-	srv    *server.Server
-}
-
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
 	if !IsEnabled(params.Config) {
@@ -98,26 +91,31 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		srv:    server.NewServer("grpc", serv, params.Logger, params.Shutdowner),
+		Server: server.NewServer("grpc", serv, params.Logger, params.Shutdowner),
 		server: svr,
 	}
 
 	return server, nil
 }
 
-// Start the server.
-func (s *Server) Start() {
-	s.srv.Start()
-}
-
-// Stop the server.
-func (s *Server) Stop(ctx context.Context) {
-	s.srv.Stop(ctx)
-}
-
 // Server for gRPC.
-func (s *Server) Server() *grpc.Server {
+type Server struct {
+	server *grpc.Server
+	*server.Server
+}
+
+// ServiceRegistrar for service registration.
+func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	return s.server
+}
+
+// GetServer returns the server, if defined.
+func (s *Server) GetServer() *server.Server {
+	if s == nil {
+		return nil
+	}
+
+	return s.Server
 }
 
 func unaryServerOption(params ServerParams, server *tm.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {

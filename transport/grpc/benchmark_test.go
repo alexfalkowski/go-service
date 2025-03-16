@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/transport"
@@ -65,8 +66,8 @@ func BenchmarkGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	transport.Register(lc, []*server.Server{g.GetServer()})
 
 	lc.RequireStart()
 	b.ResetTimer()
@@ -104,8 +105,8 @@ func BenchmarkLogGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	transport.Register(lc, []*server.Server{g.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
@@ -145,8 +146,8 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.Server(), test.NewService(false))
-	transport.Register(lc, []transport.Server{g})
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	transport.Register(lc, []*server.Server{g.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
 	lc.RequireStart()
