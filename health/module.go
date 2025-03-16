@@ -8,7 +8,7 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
-	fx.Invoke(http.Register),
-	fx.Invoke(grpc.Register),
+	http.Module,
+	grpc.Module,
 	fx.Provide(NewServer),
 )

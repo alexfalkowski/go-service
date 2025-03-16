@@ -4,6 +4,10 @@ import "net/http/pprof"
 
 // RegisterPprof for debug.
 func RegisterPprof(srv *Server) {
+	if srv == nil {
+		return
+	}
+
 	mux := srv.ServeMux()
 
 	mux.HandleFunc("/debug/pprof/", pprof.Index)

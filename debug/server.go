@@ -24,8 +24,12 @@ type ServerParams struct {
 
 // NewServer for debug.
 func NewServer(params ServerParams) (*Server, error) {
+	if !IsEnabled(params.Config) {
+		return nil, nil
+	}
+
 	mux := http.NewServeMux()
-	timeout := timeout(params.Config)
+	timeout := time.MustParseDuration(params.Config.Timeout)
 	svr := &http.Server{
 		Handler:     mux,
 		ReadTimeout: timeout, WriteTimeout: timeout,
@@ -62,10 +66,6 @@ func (s *Server) ServeMux() *http.ServeMux {
 }
 
 func config(cfg *Config) (*sh.Config, error) {
-	if !IsEnabled(cfg) {
-		return nil, nil
-	}
-
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}
@@ -78,12 +78,4 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = t
 
 	return config, err
-}
-
-func timeout(cfg *Config) time.Duration {
-	if !IsEnabled(cfg) {
-		return time.Minute
-	}
-
-	return time.MustParseDuration(cfg.Timeout)
 }

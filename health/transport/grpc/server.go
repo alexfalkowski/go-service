@@ -6,12 +6,22 @@ import (
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )
 
-type server struct {
+// NewServer creates a new gRPC health server.
+func NewServer(ob *Observer) *Server {
+	if ob == nil {
+		return nil
+	}
+
+	return &Server{ob: ob}
+}
+
+// Server represents a gRPC health server.
+type Server struct {
 	ob *Observer
 }
 
 // Check the health.
-func (s *server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+func (s *Server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
 
 	if err := s.ob.Error(); err != nil {
@@ -22,7 +32,7 @@ func (s *server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health
 }
 
 // Watch the health.
-func (s *server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
+func (s *Server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
 	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
 
 	if err := s.ob.Error(); err != nil {

@@ -23,10 +23,6 @@ type Config struct {
 func NewServer(server *grpc.Server, cfg *Config) (*Server, error) {
 	srv := &Server{server: server}
 
-	if cfg == nil {
-		return srv, nil
-	}
-
 	l, err := sn.Listener(cfg.Address)
 	if err != nil {
 		return srv, err
@@ -52,9 +48,4 @@ func (s *Server) Shutdown(_ context.Context) error {
 // String for server.
 func (s *Server) String() string {
 	return s.listener.Addr().String()
-}
-
-// IsEnabled for server.
-func (s *Server) IsEnabled() bool {
-	return s.listener != nil
 }

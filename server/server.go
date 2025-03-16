@@ -24,10 +24,6 @@ type Server struct {
 
 // Start the server.
 func (s *Server) Start() {
-	if !s.serverer.IsEnabled() {
-		return
-	}
-
 	go s.start()
 }
 
@@ -49,10 +45,6 @@ func (s *Server) start() {
 
 // Stop the server.
 func (s *Server) Stop(ctx context.Context) {
-	if !s.serverer.IsEnabled() {
-		return
-	}
-
 	_ = s.serverer.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {

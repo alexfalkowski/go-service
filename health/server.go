@@ -10,7 +10,6 @@ import (
 // NewServer for health.
 func NewServer(lc fx.Lifecycle, regs Registrations) *server.Server {
 	server := server.NewServer()
-
 	server.Register(regs...)
 
 	lc.Append(fx.Hook{
