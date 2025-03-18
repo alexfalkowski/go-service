@@ -38,7 +38,7 @@ func (s *Server) start() {
 		_ = s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", slog.String(meta.ServiceKey, s.name), addr, slog.String("error", err.Error()))
+			l.Error("could not start server", slog.String(meta.ServiceKey, s.name), addr, logger.Error(err))
 		})
 	}
 }
