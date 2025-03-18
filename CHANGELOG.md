@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.494.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.494.0) - 2025-03-18
+
+- [`77ec705`](https://github.com/alexfalkowski/go-service/commit/77ec705942fbdb7d5b731ed0b560a7e612f824dd) feat(logger): provide of slog can be private (#1424)
+
 ## [v1.493.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.493.0) - 2025-03-16
 
 - [`8072c9b`](https://github.com/alexfalkowski/go-service/commit/8072c9bf34bd95b5d00fd78b2dec75de7269f13a) feat(transport): use variadic function (#1423)
