@@ -42,6 +42,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"go.uber.org/fx"
+	"google.golang.org/grpc"
 )
 
 func TestRunWithServer(t *testing.T) {
@@ -300,23 +301,25 @@ func grpcObserver(healthServer *server.Server) *shg.Observer {
 	return &shg.Observer{Observer: healthServer.Observe("http")}
 }
 
+func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}
+
 func invokeCache(_ cc.Cache) {}
 
-func configs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
+func invokeConfigs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 
-func meter(_ *metrics.Meter) {}
+func invokeMeter(_ *metrics.Meter) {}
 
-func featureClient(_ *openfeature.Client) {}
+func invokeFeatureClient(_ *openfeature.Client) {}
 
-func webHooks(_ *h.Webhook, _ *geh.Receiver) {}
+func invokeWebhooks(_ *h.Webhook, _ *geh.Receiver) {}
 
-func environment(_ env.Name, _ env.UserAgent, _ env.Version) {}
+func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
-func netTime(n st.Network) {
+func invokeNetwork(n st.Network) {
 	_, _ = n.Now()
 }
 
-func crypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
+func invokeCrypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
 	msg := []byte("hello")
 
 	e, err := signer.Sign(msg)
@@ -332,7 +335,7 @@ func crypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Ciphe
 	return nil
 }
 
-func tokens(_ token.KID, _ *token.JWT, _ *token.Paseto, _ *token.Token) {}
+func invokeTokens(_ token.KID, _ *token.JWT, _ *token.Paseto, _ *token.Token) {}
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
@@ -348,9 +351,9 @@ func opts() []fx.Option {
 		feature.Module, transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver),
-		fx.Invoke(shutdown), fx.Invoke(featureClient), fx.Invoke(webHooks), fx.Invoke(configs),
-		fx.Invoke(meter), fx.Invoke(netTime), fx.Invoke(invokeCache),
-		fx.Invoke(crypt), fx.Invoke(environment), fx.Invoke(tokens),
+		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(invokeServiceRegistrar),
+		fx.Invoke(shutdown), fx.Invoke(invokeFeatureClient), fx.Invoke(invokeWebhooks), fx.Invoke(invokeConfigs),
+		fx.Invoke(invokeMeter), fx.Invoke(invokeNetwork), fx.Invoke(invokeCache),
+		fx.Invoke(invokeCrypt), fx.Invoke(invokeEnvironment), fx.Invoke(invokeTokens),
 	}
 }

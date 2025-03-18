@@ -106,6 +106,10 @@ type Server struct {
 
 // ServiceRegistrar for service registration.
 func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
+	if s == nil {
+		return nil
+	}
+
 	return s.server
 }
 
@@ -183,4 +187,8 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 	creds := credentials.NewTLS(conf)
 
 	return grpc.Creds(creds), nil
+}
+
+func provide(server *Server) grpc.ServiceRegistrar {
+	return server.ServiceRegistrar()
 }
