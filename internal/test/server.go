@@ -50,8 +50,7 @@ func (s *Server) Register() {
 
 	if s.RegisterHTTP {
 		httpServer, err := th.NewServer(th.ServerParams{
-			Shutdowner: sh, Mux: s.Mux,
-			Config: s.TransportConfig.HTTP, Logger: s.Logger,
+			Shutdowner: sh, Config: s.TransportConfig.HTTP, Logger: s.Logger,
 			Tracer: tracer, Meter: s.Meter,
 			Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.ID,

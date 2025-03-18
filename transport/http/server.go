@@ -32,7 +32,6 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *logger.Logger
 	Tracer     *tracer.Tracer
@@ -51,6 +50,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
+	mux := http.NewServeMux()
 	timeout := time.MustParseDuration(params.Config.Timeout)
 
 	neg := negroni.New()
@@ -80,7 +80,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(hl.NewHandler(params.Limiter))
 	}
 
-	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
+	neg.UseHandler(gzhttp.GzipHandler(mux))
 
 	svr := &http.Server{
 		Handler:     neg,
@@ -100,6 +100,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
+		mux:    mux,
 		Server: server.NewServer("http", serv, params.Logger, params.Shutdowner),
 	}
 
@@ -108,7 +109,17 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server for HTTP.
 type Server struct {
+	mux *http.ServeMux
 	*server.Server
+}
+
+// ServeMux for HTTP, if defined.
+func (s *Server) ServeMux() *http.ServeMux {
+	if s == nil {
+		return nil
+	}
+
+	return s.mux
 }
 
 // GetServer returns the server, if defined.
@@ -133,4 +144,8 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = tls
 
 	return config, err
+}
+
+func provide(server *Server) *http.ServeMux {
+	return server.ServeMux()
 }

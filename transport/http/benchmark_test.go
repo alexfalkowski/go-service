@@ -61,13 +61,11 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 func BenchmarkHTTP(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
 		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
 		Config:     cfg.HTTP,
 		UserAgent:  test.UserAgent,
 		Version:    test.Version,
@@ -100,14 +98,12 @@ func BenchmarkHTTP(b *testing.B) {
 func BenchmarkLogHTTP(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	logger, _ := logger.NewLogger(logger.Params{})
 	cfg := test.NewInsecureTransportConfig()
 
 	h, err := th.NewServer(th.ServerParams{
 		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
 		Config:     cfg.HTTP,
 		Logger:     logger,
 		UserAgent:  test.UserAgent,
@@ -142,7 +138,6 @@ func BenchmarkLogHTTP(b *testing.B) {
 func BenchmarkTraceHTTP(b *testing.B) {
 	b.ReportAllocs()
 
-	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(b)
 	logger, _ := logger.NewLogger(logger.Params{})
 	tracer := test.NewTracer(lc, nil)
@@ -150,7 +145,6 @@ func BenchmarkTraceHTTP(b *testing.B) {
 
 	h, err := th.NewServer(th.ServerParams{
 		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
 		Config:     cfg.HTTP,
 		Logger:     logger,
 		Tracer:     tracer,
