@@ -3,12 +3,6 @@ package debug
 import "github.com/felixge/fgprof"
 
 // RegisterFgprof for debug.
-func RegisterFgprof(srv *Server) {
-	if srv == nil {
-		return
-	}
-
-	mux := srv.ServeMux()
-
+func RegisterFgprof(mux *ServeMux) {
 	mux.Handle("/debug/fgprof", fgprof.Handler())
 }

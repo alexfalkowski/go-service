@@ -18,6 +18,7 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
+	Mux        *ServeMux
 	Config     *Config
 	Logger     *logger.Logger
 }
@@ -28,10 +29,9 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	mux := http.NewServeMux()
 	timeout := time.MustParseDuration(params.Config.Timeout)
 	svr := &http.Server{
-		Handler:     mux,
+		Handler:     params.Mux,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
@@ -48,7 +48,6 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	server := &Server{
 		Server: server.NewServer("debug", serv, params.Logger, params.Shutdowner),
-		mux:    mux,
 	}
 
 	return server, nil
@@ -56,13 +55,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server for debug.
 type Server struct {
-	mux *http.ServeMux
 	*server.Server
-}
-
-// ServeMux for debug.
-func (s *Server) ServeMux() *http.ServeMux {
-	return s.mux
 }
 
 // GetServer returns the server, if defined.

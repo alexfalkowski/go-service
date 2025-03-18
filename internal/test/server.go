@@ -78,18 +78,20 @@ func (s *Server) Register() {
 	}
 
 	if s.RegisterDebug {
+		mux := debug.NewServeMux()
 		debugServer, err := debug.NewServer(debug.ServerParams{
 			Shutdowner: NewShutdowner(),
+			Mux:        mux,
 			Config:     s.DebugConfig,
 			Logger:     s.Logger,
 		})
 		runtime.Must(err)
 
-		debug.RegisterPprof(debugServer)
-		debug.RegisterFgprof(debugServer)
-		debug.RegisterPsutil(debugServer, Content)
+		debug.RegisterPprof(mux)
+		debug.RegisterFgprof(mux)
+		debug.RegisterPsutil(mux, Content)
 
-		err = debug.RegisterStatsviz(debugServer)
+		err = debug.RegisterStatsviz(mux)
 		runtime.Must(err)
 
 		s.DebugServer = debugServer
