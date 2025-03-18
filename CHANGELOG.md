@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.497.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.497.0) - 2025-03-18
+
+- [`055a183`](https://github.com/alexfalkowski/go-service/commit/055a1833284c203fc8cde039d790b90995fcfca4) feat(deps): bump github.com/BurntSushi/toml from 1.4.0 to 1.5.0 (#1430)
+- [`6066534`](https://github.com/alexfalkowski/go-service/commit/606653479b4dbb0eda5cd870bd7c9990b057f90d) refactor(http): move metrics to telemetry (#1429)
+
 ## [v1.496.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.496.0) - 2025-03-18
 
 - [`172c74f`](https://github.com/alexfalkowski/go-service/commit/172c74f004bd4b4a9a605483f8835da181a7b194) feat(debug): add a mux (#1428)
