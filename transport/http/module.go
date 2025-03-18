@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
+	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"go.uber.org/fx"
 )
 
@@ -19,5 +20,5 @@ var Module = fx.Options(
 	fx.Invoke(rpc.Register),
 	fx.Invoke(rest.Register),
 	fx.Provide(NewServer),
-	fx.Invoke(RegisterMetrics),
+	fx.Invoke(metrics.Register),
 )
