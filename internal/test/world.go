@@ -29,8 +29,8 @@ import (
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport"
 	eh "github.com/alexfalkowski/go-service/transport/events/http"
-	ht "github.com/alexfalkowski/go-service/transport/http"
 	hh "github.com/alexfalkowski/go-service/transport/http/hooks"
+	tm "github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/transport/meta"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
@@ -366,7 +366,7 @@ func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
 	}
 
 	config := NewPrometheusMetricsConfig()
-	ht.RegisterMetrics(config, mux)
+	tm.Register(config, mux)
 
 	return NewMeter(lc, config)
 }

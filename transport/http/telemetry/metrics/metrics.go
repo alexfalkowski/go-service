@@ -9,8 +9,18 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
+	prometheus "github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/metric"
 )
+
+// Register prometheus.
+func Register(cfg *metrics.Config, mux *http.ServeMux) {
+	if !metrics.IsEnabled(cfg) || !cfg.IsPrometheus() {
+		return
+	}
+
+	mux.Handle("GET /metrics", prometheus.Handler())
+}
 
 // NewHandler for metrics.
 func NewHandler(meter *metrics.Meter) *Handler {
