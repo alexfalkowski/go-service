@@ -47,7 +47,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		Server: server.NewServer("debug", serv, params.Logger, params.Shutdowner),
+		Service: server.NewService("debug", serv, params.Logger, params.Shutdowner),
 	}
 
 	return server, nil
@@ -55,16 +55,16 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server for debug.
 type Server struct {
-	*server.Server
+	*server.Service
 }
 
 // GetServer returns the server, if defined.
-func (s *Server) GetServer() *server.Server {
+func (s *Server) GetServer() *server.Service {
 	if s == nil {
 		return nil
 	}
 
-	return s.Server
+	return s.Service
 }
 
 func config(cfg *Config) (*sh.Config, error) {

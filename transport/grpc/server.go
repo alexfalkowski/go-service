@@ -91,8 +91,8 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	server := &Server{
-		Server: server.NewServer("grpc", serv, params.Logger, params.Shutdowner),
-		server: svr,
+		Service: server.NewService("grpc", serv, params.Logger, params.Shutdowner),
+		server:  svr,
 	}
 
 	return server, nil
@@ -101,7 +101,7 @@ func NewServer(params ServerParams) (*Server, error) {
 // Server for gRPC.
 type Server struct {
 	server *grpc.Server
-	*server.Server
+	*server.Service
 }
 
 // ServiceRegistrar for service registration.
@@ -114,12 +114,12 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 }
 
 // GetServer returns the server, if defined.
-func (s *Server) GetServer() *server.Server {
+func (s *Server) GetServer() *server.Service {
 	if s == nil {
 		return nil
 	}
 
-	return s.Server
+	return s.Service
 }
 
 func unaryServerOption(params ServerParams, server *tm.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
