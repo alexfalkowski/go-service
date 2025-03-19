@@ -46,7 +46,7 @@ type Server struct {
 func (s *Server) Register() {
 	sh := NewShutdowner()
 	tracer := NewTracer(s.Lifecycle, s.Tracer)
-	servers := []*server.Server{}
+	servers := []*server.Service{}
 
 	if s.RegisterHTTP {
 		httpServer, err := th.NewServer(th.ServerParams{

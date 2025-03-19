@@ -8,7 +8,7 @@ import (
 )
 
 // Register all the transports.
-func Register(lc fx.Lifecycle, servers []*server.Server) {
+func Register(lc fx.Lifecycle, servers []*server.Service) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range servers {

@@ -19,6 +19,6 @@ type ServersParams struct {
 }
 
 // NewServers for transport.
-func NewServers(params ServersParams) []*server.Server {
-	return slices.AppendNotNil([]*server.Server{}, params.HTTP.GetServer(), params.GRPC.GetServer(), params.Debug.GetServer())
+func NewServers(params ServersParams) []*server.Service {
+	return slices.AppendNotNil([]*server.Service{}, params.HTTP.GetServer(), params.GRPC.GetServer(), params.Debug.GetServer())
 }
