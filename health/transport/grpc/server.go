@@ -20,32 +20,36 @@ func NewServer(params ServerParams) *Server {
 		return nil
 	}
 
-	return &Server{ob: params.Observer}
+	return &Server{observer: params.Observer}
 }
 
 // Server represents a gRPC health server.
 type Server struct {
-	ob *Observer
+	observer *Observer
 }
 
 // Check the health.
 func (s *Server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
-	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
+	var status health.HealthCheckResponse_ServingStatus
 
-	if err := s.ob.Error(); err != nil {
-		status.Status = health.HealthCheckResponse_NOT_SERVING
+	if err := s.observer.Error(); err != nil {
+		status = health.HealthCheckResponse_NOT_SERVING
+	} else {
+		status = health.HealthCheckResponse_SERVING
 	}
 
-	return status, nil
+	return &health.HealthCheckResponse{Status: status}, nil
 }
 
 // Watch the health.
 func (s *Server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
-	status := &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}
+	var status health.HealthCheckResponse_ServingStatus
 
-	if err := s.ob.Error(); err != nil {
-		status.Status = health.HealthCheckResponse_NOT_SERVING
+	if err := s.observer.Error(); err != nil {
+		status = health.HealthCheckResponse_NOT_SERVING
+	} else {
+		status = health.HealthCheckResponse_SERVING
 	}
 
-	return w.Send(status)
+	return w.Send(&health.HealthCheckResponse{Status: status})
 }
