@@ -13,6 +13,10 @@ import (
 
 // Register for metrics.
 func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
+	if dbs == nil {
+		return
+	}
+
 	opts := metric.WithAttributes(attribute.Key("db_driver").String(dbs.DriverName()))
 	maxOpen := meter.MustInt64ObservableGauge("sql_max_open_total", "Maximum number of open connections to the database.")
 	open := meter.MustInt64ObservableGauge("sql_open_total", "The number of established connections both in use and idle.")
