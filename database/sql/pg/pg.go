@@ -17,7 +17,7 @@ func Register(trace *tracer.Tracer, log *logger.Logger) {
 // Open for pg.
 func Open(lc fx.Lifecycle, cfg *Config) (*mssqlx.DBs, error) {
 	if !IsEnabled(cfg) {
-		return &mssqlx.DBs{}, nil
+		return nil, nil
 	}
 
 	return driver.Open(lc, "pg", cfg.Config)
