@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.501.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.501.0) - 2025-03-20
+
+- [`f585804`](https://github.com/alexfalkowski/go-service/commit/f5858042dcd26655dd6c3ab2d3e28f8d6bdb6088) feat(sql): follow the pattern of nil with disabled config (#1436)
+- [`ecd7ccd`](https://github.com/alexfalkowski/go-service/commit/ecd7ccda3d6cf71b59a420bf82ebdb9862a23d5e) refactor(health): use variable (#1435)
+
 ## [v1.500.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.500.0) - 2025-03-20
 
 - [`9a3f19c`](https://github.com/alexfalkowski/go-service/commit/9a3f19c285136aca7f94e5b8a516b9d7b3288365) feat(deps): bump github.com/redis/go-redis/v9 from 9.7.2 to 9.7.3 (#1434)
