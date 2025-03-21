@@ -45,9 +45,18 @@ func NewCache(params Params) config.Cache {
 	enc := params.Encoder.Get(params.Config.Encoder)
 
 	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, driver: params.Driver}
-	cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
-	cache = cl.NewCache(params.Config.Kind, params.Logger, cache)
-	cache = cm.NewCache(params.Config.Kind, params.Meter, cache)
+
+	if params.Tracer != nil {
+		cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
+	}
+
+	if params.Logger != nil {
+		cache = cl.NewCache(params.Config.Kind, params.Logger, cache)
+	}
+
+	if params.Meter != nil {
+		cache = cm.NewCache(params.Config.Kind, params.Meter, cache)
+	}
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {

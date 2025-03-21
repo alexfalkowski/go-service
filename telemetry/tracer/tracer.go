@@ -14,7 +14,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx"
 )
 
@@ -42,7 +41,7 @@ type Params struct {
 // NewTracer for tracer.
 func NewTracer(params Params) (*Tracer, error) {
 	if !IsEnabled(params.Config) {
-		return &Tracer{noop.Tracer{}}, nil
+		return nil, nil
 	}
 
 	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {

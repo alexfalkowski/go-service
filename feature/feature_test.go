@@ -10,14 +10,41 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestNoop(t *testing.T) {
-	Convey("Given I have a flipt client", t, func() {
+func TestFlags(t *testing.T) {
+	Convey("Given I do not have a feature provider", t, func() {
 		lc := fxtest.NewLifecycle(t)
 
 		feature.Register(feature.ProviderParams{
 			Lifecycle:      lc,
 			Name:           test.Name,
 			MetricProvider: test.NewPrometheusMeterProvider(lc),
+		})
+
+		client := feature.NewClient(test.Name)
+
+		lc.RequireStart()
+
+		Convey("When I get a flag", func() {
+			attrs := map[string]any{"favorite_color": "blue"}
+			v, err := client.BooleanValue(t.Context(), "v2_enabled", false, openfeature.NewEvaluationContext("tim@apple.com", attrs))
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have missing flag", func() {
+				So(v, ShouldBeFalse)
+			})
+		})
+
+		lc.RequireStop()
+	})
+
+	Convey("Given I have a feature provider", t, func() {
+		lc := fxtest.NewLifecycle(t)
+
+		feature.Register(feature.ProviderParams{
+			Lifecycle:       lc,
+			Name:            test.Name,
+			MetricProvider:  test.NewPrometheusMeterProvider(lc),
+			FeatureProvider: openfeature.NoopProvider{},
 		})
 
 		client := feature.NewClient(test.Name)

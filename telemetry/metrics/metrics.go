@@ -8,6 +8,10 @@ import (
 
 // NewMeter for metrics.
 func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
+	if provider == nil {
+		return nil
+	}
+
 	return &Meter{provider.Meter(name.String())}
 }
 
