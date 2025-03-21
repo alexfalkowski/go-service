@@ -2,12 +2,16 @@ package logger
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
 	"go.uber.org/fx"
 )
+
+// ErrNotFound for logger.
+var ErrNotFound = errors.New("logger: not found")
 
 // Params for logger.
 type Params struct {
@@ -23,25 +27,20 @@ type Params struct {
 
 // NewLogger using zap.
 func NewLogger(params Params) (*Logger, error) {
-	var logger *slog.Logger
-
 	switch {
 	case !IsEnabled(params.Config):
-		logger = newNoopLogger()
+		return nil, nil
 	case params.Config.IsOTLP():
-		l, err := newOtlpLogger(params)
-		if err != nil {
-			return nil, prefix(err)
-		}
+		logger, err := newOtlpLogger(params)
 
-		logger = l
+		return &Logger{logger}, prefix(err)
 	case params.Config.IsJSON():
-		logger = newJSONLogger(params)
+		return &Logger{newJSONLogger(params)}, nil
 	case params.Config.IsText():
-		logger = newTextLogger(params)
+		return &Logger{newTextLogger(params)}, nil
 	}
 
-	return &Logger{logger}, nil
+	return nil, ErrNotFound
 }
 
 // Logger allows to pass a function to log.
@@ -62,6 +61,15 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, at
 	l.Logger.LogAttrs(ctx, level, msg.Text, attrs...)
 }
 
+// GetLogger if defined.
+func (l *Logger) GetLogger() *slog.Logger {
+	if l == nil {
+		return nil
+	}
+
+	return l.Logger
+}
+
 func provide(logger *Logger) *slog.Logger {
-	return logger.Logger
+	return logger.GetLogger()
 }

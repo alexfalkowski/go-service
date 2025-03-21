@@ -23,19 +23,20 @@ type ProviderParams struct {
 
 // Register for feature.
 func Register(params ProviderParams) {
-	provider := params.FeatureProvider
-	if provider == nil {
-		provider = openfeature.NoopProvider{}
+	if params.FeatureProvider == nil {
+		return
 	}
 
-	h, err := hooks.NewMetricsHookForProvider(params.MetricProvider)
-	runtime.Must(err)
+	if params.MetricProvider != nil {
+		h, err := hooks.NewMetricsHookForProvider(params.MetricProvider)
+		runtime.Must(err)
 
-	openfeature.AddHooks(h, hooks.NewTracesHook(hooks.WithErrorStatusEnabled()))
+		openfeature.AddHooks(h, hooks.NewTracesHook(hooks.WithErrorStatusEnabled()))
+	}
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
-			return openfeature.SetProviderAndWait(provider)
+			return openfeature.SetProviderAndWait(params.FeatureProvider)
 		},
 		OnStop: func(_ context.Context) error {
 			openfeature.Shutdown()
