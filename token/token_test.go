@@ -16,12 +16,13 @@ func TestGenerate(t *testing.T) {
 		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
 		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
 			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-			JWT:    token.NewJWT(kid, signer, id.Default),
-			Paseto: token.NewPaseto(signer, id.Default),
+			JWT:    token.NewJWT(kid, signer, gen),
+			Paseto: token.NewPaseto(signer, gen),
 		}
 		token := token.NewToken(params)
 
@@ -40,12 +41,13 @@ func TestVerify(t *testing.T) {
 		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
 		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
 			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-			JWT:    token.NewJWT(kid, signer, id.Default),
-			Paseto: token.NewPaseto(signer, id.Default),
+			JWT:    token.NewJWT(kid, signer, gen),
+			Paseto: token.NewPaseto(signer, gen),
 		}
 		token := token.NewToken(params)
 
@@ -68,12 +70,13 @@ func TestError(t *testing.T) {
 	cfg := test.NewToken("opaque", "secrets/none")
 	kid := token.NewKID(cfg)
 	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	gen := &id.UUID{}
 	params := token.Params{
 		Config: cfg,
 		Name:   test.Name,
 		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-		JWT:    token.NewJWT(kid, signer, id.Default),
-		Paseto: token.NewPaseto(signer, id.Default),
+		JWT:    token.NewJWT(kid, signer, gen),
+		Paseto: token.NewPaseto(signer, gen),
 	}
 	token := token.NewToken(params)
 
@@ -109,12 +112,13 @@ func TestVerifyWithMissingToken(t *testing.T) {
 	cfg := test.NewToken("opaque", "secrets/opaque")
 	kid := token.NewKID(cfg)
 	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	gen := &id.UUID{}
 	params := token.Params{
 		Config: cfg,
 		Name:   test.Name,
 		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-		JWT:    token.NewJWT(kid, signer, id.Default),
-		Paseto: token.NewPaseto(signer, id.Default),
+		JWT:    token.NewJWT(kid, signer, gen),
+		Paseto: token.NewPaseto(signer, gen),
 	}
 	token := token.NewToken(params)
 

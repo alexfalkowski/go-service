@@ -20,12 +20,13 @@ func TestTokenAuthUnary(t *testing.T) {
 			cfg := test.NewToken(kind, "secrets/"+kind)
 			kid := token.NewKID(cfg)
 			signer, _ := ed25519.NewSigner(test.NewEd25519())
+			gen := &id.UUID{}
 			params := token.Params{
 				Config: cfg,
 				Name:   test.Name,
 				Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-				JWT:    token.NewJWT(kid, signer, id.Default),
-				Paseto: token.NewPaseto(signer, id.Default),
+				JWT:    token.NewJWT(kid, signer, gen),
+				Paseto: token.NewPaseto(signer, gen),
 			}
 			token := token.NewToken(params)
 

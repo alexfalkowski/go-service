@@ -1,9 +1,14 @@
 package metrics
 
 import (
+	"errors"
+
 	"github.com/alexfalkowski/go-service/os"
 	"go.opentelemetry.io/otel/sdk/metric"
 )
+
+// ErrNotFound for metrics.
+var ErrNotFound = errors.New("metrics: reader not found")
 
 // NewReader for metrics. A nil reader means disabled.
 func NewReader(fs os.FileSystem, cfg *Config) (metric.Reader, error) {
@@ -19,6 +24,6 @@ func NewReader(fs os.FileSystem, cfg *Config) (metric.Reader, error) {
 	case cfg.IsPrometheus():
 		return newPrometheusExporter(), nil
 	default:
-		return nil, nil
+		return nil, ErrNotFound
 	}
 }

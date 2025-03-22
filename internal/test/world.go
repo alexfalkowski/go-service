@@ -189,7 +189,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
 	tracer := NewOTLPTracerConfig()
-	id := id.Default
+	id := &id.UUID{}
 	os := options(opts...)
 
 	if os.logger == nil {

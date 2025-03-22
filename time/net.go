@@ -1,11 +1,16 @@
 package time
 
 import (
-	"github.com/alexfalkowski/go-service/errors"
+	"errors"
+
+	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/beevik/ntp"
 	"github.com/beevik/nts"
 )
+
+// ErrNotFound for metrics.
+var ErrNotFound = errors.New("time: network not found")
 
 // Network for time.
 type Network interface {
@@ -14,23 +19,17 @@ type Network interface {
 }
 
 // NewNetwork for time.
-func NewNetwork(cfg *Config) Network {
+func NewNetwork(cfg *Config) (Network, error) {
 	switch {
 	case !IsEnabled(cfg):
-		return &sysNetwork{}
+		return nil, nil
 	case cfg.IsNTP():
-		return &ntpNetwork{c: cfg}
+		return &ntpNetwork{c: cfg}, nil
 	case cfg.IsNTS():
-		return &ntsNetwork{c: cfg}
-	default:
-		return &sysNetwork{}
+		return &ntsNetwork{c: cfg}, nil
 	}
-}
 
-type sysNetwork struct{}
-
-func (*sysNetwork) Now() (Time, error) {
-	return Now(), nil
+	return nil, ErrNotFound
 }
 
 type ntpNetwork struct {
@@ -40,7 +39,7 @@ type ntpNetwork struct {
 func (n *ntpNetwork) Now() (Time, error) {
 	t, err := ntp.Time(n.c.Address)
 
-	return t, errors.Prefix("ntp", err)
+	return t, se.Prefix("ntp", err)
 }
 
 type ntsNetwork struct {
@@ -50,7 +49,7 @@ type ntsNetwork struct {
 func (n *ntsNetwork) Now() (t Time, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.Prefix("nts", runtime.ConvertRecover(r))
+			err = se.Prefix("nts", runtime.ConvertRecover(r))
 		}
 	}()
 

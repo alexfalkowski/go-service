@@ -221,7 +221,7 @@ func options(opts ...ClientOption) *clientOpts {
 	}
 
 	if os.id == nil {
-		os.id = id.Default
+		os.id = &id.UUID{}
 	}
 
 	return os
