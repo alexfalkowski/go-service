@@ -7,7 +7,6 @@ import (
 	crypto "github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/runtime"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -22,26 +21,26 @@ type Generator struct {
 }
 
 // Generate key pair with ssh.
-func (g *Generator) Generate() (pub string, pri string, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("ssh", runtime.ConvertRecover(r))
-		}
-	}()
-
+func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.gen)
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ssh", err)
+	}
 
 	mpu, err := ssh.NewPublicKey(public)
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ssh", err)
+	}
 
 	mpr, err := ssh.MarshalPrivateKey(private, "")
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ssh", err)
+	}
 
-	pub = string(ssh.MarshalAuthorizedKey(mpu))
-	pri = string(pem.EncodeToMemory(mpr))
+	pub := string(ssh.MarshalAuthorizedKey(mpu))
+	pri := string(pem.EncodeToMemory(mpr))
 
-	return
+	return pub, pri, nil
 }
 
 // NewSigner for ssh.

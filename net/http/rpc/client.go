@@ -10,7 +10,6 @@ import (
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/time"
 )
 
@@ -71,33 +70,34 @@ type Client[Req any, Res any] struct {
 }
 
 // Invoke for rpc.
-func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("rpc", runtime.ConvertRecover(r))
-		}
-	}()
-
+func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (*Res, error) {
 	buffer := pool.Get()
 	defer pool.Put(buffer)
 
-	err = c.mediaType.Encoder.Encode(buffer, req)
-	runtime.Must(err)
+	if err := c.mediaType.Encoder.Encode(buffer, req); err != nil {
+		return nil, errors.Prefix("rpc", err)
+	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, buffer)
-	runtime.Must(err)
+	if err != nil {
+		return nil, errors.Prefix("rpc", err)
+	}
 
 	request.Header.Set(content.TypeKey, c.mediaType.Type)
 
 	response, err := c.client.Do(request)
-	runtime.Must(err)
+	if err != nil {
+		return nil, errors.Prefix("rpc", err)
+	}
 
 	defer response.Body.Close()
 
 	buffer.Reset()
 
 	_, err = io.Copy(buffer, response.Body)
-	runtime.Must(err)
+	if err != nil {
+		return nil, errors.Prefix("rpc", err)
+	}
 
 	// The server handlers return text on errors.
 	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
@@ -106,10 +106,11 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (res *Res, err 
 	}
 
 	var rp Res
-	res = &rp
+	res := &rp
 
-	err = media.Encoder.Decode(buffer, res)
-	runtime.Must(err)
+	if err := media.Encoder.Decode(buffer, res); err != nil {
+		return nil, errors.Prefix("rpc", err)
+	}
 
 	return res, nil
 }

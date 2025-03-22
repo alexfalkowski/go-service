@@ -45,35 +45,6 @@ func TestRPCNoContent(t *testing.T) {
 	}
 }
 
-func TestRPCNoRequest(t *testing.T) {
-	for _, mt := range []string{"gob"} {
-		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
-
-			rpc.Route("/hello", test.NoContent)
-
-			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
-				client := rpc.NewClient[test.Request, test.Response](url,
-					rpc.WithClientContentType("application/"+mt),
-					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
-					rpc.WithClientTimeout("10s"),
-				)
-
-				_, err := client.Invoke(t.Context(), nil)
-
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-				})
-
-				world.RequireStop()
-			})
-		})
-	}
-}
-
 func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {

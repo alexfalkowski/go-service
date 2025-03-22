@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/runtime"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
@@ -16,10 +15,14 @@ import (
 
 func newOtlpLogger(params Params) (*slog.Logger, error) {
 	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
-		return nil, err
+		return nil, prefix(err)
 	}
 
-	exporter := newLogExporter(params.Config)
+	exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
+	if err != nil {
+		return nil, prefix(err)
+	}
+
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(params.Name.String()),
@@ -40,11 +43,4 @@ func newOtlpLogger(params Params) (*slog.Logger, error) {
 	})
 
 	return otelslog.NewLogger(params.Name.String(), otelslog.WithLoggerProvider(provider)), nil
-}
-
-func newLogExporter(cfg *Config) log.Exporter {
-	exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
-	runtime.Must(prefix(err))
-
-	return exporter
 }

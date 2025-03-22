@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/errors"
 	hc "github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/types/ptr"
 )
 
@@ -45,22 +44,22 @@ func newHandler[Res any](cont *Content, prefix string, handler func(ctx context.
 		ctx := req.Context()
 		ctx = hc.WithRequest(ctx, req)
 		ctx = hc.WithResponse(ctx, res)
-
-		defer func() {
-			if r := recover(); r != nil {
-				status.WriteError(res, errors.Prefix(prefix, runtime.ConvertRecover(r)))
-			}
-		}()
-
 		media := cont.NewFromRequest(req)
 
 		ctx = hc.WithEncoder(ctx, media.Encoder)
 		res.Header().Add(TypeKey, media.Type)
 
 		data, err := handler(ctx)
-		runtime.Must(err)
+		if err != nil {
+			status.WriteError(res, errors.Prefix(prefix, err))
 
-		err = media.Encoder.Encode(res, data)
-		runtime.Must(err)
+			return
+		}
+
+		if err := media.Encoder.Encode(res, data); err != nil {
+			status.WriteError(res, errors.Prefix(prefix, err))
+
+			return
+		}
 	}
 }

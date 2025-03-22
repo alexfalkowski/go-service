@@ -3,26 +3,12 @@ package cmd
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/runtime"
 	"go.uber.org/fx"
 )
 
-// StartFn for cmd.
-type StartFn func(ctx context.Context)
-
 // Start for cmd.
-func Start(lc fx.Lifecycle, fn StartFn) {
+func Start(lc fx.Lifecycle, fn func(ctx context.Context) error) {
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) (err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					err = runtime.ConvertRecover(r)
-				}
-			}()
-
-			fn(ctx)
-
-			return
-		},
+		OnStart: fn,
 	})
 }
