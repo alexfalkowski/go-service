@@ -13,7 +13,7 @@ import (
 
 func TestValidPaseto(t *testing.T) {
 	a, _ := ed25519.NewSigner(test.NewEd25519())
-	paseto := token.NewPaseto(a, id.Default)
+	paseto := token.NewPaseto(a, &id.UUID{})
 
 	Convey("When I generate a paseto token", t, func() {
 		token, err := paseto.Generate("test", "test", "test", time.Hour)
@@ -35,7 +35,7 @@ func TestValidPaseto(t *testing.T) {
 func TestInvalidPaseto(t *testing.T) {
 	Convey("When I generate a paseto token", t, func() {
 		a, _ := ed25519.NewSigner(test.NewEd25519())
-		paseto := token.NewPaseto(a, id.Default)
+		paseto := token.NewPaseto(a, &id.UUID{})
 
 		token, err := paseto.Generate("test", "test", "test", time.Hour)
 		So(err, ShouldBeNil)
@@ -55,7 +55,7 @@ func TestInvalidPaseto(t *testing.T) {
 
 	for _, tkn := range tokens {
 		a, _ := ed25519.NewSigner(test.NewEd25519())
-		paseto := token.NewPaseto(a, id.Default)
+		paseto := token.NewPaseto(a, &id.UUID{})
 
 		Convey("When I verify an invalid token", t, func() {
 			_, err := paseto.Verify(tkn, "test", "test")
@@ -67,7 +67,7 @@ func TestInvalidPaseto(t *testing.T) {
 	}
 
 	Convey("Given I have paseto with an erroneous signer", t, func() {
-		paseto := token.NewPaseto(&ed25519.Signer{}, id.Default)
+		paseto := token.NewPaseto(&ed25519.Signer{}, &id.UUID{})
 
 		Convey("When I generate a token", func() {
 			_, err := paseto.Generate("test", "test", "test", time.Hour)

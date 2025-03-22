@@ -41,8 +41,8 @@ func TestInvalidReader(t *testing.T) {
 	Convey("When I try to create a reader with an invalid configuration", t, func() {
 		_, err := metrics.NewReader(test.FS, &metrics.Config{Kind: "invalid"})
 
-		Convey("Then I should have no error", func() {
-			So(err, ShouldBeNil)
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
 		})
 	})
 }

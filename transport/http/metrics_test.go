@@ -20,7 +20,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			JWT:    token.NewJWT(kid, signer, id.Default),
+			JWT:    token.NewJWT(kid, signer, &id.UUID{}),
 		}
 		token := token.NewToken(params)
 

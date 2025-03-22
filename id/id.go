@@ -1,7 +1,9 @@
 package id
 
-// Default generator.
-var Default = &UUID{}
+import "errors"
+
+// ErrNotFound for id.
+var ErrNotFound = errors.New("id: generator not found")
 
 // Generator to generate an identifier.
 type Generator interface {
@@ -10,23 +12,23 @@ type Generator interface {
 }
 
 // NewGenerator from config.
-func NewGenerator(config *Config) Generator {
+func NewGenerator(config *Config) (Generator, error) {
 	if !IsEnabled(config) {
-		return Default
+		return nil, nil
 	}
 
 	switch config.Kind {
 	case "uuid":
-		return Default
+		return &UUID{}, nil
 	case "ksuid":
-		return &KSUID{}
+		return &KSUID{}, nil
 	case "nanoid":
-		return &NanoID{}
+		return &NanoID{}, nil
 	case "ulid":
-		return &ULID{}
+		return &ULID{}, nil
 	case "xid":
-		return &XID{}
-	default:
-		return Default
+		return &XID{}, nil
 	}
+
+	return nil, ErrNotFound
 }

@@ -7,10 +7,8 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestID(t *testing.T) {
+func TestValidID(t *testing.T) {
 	configs := []*id.Config{
-		nil,
-		{},
 		{Kind: "uuid"},
 		{Kind: "ksuid"},
 		{Kind: "nanoid"},
@@ -20,7 +18,8 @@ func TestID(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("Given I have a generator", t, func() {
-			gen := id.NewGenerator(config)
+			gen, err := id.NewGenerator(config)
+			So(err, ShouldBeNil)
 
 			Convey("When I generate an id", func() {
 				id := gen.Generate()
@@ -31,4 +30,30 @@ func TestID(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestInvalidID(t *testing.T) {
+	configs := []*id.Config{
+		nil,
+		{},
+	}
+
+	for _, config := range configs {
+		Convey("When I create a generator", t, func() {
+			gen, err := id.NewGenerator(config)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should not have a generator", func() {
+				So(gen, ShouldBeNil)
+			})
+		})
+	}
+
+	Convey("When I create a generator", t, func() {
+		_, err := id.NewGenerator(&id.Config{Kind: "invalid"})
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
 }

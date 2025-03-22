@@ -315,9 +315,7 @@ func invokeWebhooks(_ *h.Webhook, _ *geh.Receiver) {}
 
 func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
-func invokeNetwork(n st.Network) {
-	_, _ = n.Now()
-}
+func invokeNetwork(_ st.Network) {}
 
 func invokeCrypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
 	msg := []byte("hello")
