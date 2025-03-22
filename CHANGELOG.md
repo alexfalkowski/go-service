@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.503.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.503.0) - 2025-03-22
+
+- [`ca19ae8`](https://github.com/alexfalkowski/go-service/commit/ca19ae89e517a13d2adbec5d1a475b54ee383c31) feat(deps): bump github.com/golang-jwt/jwt/v4 from 4.5.1 to 4.5.2 (#1438)
+
 ## [v1.502.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.502.0) - 2025-03-21
 
 - [`a1413c6`](https://github.com/alexfalkowski/go-service/commit/a1413c6cffb746e8f6c909f2803622b4393ef2a7) feat(telemetry): follow the pattern of nil with disabled config (#1437)
