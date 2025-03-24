@@ -40,7 +40,7 @@ func TestValidEnvConfig(t *testing.T) {
 			input := test.NewInputConfig(set)
 
 			Convey("When I try to parse the configuration file", func() {
-				config, err := config.NewConfig[config.Config](input)
+				config, err := config.NewConfig[config.Config](input, test.Validator)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -61,7 +61,7 @@ func TestValidFileConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](input)
+			config, err := config.NewConfig[config.Config](input, test.Validator)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -79,7 +79,7 @@ func TestMissingFileConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[*config.Config](input)
+			_, err := config.NewConfig[*config.Config](input, test.Validator)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -89,20 +89,27 @@ func TestMissingFileConfig(t *testing.T) {
 }
 
 func TestInvalidFileConfig(t *testing.T) {
-	Convey("Given I have configuration file", t, func() {
-		set := cmd.NewFlagSet("test")
-		set.AddInput(test.FilePath("configs/invalid.yml"))
+	files := []string{
+		test.FilePath("configs/invalid.yml"),
+		test.FilePath("configs/invalid_trace.yml"),
+	}
 
-		input := test.NewInputConfig(set)
+	for _, file := range files {
+		Convey("Given I have configuration file", t, func() {
+			set := cmd.NewFlagSet("test")
+			set.AddInput(file)
 
-		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](input)
+			input := test.NewInputConfig(set)
 
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
+			Convey("When I try to parse the configuration file", func() {
+				_, err := config.NewConfig[config.Config](input, test.Validator)
+
+				Convey("Then I should have an error", func() {
+					So(err, ShouldBeError)
+				})
 			})
 		})
-	})
+	}
 }
 
 func TestValidMemConfig(t *testing.T) {
@@ -119,7 +126,7 @@ func TestValidMemConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](input)
+			config, err := config.NewConfig[config.Config](input, test.Validator)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
