@@ -16,7 +16,7 @@ func TestValid(t *testing.T) {
 		cfg := &Config{Address: "what?"}
 
 		Convey("When I validated it", func() {
-			err := valid.Struct(cfg)
+			err := valid.Struct(t.Context(), cfg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -28,7 +28,7 @@ func TestValid(t *testing.T) {
 		addr := "what?"
 
 		Convey("When I validated it", func() {
-			err := valid.Field(&addr, "hostname_port")
+			err := valid.Field(t.Context(), &addr, "hostname_port")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
