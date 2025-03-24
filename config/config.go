@@ -30,13 +30,14 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/alexfalkowski/go-service/types/structs"
+	"github.com/alexfalkowski/go-service/types/validator"
 )
 
 // ErrInvalidConfig when decoding fails.
 var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
-func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
+func NewConfig[T comparable](input *cmd.InputConfig, validator *validator.Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := input.Decode(config); err != nil {
 		return nil, err
@@ -44,6 +45,10 @@ func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
 
 	if structs.IsEmpty(config) {
 		return nil, ErrInvalidConfig
+	}
+
+	if err := validator.Struct(config); err != nil {
+		return nil, err
 	}
 
 	return config, nil
