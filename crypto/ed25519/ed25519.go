@@ -8,7 +8,6 @@ import (
 	crypto "github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/runtime"
 )
 
 // NewGenerator for ed25519.
@@ -22,26 +21,26 @@ type Generator struct {
 }
 
 // Generate key pair with ed25519.
-func (g *Generator) Generate() (pub string, pri string, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("ed25519", runtime.ConvertRecover(r))
-		}
-	}()
-
+func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.gen)
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ed25519", err)
+	}
 
 	mpu, err := x509.MarshalPKIXPublicKey(public)
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ed25519", err)
+	}
 
 	mpr, err := x509.MarshalPKCS8PrivateKey(private)
-	runtime.Must(err)
+	if err != nil {
+		return "", "", errors.Prefix("ed25519", err)
+	}
 
-	pub = string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu}))
-	pri = string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr}))
+	pub := string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu}))
+	pri := string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr}))
 
-	return
+	return pub, pri, nil
 }
 
 // NewSigner for ed25519.

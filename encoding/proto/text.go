@@ -3,7 +3,6 @@ package proto
 import (
 	"io"
 
-	"github.com/alexfalkowski/go-service/runtime"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,20 +16,15 @@ func NewText() *Text {
 type Text struct{}
 
 // Encode for proto.
-func (e *Text) Encode(w io.Writer, v any) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = runtime.ConvertRecover(r)
-		}
-	}()
-
+func (e *Text) Encode(w io.Writer, v any) error {
 	b, err := prototext.Marshal(v.(proto.Message))
-	runtime.Must(err)
+	if err != nil {
+		return err
+	}
 
 	_, err = w.Write(b)
-	runtime.Must(err)
 
-	return
+	return err
 }
 
 // Decode for proto.

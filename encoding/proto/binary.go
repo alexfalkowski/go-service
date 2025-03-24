@@ -3,8 +3,6 @@ package proto
 import (
 	"io"
 
-	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/runtime"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -17,35 +15,23 @@ func NewBinary() *Binary {
 type Binary struct{}
 
 // Encode for proto.
-func (e *Binary) Encode(w io.Writer, v any) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("proto", runtime.ConvertRecover(r))
-		}
-	}()
-
+func (e *Binary) Encode(w io.Writer, v any) error {
 	b, err := proto.Marshal(v.(proto.Message))
-	runtime.Must(err)
+	if err != nil {
+		return err
+	}
 
 	_, err = w.Write(b)
-	runtime.Must(err)
 
-	return
+	return err
 }
 
 // Decode for proto.
-func (e *Binary) Decode(r io.Reader, v any) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = errors.Prefix("proto", runtime.ConvertRecover(r))
-		}
-	}()
-
+func (e *Binary) Decode(r io.Reader, v any) error {
 	b, err := io.ReadAll(r)
-	runtime.Must(err)
+	if err != nil {
+		return err
+	}
 
-	err = proto.Unmarshal(b, v.(proto.Message))
-	runtime.Must(err)
-
-	return
+	return proto.Unmarshal(b, v.(proto.Message))
 }
