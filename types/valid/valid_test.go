@@ -3,7 +3,7 @@ package valid_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/valid"
+	"github.com/alexfalkowski/go-service/types/valid"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
