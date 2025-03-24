@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/types"
 	"go.uber.org/fx"
 )
 
@@ -24,4 +25,5 @@ var Module = fx.Options(
 	time.Module,
 	sync.Module,
 	id.Module,
+	types.Module,
 )
