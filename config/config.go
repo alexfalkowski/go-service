@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"errors"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
@@ -30,6 +31,7 @@ import (
 	"github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	"github.com/alexfalkowski/go-service/types/structs"
+	"github.com/alexfalkowski/go-service/types/valid"
 )
 
 // ErrInvalidConfig when decoding fails.
@@ -44,6 +46,10 @@ func NewConfig[T comparable](input *cmd.InputConfig) (*T, error) {
 
 	if structs.IsEmpty(config) {
 		return nil, ErrInvalidConfig
+	}
+
+	if err := valid.Struct(context.Background(), config); err != nil {
+		return nil, err
 	}
 
 	return config, nil

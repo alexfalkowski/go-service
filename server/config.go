@@ -15,5 +15,5 @@ type Config struct {
 	Retry   *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
 	TLS     *tls.Config   `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 	Timeout string        `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
-	Address string        `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+	Address string        `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty" validate:"omitempty,hostname_port"`
 }
