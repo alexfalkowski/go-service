@@ -1,43 +1,65 @@
-issues:
-  exclude-dirs:
-    - tmp
-linters-settings:
-  lll:
-    line-length: 180
-  varnamelen:
-    ignore-names:
-      - k
-      - v
-      - w
-      - i
-      - r
-      - fn
-      - ok
-      - lc
-      - db
-      - id
-      - os
-      - md
-      - fs
-      - sh
-      - ua
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    - tagalign
     - bodyclose
     - depguard
     - exhaustruct
     - forcetypeassert
     - gochecknoglobals
+    - gochecknoinits
     - ireturn
     - mnd
-    - paralleltest
-    - wrapcheck
-    - tagliatelle
+    - nakedret
     - nilnil
     - nonamedreturns
-    - nakedret
-    - gochecknoinits
-    - tenv
+    - paralleltest
     - revive
+    - tagalign
+    - tagliatelle
+    - wrapcheck
+  settings:
+    lll:
+      line-length: 180
+    varnamelen:
+      ignore-names:
+        - k
+        - v
+        - w
+        - i
+        - r
+        - fn
+        - ok
+        - lc
+        - db
+        - id
+        - os
+        - md
+        - fs
+        - sh
+        - ua
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - tmp
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - tmp
+      - third_party$
+      - builtin$
+      - examples$
