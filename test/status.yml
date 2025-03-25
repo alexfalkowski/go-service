@@ -2,6 +2,8 @@ environment: development
 health:
   duration: 1s
   timeout: 1s
+id:
+  kind: uuid
 telemetry:
   logger:
     kind: text
