@@ -118,7 +118,7 @@ type ServerStream struct {
 
 func (s *ServerStream) SendMsg(m any) error {
 	start := time.Now()
-	ctx := s.ServerStream.Context()
+	ctx := s.Context()
 
 	err := s.ServerStream.SendMsg(m)
 	if err == nil {
@@ -132,7 +132,7 @@ func (s *ServerStream) SendMsg(m any) error {
 
 func (s *ServerStream) RecvMsg(m any) error {
 	start := time.Now()
-	ctx := s.ServerStream.Context()
+	ctx := s.Context()
 
 	if err := s.ServerStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {
@@ -257,7 +257,7 @@ type ClientStream struct {
 
 func (s *ClientStream) SendMsg(m any) error {
 	start := time.Now()
-	ctx := s.ClientStream.Context()
+	ctx := s.Context()
 
 	err := s.ClientStream.SendMsg(m)
 	if err == nil {
@@ -271,7 +271,7 @@ func (s *ClientStream) SendMsg(m any) error {
 
 func (s *ClientStream) RecvMsg(m any) error {
 	start := time.Now()
-	ctx := s.ClientStream.Context()
+	ctx := s.Context()
 
 	if err := s.ClientStream.RecvMsg(m); err != nil {
 		if errors.Is(err, io.EOF) {

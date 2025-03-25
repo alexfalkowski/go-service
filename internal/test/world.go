@@ -252,12 +252,12 @@ func (w *World) Register() {
 
 // ServerHost for world.
 func (w *World) ServerHost() string {
-	return w.Server.TransportConfig.HTTP.Address
+	return w.TransportConfig.HTTP.Address
 }
 
 // DebugHost for world.
 func (w *World) DebugHost() string {
-	return w.Server.DebugConfig.Address
+	return w.DebugConfig.Address
 }
 
 // RegisterEvents for world.
@@ -272,7 +272,7 @@ func (w *World) EventsContext(ctx context.Context) context.Context {
 
 // ResponseWithBody for the world.
 func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, string, error) {
-	client := w.Client.NewHTTP()
+	client := w.NewHTTP()
 
 	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
 	runtime.Must(err)
@@ -294,7 +294,7 @@ func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method,
 
 // HTTPResponseNoBody for the world.
 func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, error) {
-	client := w.Client.NewHTTP()
+	client := w.NewHTTP()
 
 	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
 	runtime.Must(err)
