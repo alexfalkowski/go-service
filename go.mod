@@ -10,7 +10,7 @@ require (
 	github.com/arl/statsviz v0.6.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
-	github.com/cloudevents/sdk-go/v2 v2.15.2
+	github.com/cloudevents/sdk-go/v2 v2.16.0
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/faabiosr/cachego v0.22.2
