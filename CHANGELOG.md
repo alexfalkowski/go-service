@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.515.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.515.0) - 2025-03-26
+
+- [`24f900e`](https://github.com/alexfalkowski/go-service/commit/24f900e291fd2b6086444039006eb8b0731d5bcd) feat(deps): bump github.com/cloudevents/sdk-go/v2 from 2.15.2 to 2.16.0 (#1456)
+- [`ded26a2`](https://github.com/alexfalkowski/go-service/commit/ded26a245ed632a886c72bab9b2ac0faf375a13f) build(deps): bump bin from `b887116` to `446c480` (#1455)
+- [`d37a315`](https://github.com/alexfalkowski/go-service/commit/d37a3158801983b045bb7dea9197f60fd0cafaee) build(ci): update status config (#1454)
+- [`1ceb84d`](https://github.com/alexfalkowski/go-service/commit/1ceb84d4f58acaf18520e4ee0dd40ab474745584) build(ci): update alexfalkowski/go:2.0 (#1453)
+- [`dab3194`](https://github.com/alexfalkowski/go-service/commit/dab3194098e3bc6dc9c3c30c13959310bb6ee63c) build(deps): bump bin from `8e1a9ac` to `b887116` (#1452)
+
 ## [v1.514.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.514.0) - 2025-03-25
 
 - [`d523dcf`](https://github.com/alexfalkowski/go-service/commit/d523dcf5c5858463eba8d4e8a320107a627f9923) feat(deps): bump github.com/jackc/pgx/v5 from 5.7.3 to 5.7.4 (#1451)
