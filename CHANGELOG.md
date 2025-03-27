@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.516.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.516.0) - 2025-03-27
+
+- [`28c3f39`](https://github.com/alexfalkowski/go-service/commit/28c3f3900a05cb0a103757d67014fe9a97a697ea) feat(deps): bump golang.org/x/net from 0.37.0 to 0.38.0 (#1464)
+- [`5f399fd`](https://github.com/alexfalkowski/go-service/commit/5f399fdfedeab2803eb059b032d73068b6f9525c) build(deps): bump bin from `db4042b` to `16e2296` (#1463)
+- [`79717ce`](https://github.com/alexfalkowski/go-service/commit/79717ceb3452513683a073217c82443e8e4612eb) build(ci): add clean (#1462)
+- [`f155f08`](https://github.com/alexfalkowski/go-service/commit/f155f0823a147fe272df61090c53cd4e533314ba) build(deps): bump bin from `c661929` to `db4042b` (#1461)
+- [`0ca44b1`](https://github.com/alexfalkowski/go-service/commit/0ca44b1343e2efeb421dcb88959515c5dc6e8146) build(ci): use alexfalkowski/go:2.3 (#1460)
+- [`63e9d73`](https://github.com/alexfalkowski/go-service/commit/63e9d73ad8d296ad6b1fd3c51d4eacb997f44279) build(deps): bump bin from `446c480` to `c661929` (#1458)
+- [`358b8f9`](https://github.com/alexfalkowski/go-service/commit/358b8f92b73678518d6ef3d89cb5ad1bce4f558e) build(ci): use alexfalkowski/go:2.2 (#1457)
+
 ## [v1.515.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.515.0) - 2025-03-26
 
 - [`24f900e`](https://github.com/alexfalkowski/go-service/commit/24f900e291fd2b6086444039006eb8b0731d5bcd) feat(deps): bump github.com/cloudevents/sdk-go/v2 from 2.15.2 to 2.16.0 (#1456)
