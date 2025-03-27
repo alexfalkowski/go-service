@@ -32,6 +32,7 @@ jobs:
           keys:
             - go-service-go-cache-{{ checksum "go.sum" }}
             - go-service-go-cache-
+      - run: make clean
       - run: make dep
       - save_cache:
           name: save deps
@@ -43,6 +44,7 @@ jobs:
           keys:
             - go-service-go-build-cache-{{ checksum "go.sum" }}
             - go-service-go-build-cache-
+      - run: make clean
       - run: make lint
       - run: make sec
       - run: make specs
