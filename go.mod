@@ -2,6 +2,8 @@ module github.com/alexfalkowski/go-service
 
 go 1.24.0
 
+toolchain go1.24.1
+
 require (
 	aidanwoods.dev/go-paseto v1.5.4
 	github.com/BurntSushi/toml v1.5.0
@@ -66,7 +68,7 @@ require (
 	go.uber.org/dig v1.18.1
 	go.uber.org/fx v1.23.0
 	golang.org/x/crypto v0.36.0
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	google.golang.org/grpc v1.71.0
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
