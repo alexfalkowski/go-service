@@ -25,18 +25,17 @@ type (
 	Duration = time.Duration
 )
 
-// Now is just an alias to time.Now.
-var Now = time.Now
+var (
 
-// Since is the time elapsed since t.
-func Since(t time.Time) Duration {
-	return time.Since(t)
-}
+	// Now is just an alias to time.Now.
+	Now = time.Now
 
-// ParseDuration parses a duration string.
-func ParseDuration(s string) (time.Duration, error) {
-	return time.ParseDuration(s)
-}
+	// Since is just an alias to time.Since.
+	Since = time.Since
+
+	// ParseDuration is just an alias to time.ParseDuration.
+	ParseDuration = time.ParseDuration
+)
 
 // MustParseDuration for time.
 func MustParseDuration(s string) time.Duration {
