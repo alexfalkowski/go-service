@@ -26,7 +26,6 @@ type (
 )
 
 var (
-
 	// Now is just an alias to time.Now.
 	Now = time.Now
 
