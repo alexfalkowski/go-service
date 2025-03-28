@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.518.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.518.0) - 2025-03-28
+
+- [`8e746c3`](https://github.com/alexfalkowski/go-service/commit/8e746c361c6f48c29a7a1c69c0ebaa6dacb500e0) feat(time): split network to files (#1467)
+- [`4e2ad02`](https://github.com/alexfalkowski/go-service/commit/4e2ad0250f9f992a6324b5199047e427f11d55ab) refactor(time): remove new line (#1466)
+
 ## [v1.517.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.517.0) - 2025-03-28
 
 - [`423453e`](https://github.com/alexfalkowski/go-service/commit/423453e96f0c53d2c5ad240f63a1c823d4bb30cf) feat(time): use an alias (#1465)
