@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.519.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.519.0) - 2025-03-30
+
+- [`9ad8e09`](https://github.com/alexfalkowski/go-service/commit/9ad8e09960664ae6d3fde1eb07b32fa9ccc635e3) feat(deps): bump github.com/go-playground/validator/v10 from 10.25.0 to 10.26.0 (#1470)
+- [`9ca0e38`](https://github.com/alexfalkowski/go-service/commit/9ca0e3836576dcc8442f49ea5532b7df43559473) build(deps): bump bin from `c88983e` to `78af843` (#1469)
+- [`117d6f8`](https://github.com/alexfalkowski/go-service/commit/117d6f801deb3df5d17da5a12b3c41ad1c9c1268) build(deps): bump bin from `16e2296` to `c88983e` (#1468)
+
 ## [v1.518.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.518.0) - 2025-03-28
 
 - [`8e746c3`](https://github.com/alexfalkowski/go-service/commit/8e746c361c6f48c29a7a1c69c0ebaa6dacb500e0) feat(time): split network to files (#1467)
