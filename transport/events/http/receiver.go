@@ -34,7 +34,7 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 	handler, _ = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
 	handler = hh.NewHandler(r.hook, handler)
 
-	r.mux.HandleFunc("POST "+path, func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
-	})
+	pattern := http.MethodPost + " " + path
+
+	r.mux.Handle(pattern, handler)
 }
