@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.520.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.520.0) - 2025-04-01
+
+- [`eb4c7ee`](https://github.com/alexfalkowski/go-service/commit/eb4c7ee7a9c240147edce489336decb835596baa) feat(deps): bump github.com/faabiosr/cachego from 0.22.2 to 0.22.3 (#1471)
+
 ## [v1.519.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.519.0) - 2025-03-30
 
 - [`9ad8e09`](https://github.com/alexfalkowski/go-service/commit/9ad8e09960664ae6d3fde1eb07b32fa9ccc635e3) feat(deps): bump github.com/go-playground/validator/v10 from 10.25.0 to 10.26.0 (#1470)
