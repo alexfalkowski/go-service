@@ -2,12 +2,12 @@
 package grpc_test
 
 import (
-	"net"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/client"
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
@@ -22,9 +22,7 @@ import (
 func BenchmarkDefaultGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	addr := test.Address()
-
-	l, err := net.Listen("tcp", addr)
+	l, err := net.Listener(":12000")
 	runtime.Must(err)
 
 	server := grpc.NewServer()
@@ -38,7 +36,7 @@ func BenchmarkDefaultGRPC(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("std", func(b *testing.B) {
-		conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		runtime.Must(err)
 
 		client := v1.NewGreeterServiceClient(conn)
