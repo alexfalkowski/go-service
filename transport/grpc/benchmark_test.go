@@ -22,7 +22,7 @@ import (
 func BenchmarkDefaultGRPC(b *testing.B) {
 	b.ReportAllocs()
 
-	l, err := net.Listener(":12000")
+	l, err := net.Listen(":12000")
 	runtime.Must(err)
 
 	server := grpc.NewServer()

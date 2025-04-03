@@ -6,8 +6,11 @@ import (
 	reuse "github.com/libp2p/go-reuseport"
 )
 
-// Listener for net.
-func Listener(address string) (net.Listener, error) {
+// Listener is an alias for net.Listener.
+type Listener = net.Listener
+
+// Listen will reuse a TCP address.
+func Listen(address string) (Listener, error) {
 	return reuse.Listen("tcp", address)
 }
 
