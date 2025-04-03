@@ -3,17 +3,16 @@ package http
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"net/http"
 
-	sn "github.com/alexfalkowski/go-service/net"
+	"github.com/alexfalkowski/go-service/net"
 )
 
 // NewServer for HTTP.
 func NewServer(server *http.Server, cfg *Config) (*Server, error) {
 	srv := &Server{server: server, tls: cfg.TLS}
 
-	l, err := sn.Listener(cfg.Address)
+	l, err := net.Listen(cfg.Address)
 	if err != nil {
 		return srv, err
 	}

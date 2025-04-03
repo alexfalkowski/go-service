@@ -2,9 +2,8 @@ package grpc
 
 import (
 	"context"
-	"net"
 
-	sn "github.com/alexfalkowski/go-service/net"
+	"github.com/alexfalkowski/go-service/net"
 	"google.golang.org/grpc"
 )
 
@@ -23,7 +22,7 @@ type Config struct {
 func NewServer(server *grpc.Server, cfg *Config) (*Server, error) {
 	srv := &Server{server: server}
 
-	l, err := sn.Listener(cfg.Address)
+	l, err := net.Listen(cfg.Address)
 	if err != nil {
 		return srv, err
 	}
