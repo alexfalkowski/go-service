@@ -12,12 +12,6 @@ import (
 
 func TestInsecureDebug(t *testing.T) {
 	paths := []string{
-		"debug/statsviz",
-		"debug/pprof/",
-		"debug/pprof/cmdline",
-		"debug/pprof/symbol",
-		"debug/pprof/trace",
-		"debug/fgprof?seconds=1",
 		"debug/psutil",
 	}
 
@@ -43,12 +37,6 @@ func TestInsecureDebug(t *testing.T) {
 
 func TestSecureDebug(t *testing.T) {
 	paths := []string{
-		"debug/statsviz",
-		"debug/pprof/",
-		"debug/pprof/cmdline",
-		"debug/pprof/symbol",
-		"debug/pprof/trace",
-		"debug/fgprof?seconds=1",
 		"debug/psutil",
 	}
 

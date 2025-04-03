@@ -252,12 +252,12 @@ func (w *World) Register() {
 
 // ServerHost for world.
 func (w *World) ServerHost() string {
-	return w.TransportConfig.HTTP.Address
+	return "localhost:11000"
 }
 
 // DebugHost for world.
 func (w *World) DebugHost() string {
-	return w.DebugConfig.Address
+	return "localhost:6060"
 }
 
 // RegisterEvents for world.

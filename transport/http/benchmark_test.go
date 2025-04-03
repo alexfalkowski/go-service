@@ -28,11 +28,9 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 
-	addr := test.Address()
-
 	server := &http.Server{
 		Handler:           mux,
-		Addr:              addr,
+		Addr:              ":11000",
 		ReadHeaderTimeout: time.Second,
 	}
 	defer server.Close()
@@ -44,7 +42,7 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 
 	b.Run("std", func(b *testing.B) {
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", addr)
+		url := "http://localhost:11000/hello"
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
