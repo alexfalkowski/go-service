@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.525.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.525.0) - 2025-04-03
+
+- [`1b4318c`](https://github.com/alexfalkowski/go-service/commit/1b4318c8879239fbc4f12c17cd929b263ffcc1af) feat(net): reuse port (#1478)
+- [`8037147`](https://github.com/alexfalkowski/go-service/commit/8037147b4c4c1faf3f9eddafc381aa36eeb062bc) build(deps): bump bin from `78af843` to `68f9c91` (#1477)
+- [`2c3cb35`](https://github.com/alexfalkowski/go-service/commit/2c3cb35195315a30d99a3bfae733be8bed0ed117) build(ci): use alexfalkowski/go:2.5 (#1476)
+
 ## [v1.524.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.524.0) - 2025-04-02
 
 - [`ebcda21`](https://github.com/alexfalkowski/go-service/commit/ebcda2132014440e74e5e9b35b04371f9e9e4dc1) feat(deps): bump github.com/faabiosr/cachego from 0.22.3 to 0.26.0 (#1475)
