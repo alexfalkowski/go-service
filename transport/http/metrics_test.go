@@ -16,11 +16,13 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		cfg := test.NewToken("jwt", "secrets/jwt")
 		kid := token.NewKID(cfg)
-		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		ec := test.NewEd25519()
+		signer, _ := ed25519.NewSigner(ec)
+		verifier, _ := ed25519.NewVerifier(ec)
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			JWT:    token.NewJWT(kid, signer, &id.UUID{}),
+			JWT:    token.NewJWT(kid, signer, verifier, &id.UUID{}),
 		}
 		token := token.NewToken(params)
 
@@ -45,7 +47,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
@@ -80,7 +82,7 @@ func TestPrometheusHTTP(t *testing.T) {
 
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.ServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, "metrics", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {

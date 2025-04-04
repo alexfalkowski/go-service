@@ -25,13 +25,14 @@ func NewKID(cfg *Config) KID {
 type KID string
 
 // NewJWT token.
-func NewJWT(kid KID, signer *ed25519.Signer, generator id.Generator) *JWT {
-	return &JWT{kid: kid, signer: signer, generator: generator}
+func NewJWT(kid KID, signer *ed25519.Signer, verifier *ed25519.Verifier, generator id.Generator) *JWT {
+	return &JWT{kid: kid, signer: signer, verifier: verifier, generator: generator}
 }
 
 // JWT token.
 type JWT struct {
 	signer    *ed25519.Signer
+	verifier  *ed25519.Verifier
 	generator id.Generator
 	kid       KID
 }
@@ -78,5 +79,5 @@ func (j *JWT) Verify(token, aud, iss string) (string, error) {
 }
 
 func (j *JWT) validate(_ *jwt.Token) (any, error) {
-	return j.signer.PublicKey, nil
+	return j.verifier.PublicKey, nil
 }

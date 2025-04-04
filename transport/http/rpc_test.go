@@ -25,7 +25,7 @@ func TestRPCNoContent(t *testing.T) {
 			rpc.Route("/hello", test.NoContent)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
@@ -55,7 +55,7 @@ func TestRPCWithContent(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
@@ -85,7 +85,7 @@ func TestSuccessProtobufRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessProtobufSayHello)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 				res, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
@@ -117,7 +117,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 				rpc.Route("/hello", handler)
 
 				Convey("When I post data", func() {
-					url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+					url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 					client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
 
 					_, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
@@ -148,7 +148,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 				header := http.Header{}
 				header.Set("Content-Type", "application/"+mt)
 
-				res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
+				res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have response", func() {
@@ -189,7 +189,7 @@ func TestErrorRPC(t *testing.T) {
 					err := enc.Encode(b, test.Request{Name: "Bob"})
 					So(err, ShouldBeNil)
 
-					res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodPost, "hello", header, b)
+					res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, b)
 					So(err, ShouldBeNil)
 
 					Convey("Then I should have response", func() {
@@ -214,7 +214,7 @@ func TestAllowedRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
@@ -245,7 +245,7 @@ func TestDisallowedRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				client := rpc.NewClient[test.Request, test.Response](url,
 					rpc.WithClientContentType(mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))

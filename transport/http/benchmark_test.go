@@ -200,7 +200,7 @@ func BenchmarkRoute(b *testing.B) {
 	b.Run("html", func(b *testing.B) {
 		client := world.NewHTTP()
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.ServerHost()), http.NoBody)
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.InsecureServerHost()), http.NoBody)
 		runtime.Must(err)
 
 		req.Header.Set("Content-Type", "text/html")
@@ -231,7 +231,7 @@ func BenchmarkRPC(b *testing.B) {
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		cl := world.NewHTTP()
-		url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+		url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 		client := rpc.NewClient[test.Request, test.Response](url,
 			rpc.WithClientContentType("application/"+mt),
 			rpc.WithClientRoundTripper(cl.Transport),
@@ -265,7 +265,7 @@ func BenchmarkProtobuf(b *testing.B) {
 
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		cl := world.NewHTTP()
-		url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+		url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 		client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url,
 			rpc.WithClientContentType("application/"+mt),
 			rpc.WithClientRoundTripper(cl.Transport))

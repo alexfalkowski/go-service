@@ -11,21 +11,6 @@ import (
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
-// NewGenerator for aes.
-func NewGenerator(gen *rand.Generator) *Generator {
-	return &Generator{gen: gen}
-}
-
-// Generator for aes.
-type Generator struct {
-	gen *rand.Generator
-}
-
-// Generate for aes.
-func (g *Generator) Generate() (string, error) {
-	return g.gen.GenerateText(32)
-}
-
 // NewCipher for aes.
 func NewCipher(gen *rand.Generator, cfg *Config) (*Cipher, error) {
 	if !IsEnabled(cfg) {

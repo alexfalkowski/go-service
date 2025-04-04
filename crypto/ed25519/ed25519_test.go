@@ -40,21 +40,26 @@ func TestGenerator(t *testing.T) {
 	})
 }
 
-func TestValidSigner(t *testing.T) {
+func TestValid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
-		signer, err := ed25519.NewSigner(test.NewEd25519())
+		cfg := test.NewEd25519()
+
+		signer, err := ed25519.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ed25519.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
 			e, _ := signer.Sign([]byte("test"))
 
 			Convey("Then I should have verified the data", func() {
-				So(signer.Verify(e, []byte("test")), ShouldBeNil)
+				So(verifier.Verify(e, []byte("test")), ShouldBeNil)
 			})
 
 			Convey("Then I should have keys", func() {
 				So(signer.PrivateKey, ShouldNotBeNil)
-				So(signer.PublicKey, ShouldNotBeNil)
+				So(verifier.PublicKey, ShouldNotBeNil)
 			})
 		})
 	})
@@ -67,13 +72,21 @@ func TestValidSigner(t *testing.T) {
 			So(signer, ShouldBeNil)
 		})
 	})
+
+	Convey("When I try to create a verifier with no configuration", t, func() {
+		signer, err := ed25519.NewVerifier(nil)
+		So(err, ShouldBeNil)
+
+		Convey("Then I should have no signer", func() {
+			So(signer, ShouldBeNil)
+		})
+	})
 }
 
 //nolint:funlen
-func TestInvalidSigner(t *testing.T) {
+func TestInvalid(t *testing.T) {
 	configs := []*ed25519.Config{
 		{},
-		{Public: test.Path("secrets/ed25519_public_invalid"), Private: test.Path("secrets/ed25519_private")},
 		{Public: test.Path("secrets/ed25519_public"), Private: test.Path("secrets/ed25519_private_invalid")},
 	}
 
@@ -87,8 +100,28 @@ func TestInvalidSigner(t *testing.T) {
 		})
 	}
 
+	configs = []*ed25519.Config{
+		{},
+		{Public: test.Path("secrets/ed25519_public_invalid"), Private: test.Path("secrets/ed25519_private")},
+	}
+
+	for _, config := range configs {
+		Convey("When I create a signer", t, func() {
+			_, err := ed25519.NewVerifier(config)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	}
+
 	Convey("Given I have an signer", t, func() {
-		signer, err := ed25519.NewSigner(test.NewEd25519())
+		cfg := test.NewEd25519()
+
+		signer, err := ed25519.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ed25519.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign the data", func() {
@@ -98,13 +131,18 @@ func TestInvalidSigner(t *testing.T) {
 			sig = append(sig, byte('w'))
 
 			Convey("Then I should have an error", func() {
-				So(signer.Verify(sig, []byte("test")), ShouldBeError)
+				So(verifier.Verify(sig, []byte("test")), ShouldBeError)
 			})
 		})
 	})
 
 	Convey("Given I have an signer", t, func() {
-		signer, err := ed25519.NewSigner(test.NewEd25519())
+		cfg := test.NewEd25519()
+
+		signer, err := ed25519.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ed25519.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign one message", func() {
@@ -112,13 +150,13 @@ func TestInvalidSigner(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(signer.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
+				So(verifier.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})
 
-	Convey("When I create an signer with an invalid public key", t, func() {
-		_, err := ed25519.NewSigner(&ed25519.Config{
+	Convey("When I create an verifier with an invalid public key", t, func() {
+		_, err := ed25519.NewVerifier(&ed25519.Config{
 			Public:  test.Path("secrets/rsa_public"),
 			Private: test.Path("secrets/ed25519_private"),
 		})

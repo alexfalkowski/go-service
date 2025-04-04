@@ -24,7 +24,7 @@ func TestInsecureDebug(t *testing.T) {
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
 
-				res, err := world.ResponseWithNoBody(t.Context(), "http", world.DebugHost(), http.MethodGet, path, header, http.NoBody)
+				res, err := world.ResponseWithNoBody(t.Context(), "http", world.InsecureDebugHost(), http.MethodGet, path, header, http.NoBody)
 				So(err, ShouldBeNil)
 
 				So(res.StatusCode, ShouldEqual, 200)
@@ -49,7 +49,7 @@ func TestSecureDebug(t *testing.T) {
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
 
-				res, err := world.ResponseWithNoBody(t.Context(), "https", world.DebugHost(), http.MethodGet, path, header, http.NoBody)
+				res, err := world.ResponseWithNoBody(t.Context(), "https", world.SecureDebugHost(), http.MethodGet, path, header, http.NoBody)
 				So(err, ShouldBeNil)
 
 				So(res.StatusCode, ShouldEqual, 200)
