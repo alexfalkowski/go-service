@@ -1,0 +1,33 @@
+package rsa
+
+import (
+	"crypto/rsa"
+	"crypto/sha512"
+
+	"github.com/alexfalkowski/go-service/crypto/rand"
+)
+
+// NewEncryptor for rsa.
+func NewEncryptor(generator *rand.Generator, cfg *Config) (*Encryptor, error) {
+	if !IsEnabled(cfg) {
+		return nil, nil
+	}
+
+	pub, err := cfg.PublicKey()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Encryptor{generator: generator, publicKey: pub}, nil
+}
+
+// Encryptor for rsa.
+type Encryptor struct {
+	generator *rand.Generator
+	publicKey *rsa.PublicKey
+}
+
+// Encrypt for rsa.
+func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
+	return rsa.EncryptOAEP(sha512.New(), e.generator, e.publicKey, msg, nil)
+}

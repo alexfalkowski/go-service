@@ -40,16 +40,21 @@ func TestGenerator(t *testing.T) {
 	})
 }
 
-func TestValidSigner(t *testing.T) {
+func TestValid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
-		signer, err := ssh.NewSigner(test.NewSSH())
+		cfg := test.NewSSH()
+
+		signer, err := ssh.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ssh.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
 			e, _ := signer.Sign([]byte("test"))
 
 			Convey("Then I should compared the data", func() {
-				So(signer.Verify(e, []byte("test")), ShouldBeNil)
+				So(verifier.Verify(e, []byte("test")), ShouldBeNil)
 			})
 		})
 	})
@@ -62,20 +67,42 @@ func TestValidSigner(t *testing.T) {
 			So(signer, ShouldBeNil)
 		})
 	})
+
+	Convey("When I try to create a verifier with no configuration", t, func() {
+		verifier, err := ssh.NewVerifier(nil)
+		So(err, ShouldBeNil)
+
+		Convey("Then I should have no signer", func() {
+			So(verifier, ShouldBeNil)
+		})
+	})
 }
 
 //nolint:funlen
-func TestInvalidSigner(t *testing.T) {
+func TestInvalid(t *testing.T) {
 	Convey("When I create a signer", t, func() {
 		_, err := ssh.NewSigner(&ssh.Config{})
 
-		Convey("Then I should not have an ed25519 error", func() {
+		Convey("Then I should not have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
+
+	Convey("When I create a verifier", t, func() {
+		_, err := ssh.NewVerifier(&ssh.Config{})
+
+		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeError)
 		})
 	})
 
 	Convey("Given I have an signer", t, func() {
-		signer, err := ssh.NewSigner(test.NewSSH())
+		cfg := test.NewSSH()
+
+		signer, err := ssh.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ssh.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
@@ -85,29 +112,31 @@ func TestInvalidSigner(t *testing.T) {
 			sig = append(sig, byte('w'))
 
 			Convey("Then I should have an error", func() {
-				So(signer.Verify(sig, []byte("test")), ShouldBeError)
+				So(verifier.Verify(sig, []byte("test")), ShouldBeError)
 			})
 		})
 	})
 
 	Convey("Given I have an signer", t, func() {
-		signer, err := ssh.NewSigner(test.NewSSH())
+		cfg := test.NewSSH()
+
+		signer, err := ssh.NewSigner(cfg)
+		So(err, ShouldBeNil)
+
+		verifier, err := ssh.NewVerifier(cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign one message", func() {
 			e, _ := signer.Sign([]byte("test"))
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(signer.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
+				So(verifier.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})
 
 	Convey("When I have an invalid public key", t, func() {
-		_, err := ssh.NewSigner(&ssh.Config{
-			Public:  test.Path("secrets/redis"),
-			Private: test.Path("secrets/ssh_private"),
-		})
+		_, err := ssh.NewVerifier(&ssh.Config{Public: test.Path("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -115,10 +144,7 @@ func TestInvalidSigner(t *testing.T) {
 	})
 
 	Convey("When I have an invalid private key", t, func() {
-		_, err := ssh.NewSigner(&ssh.Config{
-			Public:  test.Path("secrets/ssh_public"),
-			Private: test.Path("secrets/redis"),
-		})
+		_, err := ssh.NewSigner(&ssh.Config{Private: test.Path("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

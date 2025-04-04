@@ -27,7 +27,7 @@ func TestRouteSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid html", func() {
@@ -58,7 +58,7 @@ func TestRouteMissingView(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have no html", func() {
@@ -86,7 +86,7 @@ func TestRouteError(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "hello", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
@@ -115,7 +115,7 @@ func TestStaticSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set("Content-Type", "text/html")
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid html", func() {
@@ -140,7 +140,7 @@ func TestStaticError(t *testing.T) {
 		Convey("When I query for hello", func() {
 			header := http.Header{}
 
-			res, _, err := world.ResponseWithBody(t.Context(), "http", world.ServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
+			res, _, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {

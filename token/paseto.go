@@ -8,13 +8,14 @@ import (
 )
 
 // NewPaseto token.
-func NewPaseto(signer *ed25519.Signer, generator id.Generator) *Paseto {
-	return &Paseto{signer: signer, generator: generator}
+func NewPaseto(signer *ed25519.Signer, verifier *ed25519.Verifier, generator id.Generator) *Paseto {
+	return &Paseto{signer: signer, verifier: verifier, generator: generator}
 }
 
 // Paseto token.
 type Paseto struct {
 	signer    *ed25519.Signer
+	verifier  *ed25519.Verifier
 	generator id.Generator
 }
 
@@ -47,7 +48,7 @@ func (p *Paseto) Verify(token, aud, iss string) (string, error) {
 	parser.AddRule(paseto.ValidAt(time.Now()))
 	parser.AddRule(paseto.ForAudience(aud))
 
-	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(p.signer.PublicKey)
+	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(p.verifier.PublicKey)
 	if err != nil {
 		return "", err
 	}

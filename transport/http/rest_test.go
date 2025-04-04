@@ -23,7 +23,7 @@ func TestRestNoContent(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestNoContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				res, err := world.Rest.R().Execute(v, url)
 
 				Convey("Then I should have no error", func() {
@@ -48,7 +48,7 @@ func TestRestRequestNoContent(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				headers := map[string]string{
 					"Content-Type": "application/json",
 					"Accept":       "application/json",
@@ -77,7 +77,7 @@ func TestRestError(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestError)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 
 				res, err := world.Rest.R().Execute(v, url)
 				So(err, ShouldBeNil)
@@ -102,7 +102,7 @@ func TestRestRequestError(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestError)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				headers := map[string]string{
 					"Content-Type": "application/json",
 					"Accept":       "application/json",
@@ -131,7 +131,7 @@ func TestRestWithContent(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 
 				resp, err := world.Rest.R().Execute(v, url)
 				So(err, ShouldBeNil)
@@ -161,7 +161,7 @@ func TestRestRequestWithContent(t *testing.T) {
 				b := test.Pool.Get()
 				defer test.Pool.Put(b)
 
-				url := fmt.Sprintf("http://%s/hello", world.ServerHost())
+				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				enc := json.NewEncoder()
 				headers := map[string]string{
 					"Content-Type": "application/json",

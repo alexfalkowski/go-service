@@ -15,14 +15,16 @@ func TestGenerate(t *testing.T) {
 	for _, kind := range []string{"opaque", "jwt", "paseto", "none"} {
 		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
-		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		ec := test.NewEd25519()
+		signer, _ := ed25519.NewSigner(ec)
+		verifier, _ := ed25519.NewVerifier(ec)
 		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
 			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-			JWT:    token.NewJWT(kid, signer, gen),
-			Paseto: token.NewPaseto(signer, gen),
+			JWT:    token.NewJWT(kid, signer, verifier, gen),
+			Paseto: token.NewPaseto(signer, verifier, gen),
 		}
 		token := token.NewToken(params)
 
@@ -40,14 +42,16 @@ func TestVerify(t *testing.T) {
 	for _, kind := range []string{"opaque", "jwt", "paseto", "none"} {
 		cfg := test.NewToken(kind, "secrets/opaque")
 		kid := token.NewKID(cfg)
-		signer, _ := ed25519.NewSigner(test.NewEd25519())
+		ec := test.NewEd25519()
+		signer, _ := ed25519.NewSigner(ec)
+		verifier, _ := ed25519.NewVerifier(ec)
 		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
 			Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-			JWT:    token.NewJWT(kid, signer, gen),
-			Paseto: token.NewPaseto(signer, gen),
+			JWT:    token.NewJWT(kid, signer, verifier, gen),
+			Paseto: token.NewPaseto(signer, verifier, gen),
 		}
 		token := token.NewToken(params)
 
@@ -69,14 +73,16 @@ func TestVerify(t *testing.T) {
 func TestError(t *testing.T) {
 	cfg := test.NewToken("opaque", "secrets/none")
 	kid := token.NewKID(cfg)
-	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(ec)
+	verifier, _ := ed25519.NewVerifier(ec)
 	gen := &id.UUID{}
 	params := token.Params{
 		Config: cfg,
 		Name:   test.Name,
 		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-		JWT:    token.NewJWT(kid, signer, gen),
-		Paseto: token.NewPaseto(signer, gen),
+		JWT:    token.NewJWT(kid, signer, verifier, gen),
+		Paseto: token.NewPaseto(signer, verifier, gen),
 	}
 	token := token.NewToken(params)
 
@@ -111,14 +117,16 @@ func TestWithNoConfig(t *testing.T) {
 func TestVerifyWithMissingToken(t *testing.T) {
 	cfg := test.NewToken("opaque", "secrets/opaque")
 	kid := token.NewKID(cfg)
-	signer, _ := ed25519.NewSigner(test.NewEd25519())
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(ec)
+	verifier, _ := ed25519.NewVerifier(ec)
 	gen := &id.UUID{}
 	params := token.Params{
 		Config: cfg,
 		Name:   test.Name,
 		Opaque: token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader())),
-		JWT:    token.NewJWT(kid, signer, gen),
-		Paseto: token.NewPaseto(signer, gen),
+		JWT:    token.NewJWT(kid, signer, verifier, gen),
+		Paseto: token.NewPaseto(signer, verifier, gen),
 	}
 	token := token.NewToken(params)
 

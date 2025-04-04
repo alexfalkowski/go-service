@@ -53,7 +53,7 @@ type WorldOption interface {
 }
 
 type worldOpts struct {
-	verfier     token.Verifier
+	verifier    token.Verifier
 	rt          http.RoundTripper
 	generator   token.Generator
 	logger      *logger.Logger
@@ -106,7 +106,7 @@ func WithWorldLimiter(config *limiter.Config) WorldOption {
 func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.generator = generator
-		o.verfier = verifier
+		o.verifier = verifier
 	})
 }
 
@@ -207,7 +207,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Lifecycle: lc, Logger: os.logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
-		Verifier: os.verfier, VerifyAuth: os.verfier != nil, ID: id,
+		Verifier: os.verifier, VerifyAuth: os.verifier != nil, ID: id,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	server.Register()
@@ -250,14 +250,24 @@ func (w *World) Register() {
 	errors.Register(errors.NewHandler(w.Logger))
 }
 
-// ServerHost for world.
-func (w *World) ServerHost() string {
+// InsecureServerHost for world.
+func (w *World) InsecureServerHost() string {
 	return "localhost:11000"
 }
 
-// DebugHost for world.
-func (w *World) DebugHost() string {
-	return "localhost:6060"
+// SecureServerHost for world.
+func (w *World) SecureServerHost() string {
+	return "localhost:11443"
+}
+
+// InsecureDebugHost for world.
+func (w *World) InsecureDebugHost() string {
+	return "localhost:13000"
+}
+
+// SecureDebugHost for world.
+func (w *World) SecureDebugHost() string {
+	return "localhost:13443"
 }
 
 // RegisterEvents for world.
@@ -267,7 +277,7 @@ func (w *World) RegisterEvents(ctx context.Context) {
 
 // EventsContext for world.
 func (w *World) EventsContext(ctx context.Context) context.Context {
-	return events.ContextWithTarget(ctx, fmt.Sprintf("http://%s/events", w.ServerHost()))
+	return events.ContextWithTarget(ctx, fmt.Sprintf("http://%s/events", w.InsecureServerHost()))
 }
 
 // ResponseWithBody for the world.

@@ -14,8 +14,10 @@ import (
 func TestJWT(t *testing.T) {
 	cfg := test.NewToken("jwt", "secrets/none")
 	kid := token.NewKID(cfg)
-	a, _ := ed25519.NewSigner(test.NewEd25519())
-	jwt := token.NewJWT(kid, a, &id.UUID{})
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(ec)
+	verifier, _ := ed25519.NewVerifier(ec)
+	jwt := token.NewJWT(kid, signer, verifier, &id.UUID{})
 
 	Convey("When I generate a JWT token", t, func() {
 		token, err := jwt.Generate("test", "test", "test", time.Hour)

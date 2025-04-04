@@ -317,7 +317,14 @@ func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func invokeNetwork(_ st.Network) {}
 
-func invokeCrypt(signer *argon2.Signer, _ *ed25519.Signer, _ *rsa.Cipher, _ *aes.Cipher, _ *hmac.Signer, _ *ssh.Signer) error {
+func invokeCrypt(
+	signer *argon2.Signer,
+	_ *ed25519.Signer, _ *ed25519.Verifier,
+	_ *rsa.Encryptor, _ *rsa.Decryptor,
+	_ *aes.Cipher,
+	_ *hmac.Signer,
+	_ *ssh.Signer, _ *ssh.Verifier,
+) error {
 	msg := []byte("hello")
 
 	e, err := signer.Sign(msg)
