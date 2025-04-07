@@ -26,6 +26,7 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
@@ -204,6 +205,14 @@ func tokenJWTConfig(cfg *Config) *jwt.Config {
 	}
 
 	return cfg.Token.JWT
+}
+
+func tokenOpaqueConfig(cfg *Config) *opaque.Config {
+	if !token.IsEnabled(cfg.Token) {
+		return nil
+	}
+
+	return cfg.Token.Opaque
 }
 
 func tokenPasetoConfig(cfg *Config) *paseto.Config {

@@ -297,6 +297,8 @@ We have our own implementation of a [Opaque](token/opaque.go) token.
 ```yaml
 token:
   kind: opaque
+  opaque:
+    name: name of service
 ```
 
 ### JWT

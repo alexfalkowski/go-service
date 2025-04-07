@@ -12,7 +12,8 @@ import (
 )
 
 func TestValid(t *testing.T) {
-	token := opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader()))
+	cfg := test.NewToken("opaque")
+	token := opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader()))
 
 	Convey("When I generate an opaque token", t, func() {
 		tkn := token.Generate()
@@ -31,29 +32,11 @@ func TestValid(t *testing.T) {
 			So(err, ShouldBeError)
 		})
 	})
-
-	name := test.Name.String()
-	keys := []string{
-		"",
-		"none_test_test",
-		name + "_test_test",
-		name + "_test_1",
-	}
-
-	for _, key := range keys {
-		Convey("When I verify a token", t, func() {
-			err := token.Verify(key)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-				So(errors.Is(err, te.ErrInvalidMatch), ShouldBeTrue)
-			})
-		})
-	}
 }
 
 func TestInvalid(t *testing.T) {
-	token := opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader()))
+	cfg := test.NewToken("opaque")
+	token := opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader()))
 
 	name := test.Name.String()
 	keys := []string{
