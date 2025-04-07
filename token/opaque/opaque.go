@@ -1,4 +1,4 @@
-package token
+package opaque
 
 import (
 	"fmt"
@@ -13,25 +13,25 @@ import (
 
 const underscore = "_"
 
-// NewOpaque creates a new opaque token.
-func NewOpaque(name env.Name, generator *rand.Generator) *Opaque {
-	return &Opaque{name: name, generator: generator}
+// NewToken creates a new opaque token.
+func NewToken(name env.Name, generator *rand.Generator) *Token {
+	return &Token{name: name, generator: generator}
 }
 
-// Opaque represents an opaque token.
-type Opaque struct {
+// Token represents an opaque token.
+type Token struct {
 	generator *rand.Generator
 	name      env.Name
 }
 
 // Generate generates a new opaque token.
-func (o *Opaque) Generate() string {
-	token := o.generator.Text()
+func (t *Token) Generate() string {
+	token := t.generator.Text()
 	checksum := strconv.FormatUint(uint64(crc32.ChecksumIEEE([]byte(token))), 10)
 
 	var builder strings.Builder
 
-	builder.WriteString(o.name.String())
+	builder.WriteString(t.name.String())
 	builder.WriteString(underscore)
 	builder.WriteString(token)
 	builder.WriteString(underscore)
@@ -41,14 +41,14 @@ func (o *Opaque) Generate() string {
 }
 
 // Verify verifies an opaque token.
-func (o *Opaque) Verify(token string) error {
+func (t *Token) Verify(token string) error {
 	segments := strings.Split(token, underscore)
 
 	if len(segments) != 3 {
 		return fmt.Errorf("invalid length: %w", errors.ErrInvalidMatch)
 	}
 
-	if segments[0] != o.name.String() {
+	if segments[0] != t.name.String() {
 		return fmt.Errorf("invalid prefix: %w", errors.ErrInvalidMatch)
 	}
 

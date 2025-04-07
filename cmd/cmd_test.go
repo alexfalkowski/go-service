@@ -15,7 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
-	"github.com/alexfalkowski/go-service/crypto/ssh"
+	cs "github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	sd "github.com/alexfalkowski/go-service/debug"
@@ -35,6 +35,10 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
+	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/opaque"
+	"github.com/alexfalkowski/go-service/token/paseto"
+	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
 	geh "github.com/alexfalkowski/go-service/transport/events/http"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -323,7 +327,7 @@ func invokeCrypt(
 	_ *rsa.Encryptor, _ *rsa.Decryptor,
 	_ *aes.Cipher,
 	_ *hmac.Signer,
-	_ *ssh.Signer, _ *ssh.Verifier,
+	_ *cs.Signer, _ *cs.Verifier,
 ) error {
 	msg := []byte("hello")
 
@@ -340,7 +344,7 @@ func invokeCrypt(
 	return nil
 }
 
-func invokeTokens(_ token.KID, _ *token.JWT, _ *token.Paseto, _ *token.Token) {}
+func invokeTokens(_ *jwt.Token, _ *opaque.Token, _ *paseto.Token, _ *ts.Token, _ *token.Token) {}
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {

@@ -23,6 +23,8 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
+	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/paseto"
 	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
@@ -32,15 +34,23 @@ import (
 const timeout = 2 * time.Second
 
 // NewToken for test.
-func NewToken(kind, secret string) *token.Config {
+func NewToken(kind string) *token.Config {
 	return &token.Config{
-		Kind:       kind,
-		Secret:     Path(secret),
-		Subject:    "sub",
-		Audience:   "aud",
-		Issuer:     "iss",
-		Expiration: "1h",
-		KeyID:      "1234567890",
+		Kind: kind,
+		JWT: &jwt.Config{
+			Subject:    "sub",
+			Audience:   "aud",
+			Issuer:     "iss",
+			Expiration: "1h",
+			KeyID:      "1234567890",
+		},
+		Paseto: &paseto.Config{
+			Subject:    "sub",
+			Audience:   "aud",
+			Issuer:     "iss",
+			Expiration: "1h",
+		},
+
 		SSH: &ts.Config{
 			Key: &ts.Key{
 				Name:   "test",

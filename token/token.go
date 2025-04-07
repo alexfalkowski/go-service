@@ -1,14 +1,13 @@
 package token
 
 import (
-	"bytes"
 	"context"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/token/errors"
+	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/opaque"
+	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
 	"go.uber.org/fx"
 )
@@ -18,9 +17,9 @@ type Params struct {
 	fx.In
 
 	Config *Config
-	JWT    *JWT
-	Paseto *Paseto
-	Opaque *Opaque
+	JWT    *jwt.Token
+	Paseto *paseto.Token
+	Opaque *opaque.Token
 	SSH    *ssh.Token
 	Name   env.Name
 }
@@ -44,9 +43,9 @@ func NewToken(params Params) *Token {
 // Token will generate and verify based on what is defined in the config.
 type Token struct {
 	cfg    *Config
-	jwt    *JWT
-	paseto *Paseto
-	opaque *Opaque
+	jwt    *jwt.Token
+	paseto *paseto.Token
+	opaque *opaque.Token
 	ssh    *ssh.Token
 	name   env.Name
 }
@@ -54,20 +53,19 @@ type Token struct {
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	switch {
 	case t.cfg.IsOpaque():
-		b, err := os.ReadFile(t.cfg.Secret)
+		token := t.opaque.Generate()
 
-		return ctx, b, err
-
+		return ctx, []byte(token), nil
 	case t.cfg.IsSSH():
 		token, err := t.ssh.Generate()
 
 		return ctx, []byte(token), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
+		token, err := t.jwt.Generate()
 
 		return ctx, []byte(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.paseto.Generate(t.cfg.Subject, t.cfg.Audience, t.cfg.Issuer, time.MustParseDuration(t.cfg.Expiration))
+		token, err := t.paseto.Generate()
 
 		return ctx, []byte(token), err
 	}
@@ -78,24 +76,15 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
 	switch {
 	case t.cfg.IsOpaque():
-		b, err := os.ReadFile(t.cfg.Secret)
-		if err != nil {
-			return ctx, err
-		}
-
-		if !bytes.Equal(b, token) {
-			return ctx, errors.ErrInvalidMatch
-		}
-
 		return ctx, t.opaque.Verify(string(token))
 	case t.cfg.IsSSH():
 		return ctx, t.ssh.Verify(string(token))
 	case t.cfg.IsJWT():
-		subject, err := t.jwt.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+		subject, err := t.jwt.Verify(string(token))
 
 		return WithSubject(ctx, meta.String(subject)), err
 	case t.cfg.IsPaseto():
-		subject, err := t.paseto.Verify(string(token), t.cfg.Audience, t.cfg.Issuer)
+		subject, err := t.paseto.Verify(string(token))
 
 		return WithSubject(ctx, meta.String(subject)), err
 	}
