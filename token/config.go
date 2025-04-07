@@ -1,6 +1,10 @@
 package token
 
-import "github.com/alexfalkowski/go-service/token/ssh"
+import (
+	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/paseto"
+	"github.com/alexfalkowski/go-service/token/ssh"
+)
 
 // IsEnabled for token.
 func IsEnabled(cfg *Config) bool {
@@ -9,14 +13,10 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for token.
 type Config struct {
-	SSH        *ssh.Config `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
-	Kind       string      `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	Secret     string      `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
-	Subject    string      `yaml:"sub,omitempty" json:"sub,omitempty" toml:"sub,omitempty"`
-	Audience   string      `yaml:"aud,omitempty" json:"aud,omitempty" toml:"aud,omitempty"`
-	Issuer     string      `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
-	Expiration string      `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
-	KeyID      string      `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
+	JWT    *jwt.Config    `yaml:"jwt,omitempty" json:"jwt,omitempty" toml:"jwt,omitempty"`
+	SSH    *ssh.Config    `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
+	Paseto *paseto.Config `yaml:"paseto,omitempty" json:"paseto,omitempty" toml:"paseto,omitempty"`
+	Kind   string         `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 
 // IsOpaque for configuration.

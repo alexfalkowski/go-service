@@ -62,11 +62,12 @@ telemetry:
       Authorization: ../test/secrets/telemetry
 token:
   kind: "jwt"
-  sub: "sub"
-  aud: "aud"
-  iss: "iss"
-  exp: "1h"
-  kid: "1234567890"
+  jwt:
+    sub: "sub"
+    aud: "aud"
+    iss: "iss"
+    exp: "1h"
+    kid: "1234567890"
 transport:
   http:
     address: :11000

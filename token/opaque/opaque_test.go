@@ -1,4 +1,4 @@
-package token_test
+package opaque_test
 
 import (
 	"errors"
@@ -6,28 +6,28 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/token"
 	te "github.com/alexfalkowski/go-service/token/errors"
+	"github.com/alexfalkowski/go-service/token/opaque"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestOpaque(t *testing.T) {
-	opaque := token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader()))
+func TestValid(t *testing.T) {
+	token := opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader()))
 
 	Convey("When I generate an opaque token", t, func() {
-		token := opaque.Generate()
+		tkn := token.Generate()
 
 		Convey("Then I should have a token", func() {
-			So(token, ShouldNotBeBlank)
+			So(tkn, ShouldNotBeBlank)
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			err := opaque.Verify(token)
+			err := token.Verify(tkn)
 			So(err, ShouldBeNil)
 		})
 
 		Convey("Then I should have an error due to invalid token", func() {
-			err := opaque.Verify("bob")
+			err := token.Verify("bob")
 			So(err, ShouldBeError)
 		})
 	})
@@ -42,7 +42,30 @@ func TestOpaque(t *testing.T) {
 
 	for _, key := range keys {
 		Convey("When I verify a token", t, func() {
-			err := opaque.Verify(key)
+			err := token.Verify(key)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+				So(errors.Is(err, te.ErrInvalidMatch), ShouldBeTrue)
+			})
+		})
+	}
+}
+
+func TestInvalid(t *testing.T) {
+	token := opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader()))
+
+	name := test.Name.String()
+	keys := []string{
+		"",
+		"none_test_test",
+		name + "_test_test",
+		name + "_test_1",
+	}
+
+	for _, key := range keys {
+		Convey("When I verify a token", t, func() {
+			err := token.Verify(key)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

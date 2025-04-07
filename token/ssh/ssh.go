@@ -23,25 +23,25 @@ type Token struct {
 }
 
 // Generate an SSH token.
-func (s *Token) Generate() (string, error) {
-	sig, err := ssh.NewSigner(s.cfg.Key.Config)
+func (t *Token) Generate() (string, error) {
+	sig, err := ssh.NewSigner(t.cfg.Key.Config)
 	if err != nil {
 		return "", err
 	}
 
-	signature, err := sig.Sign([]byte(s.cfg.Key.Name))
+	signature, err := sig.Sign([]byte(t.cfg.Key.Name))
 
-	return s.cfg.Key.Name + "-" + base64.StdEncoding.EncodeToString(signature), err
+	return t.cfg.Key.Name + "-" + base64.StdEncoding.EncodeToString(signature), err
 }
 
 // Verify an SSH token.
-func (s *Token) Verify(token string) error {
+func (t *Token) Verify(token string) error {
 	name, key, ok := strings.Cut(token, "-")
 	if !ok {
 		return errors.ErrInvalidMatch
 	}
 
-	cfg := s.cfg.Keys.Get(name)
+	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
 		return errors.ErrInvalidMatch
 	}
