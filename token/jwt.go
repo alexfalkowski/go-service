@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/token/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -68,11 +69,11 @@ func (j *JWT) Verify(token, aud, iss string) (string, error) {
 	}
 
 	if !claims.VerifyIssuer(iss, true) {
-		return "", ErrInvalidIssuer
+		return "", errors.ErrInvalidIssuer
 	}
 
 	if !claims.VerifyAudience(aud, true) {
-		return "", ErrInvalidAudience
+		return "", errors.ErrInvalidAudience
 	}
 
 	return claims.Subject, nil

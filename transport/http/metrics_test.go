@@ -24,12 +24,12 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 			Name:   test.Name,
 			JWT:    token.NewJWT(kid, signer, verifier, &id.UUID{}),
 		}
-		token := token.NewToken(params)
+		tkn := token.NewToken(params)
 
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("prometheus"),
 			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
-			test.WithWorldToken(token, token),
+			test.WithWorldToken(tkn, tkn),
 			test.WithWorldHTTP(),
 		)
 		world.Register()

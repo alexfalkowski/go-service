@@ -1,5 +1,7 @@
 package token
 
+import "github.com/alexfalkowski/go-service/token/ssh"
+
 // IsEnabled for token.
 func IsEnabled(cfg *Config) bool {
 	return cfg != nil && cfg.Kind != ""
@@ -7,13 +9,14 @@ func IsEnabled(cfg *Config) bool {
 
 // Config for token.
 type Config struct {
-	Kind       string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-	Secret     string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
-	Subject    string `yaml:"sub,omitempty" json:"sub,omitempty" toml:"sub,omitempty"`
-	Audience   string `yaml:"aud,omitempty" json:"aud,omitempty" toml:"aud,omitempty"`
-	Issuer     string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
-	Expiration string `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
-	KeyID      string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
+	SSH        *ssh.Config `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
+	Kind       string      `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+	Secret     string      `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
+	Subject    string      `yaml:"sub,omitempty" json:"sub,omitempty" toml:"sub,omitempty"`
+	Audience   string      `yaml:"aud,omitempty" json:"aud,omitempty" toml:"aud,omitempty"`
+	Issuer     string      `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
+	Expiration string      `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
+	KeyID      string      `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
 }
 
 // IsOpaque for configuration.
@@ -29,4 +32,9 @@ func (c *Config) IsJWT() bool {
 // IsPaseto for configuration.
 func (c *Config) IsPaseto() bool {
 	return c.Kind == "paseto"
+}
+
+// IsSSH for configuration.
+func (c *Config) IsSSH() bool {
+	return c.Kind == "ssh"
 }

@@ -7,13 +7,14 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
+	te "github.com/alexfalkowski/go-service/token/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestOpaque(t *testing.T) {
 	opaque := token.NewOpaque(test.Name, rand.NewGenerator(rand.NewReader()))
 
-	Convey("When I generate a JWT token", t, func() {
+	Convey("When I generate an opaque token", t, func() {
 		token := opaque.Generate()
 
 		Convey("Then I should have a token", func() {
@@ -45,7 +46,7 @@ func TestOpaque(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-				So(errors.Is(err, token.ErrInvalidMatch), ShouldBeTrue)
+				So(errors.Is(err, te.ErrInvalidMatch), ShouldBeTrue)
 			})
 		})
 	}
