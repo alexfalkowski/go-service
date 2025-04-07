@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
+	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -40,6 +41,18 @@ func NewToken(kind, secret string) *token.Config {
 		Issuer:     "iss",
 		Expiration: "1h",
 		KeyID:      "1234567890",
+		SSH: &ts.Config{
+			Key: &ts.Key{
+				Name:   "test",
+				Config: NewSSH(),
+			},
+			Keys: ts.Keys{
+				&ts.Key{
+					Name:   "test",
+					Config: NewSSH(),
+				},
+			},
+		},
 	}
 }
 

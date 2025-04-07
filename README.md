@@ -290,21 +290,76 @@ telemetry:
 
 The framework allows you to define different token generators and verifiers.
 
-We provide the following out of the box:
-- [JWT](https://github.com/golang-jwt/jwt)
-- [Paseto](https://github.com/aidantwoods/go-paseto)
+### Opaque
+
+We have our own implementation of a [Opaque](token/opaque.go) token.
+
+```yaml
+token:
+  kind: opaque
+  secret: path to a secret token
+```
+
+### JWT
+
+We use the awesome [JWT](https://github.com/golang-jwt/jwt).
 
 To configure, please specify the following:
 
 ```yaml
 token:
-  kind: jwt, paseto, opaque
-  secret: path to a secret token (only used for kind opaque)
+  kind: jwt
   sub: subject
   aud: audience
   iss: issuer
   exp: 1h
   kid: 1234567890
+```
+
+### Paseto
+
+We use the awesome [Paseto](https://github.com/aidantwoods/go-paseto).
+
+To configure, please specify the following:
+
+```yaml
+token:
+  kind: paseto
+  sub: subject
+  aud: audience
+  iss: issuer
+  exp: 1h
+  kid: 1234567890
+```
+
+### SSH
+
+We use the awesome [SSH](https://pkg.go.dev/golang.org/x/crypto/ssh).
+
+#### Generation
+
+To configure, please specify the following:
+
+```yaml
+token:
+  kind: ssh
+  ssh:
+    key:
+      name: test
+      private: path to key
+```
+
+#### Verification
+
+To configure, please specify the following:
+
+```yaml
+token:
+  kind: ssh
+  ssh:
+    keys:
+      - name: test
+        public: path to key
 ```
 
 ## Limiter

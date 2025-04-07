@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/token/errors"
 )
 
 const underscore = "_"
@@ -44,20 +45,20 @@ func (o *Opaque) Verify(token string) error {
 	segments := strings.Split(token, underscore)
 
 	if len(segments) != 3 {
-		return fmt.Errorf("invalid length: %w", ErrInvalidMatch)
+		return fmt.Errorf("invalid length: %w", errors.ErrInvalidMatch)
 	}
 
 	if segments[0] != o.name.String() {
-		return fmt.Errorf("invalid prefix: %w", ErrInvalidMatch)
+		return fmt.Errorf("invalid prefix: %w", errors.ErrInvalidMatch)
 	}
 
 	u64, err := strconv.ParseUint(segments[2], 10, 32)
 	if err != nil {
-		return fmt.Errorf("%w: %w", err, ErrInvalidMatch)
+		return fmt.Errorf("%w: %w", err, errors.ErrInvalidMatch)
 	}
 
 	if crc32.ChecksumIEEE([]byte(segments[1])) != uint32(u64) {
-		return fmt.Errorf("invalid checksum: %w", ErrInvalidMatch)
+		return fmt.Errorf("invalid checksum: %w", errors.ErrInvalidMatch)
 	}
 
 	return nil

@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
-	"github.com/alexfalkowski/go-service/crypto/ssh"
+	cs "github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -25,6 +25,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
+	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -71,7 +72,11 @@ type Config struct {
 	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
 }
 
-func aesConfig(cfg *Config) *aes.Config {
+func cacheConfig(cfg *Config) *cache.Config {
+	return cfg.Cache
+}
+
+func cryptoAESConfig(cfg *Config) *aes.Config {
 	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
@@ -79,20 +84,40 @@ func aesConfig(cfg *Config) *aes.Config {
 	return cfg.Crypto.AES
 }
 
-func cacheConfig(cfg *Config) *cache.Config {
-	return cfg.Cache
-}
-
-func debugConfig(cfg *Config) *debug.Config {
-	return cfg.Debug
-}
-
-func ed25519Config(cfg *Config) *ed25519.Config {
+func cryptoED25519Config(cfg *Config) *ed25519.Config {
 	if !crypto.IsEnabled(cfg.Crypto) {
 		return nil
 	}
 
 	return cfg.Crypto.Ed25519
+}
+
+func cryptoHMACConfig(cfg *Config) *hmac.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.HMAC
+}
+
+func cryptoRSAConfig(cfg *Config) *rsa.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.RSA
+}
+
+func cryptoSSHConfig(cfg *Config) *cs.Config {
+	if !crypto.IsEnabled(cfg.Crypto) {
+		return nil
+	}
+
+	return cfg.Crypto.SSH
+}
+
+func debugConfig(cfg *Config) *debug.Config {
+	return cfg.Debug
 }
 
 func environmentConfig(cfg *Config) env.Environment {
@@ -109,14 +134,6 @@ func grpcConfig(cfg *Config) *grpc.Config {
 	}
 
 	return cfg.Transport.GRPC
-}
-
-func hmacConfig(cfg *Config) *hmac.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.HMAC
 }
 
 func idConfig(cfg *Config) *id.Config {
@@ -155,28 +172,12 @@ func metricsConfig(cfg *Config) *metrics.Config {
 	return cfg.Telemetry.Metrics
 }
 
-func rsaConfig(cfg *Config) *rsa.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.RSA
-}
-
 func pgConfig(cfg *Config) *pg.Config {
 	if !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
 
 	return cfg.SQL.PG
-}
-
-func sshConfig(cfg *Config) *ssh.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.SSH
 }
 
 func timeConfig(cfg *Config) *time.Config {
@@ -193,6 +194,14 @@ func tokenConfig(cfg *Config) *token.Config {
 	}
 
 	return cfg.Token
+}
+
+func tokenSSHConfig(cfg *Config) *ts.Config {
+	if !token.IsEnabled(cfg.Token) {
+		return nil
+	}
+
+	return cfg.Token.SSH
 }
 
 func tracerConfig(cfg *Config) *tracer.Config {

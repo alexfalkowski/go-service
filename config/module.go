@@ -5,8 +5,9 @@ import "go.uber.org/fx"
 // Module for fx.
 var Module = fx.Options(
 	fx.Provide(NewConfig[Config]),
-	fx.Provide(aesConfig), fx.Provide(ed25519Config), fx.Provide(hmacConfig),
-	fx.Provide(rsaConfig), fx.Provide(sshConfig), fx.Provide(tokenConfig),
+	fx.Provide(cryptoAESConfig), fx.Provide(cryptoED25519Config), fx.Provide(cryptoHMACConfig),
+	fx.Provide(cryptoRSAConfig), fx.Provide(cryptoSSHConfig),
+	fx.Provide(tokenConfig), fx.Provide(tokenSSHConfig),
 	fx.Provide(environmentConfig), fx.Provide(cacheConfig),
 	fx.Provide(debugConfig), fx.Provide(idConfig), fx.Provide(timeConfig),
 	fx.Provide(pgConfig), fx.Provide(featureConfig), fx.Provide(hooksConfig),

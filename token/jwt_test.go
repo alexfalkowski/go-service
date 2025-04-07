@@ -54,7 +54,7 @@ func TestJWT(t *testing.T) {
 		Convey("When I verify an invalid token", t, func() {
 			_, err := jwt.Verify(token, "test", "test")
 
-			Convey("Then I should have a errror", func() {
+			Convey("Then I should have a error", func() {
 				So(err, ShouldBeError)
 			})
 		})

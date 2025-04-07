@@ -30,9 +30,9 @@ func TestTokenAuthUnary(t *testing.T) {
 				JWT:    token.NewJWT(kid, signer, verifier, gen),
 				Paseto: token.NewPaseto(signer, verifier, gen),
 			}
-			token := token.NewToken(params)
+			tkn := token.NewToken(params)
 
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(token, token), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
