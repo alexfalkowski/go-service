@@ -25,7 +25,7 @@ func TestGenerate(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			Opaque: opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader())),
+			Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 			JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
 			Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
 		}
@@ -76,7 +76,7 @@ func TestVerify(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			Opaque: opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader())),
+			Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 			SSH:    ssh.NewToken(cfg.SSH),
 		}
 		tkn := token.NewToken(params)
@@ -116,7 +116,7 @@ func TestVerifyWithMissingToken(t *testing.T) {
 	params := token.Params{
 		Config: cfg,
 		Name:   test.Name,
-		Opaque: opaque.NewToken(test.Name, rand.NewGenerator(rand.NewReader())),
+		Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 		JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
 		Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
 	}

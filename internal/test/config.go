@@ -24,6 +24,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
@@ -44,21 +45,23 @@ func NewToken(kind string) *token.Config {
 			Expiration: "1h",
 			KeyID:      "1234567890",
 		},
+		Opaque: &opaque.Config{
+			Name: Name.String(),
+		},
 		Paseto: &paseto.Config{
 			Subject:    "sub",
 			Audience:   "aud",
 			Issuer:     "iss",
 			Expiration: "1h",
 		},
-
 		SSH: &ts.Config{
 			Key: &ts.Key{
-				Name:   "test",
+				Name:   Name.String(),
 				Config: NewSSH(),
 			},
 			Keys: ts.Keys{
 				&ts.Key{
-					Name:   "test",
+					Name:   Name.String(),
 					Config: NewSSH(),
 				},
 			},

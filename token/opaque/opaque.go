@@ -7,21 +7,24 @@ import (
 	"strings"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/token/errors"
 )
 
 const underscore = "_"
 
 // NewToken creates a new opaque token.
-func NewToken(name env.Name, generator *rand.Generator) *Token {
-	return &Token{name: name, generator: generator}
+func NewToken(cfg *Config, generator *rand.Generator) *Token {
+	if !IsEnabled(cfg) {
+		return nil
+	}
+
+	return &Token{cfg: cfg, generator: generator}
 }
 
 // Token represents an opaque token.
 type Token struct {
+	cfg       *Config
 	generator *rand.Generator
-	name      env.Name
 }
 
 // Generate generates a new opaque token.
@@ -31,7 +34,7 @@ func (t *Token) Generate() string {
 
 	var builder strings.Builder
 
-	builder.WriteString(t.name.String())
+	builder.WriteString(t.cfg.Name)
 	builder.WriteString(underscore)
 	builder.WriteString(token)
 	builder.WriteString(underscore)
@@ -48,7 +51,7 @@ func (t *Token) Verify(token string) error {
 		return fmt.Errorf("invalid length: %w", errors.ErrInvalidMatch)
 	}
 
-	if segments[0] != t.name.String() {
+	if segments[0] != t.cfg.Name {
 		return fmt.Errorf("invalid prefix: %w", errors.ErrInvalidMatch)
 	}
 
