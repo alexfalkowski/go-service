@@ -297,7 +297,6 @@ We have our own implementation of a [Opaque](token/opaque.go) token.
 ```yaml
 token:
   kind: opaque
-  secret: path to a secret token
 ```
 
 ### JWT
@@ -309,11 +308,12 @@ To configure, please specify the following:
 ```yaml
 token:
   kind: jwt
-  sub: subject
-  aud: audience
-  iss: issuer
-  exp: 1h
-  kid: 1234567890
+  jwt:
+    sub: subject
+    aud: audience
+    iss: issuer
+    exp: 1h
+    kid: 1234567890
 ```
 
 ### Paseto
@@ -325,11 +325,11 @@ To configure, please specify the following:
 ```yaml
 token:
   kind: paseto
-  sub: subject
-  aud: audience
-  iss: issuer
-  exp: 1h
-  kid: 1234567890
+  paseto:
+    sub: subject
+    aud: audience
+    iss: issuer
+    exp: 1h
 ```
 
 ### SSH
