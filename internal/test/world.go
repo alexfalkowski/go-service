@@ -207,7 +207,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Lifecycle: lc, Logger: os.logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
-		Verifier: os.verifier, VerifyAuth: os.verifier != nil, ID: id,
+		Verifier: os.verifier, ID: id,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	server.Register()

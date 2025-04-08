@@ -6,19 +6,18 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
+	"github.com/alexfalkowski/go-service/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestTokenAuthUnary(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "opaque"} {
+	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		Convey("Given I have a all the servers", t, func() {
 			cfg := test.NewToken(kind)
 			ec := test.NewEd25519()
@@ -28,9 +27,9 @@ func TestTokenAuthUnary(t *testing.T) {
 			params := token.Params{
 				Config: cfg,
 				Name:   test.Name,
-				Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 				JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
 				Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
+				SSH:    ssh.NewToken(cfg.SSH),
 			}
 			tkn := token.NewToken(params)
 

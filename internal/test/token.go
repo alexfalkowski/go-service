@@ -1,10 +1,6 @@
 package test
 
-import (
-	"context"
-
-	"github.com/alexfalkowski/go-service/meta"
-)
+import "context"
 
 // NewGenerator for test.
 func NewGenerator(token string, err error) *Generator {
@@ -36,5 +32,5 @@ func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, e
 		return ctx, ErrInvalid
 	}
 
-	return WithTest(ctx, meta.String("auth")), nil
+	return ctx, nil
 }

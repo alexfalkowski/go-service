@@ -31,11 +31,6 @@ func (g *Generator) Read(b []byte) (int, error) {
 	return io.ReadFull(g.reader, b)
 }
 
-// Text returns a cryptographically random string.
-func (g *Generator) Text() string {
-	return rand.Text()
-}
-
 // GenerateBytes returns a cryptographically random byte slice of size.
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	s, err := g.generate(size, letters)

@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
 	"go.uber.org/fx"
@@ -19,7 +18,6 @@ type Params struct {
 	Config *Config
 	JWT    *jwt.Token
 	Paseto *paseto.Token
-	Opaque *opaque.Token
 	SSH    *ssh.Token
 	Name   env.Name
 }
@@ -35,7 +33,6 @@ func NewToken(params Params) *Token {
 		name:   params.Name,
 		jwt:    params.JWT,
 		paseto: params.Paseto,
-		opaque: params.Opaque,
 		ssh:    params.SSH,
 	}
 }
@@ -45,17 +42,12 @@ type Token struct {
 	cfg    *Config
 	jwt    *jwt.Token
 	paseto *paseto.Token
-	opaque *opaque.Token
 	ssh    *ssh.Token
 	name   env.Name
 }
 
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	switch {
-	case t.cfg.IsOpaque():
-		token := t.opaque.Generate()
-
-		return ctx, []byte(token), nil
 	case t.cfg.IsSSH():
 		token, err := t.ssh.Generate()
 
@@ -75,8 +67,6 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 
 func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
 	switch {
-	case t.cfg.IsOpaque():
-		return ctx, t.opaque.Verify(string(token))
 	case t.cfg.IsSSH():
 		return ctx, t.ssh.Verify(string(token))
 	case t.cfg.IsJWT():

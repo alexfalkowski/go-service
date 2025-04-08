@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
 )
@@ -16,14 +15,8 @@ func IsEnabled(cfg *Config) bool {
 type Config struct {
 	JWT    *jwt.Config    `yaml:"jwt,omitempty" json:"jwt,omitempty" toml:"jwt,omitempty"`
 	Paseto *paseto.Config `yaml:"paseto,omitempty" json:"paseto,omitempty" toml:"paseto,omitempty"`
-	Opaque *opaque.Config `yaml:"opaque,omitempty" json:"opaque,omitempty" toml:"opaque,omitempty"`
 	SSH    *ssh.Config    `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
 	Kind   string         `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
-}
-
-// IsOpaque for configuration.
-func (c *Config) IsOpaque() bool {
-	return c.Kind == "opaque"
 }
 
 // IsJWT for configuration.
