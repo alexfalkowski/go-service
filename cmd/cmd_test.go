@@ -36,7 +36,6 @@ import (
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
@@ -344,7 +343,7 @@ func invokeCrypt(
 	return nil
 }
 
-func invokeTokens(_ *jwt.Token, _ *opaque.Token, _ *paseto.Token, _ *ts.Token, _ *token.Token) {}
+func invokeTokens(_ *jwt.Token, _ *paseto.Token, _ *ts.Token, _ *token.Token) {}
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {

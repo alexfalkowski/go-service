@@ -36,7 +36,6 @@ type Server struct {
 	Limiter         *limiter.Limiter
 	Logger          *logger.Logger
 	ID              id.Generator
-	VerifyAuth      bool
 	RegisterHTTP    bool
 	RegisterGRPC    bool
 	RegisterDebug   bool
@@ -73,7 +72,7 @@ func (s *Server) Register() {
 		runtime.Must(err)
 
 		s.GRPCServer = grpcServer
-		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService(s.VerifyAuth))
+		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService())
 		servers = append(servers, grpcServer.GetServer())
 	}
 

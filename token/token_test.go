@@ -4,19 +4,17 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/opaque"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGenerate(t *testing.T) {
-	for _, kind := range []string{"opaque", "jwt", "paseto", "none"} {
+	for _, kind := range []string{"jwt", "paseto", "none"} {
 		cfg := test.NewToken(kind)
 		ec := test.NewEd25519()
 		signer, _ := ed25519.NewSigner(ec)
@@ -25,7 +23,6 @@ func TestGenerate(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 			JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
 			Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
 		}
@@ -71,12 +68,11 @@ func TestVerify(t *testing.T) {
 		})
 	}
 
-	for _, kind := range []string{"opaque", "ssh", "none"} {
+	for _, kind := range []string{"ssh", "none"} {
 		cfg := test.NewToken(kind)
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
 			SSH:    ssh.NewToken(cfg.SSH),
 		}
 		tkn := token.NewToken(params)
@@ -103,30 +99,6 @@ func TestWithNoConfig(t *testing.T) {
 
 		Convey("Then I should have bo token", func() {
 			So(tkn, ShouldBeNil)
-		})
-	})
-}
-
-func TestVerifyWithMissingToken(t *testing.T) {
-	cfg := test.NewToken("opaque")
-	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(ec)
-	verifier, _ := ed25519.NewVerifier(ec)
-	gen := &id.UUID{}
-	params := token.Params{
-		Config: cfg,
-		Name:   test.Name,
-		Opaque: opaque.NewToken(cfg.Opaque, rand.NewGenerator(rand.NewReader())),
-		JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
-		Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
-	}
-	tkn := token.NewToken(params)
-
-	Convey("When I verify a token", t, func() {
-		_, err := tkn.Verify(t.Context(), nil)
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
 		})
 	})
 }

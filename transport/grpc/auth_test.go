@@ -3,8 +3,14 @@ package grpc_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/token"
+	"github.com/alexfalkowski/go-service/token/jwt"
+	"github.com/alexfalkowski/go-service/token/paseto"
+	"github.com/alexfalkowski/go-service/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -151,32 +157,44 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 }
 
 func TestValidAuthUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t,
-			test.WithWorldTelemetry("otlp"),
-			test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
-			test.WithWorldGRPC(),
-		)
-		world.Register()
-		world.RequireStart()
+	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+		Convey("Given I have a gRPC server", t, func() {
+			cfg := test.NewToken(kind)
+			ec := test.NewEd25519()
+			signer, _ := ed25519.NewSigner(ec)
+			verifier, _ := ed25519.NewVerifier(ec)
+			gen := &id.UUID{}
+			params := token.Params{
+				Config: cfg,
+				Name:   test.Name,
+				JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
+				Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
+				SSH:    ssh.NewToken(cfg.SSH),
+			}
+			tkn := token.NewToken(params)
 
-		Convey("When I query for an authenticated greet", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
+			world.Register()
+			world.RequireStart()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+			Convey("When I query for an authenticated greet", func() {
+				conn := world.NewGRPC()
+				defer conn.Close()
 
-			resp, err := client.SayHello(t.Context(), req)
-			So(err, ShouldBeNil)
+				client := v1.NewGreeterServiceClient(conn)
+				req := &v1.SayHelloRequest{Name: "test"}
 
-			Convey("Then I should have a valid reply", func() {
-				So(resp.GetMessage(), ShouldEqual, "Hello test")
+				resp, err := client.SayHello(t.Context(), req)
+				So(err, ShouldBeNil)
+
+				Convey("Then I should have a valid reply", func() {
+					So(resp.GetMessage(), ShouldEqual, "Hello test")
+				})
+
+				world.RequireStop()
 			})
-
-			world.RequireStop()
 		})
-	})
+	}
 }
 
 func TestBreakerAuthUnary(t *testing.T) {

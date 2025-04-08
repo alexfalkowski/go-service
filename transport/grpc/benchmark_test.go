@@ -28,7 +28,7 @@ func BenchmarkDefaultGRPC(b *testing.B) {
 	server := grpc.NewServer()
 	defer server.GracefulStop()
 
-	v1.RegisterGreeterServiceServer(server, test.NewService(false))
+	v1.RegisterGreeterServiceServer(server, test.NewService())
 
 	//nolint:errcheck
 	go server.Serve(l)
@@ -64,7 +64,7 @@ func BenchmarkGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 	transport.Register(lc, []*server.Service{g.GetServer()})
 
 	lc.RequireStart()
@@ -103,7 +103,7 @@ func BenchmarkLogGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 	transport.Register(lc, []*server.Service{g.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
@@ -144,7 +144,7 @@ func BenchmarkTraceGRPC(b *testing.B) {
 	})
 	runtime.Must(err)
 
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService(false))
+	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 	transport.Register(lc, []*server.Service{g.GetServer()})
 	errors.Register(errors.NewHandler(logger))
 
