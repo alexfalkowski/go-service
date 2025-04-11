@@ -33,9 +33,10 @@ type Params struct {
 	Lifecycle   fx.Lifecycle
 	FileSystem  os.FileSystem
 	Config      *Config
-	Environment env.Environment
-	Version     env.Version
+	ID          env.ID
 	Name        env.Name
+	Version     env.Version
+	Environment env.Environment
 }
 
 // NewTracer for tracer.
@@ -50,14 +51,13 @@ func NewTracer(params Params) (*Tracer, error) {
 
 	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
 	exporter := otlptrace.NewUnstarted(client)
-
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
+		semconv.HostID(params.ID.String()),
 		semconv.ServiceName(params.Name.String()),
 		semconv.ServiceVersion(params.Version.String()),
 		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)
-
 	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
 
 	otel.SetTracerProvider(provider)

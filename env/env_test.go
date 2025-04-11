@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
@@ -58,5 +59,31 @@ func TestUserAgent(t *testing.T) {
 				So(ua.String(), ShouldEqual, "test/test")
 			})
 		})
+	})
+}
+
+func TestID(t *testing.T) {
+	generator := &id.UUID{}
+
+	Convey("When I get a id", t, func() {
+		id := env.NewID(generator)
+
+		Convey("Then I have a valid id", func() {
+			So(id.String(), ShouldNotBeBlank)
+		})
+	})
+
+	Convey("Given I have a id set via a env variable", t, func() {
+		So(os.SetVariable("SERVICE_ID", "new_id"), ShouldBeNil)
+
+		Convey("When I get a id", func() {
+			id := env.NewID(generator)
+
+			Convey("Then I have a valid id", func() {
+				So(id.String(), ShouldEqual, "new_id")
+			})
+		})
+
+		So(os.UnsetVariable("SERVICE_ID"), ShouldBeNil)
 	})
 }

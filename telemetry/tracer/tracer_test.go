@@ -14,9 +14,10 @@ func TestInvalidReader(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		params := tracer.Params{
 			Lifecycle:   lc,
-			Environment: test.Environment,
+			ID:          test.ID,
 			Name:        test.Name,
 			Version:     test.Version,
+			Environment: test.Environment,
 			FileSystem:  &test.ErrFS{},
 			Config:      test.NewOTLPTracerConfig(),
 		}

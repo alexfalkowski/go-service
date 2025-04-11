@@ -21,9 +21,10 @@ type MeterProviderParams struct {
 	Lifecycle   fx.Lifecycle
 	Config      *Config
 	Reader      sm.Reader
-	Environment env.Environment
-	Version     env.Version
+	ID          env.ID
 	Name        env.Name
+	Version     env.Version
+	Environment env.Environment
 }
 
 // NewMeterProvider for metrics.
@@ -32,11 +33,11 @@ func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
 		return nil
 	}
 
-	name := params.Name.String()
 	reader := params.Reader
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceName(name),
+		semconv.HostID(params.ID.String()),
+		semconv.ServiceName(params.Name.String()),
 		semconv.ServiceVersion(params.Version.String()),
 		semconv.DeploymentEnvironmentName(params.Environment.String()),
 	)

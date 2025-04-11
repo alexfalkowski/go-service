@@ -1,4 +1,6 @@
 environment: production
+id:
+  kind: uuid
 telemetry:
   logger:
     level: info
