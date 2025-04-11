@@ -14,9 +14,13 @@ func TestLogger(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		cfg := test.NewOTLPLoggerConfig()
 		params := logger.Params{
-			Lifecycle: lc, Config: cfg,
-			Environment: test.Environment, Version: test.Version,
-			FileSystem: &test.ErrFS{},
+			Lifecycle:   lc,
+			Config:      cfg,
+			ID:          test.ID,
+			Name:        test.Name,
+			Version:     test.Version,
+			Environment: test.Environment,
+			FileSystem:  &test.ErrFS{},
 		}
 
 		Convey("When I try to get a logger", func() {
@@ -32,9 +36,13 @@ func TestLogger(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		cfg := &logger.Config{Kind: "wrong", Level: "debug"}
 		params := logger.Params{
-			Lifecycle: lc, Config: cfg,
-			Environment: test.Environment, Version: test.Version,
-			FileSystem: test.FS,
+			Lifecycle:   lc,
+			Config:      cfg,
+			ID:          test.ID,
+			Name:        test.Name,
+			Version:     test.Version,
+			Environment: test.Environment,
+			FileSystem:  test.FS,
 		}
 
 		Convey("When I try to get a logger", func() {

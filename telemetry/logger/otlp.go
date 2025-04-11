@@ -25,6 +25,7 @@ func newOtlpLogger(params Params) (*slog.Logger, error) {
 
 	attrs := resource.NewWithAttributes(
 		semconv.SchemaURL,
+		semconv.HostID(params.ID.String()),
 		semconv.ServiceName(params.Name.String()),
 		semconv.ServiceVersion(params.Version.String()),
 		semconv.DeploymentEnvironmentName(params.Environment.String()),

@@ -20,9 +20,10 @@ type Params struct {
 	Lifecycle   fx.Lifecycle
 	FileSystem  os.FileSystem
 	Config      *Config
-	Environment env.Environment
-	Version     env.Version
+	ID          env.ID
 	Name        env.Name
+	Version     env.Version
+	Environment env.Environment
 }
 
 // NewLogger using zap.
