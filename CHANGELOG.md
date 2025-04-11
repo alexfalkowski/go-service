@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.535.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.535.0) - 2025-04-11
+
+- [`44c4598`](https://github.com/alexfalkowski/go-service/commit/44c459828974d4b377b2913c891308617ec04b13) feat(env): add ability for a service to have a unique id (#1491)
+- [`d55c0a7`](https://github.com/alexfalkowski/go-service/commit/d55c0a77c67079e98abb386b794eeb9d34d60e0c) build(ci): use lexfalkowski/go:2.7 (#1490)
+
 ## [v1.534.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.534.0) - 2025-04-08
 
 - [`6f00100`](https://github.com/alexfalkowski/go-service/commit/6f00100bb6e1c6461f7c24248150b513f7e41101) feat(deps): bump github.com/prometheus/client_golang from 1.21.1 to 1.22.0 (#1489)
