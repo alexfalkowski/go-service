@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.536.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.536.0) - 2025-04-12
+
+- [`afd9ab0`](https://github.com/alexfalkowski/go-service/commit/afd9ab097e80bee6bae9f62134a93e63eba0ee00) feat(rpc): client can not be generic (#1492)
+
 ## [v1.535.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.535.0) - 2025-04-11
 
 - [`44c4598`](https://github.com/alexfalkowski/go-service/commit/44c459828974d4b377b2913c891308617ec04b13) feat(env): add ability for a service to have a unique id (#1491)
