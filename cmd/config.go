@@ -36,17 +36,21 @@ func (c *Config) Kind() string {
 func (c *Config) Decode(data any) error {
 	bts, err := c.rw.Read()
 	if err != nil {
-		return se.Prefix("config", err)
+		return c.prefix(err)
 	}
 
 	if c.encoder == nil {
 		return ErrNoEncoder
 	}
 
-	return se.Prefix("config", c.encoder.Decode(bytes.NewBuffer(bts), data))
+	return c.prefix(c.encoder.Decode(bytes.NewBuffer(bts), data))
 }
 
 // Write for config.
 func (c *Config) Write(data []byte, mode os.FileMode) error {
-	return se.Prefix("config", c.rw.Write(data, mode))
+	return c.prefix(c.rw.Write(data, mode))
+}
+
+func (c *Config) prefix(err error) error {
+	return se.Prefix("config", err)
 }

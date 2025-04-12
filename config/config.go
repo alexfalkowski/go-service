@@ -6,11 +6,6 @@ import (
 	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/crypto"
-	"github.com/alexfalkowski/go-service/crypto/aes"
-	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/hmac"
-	"github.com/alexfalkowski/go-service/crypto/rsa"
-	cs "github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
 	"github.com/alexfalkowski/go-service/debug"
@@ -25,9 +20,6 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/paseto"
-	ts "github.com/alexfalkowski/go-service/token/ssh"
 	"github.com/alexfalkowski/go-service/transport"
 	"github.com/alexfalkowski/go-service/transport/grpc"
 	"github.com/alexfalkowski/go-service/transport/http"
@@ -76,46 +68,6 @@ type Config struct {
 
 func cacheConfig(cfg *Config) *cache.Config {
 	return cfg.Cache
-}
-
-func cryptoAESConfig(cfg *Config) *aes.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.AES
-}
-
-func cryptoED25519Config(cfg *Config) *ed25519.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.Ed25519
-}
-
-func cryptoHMACConfig(cfg *Config) *hmac.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.HMAC
-}
-
-func cryptoRSAConfig(cfg *Config) *rsa.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.RSA
-}
-
-func cryptoSSHConfig(cfg *Config) *cs.Config {
-	if !crypto.IsEnabled(cfg.Crypto) {
-		return nil
-	}
-
-	return cfg.Crypto.SSH
 }
 
 func debugConfig(cfg *Config) *debug.Config {
@@ -188,38 +140,6 @@ func timeConfig(cfg *Config) *time.Config {
 	}
 
 	return cfg.Time
-}
-
-func tokenConfig(cfg *Config) *token.Config {
-	if !token.IsEnabled(cfg.Token) {
-		return nil
-	}
-
-	return cfg.Token
-}
-
-func tokenJWTConfig(cfg *Config) *jwt.Config {
-	if !token.IsEnabled(cfg.Token) {
-		return nil
-	}
-
-	return cfg.Token.JWT
-}
-
-func tokenPasetoConfig(cfg *Config) *paseto.Config {
-	if !token.IsEnabled(cfg.Token) {
-		return nil
-	}
-
-	return cfg.Token.Paseto
-}
-
-func tokenSSHConfig(cfg *Config) *ts.Config {
-	if !token.IsEnabled(cfg.Token) {
-		return nil
-	}
-
-	return cfg.Token.SSH
 }
 
 func tracerConfig(cfg *Config) *tracer.Config {
