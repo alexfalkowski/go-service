@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // ErrLocationMissing for cmd.
@@ -31,7 +31,7 @@ func (e *ENV) Read() ([]byte, error) {
 		return base64.StdEncoding.DecodeString(os.GetVariable(e))
 	}
 
-	if e.name() == "" {
+	if strings.IsEmpty(e.name()) {
 		return nil, e.missingLocationError()
 	}
 
@@ -46,7 +46,7 @@ func (e *ENV) Write(data []byte, mode os.FileMode) error {
 		return os.SetVariable(e, base64.StdEncoding.EncodeToString(data))
 	}
 
-	if e.name() == "" {
+	if strings.IsEmpty(e.name()) {
 		return e.missingLocationError()
 	}
 

@@ -3,8 +3,8 @@ package metrics
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/time"
 	ts "github.com/alexfalkowski/go-service/transport/strings"

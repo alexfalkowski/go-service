@@ -3,7 +3,8 @@ package header
 import (
 	"errors"
 	"slices"
-	"strings"
+
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 const (

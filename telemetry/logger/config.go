@@ -1,10 +1,13 @@
 package logger
 
-import "github.com/alexfalkowski/go-service/telemetry/header"
+import (
+	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/telemetry/header"
+)
 
 // IsEnabled for logger.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && cfg.Kind != ""
+	return cfg != nil && !strings.IsEmpty(cfg.Kind)
 }
 
 // Config for logger.

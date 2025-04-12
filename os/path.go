@@ -4,12 +4,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // PathExtension of the specified path.
 func PathExtension(path string) string {
 	e := filepath.Ext(path)
-	if e == "" {
+	if strings.IsEmpty(e) {
 		return e
 	}
 

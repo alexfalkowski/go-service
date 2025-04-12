@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"slices"
-	"strings"
 
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/spf13/pflag"
 )
 

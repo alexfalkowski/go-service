@@ -1,8 +1,10 @@
 package id
 
+import "github.com/alexfalkowski/go-service/strings"
+
 // IsEnabled the config.
 func IsEnabled(config *Config) bool {
-	return config != nil && config.Kind != ""
+	return config != nil && !strings.IsEmpty(config.Kind)
 }
 
 // Config for id.
