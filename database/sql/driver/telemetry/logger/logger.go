@@ -74,8 +74,6 @@ func (i *Interceptor) ConnectorConnect(ctx context.Context, connect driver.Conne
 }
 
 // ResultLastInsertId for logger.
-//
-//nolint:stylecheck
 func (i *Interceptor) ResultLastInsertId(res driver.Result) (int64, error) {
 	return i.interceptor.ResultLastInsertId(res)
 }

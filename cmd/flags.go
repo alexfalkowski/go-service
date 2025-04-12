@@ -24,9 +24,23 @@ func (f *FlagSet) AddInput(value string) {
 	f.StringP("input", "i", value, "input config location (format kind:location)")
 }
 
+// GetInput retrieves the input flag value from the flag set.
+func (f *FlagSet) GetInput() string {
+	input, _ := f.GetString("input")
+
+	return input
+}
+
 // AddOutput adds an output flag to the flag set.
 func (f *FlagSet) AddOutput(value string) {
 	f.StringP("output", "o", value, "output config location (format kind:location)")
+}
+
+// GetInput retrieves the output flag value from the flag set.
+func (f *FlagSet) GetOutput() string {
+	output, _ := f.GetString("output")
+
+	return output
 }
 
 // Provide returns the flag set.

@@ -6,6 +6,7 @@ linters:
     - depguard
     - exhaustruct
     - forcetypeassert
+    - funcorder
     - gochecknoglobals
     - gochecknoinits
     - ireturn
@@ -38,6 +39,7 @@ linters:
         - fs
         - sh
         - ua
+        - rw
   exclusions:
     generated: lax
     presets:

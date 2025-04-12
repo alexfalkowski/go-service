@@ -1,0 +1,21 @@
+package test
+
+import "github.com/alexfalkowski/go-service/os"
+
+// BadReaderWriter for test.
+type BadReaderWriter struct{}
+
+// Read for test.
+func (rw *BadReaderWriter) Read() ([]byte, error) {
+	return nil, ErrFailed
+}
+
+// Write for test.
+func (rw *BadReaderWriter) Write(_ []byte, _ os.FileMode) error {
+	return ErrFailed
+}
+
+// Kind for test.
+func (rw *BadReaderWriter) Kind() string {
+	return ""
+}
