@@ -1,6 +1,7 @@
 package token
 
 import (
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/token/jwt"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
@@ -8,7 +9,7 @@ import (
 
 // IsEnabled for token.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && cfg.Kind != ""
+	return cfg != nil && !strings.IsEmpty(cfg.Kind)
 }
 
 // Config for token.

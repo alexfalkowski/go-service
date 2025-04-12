@@ -2,7 +2,8 @@ package strings
 
 import (
 	"slices"
-	"strings"
+
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 var observables = []string{

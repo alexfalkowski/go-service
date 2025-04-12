@@ -2,10 +2,10 @@ package ssh
 
 import (
 	"encoding/base64"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // NewToken for ssh.

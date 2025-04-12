@@ -1,8 +1,10 @@
 package time
 
+import "github.com/alexfalkowski/go-service/strings"
+
 // IsEnabled for time.
 func IsEnabled(cfg *Config) bool {
-	return cfg != nil && cfg.Kind != ""
+	return cfg != nil && !strings.IsEmpty(cfg.Kind)
 }
 
 // Config for time.

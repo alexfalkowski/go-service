@@ -3,12 +3,12 @@ package meta
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/transport/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
@@ -83,11 +83,11 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); ua.Value() != "" {
+	if ua := m.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
-	if ua := req.Header.Get("User-Agent"); ua != "" {
+	if ua := req.Header.Get("User-Agent"); !strings.IsEmpty(ua) {
 		return meta.String(ua)
 	}
 
@@ -95,11 +95,11 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 }
 
 func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Value {
-	if id := m.RequestID(ctx); id.Value() != "" {
+	if id := m.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 
-	if id := req.Header.Get("Request-Id"); id != "" {
+	if id := req.Header.Get("Request-Id"); !strings.IsEmpty(id) {
 		return meta.String(id)
 	}
 
@@ -109,7 +109,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) 
 func extractIP(req *http.Request) (meta.Value, meta.Value) {
 	headers := []string{"X-Real-Ip", "CF-Connecting-Ip", "True-Client-Ip", "X-Forwarded-For"}
 	for _, h := range headers {
-		if ip := req.Header.Get(h); ip != "" {
+		if ip := req.Header.Get(h); !strings.IsEmpty(ip) {
 			ip, _, _ := strings.Cut(ip, ",")
 
 			return meta.String(strings.ToLower(h)), meta.String(ip)
@@ -124,7 +124,7 @@ func extractIP(req *http.Request) (meta.Value, meta.Value) {
 
 func extractAuthorization(ctx context.Context, req *http.Request) meta.Value {
 	a := req.Header.Get("Authorization")
-	if a == "" {
+	if strings.IsEmpty(a) {
 		return meta.Blank()
 	}
 

@@ -2,7 +2,8 @@ package logger
 
 import (
 	"log/slog"
-	"strings"
+
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 func handlerOptions(cfg *Config) *slog.HandlerOptions {

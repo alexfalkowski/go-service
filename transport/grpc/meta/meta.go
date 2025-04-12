@@ -3,12 +3,12 @@ package meta
 import (
 	"context"
 	"path"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/net"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/transport/header"
 	m "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
@@ -135,7 +135,7 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); ua.Value() != "" {
+	if ua := m.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
@@ -147,7 +147,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 }
 
 func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Value {
-	if id := m.RequestID(ctx); id.Value() != "" {
+	if id := m.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 
@@ -160,7 +160,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) met
 
 func extractAuthorization(ctx context.Context, md metadata.MD) meta.Value {
 	a := authorization(md)
-	if a == "" {
+	if strings.IsEmpty(a) {
 		return meta.Blank()
 	}
 

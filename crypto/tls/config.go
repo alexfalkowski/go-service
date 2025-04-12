@@ -1,6 +1,9 @@
 package tls
 
-import "github.com/alexfalkowski/go-service/os"
+import (
+	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/strings"
+)
 
 // IsEnabled for security.
 func IsEnabled(cfg *Config) bool {
@@ -15,7 +18,7 @@ type Config struct {
 
 // HasKeyPair for security.
 func (c *Config) HasKeyPair() bool {
-	return c.Cert != "" && c.Key != ""
+	return !strings.IsEmpty(c.Cert) && !strings.IsEmpty(c.Key)
 }
 
 // GetCert for tls.

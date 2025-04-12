@@ -2,8 +2,8 @@ package tracer
 
 import (
 	"net/http"
-	"strings"
 
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	snoop "github.com/felixge/httpsnoop"

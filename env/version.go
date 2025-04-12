@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // NewVersion returns the version of the application.
@@ -17,7 +18,7 @@ type Version string
 // String of version.
 func (v Version) String() string {
 	s := string(v)
-	if s == "" || s[0] != 'v' {
+	if strings.IsEmpty(s) || s[0] != 'v' {
 		return s
 	}
 

@@ -2,7 +2,8 @@ package meta
 
 import (
 	"fmt"
-	"strings"
+
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 type kind uint8
@@ -63,6 +64,11 @@ type Value struct {
 // Value of meta.
 func (v Value) Value() string {
 	return v.value
+}
+
+// IsEmpty of meta.
+func (v Value) IsEmpty() bool {
+	return strings.IsEmpty(v.value)
 }
 
 // String depending on kind.

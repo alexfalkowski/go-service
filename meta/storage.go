@@ -1,6 +1,10 @@
 package meta
 
-import "context"
+import (
+	"context"
+
+	"github.com/alexfalkowski/go-service/strings"
+)
 
 type (
 	// Converter takes a string and creates a new string.
@@ -27,7 +31,7 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 	attributes := make(Map, len(s))
 
 	for k, v := range s {
-		if v := v.String(); v != "" {
+		if v := v.String(); !strings.IsEmpty(v) {
 			attributes[s.key(prefix, converter(k))] = v
 		}
 	}
@@ -36,7 +40,7 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 }
 
 func (s Storage) key(prefix, key string) string {
-	if prefix == "" {
+	if strings.IsEmpty(prefix) {
 		return key
 	}
 

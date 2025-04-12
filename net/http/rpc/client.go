@@ -4,12 +4,12 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
 )
 
