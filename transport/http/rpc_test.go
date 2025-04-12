@@ -3,7 +3,6 @@ package http_test
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -25,14 +24,15 @@ func TestRPCNoContent(t *testing.T) {
 			rpc.Route("/hello", test.NoContent)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				client := rpc.NewClient[test.Request, test.Response](url,
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
-
-				_, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "Bob"}
+				res := &test.Response{}
+				err := client.Invoke(t.Context(), "/hello", req, res)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -55,18 +55,19 @@ func TestRPCWithContent(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				client := rpc.NewClient[test.Request, test.Response](url,
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport),
 					rpc.WithClientTimeout("10s"),
 				)
-
-				resp, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
-				So(err, ShouldBeNil)
+				req := &test.Request{Name: "Bob"}
+				res := &test.Response{}
+				err := client.Invoke(t.Context(), "/hello", req, res)
 
 				Convey("Then I should have response", func() {
-					So(resp.Greeting, ShouldEqual, "Hello Bob")
+					So(err, ShouldBeNil)
+					So(res.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				world.RequireStop()
@@ -85,13 +86,14 @@ func TestSuccessProtobufRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessProtobufSayHello)
 
 			Convey("When I post data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
-
-				res, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
-				So(err, ShouldBeNil)
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url, rpc.WithClientContentType("application/"+mt))
+				req := &v1.SayHelloRequest{Name: "Bob"}
+				res := &v1.SayHelloResponse{}
+				err := client.Invoke(t.Context(), "/hello", req, res)
 
 				Convey("Then I should have response", func() {
+					So(err, ShouldBeNil)
 					So(res.GetMessage(), ShouldEqual, "Hello Bob")
 				})
 
@@ -117,10 +119,11 @@ func TestErroneousProtobufRPC(t *testing.T) {
 				rpc.Route("/hello", handler)
 
 				Convey("When I post data", func() {
-					url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-					client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url, rpc.WithClientContentType("application/"+mt))
-
-					_, err := client.Invoke(t.Context(), &v1.SayHelloRequest{Name: "Bob"})
+					url := "http://" + world.InsecureServerHost()
+					client := rpc.NewClient(url, rpc.WithClientContentType("application/"+mt))
+					req := &v1.SayHelloRequest{Name: "Bob"}
+					res := &v1.SayHelloResponse{}
+					err := client.Invoke(t.Context(), "/hello", req, res)
 
 					Convey("Then I should have an error", func() {
 						So(err, ShouldBeError)
@@ -214,16 +217,17 @@ func TestAllowedRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				client := rpc.NewClient[test.Request, test.Response](url,
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
 					rpc.WithClientContentType("application/"+mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
-
-				resp, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
-				So(err, ShouldBeNil)
+				req := &test.Request{Name: "Bob"}
+				res := &test.Response{}
+				err := client.Invoke(t.Context(), "/hello", req, res)
 
 				Convey("Then I should have response", func() {
-					So(resp.Greeting, ShouldEqual, "Hello Bob")
+					So(err, ShouldBeNil)
+					So(res.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				world.RequireStop()
@@ -245,17 +249,70 @@ func TestDisallowedRPC(t *testing.T) {
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post authenticated data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				client := rpc.NewClient[test.Request, test.Response](url,
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
 					rpc.WithClientContentType(mt),
 					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
-
-				_, err := client.Invoke(t.Context(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "Bob"}
+				res := &test.Response{}
+				err := client.Invoke(t.Context(), "/hello", req, res)
 
 				Convey("Then I should have an error", func() {
 					So(status.IsError(err), ShouldBeTrue)
 					So(status.Code(err), ShouldEqual, http.StatusUnauthorized)
 					So(err.Error(), ShouldContainSubstring, "token: invalid match")
+				})
+
+				world.RequireStop()
+			})
+		})
+	}
+}
+
+func TestInvalidRPCRequest(t *testing.T) {
+	for _, mt := range []string{"gob"} {
+		Convey("Given I have routes ready", t, func() {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world.Register()
+			world.RequireStart()
+
+			rpc.Route("/hello", test.SuccessSayHello)
+
+			Convey("When I try to send a hello request", func() {
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				err := client.Invoke(t.Context(), "/hello", nil, &test.Response{})
+
+				Convey("Then I should have an error", func() {
+					So(err, ShouldBeError)
+				})
+
+				world.RequireStop()
+			})
+		})
+	}
+}
+
+func TestInvalidRPCResponse(t *testing.T) {
+	for _, mt := range []string{"json"} {
+		Convey("Given I have routes ready", t, func() {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world.Register()
+			world.RequireStart()
+
+			rpc.Route("/hello", test.SuccessSayHello)
+
+			Convey("When I try to send a hello request", func() {
+				url := "http://" + world.InsecureServerHost()
+				client := rpc.NewClient(url,
+					rpc.WithClientContentType("application/"+mt),
+					rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				err := client.Invoke(t.Context(), "/hello", &test.Request{Name: "Bob"}, nil)
+
+				Convey("Then I should have an error", func() {
+					So(err, ShouldBeError)
 				})
 
 				world.RequireStop()

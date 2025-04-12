@@ -52,42 +52,44 @@ func WithClientTimeout(timeout string) ClientOption {
 }
 
 // NewClient for rpc.
-func NewClient[Req any, Res any](url string, opts ...ClientOption) *Client[Req, Res] {
+func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := &http.Client{
 		Transport: os.roundTripper,
 		Timeout:   os.timeout,
 	}
 
-	return &Client[Req, Res]{client: client, url: url, mediaType: cont.NewFromMedia(os.contentType)}
+	return &Client{client: client, url: url, mediaType: cont.NewFromMedia(os.contentType)}
 }
 
 // Client for rpc.
-type Client[Req any, Res any] struct {
+type Client struct {
 	client    *http.Client
 	mediaType *content.Media
 	url       string
 }
 
 // Invoke for rpc.
-func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (*Res, error) {
+func (c *Client) Invoke(ctx context.Context, path string, req, res any) error {
 	buffer := pool.Get()
 	defer pool.Put(buffer)
 
 	if err := c.mediaType.Encoder.Encode(buffer, req); err != nil {
-		return nil, errors.Prefix("rpc", err)
+		return errors.Prefix("rpc", err)
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, buffer)
+	url := c.url + path
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buffer)
 	if err != nil {
-		return nil, errors.Prefix("rpc", err)
+		return errors.Prefix("rpc", err)
 	}
 
 	request.Header.Set(content.TypeKey, c.mediaType.Type)
 
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, errors.Prefix("rpc", err)
+		return errors.Prefix("rpc", err)
 	}
 
 	defer response.Body.Close()
@@ -96,23 +98,20 @@ func (c *Client[Req, Res]) Invoke(ctx context.Context, req *Req) (*Res, error) {
 
 	_, err = io.Copy(buffer, response.Body)
 	if err != nil {
-		return nil, errors.Prefix("rpc", err)
+		return errors.Prefix("rpc", err)
 	}
 
 	// The server handlers return text on errors.
 	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
 	if media.IsText() {
-		return nil, status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
+		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}
-
-	var rp Res
-	res := &rp
 
 	if err := media.Encoder.Decode(buffer, res); err != nil {
-		return nil, errors.Prefix("rpc", err)
+		return errors.Prefix("rpc", err)
 	}
 
-	return res, nil
+	return nil
 }
 
 func options(opts ...ClientOption) *clientOpts {

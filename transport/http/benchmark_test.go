@@ -231,15 +231,18 @@ func BenchmarkRPC(b *testing.B) {
 
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		cl := world.NewHTTP()
-		url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-		client := rpc.NewClient[test.Request, test.Response](url,
+		url := "http://" + world.InsecureServerHost()
+		client := rpc.NewClient(url,
 			rpc.WithClientContentType("application/"+mt),
 			rpc.WithClientRoundTripper(cl.Transport),
 		)
 
 		b.Run(mt, func(b *testing.B) {
 			for b.Loop() {
-				_, err := client.Invoke(b.Context(), &test.Request{Name: "Bob"})
+				req := &test.Request{Name: "Bob"}
+				res := &test.Response{}
+
+				err := client.Invoke(b.Context(), "/hello", req, res)
 				runtime.Must(err)
 			}
 		})
@@ -265,14 +268,17 @@ func BenchmarkProtobuf(b *testing.B) {
 
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		cl := world.NewHTTP()
-		url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-		client := rpc.NewClient[v1.SayHelloRequest, v1.SayHelloResponse](url,
+		url := "http://" + world.InsecureServerHost()
+		client := rpc.NewClient(url,
 			rpc.WithClientContentType("application/"+mt),
 			rpc.WithClientRoundTripper(cl.Transport))
 
 		b.Run(mt, func(b *testing.B) {
 			for b.Loop() {
-				_, err := client.Invoke(b.Context(), &v1.SayHelloRequest{Name: "Bob"})
+				req := &v1.SayHelloRequest{Name: "Bob"}
+				res := &v1.SayHelloResponse{}
+
+				err := client.Invoke(b.Context(), "/hello", req, res)
 				runtime.Must(err)
 			}
 		})
