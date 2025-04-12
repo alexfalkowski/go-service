@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.537.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.537.0) - 2025-04-12
+
+- [`0af2ff8`](https://github.com/alexfalkowski/go-service/commit/0af2ff8ec5722844f512968ed56a0bab4336ca0e) feat(strings): add check for is empty (#1494)
+- [`3a89b67`](https://github.com/alexfalkowski/go-service/commit/3a89b676286b294ea27b1a53a1652ba47f8ff74c) docs(diagrams): update with make (#1493)
+
 ## [v1.536.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.536.0) - 2025-04-12
 
 - [`afd9ab0`](https://github.com/alexfalkowski/go-service/commit/afd9ab097e80bee6bae9f62134a93e63eba0ee00) feat(rpc): client can not be generic (#1492)
