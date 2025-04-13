@@ -261,12 +261,12 @@ func NewPGConfig() *pg.Config {
 
 // NewInputConfig for test.
 func NewInputConfig(set *cmd.FlagSet) *cmd.InputConfig {
-	return cmd.NewInputConfig(set, Encoder, FS)
+	return cmd.NewInputConfig(Name, set, Encoder, FS)
 }
 
 // NewOutputConfig for test.
 func NewOutputConfig(set *cmd.FlagSet) *cmd.OutputConfig {
-	return cmd.NewOutputConfig(set, Encoder, FS)
+	return cmd.NewOutputConfig(Name, set, Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.

@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/errors"
+	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/cristalhq/acmd"
@@ -81,9 +82,14 @@ func (c *Command) Run(args ...string) error {
 }
 
 // ExitOnError will run the command and exit on error.
+// It will not exit on context.Canceled error.
 func (c *Command) ExitOnError(args ...string) {
 	if err := c.Run(args...); err != nil {
-		log.Printf("%s: failed to run: %v", c.name.String(), err)
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+
+		log.Printf("%s: %v", c.name.String(), err)
 		os.Exit(1)
 	}
 }
@@ -118,5 +124,5 @@ func options(options []fx.Option) []fx.Option {
 }
 
 func prefix(prefix string, err error) error {
-	return errors.Prefix(prefix, dig.RootCause(err))
+	return se.Prefix(prefix+": failed to run", dig.RootCause(err))
 }

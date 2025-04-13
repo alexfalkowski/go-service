@@ -15,7 +15,24 @@ var (
 
 // ExecutableName of the running application.
 func ExecutableName() string {
+	return filepath.Base(Executable())
+}
+
+// ExecutableDir of the running application.
+func ExecutableDir() string {
+	return filepath.Dir(Executable())
+}
+
+// Executable of the running application.
+func Executable() string {
 	path, _ := os.Executable()
 
-	return filepath.Base(path)
+	return path
+}
+
+// UserHomeDir of the current user.
+func UserHomeDir() string {
+	home, _ := os.UserHomeDir()
+
+	return home
 }

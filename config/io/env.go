@@ -1,4 +1,4 @@
-package cmd
+package io
 
 import (
 	"encoding/base64"
@@ -12,18 +12,19 @@ import (
 // ErrLocationMissing for cmd.
 var ErrLocationMissing = errors.New("location is missing")
 
-// NewENV for cmd.
+// NewENV for io.
 func NewENV(location string, fs os.FileSystem) *ENV {
 	return &ENV{location: location, fs: fs}
 }
 
-// ENV for cmd.
+// ENV reads and writes from environment variables to files.
 type ENV struct {
 	fs       os.FileSystem
 	location string
 }
 
-// Read for env.
+// Read a file from an environment variable.
+// The contents of the file could be inside the environment variable.
 func (e *ENV) Read() ([]byte, error) {
 	if e.isMem() {
 		_, e := e.split()
@@ -38,7 +39,8 @@ func (e *ENV) Read() ([]byte, error) {
 	return e.fs.ReadFile(e.name())
 }
 
-// Write for env.
+// Write a file from an environment variable.
+// The contents of the file could be written to the environment variable.
 func (e *ENV) Write(data []byte, mode os.FileMode) error {
 	if e.isMem() {
 		_, e := e.split()
@@ -53,7 +55,7 @@ func (e *ENV) Write(data []byte, mode os.FileMode) error {
 	return e.fs.WriteFile(e.name(), data, mode)
 }
 
-// Kind for env.
+// Kind for env, which is the file extension or defined in the environment variable.
 func (e *ENV) Kind() string {
 	if e.isMem() {
 		k, _ := e.split()
