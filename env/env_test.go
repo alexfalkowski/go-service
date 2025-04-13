@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -20,7 +19,7 @@ func TestName(t *testing.T) {
 	})
 
 	Convey("Given I have a name set via a env variable", t, func() {
-		So(os.SetVariable("SERVICE_NAME", test.Name.String()), ShouldBeNil)
+		t.Setenv("SERVICE_NAME", test.Name.String())
 
 		Convey("When I get a name", func() {
 			name := env.NewName()
@@ -29,8 +28,6 @@ func TestName(t *testing.T) {
 				So(name.String(), ShouldEqual, "test")
 			})
 		})
-
-		So(os.UnsetVariable("SERVICE_NAME"), ShouldBeNil)
 	})
 }
 
@@ -74,7 +71,7 @@ func TestID(t *testing.T) {
 	})
 
 	Convey("Given I have a id set via a env variable", t, func() {
-		So(os.SetVariable("SERVICE_ID", "new_id"), ShouldBeNil)
+		t.Setenv("SERVICE_ID", "new_id")
 
 		Convey("When I get a id", func() {
 			id := env.NewID(generator)
@@ -83,7 +80,5 @@ func TestID(t *testing.T) {
 				So(id.String(), ShouldEqual, "new_id")
 			})
 		})
-
-		So(os.UnsetVariable("SERVICE_ID"), ShouldBeNil)
 	})
 }

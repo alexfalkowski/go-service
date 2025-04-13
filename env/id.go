@@ -9,7 +9,7 @@ import (
 
 // NewID for this service.
 func NewID(generator id.Generator) ID {
-	return ID(cmp.Or(os.GetVariable("SERVICE_ID"), generator.Generate()))
+	return ID(cmp.Or(os.Getenv("SERVICE_ID"), generator.Generate()))
 }
 
 // ID of the service.

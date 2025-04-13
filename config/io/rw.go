@@ -7,18 +7,14 @@ import (
 
 // NewReadWriter based on kind.
 func NewReadWriter(name env.Name, kind, location string, fs os.FileSystem) ReaderWriter {
-	var rw ReaderWriter
-
 	switch kind {
 	case "file":
-		rw = NewFile(location, fs)
+		return NewFile(location, fs)
 	case "env":
-		rw = NewENV(location, fs)
+		return NewENV(location, fs)
 	default:
-		rw = NewNone()
+		return NewCommon(name, fs)
 	}
-
-	return NewCommon(name, fs, rw)
 }
 
 // ReaderWriter for io.

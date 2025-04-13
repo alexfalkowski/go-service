@@ -2,17 +2,13 @@ package os
 
 import "os"
 
-// GetVariable by key.
-func GetVariable(key string) string {
-	return os.Getenv(key)
-}
+var (
+	// Getenv is an alias of os.Getenv.
+	Getenv = os.Getenv
 
-// SetVariable of value by key.
-func SetVariable(key, value string) error {
-	return os.Setenv(key, value)
-}
+	// Setenv is an alias of os.Setenv.
+	Setenv = os.Setenv
 
-// UnsetVariable by key.
-func UnsetVariable(key string) error {
-	return os.Unsetenv(key)
-}
+	// Unsetenv is an alias of os.Unsetenv.
+	Unsetenv = os.Unsetenv
+)
