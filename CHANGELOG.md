@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.539.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.539.1) - 2025-04-13
+
+- [`cc24173`](https://github.com/alexfalkowski/go-service/commit/cc24173af23acee1c59570a7bba5e0c358e94bef) fix(cmd): ignore error if context.Canceled (#1497)
+
 ## [v1.539.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.539.0) - 2025-04-13
 
 - [`5ffee23`](https://github.com/alexfalkowski/go-service/commit/5ffee23969d82fc6a0135719f1bd974027fc0a5b) feat(config): allow the input config file to be retrieved from common places (#1496)
