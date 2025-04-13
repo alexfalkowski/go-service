@@ -5,6 +5,11 @@ import "github.com/alexfalkowski/go-service/os"
 // BadReaderWriter for test.
 type BadReaderWriter struct{}
 
+// Exists for test.
+func (rw *BadReaderWriter) Exists() bool {
+	return true
+}
+
 // Read for test.
 func (rw *BadReaderWriter) Read() ([]byte, error) {
 	return nil, ErrFailed

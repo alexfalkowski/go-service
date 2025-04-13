@@ -14,8 +14,6 @@ func NewReadWriter(name env.Name, kind, location string, fs os.FileSystem) Reade
 		rw = NewFile(location, fs)
 	case "env":
 		rw = NewENV(location, fs)
-	default:
-		rw = NewNone()
 	}
 
 	return NewCommon(name, fs, rw)
@@ -23,6 +21,9 @@ func NewReadWriter(name env.Name, kind, location string, fs os.FileSystem) Reade
 
 // ReaderWriter for io.
 type ReaderWriter interface {
+	// Valid defines whether the read writer has a place to read or write.
+	Valid() bool
+
 	// Read bytes.
 	Read() ([]byte, error)
 

@@ -13,6 +13,11 @@ type File struct {
 	location string
 }
 
+// Valid checks if the location is present.
+func (f *File) Valid() bool {
+	return f.fs.PathExists(f.location)
+}
+
 // Read from a file.
 func (f *File) Read() ([]byte, error) {
 	return f.fs.ReadFile(f.location)

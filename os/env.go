@@ -16,3 +16,10 @@ func SetVariable(key, value string) error {
 func UnsetVariable(key string) error {
 	return os.Unsetenv(key)
 }
+
+// VariableExists verifies if the env variable is set.
+func VariableExists(key string) bool {
+	_, ok := os.LookupEnv(key)
+
+	return ok
+}

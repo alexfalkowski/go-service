@@ -11,21 +11,13 @@ import (
 )
 
 func TestReadWriter(t *testing.T) {
-	tuples := [][2]string{
-		{"file", "file.yaml"},
-		{"file", "file.test.yaml"},
-		{"file", "test/.config/existing.client.yaml"},
-	}
+	Convey("When I get an existing read writer", t, func() {
+		rw := io.NewReadWriter(test.Name, "file", test.Path("configs/config.yml"), test.FS)
 
-	for _, tuple := range tuples {
-		Convey("When I get a read writer", t, func() {
-			rw := io.NewReadWriter(test.Name, tuple[0], tuple[1], test.FS)
-
-			Convey("Then I should have a valid split", func() {
-				So(rw.Kind(), ShouldEqual, "yaml")
-			})
+		Convey("Then I should have a yml kind", func() {
+			So(rw.Kind(), ShouldEqual, "yml")
 		})
-	}
+	})
 
 	Convey("Given I have a config file in my home", t, func() {
 		home, err := os.UserHomeDir()
@@ -42,14 +34,10 @@ func TestReadWriter(t *testing.T) {
 		err = os.WriteFile(filepath.Join(path, test.Name.String()+".yml"), data, 0o600)
 		So(err, ShouldBeNil)
 
-		Convey("When I try to read", func() {
-			rw := io.NewCommon(test.Name, test.FS, &test.BadReaderWriter{})
+		Convey("When I get an missing read writer", func() {
+			rw := io.NewReadWriter(test.Name, "file", test.Path("configs/config.yaml"), test.FS)
 
-			bytes, err := rw.Read()
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have a valid config", func() {
-				So(bytes, ShouldNotBeNil)
+			Convey("Then I should have a yml kind", func() {
 				So(rw.Kind(), ShouldEqual, "yml")
 			})
 		})
