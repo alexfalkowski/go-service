@@ -64,7 +64,7 @@ func (c *Command) AddClient(name, description string, flags *FlagSet, opts ...fx
 	c.cmds = append(c.cmds, cmd)
 }
 
-// Run the command.
+// Run the command, do not return an error if it is context.Canceled.
 func (c *Command) Run(args ...string) error {
 	if len(args) == 0 {
 		args = SanitizeArgs(os.Args)
@@ -78,17 +78,20 @@ func (c *Command) Run(args ...string) error {
 		Args:           args,
 	})
 
-	return runner.Run()
+	if err := runner.Run(); err != nil {
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 // ExitOnError will run the command and exit on error.
-// It will not exit on context.Canceled error.
 func (c *Command) ExitOnError(args ...string) {
 	if err := c.Run(args...); err != nil {
-		if errors.Is(err, context.Canceled) {
-			return
-		}
-
 		log.Printf("%s: %v", c.name.String(), err)
 		os.Exit(1)
 	}
