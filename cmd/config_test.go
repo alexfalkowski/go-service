@@ -2,11 +2,12 @@ package cmd_test
 
 import (
 	"encoding/base64"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -37,9 +38,10 @@ func TestNoneConfig(t *testing.T) {
 	}
 }
 
+//nolint:funlen
 func TestReadValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "config.yml"), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", test.Path("configs/config.yml"))
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
@@ -49,32 +51,73 @@ func TestReadValidConfigFile(t *testing.T) {
 
 			Convey("Then I should have a valid configuration", func() {
 				So(input.Kind(), ShouldEqual, "yml")
-			})
 
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
+				var d map[string]any
+
+				So(input.Decode(&d), ShouldBeNil)
+			})
 		})
 	})
 
 	Convey("Given I have configuration file", t, func() {
 		Convey("When I read the config", func() {
 			set := cmd.NewFlagSet("test")
-			set.AddInput("file:config.yml")
+			set.AddInput("file:" + test.Path("configs/config.yml"))
 
 			input := test.NewInputConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(input, ShouldNotBeNil)
+				So(input.Kind(), ShouldEqual, "yml")
+
+				var d map[string]any
+
+				So(input.Decode(&d), ShouldBeNil)
 			})
 		})
 	})
+
+	Convey("Given I have configuration file", t, func() {
+		home, err := os.UserHomeDir()
+		So(err, ShouldBeNil)
+
+		path := filepath.Join(home, ".config", test.Name.String())
+
+		err = os.MkdirAll(path, 0o777)
+		So(err, ShouldBeNil)
+
+		data, err := os.ReadFile(test.Path("configs/config.yml"))
+		So(err, ShouldBeNil)
+
+		err = os.WriteFile(filepath.Join(path, test.Name.String()+".yml"), data, 0o600)
+		So(err, ShouldBeNil)
+
+		Convey("When I read the config", func() {
+			set := cmd.NewFlagSet("test")
+			set.AddInput("")
+
+			input := test.NewInputConfig(set)
+
+			Convey("Then I should have a valid configuration", func() {
+				So(input.Kind(), ShouldEqual, "yml")
+
+				var d map[string]any
+
+				So(input.Decode(&d), ShouldBeNil)
+			})
+		})
+
+		err = os.RemoveAll(path)
+		So(err, ShouldBeNil)
+	})
 }
 
+//nolint:funlen
 func TestWriteValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		file := test.Path("configs/new_config.yml")
 
 		So(os.WriteFile(file, []byte("environment: development"), 0o600), ShouldBeNil)
-		So(os.SetVariable("CONFIG_FILE", file), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", file)
 
 		set := cmd.NewFlagSet("test")
 		set.AddOutput("env:CONFIG_FILE")
@@ -92,7 +135,6 @@ func TestWriteValidConfigFile(t *testing.T) {
 				So(string(d), ShouldEqual, "test")
 			})
 
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 			So(os.Remove(file), ShouldBeNil)
 		})
 	})
@@ -121,12 +163,52 @@ func TestWriteValidConfigFile(t *testing.T) {
 			So(os.Remove(file), ShouldBeNil)
 		})
 	})
+
+	Convey("Given I have configuration file", t, func() {
+		home, err := os.UserHomeDir()
+		So(err, ShouldBeNil)
+
+		path := filepath.Join(home, ".config", test.Name.String())
+
+		err = os.MkdirAll(path, 0o777)
+		So(err, ShouldBeNil)
+
+		data, err := os.ReadFile(test.Path("configs/config.yml"))
+		So(err, ShouldBeNil)
+
+		file := filepath.Join(path, test.Name.String()+".yml")
+
+		err = os.WriteFile(file, data, 0o600)
+		So(err, ShouldBeNil)
+
+		set := cmd.NewFlagSet("test")
+		set.AddOutput("")
+
+		Convey("When I write the config", func() {
+			output := test.NewOutputConfig(set)
+
+			err := output.Write([]byte("test"), os.ModeAppend)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a valid configuration", func() {
+				d, err := os.ReadFile(file)
+				So(err, ShouldBeNil)
+
+				So(string(d), ShouldEqual, "test")
+			})
+
+			So(os.Remove(file), ShouldBeNil)
+		})
+
+		err = os.RemoveAll(path)
+		So(err, ShouldBeNil)
+	})
 }
 
 func TestValidConfigEnv(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
-		So(os.SetVariable("CONFIG", "ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg=="), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", "yaml:CONFIG")
+		t.Setenv("CONFIG", "ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==")
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
@@ -135,11 +217,8 @@ func TestValidConfigEnv(t *testing.T) {
 			input := test.NewInputConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(input, ShouldNotBeNil)
+				So(input.Kind(), ShouldEqual, "yaml")
 			})
-
-			So(os.UnsetVariable("CONFIG"), ShouldBeNil)
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 
 		Convey("When I write the config", func() {
@@ -149,11 +228,8 @@ func TestValidConfigEnv(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(os.GetVariable("CONFIG"), ShouldEqual, base64.StdEncoding.EncodeToString([]byte("test")))
+				So(os.Getenv("CONFIG"), ShouldEqual, base64.StdEncoding.EncodeToString([]byte("test")))
 			})
-
-			So(os.UnsetVariable("CONFIG"), ShouldBeNil)
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -173,7 +249,7 @@ func TestMissingConfig(t *testing.T) {
 
 func TestNonExistentConfig(t *testing.T) {
 	Convey("Given I have non existent configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "../bob"), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", "../bob")
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
@@ -182,10 +258,8 @@ func TestNonExistentConfig(t *testing.T) {
 			input := test.NewInputConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(input, ShouldNotBeNil)
+				So(input.Kind(), ShouldBeEmpty)
 			})
-
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }
@@ -198,14 +272,14 @@ func TestInvalidKindConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("Then I should have a valid configuration", func() {
-			So(input, ShouldNotBeNil)
+			So(input.Kind(), ShouldEqual, "yml")
 		})
 	})
 }
 
 func TestInvalidConfig(t *testing.T) {
 	Convey("Given I have invalid kind configuration file", t, func() {
-		So(os.SetVariable("CONFIG_FILE", "config.go"), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", "config.go")
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
@@ -216,8 +290,6 @@ func TestInvalidConfig(t *testing.T) {
 			Convey("Then I should have an error when decoding", func() {
 				So(input.Decode(nil), ShouldBeError)
 			})
-
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	})
 }

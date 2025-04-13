@@ -9,7 +9,7 @@ import (
 
 // NewVersion returns the version of the application.
 func NewVersion() Version {
-	return Version(cmp.Or(os.GetVariable("SERVICE_VERSION"), "development"))
+	return Version(cmp.Or(os.Getenv("SERVICE_VERSION"), "development"))
 }
 
 // Version of the application.

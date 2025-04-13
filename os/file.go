@@ -19,8 +19,3 @@ func WriteFile(name string, data []byte, perm FileMode) error {
 
 	return os.WriteFile(name, data, perm)
 }
-
-// Remove a file or empty folder.
-func Remove(name string) error {
-	return os.Remove(name)
-}

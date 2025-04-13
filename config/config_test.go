@@ -32,7 +32,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 	for _, file := range files {
 		Convey("Given I have configuration file", t, func() {
-			So(os.SetVariable("CONFIG_FILE", file), ShouldBeNil)
+			t.Setenv("CONFIG_FILE", file)
 
 			set := cmd.NewFlagSet("test")
 			set.AddInput("env:CONFIG_FILE")
@@ -47,8 +47,6 @@ func TestValidEnvConfig(t *testing.T) {
 					verifyConfig(config)
 				})
 			})
-
-			So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
 		})
 	}
 }
@@ -117,8 +115,8 @@ func TestValidMemConfig(t *testing.T) {
 		d, err := os.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
-		So(os.SetVariable("CONFIG_FILE", "yaml:CONFIG"), ShouldBeNil)
-		So(os.SetVariable("CONFIG", base64.StdEncoding.EncodeToString(d)), ShouldBeNil)
+		t.Setenv("CONFIG_FILE", "yaml:CONFIG")
+		t.Setenv("CONFIG", base64.StdEncoding.EncodeToString(d))
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
@@ -133,9 +131,6 @@ func TestValidMemConfig(t *testing.T) {
 				verifyConfig(config)
 			})
 		})
-
-		So(os.UnsetVariable("CONFIG_FILE"), ShouldBeNil)
-		So(os.UnsetVariable("CONFIG"), ShouldBeNil)
 	})
 }
 

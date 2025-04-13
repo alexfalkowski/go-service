@@ -9,53 +9,64 @@ import (
 )
 
 // NewCommon for io.
-func NewCommon(name env.Name, fs os.FileSystem, rw ReaderWriter) *Common {
-	return &Common{name: name, fs: fs, rw: rw}
+func NewCommon(name env.Name, fs os.FileSystem) *Common {
+	location, kind := common(name)
+
+	return &Common{location: location, kind: kind, fs: fs}
 }
 
 // Common for io.
 type Common struct {
-	fs   os.FileSystem
-	rw   ReaderWriter
-	name env.Name
+	fs       os.FileSystem
+	location string
+	kind     string
 }
 
 // It will first try to read from the underlying read writer, otherwise it will read a configuration file in commonly defined locations.
 func (c *Common) Read() ([]byte, error) {
-	bytes, err := c.rw.Read()
-	if err != nil {
-		name := c.name.String()
-		file := name + ".yml"
-		dirs := []string{
-			os.ExecutableDir(),
-			filepath.Join(os.UserHomeDir(), ".config", name),
-			"/etc/" + name,
-		}
-
-		for _, dir := range dirs {
-			name := filepath.Join(dir, file)
-			if c.fs.PathExists(name) {
-				return c.fs.ReadFile(name)
-			}
-		}
-
-		return nil, err
+	if strings.IsEmpty(c.location) {
+		return nil, ErrLocationMissing
 	}
 
-	return bytes, nil
+	return c.fs.ReadFile(c.location)
 }
 
 // Write to the underlying read writer.
 func (c *Common) Write(data []byte, mode os.FileMode) error {
-	return c.rw.Write(data, mode)
+	if strings.IsEmpty(c.location) {
+		return ErrLocationMissing
+	}
+
+	return c.fs.WriteFile(c.location, data, mode)
 }
 
 // Kind from the underlying read writer, otherwise YAML.
 func (c *Common) Kind() string {
-	kind := c.rw.Kind()
-	if strings.IsEmpty(kind) {
+	if strings.IsEmpty(c.kind) {
 		return "yml"
 	}
 
-	return kind
+	return c.kind
+}
+
+func common(name env.Name) (string, string) {
+	extensions := []string{".yml", ".toml", ".json"}
+	for _, extension := range extensions {
+		n := name.String()
+		file := n + extension
+		dirs := []string{
+			os.ExecutableDir(),
+			filepath.Join(os.UserHomeDir(), ".config", n),
+			"/etc/" + n,
+		}
+
+		for _, dir := range dirs {
+			name := filepath.Join(dir, file)
+			if os.PathExists(name) {
+				return name, os.PathExtension(name)
+			}
+		}
+	}
+
+	return "", ""
 }
