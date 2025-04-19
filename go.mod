@@ -32,7 +32,6 @@ require (
 	github.com/klauspost/compress v1.18.0
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/matoous/go-nanoid v1.5.1
-	github.com/matthewhartstonge/argon2 v1.2.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/oklog/ulid v1.3.1
 	github.com/open-feature/go-sdk v1.14.1

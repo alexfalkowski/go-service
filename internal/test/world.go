@@ -243,6 +243,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	}
 }
 
+// Register all packages.
 func (w *World) Register() {
 	rest.Register(w.ServeMux, Content)
 	rpc.Register(w.ServeMux, Content, Pool)
