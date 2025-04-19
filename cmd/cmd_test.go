@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto/aes"
-	"github.com/alexfalkowski/go-service/crypto/argon2"
+	"github.com/alexfalkowski/go-service/crypto/bcrypt"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
@@ -307,7 +307,7 @@ func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 func invokeNetwork(_ st.Network) {}
 
 func invokeCrypt(
-	signer *argon2.Signer,
+	signer *bcrypt.Signer,
 	_ *ed25519.Signer, _ *ed25519.Verifier,
 	_ *rsa.Encryptor, _ *rsa.Decryptor,
 	_ *aes.Cipher,

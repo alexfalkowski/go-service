@@ -1,16 +1,15 @@
-package argon2_test
+package bcrypt_test
 
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/argon2"
-	"github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/crypto/bcrypt"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSigner(t *testing.T) {
 	Convey("Given I have a hash", t, func() {
-		signer := argon2.NewSigner()
+		signer := bcrypt.NewSigner()
 
 		Convey("When I sign a hash", func() {
 			s, err := signer.Sign([]byte("test"))
@@ -35,7 +34,7 @@ func TestSigner(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then verifying to bob should fail", func() {
-				So(signer.Verify(s, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
+				So(signer.Verify(s, []byte("bob")), ShouldBeError)
 			})
 		})
 

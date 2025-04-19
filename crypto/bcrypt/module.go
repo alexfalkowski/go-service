@@ -1,4 +1,4 @@
-package argon2
+package bcrypt
 
 import "go.uber.org/fx"
 

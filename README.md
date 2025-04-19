@@ -456,9 +456,7 @@ transport:
 
 The crypto package provides sensible defaults for symmetric, asymmetric, hashing and randomness.
 
-We rely on the following libraries:
-- [argon2](https://github.com/matthewhartstonge/argon2)
-- [crypto](https://pkg.go.dev/golang.org/x/crypto)
+We rely on the awesome [crypto](https://pkg.go.dev/golang.org/x/crypto).
 
 ### Configuration
 
