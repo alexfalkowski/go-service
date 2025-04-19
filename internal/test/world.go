@@ -252,22 +252,22 @@ func (w *World) Register() {
 
 // InsecureServerHost for world.
 func (w *World) InsecureServerHost() string {
-	return "localhost:11000"
+	return w.TransportConfig.HTTP.Address
 }
 
 // SecureServerHost for world.
 func (w *World) SecureServerHost() string {
-	return "localhost:11443"
+	return w.TransportConfig.HTTP.Address
 }
 
 // InsecureDebugHost for world.
 func (w *World) InsecureDebugHost() string {
-	return "localhost:13000"
+	return w.DebugConfig.Address
 }
 
 // SecureDebugHost for world.
 func (w *World) SecureDebugHost() string {
-	return "localhost:13443"
+	return w.DebugConfig.Address
 }
 
 // RegisterEvents for world.

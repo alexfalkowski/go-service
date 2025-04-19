@@ -1,17 +1,13 @@
 package net
 
-import (
-	"net"
-
-	reuse "github.com/libp2p/go-reuseport"
-)
+import "net"
 
 // Listener is an alias for net.Listener.
 type Listener = net.Listener
 
 // Listen will reuse a TCP address.
 func Listen(address string) (Listener, error) {
-	return reuse.Listen("tcp", address)
+	return net.Listen("tcp", address)
 }
 
 // Host from the address, if it can be split.

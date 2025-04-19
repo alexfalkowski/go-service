@@ -150,14 +150,14 @@ func NewInsecureTransportConfig() *transport.Config {
 		HTTP: &http.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				Address: ":11000",
+				Address: Address(),
 				Retry:   NewRetry(),
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
 				Timeout: timeout.String(),
-				Address: ":12000",
+				Address: Address(),
 				Retry:   NewRetry(),
 			},
 		},
@@ -174,7 +174,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				TLS:     config,
-				Address: ":11443",
+				Address: Address(),
 				Retry:   retry,
 			},
 		},
@@ -182,7 +182,7 @@ func NewSecureTransportConfig() *transport.Config {
 			Config: &server.Config{
 				Timeout: timeout.String(),
 				TLS:     config,
-				Address: ":12443",
+				Address: Address(),
 				Retry:   retry,
 			},
 		},
@@ -274,7 +274,7 @@ func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
 			Timeout: "5s",
-			Address: ":13000",
+			Address: Address(),
 			Retry:   NewRetry(),
 		},
 	}
@@ -286,7 +286,7 @@ func NewSecureDebugConfig() *debug.Config {
 		Config: &server.Config{
 			Timeout: "5s",
 			TLS:     NewTLSServerConfig(),
-			Address: ":13443",
+			Address: Address(),
 			Retry:   NewRetry(),
 		},
 	}

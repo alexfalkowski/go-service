@@ -10,11 +10,17 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestInsecureDebug(t *testing.T) {
-	paths := []string{
-		"debug/psutil",
-	}
+var paths = []string{
+	"debug/statsviz",
+	"debug/pprof/",
+	"debug/pprof/cmdline",
+	"debug/pprof/symbol",
+	"debug/pprof/trace",
+	"debug/fgprof?seconds=1",
+	"debug/psutil",
+}
 
+func TestInsecureDebug(t *testing.T) {
 	for _, path := range paths {
 		Convey("When I have a all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
@@ -36,10 +42,6 @@ func TestInsecureDebug(t *testing.T) {
 }
 
 func TestSecureDebug(t *testing.T) {
-	paths := []string{
-		"debug/psutil",
-	}
-
 	for _, path := range paths {
 		Convey("When I have a all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
