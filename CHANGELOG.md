@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.543.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.543.0) - 2025-04-20
+
+- [`44490d3`](https://github.com/alexfalkowski/go-service/commit/44490d3d82cac4e5c6cfd4651442f086824c88b5) feat(runtime): pass a logger to maxprocs (#1503)
+- [`bde246a`](https://github.com/alexfalkowski/go-service/commit/bde246a1f27b9c603037e2aa98510d7275415986) build(deps): bump bin from `68f9c91` to `dbf1984` (#1502)
+
 ## [v1.542.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.542.0) - 2025-04-19
 
 - [`e57b8b1`](https://github.com/alexfalkowski/go-service/commit/e57b8b1aabcb8d9f198cc6780672bc07e0784204) feat(crypto): bcrypt is good enough for server applications (#1500)
