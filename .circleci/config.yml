@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.8
+      - image: alexfalkowski/go:2.10
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
@@ -16,7 +16,7 @@ jobs:
         command: server -i env:CONFIG_FILE
         environment:
           CONFIG_FILE: yaml:CONFIG
-          CONFIG: ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IDo2MDAwCiAgICByZXRyeToKICAgICAgYmFja29mZjogMTAwbXMKICAgICAgdGltZW91dDogMXMKICAgICAgYXR0ZW1wdHM6IDMKICAgIHRpbWVvdXQ6IDEwcwogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgogIGdycGM6CiAgICBhZGRyZXNzOiA6NjAwMQogICAgcmV0cnk6CiAgICAgIGJhY2tvZmY6IDEwMG1zCiAgICAgIHRpbWVvdXQ6IDFzCiAgICAgIGF0dGVtcHRzOiAzCiAgICB0aW1lb3V0OiAxMHMKICAgIHVzZXJfYWdlbnQ6ICJTdGF0dXMtc2VydmVyLzEuMCBncnBjLzEuMCIK
+          CONFIG: ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IDo2MDAwCiAgICByZXRyeToKICAgICAgYmFja29mZjogMTAwbXMKICAgICAgdGltZW91dDogMXMKICAgICAgYXR0ZW1wdHM6IDMKICAgIHRpbWVvdXQ6IDEwcwogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgo=
       - image: grafana/mimir:latest
         command: -server.http-listen-port=9009 -auth.multitenancy-enabled=false -ingester.ring.replication-factor=1
     working_directory: ~/go-service
@@ -63,7 +63,7 @@ jobs:
     resource_class: large
   release:
     docker:
-      - image: alexfalkowski/release:3.13
+      - image: alexfalkowski/release:3.14
     working_directory: ~/go-service
     steps:
       - checkout
