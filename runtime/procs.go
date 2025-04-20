@@ -1,10 +1,17 @@
 package runtime
 
-import "go.uber.org/automaxprocs/maxprocs"
+import (
+	"log/slog"
+
+	"go.uber.org/automaxprocs/maxprocs"
+)
 
 // RegisterMaxProcs for runtime.
-func RegisterMaxProcs() error {
-	_, err := maxprocs.Set()
+func RegisterMaxProcs(logger *slog.Logger) {
+	var opts []maxprocs.Option
+	if logger != nil {
+		opts = append(opts, maxprocs.Logger(logger.Info))
+	}
 
-	return err
+	_, _ = maxprocs.Set(opts...)
 }
