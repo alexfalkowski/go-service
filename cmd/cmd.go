@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
@@ -98,7 +98,7 @@ func (c *Command) Run(args ...string) error {
 // ExitOnError will run the command and exit on error.
 func (c *Command) ExitOnError(args ...string) {
 	if err := c.Run(args...); err != nil {
-		log.Printf("%s: %v", c.name.String(), err)
+		fmt.Printf("%s: %v", c.name.String(), err) //nolint:forbidigo
 		os.Exit(1)
 	}
 }
