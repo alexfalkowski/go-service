@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.550.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.550.0) - 2025-04-22
+
+- [`23b9862`](https://github.com/alexfalkowski/go-service/commit/23b9862db80daafab3470067f76280eaf46197ec) feat(logger): add tint (#1512)
+
 ## [v1.549.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.549.0) - 2025-04-22
 
 - [`4fa3e3b`](https://github.com/alexfalkowski/go-service/commit/4fa3e3b8582aa7e479f5064125e999b1baffaaf2) feat(logger): set default logger, so we can use it elsewhere (#1511)
