@@ -129,7 +129,7 @@ func RunClient(ctx context.Context, name string, opts ...fx.Option) error {
 }
 
 func options(options []fx.Option) []fx.Option {
-	return append(options, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger, fx.RecoverFromPanics())
+	return append(options, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
 }
 
 func prefix(prefix string, err error) error {
