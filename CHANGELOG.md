@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.545.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.545.0) - 2025-04-22
+
+- [`b5790dc`](https://github.com/alexfalkowski/go-service/commit/b5790dc66b49ad41f91f37d884f5177177eb14ed) feat(cmd): move flag set inside command (#1507)
+- [`3f9bfe3`](https://github.com/alexfalkowski/go-service/commit/3f9bfe36343a52241dfc4856fa565d30c7bafcd1) build(deps): bump bin from `dbf1984` to `b0fd780` (#1506)
+- [`7ffc93f`](https://github.com/alexfalkowski/go-service/commit/7ffc93f3f6f017770075f022947d3061c910ce0c) build(ci): use alexfalkowski/go:2.12 (#1505)
+
 ## [v1.544.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.544.0) - 2025-04-21
 
 - [`7293485`](https://github.com/alexfalkowski/go-service/commit/72934859899eb2877e7411ad3b72a5bba00a08ae) feat(deps): bump google.golang.org/grpc from 1.71.1 to 1.72.0 (#1504)
