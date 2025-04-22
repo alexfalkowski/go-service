@@ -28,20 +28,18 @@ type Params struct {
 
 // NewLogger using zap.
 func NewLogger(params Params) (*Logger, error) {
-	switch {
-	case !IsEnabled(params.Config):
-		return nil, nil
-	case params.Config.IsOTLP():
-		logger, err := newOtlpLogger(params)
-
-		return &Logger{logger}, prefix(err)
-	case params.Config.IsJSON():
-		return &Logger{newJSONLogger(params)}, nil
-	case params.Config.IsText():
-		return &Logger{newTextLogger(params)}, nil
+	logger, err := logger(params)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, ErrNotFound
+	if logger == nil {
+		return nil, nil
+	}
+
+	slog.SetDefault(logger)
+
+	return &Logger{logger}, nil
 }
 
 // Logger allows to pass a function to log.
@@ -69,6 +67,23 @@ func (l *Logger) GetLogger() *slog.Logger {
 	}
 
 	return l.Logger
+}
+
+func logger(params Params) (*slog.Logger, error) {
+	switch {
+	case !IsEnabled(params.Config):
+		return nil, nil
+	case params.Config.IsOTLP():
+		logger, err := newOtlpLogger(params)
+
+		return logger, prefix(err)
+	case params.Config.IsJSON():
+		return newJSONLogger(params), nil
+	case params.Config.IsText():
+		return newTextLogger(params), nil
+	}
+
+	return nil, ErrNotFound
 }
 
 func provide(logger *Logger) *slog.Logger {
