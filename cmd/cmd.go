@@ -27,7 +27,8 @@ type Command struct {
 }
 
 // AddServer to the command.
-func (c *Command) AddServer(name, description string, flags *FlagSet, opts ...fx.Option) {
+func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSet {
+	flags := NewFlagSet(name)
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
@@ -43,10 +44,13 @@ func (c *Command) AddServer(name, description string, flags *FlagSet, opts ...fx
 	}
 
 	c.cmds = append(c.cmds, cmd)
+
+	return flags
 }
 
 // AddClient to the command.
-func (c *Command) AddClient(name, description string, flags *FlagSet, opts ...fx.Option) {
+func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSet {
+	flags := NewFlagSet(name)
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
@@ -62,6 +66,8 @@ func (c *Command) AddClient(name, description string, flags *FlagSet, opts ...fx
 	}
 
 	c.cmds = append(c.cmds, cmd)
+
+	return flags
 }
 
 // Run the command, do not return an error if it is context.Canceled.

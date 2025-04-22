@@ -55,11 +55,9 @@ func TestRunWithServer(t *testing.T) {
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
 			flags.AddOutput("env:OUT_CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			Convey("Then I should not see an error", func() {
 				So(command.Run(test.Name.String(), "server"), ShouldBeNil)
@@ -75,10 +73,8 @@ func TestRun(t *testing.T) {
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			Convey("Then I should see an error", func() {
 				So(command.Run(), ShouldBeError)
@@ -94,11 +90,9 @@ func TestRunWithInvalidFlag(t *testing.T) {
 		Convey("When I try to run the application with an invalid flag", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
 			flags.AddOutput("env:OUT_CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			Convey("Then I should see an error", func() {
 				So(command.Run(test.Name.String(), "server", "--invalid-flag"), ShouldBeError)
@@ -112,11 +106,9 @@ func TestRunWithInvalidFlag(t *testing.T) {
 		Convey("When I try to run the application with an invalid flag", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("client")
+			flags := command.AddClient("client", "Start the client.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
 			flags.AddOutput("env:OUT_CONFIG_FILE")
-
-			command.AddClient("client", "Start the client.", flags, opts()...)
 
 			Convey("Then I should see an error", func() {
 				So(command.Run(test.Name.String(), "client", "--invalid-flag"), ShouldBeError)
@@ -132,11 +124,9 @@ func TestRunWithInvalidParams(t *testing.T) {
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
 			flags.AddOutput("env:OUT_CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			Convey("Then I should not see an error", func() {
 				So(command.Run(test.Name.String(), "server"), ShouldBeNil)
@@ -156,10 +146,8 @@ func TestInvalid(t *testing.T) {
 		Convey("When I try to run an application", t, func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			Convey("Then I should not see an error", func() {
 				err := command.Run(test.Name.String(), "server", "--input", config)
@@ -175,10 +163,8 @@ func TestDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
 		command := cmd.New(test.Name, test.Version)
 
-		flags := cmd.NewFlagSet("server")
+		flags := command.AddServer("server", "Start the server.", opts()...)
 		flags.AddInput("env:CONFIG_FILE")
-
-		command.AddServer("server", "Start the server.", flags, opts()...)
 
 		Convey("Then I should see an error", func() {
 			So(command.Run(test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")), ShouldBeNil)
@@ -193,10 +179,8 @@ func TestExitOnRun(t *testing.T) {
 		Convey("When I try to run an application", func() {
 			command := cmd.New(test.Name, test.Version)
 
-			flags := cmd.NewFlagSet("server")
+			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
-
-			command.AddServer("server", "Start the server.", flags, opts()...)
 
 			var exitCode int
 
@@ -216,13 +200,10 @@ func TestExitOnRun(t *testing.T) {
 func TestClient(t *testing.T) {
 	Convey("When I try to run a client", t, func() {
 		opts := []fx.Option{fx.NopLogger}
-
 		command := cmd.New(test.Name, test.Version)
 
-		flags := cmd.NewFlagSet("client")
+		flags := command.AddClient("client", "Start the client.", opts...)
 		flags.AddInput("env:CONFIG_FILE")
-
-		command.AddClient("client", "Start the client.", flags, opts...)
 
 		Convey("Then I should not see an error", func() {
 			So(command.Run(test.Name.String(), "client"), ShouldBeNil)
@@ -243,10 +224,8 @@ func TestInvalidClient(t *testing.T) {
 			Convey("When I try to run an application", func() {
 				command := cmd.New(test.Name, test.Version)
 
-				flags := cmd.NewFlagSet("client")
+				flags := command.AddClient("client", "Start the client.", opts()...)
 				flags.AddInput("env:CONFIG_FILE")
-
-				command.AddClient("client", "Start the client.", flags, opts()...)
 
 				Convey("Then I should see an error", func() {
 					err := command.Run(test.Name.String(), "client", "--input", "env:TEST_CONFIG_FILE")

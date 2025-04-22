@@ -59,7 +59,7 @@ func SanitizeArgs(args []string) []string {
 func SplitFlag(flag string) (string, string) {
 	kind, name, ok := strings.Cut(flag, ":")
 	if !ok {
-		return "none", "not_used"
+		return "", ""
 	}
 
 	return kind, name
