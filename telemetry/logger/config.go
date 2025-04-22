@@ -18,17 +18,22 @@ type Config struct {
 	Level   string     `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 
-// IsOTLP configuration.
+// IsOTLP logger.
 func (c *Config) IsOTLP() bool {
 	return c.Kind == "otlp"
 }
 
-// IsJSON configuration.
+// IsJSON logger.
 func (c *Config) IsJSON() bool {
 	return c.Kind == "json"
 }
 
-// IsText configuration.
+// IsText logger.
 func (c *Config) IsText() bool {
 	return c.Kind == "text"
+}
+
+// IsTint logger.
+func (c *Config) IsTint() bool {
+	return c.Kind == "tint"
 }

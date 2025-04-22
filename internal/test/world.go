@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/cache"
 	cc "github.com/alexfalkowski/go-service/cache/config"
@@ -22,6 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -53,19 +53,20 @@ type WorldOption interface {
 }
 
 type worldOpts struct {
-	verifier    token.Verifier
-	rt          http.RoundTripper
-	generator   token.Generator
-	logger      *logger.Logger
-	limiter     *limiter.Config
-	pg          *pg.Config
-	telemetry   string
-	secure      bool
-	compression bool
-	http        bool
-	grpc        bool
-	debug       bool
-	rest        bool
+	verifier     token.Verifier
+	rt           http.RoundTripper
+	generator    token.Generator
+	logger       *logger.Logger
+	limiter      *limiter.Config
+	pg           *pg.Config
+	telemetry    string
+	loggerConfig string
+	secure       bool
+	compression  bool
+	http         bool
+	grpc         bool
+	debug        bool
+	rest         bool
 }
 
 type worldOptionFunc func(*worldOpts)
@@ -159,6 +160,13 @@ func WithWorldLogger(logger *logger.Logger) WorldOption {
 	})
 }
 
+// WithWorldLogger for test.
+func WithWorldLoggerConfig(config string) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.loggerConfig = config
+	})
+}
+
 func options(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
@@ -192,10 +200,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	id := &id.UUID{}
 	os := options(opts...)
 
-	if os.logger == nil {
-		os.logger = NewLogger(lc, NewOTLPLoggerConfig())
-	}
-
+	logger := createLogger(lc, os)
 	tranConfig := transportConfig(os)
 	debugConfig := debugConfig(os)
 	tlsConfig := tlsConfig(os)
@@ -204,7 +209,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	pgConfig := pgConfig(os)
 
 	server := &Server{
-		Lifecycle: lc, Logger: os.logger, Tracer: tracer,
+		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
 		Meter: meter, Mux: mux, Limiter: limiter,
 		Verifier: os.verifier, ID: id,
@@ -213,7 +218,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	server.Register()
 
 	client := &Client{
-		Lifecycle: lc, Logger: os.logger, Tracer: tracer, Transport: tranConfig,
+		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
 		Meter: meter, TLS: tlsConfig, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
 	}
@@ -231,10 +236,10 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	sender, err := eh.NewSender(hh.NewWebhook(h, id), eh.WithSenderRoundTripper(os.rt))
 	runtime.Must(err)
 
-	cache := redisCache(lc, os.logger, meter, tracer)
+	cache := redisCache(lc, logger, meter, tracer)
 
 	return &World{
-		Logger: os.logger, Tracer: tracer,
+		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
 		Rest:     restClient,
@@ -345,6 +350,29 @@ func RegisterRequestHandlers[Req any, Res any](path string, h content.RequestHan
 	rest.Post(path, h)
 	rest.Put(path, h)
 	rest.Patch(path, h)
+}
+
+func createLogger(lc fx.Lifecycle, os *worldOpts) *logger.Logger {
+	if os.logger != nil {
+		return os.logger
+	}
+
+	var config *logger.Config
+
+	switch os.loggerConfig {
+	case "json":
+		config = NewJSONLoggerConfig()
+	case "text":
+		config = NewTextLoggerConfig()
+	case "tilt":
+		config = NewTintLoggerConfig()
+	case "otlp":
+		config = NewOTLPLoggerConfig()
+	default:
+		config = NewOTLPLoggerConfig()
+	}
+
+	return NewLogger(lc, config)
 }
 
 func transportConfig(os *worldOpts) *transport.Config {

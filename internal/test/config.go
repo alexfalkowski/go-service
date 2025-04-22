@@ -217,6 +217,14 @@ func NewJSONLoggerConfig() *logger.Config {
 	}
 }
 
+// NewTintLoggerConfig for test.
+func NewTintLoggerConfig() *logger.Config {
+	return &logger.Config{
+		Kind:  "tint",
+		Level: "debug",
+	}
+}
+
 // NewPrometheusMetricsConfig for test.
 func NewPrometheusMetricsConfig() *metrics.Config {
 	return &metrics.Config{
