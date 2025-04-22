@@ -31,6 +31,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/klauspost/compress v1.18.0
 	github.com/linxGnu/mssqlx v1.1.8
+	github.com/lmittmann/tint v1.0.7
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/oklog/ulid v1.3.1

@@ -42,7 +42,7 @@ func down(db *mssqlx.DBs) error {
 
 func TestOpen(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("text"))
 
 		Convey("When I try open the database", func() {
 			_, err := world.OpenDatabase()
@@ -82,7 +82,7 @@ func TestInvalidOpen(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("Given I have an invalid config", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config), test.WithWorldLoggerConfig("json"))
 			world.Register()
 
 			Convey("When I try open the database", func() {
@@ -102,7 +102,7 @@ func TestInvalidOpen(t *testing.T) {
 
 func TestSQL(t *testing.T) {
 	Convey("Given I have a configuration", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("otlp"))
 		world.Register()
 
 		Convey("When I try to get a database", func() {
@@ -441,7 +441,7 @@ func TestTransStatementExec(t *testing.T) {
 
 func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tilt"))
 		world.Register()
 
 		db, err := world.OpenDatabase()

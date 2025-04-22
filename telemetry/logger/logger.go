@@ -26,7 +26,7 @@ type Params struct {
 	Environment env.Environment
 }
 
-// NewLogger using zap.
+// NewLogger using slog.
 func NewLogger(params Params) (*Logger, error) {
 	logger, err := logger(params)
 	if err != nil {
@@ -81,6 +81,8 @@ func logger(params Params) (*slog.Logger, error) {
 		return newJSONLogger(params), nil
 	case params.Config.IsText():
 		return newTextLogger(params), nil
+	case params.Config.IsTint():
+		return newTintLogger(params), nil
 	}
 
 	return nil, ErrNotFound

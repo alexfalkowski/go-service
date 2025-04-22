@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/cristalhq/acmd"
 	"go.uber.org/dig"
@@ -98,7 +99,7 @@ func (c *Command) Run(args ...string) error {
 // ExitOnError will run the command and exit on error.
 func (c *Command) ExitOnError(args ...string) {
 	if err := c.Run(args...); err != nil {
-		slog.Error("could not start", slog.String("error", err.Error()))
+		slog.Error("could not start", logger.Error(err))
 		os.Exit(1)
 	}
 }
