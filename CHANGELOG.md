@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.546.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.546.0) - 2025-04-22
+
+- [`73801ad`](https://github.com/alexfalkowski/go-service/commit/73801ad014ba2f73d2620389ceefc0d799362887) feat(cmd): do not recover from panics (#1508)
+
 ## [v1.545.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.545.0) - 2025-04-22
 
 - [`b5790dc`](https://github.com/alexfalkowski/go-service/commit/b5790dc66b49ad41f91f37d884f5177177eb14ed) feat(cmd): move flag set inside command (#1507)
