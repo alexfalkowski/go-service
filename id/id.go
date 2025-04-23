@@ -1,6 +1,10 @@
 package id
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/alexfalkowski/go-service/crypto/rand"
+)
 
 // ErrNotFound for id.
 var ErrNotFound = errors.New("id: generator not found")
@@ -12,7 +16,7 @@ type Generator interface {
 }
 
 // NewGenerator from config.
-func NewGenerator(config *Config) (Generator, error) {
+func NewGenerator(config *Config, reader rand.Reader) (Generator, error) {
 	if !IsEnabled(config) {
 		return nil, nil
 	}
@@ -25,7 +29,7 @@ func NewGenerator(config *Config) (Generator, error) {
 	case "nanoid":
 		return &NanoID{}, nil
 	case "ulid":
-		return &ULID{}, nil
+		return NewULID(reader), nil
 	case "xid":
 		return &XID{}, nil
 	}

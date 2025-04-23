@@ -1,8 +1,6 @@
 package token
 
-import (
-	"context"
-)
+import "context"
 
 // Verifier allows the implementation of different types of verifiers.
 type Verifier interface {

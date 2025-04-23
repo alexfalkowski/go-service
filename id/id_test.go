@@ -3,6 +3,7 @@ package id_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/id"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -18,7 +19,7 @@ func TestValidID(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("Given I have a generator", t, func() {
-			gen, err := id.NewGenerator(config)
+			gen, err := id.NewGenerator(config, rand.NewReader())
 			So(err, ShouldBeNil)
 
 			Convey("When I generate an id", func() {
@@ -40,7 +41,7 @@ func TestInvalidID(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I create a generator", t, func() {
-			gen, err := id.NewGenerator(config)
+			gen, err := id.NewGenerator(config, rand.NewReader())
 			So(err, ShouldBeNil)
 
 			Convey("Then I should not have a generator", func() {
@@ -50,7 +51,7 @@ func TestInvalidID(t *testing.T) {
 	}
 
 	Convey("When I create a generator", t, func() {
-		_, err := id.NewGenerator(&id.Config{Kind: "invalid"})
+		_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, rand.NewReader())
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
