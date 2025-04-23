@@ -45,7 +45,7 @@ func TestRouteSuccess(t *testing.T) {
 }
 
 func TestRouteMissingView(t *testing.T) {
-	Convey("Given I have setup a route with an missisng view", t, func() {
+	Convey("Given I have setup a route with an missing view", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()

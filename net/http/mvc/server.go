@@ -51,9 +51,12 @@ func Static(path, name string) bool {
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
+		} else {
+			if _, err := res.Write(bytes); err != nil {
+				meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
+				res.WriteHeader(status.Code(err))
+			}
 		}
-
-		_, _ = res.Write(bytes)
 	}
 
 	mux.HandleFunc(path, handler)
