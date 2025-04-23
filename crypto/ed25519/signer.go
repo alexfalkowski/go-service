@@ -1,8 +1,6 @@
 package ed25519
 
-import (
-	"crypto/ed25519"
-)
+import "crypto/ed25519"
 
 // NewSigner for ed25519.
 func NewSigner(cfg *Config) (*Signer, error) {
