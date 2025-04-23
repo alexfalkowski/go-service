@@ -32,13 +32,14 @@ func (p ViewsParams) IsValid() bool {
 
 // NewView from fs with patterns.
 func NewViews(params ViewsParams) *Views {
-	var tpl *template.Template
-
-	if params.IsValid() {
-		tpl = template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...))
+	if !params.IsValid() {
+		return nil
 	}
 
-	return &Views{template: tpl, fs: params.FS}
+	return &Views{
+		template: template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...)),
+		fs:       params.FS,
+	}
 }
 
 // View for mvc.
@@ -49,7 +50,7 @@ type Views struct {
 
 // IsValid verifies that ut has an fs and template.
 func (v *Views) IsValid() bool {
-	return v.template != nil && v.fs != nil
+	return v != nil && v.fs != nil
 }
 
 // View to render.
