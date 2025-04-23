@@ -1,13 +1,10 @@
 package mvc
 
 import (
-	"context"
 	"html/template"
 	"io/fs"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/go-sprout/sprout/sprigin"
 	"go.uber.org/fx"
 )
@@ -57,11 +54,8 @@ func (v *Views) IsValid() bool {
 type View string
 
 // Render the view.
-func (v View) Render(ctx context.Context, res http.ResponseWriter, model any) {
-	if err := views.template.ExecuteTemplate(res, v.String(), model); err != nil {
-		meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
-		res.WriteHeader(status.Code(err))
-	}
+func (v View) Render(res http.ResponseWriter, model any) error {
+	return views.template.ExecuteTemplate(res, v.String(), model)
 }
 
 // String representation of the view.

@@ -24,12 +24,12 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 
 		view, model, err := controller(ctx)
 		if err != nil {
-			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
+			meta.WithAttribute(ctx, "mvcRouteError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 
-			view.Render(ctx, res, err)
+			_ = view.Render(res, err)
 		} else {
-			view.Render(ctx, res, model)
+			_ = view.Render(res, model)
 		}
 	}
 
