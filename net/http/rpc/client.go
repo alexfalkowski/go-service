@@ -75,21 +75,21 @@ func (c *Client) Invoke(ctx context.Context, path string, req, res any) error {
 	defer pool.Put(buffer)
 
 	if err := c.mediaType.Encoder.Encode(buffer, req); err != nil {
-		return errors.Prefix("rpc", err)
+		return c.prefix(err)
 	}
 
 	url := c.url + path
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buffer)
 	if err != nil {
-		return errors.Prefix("rpc", err)
+		return c.prefix(err)
 	}
 
 	request.Header.Set(content.TypeKey, c.mediaType.Type)
 
 	response, err := c.client.Do(request)
 	if err != nil {
-		return errors.Prefix("rpc", err)
+		return c.prefix(err)
 	}
 
 	defer response.Body.Close()
@@ -98,7 +98,7 @@ func (c *Client) Invoke(ctx context.Context, path string, req, res any) error {
 
 	_, err = io.Copy(buffer, response.Body)
 	if err != nil {
-		return errors.Prefix("rpc", err)
+		return c.prefix(err)
 	}
 
 	// The server handlers return text on errors.
@@ -108,10 +108,14 @@ func (c *Client) Invoke(ctx context.Context, path string, req, res any) error {
 	}
 
 	if err := media.Encoder.Decode(buffer, res); err != nil {
-		return errors.Prefix("rpc", err)
+		return c.prefix(err)
 	}
 
 	return nil
+}
+
+func (c *Client) prefix(err error) error {
+	return errors.Prefix("rpc", err)
 }
 
 func options(opts ...ClientOption) *clientOpts {
