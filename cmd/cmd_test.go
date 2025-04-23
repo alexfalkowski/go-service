@@ -60,7 +60,7 @@ func TestRunWithServer(t *testing.T) {
 			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				So(command.Run(test.Name.String(), "server"), ShouldBeNil)
+				So(command.Run(t.Context(), test.Name.String(), "server"), ShouldBeNil)
 			})
 		})
 	})
@@ -77,7 +77,7 @@ func TestRun(t *testing.T) {
 			flags.AddInput("env:CONFIG_FILE")
 
 			Convey("Then I should see an error", func() {
-				So(command.Run(), ShouldBeError)
+				So(command.Run(t.Context()), ShouldBeError)
 			})
 		})
 	})
@@ -95,7 +95,7 @@ func TestRunWithInvalidFlag(t *testing.T) {
 			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			Convey("Then I should see an error", func() {
-				So(command.Run(test.Name.String(), "server", "--invalid-flag"), ShouldBeError)
+				So(command.Run(t.Context(), test.Name.String(), "server", "--invalid-flag"), ShouldBeError)
 			})
 		})
 	})
@@ -111,7 +111,7 @@ func TestRunWithInvalidFlag(t *testing.T) {
 			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			Convey("Then I should see an error", func() {
-				So(command.Run(test.Name.String(), "client", "--invalid-flag"), ShouldBeError)
+				So(command.Run(t.Context(), test.Name.String(), "client", "--invalid-flag"), ShouldBeError)
 			})
 		})
 	})
@@ -129,7 +129,7 @@ func TestRunWithInvalidParams(t *testing.T) {
 			flags.AddOutput("env:OUT_CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				So(command.Run(test.Name.String(), "server"), ShouldBeNil)
+				So(command.Run(t.Context(), test.Name.String(), "server"), ShouldBeNil)
 			})
 		})
 	})
@@ -150,7 +150,7 @@ func TestInvalid(t *testing.T) {
 			flags.AddInput("env:CONFIG_FILE")
 
 			Convey("Then I should not see an error", func() {
-				err := command.Run(test.Name.String(), "server", "--input", config)
+				err := command.Run(t.Context(), test.Name.String(), "server", "--input", config)
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "unknown port")
@@ -167,7 +167,7 @@ func TestDisabled(t *testing.T) {
 		flags.AddInput("env:CONFIG_FILE")
 
 		Convey("Then I should see an error", func() {
-			So(command.Run(test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")), ShouldBeNil)
+			So(command.Run(t.Context(), test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")), ShouldBeNil)
 		})
 	})
 }
@@ -188,7 +188,7 @@ func TestExitOnRun(t *testing.T) {
 				exitCode = code
 			}
 
-			command.ExitOnError(test.Name.String(), "server")
+			command.ExitOnError(t.Context(), test.Name.String(), "server")
 
 			Convey("Then it should exit with a code of 1", func() {
 				So(exitCode, ShouldEqual, 1)
@@ -206,7 +206,7 @@ func TestClient(t *testing.T) {
 		flags.AddInput("env:CONFIG_FILE")
 
 		Convey("Then I should not see an error", func() {
-			So(command.Run(test.Name.String(), "client"), ShouldBeNil)
+			So(command.Run(t.Context(), test.Name.String(), "client"), ShouldBeNil)
 		})
 	})
 }
@@ -228,7 +228,7 @@ func TestInvalidClient(t *testing.T) {
 				flags.AddInput("env:CONFIG_FILE")
 
 				Convey("Then I should see an error", func() {
-					err := command.Run(test.Name.String(), "client", "--input", "env:TEST_CONFIG_FILE")
+					err := command.Run(t.Context(), test.Name.String(), "client", "--input", "env:TEST_CONFIG_FILE")
 
 					So(err, ShouldBeError)
 					So(err.Error(), ShouldContainSubstring, "unknown port")

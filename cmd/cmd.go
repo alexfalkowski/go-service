@@ -71,7 +71,7 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSe
 }
 
 // Run the command, do not return an error if it is context.Canceled.
-func (c *Command) Run(args ...string) error {
+func (c *Command) Run(ctx context.Context, args ...string) error {
 	if len(args) == 0 {
 		args = SanitizeArgs(os.Args)
 	}
@@ -82,14 +82,15 @@ func (c *Command) Run(args ...string) error {
 		AppDescription: name,
 		Version:        c.version.String(),
 		Args:           args,
+		Context:        ctx,
 	})
 
 	return runner.Run()
 }
 
 // ExitOnError will run the command and exit on error.
-func (c *Command) ExitOnError(args ...string) {
-	if err := c.Run(args...); err != nil {
+func (c *Command) ExitOnError(ctx context.Context, args ...string) {
+	if err := c.Run(ctx, args...); err != nil {
 		slog.Error("could not start", logger.Error(err))
 		os.Exit(1)
 	}
