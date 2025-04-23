@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	"github.com/alexfalkowski/go-service/env"
@@ -85,15 +84,7 @@ func (c *Command) Run(args ...string) error {
 		Args:           args,
 	})
 
-	if err := runner.Run(); err != nil {
-		if errors.Is(err, context.Canceled) {
-			return nil
-		}
-
-		return err
-	}
-
-	return nil
+	return runner.Run()
 }
 
 // ExitOnError will run the command and exit on error.
