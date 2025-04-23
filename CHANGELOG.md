@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.553.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.553.0) - 2025-04-23
+
+- [`f02214b`](https://github.com/alexfalkowski/go-service/commit/f02214bc30f868cd12051b6d0013193a03533606) feat(mvc): handle the error from res.Write for Static (#1516)
+
 ## [v1.552.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.552.0) - 2025-04-23
 
 - [`8cb4828`](https://github.com/alexfalkowski/go-service/commit/8cb482825ab5cd79ee2c7a3a90f89ed71bfa6fc4) feat(mvc): follow the pattern of nil with disabled config (#1514)
