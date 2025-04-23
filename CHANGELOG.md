@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.554.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.554.0) - 2025-04-23
+
+- [`bd0cdbd`](https://github.com/alexfalkowski/go-service/commit/bd0cdbd35866b36a9611f23931dfa80a1c063bd0) feat(id): use our own crypto rand (#1517)
+
 ## [v1.553.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.553.0) - 2025-04-23
 
 - [`f02214b`](https://github.com/alexfalkowski/go-service/commit/f02214bc30f868cd12051b6d0013193a03533606) feat(mvc): handle the error from res.Write for Static (#1516)
