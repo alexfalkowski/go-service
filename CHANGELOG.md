@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.557.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.557.0) - 2025-04-24
+
+- [`7b22dbd`](https://github.com/alexfalkowski/go-service/commit/7b22dbd44e0979b1ec741cb023ff73290924969a) feat(mvc): do not load file into memory (#1521)
+- [`c30a1a4`](https://github.com/alexfalkowski/go-service/commit/c30a1a44d8565b685e92cc09bc40ef82cdc9bbcb) build(codecov): add config (#1520)
+
 ## [v1.556.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.556.0) - 2025-04-24
 
 - [`6985331`](https://github.com/alexfalkowski/go-service/commit/698533122bee6d666be8e56ae2add8128e72df1e) feat(rpc): remove prefix dups (#1519)
