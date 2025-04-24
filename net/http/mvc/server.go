@@ -1,7 +1,7 @@
 package mvc
 
 import (
-	"io/fs"
+	"io"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
@@ -47,12 +47,13 @@ func Static(path, name string) bool {
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		bytes, err := fs.ReadFile(views.fs, name)
+		f, err := views.fs.Open(name)
 		if err != nil {
 			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 		} else {
-			if _, err := res.Write(bytes); err != nil {
+			_, err := io.Copy(res, f)
+			if err != nil {
 				meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
 				res.WriteHeader(status.Code(err))
 			}
