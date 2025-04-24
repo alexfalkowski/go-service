@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.556.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.556.0) - 2025-04-24
+
+- [`6985331`](https://github.com/alexfalkowski/go-service/commit/698533122bee6d666be8e56ae2add8128e72df1e) feat(rpc): remove prefix dups (#1519)
+
 ## [v1.555.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.555.0) - 2025-04-23
 
 - [`4a0943c`](https://github.com/alexfalkowski/go-service/commit/4a0943c0ed593b13a2b3d52556156dbc9fe1b722) feat(cmd): pass context to run (#1518)
