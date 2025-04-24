@@ -23,21 +23,25 @@ type Generator struct {
 func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.generator)
 	if err != nil {
-		return "", "", errors.Prefix("ed25519", err)
+		return "", "", g.prefix(err)
 	}
 
 	mpu, err := x509.MarshalPKIXPublicKey(public)
 	if err != nil {
-		return "", "", errors.Prefix("ed25519", err)
+		return "", "", g.prefix(err)
 	}
 
 	mpr, err := x509.MarshalPKCS8PrivateKey(private)
 	if err != nil {
-		return "", "", errors.Prefix("ed25519", err)
+		return "", "", g.prefix(err)
 	}
 
 	pub := string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu}))
 	pri := string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr}))
 
 	return pub, pri, nil
+}
+
+func (g *Generator) prefix(err error) error {
+	return errors.Prefix("ed25519", err)
 }

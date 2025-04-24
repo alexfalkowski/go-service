@@ -20,17 +20,21 @@ type NTSNetwork struct {
 func (n *NTSNetwork) Now() (Time, error) {
 	session, err := nts.NewSession(n.address)
 	if err != nil {
-		return Time{}, errors.Prefix("nts", err)
+		return Time{}, n.prefix(err)
 	}
 
 	res, err := session.Query()
 	if err != nil {
-		return Time{}, errors.Prefix("nts", err)
+		return Time{}, n.prefix(err)
 	}
 
 	if err := res.Validate(); err != nil {
-		return Time{}, errors.Prefix("nts", err)
+		return Time{}, n.prefix(err)
 	}
 
 	return Now().Add(res.ClockOffset), nil
+}
+
+func (n *NTSNetwork) prefix(err error) error {
+	return errors.Prefix("nts", err)
 }

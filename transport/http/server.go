@@ -91,12 +91,12 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	c, err := config(params.Config)
 	if err != nil {
-		return nil, errors.Prefix("http", err)
+		return nil, prefix(err)
 	}
 
 	serv, err := sh.NewServer(svr, c)
 	if err != nil {
-		return nil, errors.Prefix("http", err)
+		return nil, prefix(err)
 	}
 
 	server := &Server{
@@ -133,4 +133,8 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = tls
 
 	return config, err
+}
+
+func prefix(err error) error {
+	return errors.Prefix("http", err)
 }

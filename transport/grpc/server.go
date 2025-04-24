@@ -56,7 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	opt, err := creds(params.Config)
 	if err != nil {
-		return nil, errors.Prefix("grpc", err)
+		return nil, prefix(err)
 	}
 
 	var meter *tm.Server
@@ -87,7 +87,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	serv, err := sg.NewServer(svr, &sg.Config{Address: cmp.Or(params.Config.Address, ":9090")})
 	if err != nil {
-		return nil, errors.Prefix("grpc", err)
+		return nil, prefix(err)
 	}
 
 	server := &Server{
@@ -191,4 +191,8 @@ func creds(cfg *Config) (grpc.ServerOption, error) {
 
 func provide(server *Server) grpc.ServiceRegistrar {
 	return server.ServiceRegistrar()
+}
+
+func prefix(err error) error {
+	return errors.Prefix("grpc", err)
 }

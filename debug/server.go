@@ -38,12 +38,12 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	c, err := config(params.Config)
 	if err != nil {
-		return nil, errors.Prefix("debug", err)
+		return nil, prefix(err)
 	}
 
 	serv, err := sh.NewServer(svr, c)
 	if err != nil {
-		return nil, errors.Prefix("debug", err)
+		return nil, prefix(err)
 	}
 
 	server := &Server{
@@ -80,4 +80,8 @@ func config(cfg *Config) (*sh.Config, error) {
 	config.TLS = t
 
 	return config, err
+}
+
+func prefix(err error) error {
+	return errors.Prefix("debug", err)
 }

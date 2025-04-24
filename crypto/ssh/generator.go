@@ -23,21 +23,25 @@ type Generator struct {
 func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.generator)
 	if err != nil {
-		return "", "", errors.Prefix("ssh", err)
+		return "", "", g.prefix(err)
 	}
 
 	mpu, err := ssh.NewPublicKey(public)
 	if err != nil {
-		return "", "", errors.Prefix("ssh", err)
+		return "", "", g.prefix(err)
 	}
 
 	mpr, err := ssh.MarshalPrivateKey(private, "")
 	if err != nil {
-		return "", "", errors.Prefix("ssh", err)
+		return "", "", g.prefix(err)
 	}
 
 	pub := string(ssh.MarshalAuthorizedKey(mpu))
 	pri := string(pem.EncodeToMemory(mpr))
 
 	return pub, pri, nil
+}
+
+func (g *Generator) prefix(err error) error {
+	return errors.Prefix("ssh", err)
 }
