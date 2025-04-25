@@ -7,8 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	tt "github.com/alexfalkowski/go-service/transport/token"
 )
 
 // Handler for token.
@@ -29,8 +29,9 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	ctx := req.Context()
+	token := meta.Authorization(ctx).Value()
 
-	ctx, err := tt.Verify(ctx, h.verifier)
+	ctx, err := h.verifier.Verify(ctx, []byte(token))
 	if err != nil {
 		status.WriteError(res, status.FromError(http.StatusUnauthorized, errors.Prefix("token", err)))
 
