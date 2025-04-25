@@ -6,8 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
+	"github.com/alexfalkowski/go-service/transport/meta"
 	"github.com/alexfalkowski/go-service/transport/strings"
-	tt "github.com/alexfalkowski/go-service/transport/token"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,7 +23,9 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 			return handler(ctx, req)
 		}
 
-		ctx, err := tt.Verify(ctx, verifier)
+		token := meta.Authorization(ctx).Value()
+
+		ctx, err := verifier.Verify(ctx, []byte(token))
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -41,8 +43,9 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 		}
 
 		ctx := stream.Context()
+		token := meta.Authorization(ctx).Value()
 
-		ctx, err := tt.Verify(ctx, verifier)
+		ctx, err := verifier.Verify(ctx, []byte(token))
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
