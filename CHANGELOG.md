@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.558.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.558.0) - 2025-04-25
+
+- [`0c39d30`](https://github.com/alexfalkowski/go-service/commit/0c39d300b16b4fe4c9049b5f13d793d76e8faa90) feat(token): remove unneeded func (#1525)
+- [`65879b4`](https://github.com/alexfalkowski/go-service/commit/65879b434bb1cd3af1864ff94d7b137b4593f9e8) build(ci): use alexfalkowski/release:3.15 (#1523)
+- [`a8776a9`](https://github.com/alexfalkowski/go-service/commit/a8776a9b2277bf0e62323ca811578a63136ee683) build(ci): use alexfalkowski/go:2.13 (#1522)
+
 ## [v1.557.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.557.0) - 2025-04-24
 
 - [`7b22dbd`](https://github.com/alexfalkowski/go-service/commit/7b22dbd44e0979b1ec741cb023ff73290924969a) feat(mvc): do not load file into memory (#1521)
