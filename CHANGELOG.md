@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.559.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.559.0) - 2025-04-27
+
+- [`43bdb07`](https://github.com/alexfalkowski/go-service/commit/43bdb0733bc2d91f4c47287664b15a538eb326e6) feat(mvc): add the ability for static path value (#1526)
+
 ## [v1.558.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.558.0) - 2025-04-25
 
 - [`0c39d30`](https://github.com/alexfalkowski/go-service/commit/0c39d300b16b4fe4c9049b5f13d793d76e8faa90) feat(token): remove unneeded func (#1525)
