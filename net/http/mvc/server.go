@@ -38,8 +38,8 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 	return true
 }
 
-// Static file name to be served via path.
-func Static(path, name string) bool {
+// StaticFile to be served via path.
+func StaticFile(path, name string) bool {
 	if !views.IsValid() {
 		return false
 	}
@@ -49,12 +49,40 @@ func Static(path, name string) bool {
 
 		f, err := views.fs.Open(name)
 		if err != nil {
-			meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
+			meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 		} else {
 			_, err := io.Copy(res, f)
 			if err != nil {
-				meta.WithAttribute(ctx, "mvcStaticError", meta.Error(err))
+				meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
+				res.WriteHeader(status.Code(err))
+			}
+		}
+	}
+
+	mux.HandleFunc(path, handler)
+
+	return true
+}
+
+// StaticPathValue to be served from a dedicated path value.
+func StaticPathValue(path, value, prefix string) bool {
+	if !views.IsValid() {
+		return false
+	}
+
+	handler := func(res http.ResponseWriter, req *http.Request) {
+		ctx := req.Context()
+		val := req.PathValue(value)
+
+		f, err := views.fs.Open(prefix + "/" + val)
+		if err != nil {
+			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
+			res.WriteHeader(status.Code(err))
+		} else {
+			_, err := io.Copy(res, f)
+			if err != nil {
+				meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
 				res.WriteHeader(status.Code(err))
 			}
 		}

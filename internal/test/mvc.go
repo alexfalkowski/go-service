@@ -10,8 +10,8 @@ type (
 		Done  bool
 	}
 
-	// PageData for test.
-	PageData struct {
+	// Page for test.
+	Page struct {
 		Title string
 		Todos []Todo
 	}
@@ -23,7 +23,7 @@ var (
 	Views embed.FS
 
 	// Model for test.
-	Model = PageData{
+	Model = Page{
 		Title: "My TODO list",
 		Todos: []Todo{
 			{Title: "Task 1", Done: false},
