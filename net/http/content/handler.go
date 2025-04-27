@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/errors"
-	hc "github.com/alexfalkowski/go-service/net/http/context"
+	"github.com/alexfalkowski/go-service/net/http/meta"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/types/ptr"
 )
@@ -18,8 +18,8 @@ func NewRequestHandler[Req any, Res any](cont *Content, prefix string, handler R
 	return newHandler(cont, prefix, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
 
-		encoder := hc.Encoder(ctx)
-		request := hc.Request(ctx)
+		encoder := meta.Encoder(ctx)
+		request := meta.Request(ctx)
 
 		if err := encoder.Decode(request.Body, req); err != nil {
 			return nil, status.Error(http.StatusBadRequest, err.Error())
@@ -42,11 +42,11 @@ func NewHandler[Res any](cont *Content, prefix string, handler Handler[Res]) htt
 func newHandler[Res any](cont *Content, prefix string, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		ctx = hc.WithRequest(ctx, req)
-		ctx = hc.WithResponse(ctx, res)
+		ctx = meta.WithRequest(ctx, req)
+		ctx = meta.WithResponse(ctx, res)
 		media := cont.NewFromRequest(req)
 
-		ctx = hc.WithEncoder(ctx, media.Encoder)
+		ctx = meta.WithEncoder(ctx, media.Encoder)
 		res.Header().Add(TypeKey, media.Type)
 
 		data, err := handler(ctx)
