@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
-	hc "github.com/alexfalkowski/go-service/net/http/context"
+	"github.com/alexfalkowski/go-service/net/http/context"
 	"github.com/alexfalkowski/go-service/net/http/status"
 )
 
@@ -19,8 +19,8 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 		ctx := req.Context()
-		ctx = hc.WithRequest(ctx, req)
-		ctx = hc.WithResponse(ctx, res)
+		ctx = context.WithRequest(ctx, req)
+		ctx = context.WithResponse(ctx, res)
 
 		view, model, err := controller(ctx)
 		if err != nil {

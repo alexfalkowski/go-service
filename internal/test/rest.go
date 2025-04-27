@@ -2,10 +2,9 @@ package test
 
 import (
 	"cmp"
-	"context"
 
 	"github.com/alexfalkowski/go-service/meta"
-	nc "github.com/alexfalkowski/go-service/net/http/context"
+	"github.com/alexfalkowski/go-service/net/http/context"
 )
 
 // RestNoContent for test.
@@ -20,8 +19,8 @@ func RestRequestNoContent(_ context.Context, _ *Request) (*Response, error) {
 
 // RestNoContent for test.
 func RestContent(ctx context.Context) (*Response, error) {
-	req := nc.Request(ctx)
-	_ = nc.Response(ctx)
+	req := context.Request(ctx)
+	_ = context.Response(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
