@@ -19,7 +19,7 @@ func TestRouteSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
 			return mvc.View("hello.tmpl"), &test.Model, nil
 		})
 
@@ -50,7 +50,7 @@ func TestRouteMissingView(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
 			return mvc.View("none.tmpl"), &test.Model, nil
 		})
 
@@ -78,7 +78,7 @@ func TestRouteError(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
 			return mvc.View("error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
 		})
 
@@ -103,13 +103,13 @@ func TestRouteError(t *testing.T) {
 	})
 }
 
-func TestStaticSuccess(t *testing.T) {
+func TestStaticFileSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
-		mvc.Static("GET /robots.txt", "static/robots.txt")
+		mvc.StaticFile("GET /robots.txt", "static/robots.txt")
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
@@ -129,18 +129,67 @@ func TestStaticSuccess(t *testing.T) {
 	})
 }
 
-func TestStaticError(t *testing.T) {
+func TestStaticFileError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
-		mvc.Static("GET /robots.txt", "static/bob.txt")
+		mvc.StaticFile("GET /robots.txt", "static/bob.txt")
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
 
 			res, _, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have an error", func() {
+				So(res.StatusCode, ShouldEqual, 500)
+			})
+
+			world.RequireStop()
+		})
+	})
+}
+
+func TestStaticPathValueSuccess(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+		world.Register()
+		world.RequireStart()
+
+		mvc.StaticPathValue("GET /{file}", "file", "static")
+
+		Convey("When I query for robots", func() {
+			header := http.Header{}
+			header.Set("Content-Type", "text/html")
+
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid html", func() {
+				So(body, ShouldNotBeEmpty)
+				So(res.StatusCode, ShouldEqual, 200)
+				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
+			})
+
+			world.RequireStop()
+		})
+	})
+}
+
+func TestStaticPathValueError(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+		world.Register()
+		world.RequireStart()
+
+		mvc.StaticPathValue("GET /{file}", "file", "static")
+
+		Convey("When I query for hello", func() {
+			header := http.Header{}
+
+			res, _, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "bob.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an error", func() {
@@ -160,14 +209,16 @@ func TestMissingViews(t *testing.T) {
 		mvc.Register(mux, v)
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
 				return mvc.View("hello.tmpl"), &test.Model, nil
 			})
-			staticAdded := mvc.Static("GET /robots.txt", "static/bob.txt")
+			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
+			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")
 
 			Convey("Then they should not be added", func() {
 				So(routeAdded, ShouldBeFalse)
-				So(staticAdded, ShouldBeFalse)
+				So(fileAdded, ShouldBeFalse)
+				So(pathAdded, ShouldBeFalse)
 			})
 		})
 	})
@@ -179,14 +230,16 @@ func TestMissingViews(t *testing.T) {
 		mvc.Register(mux, v)
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.PageData, error) {
+			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
 				return mvc.View("hello.tmpl"), &test.Model, nil
 			})
-			staticAdded := mvc.Static("GET /robots.txt", "static/bob.txt")
+			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
+			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")
 
 			Convey("Then they should not be added", func() {
 				So(routeAdded, ShouldBeFalse)
-				So(staticAdded, ShouldBeFalse)
+				So(fileAdded, ShouldBeFalse)
+				So(pathAdded, ShouldBeFalse)
 			})
 		})
 	})
