@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.560.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.560.0) - 2025-04-27
+
+- [`64f66e2`](https://github.com/alexfalkowski/go-service/commit/64f66e2a90d4ce5246f0e6b3a1a0873276f7886d) feat(http): rename context to meta (#1528)
+
 ## [v1.559.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.559.0) - 2025-04-27
 
 - [`43bdb07`](https://github.com/alexfalkowski/go-service/commit/43bdb0733bc2d91f4c47287664b15a538eb326e6) feat(mvc): add the ability for static path value (#1526)
