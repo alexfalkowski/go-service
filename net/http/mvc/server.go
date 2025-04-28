@@ -69,6 +69,7 @@ func StaticFile(path, name string) bool {
 		return false
 	}
 
+	path = http.MethodGet + " " + path
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
@@ -89,6 +90,7 @@ func StaticPathValue(path, value, prefix string) bool {
 		return false
 	}
 
+	path = http.MethodGet + " " + path
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		name := prefix + "/" + req.PathValue(value)

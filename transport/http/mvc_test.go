@@ -118,7 +118,7 @@ func TestStaticFileSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.StaticFile("GET /robots.txt", "static/robots.txt")
+		mvc.StaticFile("/robots.txt", "static/robots.txt")
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
@@ -144,7 +144,7 @@ func TestStaticFileError(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.StaticFile("GET /robots.txt", "static/bob.txt")
+		mvc.StaticFile("/robots.txt", "static/bob.txt")
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
@@ -167,7 +167,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.StaticPathValue("GET /{file}", "file", "static")
+		mvc.StaticPathValue("/{file}", "file", "static")
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
@@ -193,7 +193,7 @@ func TestStaticPathValueError(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.StaticPathValue("GET /{file}", "file", "static")
+		mvc.StaticPathValue("/{file}", "file", "static")
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
@@ -221,8 +221,8 @@ func TestMissingViews(t *testing.T) {
 			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
-			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
-			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")
+			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
+			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")
 
 			Convey("Then they should not be added", func() {
 				So(routeAdded, ShouldBeFalse)
@@ -242,8 +242,8 @@ func TestMissingViews(t *testing.T) {
 			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
-			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
-			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")
+			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
+			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")
 
 			Convey("Then they should not be added", func() {
 				So(routeAdded, ShouldBeFalse)
