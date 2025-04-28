@@ -29,5 +29,5 @@ func Register(params RegisterParams) {
 
 // IsDefined for mvc.
 func IsDefined() bool {
-	return fileSystem != nil && layout != nil && layout.IsValid()
+	return fileSystem != nil && layout.IsValid()
 }

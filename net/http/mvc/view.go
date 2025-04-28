@@ -45,7 +45,11 @@ func (l *Layout) PartialName() string {
 
 // IsValid the layout.
 func (l *Layout) IsValid() bool {
-	return !strings.IsEmpty(l.full) || !strings.IsEmpty(l.partial)
+	if l == nil {
+		return false
+	}
+
+	return !strings.IsEmpty(l.full) && !strings.IsEmpty(l.partial)
 }
 
 func (l *Layout) name(name string) string {
