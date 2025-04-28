@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.561.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.561.0) - 2025-04-28
+
+- [`e125a62`](https://github.com/alexfalkowski/go-service/commit/e125a626ea596907ad9edbe1035a80610c391f22) feat(mvc): introduce writeFile to remove dup (#1530)
+- [`17ababa`](https://github.com/alexfalkowski/go-service/commit/17ababab8a6b4c086a3a0c1598d90e4948ff4d9c) build(deps): bump bin from `b0fd780` to `926a71b` (#1529)
+
 ## [v1.560.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.560.0) - 2025-04-27
 
 - [`64f66e2`](https://github.com/alexfalkowski/go-service/commit/64f66e2a90d4ce5246f0e6b3a1a0873276f7886d) feat(http): rename context to meta (#1528)
