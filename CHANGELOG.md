@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.564.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.564.1) - 2025-04-28
+
+- [`fb32e0c`](https://github.com/alexfalkowski/go-service/commit/fb32e0c853ef40e2c85485f29ff3a53343b1e42b) fix(mvc): static files can only be get (#1535)
+
 ## [v1.564.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.564.0) - 2025-04-28
 
 - [`8265b72`](https://github.com/alexfalkowski/go-service/commit/8265b72e00445d76705124c315a3d121ec108e99) feat(mvc): add convenience funcs just like rest (#1534)
