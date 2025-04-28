@@ -1,13 +1,34 @@
 package mvc
 
-import "net/http"
+import (
+	"io/fs"
+	"net/http"
 
-var (
-	mux   *http.ServeMux
-	views *Views
+	"github.com/alexfalkowski/go-service/strings"
+	"go.uber.org/fx"
 )
 
+var (
+	mux        *http.ServeMux
+	fileSystem fs.FS
+	layout     Layout
+)
+
+// RegisterParams for mvc.
+type RegisterParams struct {
+	fx.In
+
+	Mux        *http.ServeMux
+	FileSystem fs.FS  `optional:"true"`
+	Layout     Layout `optional:"true"`
+}
+
 // Register for mvc.
-func Register(mu *http.ServeMux, vi *Views) {
-	mux, views = mu, vi
+func Register(params RegisterParams) {
+	mux, fileSystem, layout = params.Mux, params.FileSystem, params.Layout
+}
+
+// IsDefined for mvc.
+func IsDefined() bool {
+	return fileSystem != nil && !strings.IsEmpty(layout.String())
 }

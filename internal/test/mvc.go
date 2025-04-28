@@ -1,6 +1,10 @@
 package test
 
-import "embed"
+import (
+	"embed"
+
+	"github.com/alexfalkowski/go-service/net/http/mvc"
+)
 
 type (
 	// Todo for test.
@@ -18,9 +22,13 @@ type (
 )
 
 var (
+	// FileSystem for test.
 	//go:embed views/*.tmpl
 	//go:embed static/*.txt
-	Views embed.FS
+	FileSystem embed.FS
+
+	// Layout for test.
+	Layout = mvc.Layout("views/layout.tmpl")
 
 	// Model for test.
 	Model = Page{

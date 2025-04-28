@@ -191,8 +191,8 @@ func BenchmarkRoute(b *testing.B) {
 
 	world.RequireStart()
 
-	mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-		return mvc.View("hello.tmpl"), &test.Model, nil
+	mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 	})
 
 	b.ResetTimer()
