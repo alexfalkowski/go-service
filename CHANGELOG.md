@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.562.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.562.0) - 2025-04-28
+
+- [`45d886a`](https://github.com/alexfalkowski/go-service/commit/45d886aa9cb88754ff542c349754dc77e647a8bf) feat(mvc): add layout (#1531)
+
 ## [v1.561.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.561.0) - 2025-04-28
 
 - [`e125a62`](https://github.com/alexfalkowski/go-service/commit/e125a626ea596907ad9edbe1035a80610c391f22) feat(mvc): introduce writeFile to remove dup (#1530)
