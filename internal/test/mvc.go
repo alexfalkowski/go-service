@@ -28,7 +28,7 @@ var (
 	FileSystem embed.FS
 
 	// Layout for test.
-	Layout = mvc.Layout("views/layout.tmpl")
+	Layout = mvc.NewLayout("views/full.tmpl", "views/partial.tmpl")
 
 	// Model for test.
 	Model = Page{
