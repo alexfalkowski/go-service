@@ -13,16 +13,21 @@ import (
 	"golang.org/x/net/html"
 )
 
-//nolint:dupl
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		controller := func(_ context.Context) (*mvc.View, *test.Page, error) {
 			return mvc.NewView("views/hello.tmpl"), &test.Model, nil
-		})
+		}
+
+		mvc.Delete("/hello", controller)
+		mvc.Get("/hello", controller)
+		mvc.Post("/hello", controller)
+		mvc.Put("/hello", controller)
+		mvc.Patch("/hello", controller)
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
@@ -45,14 +50,13 @@ func TestRouteSuccess(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestRoutePartialViewSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 			return mvc.NewPartialView("views/hello.tmpl"), &test.Model, nil
 		})
 
@@ -83,7 +87,7 @@ func TestRouteError(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 			return mvc.NewView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
 		})
 
@@ -214,7 +218,7 @@ func TestMissingViews(t *testing.T) {
 		})
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
@@ -235,7 +239,7 @@ func TestMissingViews(t *testing.T) {
 		})
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
