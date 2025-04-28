@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+//nolint:dupl
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
@@ -21,6 +22,38 @@ func TestRouteSuccess(t *testing.T) {
 
 		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 			return mvc.NewView("views/hello.tmpl"), &test.Model, nil
+		})
+
+		Convey("When I query for hello", func() {
+			header := http.Header{}
+			header.Set("Content-Type", "text/html")
+
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid html", func() {
+				So(body, ShouldNotBeEmpty)
+				So(res.StatusCode, ShouldEqual, 200)
+				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
+
+				_, err := html.Parse(strings.NewReader(body))
+				So(err, ShouldBeNil)
+			})
+
+			world.RequireStop()
+		})
+	})
+}
+
+//nolint:dupl
+func TestRoutePartialViewSuccess(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
+		world.Register()
+		world.RequireStart()
+
+		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			return mvc.NewPartialView("views/hello.tmpl"), &test.Model, nil
 		})
 
 		Convey("When I query for hello", func() {

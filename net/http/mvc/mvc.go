@@ -4,14 +4,13 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/strings"
 	"go.uber.org/fx"
 )
 
 var (
 	mux        *http.ServeMux
 	fileSystem fs.FS
-	layout     Layout
+	layout     *Layout
 )
 
 // RegisterParams for mvc.
@@ -19,8 +18,8 @@ type RegisterParams struct {
 	fx.In
 
 	Mux        *http.ServeMux
-	FileSystem fs.FS  `optional:"true"`
-	Layout     Layout `optional:"true"`
+	FileSystem fs.FS   `optional:"true"`
+	Layout     *Layout `optional:"true"`
 }
 
 // Register for mvc.
@@ -30,5 +29,5 @@ func Register(params RegisterParams) {
 
 // IsDefined for mvc.
 func IsDefined() bool {
-	return fileSystem != nil && !strings.IsEmpty(layout.String())
+	return fileSystem != nil && layout != nil && layout.IsValid()
 }
