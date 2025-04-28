@@ -3,68 +3,45 @@ package mvc
 import (
 	"context"
 	"html/template"
-	"io/fs"
-	"net/http"
+	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/meta"
+	hm "github.com/alexfalkowski/go-service/net/http/meta"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/go-sprout/sprout/sprigin"
-	"go.uber.org/fx"
 )
 
-type (
-	// ViewsParams for mvc.
-	ViewsParams struct {
-		fx.In
+// Layout is the main template that is used for all other templates.
+type Layout string
 
-		FS       fs.FS    `optional:"true"`
-		Patterns Patterns `optional:"true"`
-	}
-
-	// Patterns to render views.
-	Patterns []string
-)
-
-// IsValid verifies the params are present.
-func (p ViewsParams) IsValid() bool {
-	return p.FS != nil && len(p.Patterns) != 0
+// String of the layout.
+func (l Layout) String() string {
+	return string(l)
 }
 
-// NewView from fs with patterns.
-func NewViews(params ViewsParams) *Views {
-	if !params.IsValid() {
-		return nil
-	}
-
-	return &Views{
-		template: template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(params.FS, params.Patterns...)),
-		fs:       params.FS,
-	}
+// Name of the layout.
+func (l Layout) Name() string {
+	return filepath.Base(l.String())
 }
 
-// View for mvc.
-type Views struct {
-	template *template.Template
-	fs       fs.FS
-}
+// NewView to render.
+func NewView(name string) *View {
+	template := template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(fileSystem, layout.String(), name))
 
-// IsValid verifies that ut has an fs and template.
-func (v *Views) IsValid() bool {
-	return v != nil && v.fs != nil
+	return &View{template: template}
 }
 
 // View to render.
-type View string
+type View struct {
+	template *template.Template
+}
 
 // Render the view.
-func (v View) Render(ctx context.Context, res http.ResponseWriter, model any) {
-	if err := views.template.ExecuteTemplate(res, v.String(), model); err != nil {
+func (v *View) Render(ctx context.Context, model any) {
+	res := hm.Response(ctx)
+
+	if err := v.template.ExecuteTemplate(res, layout.Name(), model); err != nil {
 		meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		res.WriteHeader(status.Code(err))
 	}
-}
-
-// String representation of the view.
-func (v View) String() string {
-	return string(v)
 }

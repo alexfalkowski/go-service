@@ -19,8 +19,8 @@ func TestRouteSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-			return mvc.View("hello.tmpl"), &test.Model, nil
+		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 		})
 
 		Convey("When I query for hello", func() {
@@ -44,42 +44,14 @@ func TestRouteSuccess(t *testing.T) {
 	})
 }
 
-func TestRouteMissingView(t *testing.T) {
-	Convey("Given I have setup a route with an missing view", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
-
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-			return mvc.View("none.tmpl"), &test.Model, nil
-		})
-
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			header.Set("Content-Type", "text/html")
-
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have no html", func() {
-				So(body, ShouldBeEmpty)
-				So(res.StatusCode, ShouldEqual, 500)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
-			})
-
-			world.RequireStop()
-		})
-	})
-}
-
 func TestRouteError(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
-		mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-			return mvc.View("error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
+		mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			return mvc.NewView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
 		})
 
 		Convey("When I query for hello", func() {
@@ -203,14 +175,14 @@ func TestStaticPathValueError(t *testing.T) {
 
 func TestMissingViews(t *testing.T) {
 	Convey("Given I have views with missing FS", t, func() {
-		mux := http.NewServeMux()
-
-		v := mvc.NewViews(mvc.ViewsParams{Patterns: mvc.Patterns{"views/*.tmpl"}})
-		mvc.Register(mux, v)
+		mvc.Register(mvc.RegisterParams{
+			Mux:    http.NewServeMux(),
+			Layout: test.Layout,
+		})
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-				return mvc.View("hello.tmpl"), &test.Model, nil
+			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
 			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")
@@ -223,15 +195,15 @@ func TestMissingViews(t *testing.T) {
 		})
 	})
 
-	Convey("Given I have views with missing patterns", t, func() {
-		mux := http.NewServeMux()
-		v := mvc.NewViews(mvc.ViewsParams{FS: &test.Views})
-
-		mvc.Register(mux, v)
+	Convey("Given I have views with missing layout", t, func() {
+		mvc.Register(mvc.RegisterParams{
+			Mux:        http.NewServeMux(),
+			FileSystem: test.FileSystem,
+		})
 
 		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (mvc.View, *test.Page, error) {
-				return mvc.View("hello.tmpl"), &test.Model, nil
+			routeAdded := mvc.Route("GET /hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("GET /robots.txt", "static/robots.txt")
 			pathAdded := mvc.StaticPathValue("GET /{file}", "file", "static")

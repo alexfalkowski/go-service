@@ -223,8 +223,11 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Compression: os.compression, RoundTripper: os.rt,
 	}
 
-	views := mvc.NewViews(mvc.ViewsParams{FS: &Views, Patterns: mvc.Patterns{"views/*.tmpl"}})
-	mvc.Register(mux, views)
+	mvc.Register(mvc.RegisterParams{
+		Mux:        mux,
+		FileSystem: FileSystem,
+		Layout:     Layout,
+	})
 
 	restClient := restClient(client, os)
 

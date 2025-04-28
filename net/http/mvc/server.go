@@ -11,7 +11,7 @@ import (
 
 // Route the path with controller for mvc.
 func Route[Model any](path string, controller Controller[Model]) bool {
-	if !views.IsValid() {
+	if !IsDefined() {
 		return false
 	}
 
@@ -27,9 +27,9 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 
-			view.Render(ctx, res, err)
+			view.Render(ctx, err)
 		} else {
-			view.Render(ctx, res, model)
+			view.Render(ctx, model)
 		}
 	}
 
@@ -40,7 +40,7 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 
 // StaticFile to be served via path.
 func StaticFile(path, name string) bool {
-	if !views.IsValid() {
+	if !IsDefined() {
 		return false
 	}
 
@@ -60,7 +60,7 @@ func StaticFile(path, name string) bool {
 
 // StaticPathValue to be served from a dedicated path value.
 func StaticPathValue(path, value, prefix string) bool {
-	if !views.IsValid() {
+	if !IsDefined() {
 		return false
 	}
 
@@ -80,7 +80,7 @@ func StaticPathValue(path, value, prefix string) bool {
 }
 
 func writeFile(name string, writer io.Writer) error {
-	f, err := views.fs.Open(name)
+	f, err := fileSystem.Open(name)
 	if err != nil {
 		return err
 	}
