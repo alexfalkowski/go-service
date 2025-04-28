@@ -9,6 +9,31 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/status"
 )
 
+// Delete method for mvc.
+func Delete[Model any](path string, controller Controller[Model]) bool {
+	return Route(http.MethodDelete+" "+path, controller)
+}
+
+// Get method for mvc.
+func Get[Model any](path string, controller Controller[Model]) bool {
+	return Route(http.MethodGet+" "+path, controller)
+}
+
+// Post method for mvc.
+func Post[Model any](path string, controller Controller[Model]) bool {
+	return Route(http.MethodPost+" "+path, controller)
+}
+
+// Put method for mvc.
+func Put[Model any](path string, controller Controller[Model]) bool {
+	return Route(http.MethodPut+" "+path, controller)
+}
+
+// Patch method for mvc.
+func Patch[Model any](path string, controller Controller[Model]) bool {
+	return Route(http.MethodPatch+" "+path, controller)
+}
+
 // Route the path with controller for mvc.
 func Route[Model any](path string, controller Controller[Model]) bool {
 	if !IsDefined() {
