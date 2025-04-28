@@ -47,16 +47,9 @@ func StaticFile(path, name string) bool {
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		f, err := views.fs.Open(name)
-		if err != nil {
+		if err := writeFile(name, res); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
-		} else {
-			_, err := io.Copy(res, f)
-			if err != nil {
-				meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
-				res.WriteHeader(status.Code(err))
-			}
 		}
 	}
 
@@ -73,22 +66,26 @@ func StaticPathValue(path, value, prefix string) bool {
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		val := req.PathValue(value)
+		name := prefix + "/" + req.PathValue(value)
 
-		f, err := views.fs.Open(prefix + "/" + val)
-		if err != nil {
+		if err := writeFile(name, res); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
-		} else {
-			_, err := io.Copy(res, f)
-			if err != nil {
-				meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
-				res.WriteHeader(status.Code(err))
-			}
 		}
 	}
 
 	mux.HandleFunc(path, handler)
 
 	return true
+}
+
+func writeFile(name string, writer io.Writer) error {
+	f, err := views.fs.Open(name)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(writer, f)
+
+	return err
 }
