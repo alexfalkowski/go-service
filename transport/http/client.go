@@ -36,7 +36,7 @@ type clientOpts struct {
 	logger       *logger.Logger
 	retry        *sr.Config
 	tls          *tls.Config
-	id           id.Generator
+	generator    id.Generator
 	userAgent    env.UserAgent
 	timeout      time.Duration
 	breaker      bool
@@ -127,9 +127,9 @@ func WithClientTLS(sec *tls.Config) ClientOption {
 }
 
 // WithClientID for HTTP.
-func WithClientID(gen id.Generator) ClientOption {
+func WithClientID(generator id.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.id = gen
+		o.generator = generator
 	})
 }
 
@@ -170,7 +170,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = tt.NewRoundTripper(os.tracer, hrt)
 	}
 
-	hrt = meta.NewRoundTripper(os.userAgent, os.id, hrt)
+	hrt = meta.NewRoundTripper(os.userAgent, os.generator, hrt)
 
 	return hrt, nil
 }
@@ -220,8 +220,8 @@ func options(opts ...ClientOption) *clientOpts {
 		os.timeout = 30 * time.Second
 	}
 
-	if os.id == nil {
-		os.id = &id.UUID{}
+	if os.generator == nil {
+		os.generator = &id.UUID{}
 	}
 
 	return os

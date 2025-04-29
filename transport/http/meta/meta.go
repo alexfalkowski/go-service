@@ -10,20 +10,20 @@ import (
 	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/transport/header"
-	m "github.com/alexfalkowski/go-service/transport/meta"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 )
 
-// Handler for meta.
-type Handler struct {
-	gen       id.Generator
-	userAgent env.UserAgent
-	version   env.Version
+// NewHandler for meta.
+func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator) *Handler {
+	return &Handler{userAgent: userAgent, version: version, generator: generator}
 }
 
-// NewHandler for meta.
-func NewHandler(userAgent env.UserAgent, version env.Version, gen id.Generator) *Handler {
-	return &Handler{userAgent: userAgent, version: version, gen: gen}
+// Handler for meta.
+type Handler struct {
+	generator id.Generator
+	userAgent env.UserAgent
+	version   env.Version
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -37,31 +37,31 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	header.Add("Service-Version", h.version.String())
 
 	ctx := req.Context()
-	ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
+	ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 
-	requestID := extractRequestID(ctx, h.gen, req)
+	requestID := extractRequestID(ctx, h.generator, req)
 
 	header.Set("Request-Id", requestID.Value())
-	ctx = m.WithRequestID(ctx, requestID)
+	ctx = tm.WithRequestID(ctx, requestID)
 
 	kind, ip := extractIP(req)
-	ctx = m.WithIPAddr(ctx, ip)
-	ctx = m.WithIPAddrKind(ctx, kind)
+	ctx = tm.WithIPAddr(ctx, ip)
+	ctx = tm.WithIPAddrKind(ctx, kind)
 
-	ctx = m.WithGeolocation(ctx, extractGeolocation(req))
-	ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, req))
+	ctx = tm.WithGeolocation(ctx, extractGeolocation(req))
+	ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, req))
 
 	next(res, req.WithContext(ctx))
 }
 
 // NewRoundTripper for meta.
-func NewRoundTripper(userAgent env.UserAgent, gen id.Generator, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{userAgent: userAgent, gen: gen, RoundTripper: hrt}
+func NewRoundTripper(userAgent env.UserAgent, generator id.Generator, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{userAgent: userAgent, generator: generator, RoundTripper: hrt}
 }
 
 // RoundTripper for meta.
 type RoundTripper struct {
-	gen id.Generator
+	generator id.Generator
 	http.RoundTripper
 	userAgent env.UserAgent
 }
@@ -72,18 +72,18 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	userAgent := extractUserAgent(ctx, req, r.userAgent)
 
 	req.Header.Set("User-Agent", userAgent.Value())
-	ctx = m.WithUserAgent(ctx, userAgent)
+	ctx = tm.WithUserAgent(ctx, userAgent)
 
-	requestID := extractRequestID(ctx, r.gen, req)
+	requestID := extractRequestID(ctx, r.generator, req)
 
 	req.Header.Set("Request-Id", requestID.Value())
-	ctx = m.WithRequestID(ctx, requestID)
+	ctx = tm.WithRequestID(ctx, requestID)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
 func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); !ua.IsEmpty() {
+	if ua := tm.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
@@ -94,8 +94,8 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 	return meta.String(userAgent.String())
 }
 
-func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) meta.Value {
-	if id := m.RequestID(ctx); !id.IsEmpty() {
+func extractRequestID(ctx context.Context, generator id.Generator, req *http.Request) meta.Value {
+	if id := tm.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 
@@ -103,7 +103,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, req *http.Request) 
 		return meta.String(id)
 	}
 
-	return meta.String(gen.Generate())
+	return meta.String(generator.Generate())
 }
 
 func extractIP(req *http.Request) (meta.Value, meta.Value) {

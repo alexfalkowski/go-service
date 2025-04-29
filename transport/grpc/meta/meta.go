@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/net"
 	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/transport/header"
-	m "github.com/alexfalkowski/go-service/transport/meta"
+	tm "github.com/alexfalkowski/go-service/transport/meta"
 	ts "github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
@@ -19,7 +19,7 @@ import (
 )
 
 // UnaryServerInterceptor for meta.
-func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, gen id.Generator) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if ts.IsObservable(p) {
@@ -28,17 +28,17 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, gen id
 
 		md := ExtractIncoming(ctx)
 
-		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 
-		id := extractRequestID(ctx, gen, md)
-		ctx = m.WithRequestID(ctx, id)
+		id := extractRequestID(ctx, generator, md)
+		ctx = tm.WithRequestID(ctx, id)
 
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = m.WithIPAddr(ctx, ip)
-		ctx = m.WithIPAddrKind(ctx, kind)
+		ctx = tm.WithIPAddr(ctx, ip)
+		ctx = tm.WithIPAddrKind(ctx, kind)
 
-		ctx = m.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
+		ctx = tm.WithGeolocation(ctx, extractGeolocation(md))
+		ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		_ = grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", id.Value()))
 
@@ -47,7 +47,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, gen id
 }
 
 // StreamServerInterceptor for meta.
-func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gen id.Generator) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
 		if ts.IsObservable(p) {
@@ -58,19 +58,19 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gen i
 
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
-		ctx = m.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 
-		id := extractRequestID(ctx, gen, md)
+		id := extractRequestID(ctx, generator, md)
 		_ = stream.SetHeader(metadata.Pairs("request-id", id.Value()))
 
-		ctx = m.WithRequestID(ctx, id)
+		ctx = tm.WithRequestID(ctx, id)
 
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = m.WithIPAddr(ctx, ip)
-		ctx = m.WithIPAddrKind(ctx, kind)
+		ctx = tm.WithIPAddr(ctx, ip)
+		ctx = tm.WithIPAddrKind(ctx, kind)
 
-		ctx = m.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = m.WithAuthorization(ctx, extractAuthorization(ctx, md))
+		ctx = tm.WithGeolocation(ctx, extractGeolocation(md))
+		ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -80,16 +80,16 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gen i
 }
 
 // UnaryClientInterceptor for meta.
-func UnaryClientInterceptor(userAgent env.UserAgent, gen id.Generator) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = m.WithUserAgent(ctx, ua)
+		ctx = tm.WithUserAgent(ctx, ua)
 		md.Append("user-agent", ua.Value())
 
-		id := extractRequestID(ctx, gen, md)
-		ctx = m.WithRequestID(ctx, id)
+		id := extractRequestID(ctx, generator, md)
+		ctx = tm.WithRequestID(ctx, id)
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
@@ -99,16 +99,16 @@ func UnaryClientInterceptor(userAgent env.UserAgent, gen id.Generator) grpc.Unar
 }
 
 // StreamClientInterceptor for meta.
-func StreamClientInterceptor(userAgent env.UserAgent, gen id.Generator) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = m.WithUserAgent(ctx, ua)
+		ctx = tm.WithUserAgent(ctx, ua)
 		md.Append("user-agent", ua.Value())
 
-		id := extractRequestID(ctx, gen, md)
-		ctx = m.WithRequestID(ctx, id)
+		id := extractRequestID(ctx, generator, md)
+		ctx = tm.WithRequestID(ctx, id)
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
@@ -135,7 +135,7 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
-	if ua := m.UserAgent(ctx); !ua.IsEmpty() {
+	if ua := tm.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
@@ -146,8 +146,8 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 	return meta.String(userAgent.String())
 }
 
-func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) meta.Value {
-	if id := m.RequestID(ctx); !id.IsEmpty() {
+func extractRequestID(ctx context.Context, generator id.Generator, md metadata.MD) meta.Value {
+	if id := tm.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 
@@ -155,7 +155,7 @@ func extractRequestID(ctx context.Context, gen id.Generator, md metadata.MD) met
 		return meta.String(id[0])
 	}
 
-	return meta.String(gen.Generate())
+	return meta.String(generator.Generate())
 }
 
 func extractAuthorization(ctx context.Context, md metadata.MD) meta.Value {
