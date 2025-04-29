@@ -11,14 +11,14 @@ import (
 	"github.com/alexfalkowski/go-service/transport/strings"
 )
 
-// Handler for token.
-type Handler struct {
-	verifier token.Verifier
-}
-
 // NewHandler for token.
 func NewHandler(verifier token.Verifier) *Handler {
 	return &Handler{verifier: verifier}
+}
+
+// Handler for token.
+type Handler struct {
+	verifier token.Verifier
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {

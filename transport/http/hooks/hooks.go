@@ -11,15 +11,15 @@ import (
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
-// Webhook provides a simple facade that signs and verifies the payload.
-type Webhook struct {
-	hook *hooks.Webhook
-	gen  id.Generator
+// NewWebhook for http.
+func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
+	return &Webhook{hook: hook, generator: generator}
 }
 
-// NewWebhook for http.
-func NewWebhook(hook *hooks.Webhook, gen id.Generator) *Webhook {
-	return &Webhook{hook: hook, gen: gen}
+// Webhook provides a simple facade that signs and verifies the payload.
+type Webhook struct {
+	hook      *hooks.Webhook
+	generator id.Generator
 }
 
 // Sign the webhook.
@@ -32,7 +32,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 	req.Body = body
 
 	now := time.Now()
-	id := h.gen.Generate()
+	id := h.generator.Generate()
 
 	// Sign does not return an error.
 	signature, _ := h.hook.Sign(id, now, payload)

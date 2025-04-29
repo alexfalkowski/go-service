@@ -38,7 +38,7 @@ type clientOpts struct {
 	logger      *logger.Logger
 	retry       *retry.Config
 	userAgent   env.UserAgent
-	id          id.Generator
+	generator   id.Generator
 	opts        []grpc.DialOption
 	unary       []grpc.UnaryClientInterceptor
 	stream      []grpc.StreamClientInterceptor
@@ -145,9 +145,9 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 }
 
 // WithClientID for gRPC.
-func WithClientID(gen id.Generator) ClientOption {
+func WithClientID(generator id.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.id = gen
+		o.generator = generator
 	})
 }
 
@@ -243,7 +243,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, tt.UnaryClientInterceptor(os.tracer))
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.id))
+	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
 
 	return unary
 }
@@ -264,7 +264,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 		stream = append(stream, tt.StreamClientInterceptor(opts.tracer))
 	}
 
-	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.id))
+	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
 
 	return grpc.WithChainStreamInterceptor(stream...)
 }
@@ -279,8 +279,8 @@ func options(opts ...ClientOption) *clientOpts {
 		os.timeout = 30 * time.Second
 	}
 
-	if os.id == nil {
-		os.id = &id.UUID{}
+	if os.generator == nil {
+		os.generator = &id.UUID{}
 	}
 
 	return os
