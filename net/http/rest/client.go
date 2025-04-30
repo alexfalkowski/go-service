@@ -8,14 +8,14 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/go-resty/resty/v2"
+	"resty.dev/v3"
 )
 
 // Error will return an error if the response from the server is text (as server handlers return text on errors).
 func Error(response *resty.Response) error {
 	ct := cont.NewFromMedia(response.Header().Get(content.TypeKey))
 	if ct.IsText() {
-		return status.Error(response.StatusCode(), strings.TrimSpace(string(response.Body())))
+		return status.Error(response.StatusCode(), strings.TrimSpace(response.String()))
 	}
 
 	return nil

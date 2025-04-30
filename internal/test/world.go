@@ -34,10 +34,10 @@ import (
 	"github.com/alexfalkowski/go-service/transport/meta"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"github.com/go-resty/resty/v2"
 	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
+	"resty.dev/v3"
 )
 
 func init() {
