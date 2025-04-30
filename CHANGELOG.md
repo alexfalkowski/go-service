@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.565.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.565.0) - 2025-04-30
+
+- [`e90cc1b`](https://github.com/alexfalkowski/go-service/commit/e90cc1bdf303a2717c9413f4bca1f6d17cc7fc6a) feat(mvc): add ability to create a view pair (full, partial) (#1538)
+- [`c60011a`](https://github.com/alexfalkowski/go-service/commit/c60011a1289a179469864d7550d401e74c95dbf3) refactor(cleanup): name things consitently (#1536)
+
 ## [v1.564.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.564.1) - 2025-04-28
 
 - [`fb32e0c`](https://github.com/alexfalkowski/go-service/commit/fb32e0c853ef40e2c85485f29ff3a53343b1e42b) fix(mvc): static files can only be get (#1535)
