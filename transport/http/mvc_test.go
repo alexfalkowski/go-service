@@ -19,8 +19,10 @@ func TestRouteSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
+		full, _ := mvc.NewViewPair("views/hello.tmpl")
+
 		controller := func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return mvc.NewView("views/hello.tmpl"), &test.Model, nil
+			return full, &test.Model, nil
 		}
 
 		mvc.Delete("/hello", controller)
@@ -56,8 +58,10 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
+		_, partial := mvc.NewViewPair("views/hello.tmpl")
+
 		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return mvc.NewPartialView("views/hello.tmpl"), &test.Model, nil
+			return partial, &test.Model, nil
 		})
 
 		Convey("When I query for hello", func() {
@@ -88,7 +92,7 @@ func TestRouteError(t *testing.T) {
 		world.RequireStart()
 
 		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return mvc.NewView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
+			return mvc.NewFullView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
 		})
 
 		Convey("When I query for hello", func() {
@@ -219,7 +223,7 @@ func TestMissingViews(t *testing.T) {
 
 		Convey("When I add routes to an invalid view", func() {
 			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
+				return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
 			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")
@@ -240,7 +244,7 @@ func TestMissingViews(t *testing.T) {
 
 		Convey("When I add routes to an invalid view", func() {
 			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-				return mvc.NewView("views/hello.tmpl"), &test.Model, nil
+				return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
 			})
 			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
 			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")

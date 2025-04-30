@@ -191,8 +191,10 @@ func BenchmarkRoute(b *testing.B) {
 
 	world.RequireStart()
 
+	view := mvc.NewFullView("views/hello.tmpl")
+
 	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return mvc.NewView("views/hello.tmpl"), &test.Model, nil
+		return view, &test.Model, nil
 	})
 
 	b.ResetTimer()

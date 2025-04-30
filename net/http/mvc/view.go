@@ -56,8 +56,13 @@ func (l *Layout) name(name string) string {
 	return filepath.Base(name)
 }
 
-// NewView to render.
-func NewView(name string) *View {
+// NewViewPair returns a pair of full and partial view.
+func NewViewPair(name string) (*View, *View) {
+	return NewFullView(name), NewPartialView(name)
+}
+
+// NewFullView to render.
+func NewFullView(name string) *View {
 	template := template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(fileSystem, layout.Full(), name))
 
 	return &View{name: layout.FullName(), template: template}
