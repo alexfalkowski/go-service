@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.568.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.568.0) - 2025-05-01
+
+- [`331d478`](https://github.com/alexfalkowski/go-service/commit/331d478efb02835cd678fd557296b5f5d51a7648) feat(mvc): configure sprout (#1541)
+
 ## [v1.567.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.567.0) - 2025-05-01
 
 - [`3e324e4`](https://github.com/alexfalkowski/go-service/commit/3e324e475869afc1d0376f4efe602bef00982b56) feat(deps): bump github.com/shirou/gopsutil/v4 from 4.25.3 to 4.25.4 (#1540)
