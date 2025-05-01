@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.566.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.566.0) - 2025-05-01
+
+- [`505f9ad`](https://github.com/alexfalkowski/go-service/commit/505f9ade2fa7041c271fedd3e014890fea5bc8d9) feat(deps): bump github.com/redis/go-redis/v9 from 9.7.3 to 9.8.0 (#1539)
+
 ## [v1.565.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.565.0) - 2025-04-30
 
 - [`e90cc1b`](https://github.com/alexfalkowski/go-service/commit/e90cc1bdf303a2717c9413f4bca1f6d17cc7fc6a) feat(mvc): add ability to create a view pair (full, partial) (#1538)
