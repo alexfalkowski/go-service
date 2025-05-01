@@ -272,7 +272,7 @@ func TestInvalidKindConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("Then I should have a valid configuration", func() {
-			So(input.Kind(), ShouldEqual, "yml")
+			So(input.Kind(), ShouldEqual, "yaml")
 		})
 	})
 }

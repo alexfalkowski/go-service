@@ -43,14 +43,14 @@ func (c *Common) Write(data []byte, mode os.FileMode) error {
 // Kind from the underlying read writer, otherwise YAML.
 func (c *Common) Kind() string {
 	if strings.IsEmpty(c.kind) {
-		return "yml"
+		return "yaml"
 	}
 
 	return c.kind
 }
 
 func common(name env.Name) (string, string) {
-	extensions := []string{".yml", ".toml", ".json"}
+	extensions := []string{".yaml", ".yml", ".toml", ".json"}
 	for _, extension := range extensions {
 		n := name.String()
 		file := n + extension
