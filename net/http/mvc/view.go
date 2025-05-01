@@ -9,7 +9,6 @@ import (
 	hm "github.com/alexfalkowski/go-service/net/http/meta"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/strings"
-	"github.com/go-sprout/sprout/sprigin"
 )
 
 // NewLayout defines a full and partial layout.
@@ -63,14 +62,14 @@ func NewViewPair(name string) (*View, *View) {
 
 // NewFullView to render.
 func NewFullView(name string) *View {
-	template := template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(fileSystem, layout.Full(), name))
+	template := template.Must(template.New("").Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
 
 	return &View{name: layout.FullName(), template: template}
 }
 
 // NewPartialView to render.
 func NewPartialView(name string) *View {
-	template := template.Must(template.New("").Funcs(sprigin.FuncMap()).ParseFS(fileSystem, layout.Partial(), name))
+	template := template.Must(template.New("").Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
 
 	return &View{name: layout.PartialName(), template: template}
 }
