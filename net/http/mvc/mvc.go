@@ -4,11 +4,13 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/go-sprout/sprout"
 	"go.uber.org/fx"
 )
 
 var (
 	mux        *http.ServeMux
+	fmap       sprout.FunctionMap
 	fileSystem fs.FS
 	layout     *Layout
 )
@@ -17,14 +19,18 @@ var (
 type RegisterParams struct {
 	fx.In
 
-	Mux        *http.ServeMux
-	FileSystem fs.FS   `optional:"true"`
-	Layout     *Layout `optional:"true"`
+	Mux         *http.ServeMux
+	FunctionMap sprout.FunctionMap
+	FileSystem  fs.FS   `optional:"true"`
+	Layout      *Layout `optional:"true"`
 }
 
 // Register for mvc.
 func Register(params RegisterParams) {
-	mux, fileSystem, layout = params.Mux, params.FileSystem, params.Layout
+	mux = params.Mux
+	fmap = params.FunctionMap
+	fileSystem = params.FileSystem
+	layout = params.Layout
 }
 
 // IsDefined for mvc.

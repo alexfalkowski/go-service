@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"strings"
 	"testing"
@@ -217,8 +218,9 @@ func TestStaticPathValueError(t *testing.T) {
 func TestMissingViews(t *testing.T) {
 	Convey("Given I have views with missing FS", t, func() {
 		mvc.Register(mvc.RegisterParams{
-			Mux:    http.NewServeMux(),
-			Layout: test.Layout,
+			Mux:         http.NewServeMux(),
+			FunctionMap: mvc.NewFunctionMap(slog.Default()),
+			Layout:      test.Layout,
 		})
 
 		Convey("When I add routes to an invalid view", func() {
@@ -238,8 +240,9 @@ func TestMissingViews(t *testing.T) {
 
 	Convey("Given I have views with missing layout", t, func() {
 		mvc.Register(mvc.RegisterParams{
-			Mux:        http.NewServeMux(),
-			FileSystem: test.FileSystem,
+			Mux:         http.NewServeMux(),
+			FunctionMap: mvc.NewFunctionMap(slog.Default()),
+			FileSystem:  test.FileSystem,
 		})
 
 		Convey("When I add routes to an invalid view", func() {

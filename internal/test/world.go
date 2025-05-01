@@ -224,9 +224,10 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	}
 
 	mvc.Register(mvc.RegisterParams{
-		Mux:        mux,
-		FileSystem: FileSystem,
-		Layout:     Layout,
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(logger.Logger),
+		FileSystem:  FileSystem,
+		Layout:      Layout,
 	})
 
 	restClient := restClient(client, os)
