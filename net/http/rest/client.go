@@ -3,23 +3,15 @@ package rest
 import (
 	"net/http"
 
-	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/net/http/client"
 	"github.com/alexfalkowski/go-service/time"
-	"github.com/go-resty/resty/v2"
 )
 
-// Error will return an error if the response from the server is text (as server handlers return text on errors).
-func Error(response *resty.Response) error {
-	ct := cont.NewFromMedia(response.Header().Get(content.TypeKey))
-	if ct.IsText() {
-		return status.Error(response.StatusCode(), strings.TrimSpace(string(response.Body())))
-	}
+// NoOptions is just an alias for client.NoOptions.
+var NoOptions = client.NoOptions
 
-	return nil
-}
+// Options is just an alias for client.Options.
+type Options = client.Options
 
 // ClientOption for rest.
 type ClientOption interface {
@@ -52,25 +44,25 @@ func WithClientTimeout(timeout string) ClientOption {
 }
 
 // NewClient for rest.
-func NewClient(opts ...ClientOption) *resty.Client {
+func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := &http.Client{Transport: os.roundTripper, Timeout: os.timeout}
+	client := client.NewClient(cont, pool,
+		client.WithRoundTripper(os.roundTripper),
+		client.WithTimeout(os.timeout),
+	)
 
-	return resty.NewWithClient(client)
+	return &Client{client}
+}
+
+// Client for rest.
+type Client struct {
+	*client.Client
 }
 
 func options(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{}
 	for _, o := range opts {
 		o.apply(os)
-	}
-
-	if os.timeout == 0 {
-		os.timeout = 30 * time.Second
-	}
-
-	if os.roundTripper == nil {
-		os.roundTripper = nh.Transport(nil)
 	}
 
 	return os

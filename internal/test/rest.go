@@ -3,13 +3,30 @@ package test
 import (
 	"cmp"
 	"context"
+	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
 	hm "github.com/alexfalkowski/go-service/net/http/meta"
 )
 
+// RestInvalidStatusCode for test.
+func RestInvalidStatusCode(ctx context.Context) (*Response, error) {
+	res := hm.Response(ctx)
+	res.WriteHeader(http.StatusInternalServerError)
+
+	return nil, nil
+}
+
 // RestNoContent for test.
 func RestNoContent(_ context.Context) (*Response, error) {
+	return nil, nil
+}
+
+// RestRequestInvalidStatusCode for test.
+func RestRequestInvalidStatusCode(ctx context.Context, _ *Request) (*Response, error) {
+	res := hm.Response(ctx)
+	res.WriteHeader(http.StatusInternalServerError)
+
 	return nil, nil
 }
 

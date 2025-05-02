@@ -29,15 +29,35 @@ type Content struct {
 // NewFromRequest for content.
 func (c *Content) NewFromRequest(req *http.Request) *Media {
 	t, err := ct.GetMediaType(req)
+	if err != nil {
+		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
+	}
 
-	return newType(t, err, c.enc)
+	return NewMedia(t, c.enc)
 }
 
 // NewFromMedia for content.
 func (c *Content) NewFromMedia(mediaType string) *Media {
 	t, err := ct.ParseMediaType(mediaType)
+	if err != nil {
+		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
+	}
 
-	return newType(t, err, c.enc)
+	return NewMedia(t, c.enc)
+}
+
+// NewMedia for content.
+func NewMedia(media ct.MediaType, enc *encoding.Map) *Media {
+	if media.Subtype == plainSubtype {
+		return &Media{Type: media.String(), Subtype: media.Subtype}
+	}
+
+	e := enc.Get(media.Subtype)
+	if e == nil {
+		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
+	}
+
+	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
 }
 
 // Media for content.
@@ -56,21 +76,4 @@ type Media struct {
 // IsText for type.
 func (t *Media) IsText() bool {
 	return t.Subtype == plainSubtype
-}
-
-func newType(media ct.MediaType, err error, enc *encoding.Map) *Media {
-	if err != nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
-	}
-
-	if media.Subtype == plainSubtype {
-		return &Media{Type: media.String(), Subtype: media.Subtype}
-	}
-
-	e := enc.Get(media.Subtype)
-	if e == nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
-	}
-
-	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
 }

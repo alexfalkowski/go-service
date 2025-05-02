@@ -244,7 +244,7 @@ func BenchmarkRPC(b *testing.B) {
 				req := &test.Request{Name: "Bob"}
 				res := &test.Response{}
 
-				err := client.Invoke(b.Context(), "/hello", req, res)
+				err := client.Post(b.Context(), "/hello", req, res)
 				runtime.Must(err)
 			}
 		})
@@ -280,7 +280,7 @@ func BenchmarkProtobuf(b *testing.B) {
 				req := &v1.SayHelloRequest{Name: "Bob"}
 				res := &v1.SayHelloResponse{}
 
-				err := client.Invoke(b.Context(), "/hello", req, res)
+				err := client.Post(b.Context(), "/hello", req, res)
 				runtime.Must(err)
 			}
 		})
