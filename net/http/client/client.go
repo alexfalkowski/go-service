@@ -4,12 +4,12 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/alexfalkowski/go-service/errors"
 	nh "github.com/alexfalkowski/go-service/net/http"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/time"
 )
@@ -139,14 +139,19 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}
 
+	if response.StatusCode >= 400 && response.StatusCode <= 599 {
+		msg := strings.TrimSpace(buffer.String())
+		if strings.IsEmpty(msg) {
+			msg = http.StatusText(response.StatusCode)
+		}
+
+		return status.Error(response.StatusCode, msg)
+	}
+
 	if opts.Response != nil {
 		if err := media.Encoder.Decode(buffer, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
-	}
-
-	if response.StatusCode >= 400 && response.StatusCode <= 599 {
-		return status.Error(response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
 	return nil
