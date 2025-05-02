@@ -34,7 +34,6 @@ import (
 	"github.com/alexfalkowski/go-service/transport/meta"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"github.com/go-resty/resty/v2"
 	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
@@ -189,7 +188,7 @@ type World struct {
 	*eh.Receiver
 	cc.Cache
 	Sender client.Client
-	Rest   *resty.Client
+	Rest   *rest.Client
 }
 
 // NewWorld for test.
@@ -230,7 +229,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Layout:      Layout,
 	})
 
-	restClient := restClient(client, os)
+	rest.Register(mux, Content, Pool)
 
 	h, err := hooks.New(NewHook())
 	runtime.Must(err)
@@ -246,7 +245,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
-		Rest:     restClient,
+		Rest:     restClient(client, os),
 		Receiver: receiver, Sender: sender,
 		Cache: cache, PG: pgConfig,
 	}
@@ -254,7 +253,6 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 
 // Register all packages.
 func (w *World) Register() {
-	rest.Register(w.ServeMux, Content)
 	rpc.Register(w.ServeMux, Content, Pool)
 	pg.Register(w.NewTracer(), w.Logger)
 	errors.Register(errors.NewHandler(w.Logger))
@@ -414,7 +412,7 @@ func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
 	return NewMeter(lc, config)
 }
 
-func restClient(client *Client, os *worldOpts) *resty.Client {
+func restClient(client *Client, os *worldOpts) *rest.Client {
 	if os.rest {
 		return rest.NewClient(
 			rest.WithClientRoundTripper(client.NewHTTP().Transport),

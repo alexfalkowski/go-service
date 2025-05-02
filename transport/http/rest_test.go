@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package http_test
 
 import (
@@ -6,15 +5,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/net/http/rest"
-	"github.com/alexfalkowski/go-service/net/http/status"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestRestNoContent(t *testing.T) {
-	for _, v := range []string{http.MethodDelete, http.MethodGet} {
+	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
@@ -24,12 +21,10 @@ func TestRestNoContent(t *testing.T) {
 
 			Convey("When I send data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				res, err := world.Rest.R().Execute(v, url)
+				err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
-					So(rest.Error(res), ShouldBeNil)
-					So(status.Code(err), ShouldEqual, http.StatusOK)
 				})
 
 				world.RequireStop()
@@ -38,8 +33,9 @@ func TestRestNoContent(t *testing.T) {
 	}
 }
 
+//nolint:dupl
 func TestRestRequestNoContent(t *testing.T) {
-	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
@@ -49,16 +45,15 @@ func TestRestRequestNoContent(t *testing.T) {
 
 			Convey("When I send data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				headers := map[string]string{
-					"Content-Type": "application/json",
-					"Accept":       "application/json",
-				}
 				req := &test.Request{Name: "test"}
-				res, err := world.Rest.R().SetHeaders(headers).SetBody(req).Execute(v, url)
+				opts := &rest.Options{
+					ContentType: "application/json",
+					Request:     req,
+				}
+				err := world.Rest.Do(t.Context(), method, url, opts)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
-					So(rest.Error(res), ShouldBeNil)
 				})
 
 				world.RequireStop()
@@ -68,7 +63,7 @@ func TestRestRequestNoContent(t *testing.T) {
 }
 
 func TestRestError(t *testing.T) {
-	for _, v := range []string{http.MethodDelete, http.MethodGet} {
+	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tilt"))
 			world.Register()
@@ -78,12 +73,10 @@ func TestRestError(t *testing.T) {
 
 			Convey("When I send data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 
-				res, err := world.Rest.R().Execute(v, url)
-				So(err, ShouldBeNil)
-
-				Convey("Then I should have no error", func() {
-					So(rest.Error(res), ShouldBeError)
+				Convey("Then I should have an error", func() {
+					So(err, ShouldBeError)
 				})
 
 				world.RequireStop()
@@ -92,8 +85,9 @@ func TestRestError(t *testing.T) {
 	}
 }
 
+//nolint:dupl
 func TestRestRequestError(t *testing.T) {
-	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 			world.Register()
@@ -103,16 +97,15 @@ func TestRestRequestError(t *testing.T) {
 
 			Convey("When I send data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				headers := map[string]string{
-					"Content-Type": "application/json",
-					"Accept":       "application/json",
-				}
 				req := &test.Request{Name: "test"}
-				res, err := world.Rest.R().SetHeaders(headers).SetBody(req).Execute(v, url)
-				So(err, ShouldBeNil)
+				opts := &rest.Options{
+					ContentType: "application/json",
+					Request:     req,
+				}
+				err := world.Rest.Do(t.Context(), method, url, opts)
 
 				Convey("Then I should have no error", func() {
-					So(rest.Error(res), ShouldBeError)
+					So(err, ShouldBeError)
 				})
 
 				world.RequireStop()
@@ -122,7 +115,7 @@ func TestRestRequestError(t *testing.T) {
 }
 
 func TestRestWithContent(t *testing.T) {
-	for _, v := range []string{http.MethodDelete, http.MethodGet} {
+	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
@@ -132,12 +125,15 @@ func TestRestWithContent(t *testing.T) {
 
 			Convey("When I send data", func() {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-
-				resp, err := world.Rest.R().Execute(v, url)
-				So(err, ShouldBeNil)
+				resp := &test.Response{}
+				opts := &rest.Options{
+					Response: resp,
+				}
+				err := world.Rest.Do(t.Context(), method, url, opts)
 
 				Convey("Then I should have a response", func() {
-					So(resp, ShouldNotBeNil)
+					So(err, ShouldBeNil)
+					So(resp.Greeting, ShouldEqual, "Hello Bob")
 				})
 
 				world.RequireStop()
@@ -147,7 +143,7 @@ func TestRestWithContent(t *testing.T) {
 }
 
 func TestRestRequestWithContent(t *testing.T) {
-	for _, v := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
@@ -156,33 +152,18 @@ func TestRestRequestWithContent(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
 			Convey("When I send data", func() {
-				var resp test.Response
-
-				b := test.Pool.Get()
-				defer test.Pool.Put(b)
-
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
-				enc := json.NewEncoder()
-				headers := map[string]string{
-					"Content-Type": "application/json",
-					"Accept":       "application/json",
-				}
 				req := &test.Request{Name: "test"}
-
-				err := enc.Encode(b, req)
-				So(err, ShouldBeNil)
-
-				res, err := world.Rest.R().SetHeaders(headers).SetBody(b.Bytes()).Execute(v, url)
-				So(err, ShouldBeNil)
-
-				b.Reset()
-				b.Write(res.Body())
-
-				err = enc.Decode(b, &resp)
-				So(err, ShouldBeNil)
+				resp := &test.Response{}
+				opts := &rest.Options{
+					ContentType: "application/json",
+					Request:     req,
+					Response:    resp,
+				}
+				err := world.Rest.Do(t.Context(), method, url, opts)
 
 				Convey("Then I should have a response", func() {
-					So(res, ShouldNotBeNil)
+					So(err, ShouldBeNil)
 					So(resp.Greeting, ShouldEqual, "Hello test")
 				})
 
@@ -190,4 +171,57 @@ func TestRestRequestWithContent(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestRestInvalidStatusCode(t *testing.T) {
+	Convey("Given I have all the servers", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+		world.Register()
+		world.RequireStart()
+
+		test.RegisterHandlers("/hello", test.RestInvalidStatusCode)
+
+		Convey("When I send data", func() {
+			url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+			err := world.Rest.Get(t.Context(), url, rest.NoOptions)
+
+			Convey("Then I should have a get error", func() {
+				So(err, ShouldBeError)
+			})
+
+			err = world.Rest.Delete(t.Context(), url, rest.NoOptions)
+
+			Convey("Then I should have a delete error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		test.RegisterRequestHandlers("/hello", test.RestRequestInvalidStatusCode)
+
+		Convey("When I send request data", func() {
+			url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+			req := &test.Request{}
+			opts := &rest.Options{Request: req}
+
+			err := world.Rest.Post(t.Context(), url, opts)
+
+			Convey("Then I should have a post error", func() {
+				So(err, ShouldBeError)
+			})
+
+			err = world.Rest.Put(t.Context(), url, opts)
+
+			Convey("Then I should have a put error", func() {
+				So(err, ShouldBeError)
+			})
+
+			err = world.Rest.Patch(t.Context(), url, opts)
+
+			Convey("Then I should have a patch error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		world.RequireStop()
+	})
 }

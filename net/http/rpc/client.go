@@ -2,15 +2,19 @@ package rpc
 
 import (
 	"context"
-	"io"
+	"errors"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/net/http/client"
 	"github.com/alexfalkowski/go-service/time"
+)
+
+var (
+	// ErrInvalidRequest when we pass nil.
+	ErrInvalidRequest = errors.New("rpc: invalid request")
+
+	// ErrInvalidResponse when we pass nil.
+	ErrInvalidResponse = errors.New("rpc: invalid response")
 )
 
 // ClientOption for rpc.
@@ -54,82 +58,44 @@ func WithClientTimeout(timeout string) ClientOption {
 // NewClient for rpc.
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := &http.Client{
-		Transport: os.roundTripper,
-		Timeout:   os.timeout,
-	}
+	client := client.NewClient(cont, pool,
+		client.WithRoundTripper(os.roundTripper),
+		client.WithTimeout(os.timeout),
+	)
 
-	return &Client{client: client, url: url, mediaType: cont.NewFromMedia(os.contentType)}
+	return &Client{client: client, url: url, contentType: os.contentType}
 }
 
 // Client for rpc.
 type Client struct {
-	client    *http.Client
-	mediaType *content.Media
-	url       string
+	client      *client.Client
+	contentType string
+	url         string
 }
 
-// Invoke for rpc.
-func (c *Client) Invoke(ctx context.Context, path string, req, res any) error {
-	buffer := pool.Get()
-	defer pool.Put(buffer)
-
-	if err := c.mediaType.Encoder.Encode(buffer, req); err != nil {
-		return c.prefix(err)
+// Post for rpc.
+func (c *Client) Post(ctx context.Context, path string, req, res any) error {
+	if req == nil {
+		return ErrInvalidRequest
 	}
 
-	url := c.url + path
-
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buffer)
-	if err != nil {
-		return c.prefix(err)
+	if res == nil {
+		return ErrInvalidResponse
 	}
 
-	request.Header.Set(content.TypeKey, c.mediaType.Type)
-
-	response, err := c.client.Do(request)
-	if err != nil {
-		return c.prefix(err)
+	opts := &client.Options{
+		ContentType: c.contentType,
+		Request:     req,
+		Response:    res,
 	}
 
-	defer response.Body.Close()
-
-	buffer.Reset()
-
-	_, err = io.Copy(buffer, response.Body)
-	if err != nil {
-		return c.prefix(err)
-	}
-
-	// The server handlers return text on errors.
-	media := cont.NewFromMedia(response.Header.Get(content.TypeKey))
-	if media.IsText() {
-		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
-	}
-
-	if err := media.Encoder.Decode(buffer, res); err != nil {
-		return c.prefix(err)
-	}
-
-	return nil
-}
-
-func (c *Client) prefix(err error) error {
-	return errors.Prefix("rpc", err)
+	return c.client.Post(ctx, c.url+path, opts)
 }
 
 func options(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{}
 	for _, o := range opts {
 		o.apply(os)
-	}
-
-	if os.timeout == 0 {
-		os.timeout = 30 * time.Second
-	}
-
-	if os.roundTripper == nil {
-		os.roundTripper = nh.Transport(nil)
 	}
 
 	return os
