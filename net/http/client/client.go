@@ -1,6 +1,7 @@
 package client
 
 import (
+	"cmp"
 	"context"
 	"io"
 	"net/http"
@@ -133,8 +134,11 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 		return errors.Prefix("http: copy", err)
 	}
 
+	// If for some reason the server does not return it, default to opts.
+	contentType := cmp.Or(response.Header.Get(content.TypeKey), opts.ContentType)
+
 	// The server handlers return text on errors.
-	media := c.content.NewFromMedia(response.Header.Get(content.TypeKey))
+	media := c.content.NewFromMedia(contentType)
 	if media.IsText() {
 		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}
