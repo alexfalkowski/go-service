@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.570.3](https://github.com/alexfalkowski/go-service/releases/tag/v1.570.3) - 2025-05-03
+
+- [`374c0f0`](https://github.com/alexfalkowski/go-service/commit/374c0f056c8dbaddb8d2e4081f31e7afc3afa60b) fix(rest): default to opts content type if the server does not return it (#1546)
+
 ## [v1.570.2](https://github.com/alexfalkowski/go-service/releases/tag/v1.570.2) - 2025-05-02
 
 - [`f5b2990`](https://github.com/alexfalkowski/go-service/commit/f5b29903c0751becfb23da70317ccf957f2d9045) fix(rest): make sure the status text is lower case (#1545)
