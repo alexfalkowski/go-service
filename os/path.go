@@ -31,3 +31,13 @@ func PathExists(name string) bool {
 
 	return true
 }
+
+// ExpandPath will append the home dir if path starts with ~.
+func ExpandPath(path string) string {
+	dir := UserHomeDir()
+	if strings.IsEmpty(dir) || len(path) == 0 || path[0] != '~' {
+		return path
+	}
+
+	return filepath.Join(dir, path[1:])
+}
