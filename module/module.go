@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types"
@@ -18,7 +17,6 @@ import (
 var Module = fx.Options(
 	os.Module,
 	env.Module,
-	runtime.Module,
 	compress.Module,
 	encoding.Module,
 	crypto.Module,

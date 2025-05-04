@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/cristalhq/acmd"
@@ -37,7 +38,7 @@ func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSe
 				return err
 			}
 
-			opts = append(opts, fx.Provide(flags.Provide))
+			opts = append(opts, fx.Provide(flags.Provide), runtime.Module)
 
 			return RunServer(ctx, name, opts...)
 		},
