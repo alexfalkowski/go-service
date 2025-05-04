@@ -2,12 +2,12 @@ package cmd_test
 
 import (
 	"encoding/base64"
-	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -77,12 +77,10 @@ func TestReadValidConfigFile(t *testing.T) {
 	})
 
 	Convey("Given I have configuration file", t, func() {
-		home, err := os.UserHomeDir()
-		So(err, ShouldBeNil)
-
+		home := os.UserHomeDir()
 		path := filepath.Join(home, ".config", test.Name.String())
 
-		err = os.MkdirAll(path, 0o777)
+		err := os.MkdirAll(path, 0o777)
 		So(err, ShouldBeNil)
 
 		data, err := os.ReadFile(test.Path("configs/config.yml"))
@@ -165,12 +163,10 @@ func TestWriteValidConfigFile(t *testing.T) {
 	})
 
 	Convey("Given I have configuration file", t, func() {
-		home, err := os.UserHomeDir()
-		So(err, ShouldBeNil)
-
+		home := os.UserHomeDir()
 		path := filepath.Join(home, ".config", test.Name.String())
 
-		err = os.MkdirAll(path, 0o777)
+		err := os.MkdirAll(path, 0o777)
 		So(err, ShouldBeNil)
 
 		data, err := os.ReadFile(test.Path("configs/config.yml"))

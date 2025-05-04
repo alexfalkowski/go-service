@@ -9,6 +9,18 @@ var (
 	// Args is an alias for os.Args.
 	Args = os.Args
 
+	// Create is an alias for os.Create.
+	Create = os.Create
+
+	// MkdirAll is an alias for os.MkdirAll.
+	MkdirAll = os.MkdirAll
+
+	// Remove is an alias for os.Remove.
+	Remove = os.Remove
+
+	// RemoveAll is an alias for os.RemoveAll.
+	RemoveAll = os.RemoveAll
+
 	// Stdout is an alias for os.Stdout.
 	Stdout = os.Stdout
 )
