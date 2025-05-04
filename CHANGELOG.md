@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.573.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.573.0) - 2025-05-04
+
+- [`dc51f2a`](https://github.com/alexfalkowski/go-service/commit/dc51f2a3d4be29b0a0f7c2342474ab1a84df3283) feat(os): allow expanding path (#1549)
+
 ## [v1.572.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.572.0) - 2025-05-04
 
 - [`ea92291`](https://github.com/alexfalkowski/go-service/commit/ea92291c1a598768247b81f1c72aed74c3946178) feat(cmd): only add runtime.Module for servers (#1548)
