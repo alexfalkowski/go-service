@@ -8,6 +8,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/net/http/status"
@@ -149,7 +150,7 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 
 			Convey("When I post data", func() {
 				header := http.Header{}
-				header.Set("Content-Type", "application/"+mt)
+				header.Set(content.TypeKey, "application/"+mt)
 
 				res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString("an erroneous payload"))
 				So(err, ShouldBeNil)
@@ -182,7 +183,7 @@ func TestErrorRPC(t *testing.T) {
 
 				Convey("When I post data", func() {
 					header := http.Header{}
-					header.Set("Content-Type", "application/"+mt)
+					header.Set(content.TypeKey, "application/"+mt)
 
 					enc := test.Encoder.Get(mt)
 
@@ -237,7 +238,7 @@ func TestAllowedRPC(t *testing.T) {
 }
 
 func TestDisallowedRPC(t *testing.T) {
-	for _, mt := range []string{"application/json", "application/yaml", "application/yml", "application/toml", "application/gob", "test"} {
+	for _, mt := range []string{mime.JSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t,
 				test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -47,7 +48,7 @@ func TestRestRequestNoContent(t *testing.T) {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				req := &test.Request{Name: "test"}
 				opts := &rest.Options{
-					ContentType: "application/json",
+					ContentType: mime.JSONMediaType,
 					Request:     req,
 				}
 				err := world.Rest.Do(t.Context(), method, url, opts)
@@ -99,7 +100,7 @@ func TestRestRequestError(t *testing.T) {
 				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
 				req := &test.Request{Name: "test"}
 				opts := &rest.Options{
-					ContentType: "application/json",
+					ContentType: mime.JSONMediaType,
 					Request:     req,
 				}
 				err := world.Rest.Do(t.Context(), method, url, opts)
@@ -156,7 +157,7 @@ func TestRestRequestWithContent(t *testing.T) {
 				req := &test.Request{Name: "test"}
 				resp := &test.Response{}
 				opts := &rest.Options{
-					ContentType: "application/json",
+					ContentType: mime.JSONMediaType,
 					Request:     req,
 					Response:    resp,
 				}

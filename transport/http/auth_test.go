@@ -8,6 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/mime"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
@@ -41,7 +43,7 @@ func TestTokenAuthUnary(t *testing.T) {
 
 			Convey("When I query for an authenticated greet", func() {
 				header := http.Header{}
-				header.Set("Content-Type", "application/json")
+				header.Set(content.TypeKey, mime.JSONMediaType)
 				header.Set("Request-Id", "test")
 				header.Set("X-Forwarded-For", "127.0.0.1")
 				header.Set("Geolocation", "geo:47,11")
@@ -70,7 +72,7 @@ func TestValidAuthUnary(t *testing.T) {
 
 		Convey("When I query for an authenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 			header.Set("X-Forwarded-For", "127.0.0.1")
 
@@ -97,7 +99,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
@@ -123,7 +125,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 			header.Set("Authorization", "What Invalid")
 
@@ -151,7 +153,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
@@ -177,7 +179,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
 			_, _, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
@@ -203,7 +205,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
@@ -229,7 +231,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 		Convey("When I query for a greet that will generate a token error", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
 			_, _, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
@@ -259,7 +261,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 
 			for range 10 {
 				header := http.Header{}
-				header.Set("Content-Type", "application/json")
+				header.Set(content.TypeKey, mime.JSONMediaType)
 				header.Set("Request-Id", "test")
 
 				_, _, err = world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodPost, "hello", header, bytes.NewBufferString(`{"name":"test"}`))
