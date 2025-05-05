@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/mime"
 	ct "github.com/elnormous/contenttype"
 )
 
 const (
-	jsonMediaType = "application/json"
-	jsonKind      = "json"
-	plainSubtype  = "plain"
+	jsonKind     = "json"
+	plainSubtype = "plain"
 
 	// TypeKey for HTTP headers.
 	TypeKey = "Content-Type"
@@ -30,7 +30,7 @@ type Content struct {
 func (c *Content) NewFromRequest(req *http.Request) *Media {
 	t, err := ct.GetMediaType(req)
 	if err != nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
+		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
 	}
 
 	return NewMedia(t, c.enc)
@@ -40,7 +40,7 @@ func (c *Content) NewFromRequest(req *http.Request) *Media {
 func (c *Content) NewFromMedia(mediaType string) *Media {
 	t, err := ct.ParseMediaType(mediaType)
 	if err != nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
+		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
 	}
 
 	return NewMedia(t, c.enc)
@@ -54,7 +54,7 @@ func NewMedia(media ct.MediaType, enc *encoding.Map) *Media {
 
 	e := enc.Get(media.Subtype)
 	if e == nil {
-		return &Media{Type: jsonMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
+		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
 	}
 
 	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}

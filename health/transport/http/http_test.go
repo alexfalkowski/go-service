@@ -13,6 +13,8 @@ import (
 	shh "github.com/alexfalkowski/go-service/health/transport/http"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/mime"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	tm "github.com/alexfalkowski/go-service/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
@@ -46,7 +48,7 @@ func TestHealth(t *testing.T) {
 				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
 
 				header := http.Header{}
-				header.Set("Content-Type", "application/json")
+				header.Set(content.TypeKey, mime.JSONMediaType)
 
 				res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, check, header, http.NoBody)
 				So(err, ShouldBeNil)
@@ -84,7 +86,7 @@ func TestReadinessNoop(t *testing.T) {
 			header := http.Header{}
 			header.Add("Request-Id", "test-id")
 			header.Add("User-Agent", "test-user-agent")
-			header.Set("Content-Type", "application/json")
+			header.Set(content.TypeKey, mime.JSONMediaType)
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "readyz", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -92,7 +94,7 @@ func TestReadinessNoop(t *testing.T) {
 			Convey("Then I should have a healthy response", func() {
 				So(body, ShouldContainSubstring, "SERVING")
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "application/json")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.JSONMediaType)
 			})
 
 			world.RequireStop()
@@ -127,7 +129,7 @@ func TestInvalidHealth(t *testing.T) {
 			Convey("Then I should have an unhealthy response", func() {
 				So(body, ShouldEqual, "rest: http: invalid status code")
 				So(res.StatusCode, ShouldEqual, 503)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
 			})
 
 			world.RequireStop()

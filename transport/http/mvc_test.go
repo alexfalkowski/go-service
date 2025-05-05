@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	. "github.com/smartystreets/goconvey/convey"
@@ -34,7 +35,7 @@ func TestRouteSuccess(t *testing.T) {
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "text/html")
+			header.Set(content.TypeKey, "text/html")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -42,7 +43,7 @@ func TestRouteSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/html; charset=utf-8")
 
 				_, err := html.Parse(strings.NewReader(body))
 				So(err, ShouldBeNil)
@@ -67,7 +68,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "text/html")
+			header.Set(content.TypeKey, "text/html")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -75,7 +76,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/html; charset=utf-8")
 
 				_, err := html.Parse(strings.NewReader(body))
 				So(err, ShouldBeNil)
@@ -98,7 +99,7 @@ func TestRouteError(t *testing.T) {
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "text/html")
+			header.Set(content.TypeKey, "text/html")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "hello", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -106,7 +107,7 @@ func TestRouteError(t *testing.T) {
 			Convey("Then I should have an error", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 503)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/html; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/html; charset=utf-8")
 
 				_, err := html.Parse(strings.NewReader(body))
 				So(err, ShouldBeNil)
@@ -127,7 +128,7 @@ func TestStaticFileSuccess(t *testing.T) {
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "text/html")
+			header.Set(content.TypeKey, "text/html")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -135,7 +136,7 @@ func TestStaticFileSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
 			})
 
 			world.RequireStop()
@@ -176,7 +177,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
-			header.Set("Content-Type", "text/html")
+			header.Set(content.TypeKey, "text/html")
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -184,7 +185,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get("Content-Type"), ShouldEqual, "text/plain; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
 			})
 
 			world.RequireStop()
