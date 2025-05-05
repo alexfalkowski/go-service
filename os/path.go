@@ -41,3 +41,8 @@ func ExpandPath(path string) string {
 
 	return filepath.Join(dir, path[1:])
 }
+
+// CleanPath makes sure that the path is expanded and in a clean format.
+func CleanPath(path string) string {
+	return ExpandPath(filepath.Clean(path))
+}

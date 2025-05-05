@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 )
 
+// FileInfo is an alias of os.FileInfo.
+type FileInfo = os.FileInfo
+
 var (
 	// Args is an alias for os.Args.
 	Args = os.Args
@@ -14,6 +17,9 @@ var (
 
 	// MkdirAll is an alias for os.MkdirAll.
 	MkdirAll = os.MkdirAll
+
+	// Open is an alias for os.Open.
+	Open = os.Open
 
 	// Remove is an alias for os.Remove.
 	Remove = os.Remove
