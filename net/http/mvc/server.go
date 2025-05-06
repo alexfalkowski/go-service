@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	hm "github.com/alexfalkowski/go-service/net/http/meta"
 	"github.com/alexfalkowski/go-service/net/http/status"
@@ -42,7 +43,7 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set(content.TypeKey, "text/html; charset=utf-8")
+		res.Header().Set(content.TypeKey, mime.HTMLMediaType)
 
 		ctx := req.Context()
 		ctx = hm.WithRequest(ctx, req)

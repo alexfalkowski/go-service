@@ -1,6 +1,9 @@
 package mime
 
 const (
+	// HTMLMediaType mime.
+	HTMLMediaType = "text/html; charset=utf-8"
+
 	// JPEGMediaType mime.
 	JPEGMediaType = "image/jpeg"
 
