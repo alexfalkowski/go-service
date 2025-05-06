@@ -4,31 +4,32 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/net/http/content"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // Delete for rest.
 func Delete[Res any](path string, handler content.Handler[Res]) {
-	Route(http.MethodDelete+" "+path, handler)
+	Route(strings.Join(" ", http.MethodDelete, path), handler)
 }
 
 // Get for rest.
 func Get[Res any](path string, handler content.Handler[Res]) {
-	Route(http.MethodGet+" "+path, handler)
+	Route(strings.Join(" ", http.MethodGet, path), handler)
 }
 
 // Post for rest.
 func Post[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(http.MethodPost+" "+path, handler)
+	RouteRequest(strings.Join(" ", http.MethodPost, path), handler)
 }
 
 // Put for rest.
 func Put[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(http.MethodPut+" "+path, handler)
+	RouteRequest(strings.Join(" ", http.MethodPut, path), handler)
 }
 
 // Patch for rest.
 func Patch[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(http.MethodPatch+" "+path, handler)
+	RouteRequest(strings.Join(" ", http.MethodPatch, path), handler)
 }
 
 // RouteRequest for rest.

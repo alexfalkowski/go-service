@@ -36,7 +36,9 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	ctx, span := h.tracer.StartServer(ctx, operationName(method+" "+path), attrs...)
+	op := operationName(strings.Join(" ", method, path))
+
+	ctx, span := h.tracer.StartServer(ctx, op, attrs...)
 	defer span.End()
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
@@ -69,7 +71,9 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	ctx, span := r.tracer.StartClient(ctx, operationName(method+" "+req.URL.Redacted()), attrs...)
+	op := operationName(strings.Join(" ", method, req.URL.Redacted()))
+
+	ctx, span := r.tracer.StartClient(ctx, op, attrs...)
 	defer span.End()
 
 	inject(ctx, req)

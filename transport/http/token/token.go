@@ -5,10 +5,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
 	"github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 )
 
 // NewHandler for token.
@@ -22,7 +23,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsObservable(req.URL.Path) {
+	if ts.IsObservable(req.URL.Path) {
 		next(res, req)
 
 		return
@@ -64,7 +65,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	req = req.WithContext(ctx)
-	req.Header.Add("Authorization", header.BearerAuthorization+" "+string(token))
+	req.Header.Add("Authorization", strings.Join(" ", header.BearerAuthorization, string(token)))
 
 	return r.RoundTripper.RoundTrip(req)
 }
