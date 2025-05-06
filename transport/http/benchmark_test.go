@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
@@ -206,7 +207,7 @@ func BenchmarkRoute(b *testing.B) {
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.InsecureServerHost()), http.NoBody)
 		runtime.Must(err)
 
-		req.Header.Set(content.TypeKey, "text/html")
+		req.Header.Set(content.TypeKey, mime.HTMLMediaType)
 
 		for b.Loop() {
 			_, err := client.Do(req)
