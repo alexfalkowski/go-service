@@ -4,10 +4,11 @@ import (
 	"context"
 	"path"
 
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
 	"github.com/alexfalkowski/go-service/transport/meta"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	ts "github.com/alexfalkowski/go-service/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -19,7 +20,7 @@ import (
 func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		if ts.IsObservable(service) {
 			return handler(ctx, req)
 		}
 
@@ -38,7 +39,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		if ts.IsObservable(service) {
 			return handler(srv, stream)
 		}
 
@@ -76,7 +77,9 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...st
 		return nil, header.ErrInvalidAuthorization
 	}
 
-	return map[string]string{"authorization": header.BearerAuthorization + " " + string(token)}, nil
+	meta := map[string]string{"authorization": strings.Join(" ", header.BearerAuthorization, string(token))}
+
+	return meta, nil
 }
 
 func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {

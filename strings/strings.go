@@ -26,3 +26,9 @@ var (
 func IsEmpty(s string) bool {
 	return len(s) == 0
 }
+
+// Join strings by a separator.
+// This allows to do strings.Join(" ", "1", "2").
+func Join(sep string, ss ...string) string {
+	return strings.Join(ss, sep)
+}

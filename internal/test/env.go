@@ -1,6 +1,10 @@
 package test
 
-import "github.com/alexfalkowski/go-service/env"
+import (
+	"path/filepath"
+
+	"github.com/alexfalkowski/go-service/env"
+)
 
 const (
 	// ID for test.
@@ -17,4 +21,4 @@ const (
 )
 
 // UserAgent for test.
-var UserAgent = env.UserAgent(Name.String() + "/" + Version.String())
+var UserAgent = env.UserAgent(filepath.Join(Name.String(), Version.String()))

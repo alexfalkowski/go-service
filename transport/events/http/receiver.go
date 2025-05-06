@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/strings"
 	hh "github.com/alexfalkowski/go-service/transport/events/http/hooks"
 	"github.com/alexfalkowski/go-service/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
@@ -34,7 +35,5 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 	handler, _ = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
 	handler = hh.NewHandler(r.hook, handler)
 
-	pattern := http.MethodPost + " " + path
-
-	r.mux.Handle(pattern, handler)
+	r.mux.Handle(strings.Join(" ", http.MethodPost, path), handler)
 }
