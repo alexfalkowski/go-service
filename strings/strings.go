@@ -32,3 +32,8 @@ func IsEmpty(s string) bool {
 func Join(sep string, ss ...string) string {
 	return strings.Join(ss, sep)
 }
+
+// Concat will take all the strings and join them with an empty string.
+func Concat(ss ...string) string {
+	return Join("", ss...)
+}
