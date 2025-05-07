@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/strings"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -19,7 +20,7 @@ import (
 
 // OperationName for tracer.
 func OperationName(area, name string) string {
-	return area + ": " + name
+	return strings.Join(": ", area, name)
 }
 
 // Register for tracer.

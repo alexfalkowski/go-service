@@ -30,8 +30,9 @@ func (t *Token) Generate() (string, error) {
 	}
 
 	signature, err := sig.Sign([]byte(t.cfg.Key.Name))
+	token := strings.Join("-", t.cfg.Key.Name, base64.StdEncoding.EncodeToString(signature))
 
-	return t.cfg.Key.Name + "-" + base64.StdEncoding.EncodeToString(signature), err
+	return token, err
 }
 
 // Verify an SSH token.

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -16,7 +17,7 @@ func TestSplitFlag(t *testing.T) {
 
 	for _, tuple := range tuples {
 		Convey("When I split the flag", t, func() {
-			k, l := cmd.SplitFlag(tuple[0] + ":" + tuple[1])
+			k, l := cmd.SplitFlag(strings.Join(":", tuple[0], tuple[1]))
 
 			Convey("Then I should have a valid split", func() {
 				So(k, ShouldEqual, tuple[0])

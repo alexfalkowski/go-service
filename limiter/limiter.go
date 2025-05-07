@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/strings"
 	st "github.com/alexfalkowski/go-service/time"
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
@@ -71,9 +72,14 @@ func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
 		return false, "", err
 	}
 
-	v := "limit=" + strconv.FormatUint(tokens, 10) + ", remaining=" + strconv.FormatUint(remaining, 10)
+	header := strings.Concat(
+		"limit=",
+		strconv.FormatUint(tokens, 10),
+		", remaining=",
+		strconv.FormatUint(remaining, 10),
+	)
 
-	return ok, v, nil
+	return ok, header, nil
 }
 
 // Close the limiter.
