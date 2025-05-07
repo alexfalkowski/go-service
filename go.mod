@@ -2,8 +2,6 @@ module github.com/alexfalkowski/go-service
 
 go 1.24.0
 
-toolchain go1.24.1
-
 require (
 	aidanwoods.dev/go-paseto v1.5.4
 	github.com/BurntSushi/toml v1.5.0
