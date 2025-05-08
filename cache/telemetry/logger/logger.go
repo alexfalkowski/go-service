@@ -4,21 +4,21 @@ import (
 	"context"
 	"log/slog"
 
-	cache "github.com/alexfalkowski/go-service/cache/config"
+	"github.com/alexfalkowski/go-service/cache/internal/cache"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/transport/meta"
 )
 
 // NewCache for tracer.
-func NewCache(kind string, logger *logger.Logger, cache cache.Cache) *Cache {
+func NewCache(kind string, logger *logger.Logger, cache cache.Cacheable) *Cache {
 	return &Cache{kind: kind, logger: logger, cache: cache}
 }
 
 // Cache for tracer.
 type Cache struct {
 	logger *logger.Logger
-	cache  cache.Cache
+	cache  cache.Cacheable
 	kind   string
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cache/driver"
+	"github.com/alexfalkowski/go-service/cache/internal/cache"
 	cl "github.com/alexfalkowski/go-service/cache/telemetry/logger"
 	cm "github.com/alexfalkowski/go-service/cache/telemetry/metrics"
 	ct "github.com/alexfalkowski/go-service/cache/telemetry/tracer"
@@ -19,6 +20,9 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
 )
+
+// Cacheable is an alias of cache.Cacheable.
+type Cacheable = cache.Cacheable
 
 // Params for cache.
 type Params struct {
@@ -36,7 +40,7 @@ type Params struct {
 }
 
 // NewCache from config.
-func NewCache(params Params) config.Cache {
+func NewCache(params Params) Cacheable {
 	if !config.IsEnabled(params.Config) {
 		return nil
 	}
@@ -44,7 +48,7 @@ func NewCache(params Params) config.Cache {
 	cmp := params.Compressor.Get(params.Config.Compressor)
 	enc := params.Encoder.Get(params.Config.Encoder)
 
-	var cache config.Cache = &Cache{cmp: cmp, enc: enc, pool: params.Pool, driver: params.Driver}
+	var cache Cacheable = &Cache{cmp: cmp, enc: enc, pool: params.Pool, driver: params.Driver}
 
 	if params.Tracer != nil {
 		cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
