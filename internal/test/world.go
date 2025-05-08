@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/cache"
-	cc "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cache/driver"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -186,7 +185,7 @@ type World struct {
 	*Client
 	*events.Event
 	*eh.Receiver
-	cc.Cache
+	Cache  cache.Cacheable
 	Sender client.Client
 	Rest   *rest.Client
 }
@@ -434,7 +433,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	return nil
 }
 
-func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cc.Cache {
+func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cache.Cacheable {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	driver, err := driver.New(cfg)
