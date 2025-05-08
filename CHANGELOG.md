@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.583.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.583.0) - 2025-05-08
+
+- [`5b1159d`](https://github.com/alexfalkowski/go-service/commit/5b1159de457e814c24293d15201158483d4d5e5f) feat(cache): define interface for cache (#1564)
+- [`9d15c0f`](https://github.com/alexfalkowski/go-service/commit/9d15c0f591a6d3a1b5518a090e3ed3eb5fd0557d) build(deps): bump bin from `652fb33` to `ac9a5b2` (#1563)
+- [`7e7fbdd`](https://github.com/alexfalkowski/go-service/commit/7e7fbdd783ebefa36d00abf396d4b593c805a8b5) build(deps): bump bin from `926a71b` to `652fb33` (#1562)
+
 ## [v1.582.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.582.0) - 2025-05-07
 
 - [`632f0b2`](https://github.com/alexfalkowski/go-service/commit/632f0b29ba83f7e1dda3b221cb26c7df2a4fc13f) feat(strings): use new Join (#1561)
