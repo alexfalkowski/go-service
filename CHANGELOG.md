@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.585.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.585.0) - 2025-05-09
+
+- [`6b5fdb9`](https://github.com/alexfalkowski/go-service/commit/6b5fdb9566d9a7df8b1db70e9f018de0017d2fe9) feat(deps): bump go.uber.org/dig from 1.18.1 to 1.18.2 (#1565)
+
 ## [v1.584.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.584.0) - 2025-05-09
 
 - [`bbf5209`](https://github.com/alexfalkowski/go-service/commit/bbf5209162308ab2683f4250014b5aa155eef0f1) feat(cache): similar to sort.Interface (#1566)
