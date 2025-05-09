@@ -3,7 +3,7 @@ package metrics
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/internal/cache"
+	"github.com/alexfalkowski/go-service/cache/cacheable"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/time"
 	"go.opentelemetry.io/otel/attribute"
@@ -11,7 +11,7 @@ import (
 )
 
 // NewCache for metrics.
-func NewCache(kind string, meter *metrics.Meter, cache cache.Cacheable) *Cache {
+func NewCache(kind string, meter *metrics.Meter, cache cacheable.Interface) *Cache {
 	hits := meter.MustInt64Counter("cache_hits_total", "The number of hits in the cache.")
 	misses := meter.MustInt64Counter("cache_misses_total", "The number of misses in the cache.")
 
@@ -20,7 +20,7 @@ func NewCache(kind string, meter *metrics.Meter, cache cache.Cacheable) *Cache {
 
 // Cache for metrics.
 type Cache struct {
-	cache  cache.Cacheable
+	cache  cacheable.Interface
 	hits   metric.Int64Counter
 	misses metric.Int64Counter
 	kind   string
