@@ -1,4 +1,4 @@
-package cache
+package cacheable
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/time"
 )
 
-// Cacheable allows marshaling and compressing items to the cache.
-type Cacheable interface {
+// Interface allows marshaling and compressing items to the cache.
+type Interface interface {
 	// Close the cache.
 	Close(ctx context.Context) error
 

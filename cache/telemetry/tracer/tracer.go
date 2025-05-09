@@ -3,21 +3,21 @@ package tracer
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/internal/cache"
+	"github.com/alexfalkowski/go-service/cache/cacheable"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"go.opentelemetry.io/otel/attribute"
 )
 
 // NewCache for tracer.
-func NewCache(kind string, tracer *tracer.Tracer, cache cache.Cacheable) *Cache {
+func NewCache(kind string, tracer *tracer.Tracer, cache cacheable.Interface) *Cache {
 	return &Cache{kind: kind, tracer: tracer, cache: cache}
 }
 
 // Cache for tracer.
 type Cache struct {
 	tracer *tracer.Tracer
-	cache  cache.Cacheable
+	cache  cacheable.Interface
 	kind   string
 }
 
