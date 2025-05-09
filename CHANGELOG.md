@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.584.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.584.0) - 2025-05-09
+
+- [`bbf5209`](https://github.com/alexfalkowski/go-service/commit/bbf5209162308ab2683f4250014b5aa155eef0f1) feat(cache): similar to sort.Interface (#1566)
+
 ## [v1.583.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.583.0) - 2025-05-08
 
 - [`5b1159d`](https://github.com/alexfalkowski/go-service/commit/5b1159de457e814c24293d15201158483d4d5e5f) feat(cache): define interface for cache (#1564)
