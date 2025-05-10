@@ -10,6 +10,9 @@ const (
 	// JSONMediaType mime.
 	JSONMediaType = "application/json"
 
+	// MarkdownMediaType mime.
+	MarkdownMediaType = "text/markdown; charset=UTF-8"
+
 	// ProtobufMediaType mime.
 	ProtobufMediaType = "application/protobuf"
 
