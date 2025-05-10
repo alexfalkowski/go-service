@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.586.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.586.0) - 2025-05-10
+
+- [`9977af1`](https://github.com/alexfalkowski/go-service/commit/9977af1340626f58dcd3004eeca269579c21dde4) feat(mime): add markdown (#1568)
+- [`3e7918f`](https://github.com/alexfalkowski/go-service/commit/3e7918f734ddc4c172c522752a9e21faa3a5ae65) build(ci): use alexfalkowski/go:2.17 (#1567)
+
 ## [v1.585.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.585.0) - 2025-05-09
 
 - [`6b5fdb9`](https://github.com/alexfalkowski/go-service/commit/6b5fdb9566d9a7df8b1db70e9f018de0017d2fe9) feat(deps): bump go.uber.org/dig from 1.18.1 to 1.18.2 (#1565)
