@@ -8,7 +8,7 @@ import (
 )
 
 func TestEncoder(t *testing.T) {
-	for _, k := range []string{"yaml", "yml", "toml", "proto", "gob"} {
+	for _, k := range test.Encoder.Keys() {
 		Convey("When I get an encoder", t, func() {
 			e := test.Encoder.Get(k)
 

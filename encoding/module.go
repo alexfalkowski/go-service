@@ -1,6 +1,7 @@
 package encoding
 
 import (
+	"github.com/alexfalkowski/go-service/encoding/bytes"
 	"github.com/alexfalkowski/go-service/encoding/gob"
 	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/encoding/proto"
@@ -18,5 +19,6 @@ var Module = fx.Options(
 	fx.Provide(toml.NewEncoder),
 	fx.Provide(yaml.NewEncoder),
 	fx.Provide(gob.NewEncoder),
+	fx.Provide(bytes.NewEncoder),
 	fx.Provide(NewMap),
 )

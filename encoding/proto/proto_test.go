@@ -14,28 +14,59 @@ func TestBinaryEncoder(t *testing.T) {
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
 
-		bytes := test.Pool.Get()
-		defer test.Pool.Put(bytes)
-
-		msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
-
 		Convey("When I encode and decode the proto", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
 			err := encoder.Encode(bytes, msg)
 			So(err, ShouldBeNil)
 
-			var msg grpc_health_v1.HealthCheckResponse
+			var decode grpc_health_v1.HealthCheckResponse
 
-			err = encoder.Decode(bytes, &msg)
+			err = encoder.Decode(bytes, &decode)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a status", func() {
-				So(msg.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+				So(decode.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+			})
+		})
+
+		Convey("When I encode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			var msg string
+
+			err := encoder.Encode(bytes, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		Convey("When I decode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
+			err := encoder.Encode(bytes, msg)
+			So(err, ShouldBeNil)
+
+			var decode string
+
+			err = encoder.Decode(bytes, &decode)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 	})
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestTextEncoder(t *testing.T) {
 	Convey("Given I have text encoder", t, func() {
 		encoder := proto.NewText()
@@ -68,10 +99,41 @@ func TestTextEncoder(t *testing.T) {
 				So(msg.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
 			})
 		})
+
+		Convey("When I encode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			var msg string
+
+			err := encoder.Encode(bytes, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		Convey("When I decode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
+			err := encoder.Encode(bytes, msg)
+			So(err, ShouldBeNil)
+
+			var decode string
+
+			err = encoder.Decode(bytes, &decode)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
 	})
 }
 
-//nolint:dupl
+//nolint:dupl,funlen
 func TestJSONEncoder(t *testing.T) {
 	Convey("Given I have json encoder", t, func() {
 		encoder := proto.NewJSON()
@@ -102,6 +164,37 @@ func TestJSONEncoder(t *testing.T) {
 
 			Convey("Then I should have valid msg", func() {
 				So(msg.GetStatus(), ShouldEqual, grpc_health_v1.HealthCheckResponse_SERVING)
+			})
+		})
+
+		Convey("When I encode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			var msg string
+
+			err := encoder.Encode(bytes, &msg)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+
+		Convey("When I decode with invalid type", func() {
+			bytes := test.Pool.Get()
+			defer test.Pool.Put(bytes)
+
+			msg := &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}
+
+			err := encoder.Encode(bytes, msg)
+			So(err, ShouldBeNil)
+
+			var decode string
+
+			err = encoder.Decode(bytes, &decode)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 	})

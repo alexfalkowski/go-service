@@ -1,6 +1,10 @@
 package encoding
 
 import (
+	"maps"
+	"slices"
+
+	"github.com/alexfalkowski/go-service/encoding/bytes"
 	"github.com/alexfalkowski/go-service/encoding/gob"
 	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/encoding/proto"
@@ -20,27 +24,30 @@ type MapParams struct {
 	ProtoText   *proto.Text
 	ProtoJSON   *proto.JSON
 	GOB         *gob.Encoder
+	Bytes       *bytes.Encoder
 }
 
 // NewMap for encoding.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{
-			"json":      params.JSON,
-			"yaml":      params.YAML,
-			"yml":       params.YAML,
-			"toml":      params.TOML,
-			"pb":        params.ProtoBinary,
-			"pbbin":     params.ProtoBinary,
-			"proto":     params.ProtoBinary,
-			"protobin":  params.ProtoBinary,
-			"protobuf":  params.ProtoBinary,
-			"pbtxt":     params.ProtoText,
-			"prototext": params.ProtoText,
-			"prototxt":  params.ProtoText,
-			"protojson": params.ProtoJSON,
-			"pbjson":    params.ProtoJSON,
-			"gob":       params.GOB,
+			"json":         params.JSON,
+			"yaml":         params.YAML,
+			"yml":          params.YAML,
+			"toml":         params.TOML,
+			"pb":           params.ProtoBinary,
+			"pbbin":        params.ProtoBinary,
+			"proto":        params.ProtoBinary,
+			"protobin":     params.ProtoBinary,
+			"protobuf":     params.ProtoBinary,
+			"pbtxt":        params.ProtoText,
+			"prototext":    params.ProtoText,
+			"prototxt":     params.ProtoText,
+			"protojson":    params.ProtoJSON,
+			"pbjson":       params.ProtoJSON,
+			"gob":          params.GOB,
+			"markdown":     params.Bytes,
+			"octet-stream": params.Bytes,
 		},
 	}
 }
@@ -58,4 +65,9 @@ func (f *Map) Register(kind string, enc Encoder) {
 // Get from kind.
 func (f *Map) Get(kind string) Encoder {
 	return f.encoders[kind]
+}
+
+// Keys from the encoders map.
+func (f *Map) Keys() []string {
+	return slices.Collect(maps.Keys(f.encoders))
 }

@@ -14,12 +14,12 @@ func NewEncoder() *Encoder {
 // Encoder for yaml.
 type Encoder struct{}
 
-// Encode for proto.
+// Encode for yaml.
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	return yaml.NewEncoder(w).Encode(v)
 }
 
-// Decode for proto.
+// Decode for yaml.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	return yaml.NewDecoder(r).Decode(v)
 }
