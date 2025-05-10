@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/encoding/bytes"
 	"github.com/alexfalkowski/go-service/encoding/gob"
 	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/encoding/proto"
@@ -21,6 +22,7 @@ var Encoder = encoding.NewMap(encoding.MapParams{
 	ProtoText:   proto.NewText(),
 	ProtoJSON:   proto.NewJSON(),
 	GOB:         gob.NewEncoder(),
+	Bytes:       bytes.NewEncoder(),
 })
 
 // Content for tests.

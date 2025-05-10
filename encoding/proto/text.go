@@ -3,6 +3,7 @@ package proto
 import (
 	"io"
 
+	"github.com/alexfalkowski/go-service/encoding/errors"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,22 +18,32 @@ type Text struct{}
 
 // Encode for proto.
 func (e *Text) Encode(w io.Writer, v any) error {
-	b, err := prototext.Marshal(v.(proto.Message))
+	msg, ok := v.(proto.Message)
+	if !ok {
+		return errors.ErrInvalidType
+	}
+
+	bytes, err := prototext.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	_, err = w.Write(b)
+	_, err = w.Write(bytes)
 
 	return err
 }
 
 // Decode for proto.
 func (e *Text) Decode(r io.Reader, v any) error {
-	b, err := io.ReadAll(r)
+	bytes, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
 
-	return prototext.Unmarshal(b, v.(proto.Message))
+	msg, ok := v.(proto.Message)
+	if !ok {
+		return errors.ErrInvalidType
+	}
+
+	return prototext.Unmarshal(bytes, msg)
 }
