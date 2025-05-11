@@ -81,7 +81,7 @@ To configure, please specify the following:
 
 ```yaml
 cache:
-  kind: redis
+  kind: redis | sync
   compressor: none | s2 | zstd | snappy
   encoder: json | toml | yaml | proto | gob
   options:
