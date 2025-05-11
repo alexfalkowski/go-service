@@ -1,10 +1,10 @@
 package json_test
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/json"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"

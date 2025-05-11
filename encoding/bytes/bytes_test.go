@@ -1,10 +1,10 @@
 package bytes_test
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	eb "github.com/alexfalkowski/go-service/encoding/bytes"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"

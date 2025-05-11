@@ -1,10 +1,10 @@
 package gob_test
 
 import (
-	"bytes"
 	"encoding/base64"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/gob"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"

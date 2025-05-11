@@ -1,9 +1,9 @@
 package proto_test
 
 import (
-	"bytes"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/proto"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"

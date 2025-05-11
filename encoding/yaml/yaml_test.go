@@ -1,10 +1,10 @@
 package yaml_test
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/yaml"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"

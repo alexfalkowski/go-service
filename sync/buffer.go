@@ -1,6 +1,6 @@
 package sync
 
-import "bytes"
+import "github.com/alexfalkowski/go-service/bytes"
 
 // NewBufferPool for sync.
 func NewBufferPool() *BufferPool {
@@ -20,17 +20,12 @@ func (p *BufferPool) Get() *bytes.Buffer {
 }
 
 // Put the buffer back.
-func (p *BufferPool) Put(b *bytes.Buffer) {
-	b.Reset()
-	p.pool.Put(b)
+func (p *BufferPool) Put(buffer *bytes.Buffer) {
+	buffer.Reset()
+	p.pool.Put(buffer)
 }
 
 // Copy the buffer to a []byte.
-func (p *BufferPool) Copy(b *bytes.Buffer) []byte {
-	buf := b.Bytes()
-	newBuf := make([]byte, len(buf))
-
-	copy(newBuf, buf)
-
-	return newBuf
+func (p *BufferPool) Copy(buffer *bytes.Buffer) []byte {
+	return bytes.Copy(buffer.Bytes())
 }

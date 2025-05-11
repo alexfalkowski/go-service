@@ -1,9 +1,9 @@
 package bytes
 
 import (
-	"bytes"
 	"io"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/errors"
 )
 

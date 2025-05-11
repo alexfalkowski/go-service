@@ -1,10 +1,10 @@
 package cache
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cache/cacheable"
 	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cache/driver"
