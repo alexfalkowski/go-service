@@ -12,10 +12,10 @@ type Interface interface {
 	Close(ctx context.Context) error
 
 	// Remove a cached key.
-	Remove(ctx context.Context, key string) error
+	Remove(ctx context.Context, key string) (bool, error)
 
 	// Get a cached value.
-	Get(ctx context.Context, key string, value any) error
+	Get(ctx context.Context, key string, value any) (bool, error)
 
 	// Persist a value with key and TTL.
 	Persist(ctx context.Context, key string, value any, ttl time.Duration) error

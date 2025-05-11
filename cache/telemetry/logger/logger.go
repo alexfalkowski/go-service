@@ -28,35 +28,41 @@ func (c *Cache) Close(ctx context.Context) error {
 }
 
 // Remove a cached key.
-func (c *Cache) Remove(ctx context.Context, key string) error {
+func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 	start := time.Now()
 	attrs := []slog.Attr{
 		slog.String(meta.ServiceKey, c.kind),
 		slog.String(meta.PathKey, key),
 	}
 
-	err := c.cache.Remove(ctx, key)
+	ok, err := c.cache.Remove(ctx, key)
 
-	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
+	attrs = append(attrs,
+		slog.String(meta.DurationKey, time.Since(start).String()),
+		slog.Bool("exists", ok),
+	)
 	c.logger.Log(ctx, logger.NewMessage(message("remove"), err), attrs...)
 
-	return err
+	return ok, err
 }
 
 // Get a cached value.
-func (c *Cache) Get(ctx context.Context, key string, value any) error {
+func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	start := time.Now()
 	attrs := []slog.Attr{
 		slog.String(meta.ServiceKey, c.kind),
 		slog.String(meta.PathKey, key),
 	}
 
-	err := c.cache.Get(ctx, key, value)
+	ok, err := c.cache.Get(ctx, key, value)
 
-	attrs = append(attrs, slog.String(meta.DurationKey, time.Since(start).String()))
+	attrs = append(attrs,
+		slog.String(meta.DurationKey, time.Since(start).String()),
+		slog.Bool("exists", ok),
+	)
 	c.logger.Log(ctx, logger.NewMessage(message("get"), err), attrs...)
 
-	return err
+	return ok, err
 }
 
 // Persist a value with key and TTL.

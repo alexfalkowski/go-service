@@ -16,11 +16,11 @@ func Register(c cacheable.Interface) {
 }
 
 // Get a value from key.
-func Get[T any](ctx context.Context, key string) (*T, error) {
+func Get[T any](ctx context.Context, key string) (*T, bool, error) {
 	value := ptr.Zero[T]()
-	err := cache.Get(ctx, key, value)
+	ok, err := cache.Get(ctx, key, value)
 
-	return value, err
+	return value, ok, err
 }
 
 // Persist a value to the key with a TTL.

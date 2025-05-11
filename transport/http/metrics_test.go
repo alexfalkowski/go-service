@@ -41,8 +41,9 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		ptr := ptr.Zero[string]()
 
-		err = world.Cache.Get(t.Context(), "not_existent", ptr)
-		So(err, ShouldBeError)
+		ok, err := world.Cache.Get(t.Context(), "not_existent", ptr)
+		So(ok, ShouldBeFalse)
+		So(err, ShouldBeNil)
 
 		Convey("When I query metrics", func() {
 			header := http.Header{}
