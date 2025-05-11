@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.589.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.589.0) - 2025-05-11
+
+- [`a632b67`](https://github.com/alexfalkowski/go-service/commit/a632b67c1f9aa9174c8aaa3aacc1722a8396f3e0) feat(bytes): add copy (#1571)
+
 ## [v1.588.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.588.0) - 2025-05-11
 
 - [`e1e9a99`](https://github.com/alexfalkowski/go-service/commit/e1e9a99854863f7211d2a66687564e739d65d1c9) feat(mvc): add ability to add custom sprout registries (#1570)
