@@ -1,8 +1,9 @@
 package os
 
 import (
-	"bytes"
 	"os"
+
+	"github.com/alexfalkowski/go-service/bytes"
 )
 
 // ReadFile for the name provided.

@@ -1,10 +1,10 @@
 package http_test
 
 import (
-	"bytes"
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/internal/test"

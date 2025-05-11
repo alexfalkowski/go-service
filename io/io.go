@@ -1,8 +1,9 @@
 package io
 
 import (
-	"bytes"
 	"io"
+
+	"github.com/alexfalkowski/go-service/bytes"
 )
 
 // ReadAll reads all the bytes from the io.Reader and returns the bytes with an io.ReadCloser.

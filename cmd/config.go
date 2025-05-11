@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"bytes"
 	"errors"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/config/io"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
