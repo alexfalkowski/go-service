@@ -27,7 +27,7 @@ func (c *Cache) Close(ctx context.Context) error {
 }
 
 // Remove a cached key.
-func (c *Cache) Remove(ctx context.Context, key string) error {
+func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 	attrs := []attribute.KeyValue{
 		attribute.Key("cache.key").String(key),
 		attribute.Key("cache.kind").String(c.kind),
@@ -36,16 +36,17 @@ func (c *Cache) Remove(ctx context.Context, key string) error {
 	ctx, span := c.tracer.StartClient(ctx, operationName("remove"), attrs...)
 	defer span.End()
 
-	err := c.cache.Remove(ctx, key)
+	ok, err := c.cache.Remove(ctx, key)
 
+	span.SetAttributes(attribute.Key("cache.found").Bool(ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
-	return err
+	return ok, err
 }
 
 // Get a cached value.
-func (c *Cache) Get(ctx context.Context, key string, value any) error {
+func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	attrs := []attribute.KeyValue{
 		attribute.Key("cache.key").String(key),
 		attribute.Key("cache.kind").String(c.kind),
@@ -54,12 +55,13 @@ func (c *Cache) Get(ctx context.Context, key string, value any) error {
 	ctx, span := c.tracer.StartClient(ctx, operationName("get"), attrs...)
 	defer span.End()
 
-	err := c.cache.Get(ctx, key, value)
+	ok, err := c.cache.Get(ctx, key, value)
 
+	span.SetAttributes(attribute.Key("cache.found").Bool(ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
-	return err
+	return ok, err
 }
 
 // Persist a value with key and TTL.

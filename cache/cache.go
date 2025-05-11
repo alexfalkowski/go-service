@@ -82,18 +82,26 @@ func (c *Cache) Close(_ context.Context) error {
 }
 
 // Remove a cached key.
-func (c *Cache) Remove(_ context.Context, key string) error {
-	return c.driver.Delete(key)
+func (c *Cache) Remove(_ context.Context, key string) (bool, error) {
+	if !c.driver.Contains(key) {
+		return false, nil
+	}
+
+	return true, c.driver.Delete(key)
 }
 
 // Get a cached value.
-func (c *Cache) Get(_ context.Context, key string, value any) error {
-	val, err := c.driver.Fetch(key)
-	if err != nil {
-		return err
+func (c *Cache) Get(_ context.Context, key string, value any) (bool, error) {
+	if !c.driver.Contains(key) {
+		return false, nil
 	}
 
-	return c.decode(val, value)
+	val, err := c.driver.Fetch(key)
+	if err != nil {
+		return true, err
+	}
+
+	return true, c.decode(val, value)
 }
 
 // Persist a value with key and TTL.

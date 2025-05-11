@@ -58,15 +58,16 @@ func TestValidCache(t *testing.T) {
 				err := cache.Persist(t.Context(), "test", &value, time.Minute)
 				So(err, ShouldBeNil)
 
-				v, err := cache.Get[string](t.Context(), "test")
+				v, ok, err := cache.Get[string](t.Context(), "test")
 				So(err, ShouldBeNil)
+				So(ok, ShouldBeTrue)
 
 				Convey("Then I should have a value", func() {
 					So(*v, ShouldEqual, "wassup?")
 				})
 			})
 
-			err = kind.Remove(t.Context(), "test")
+			_, err = kind.Remove(t.Context(), "test")
 			So(err, ShouldBeNil)
 
 			world.RequireStop()
@@ -232,7 +233,7 @@ func TestErroneousGet(t *testing.T) {
 
 			Convey("When I try to encode a value", func() {
 				ptr := ptr.Zero[string]()
-				err := kind.Get(t.Context(), "test", ptr)
+				_, err := kind.Get(t.Context(), "test", ptr)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)

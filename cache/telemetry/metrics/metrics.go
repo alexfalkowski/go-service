@@ -32,25 +32,27 @@ func (c *Cache) Close(ctx context.Context) error {
 }
 
 // Remove a cached key.
-func (c *Cache) Remove(ctx context.Context, key string) error {
+func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 	return c.cache.Remove(ctx, key)
 }
 
 // Get a cached value.
-func (c *Cache) Get(ctx context.Context, key string, value any) error {
+func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	kind := attribute.Key("kind")
 	opts := metric.WithAttributes(kind.String(c.kind))
 
-	err := c.cache.Get(ctx, key, value)
+	ok, err := c.cache.Get(ctx, key, value)
 	if err != nil {
-		c.misses.Add(ctx, 1, opts)
-
-		return err
+		return ok, err
 	}
 
-	c.hits.Add(ctx, 1, opts)
+	if ok {
+		c.hits.Add(ctx, 1, opts)
+	} else {
+		c.misses.Add(ctx, 1, opts)
+	}
 
-	return nil
+	return ok, err
 }
 
 // Persist a value with key and TTL.
