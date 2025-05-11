@@ -221,7 +221,7 @@ func TestMissingViews(t *testing.T) {
 	Convey("Given I have views with missing FS", t, func() {
 		mvc.Register(mvc.RegisterParams{
 			Mux:         http.NewServeMux(),
-			FunctionMap: mvc.NewFunctionMap(slog.Default()),
+			FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 			Layout:      test.Layout,
 		})
 
@@ -243,7 +243,7 @@ func TestMissingViews(t *testing.T) {
 	Convey("Given I have views with missing layout", t, func() {
 		mvc.Register(mvc.RegisterParams{
 			Mux:         http.NewServeMux(),
-			FunctionMap: mvc.NewFunctionMap(slog.Default()),
+			FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 			FileSystem:  test.FileSystem,
 		})
 

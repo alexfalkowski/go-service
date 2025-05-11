@@ -224,7 +224,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 
 	mvc.Register(mvc.RegisterParams{
 		Mux:         mux,
-		FunctionMap: mvc.NewFunctionMap(logger.Logger),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger.Logger}),
 		FileSystem:  FileSystem,
 		Layout:      Layout,
 	})
