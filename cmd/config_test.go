@@ -1,11 +1,11 @@
 package cmd_test
 
 import (
-	"encoding/base64"
 	"path/filepath"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
@@ -224,7 +224,7 @@ func TestValidConfigEnv(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				So(os.Getenv("CONFIG"), ShouldEqual, base64.StdEncoding.EncodeToString([]byte("test")))
+				So(os.Getenv("CONFIG"), ShouldEqual, base64.Encode([]byte("test")))
 			})
 		})
 	})

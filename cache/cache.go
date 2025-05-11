@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"encoding/base64"
 
 	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cache/cacheable"
@@ -13,6 +12,7 @@ import (
 	ct "github.com/alexfalkowski/go-service/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/compress"
 	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/sync"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -45,7 +45,7 @@ func NewCache(params Params) cacheable.Interface {
 	cmp := params.Compressor.Get(params.Config.Compressor)
 	enc := params.Encoder.Get(params.Config.Encoder)
 
-	var cache cacheable.Interface = &Cache{cmp: cmp, enc: enc, pool: params.Pool, driver: params.Driver}
+	var cache cacheable.Interface = &Cache{compressor: cmp, encoder: enc, pool: params.Pool, driver: params.Driver}
 
 	if params.Tracer != nil {
 		cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
@@ -70,10 +70,10 @@ func NewCache(params Params) cacheable.Interface {
 
 // Cache allows marshaling and compressing items to the cache.
 type Cache struct {
-	enc    encoding.Encoder
-	pool   *sync.BufferPool
-	cmp    compress.Compressor
-	driver driver.Driver
+	encoder    encoding.Encoder
+	pool       *sync.BufferPool
+	compressor compress.Compressor
+	driver     driver.Driver
 }
 
 // Close the cache.
@@ -98,7 +98,7 @@ func (c *Cache) Get(_ context.Context, key string, value any) (bool, error) {
 
 	val, err := c.driver.Fetch(key)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 
 	return true, c.decode(val, value)
@@ -115,28 +115,51 @@ func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Durat
 }
 
 func (c *Cache) encode(value any) (string, error) {
-	buf := c.pool.Get()
-	defer c.pool.Put(buf)
+	var data []byte
 
-	if err := c.enc.Encode(buf, value); err != nil {
-		return "", err
+	switch kind := value.(type) {
+	case *[]byte:
+		data = *kind
+	case *bytes.Buffer:
+		data = kind.Bytes()
+	default:
+		buf := c.pool.Get()
+		defer c.pool.Put(buf)
+
+		if err := c.encoder.Encode(buf, value); err != nil {
+			return "", err
+		}
+
+		data = buf.Bytes()
 	}
 
-	cmp := c.cmp.Compress(buf.Bytes())
+	compressed := c.compressor.Compress(data)
+	encoded := base64.Encode(compressed)
 
-	return base64.StdEncoding.EncodeToString(cmp), nil
+	return encoded, nil
 }
 
 func (c *Cache) decode(value string, field any) error {
-	data, err := base64.URLEncoding.DecodeString(value)
+	decoded, err := base64.Decode(value)
 	if err != nil {
 		return err
 	}
 
-	data, err = c.cmp.Decompress(data)
+	decompressed, err := c.compressor.Decompress(decoded)
 	if err != nil {
 		return err
 	}
 
-	return c.enc.Decode(bytes.NewReader(data), field)
+	switch kind := field.(type) {
+	case *[]byte:
+		*kind = decompressed
+
+		return nil
+	case *bytes.Buffer:
+		_, _ = kind.Write(decompressed)
+
+		return nil
+	default:
+		return c.encoder.Decode(bytes.NewReader(decompressed), field)
+	}
 }

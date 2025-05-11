@@ -1,10 +1,9 @@
 package ssh
 
 import (
-	"encoding/base64"
-
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/strings"
 )
 
@@ -30,7 +29,7 @@ func (t *Token) Generate() (string, error) {
 	}
 
 	signature, err := sig.Sign([]byte(t.cfg.Key.Name))
-	token := strings.Join("-", t.cfg.Key.Name, base64.StdEncoding.EncodeToString(signature))
+	token := strings.Join("-", t.cfg.Key.Name, base64.Encode(signature))
 
 	return token, err
 }
@@ -52,7 +51,7 @@ func (t *Token) Verify(token string) error {
 		return err
 	}
 
-	sig, err := base64.StdEncoding.DecodeString(key)
+	sig, err := base64.Decode(key)
 	if err != nil {
 		return err
 	}

@@ -1,9 +1,8 @@
 package hooks
 
 import (
-	"encoding/base64"
-
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
@@ -21,7 +20,7 @@ type Generator struct {
 func (g *Generator) Generate() (string, error) {
 	b, err := g.gen.GenerateBytes(32)
 
-	return base64.StdEncoding.EncodeToString(b), err
+	return base64.Encode(b), err
 }
 
 // New hook from config.

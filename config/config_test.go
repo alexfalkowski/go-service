@@ -1,7 +1,6 @@
 package config_test
 
 import (
-	"encoding/base64"
 	"testing"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
@@ -15,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/debug"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"
@@ -116,7 +116,7 @@ func TestValidMemConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		t.Setenv("CONFIG_FILE", "yaml:CONFIG")
-		t.Setenv("CONFIG", base64.StdEncoding.EncodeToString(d))
+		t.Setenv("CONFIG", base64.Encode(d))
 
 		set := cmd.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
