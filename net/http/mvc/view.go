@@ -83,8 +83,12 @@ type View struct {
 // Render the view.
 func (v *View) Render(ctx context.Context, model any) {
 	res := hm.Response(ctx)
+	template := &Template{
+		Meta:  meta.Strings(ctx, ""),
+		Model: model,
+	}
 
-	if err := v.template.ExecuteTemplate(res, v.name, model); err != nil {
+	if err := v.template.ExecuteTemplate(res, v.name, template); err != nil {
 		meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
 		res.WriteHeader(status.Code(err))
 	}

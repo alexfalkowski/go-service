@@ -1,7 +1,7 @@
 {{ define "content" }}
-<h1>{{ .Title | quote }}</h1>
+<h1>{{ .Model.Title | quote }}</h1>
 <ul>
-    {{ range .Todos }}
+    {{ range .Model.Todos }}
         {{ if .Done }}
             <li class="done">{{ .Title }}</li>
         {{ else }}
