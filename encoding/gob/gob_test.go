@@ -1,10 +1,10 @@
 package gob_test
 
 import (
-	"encoding/base64"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/encoding/gob"
 	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
@@ -23,7 +23,7 @@ func TestEncoder(t *testing.T) {
 			err := encoder.Encode(bytes, msg)
 			So(err, ShouldBeNil)
 
-			s := base64.StdEncoding.EncodeToString(bytes.Bytes())
+			s := base64.Encode(bytes.Bytes())
 
 			Convey("Then I should have valid proto", func() {
 				So(s, ShouldEqual, "DX8EAQL/gAABDAEMAAAO/4AAAQR0ZXN0BHRlc3Q=")
@@ -35,7 +35,7 @@ func TestEncoder(t *testing.T) {
 		encoder := gob.NewEncoder()
 
 		Convey("When I decode the gob", func() {
-			m, err := base64.StdEncoding.DecodeString("DX8EAQL/gAABDAEMAAAO/4AAAQR0ZXN0BHRlc3Q=")
+			m, err := base64.Decode("DX8EAQL/gAABDAEMAAAO/4AAAQR0ZXN0BHRlc3Q=")
 			So(err, ShouldBeNil)
 
 			var msg map[string]string

@@ -44,7 +44,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/sony/gobreaker v1.0.0
 	github.com/spf13/pflag v1.0.6
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20250305151702-d347f20c7e91
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20250511132225-4668a470bf48
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.10.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.60.0

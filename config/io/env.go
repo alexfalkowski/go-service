@@ -1,9 +1,9 @@
 package io
 
 import (
-	"encoding/base64"
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/strings"
 )
@@ -25,7 +25,7 @@ func (e *ENV) Read() ([]byte, error) {
 	if e.isMemory() {
 		_, e := e.split()
 
-		return base64.StdEncoding.DecodeString(os.Getenv(e))
+		return base64.Decode(os.Getenv(e))
 	}
 
 	if strings.IsEmpty(e.name()) {
@@ -41,7 +41,7 @@ func (e *ENV) Write(data []byte, mode os.FileMode) error {
 	if e.isMemory() {
 		_, e := e.split()
 
-		return os.Setenv(e, base64.StdEncoding.EncodeToString(data))
+		return os.Setenv(e, base64.Encode(data))
 	}
 
 	if strings.IsEmpty(e.name()) {
