@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.592.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.592.0) - 2025-05-12
+
+- [`13badf3`](https://github.com/alexfalkowski/go-service/commit/13badf335cabe77702a80e729e6fdfe0a4d90ea4) feat(cache): allow to cache []byte and bytes.Buffer (#1575)
+- [`cffdc2e`](https://github.com/alexfalkowski/go-service/commit/cffdc2eef750efc5c9462ea5dfd4631bdd75e357) build(deps): bump bin from `ac9a5b2` to `c59b166` (#1576)
+- [`6bdf7b4`](https://github.com/alexfalkowski/go-service/commit/6bdf7b41645964682b8c7cd8ae79bf0c8ca0c9e6) docs(cache): add sync (#1574)
+
 ## [v1.591.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.591.0) - 2025-05-11
 
 - [`7abf107`](https://github.com/alexfalkowski/go-service/commit/7abf107617b29f335f0e5f905daf7339db734198) feat(cache): add bool to verify if cache was hit (#1573)
