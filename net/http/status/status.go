@@ -9,6 +9,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Coder allows errors to implement so we can return the code needed.
+type Coder interface {
+	// Code reflects the status code to return, e.g: http.StatusNotFound.
+	Code() int
+}
+
 // Taken from https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go
 var statusCodes = map[codes.Code]int{
 	codes.OK:                 http.StatusOK,
@@ -44,6 +50,10 @@ func Error(code int, msg string) error {
 
 // FromError creates an error from an error.
 func FromError(code int, err error) error {
+	if IsError(err) {
+		return err
+	}
+
 	return Error(code, err.Error())
 }
 
@@ -54,6 +64,10 @@ func Errorf(code int, format string, a ...any) error {
 
 // IsError verifies if the package created this error.
 func IsError(err error) bool {
+	if _, ok := err.(Coder); ok {
+		return true
+	}
+
 	e := &statusError{}
 
 	return errors.As(err, &e)
@@ -61,6 +75,10 @@ func IsError(err error) bool {
 
 // Code from the error. If nil 200, otherwise 500.
 func Code(err error) int {
+	if coder, ok := err.(Coder); ok {
+		return coder.Code()
+	}
+
 	e := &statusError{}
 	if errors.As(err, &e) {
 		return e.code
