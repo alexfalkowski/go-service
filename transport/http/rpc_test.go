@@ -108,6 +108,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 	handlers := []content.RequestHandler[v1.SayHelloRequest, v1.SayHelloResponse]{
 		test.ErrorsProtobufSayHello,
 		test.ErrorsNotMappedProtobufSayHello,
+		test.ErrorsInternalProtobufSayHello,
 	}
 
 	for _, handler := range handlers {
@@ -197,7 +198,7 @@ func TestErrorRPC(t *testing.T) {
 					So(err, ShouldBeNil)
 
 					Convey("Then I should have response", func() {
-						So(body, ShouldEqual, "rpc: failed")
+						So(body, ShouldEqual, "failed")
 						So(res.StatusCode, ShouldEqual, http.StatusInternalServerError)
 					})
 

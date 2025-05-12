@@ -34,10 +34,10 @@ func Patch[Req any, Res any](path string, handler content.RequestHandler[Req, Re
 
 // RouteRequest for rest.
 func RouteRequest[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	mux.HandleFunc(path, content.NewRequestHandler(cont, "rest", handler))
+	mux.HandleFunc(path, content.NewRequestHandler(cont, handler))
 }
 
 // Route for rest.
 func Route[Res any](path string, handler content.Handler[Res]) {
-	mux.HandleFunc(path, content.NewHandler(cont, "rest", handler))
+	mux.HandleFunc(path, content.NewHandler(cont, handler))
 }

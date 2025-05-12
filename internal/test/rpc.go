@@ -63,3 +63,8 @@ func ErrorsProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHe
 func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, ErrFailed
 }
+
+// ErrorsInternalProtobufSayHello for test.
+func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
+	return nil, ErrInternal
+}

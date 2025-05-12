@@ -36,7 +36,7 @@ type Response struct {
 func resister(path string, ob *subscriber.Observer) {
 	rest.Get(path, func(ctx context.Context) (*Response, error) {
 		if err := ob.Error(); err != nil {
-			return nil, status.Error(http.StatusServiceUnavailable, err.Error())
+			return nil, status.FromError(http.StatusServiceUnavailable, err)
 		}
 
 		res := &Response{

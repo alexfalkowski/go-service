@@ -95,7 +95,7 @@ func TestRouteError(t *testing.T) {
 		world.RequireStart()
 
 		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return mvc.NewFullView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrFailed)
+			return mvc.NewFullView("views/error.tmpl"), &test.Model, status.FromError(http.StatusServiceUnavailable, test.ErrInternal)
 		})
 
 		Convey("When I query for hello", func() {
@@ -107,7 +107,7 @@ func TestRouteError(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, 503)
+				So(res.StatusCode, ShouldEqual, http.StatusInternalServerError)
 				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.HTMLMediaType)
 
 				_, err := html.Parse(strings.NewReader(body))

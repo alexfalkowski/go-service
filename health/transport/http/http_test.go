@@ -127,7 +127,7 @@ func TestInvalidHealth(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {
-				So(body, ShouldEqual, "rest: http: invalid status code")
+				So(body, ShouldEqual, "http: invalid status code")
 				So(res.StatusCode, ShouldEqual, 503)
 				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
 			})
