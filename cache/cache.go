@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 
 	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cache/cacheable"
@@ -98,6 +99,10 @@ func (c *Cache) Get(_ context.Context, key string, value any) (bool, error) {
 
 	val, err := c.driver.Fetch(key)
 	if err != nil {
+		if errors.Is(err, driver.ErrExpired) {
+			return false, nil
+		}
+
 		return false, err
 	}
 

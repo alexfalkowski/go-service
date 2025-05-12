@@ -7,21 +7,30 @@ import (
 )
 
 const (
-	// Minute represents 60 seconds.
+	// Microsecond is an alias of time.Microsecond.
+	Microsecond = time.Microsecond
+
+	// Millisecond is an alias of time.Millisecond.
+	Millisecond = time.Millisecond
+
+	// Minute is an alias of time.Minute.
 	Minute = time.Minute
 
-	// Second represents 1 second.
+	// Nanosecond is an alias of time.Nanosecond.
+	Nanosecond = time.Nanosecond
+
+	// Second is an alias of time.Second.
 	Second = time.Second
 
-	// RFC3339 formats time to 2006-01-02T15:04:05Z07:00.
+	// RFC3339 is an alias of time.RFC3339.
 	RFC3339 = time.RFC3339
 )
 
 type (
-	// Time represents an instant in time with nanosecond precision.
+	// Time is an alias of time.Time.
 	Time = time.Time
 
-	// Duration represents the elapsed time between two instants.
+	// Duration is an alias of time.Duration.
 	Duration = time.Duration
 )
 
@@ -29,11 +38,14 @@ var (
 	// Now is just an alias to time.Now.
 	Now = time.Now
 
+	// ParseDuration is just an alias to time.ParseDuration.
+	ParseDuration = time.ParseDuration
+
 	// Since is just an alias to time.Since.
 	Since = time.Since
 
-	// ParseDuration is just an alias to time.ParseDuration.
-	ParseDuration = time.ParseDuration
+	// Sleep is just an alias to time.Sleep.
+	Sleep = time.Sleep
 )
 
 // MustParseDuration for time.

@@ -132,6 +132,55 @@ func TestGenericValidCache(t *testing.T) {
 	})
 }
 
+func TestExpiredCache(t *testing.T) {
+	Convey("Given I have a cache", t, func() {
+		world := test.NewWorld(t)
+		world.Register()
+
+		config := test.NewCacheConfig("sync", "snappy", "json", "redis")
+
+		driver, err := driver.New(config)
+		So(err, ShouldBeNil)
+
+		params := cache.Params{
+			Lifecycle:  world.Lifecycle,
+			Config:     config,
+			Compressor: test.Compressor,
+			Encoder:    test.Encoder,
+			Pool:       test.Pool,
+			Driver:     driver,
+			Tracer:     world.NewTracer(),
+			Logger:     world.Logger,
+			Meter:      world.Server.Meter,
+		}
+
+		kind := cache.NewCache(params)
+		cache.Register(kind)
+
+		world.RequireStart()
+
+		Convey("When I get an item", func() {
+			err := cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Nanosecond)
+			So(err, ShouldBeNil)
+
+			// Simulate expiry.
+			time.Sleep(time.Second)
+
+			_, ok, err := cache.Get[string](t.Context(), "test")
+			So(err, ShouldBeNil)
+
+			Convey("Then I should not have an item in cache", func() {
+				So(ok, ShouldBeFalse)
+			})
+
+			_, err = kind.Remove(t.Context(), "test")
+			So(err, ShouldBeNil)
+		})
+
+		world.RequireStop()
+	})
+}
+
 func TestErroneousCache(t *testing.T) {
 	configs := []*config.Config{
 		test.NewCacheConfig("redis", "snappy", "json", "none"),
