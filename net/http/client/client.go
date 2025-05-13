@@ -144,12 +144,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 	}
 
 	if response.StatusCode >= 400 && response.StatusCode <= 599 {
-		msg := strings.TrimSpace(buffer.String())
-		if strings.IsEmpty(msg) {
-			msg = strings.ToLower(http.StatusText(response.StatusCode))
-		}
-
-		return status.Error(response.StatusCode, msg)
+		return status.Error(response.StatusCode, strings.ToLower(http.StatusText(response.StatusCode)))
 	}
 
 	if opts.Response != nil {
