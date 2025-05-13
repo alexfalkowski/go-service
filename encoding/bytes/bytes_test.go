@@ -10,26 +10,12 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-//nolint:funlen
 func TestEncoder(t *testing.T) {
 	Convey("Given I have bytes encoder", t, func() {
 		encoder := eb.NewEncoder()
 
 		buffer := test.Pool.Get()
 		defer test.Pool.Put(buffer)
-
-		Convey("When I encode a byte array", func() {
-			msg := []byte("yes!")
-
-			err := encoder.Encode(buffer, &msg)
-			So(err, ShouldBeNil)
-
-			s := strings.TrimSpace(buffer.String())
-
-			Convey("Then I should have valid message", func() {
-				So(s, ShouldEqual, "yes!")
-			})
-		})
 
 		Convey("When I encode a buffer", func() {
 			err := encoder.Encode(buffer, bytes.NewBufferString("yes!"))
@@ -55,18 +41,6 @@ func TestEncoder(t *testing.T) {
 
 	Convey("Given I have bytes encoder", t, func() {
 		encoder := eb.NewEncoder()
-
-		Convey("When I decode a bytes array", func() {
-			str := "test"
-			msg := make([]byte, len(str))
-
-			err := encoder.Decode(bytes.NewReader([]byte(str)), &msg)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid map", func() {
-				So(msg, ShouldEqual, []byte(str))
-			})
-		})
 
 		Convey("When I decode a buffer", func() {
 			var msg bytes.Buffer

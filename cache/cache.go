@@ -122,12 +122,10 @@ func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Durat
 func (c *Cache) encode(value any) (string, error) {
 	var data []byte
 
-	switch kind := value.(type) {
-	case *[]byte:
-		data = *kind
-	case *bytes.Buffer:
-		data = kind.Bytes()
-	default:
+	buffer, ok := value.(*bytes.Buffer)
+	if ok {
+		data = buffer.Bytes()
+	} else {
 		buf := c.pool.Get()
 		defer c.pool.Put(buf)
 
@@ -155,16 +153,12 @@ func (c *Cache) decode(value string, field any) error {
 		return err
 	}
 
-	switch kind := field.(type) {
-	case *[]byte:
-		*kind = decompressed
+	buffer, ok := field.(*bytes.Buffer)
+	if ok {
+		_, _ = buffer.Write(decompressed)
 
 		return nil
-	case *bytes.Buffer:
-		_, _ = kind.Write(decompressed)
-
-		return nil
-	default:
-		return c.encoder.Decode(bytes.NewReader(decompressed), field)
 	}
+
+	return c.encoder.Decode(bytes.NewReader(decompressed), field)
 }

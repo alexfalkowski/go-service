@@ -27,7 +27,6 @@ func TestValidCache(t *testing.T) {
 		for _, value := range []tuple{
 			{ptr.Value("hello?"), ptr.Zero[string]()},
 			{bytes.NewBufferString("hello?"), &bytes.Buffer{}},
-			{ptr.Value([]byte("hello?")), &[]byte{}},
 		} {
 			Convey("Given I have a cache of kind "+config.Kind, t, func() {
 				world := test.NewWorld(t)
