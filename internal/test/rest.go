@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 
+	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/meta"
 	hm "github.com/alexfalkowski/go-service/net/http/meta"
 )
@@ -51,6 +52,14 @@ func RestRequestContent(ctx context.Context, req *Request) (*Response, error) {
 	s := "Hello " + name
 
 	return &Response{Meta: meta.CamelStrings(ctx, ""), Greeting: s}, nil
+}
+
+// RestRequestProtobuf for test.
+func RestRequestProtobuf(_ context.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
+	name := cmp.Or(r.GetName(), "Bob")
+	s := "Hello " + name
+
+	return &v1.SayHelloResponse{Message: s}, nil
 }
 
 // RestError for test.

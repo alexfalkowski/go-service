@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
+	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/server"
@@ -183,7 +184,7 @@ func BenchmarkTraceHTTP(b *testing.B) {
 	lc.RequireStop()
 }
 
-func BenchmarkRoute(b *testing.B) {
+func BenchmarkMVC(b *testing.B) {
 	b.ReportAllocs()
 
 	logger, _ := logger.NewLogger(logger.Params{})
@@ -219,75 +220,163 @@ func BenchmarkRoute(b *testing.B) {
 	world.RequireStop()
 }
 
+//nolint:funlen
 func BenchmarkRPC(b *testing.B) {
-	b.ReportAllocs()
+	b.Run("text", func(b *testing.B) {
+		b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.Params{})
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-	world.Register()
+		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
+		world.Register()
 
-	world.RequireStart()
+		world.RequireStart()
 
-	rpc.Route("/hello", test.SuccessSayHello)
+		rpc.Route("/hello", test.SuccessSayHello)
 
-	b.ResetTimer()
+		b.ResetTimer()
 
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
-		cl := world.NewHTTP()
-		url := "http://" + world.InsecureServerHost()
-		client := rpc.NewClient(url,
-			rpc.WithClientContentType("application/"+mt),
-			rpc.WithClientRoundTripper(cl.Transport),
-		)
+		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+			cl := world.NewHTTP()
+			url := "http://" + world.InsecureServerHost()
+			client := rpc.NewClient(url,
+				rpc.WithClientContentType("application/"+mt),
+				rpc.WithClientRoundTripper(cl.Transport),
+			)
 
-		b.Run(mt, func(b *testing.B) {
-			for b.Loop() {
-				req := &test.Request{Name: "Bob"}
-				res := &test.Response{}
+			b.Run(mt, func(b *testing.B) {
+				for b.Loop() {
+					req := &test.Request{Name: "Bob"}
+					res := &test.Response{}
 
-				err := client.Post(b.Context(), "/hello", req, res)
-				runtime.Must(err)
-			}
-		})
-	}
+					err := client.Post(b.Context(), "/hello", req, res)
+					runtime.Must(err)
+				}
+			})
+		}
 
-	b.StopTimer()
-	world.RequireStop()
+		b.StopTimer()
+		world.RequireStop()
+	})
+
+	b.Run("proto", func(b *testing.B) {
+		b.ReportAllocs()
+
+		logger, _ := logger.NewLogger(logger.Params{})
+
+		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
+		world.Register()
+
+		world.RequireStart()
+
+		rpc.Route("/hello", test.SuccessProtobufSayHello)
+
+		b.ResetTimer()
+
+		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
+			cl := world.NewHTTP()
+			url := "http://" + world.InsecureServerHost()
+			client := rpc.NewClient(url,
+				rpc.WithClientContentType("application/"+mt),
+				rpc.WithClientRoundTripper(cl.Transport))
+
+			b.Run(mt, func(b *testing.B) {
+				for b.Loop() {
+					req := &v1.SayHelloRequest{Name: "Bob"}
+					res := &v1.SayHelloResponse{}
+
+					err := client.Post(b.Context(), "/hello", req, res)
+					runtime.Must(err)
+				}
+			})
+		}
+
+		b.StopTimer()
+		world.RequireStop()
+	})
 }
 
-func BenchmarkProtobuf(b *testing.B) {
-	b.ReportAllocs()
+//nolint:funlen
+func BenchmarkRest(b *testing.B) {
+	b.Run("text", func(b *testing.B) {
+		b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.Params{})
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-	world.Register()
+		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
+		world.Register()
 
-	world.RequireStart()
+		world.RequireStart()
 
-	rpc.Route("/hello", test.SuccessProtobufSayHello)
+		test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
-	b.ResetTimer()
+		b.ResetTimer()
 
-	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-		cl := world.NewHTTP()
-		url := "http://" + world.InsecureServerHost()
-		client := rpc.NewClient(url,
-			rpc.WithClientContentType("application/"+mt),
-			rpc.WithClientRoundTripper(cl.Transport))
+		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+			for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
+				cl := world.NewHTTP()
+				url := "http://" + world.InsecureServerHost() + "/hello"
+				client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
-		b.Run(mt, func(b *testing.B) {
-			for b.Loop() {
-				req := &v1.SayHelloRequest{Name: "Bob"}
-				res := &v1.SayHelloResponse{}
+				b.Run(mt+"/"+method, func(b *testing.B) {
+					for b.Loop() {
+						req := &test.Request{Name: "Bob"}
+						res := &test.Response{}
+						opts := &rest.Options{
+							ContentType: "application/" + mt,
+							Request:     req,
+							Response:    res,
+						}
 
-				err := client.Post(b.Context(), "/hello", req, res)
-				runtime.Must(err)
+						err := client.Do(b.Context(), method, url, opts)
+						runtime.Must(err)
+					}
+				})
 			}
-		})
-	}
+		}
 
-	b.StopTimer()
-	world.RequireStop()
+		b.StopTimer()
+		world.RequireStop()
+	})
+
+	b.Run("proto", func(b *testing.B) {
+		b.ReportAllocs()
+
+		logger, _ := logger.NewLogger(logger.Params{})
+
+		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
+		world.Register()
+
+		world.RequireStart()
+
+		test.RegisterRequestHandlers("/hello", test.RestRequestProtobuf)
+
+		b.ResetTimer()
+
+		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
+			for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
+				cl := world.NewHTTP()
+				url := "http://" + world.InsecureServerHost() + "/hello"
+				client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+
+				b.Run(mt+"/"+method, func(b *testing.B) {
+					for b.Loop() {
+						req := &v1.SayHelloRequest{Name: "Bob"}
+						res := &v1.SayHelloResponse{}
+						opts := &rest.Options{
+							ContentType: "application/" + mt,
+							Request:     req,
+							Response:    res,
+						}
+
+						err := client.Do(b.Context(), method, url, opts)
+						runtime.Must(err)
+					}
+				})
+			}
+		}
+
+		b.StopTimer()
+		world.RequireStop()
+	})
 }
