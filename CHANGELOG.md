@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.599.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.599.1) - 2025-05-13
+
+- [`374ba4e`](https://github.com/alexfalkowski/go-service/commit/374ba4eaf8aab06094af02b8f8beee8183c61d37) fix(http): set the message to the status code (#1586)
+
 ## [v1.599.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.599.0) - 2025-05-13
 
 - [`f3fec81`](https://github.com/alexfalkowski/go-service/commit/f3fec818ab0dfc00ded105a5e278cd35b99b1455) feat(bytes): only use a buffer (#1585)
