@@ -13,6 +13,26 @@ func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
 }
 
+// InternalServerError for status.
+func InternalServerError(err error) error {
+	return FromError(http.StatusInternalServerError, err)
+}
+
+// ServiceUnavailableError for status.
+func ServiceUnavailableError(err error) error {
+	return FromError(http.StatusServiceUnavailable, err)
+}
+
+// UnauthorizedError for status.
+func UnauthorizedError(err error) error {
+	return FromError(http.StatusUnauthorized, err)
+}
+
+// BadRequestError for status.
+func BadRequestError(err error) error {
+	return FromError(http.StatusBadRequest, err)
+}
+
 // FromError creates an error from an error.
 func FromError(code int, err error) error {
 	if IsError(err) {
