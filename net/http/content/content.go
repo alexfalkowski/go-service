@@ -10,7 +10,7 @@ import (
 
 const (
 	jsonKind     = "json"
-	plainSubtype = "plain"
+	errorSubtype = "error"
 
 	// TypeKey for HTTP headers.
 	TypeKey = "Content-Type"
@@ -48,7 +48,7 @@ func (c *Content) NewFromMedia(mediaType string) *Media {
 
 // NewMedia for content.
 func NewMedia(media ct.MediaType, enc *encoding.Map) *Media {
-	if media.Subtype == plainSubtype {
+	if media.Subtype == errorSubtype {
 		return &Media{Type: media.String(), Subtype: media.Subtype}
 	}
 
@@ -73,7 +73,7 @@ type Media struct {
 	Subtype string
 }
 
-// IsText for type.
-func (t *Media) IsText() bool {
-	return t.Subtype == plainSubtype
+// IsError for type.
+func (t *Media) IsError() bool {
+	return t.Subtype == errorSubtype
 }

@@ -129,7 +129,7 @@ func TestStaticFileSuccess(t *testing.T) {
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
-			header.Set(content.TypeKey, mime.HTMLMediaType)
+			header.Set(content.TypeKey, mime.TextMediaType)
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -137,7 +137,7 @@ func TestStaticFileSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.TextMediaType)
 			})
 
 			world.RequireStop()
@@ -178,7 +178,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 
 		Convey("When I query for robots", func() {
 			header := http.Header{}
-			header.Set(content.TypeKey, mime.HTMLMediaType)
+			header.Set(content.TypeKey, mime.TextMediaType)
 
 			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "robots.txt", header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -186,7 +186,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 			Convey("Then I should have valid html", func() {
 				So(body, ShouldNotBeEmpty)
 				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, "text/plain; charset=utf-8")
+				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.TextMediaType)
 			})
 
 			world.RequireStop()
