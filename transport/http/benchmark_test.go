@@ -25,28 +25,29 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func BenchmarkDefaultHTTP(b *testing.B) {
-	b.ReportAllocs()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
-
-	server := &http.Server{
-		Handler:           mux,
-		Addr:              test.Address(),
-		ReadHeaderTimeout: time.Second,
-	}
-	defer server.Close()
-
-	//nolint:errcheck
-	go server.ListenAndServe()
-
-	b.ResetTimer()
-
+//nolint:funlen
+func BenchmarkHTTP(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
+		b.ReportAllocs()
+
+		mux := http.NewServeMux()
+		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
+
+		server := &http.Server{
+			Handler:           mux,
+			Addr:              test.Address(),
+			ReadHeaderTimeout: time.Second,
+		}
+		defer server.Close()
+
+		//nolint:errcheck
+		go server.ListenAndServe()
+
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", server.Addr)
 
+		b.ResetTimer()
+
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
@@ -54,36 +55,35 @@ func BenchmarkDefaultHTTP(b *testing.B) {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
 	})
-
-	b.StopTimer()
-}
-
-func BenchmarkHTTP(b *testing.B) {
-	b.ReportAllocs()
-
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	cfg := test.NewInsecureTransportConfig()
-
-	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
-		Config:     cfg.HTTP,
-		UserAgent:  test.UserAgent,
-		Version:    test.Version,
-		ID:         &id.UUID{},
-	})
-	runtime.Must(err)
-
-	transport.Register(lc, []*server.Service{h.GetServer()})
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
+		b.ReportAllocs()
+
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(b)
+		cfg := test.NewInsecureTransportConfig()
+
+		h, err := th.NewServer(th.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Mux:        mux,
+			Config:     cfg.HTTP,
+			UserAgent:  test.UserAgent,
+			Version:    test.Version,
+			ID:         &id.UUID{},
+		})
+		runtime.Must(err)
+
+		transport.Register(lc, []*server.Service{h.GetServer()})
+
+		lc.RequireStart()
+
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
+		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
@@ -92,40 +92,39 @@ func BenchmarkHTTP(b *testing.B) {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
+		lc.RequireStop()
 	})
-
-	b.StopTimer()
-	lc.RequireStop()
-}
-
-func BenchmarkLogHTTP(b *testing.B) {
-	b.ReportAllocs()
-
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger, _ := logger.NewLogger(logger.Params{})
-	cfg := test.NewInsecureTransportConfig()
-
-	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
-		Config:     cfg.HTTP,
-		Logger:     logger,
-		UserAgent:  test.UserAgent,
-		Version:    test.Version,
-		ID:         &id.UUID{},
-	})
-	runtime.Must(err)
-
-	transport.Register(lc, []*server.Service{h.GetServer()})
-	errors.Register(errors.NewHandler(logger))
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("log", func(b *testing.B) {
+		b.ReportAllocs()
+
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(b)
+		logger, _ := logger.NewLogger(logger.Params{})
+		cfg := test.NewInsecureTransportConfig()
+
+		h, err := th.NewServer(th.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Mux:        mux,
+			Config:     cfg.HTTP,
+			Logger:     logger,
+			UserAgent:  test.UserAgent,
+			Version:    test.Version,
+			ID:         &id.UUID{},
+		})
+		runtime.Must(err)
+
+		transport.Register(lc, []*server.Service{h.GetServer()})
+		errors.Register(errors.NewHandler(logger))
+
+		lc.RequireStart()
+
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
+		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
@@ -134,42 +133,41 @@ func BenchmarkLogHTTP(b *testing.B) {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
+		lc.RequireStop()
 	})
-
-	b.StopTimer()
-	lc.RequireStop()
-}
-
-func BenchmarkTraceHTTP(b *testing.B) {
-	b.ReportAllocs()
-
-	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(b)
-	logger, _ := logger.NewLogger(logger.Params{})
-	tracer := test.NewTracer(lc, nil)
-	cfg := test.NewInsecureTransportConfig()
-
-	h, err := th.NewServer(th.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Mux:        mux,
-		Config:     cfg.HTTP,
-		Logger:     logger,
-		Tracer:     tracer,
-		UserAgent:  test.UserAgent,
-		Version:    test.Version,
-		ID:         &id.UUID{},
-	})
-	runtime.Must(err)
-
-	transport.Register(lc, []*server.Service{h.GetServer()})
-	errors.Register(errors.NewHandler(logger))
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("trace", func(b *testing.B) {
+		b.ReportAllocs()
+
+		mux := http.NewServeMux()
+		lc := fxtest.NewLifecycle(b)
+		logger, _ := logger.NewLogger(logger.Params{})
+		tracer := test.NewTracer(lc, nil)
+		cfg := test.NewInsecureTransportConfig()
+
+		h, err := th.NewServer(th.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Mux:        mux,
+			Config:     cfg.HTTP,
+			Logger:     logger,
+			Tracer:     tracer,
+			UserAgent:  test.UserAgent,
+			Version:    test.Version,
+			ID:         &id.UUID{},
+		})
+		runtime.Must(err)
+
+		transport.Register(lc, []*server.Service{h.GetServer()})
+		errors.Register(errors.NewHandler(logger))
+
+		lc.RequireStart()
+
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+
+		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
@@ -178,10 +176,10 @@ func BenchmarkTraceHTTP(b *testing.B) {
 			_, err = client.Do(req)
 			runtime.Must(err)
 		}
-	})
 
-	b.StopTimer()
-	lc.RequireStop()
+		b.StopTimer()
+		lc.RequireStop()
+	})
 }
 
 func BenchmarkMVC(b *testing.B) {

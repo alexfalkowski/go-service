@@ -19,58 +19,56 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func BenchmarkDefaultGRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	l, err := net.Listen(test.Address())
-	runtime.Must(err)
-
-	server := grpc.NewServer()
-	defer server.GracefulStop()
-
-	v1.RegisterGreeterServiceServer(server, test.NewService())
-
-	//nolint:errcheck
-	go server.Serve(l)
-
-	b.ResetTimer()
-
+//nolint:funlen
+func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
+		b.ReportAllocs()
+
+		l, err := net.Listen(test.Address())
+		runtime.Must(err)
+
+		server := grpc.NewServer()
+		defer server.GracefulStop()
+
+		v1.RegisterGreeterServiceServer(server, test.NewService())
+
+		//nolint:errcheck
+		go server.Serve(l)
+
 		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		runtime.Must(err)
 
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
+		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
 	})
-
-	b.StopTimer()
-}
-
-func BenchmarkGRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	lc := fxtest.NewLifecycle(b)
-	cfg := test.NewInsecureTransportConfig()
-
-	g, err := tg.NewServer(tg.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg.GRPC,
-		UserAgent:  test.UserAgent, Version: test.Version,
-	})
-	runtime.Must(err)
-
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-	transport.Register(lc, []*server.Service{g.GetServer()})
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("none", func(b *testing.B) {
+		b.ReportAllocs()
+
+		lc := fxtest.NewLifecycle(b)
+		cfg := test.NewInsecureTransportConfig()
+
+		g, err := tg.NewServer(tg.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg.GRPC,
+			UserAgent:  test.UserAgent, Version: test.Version,
+		})
+		runtime.Must(err)
+
+		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
+		transport.Register(lc, []*server.Service{g.GetServer()})
+
+		lc.RequireStart()
+
 		cl := &client.Config{Address: cfg.GRPC.Address}
 
 		conn, err := tg.NewClient(cl.Address)
@@ -79,38 +77,37 @@ func BenchmarkGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
+		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
+		lc.RequireStop()
 	})
-
-	b.StopTimer()
-	lc.RequireStop()
-}
-
-func BenchmarkLogGRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	logger, _ := logger.NewLogger(logger.Params{})
-	lc := fxtest.NewLifecycle(b)
-	cfg := test.NewInsecureTransportConfig()
-
-	g, err := tg.NewServer(tg.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg.GRPC, Logger: logger,
-		UserAgent: test.UserAgent, Version: test.Version,
-	})
-	runtime.Must(err)
-
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-	transport.Register(lc, []*server.Service{g.GetServer()})
-	errors.Register(errors.NewHandler(logger))
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("log", func(b *testing.B) {
+		b.ReportAllocs()
+
+		logger, _ := logger.NewLogger(logger.Params{})
+		lc := fxtest.NewLifecycle(b)
+		cfg := test.NewInsecureTransportConfig()
+
+		g, err := tg.NewServer(tg.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg.GRPC, Logger: logger,
+			UserAgent: test.UserAgent, Version: test.Version,
+		})
+		runtime.Must(err)
+
+		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
+		transport.Register(lc, []*server.Service{g.GetServer()})
+		errors.Register(errors.NewHandler(logger))
+
+		lc.RequireStart()
+
 		cl := &client.Config{Address: cfg.GRPC.Address}
 
 		conn, err := tg.NewClient(cl.Address)
@@ -119,39 +116,38 @@ func BenchmarkLogGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
+		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
+
+		b.StopTimer()
+		lc.RequireStop()
 	})
-
-	b.StopTimer()
-	lc.RequireStop()
-}
-
-func BenchmarkTraceGRPC(b *testing.B) {
-	b.ReportAllocs()
-
-	logger, _ := logger.NewLogger(logger.Params{})
-	lc := fxtest.NewLifecycle(b)
-	tracer := test.NewTracer(lc, nil)
-	cfg := test.NewInsecureTransportConfig()
-
-	g, err := tg.NewServer(tg.ServerParams{
-		Shutdowner: test.NewShutdowner(),
-		Config:     cfg.GRPC, Logger: logger, Tracer: tracer,
-		UserAgent: test.UserAgent, Version: test.Version,
-	})
-	runtime.Must(err)
-
-	v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-	transport.Register(lc, []*server.Service{g.GetServer()})
-	errors.Register(errors.NewHandler(logger))
-
-	lc.RequireStart()
-	b.ResetTimer()
 
 	b.Run("trace", func(b *testing.B) {
+		b.ReportAllocs()
+
+		logger, _ := logger.NewLogger(logger.Params{})
+		lc := fxtest.NewLifecycle(b)
+		tracer := test.NewTracer(lc, nil)
+		cfg := test.NewInsecureTransportConfig()
+
+		g, err := tg.NewServer(tg.ServerParams{
+			Shutdowner: test.NewShutdowner(),
+			Config:     cfg.GRPC, Logger: logger, Tracer: tracer,
+			UserAgent: test.UserAgent, Version: test.Version,
+		})
+		runtime.Must(err)
+
+		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
+		transport.Register(lc, []*server.Service{g.GetServer()})
+		errors.Register(errors.NewHandler(logger))
+
+		lc.RequireStart()
+
 		cl := &client.Config{Address: cfg.GRPC.Address}
 
 		conn, err := tg.NewClient(cl.Address)
@@ -160,12 +156,14 @@ func BenchmarkTraceGRPC(b *testing.B) {
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
 
+		b.ResetTimer()
+
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
 			runtime.Must(err)
 		}
-	})
 
-	b.StopTimer()
-	lc.RequireStop()
+		b.StopTimer()
+		lc.RequireStop()
+	})
 }
