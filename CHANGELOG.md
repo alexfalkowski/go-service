@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.598.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.598.0) - 2025-05-13
+
+- [`3cd4e72`](https://github.com/alexfalkowski/go-service/commit/3cd4e729678a941af214910a35886c4b14be9233) feat(deps): update purego to v0.8.3 (#1583)
+
 ## [v1.597.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.597.0) - 2025-05-13
 
 - [`a601184`](https://github.com/alexfalkowski/go-service/commit/a6011848e6d75def385ee229311cd22688d81deb) feat(http): add common errors (#1582)
