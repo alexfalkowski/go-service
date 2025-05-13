@@ -1,6 +1,9 @@
 package mime
 
 const (
+	// ErrorMediaType mime.
+	ErrorMediaType = "text/error; charset=utf-8"
+
 	// HTMLMediaType mime.
 	HTMLMediaType = "text/html; charset=utf-8"
 
@@ -11,7 +14,7 @@ const (
 	JSONMediaType = "application/json"
 
 	// MarkdownMediaType mime.
-	MarkdownMediaType = "text/markdown; charset=UTF-8"
+	MarkdownMediaType = "text/markdown; charset=utf-8"
 
 	// ProtobufMediaType mime.
 	ProtobufMediaType = "application/protobuf"
@@ -21,6 +24,9 @@ const (
 
 	// ProtobufMediaType mime.
 	ProtobufTextMediaType = "application/pbtxt"
+
+	// TextMediaType mime.
+	TextMediaType = "text/plain; charset=utf-8"
 
 	// TOMLMediaType mime.
 	TOMLMediaType = "application/toml"

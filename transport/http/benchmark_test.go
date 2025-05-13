@@ -309,31 +309,49 @@ func BenchmarkRest(b *testing.B) {
 		world.RequireStart()
 
 		test.RegisterRequestHandlers("/hello", test.RestRequestContent)
+		mvc.StaticFile("/robots.txt", "static/robots.txt")
 
 		b.ResetTimer()
 
 		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
-			for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
-				cl := world.NewHTTP()
-				url := "http://" + world.InsecureServerHost() + "/hello"
-				client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+			cl := world.NewHTTP()
+			url := "http://" + world.InsecureServerHost() + "/hello"
+			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
-				b.Run(mt+"/"+method, func(b *testing.B) {
-					for b.Loop() {
-						req := &test.Request{Name: "Bob"}
-						res := &test.Response{}
-						opts := &rest.Options{
-							ContentType: "application/" + mt,
-							Request:     req,
-							Response:    res,
-						}
-
-						err := client.Do(b.Context(), method, url, opts)
-						runtime.Must(err)
+			b.Run(mt, func(b *testing.B) {
+				for b.Loop() {
+					req := &test.Request{Name: "Bob"}
+					res := &test.Response{}
+					opts := &rest.Options{
+						ContentType: "application/" + mt,
+						Request:     req,
+						Response:    res,
 					}
-				})
-			}
+
+					err := client.Post(b.Context(), url, opts)
+					runtime.Must(err)
+				}
+			})
 		}
+
+		b.Run("static", func(b *testing.B) {
+			cl := world.NewHTTP()
+			url := "http://" + world.InsecureServerHost() + "/robots.txt"
+			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+
+			for b.Loop() {
+				buffer := test.Pool.Get()
+				opts := &rest.Options{
+					ContentType: mime.TextMediaType,
+					Response:    buffer,
+				}
+
+				err := client.Get(b.Context(), url, opts)
+				runtime.Must(err)
+
+				test.Pool.Put(buffer)
+			}
+		})
 
 		b.StopTimer()
 		world.RequireStop()
@@ -354,26 +372,24 @@ func BenchmarkRest(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-			for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
-				cl := world.NewHTTP()
-				url := "http://" + world.InsecureServerHost() + "/hello"
-				client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
+			cl := world.NewHTTP()
+			url := "http://" + world.InsecureServerHost() + "/hello"
+			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
-				b.Run(mt+"/"+method, func(b *testing.B) {
-					for b.Loop() {
-						req := &v1.SayHelloRequest{Name: "Bob"}
-						res := &v1.SayHelloResponse{}
-						opts := &rest.Options{
-							ContentType: "application/" + mt,
-							Request:     req,
-							Response:    res,
-						}
-
-						err := client.Do(b.Context(), method, url, opts)
-						runtime.Must(err)
+			b.Run(mt, func(b *testing.B) {
+				for b.Loop() {
+					req := &v1.SayHelloRequest{Name: "Bob"}
+					res := &v1.SayHelloResponse{}
+					opts := &rest.Options{
+						ContentType: "application/" + mt,
+						Request:     req,
+						Response:    res,
 					}
-				})
-			}
+
+					err := client.Post(b.Context(), url, opts)
+					runtime.Must(err)
+				}
+			})
 		}
 
 		b.StopTimer()

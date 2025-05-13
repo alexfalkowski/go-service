@@ -137,9 +137,9 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 	// If for some reason the server does not return it, default to opts.
 	contentType := cmp.Or(response.Header.Get(content.TypeKey), opts.ContentType)
 
-	// The server handlers return text on errors.
+	// The server handlers return text/error to indicate an error.
 	media := c.content.NewFromMedia(contentType)
-	if media.IsText() {
+	if media.IsError() {
 		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
 	}
 

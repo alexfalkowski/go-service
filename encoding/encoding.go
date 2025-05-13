@@ -48,6 +48,7 @@ func NewMap(params MapParams) *Map {
 			"gob":          params.GOB,
 			"markdown":     params.Bytes,
 			"octet-stream": params.Bytes,
+			"plain":        params.Bytes,
 		},
 	}
 }
