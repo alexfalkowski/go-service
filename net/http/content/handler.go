@@ -21,7 +21,7 @@ func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[R
 		request := meta.Request(ctx)
 
 		if err := encoder.Decode(request.Body, req); err != nil {
-			return nil, status.FromError(http.StatusBadRequest, err)
+			return nil, status.BadRequestError(err)
 		}
 
 		return handler(ctx, req)

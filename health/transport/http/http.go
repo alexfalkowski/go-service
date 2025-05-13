@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-health/subscriber"
 	"github.com/alexfalkowski/go-service/meta"
@@ -36,7 +35,7 @@ type Response struct {
 func resister(path string, ob *subscriber.Observer) {
 	rest.Get(path, func(ctx context.Context) (*Response, error) {
 		if err := ob.Error(); err != nil {
-			return nil, status.FromError(http.StatusServiceUnavailable, err)
+			return nil, status.ServiceUnavailableError(err)
 		}
 
 		res := &Response{

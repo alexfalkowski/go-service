@@ -30,7 +30,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ok, info, err := h.limiter.Take(ctx)
 	if err != nil {
-		status.WriteError(ctx, res, status.FromError(http.StatusInternalServerError, err))
+		status.WriteError(ctx, res, status.InternalServerError(err))
 
 		return
 	}
