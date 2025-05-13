@@ -17,32 +17,24 @@ type Encoder struct{}
 
 // Encode for bytes.
 func (e *Encoder) Encode(w io.Writer, v any) error {
-	switch kind := v.(type) {
-	case *[]byte:
-		_, err := w.Write(*kind)
-
-		return err
-	case *bytes.Buffer:
-		_, err := io.Copy(w, kind)
-
-		return err
-	default:
+	buffer, ok := v.(*bytes.Buffer)
+	if !ok {
 		return errors.ErrInvalidType
 	}
+
+	_, err := io.Copy(w, buffer)
+
+	return err
 }
 
 // Decode for bytes.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	switch kind := v.(type) {
-	case *[]byte:
-		_, err := r.Read(*kind)
-
-		return err
-	case *bytes.Buffer:
-		_, err := io.Copy(kind, r)
-
-		return err
-	default:
+	buffer, ok := v.(*bytes.Buffer)
+	if !ok {
 		return errors.ErrInvalidType
 	}
+
+	_, err := io.Copy(buffer, r)
+
+	return err
 }
