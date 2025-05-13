@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.595.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.595.0) - 2025-05-13
+
+- [`6a3b0bb`](https://github.com/alexfalkowski/go-service/commit/6a3b0bb9fbb519c85679c33dd4992f2ae2679c62) feat(encoding): add text mime type with benchmark (#1580)
+- [`7c04c79`](https://github.com/alexfalkowski/go-service/commit/7c04c79e3958b5881fac4e867c8843c580751e78) test(http): add rest benchmarks (#1579)
+
 ## [v1.594.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.594.0) - 2025-05-12
 
 - [`fda855c`](https://github.com/alexfalkowski/go-service/commit/fda855cfce2b920609d5639e3be523037761d4e5) feat(http): add coder to status for extensibility (#1578)
