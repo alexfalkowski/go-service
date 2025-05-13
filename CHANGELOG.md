@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.596.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.596.0) - 2025-05-13
+
+- [`bb0b852`](https://github.com/alexfalkowski/go-service/commit/bb0b852eeb5e0da4260a453471d189de73fa5a40) feat(http): record write error (#1581)
+
 ## [v1.595.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.595.0) - 2025-05-13
 
 - [`6a3b0bb`](https://github.com/alexfalkowski/go-service/commit/6a3b0bb9fbb519c85679c33dd4992f2ae2679c62) feat(encoding): add text mime type with benchmark (#1580)
