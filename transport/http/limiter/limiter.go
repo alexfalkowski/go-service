@@ -30,7 +30,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ok, info, err := h.limiter.Take(ctx)
 	if err != nil {
-		status.WriteError(res, status.FromError(http.StatusInternalServerError, err))
+		status.WriteError(ctx, res, status.FromError(http.StatusInternalServerError, err))
 
 		return
 	}
@@ -38,7 +38,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	res.Header().Add("RateLimit", info)
 
 	if !ok {
-		status.WriteError(res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", info))
+		status.WriteError(ctx, res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", info))
 
 		return
 	}

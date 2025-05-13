@@ -50,13 +50,13 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 
 		data, err := handler(ctx)
 		if err != nil {
-			status.WriteError(res, err)
+			status.WriteError(ctx, res, err)
 
 			return
 		}
 
 		if err := media.Encoder.Encode(res, data); err != nil {
-			status.WriteError(res, err)
+			status.WriteError(ctx, res, err)
 
 			return
 		}

@@ -73,7 +73,7 @@ func NewHandler(hook *Webhook) *Handler {
 // ServeHTTP for hooks.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if err := h.hook.Verify(req); err != nil {
-		status.WriteError(res, status.FromError(http.StatusBadRequest, err))
+		status.WriteError(req.Context(), res, status.FromError(http.StatusBadRequest, err))
 
 		return
 	}
