@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.599.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.599.0) - 2025-05-13
+
+- [`f3fec81`](https://github.com/alexfalkowski/go-service/commit/f3fec818ab0dfc00ded105a5e278cd35b99b1455) feat(bytes): only use a buffer (#1585)
+- [`296fb02`](https://github.com/alexfalkowski/go-service/commit/296fb02e2cf14ca103757aed924b880b3b6d6ba5) test(benchmark): move to one func (#1584)
+
 ## [v1.598.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.598.0) - 2025-05-13
 
 - [`3cd4e72`](https://github.com/alexfalkowski/go-service/commit/3cd4e729678a941af214910a35886c4b14be9233) feat(deps): update purego to v0.8.3 (#1583)
