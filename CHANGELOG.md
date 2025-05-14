@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.601.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.601.1) - 2025-05-14
+
+- [`a1dc31a`](https://github.com/alexfalkowski/go-service/commit/a1dc31a6c94772b035d69ae2c4b516e146f8a837) fix(cache): use sync.RWMutex (#1590)
+
 ## [v1.601.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.601.0) - 2025-05-14
 
 - [`c8bb216`](https://github.com/alexfalkowski/go-service/commit/c8bb216f6d8fcea4129fe1ae206e4cbbe86d94a2) feat(cache): make sure that we smartly look at the values to provide the best compressor and encoder (#1589)
