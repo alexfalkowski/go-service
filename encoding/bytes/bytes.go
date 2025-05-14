@@ -22,7 +22,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 		return errors.ErrInvalidType
 	}
 
-	_, err := io.Copy(w, buffer)
+	_, err := w.Write(buffer.Bytes())
 
 	return err
 }
@@ -34,7 +34,7 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 		return errors.ErrInvalidType
 	}
 
-	_, err := io.Copy(buffer, r)
+	_, err := buffer.ReadFrom(r)
 
 	return err
 }
