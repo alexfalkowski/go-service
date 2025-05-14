@@ -3,7 +3,6 @@ package client
 import (
 	"cmp"
 	"context"
-	"io"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/errors"
@@ -129,7 +128,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 
 	buffer.Reset()
 
-	_, err = io.Copy(buffer, response.Body)
+	_, err = buffer.ReadFrom(response.Body)
 	if err != nil {
 		return errors.Prefix("http: copy", err)
 	}
