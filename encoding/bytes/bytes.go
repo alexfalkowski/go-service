@@ -22,7 +22,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 		return errors.ErrInvalidType
 	}
 
-	_, err := w.Write(buffer.Bytes())
+	_, err := buffer.WriteTo(w)
 
 	return err
 }
