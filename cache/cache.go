@@ -20,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/time"
 	"go.uber.org/fx"
+	"google.golang.org/protobuf/proto"
 )
 
 // Params for cache.
@@ -43,10 +44,13 @@ func NewCache(params Params) cacheable.Interface {
 		return nil
 	}
 
-	cmp := params.Compressor.Get(params.Config.Compressor)
-	enc := params.Encoder.Get(params.Config.Encoder)
-
-	var cache cacheable.Interface = &Cache{compressor: cmp, encoder: enc, pool: params.Pool, driver: params.Driver}
+	var cache cacheable.Interface = &Cache{
+		cm:     params.Compressor,
+		em:     params.Encoder,
+		cfg:    params.Config,
+		pool:   params.Pool,
+		driver: params.Driver,
+	}
 
 	if params.Tracer != nil {
 		cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
@@ -71,10 +75,11 @@ func NewCache(params Params) cacheable.Interface {
 
 // Cache allows marshaling and compressing items to the cache.
 type Cache struct {
-	encoder    encoding.Encoder
-	pool       *sync.BufferPool
-	compressor compress.Compressor
-	driver     driver.Driver
+	cm     *compress.Map
+	em     *encoding.Map
+	cfg    *config.Config
+	pool   *sync.BufferPool
+	driver driver.Driver
 }
 
 // Close the cache.
@@ -120,23 +125,15 @@ func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Durat
 }
 
 func (c *Cache) encode(value any) (string, error) {
-	var data []byte
+	buf := c.pool.Get()
+	defer c.pool.Put(buf)
 
-	buffer, ok := value.(*bytes.Buffer)
-	if ok {
-		data = buffer.Bytes()
-	} else {
-		buf := c.pool.Get()
-		defer c.pool.Put(buf)
-
-		if err := c.encoder.Encode(buf, value); err != nil {
-			return "", err
-		}
-
-		data = buf.Bytes()
+	if err := c.encoder(value).Encode(buf, value); err != nil {
+		return "", err
 	}
 
-	compressed := c.compressor.Compress(data)
+	data := buf.Bytes()
+	compressed := c.compressor().Compress(data)
 	encoded := base64.Encode(compressed)
 
 	return encoded, nil
@@ -148,17 +145,33 @@ func (c *Cache) decode(value string, field any) error {
 		return err
 	}
 
-	decompressed, err := c.compressor.Decompress(decoded)
+	decompressed, err := c.compressor().Decompress(decoded)
 	if err != nil {
 		return err
 	}
 
-	buffer, ok := field.(*bytes.Buffer)
-	if ok {
-		_, _ = buffer.Write(decompressed)
+	return c.encoder(field).Decode(bytes.NewReader(decompressed), field)
+}
 
-		return nil
+func (c *Cache) compressor() compress.Compressor {
+	if cmp := c.cm.Get(c.cfg.Compressor); cmp != nil {
+		return cmp
 	}
 
-	return c.encoder.Decode(bytes.NewReader(decompressed), field)
+	return c.cm.Get("none")
+}
+
+func (c *Cache) encoder(value any) encoding.Encoder {
+	switch value.(type) {
+	case *bytes.Buffer:
+		return c.em.Get("plain")
+	case proto.Message:
+		return c.em.Get("proto")
+	default:
+		if enc := c.em.Get(c.cfg.Encoder); enc != nil {
+			return enc
+		}
+
+		return c.em.Get("json")
+	}
 }

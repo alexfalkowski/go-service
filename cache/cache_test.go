@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cache/driver"
 	"github.com/alexfalkowski/go-service/internal/test"
+	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,14 +20,16 @@ type tuple [2]any
 //nolint:funlen
 func TestValidCache(t *testing.T) {
 	configs := []*config.Config{
-		test.NewCacheConfig("redis", "snappy", "json", "redis"),
-		test.NewCacheConfig("sync", "snappy", "json", "redis"),
+		test.NewCacheConfig("redis", "snappy", "", "redis"),
+		test.NewCacheConfig("sync", "", "", "redis"),
 	}
 
 	for _, config := range configs {
 		for _, value := range []tuple{
 			{ptr.Value("hello?"), ptr.Zero[string]()},
 			{bytes.NewBufferString("hello?"), &bytes.Buffer{}},
+			{&v1.SayHelloRequest{Name: "hello?"}, &v1.SayHelloRequest{}},
+			{&test.Request{Name: "hello?"}, &test.Request{}},
 		} {
 			Convey("Given I have a cache of kind "+config.Kind, t, func() {
 				world := test.NewWorld(t)
@@ -65,10 +68,12 @@ func TestValidCache(t *testing.T) {
 						switch kind := get.(type) {
 						case *string:
 							So(*kind, ShouldEqual, "hello?")
-						case *[]byte:
-							So(*kind, ShouldEqual, []byte("hello?"))
 						case *bytes.Buffer:
 							So(kind.Bytes(), ShouldEqual, []byte("hello?"))
+						case *v1.SayHelloRequest:
+							So(kind.GetName(), ShouldEqual, "hello?")
+						case *test.Request:
+							So(kind.Name, ShouldEqual, "hello?")
 						default:
 							So(true, ShouldBeFalse) // should never happen.
 						}
