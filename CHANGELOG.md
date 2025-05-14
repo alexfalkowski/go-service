@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.600.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.600.0) - 2025-05-14
+
+- [`012ca92`](https://github.com/alexfalkowski/go-service/commit/012ca92a2645dc003adc362aec224cd129b0e023) feat(deps): bump go.uber.org/fx from 1.23.0 to 1.24.0 (#1588)
+
 ## [v1.599.1](https://github.com/alexfalkowski/go-service/releases/tag/v1.599.1) - 2025-05-13
 
 - [`374ba4e`](https://github.com/alexfalkowski/go-service/commit/374ba4eaf8aab06094af02b8f8beee8183c61d37) fix(http): set the message to the status code (#1586)
