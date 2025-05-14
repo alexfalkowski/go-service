@@ -3,7 +3,6 @@ package bytes
 import (
 	"io"
 
-	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/encoding/errors"
 )
 
@@ -17,24 +16,24 @@ type Encoder struct{}
 
 // Encode for bytes.
 func (e *Encoder) Encode(w io.Writer, v any) error {
-	buffer, ok := v.(*bytes.Buffer)
+	to, ok := v.(io.WriterTo)
 	if !ok {
 		return errors.ErrInvalidType
 	}
 
-	_, err := buffer.WriteTo(w)
+	_, err := to.WriteTo(w)
 
 	return err
 }
 
 // Decode for bytes.
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	buffer, ok := v.(*bytes.Buffer)
+	from, ok := v.(io.ReaderFrom)
 	if !ok {
 		return errors.ErrInvalidType
 	}
 
-	_, err := buffer.ReadFrom(r)
+	_, err := from.ReadFrom(r)
 
 	return err
 }

@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
+	"io"
 
 	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cache/cacheable"
@@ -176,7 +177,7 @@ func (c *Cache) compressor() compress.Compressor {
 
 func (c *Cache) encoder(value any) encoding.Encoder {
 	switch value.(type) {
-	case *bytes.Buffer:
+	case io.ReaderFrom, io.WriterTo:
 		return c.em.Get("plain")
 	case proto.Message:
 		return c.em.Get("proto")
