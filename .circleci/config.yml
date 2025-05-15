@@ -78,7 +78,6 @@ workflows:
     jobs:
       - build
       - release:
-          serial-group: release
           context: gh
           requires:
             - build
