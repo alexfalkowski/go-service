@@ -1,9 +1,6 @@
 package strings
 
-import (
-	"strings"
-	"unsafe"
-)
+import "strings"
 
 var (
 	// Contains is an alias for strings.Contains.
@@ -39,9 +36,4 @@ func Join(sep string, ss ...string) string {
 // Concat will take all the strings and join them with an empty string.
 func Concat(ss ...string) string {
 	return Join("", ss...)
-}
-
-// Bytes from string.
-func Bytes(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(&s))
 }
