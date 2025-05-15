@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.609.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.609.0) - 2025-05-15
+
+- [`6a01102`](https://github.com/alexfalkowski/go-service/commit/6a011020d8f68879dc8de405af87f1f358989b9c) feat(health): update github.com/alexfalkowski/go-health to v1.23.0 (#1600)
+- [`a2e57ac`](https://github.com/alexfalkowski/go-service/commit/a2e57ac9a5c1eafe036919d4fc74a04f8f9b14c4) build(ci): remove serial group (#1599)
+
 ## [v1.608.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.608.0) - 2025-05-15
 
 - [`49c7d65`](https://github.com/alexfalkowski/go-service/commit/49c7d65f5365b14f84285b2373845e8479eb4b5b) feat(base64): use strings.Bytes (#1598)
