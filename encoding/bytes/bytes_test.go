@@ -45,7 +45,7 @@ func TestEncoder(t *testing.T) {
 		Convey("When I decode a buffer", func() {
 			var msg bytes.Buffer
 
-			err := encoder.Decode(bytes.NewReader([]byte("test")), &msg)
+			err := encoder.Decode(bytes.NewBufferString("test"), &msg)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid map", func() {
@@ -56,7 +56,7 @@ func TestEncoder(t *testing.T) {
 		Convey("When I decode with an invalid type", func() {
 			var msg string
 
-			err := encoder.Decode(bytes.NewReader([]byte("test")), &msg)
+			err := encoder.Decode(bytes.NewBufferString("test"), &msg)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

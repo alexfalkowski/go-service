@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 // NewGenerator for test.
@@ -18,7 +19,7 @@ type Generator struct {
 }
 
 func (g *Generator) Generate(ctx context.Context) (context.Context, []byte, error) {
-	return ctx, []byte(g.token), g.err
+	return ctx, strings.Bytes(g.token), g.err
 }
 
 // NewVerifier for test.

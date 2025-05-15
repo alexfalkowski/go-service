@@ -28,7 +28,7 @@ func (t *Token) Generate() (string, error) {
 		return "", err
 	}
 
-	signature, err := sig.Sign([]byte(t.cfg.Key.Name))
+	signature, err := sig.Sign(strings.Bytes(t.cfg.Key.Name))
 	token := strings.Join("-", t.cfg.Key.Name, base64.Encode(signature))
 
 	return token, err
@@ -56,5 +56,5 @@ func (t *Token) Verify(token string) error {
 		return err
 	}
 
-	return verifier.Verify(sig, []byte(name))
+	return verifier.Verify(sig, strings.Bytes(name))
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/cache/driver"
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
@@ -69,7 +70,7 @@ func TestValidCache(t *testing.T) {
 						case *string:
 							So(*kind, ShouldEqual, "hello?")
 						case *bytes.Buffer:
-							So(kind.Bytes(), ShouldEqual, []byte("hello?"))
+							So(kind.Bytes(), ShouldEqual, strings.Bytes("hello?"))
 						case *v1.SayHelloRequest:
 							So(kind.GetName(), ShouldEqual, "hello?")
 						case *test.Request:

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -21,7 +22,7 @@ func TestMap(t *testing.T) {
 			cmp := test.Compressor.Get(kind)
 
 			Convey("When I compress the data", func() {
-				data := []byte("hello")
+				data := strings.Bytes("hello")
 				d := cmp.Compress(data)
 
 				Convey("Then I should have the same decompressed data", func() {

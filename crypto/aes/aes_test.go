@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -55,7 +56,7 @@ func TestValidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt([]byte("test"))
+			enc, err := cipher.Encrypt(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
@@ -86,7 +87,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			_, err := cipher.Encrypt([]byte("test"))
+			_, err := cipher.Encrypt(strings.Bytes("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -94,7 +95,7 @@ func TestInvalidCipher(t *testing.T) {
 		})
 
 		Convey("When I decrypt data", func() {
-			_, err := cipher.Decrypt([]byte("test"))
+			_, err := cipher.Decrypt(strings.Bytes("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -109,7 +110,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I try to encrypt data", func() {
-			_, err := cipher.Encrypt([]byte("test"))
+			_, err := cipher.Encrypt(strings.Bytes("test"))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -124,7 +125,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt([]byte("test"))
+			enc, err := cipher.Encrypt(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			enc = append(enc, byte('w'))
@@ -141,7 +142,7 @@ func TestInvalidCipher(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
-			_, err := cipher.Decrypt([]byte("test"))
+			_, err := cipher.Decrypt(strings.Bytes("test"))
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)
