@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/cache/cacheable"
+	"github.com/alexfalkowski/go-service/cache/cacher"
 	"github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/cache/driver"
 	cl "github.com/alexfalkowski/go-service/cache/telemetry/logger"
@@ -40,12 +40,12 @@ type Params struct {
 }
 
 // NewCache from config.
-func NewCache(params Params) cacheable.Interface {
+func NewCache(params Params) cacher.Cache {
 	if !config.IsEnabled(params.Config) {
 		return nil
 	}
 
-	var cache cacheable.Interface = &Cache{
+	var cache cacher.Cache = &Cache{
 		cm:     params.Compressor,
 		em:     params.Encoder,
 		cfg:    params.Config,

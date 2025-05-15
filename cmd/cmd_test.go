@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/cache"
-	"github.com/alexfalkowski/go-service/cache/cacheable"
+	"github.com/alexfalkowski/go-service/cache/cacher"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -271,7 +271,7 @@ func grpcObserver(healthServer *server.Server) *shg.Observer {
 
 func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}
 
-func invokeCache(_ cacheable.Interface) {}
+func invokeCache(_ cacher.Cache) {}
 
 func invokeConfigs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 

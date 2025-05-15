@@ -3,15 +3,15 @@ package cache
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/cacheable"
+	"github.com/alexfalkowski/go-service/cache/cacher"
 	"github.com/alexfalkowski/go-service/time"
 	"github.com/alexfalkowski/go-service/types/ptr"
 )
 
-var cache cacheable.Interface
+var cache cacher.Cache
 
 // Register the cache.
-func Register(c cacheable.Interface) {
+func Register(c cacher.Cache) {
 	cache = c
 }
 
