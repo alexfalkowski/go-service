@@ -4,6 +4,7 @@ import (
 	"context"
 	"path"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/transport/header"
@@ -77,7 +78,9 @@ func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...st
 		return nil, header.ErrInvalidAuthorization
 	}
 
-	meta := map[string]string{"authorization": strings.Join(" ", header.BearerAuthorization, string(token))}
+	meta := map[string]string{
+		"authorization": strings.Join(" ", header.BearerAuthorization, bytes.String(token)),
+	}
 
 	return meta, nil
 }

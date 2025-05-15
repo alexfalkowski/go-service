@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/token/jwt"
@@ -66,15 +67,17 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 }
 
 func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
+	tkn := bytes.String(token)
+
 	switch {
 	case t.cfg.IsSSH():
-		return ctx, t.ssh.Verify(string(token))
+		return ctx, t.ssh.Verify(tkn)
 	case t.cfg.IsJWT():
-		subject, err := t.jwt.Verify(string(token))
+		subject, err := t.jwt.Verify(tkn)
 
 		return WithSubject(ctx, meta.String(subject)), err
 	case t.cfg.IsPaseto():
-		subject, err := t.paseto.Verify(string(token))
+		subject, err := t.paseto.Verify(tkn)
 
 		return WithSubject(ctx, meta.String(subject)), err
 	}

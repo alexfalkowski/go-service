@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/encoding/base64"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
@@ -34,5 +35,5 @@ func New(cfg *Config) (*hooks.Webhook, error) {
 		return nil, err
 	}
 
-	return hooks.NewWebhook(string(b))
+	return hooks.NewWebhook(bytes.String(b))
 }

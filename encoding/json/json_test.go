@@ -1,7 +1,6 @@
 package json_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/bytes"
@@ -14,19 +13,19 @@ func TestEncoder(t *testing.T) {
 	Convey("Given I have JSON encoder", t, func() {
 		encoder := json.NewEncoder()
 
-		bytes := test.Pool.Get()
-		defer test.Pool.Put(bytes)
+		buffer := test.Pool.Get()
+		defer test.Pool.Put(buffer)
 
 		msg := map[string]string{"test": "test"}
 
 		Convey("When I encode the JSON", func() {
-			err := encoder.Encode(bytes, msg)
+			err := encoder.Encode(buffer, msg)
 			So(err, ShouldBeNil)
 
-			s := strings.TrimSpace(string(test.Pool.Copy(bytes)))
+			s := bytes.TrimSpace(test.Pool.Copy(buffer))
 
 			Convey("Then I should have valid JSON", func() {
-				So(s, ShouldEqual, "{\"test\":\"test\"}")
+				So(bytes.String(s), ShouldEqual, "{\"test\":\"test\"}")
 			})
 		})
 	})

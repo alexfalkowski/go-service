@@ -3,6 +3,7 @@ package rsa_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -77,7 +78,7 @@ func TestValid(t *testing.T) {
 				d, err := decryptor.Decrypt(e)
 				So(err, ShouldBeNil)
 
-				So(string(d), ShouldEqual, "test")
+				So(bytes.String(d), ShouldEqual, "test")
 			})
 		})
 	})

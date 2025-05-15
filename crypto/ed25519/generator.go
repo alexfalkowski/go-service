@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/errors"
 )
@@ -36,10 +37,10 @@ func (g *Generator) Generate() (string, string, error) {
 		return "", "", g.prefix(err)
 	}
 
-	pub := string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu}))
-	pri := string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr}))
+	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
+	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
 
-	return pub, pri, nil
+	return bytes.String(pub), bytes.String(pri), nil
 }
 
 func (g *Generator) prefix(err error) error {

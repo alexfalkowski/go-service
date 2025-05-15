@@ -3,6 +3,7 @@ package driver
 import (
 	"errors"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	cache "github.com/alexfalkowski/go-service/cache/config"
 	"github.com/alexfalkowski/go-service/os"
 	"github.com/faabiosr/cachego"
@@ -32,7 +33,7 @@ func New(cfg *cache.Config) (Driver, error) {
 			return nil, err
 		}
 
-		opts, err := client.ParseURL(string(url))
+		opts, err := client.ParseURL(bytes.String(url))
 		if err != nil {
 			return nil, err
 		}

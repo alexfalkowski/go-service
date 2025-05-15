@@ -1,6 +1,9 @@
 package header
 
-import "github.com/alexfalkowski/go-service/os"
+import (
+	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/os"
+)
 
 // Map is a key-value map.
 type Map map[string]string
@@ -12,12 +15,12 @@ func (m Map) Secrets(fs os.FileSystem) error {
 			continue
 		}
 
-		bytes, err := fs.ReadFile(name)
+		data, err := fs.ReadFile(name)
 		if err != nil {
 			return err
 		}
 
-		m[key] = string(bytes)
+		m[key] = bytes.String(data)
 	}
 
 	return nil

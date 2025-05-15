@@ -6,6 +6,7 @@ import (
 	"database/sql/driver"
 	"errors"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
@@ -53,7 +54,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 			return nil, err
 		}
 
-		masters[i] = string(u)
+		masters[i] = bytes.String(u)
 	}
 
 	slaves := make([]string, len(cfg.Slaves))
@@ -64,7 +65,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 			return nil, err
 		}
 
-		slaves[i] = string(u)
+		slaves[i] = bytes.String(u)
 	}
 
 	db, err := connect(name, masters, slaves)

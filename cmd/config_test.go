@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -130,7 +131,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 				d, err := os.ReadFile(file)
 				So(err, ShouldBeNil)
 
-				So(string(d), ShouldEqual, "test")
+				So(bytes.String(d), ShouldEqual, "test")
 			})
 
 			So(os.Remove(file), ShouldBeNil)
@@ -155,7 +156,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 				d, err := os.ReadFile(file)
 				So(err, ShouldBeNil)
 
-				So(string(d), ShouldEqual, "test")
+				So(bytes.String(d), ShouldEqual, "test")
 			})
 
 			So(os.Remove(file), ShouldBeNil)
@@ -190,7 +191,7 @@ func TestWriteValidConfigFile(t *testing.T) {
 				d, err := os.ReadFile(file)
 				So(err, ShouldBeNil)
 
-				So(string(d), ShouldEqual, "test")
+				So(bytes.String(d), ShouldEqual, "test")
 			})
 
 			So(os.Remove(file), ShouldBeNil)

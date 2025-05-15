@@ -1,6 +1,10 @@
 package test
 
-import "context"
+import (
+	"context"
+
+	"github.com/alexfalkowski/go-service/bytes"
+)
 
 // NewGenerator for test.
 func NewGenerator(token string, err error) *Generator {
@@ -28,7 +32,7 @@ type Verifier struct {
 }
 
 func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, error) {
-	if string(token) != v.token {
+	if bytes.String(token) != v.token {
 		return ctx, ErrInvalid
 	}
 
