@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/internal/test"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
@@ -35,7 +36,7 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 			Convey("Then I should receive an event", func() {
 				So(protocol.IsACK(result), ShouldBeTrue)
 				So(world.Event, ShouldNotBeNil)
-				So(string(e.Data()), ShouldEqual, "test")
+				So(bytes.String(e.Data()), ShouldEqual, "test")
 			})
 
 			world.RequireStop()
@@ -66,7 +67,7 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 			Convey("Then I should receive an event", func() {
 				So(protocol.IsACK(result), ShouldBeTrue)
 				So(world.Event, ShouldNotBeNil)
-				So(string(e.Data()), ShouldEqual, "test")
+				So(bytes.String(e.Data()), ShouldEqual, "test")
 			})
 
 			world.RequireStop()

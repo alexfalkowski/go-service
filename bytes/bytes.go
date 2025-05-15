@@ -1,6 +1,9 @@
 package bytes
 
-import "bytes"
+import (
+	"bytes"
+	"unsafe"
+)
 
 // Buffer is an alias bytes.Buffer.
 type Buffer = bytes.Buffer
@@ -25,4 +28,9 @@ func Copy(bytes []byte) []byte {
 	copy(newBytes, bytes)
 
 	return newBytes
+}
+
+// String from the bytes.
+func String(bytes []byte) string {
+	return *(*string)(unsafe.Pointer(&bytes))
 }

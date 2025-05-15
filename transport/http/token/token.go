@@ -3,6 +3,7 @@ package token
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/net/http/status"
 	"github.com/alexfalkowski/go-service/strings"
@@ -65,7 +66,10 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	req = req.WithContext(ctx)
-	req.Header.Add("Authorization", strings.Join(" ", header.BearerAuthorization, string(token)))
+	req.Header.Add(
+		"Authorization",
+		strings.Join(" ", header.BearerAuthorization, bytes.String(token)),
+	)
 
 	return r.RoundTripper.RoundTrip(req)
 }

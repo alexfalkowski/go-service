@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"io"
 	"math/big"
+
+	"github.com/alexfalkowski/go-service/bytes"
 )
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -44,7 +46,7 @@ func (g *Generator) GenerateText(size int) (string, error) {
 }
 
 func (g *Generator) generate(size int, values string) (string, error) {
-	bytes := make([]byte, size)
+	data := make([]byte, size)
 	length := int64(len(values))
 
 	for i := range size {
@@ -53,8 +55,8 @@ func (g *Generator) generate(size int, values string) (string, error) {
 			return "", err
 		}
 
-		bytes[i] = values[num.Int64()]
+		data[i] = values[num.Int64()]
 	}
 
-	return string(bytes), nil
+	return bytes.String(data), nil
 }

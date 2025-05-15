@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
@@ -28,5 +29,5 @@ func (g *Generator) Generate() (string, string, error) {
 	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&public.PublicKey)})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(public)})
 
-	return string(pub), string(pri), nil
+	return bytes.String(pub), bytes.String(pri), nil
 }

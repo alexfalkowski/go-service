@@ -3,6 +3,7 @@ package aes_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/internal/test"
@@ -61,7 +62,7 @@ func TestValidCipher(t *testing.T) {
 				d, err := cipher.Decrypt(enc)
 				So(err, ShouldBeNil)
 
-				So(string(d), ShouldEqual, "test")
+				So(bytes.String(d), ShouldEqual, "test")
 			})
 		})
 	})

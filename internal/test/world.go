@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/cache"
 	"github.com/alexfalkowski/go-service/cache/cacher"
 	"github.com/alexfalkowski/go-service/cache/driver"
@@ -21,7 +22,6 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/rest"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/telemetry/errors"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -307,7 +307,7 @@ func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method,
 	data, err := io.ReadAll(res.Body)
 	runtime.Must(err)
 
-	return res, strings.TrimSpace(string(data)), nil
+	return res, bytes.String(bytes.TrimSpace(data)), nil
 }
 
 // HTTPResponseNoBody for the world.
