@@ -33,7 +33,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	token := meta.Authorization(ctx).Value()
 
-	ctx, err := h.verifier.Verify(ctx, []byte(token))
+	ctx, err := h.verifier.Verify(ctx, strings.Bytes(token))
 	if err != nil {
 		status.WriteError(ctx, res, status.UnauthorizedError(errors.Prefix("token", err)))
 

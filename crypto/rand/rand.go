@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/strings"
 )
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -37,7 +38,7 @@ func (g *Generator) Read(b []byte) (int, error) {
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	s, err := g.generate(size, letters)
 
-	return []byte(s), err
+	return strings.Bytes(s), err
 }
 
 // GenerateText will generate using letters.

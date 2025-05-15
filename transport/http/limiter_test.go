@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -15,7 +16,7 @@ func TestGet(t *testing.T) {
 		world.RequireStart()
 
 		world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-			_, _ = w.Write([]byte("hello!"))
+			_, _ = w.Write(strings.Bytes("hello!"))
 		})
 
 		Convey("When I query for a greet", func() {
@@ -43,7 +44,7 @@ func TestLimiter(t *testing.T) {
 			world.RequireStart()
 
 			world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-				_, _ = w.Write([]byte("hello!"))
+				_, _ = w.Write(strings.Bytes("hello!"))
 			})
 
 			Convey("When I query for a greet", func() {
@@ -74,7 +75,7 @@ func TestClosedLimiter(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-			_, _ = w.Write([]byte("hello!"))
+			_, _ = w.Write(strings.Bytes("hello!"))
 		})
 
 		Convey("When I query for a greet", func() {

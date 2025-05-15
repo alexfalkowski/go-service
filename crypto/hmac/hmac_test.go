@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/hmac"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -55,11 +56,11 @@ func TestValidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			e, err := signer.Sign([]byte("test"))
+			e, err := signer.Sign(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should compared the data", func() {
-				So(signer.Verify(e, []byte("test")), ShouldBeNil)
+				So(signer.Verify(e, strings.Bytes("test")), ShouldBeNil)
 			})
 		})
 	})
@@ -80,13 +81,13 @@ func TestInvalidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
-			sign, err := signer.Sign([]byte("test"))
+			sign, err := signer.Sign(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			sign = append(sign, byte('w'))
 
 			Convey("Then I should have an error", func() {
-				So(signer.Verify(sign, []byte("test")), ShouldBeError)
+				So(signer.Verify(sign, strings.Bytes("test")), ShouldBeError)
 			})
 		})
 	})
@@ -96,11 +97,11 @@ func TestInvalidSigner(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {
-			e, err := signer.Sign([]byte("test"))
+			e, err := signer.Sign(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I comparing another message will gave an error", func() {
-				So(signer.Verify(e, []byte("bob")), ShouldBeError, errors.ErrInvalidMatch)
+				So(signer.Verify(e, strings.Bytes("bob")), ShouldBeError, errors.ErrInvalidMatch)
 			})
 		})
 	})

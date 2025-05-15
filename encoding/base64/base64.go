@@ -8,6 +8,6 @@ func Encode(src []byte) string {
 }
 
 // Decode str to []byte, otherwise err if fails.
-func Decode(str string) ([]byte, error) {
-	return base64.StdEncoding.DecodeString(str)
+func Decode(s string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(s)
 }

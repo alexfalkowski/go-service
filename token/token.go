@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/token/jwt"
 	"github.com/alexfalkowski/go-service/token/paseto"
 	"github.com/alexfalkowski/go-service/token/ssh"
@@ -52,15 +53,15 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	case t.cfg.IsSSH():
 		token, err := t.ssh.Generate()
 
-		return ctx, []byte(token), err
+		return ctx, strings.Bytes(token), err
 	case t.cfg.IsJWT():
 		token, err := t.jwt.Generate()
 
-		return ctx, []byte(token), err
+		return ctx, strings.Bytes(token), err
 	case t.cfg.IsPaseto():
 		token, err := t.paseto.Generate()
 
-		return ctx, []byte(token), err
+		return ctx, strings.Bytes(token), err
 	}
 
 	return ctx, nil, nil

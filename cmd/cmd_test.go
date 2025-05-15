@@ -29,6 +29,7 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/module"
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/strings"
 	"github.com/alexfalkowski/go-service/telemetry"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -293,7 +294,7 @@ func invokeCrypt(
 	_ *hmac.Signer,
 	_ *cs.Signer, _ *cs.Verifier,
 ) error {
-	msg := []byte("hello")
+	msg := strings.Bytes("hello")
 
 	e, err := signer.Sign(msg)
 	if err != nil {

@@ -27,7 +27,7 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 
 		token := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, []byte(token))
+		ctx, err := verifier.Verify(ctx, strings.Bytes(token))
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -47,7 +47,7 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 		ctx := stream.Context()
 		token := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, []byte(token))
+		ctx, err := verifier.Verify(ctx, strings.Bytes(token))
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}

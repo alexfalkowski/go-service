@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -71,7 +72,7 @@ func TestValid(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			e, err := encryptor.Encrypt([]byte("test"))
+			e, err := encryptor.Encrypt(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			Convey("Then I should decrypt the data", func() {
@@ -132,7 +133,7 @@ func TestInvalid(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
-			enc, err := encryptor.Encrypt([]byte("test"))
+			enc, err := encryptor.Encrypt(strings.Bytes("test"))
 			So(err, ShouldBeNil)
 
 			enc = append(enc, byte('w'))
@@ -151,7 +152,7 @@ func TestInvalid(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
-			_, err := decryptor.Decrypt([]byte("test"))
+			_, err := decryptor.Decrypt(strings.Bytes("test"))
 
 			Convey("Then I have an error", func() {
 				So(err, ShouldBeError)
