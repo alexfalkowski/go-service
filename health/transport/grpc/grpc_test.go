@@ -228,7 +228,7 @@ func TestIgnoreAuthStream(t *testing.T) {
 }
 
 func observer(lc fx.Lifecycle, url string, client *http.Client) *subscriber.Observer {
-	cc := checker.NewHTTPChecker(url, client.Transport, 5*time.Second)
+	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(client.Transport))
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 	regs := health.Registrations{hr}
 	hs := health.NewServer(lc, regs)

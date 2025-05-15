@@ -244,14 +244,14 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tr
 		return nil
 	}
 
-	t := 5 * time.Second
+	timeout := 5 * time.Second
 	nc := checker.NewNoopChecker()
-	nr := server.NewRegistration("noop", t, nc)
+	nr := server.NewRegistration("noop", timeout, nc)
 	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(ua))
-	hc := checker.NewHTTPChecker("https://google.com", rt, t)
-	hr := server.NewRegistration("http", t, hc)
+	hc := checker.NewHTTPChecker("https://google.com", timeout, checker.WithRoundTripper(rt))
+	hr := server.NewRegistration("http", timeout, hc)
 
-	return health.Registrations{nr, hr}
+	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
 }
 
 func healthObserver(healthServer *server.Server) (*shh.HealthObserver, error) {
@@ -263,7 +263,7 @@ func livenessObserver(healthServer *server.Server) *shh.LivenessObserver {
 }
 
 func readinessObserver(healthServer *server.Server) *shh.ReadinessObserver {
-	return &shh.ReadinessObserver{Observer: healthServer.Observe("http")}
+	return &shh.ReadinessObserver{Observer: healthServer.Observe("http", "online")}
 }
 
 func grpcObserver(healthServer *server.Server) *shg.Observer {
