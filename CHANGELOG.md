@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.606.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.606.0) - 2025-05-15
+
+- [`e126180`](https://github.com/alexfalkowski/go-service/commit/e1261803669b93179bace86844759fa4b3db4366) feat(bytes): convert to string without copy (#1596)
+
 ## [v1.605.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.605.0) - 2025-05-15
 
 - [`088a357`](https://github.com/alexfalkowski/go-service/commit/088a357cad48a1c1cda1d4d8b7a3598b5e033d12) feat(cache): rename to cacher.Cache (#1595)
