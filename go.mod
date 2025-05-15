@@ -6,7 +6,7 @@ require (
 	aidanwoods.dev/go-paseto v1.5.4
 	github.com/BurntSushi/toml v1.5.0
 	github.com/KimMachineGun/automemlimit v0.7.2
-	github.com/alexfalkowski/go-health v1.22.0
+	github.com/alexfalkowski/go-health v1.23.0
 	github.com/arl/statsviz v0.6.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1

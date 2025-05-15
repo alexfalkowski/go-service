@@ -127,7 +127,7 @@ func TestInvalidHealth(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {
-				So(body, ShouldEqual, "http: invalid status code")
+				So(body, ShouldEqual, "http: http checker: invalid status code")
 				So(res.StatusCode, ShouldEqual, 503)
 				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.ErrorMediaType)
 			})
@@ -146,7 +146,7 @@ func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, e
 	dc := shc.NewDBChecker(db, 1*time.Second)
 	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
 
-	cc := checker.NewHTTPChecker(url, world.NewHTTP().Transport, 5*time.Second)
+	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(world.NewHTTP().Transport))
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 
 	no := checker.NewNoopChecker()
