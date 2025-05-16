@@ -22,11 +22,11 @@ func (c *Config) HasKeyPair() bool {
 }
 
 // GetCert for tls.
-func (c *Config) GetCert() ([]byte, error) {
-	return os.ReadFile(c.Cert)
+func (c *Config) GetCert(fs *os.FS) ([]byte, error) {
+	return fs.ReadFile(c.Cert)
 }
 
 // GetKey for tls.
-func (c *Config) GetKey() ([]byte, error) {
-	return os.ReadFile(c.Key)
+func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
+	return fs.ReadFile(c.Key)
 }

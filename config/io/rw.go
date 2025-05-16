@@ -6,7 +6,7 @@ import (
 )
 
 // NewReadWriter based on kind.
-func NewReadWriter(name env.Name, kind, location string, fs os.FileSystem) ReaderWriter {
+func NewReadWriter(name env.Name, kind, location string, fs *os.FS) ReaderWriter {
 	switch kind {
 	case "file":
 		return NewFile(location, fs)

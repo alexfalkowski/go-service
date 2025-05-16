@@ -6,8 +6,13 @@ import (
 
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/strings"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestGet(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {

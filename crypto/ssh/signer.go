@@ -1,14 +1,18 @@
 package ssh
 
-import "crypto/ed25519"
+import (
+	"crypto/ed25519"
+
+	"github.com/alexfalkowski/go-service/os"
+)
 
 // NewSigner for ssh.
-func NewSigner(cfg *Config) (*Signer, error) {
+func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	pri, err := cfg.PrivateKey()
+	pri, err := cfg.PrivateKey(fs)
 	if err != nil {
 		return nil, err
 	}

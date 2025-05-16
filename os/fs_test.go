@@ -3,12 +3,12 @@ package os_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestFS(t *testing.T) {
-	fs := os.NewFS()
+	fs := test.FS
 
 	for _, path := range []string{"none"} {
 		Convey("When I check the path", t, func() {

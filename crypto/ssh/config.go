@@ -19,8 +19,8 @@ type Config struct {
 }
 
 // PublicKey ssh.
-func (c *Config) PublicKey() (ed25519.PublicKey, error) {
-	bytes, err := os.ReadFile(c.Public)
+func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
+	bytes, err := fs.ReadFile(c.Public)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +37,8 @@ func (c *Config) PublicKey() (ed25519.PublicKey, error) {
 }
 
 // PrivateKey ssh.
-func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
-	bytes, err := os.ReadFile(c.Private)
+func (c *Config) PrivateKey(fs *os.FS) (ed25519.PrivateKey, error) {
+	bytes, err := fs.ReadFile(c.Private)
 	if err != nil {
 		return nil, err
 	}

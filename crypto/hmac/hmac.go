@@ -5,15 +5,16 @@ import (
 	"crypto/sha512"
 
 	"github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // NewSigner for hmac.
-func NewSigner(cfg *Config) (*Signer, error) {
+func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	k, err := cfg.GetKey()
+	k, err := cfg.GetKey(fs)
 
 	return &Signer{key: k}, err
 }

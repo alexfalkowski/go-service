@@ -7,7 +7,7 @@ import (
 )
 
 // NewInputConfig for cmd.
-func NewInputConfig(name env.Name, set *FlagSet, enc *encoding.Map, fs os.FileSystem) *InputConfig {
+func NewInputConfig(name env.Name, set *FlagSet, enc *encoding.Map, fs *os.FS) *InputConfig {
 	return &InputConfig{
 		Config: NewConfig(name, set.GetInput(), enc, fs),
 	}

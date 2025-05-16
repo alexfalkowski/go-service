@@ -4,15 +4,16 @@ import (
 	"crypto/ed25519"
 
 	crypto "github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // NewVerifier for ssh.
-func NewVerifier(cfg *Config) (*Verifier, error) {
+func NewVerifier(fs *os.FS, cfg *Config) (*Verifier, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	pub, err := cfg.PublicKey()
+	pub, err := cfg.PublicKey(fs)
 	if err != nil {
 		return nil, err
 	}

@@ -4,9 +4,14 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/crypto/tls"
+	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	http.Register(test.FS)
+}
 
 func TestClient(t *testing.T) {
 	Convey("Given I have invalid credentials", t, func() {

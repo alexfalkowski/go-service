@@ -202,7 +202,7 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 		return nh.Transport(nil), nil
 	}
 
-	conf, err := tls.NewConfig(os.tls)
+	conf, err := tls.NewConfig(fs, os.tls)
 	if err != nil {
 		return nil, err
 	}

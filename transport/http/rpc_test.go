@@ -12,8 +12,13 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/rpc"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestRPCNoContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml"} {

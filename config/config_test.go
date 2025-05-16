@@ -17,7 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/feature"
 	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/token"
 	. "github.com/smartystreets/goconvey/convey"
@@ -112,7 +111,9 @@ func TestInvalidFileConfig(t *testing.T) {
 
 func TestValidMemConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		d, err := os.ReadFile(test.Path("configs/config.yml"))
+		fs := test.FS
+
+		d, err := fs.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
 		t.Setenv("CONFIG_FILE", "yaml:CONFIG")

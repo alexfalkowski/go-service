@@ -19,6 +19,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+func init() {
+	tg.Register(test.FS)
+}
+
 //nolint:funlen
 func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {

@@ -13,8 +13,8 @@ import (
 func TestValid(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(ec)
-	verifier, _ := ed25519.NewVerifier(ec)
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	paseto := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
 
 	Convey("When I generate a paseto token", t, func() {
@@ -37,8 +37,8 @@ func TestValid(t *testing.T) {
 //nolint:funlen
 func TestInvalid(t *testing.T) {
 	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(ec)
-	verifier, _ := ed25519.NewVerifier(ec)
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 
 	Convey("When I generate a paseto token with invalid aud", t, func() {
 		pcf := &paseto.Config{

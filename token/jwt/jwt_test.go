@@ -12,8 +12,8 @@ import (
 
 func TestValid(t *testing.T) {
 	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(ec)
-	verifier, _ := ed25519.NewVerifier(ec)
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 
 	Convey("When I generate a JWT token", t, func() {
 		cfg := test.NewToken("jwt")
@@ -39,8 +39,8 @@ func TestValid(t *testing.T) {
 func TestInvalid(t *testing.T) {
 	cfg := test.NewToken("jwt")
 	ec := test.NewEd25519()
-	signer, _ := ed25519.NewSigner(ec)
-	verifier, _ := ed25519.NewVerifier(ec)
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
 
 	tokens := []string{

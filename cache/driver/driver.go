@@ -21,14 +21,14 @@ var (
 )
 
 // New creates a new cache driver with different backends.
-func New(cfg *cache.Config) (Driver, error) {
+func New(fs *os.FS, cfg *cache.Config) (Driver, error) {
 	if !cache.IsEnabled(cfg) {
 		return nil, nil
 	}
 
 	switch cfg.Kind {
 	case "redis":
-		url, err := os.ReadFile(cfg.Options["url"].(string))
+		url, err := fs.ReadFile(cfg.Options["url"].(string))
 		if err != nil {
 			return nil, err
 		}

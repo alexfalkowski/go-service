@@ -1,6 +1,15 @@
 package os
 
-import "os"
+import (
+	"errors"
+	"os"
+	"path/filepath"
+
+	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/strings"
+	"github.com/avfs/avfs"
+	"github.com/avfs/avfs/vfs/osfs"
+)
 
 // ModeAppend will append to an existing file.
 const ModeAppend = os.ModeAppend
@@ -8,45 +17,63 @@ const ModeAppend = os.ModeAppend
 // FileMode is an alias to os.FileMode.
 type FileMode = os.FileMode
 
-// FileSystem borrows concepts from io/fs.
-type FileSystem interface {
-	// ReadFile for the path provided.
-	ReadFile(name string) ([]byte, error)
-
-	// WriteFile writes data to name.
-	WriteFile(name string, data []byte, perm FileMode) error
-
-	// PathExists for the path provided.
-	PathExists(name string) bool
-
-	// IsNotExist whether the error is os.ErrNotExist.
-	IsNotExist(err error) bool
-}
-
 // NewFS for os.
-func NewFS() FileSystem {
-	return &SystemFS{}
+func NewFS() *FS {
+	return &FS{VFS: osfs.New()}
 }
 
-// SystemFS uses the underlying os.
-type SystemFS struct{}
-
-// ReadFile for os.
-func (*SystemFS) ReadFile(path string) ([]byte, error) {
-	return ReadFile(path)
+// FS for os.
+type FS struct {
+	avfs.VFS
 }
 
-// WriteFile for os.
-func (*SystemFS) WriteFile(name string, data []byte, perm FileMode) error {
-	return WriteFile(name, data, perm)
+// ReadFile for the name provided.
+func (fs *FS) ReadFile(name string) ([]byte, error) {
+	b, err := fs.VFS.ReadFile(fs.CleanPath(name))
+
+	return bytes.TrimSpace(b), err
+}
+
+// WriteFile writes data to name with perm.
+func (fs *FS) WriteFile(name string, data []byte, perm FileMode) error {
+	return fs.VFS.WriteFile(fs.CleanPath(name), bytes.TrimSpace(data), perm)
 }
 
 // PathExists for os.
-func (*SystemFS) PathExists(name string) bool {
-	return PathExists(name)
+func (fs *FS) PathExists(name string) bool {
+	if _, err := fs.Stat(name); fs.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
 
 // IsNotExist for os.
-func (*SystemFS) IsNotExist(err error) bool {
-	return IsNotExist(err)
+func (*FS) IsNotExist(err error) bool {
+	return errors.Is(err, os.ErrNotExist)
+}
+
+// PathExtension of the specified path.
+func (*FS) PathExtension(path string) string {
+	e := filepath.Ext(path)
+	if strings.IsEmpty(e) {
+		return e
+	}
+
+	return e[1:]
+}
+
+// ExpandPath will append the home dir if path starts with ~.
+func (fs *FS) ExpandPath(path string) string {
+	dir := UserHomeDir()
+	if strings.IsEmpty(dir) || len(path) == 0 || path[0] != '~' {
+		return path
+	}
+
+	return fs.Join(dir, path[1:])
+}
+
+// CleanPath makes sure that the path is expanded and in a clean format.
+func (fs *FS) CleanPath(path string) string {
+	return fs.ExpandPath(fs.Clean(path))
 }

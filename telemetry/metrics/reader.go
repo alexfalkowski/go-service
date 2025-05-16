@@ -14,7 +14,7 @@ import (
 var ErrNotFound = errors.New("metrics: reader not found")
 
 // NewReader for metrics. A nil reader means disabled.
-func NewReader(fs os.FileSystem, cfg *Config) (metric.Reader, error) {
+func NewReader(fs *os.FS, cfg *Config) (metric.Reader, error) {
 	switch {
 	case !IsEnabled(cfg):
 		return nil, nil

@@ -12,9 +12,14 @@ import (
 	"github.com/alexfalkowski/go-service/net/http/content"
 	"github.com/alexfalkowski/go-service/net/http/mvc"
 	"github.com/alexfalkowski/go-service/net/http/status"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/net/html"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {

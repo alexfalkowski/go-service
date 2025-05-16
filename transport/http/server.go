@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -40,6 +41,7 @@ type ServerParams struct {
 	UserAgent  env.UserAgent
 	Version    env.Version
 	ID         id.Generator
+	FS         *os.FS
 	Limiter    *limiter.Limiter  `optional:"true"`
 	Verifier   token.Verifier    `optional:"true"`
 	Handlers   []negroni.Handler `optional:"true"`
@@ -89,7 +91,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		Protocols: sh.Protocols(),
 	}
 
-	c, err := config(params.Config)
+	c, err := config(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -120,7 +122,7 @@ func (s *Server) GetServer() *server.Service {
 	return s.Service
 }
 
-func config(cfg *Config) (*sh.Config, error) {
+func config(fs *os.FS, cfg *Config) (*sh.Config, error) {
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":8080"),
 	}
@@ -129,7 +131,7 @@ func config(cfg *Config) (*sh.Config, error) {
 		return config, nil
 	}
 
-	tls, err := ct.NewConfig(cfg.TLS)
+	tls, err := ct.NewConfig(fs, cfg.TLS)
 	config.TLS = tls
 
 	return config, err

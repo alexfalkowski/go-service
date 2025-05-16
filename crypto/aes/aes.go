@@ -6,18 +6,19 @@ import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/os"
 )
 
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
 // NewCipher for aes.
-func NewCipher(gen *rand.Generator, cfg *Config) (*Cipher, error) {
+func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	k, err := cfg.GetKey()
+	k, err := cfg.GetKey(fs)
 
 	return &Cipher{gen: gen, key: k}, err
 }

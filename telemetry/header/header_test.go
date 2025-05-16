@@ -11,7 +11,7 @@ import (
 func TestSecrets(t *testing.T) {
 	Convey("When I try to get secrets with an erroneous fs", t, func() {
 		m := header.Map{"test": "none"}
-		err := m.Secrets(&test.ErrFS{})
+		err := m.Secrets(test.ErrFS)
 
 		Convey("Then I should have error", func() {
 			So(err, ShouldBeError)

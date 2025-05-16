@@ -42,7 +42,7 @@ func TestGenerator(t *testing.T) {
 func TestValidSigner(t *testing.T) {
 	Convey("Given I have generated a key", t, func() {
 		Convey("When I create an signer", func() {
-			signer, err := hmac.NewSigner(test.NewHMAC())
+			signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 
 			Convey("Then I should not have an error", func() {
 				So(err, ShouldBeNil)
@@ -52,7 +52,7 @@ func TestValidSigner(t *testing.T) {
 	})
 
 	Convey("Given I have an signer", t, func() {
-		signer, err := hmac.NewSigner(test.NewHMAC())
+		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
@@ -66,7 +66,7 @@ func TestValidSigner(t *testing.T) {
 	})
 
 	Convey("When I create a signer with no configuration", t, func() {
-		signer, err := hmac.NewSigner(nil)
+		signer, err := hmac.NewSigner(nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no signer", func() {
@@ -77,7 +77,7 @@ func TestValidSigner(t *testing.T) {
 
 func TestInvalidSigner(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
-		signer, err := hmac.NewSigner(test.NewHMAC())
+		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate data", func() {
@@ -93,7 +93,7 @@ func TestInvalidSigner(t *testing.T) {
 	})
 
 	Convey("Given I have an signer", t, func() {
-		signer, err := hmac.NewSigner(test.NewHMAC())
+		signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 		So(err, ShouldBeNil)
 
 		Convey("When I generate one message", func() {

@@ -11,7 +11,7 @@ import (
 
 func TestDecode(t *testing.T) {
 	Convey("When I decode invalid path", t, func() {
-		_, err := pem.Decode("non existent", "n/a")
+		_, err := test.PEM.Decode("non existent", "n/a")
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -19,7 +19,7 @@ func TestDecode(t *testing.T) {
 	})
 
 	Convey("When I decode invalid block", t, func() {
-		_, err := pem.Decode(test.Path("secrets/redis"), "n/a")
+		_, err := test.PEM.Decode(test.Path("secrets/redis"), "n/a")
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -28,7 +28,7 @@ func TestDecode(t *testing.T) {
 	})
 
 	Convey("When I decode invalid kind", t, func() {
-		_, err := pem.Decode(test.Path("secrets/rsa_public"), "what")
+		_, err := test.PEM.Decode(test.Path("secrets/rsa_public"), "what")
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

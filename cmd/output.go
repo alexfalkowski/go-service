@@ -7,7 +7,7 @@ import (
 )
 
 // NewOutputConfig for cmd.
-func NewOutputConfig(name env.Name, set *FlagSet, enc *encoding.Map, fs os.FileSystem) *OutputConfig {
+func NewOutputConfig(name env.Name, set *FlagSet, enc *encoding.Map, fs *os.FS) *OutputConfig {
 	return &OutputConfig{
 		Config: NewConfig(name, set.GetOutput(), enc, fs),
 	}

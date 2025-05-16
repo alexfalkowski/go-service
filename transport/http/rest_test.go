@@ -8,8 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/mime"
 	"github.com/alexfalkowski/go-service/net/http/rest"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestRestNoContent(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {

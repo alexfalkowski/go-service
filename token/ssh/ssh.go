@@ -4,26 +4,28 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/errors"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
 	"github.com/alexfalkowski/go-service/encoding/base64"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/strings"
 )
 
 // NewToken for ssh.
-func NewToken(cfg *Config) *Token {
+func NewToken(fs *os.FS, cfg *Config) *Token {
 	if !IsEnabled(cfg) {
 		return nil
 	}
 
-	return &Token{cfg: cfg}
+	return &Token{fs: fs, cfg: cfg}
 }
 
 // Token for ssh.
 type Token struct {
+	fs  *os.FS
 	cfg *Config
 }
 
 // Generate an SSH token.
 func (t *Token) Generate() (string, error) {
-	sig, err := ssh.NewSigner(t.cfg.Key.Config)
+	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +48,7 @@ func (t *Token) Verify(token string) error {
 		return errors.ErrInvalidMatch
 	}
 
-	verifier, err := ssh.NewVerifier(cfg.Config)
+	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)
 	if err != nil {
 		return err
 	}

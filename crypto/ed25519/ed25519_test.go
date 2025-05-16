@@ -45,10 +45,10 @@ func TestValid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewEd25519()
 
-		signer, err := ed25519.NewSigner(cfg)
+		signer, err := ed25519.NewSigner(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ed25519.NewVerifier(cfg)
+		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
@@ -66,7 +66,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I try to create a signer with no configuration", t, func() {
-		signer, err := ed25519.NewSigner(nil)
+		signer, err := ed25519.NewSigner(nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no signer", func() {
@@ -75,7 +75,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I try to create a verifier with no configuration", t, func() {
-		signer, err := ed25519.NewVerifier(nil)
+		signer, err := ed25519.NewVerifier(nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no signer", func() {
@@ -93,7 +93,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I create a signer", t, func() {
-			_, err := ed25519.NewSigner(config)
+			_, err := ed25519.NewSigner(test.PEM, config)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -108,7 +108,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I create a signer", t, func() {
-			_, err := ed25519.NewVerifier(config)
+			_, err := ed25519.NewVerifier(test.PEM, config)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -119,10 +119,10 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewEd25519()
 
-		signer, err := ed25519.NewSigner(cfg)
+		signer, err := ed25519.NewSigner(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ed25519.NewVerifier(cfg)
+		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign the data", func() {
@@ -140,10 +140,10 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewEd25519()
 
-		signer, err := ed25519.NewSigner(cfg)
+		signer, err := ed25519.NewSigner(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ed25519.NewVerifier(cfg)
+		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign one message", func() {
@@ -157,10 +157,13 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I create an verifier with an invalid public key", t, func() {
-		_, err := ed25519.NewVerifier(&ed25519.Config{
-			Public:  test.Path("secrets/rsa_public"),
-			Private: test.Path("secrets/ed25519_private"),
-		})
+		_, err := ed25519.NewVerifier(
+			test.PEM,
+			&ed25519.Config{
+				Public:  test.Path("secrets/rsa_public"),
+				Private: test.Path("secrets/ed25519_private"),
+			},
+		)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -168,10 +171,13 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I create an signer with an invalid private key", t, func() {
-		_, err := ed25519.NewSigner(&ed25519.Config{
-			Public:  test.Path("secrets/ed25519_public"),
-			Private: test.Path("secrets/rsa_private"),
-		})
+		_, err := ed25519.NewSigner(
+			test.PEM,
+			&ed25519.Config{
+				Public:  test.Path("secrets/ed25519_public"),
+				Private: test.Path("secrets/rsa_private"),
+			},
+		)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

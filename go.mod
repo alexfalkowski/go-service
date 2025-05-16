@@ -8,6 +8,7 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.2
 	github.com/alexfalkowski/go-health v1.23.0
 	github.com/arl/statsviz v0.6.0
+	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
 	github.com/cloudevents/sdk-go/v2 v2.16.0

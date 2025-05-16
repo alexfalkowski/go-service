@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/tls"
 	"github.com/alexfalkowski/go-service/errors"
 	sh "github.com/alexfalkowski/go-service/net/http"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/time"
@@ -21,6 +22,7 @@ type ServerParams struct {
 	Mux        *ServeMux
 	Config     *Config
 	Logger     *logger.Logger
+	FS         *os.FS
 }
 
 // NewServer for debug.
@@ -36,7 +38,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
 
-	c, err := config(params.Config)
+	c, err := config(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -67,7 +69,7 @@ func (s *Server) GetServer() *server.Service {
 	return s.Service
 }
 
-func config(cfg *Config) (*sh.Config, error) {
+func config(fs *os.FS, cfg *Config) (*sh.Config, error) {
 	config := &sh.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}
@@ -76,7 +78,7 @@ func config(cfg *Config) (*sh.Config, error) {
 		return config, nil
 	}
 
-	t, err := tls.NewConfig(cfg.TLS)
+	t, err := tls.NewConfig(fs, cfg.TLS)
 	config.TLS = t
 
 	return config, err

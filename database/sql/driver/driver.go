@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/tracer"
@@ -45,11 +46,11 @@ func New(name string, driver Driver, trace *tracer.Tracer, log *logger.Logger) D
 }
 
 // Open a DB pool.
-func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error) {
+func Open(lc fx.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
 	for i, m := range cfg.Masters {
-		u, err := m.GetURL()
+		u, err := m.GetURL(fs)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +61,7 @@ func Open(lc fx.Lifecycle, name string, cfg *config.Config) (*mssqlx.DBs, error)
 	slaves := make([]string, len(cfg.Slaves))
 
 	for i, s := range cfg.Slaves {
-		u, err := s.GetURL()
+		u, err := s.GetURL(fs)
 		if err != nil {
 			return nil, err
 		}

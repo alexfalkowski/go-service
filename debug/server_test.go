@@ -7,8 +7,13 @@ import (
 	"github.com/alexfalkowski/go-service/debug"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/server"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 var paths = []string{
 	"debug/statsviz",
@@ -70,12 +75,13 @@ func TestInvalidServer(t *testing.T) {
 				TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 			},
 		}
-		p := debug.ServerParams{
+		params := debug.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg,
+			FS:         test.FS,
 		}
 
-		_, err := debug.NewServer(p)
+		_, err := debug.NewServer(params)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

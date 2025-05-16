@@ -18,7 +18,7 @@ func TestInvalidReader(t *testing.T) {
 			Name:        test.Name,
 			Version:     test.Version,
 			Environment: test.Environment,
-			FileSystem:  &test.ErrFS{},
+			FileSystem:  test.ErrFS,
 			Config:      test.NewOTLPTracerConfig(),
 		}
 		_, err := tracer.NewTracer(params)

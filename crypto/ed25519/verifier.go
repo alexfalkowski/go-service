@@ -4,15 +4,16 @@ import (
 	"crypto/ed25519"
 
 	crypto "github.com/alexfalkowski/go-service/crypto/errors"
+	"github.com/alexfalkowski/go-service/crypto/pem"
 )
 
 // NewSigner for ed25519.
-func NewVerifier(cfg *Config) (*Verifier, error) {
+func NewVerifier(decoder *pem.Decoder, cfg *Config) (*Verifier, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	pub, err := cfg.PublicKey()
+	pub, err := cfg.PublicKey(decoder)
 	if err != nil {
 		return nil, err
 	}

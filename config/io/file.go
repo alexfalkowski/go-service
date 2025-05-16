@@ -3,13 +3,13 @@ package io
 import "github.com/alexfalkowski/go-service/os"
 
 // NewFile for io.
-func NewFile(location string, fs os.FileSystem) *File {
+func NewFile(location string, fs *os.FS) *File {
 	return &File{location: location, fs: fs}
 }
 
 // File reads and writes files.
 type File struct {
-	fs       os.FileSystem
+	fs       *os.FS
 	location string
 }
 
@@ -25,5 +25,5 @@ func (f *File) Write(data []byte, mode os.FileMode) error {
 
 // Kind for file, which is the file extension.
 func (f *File) Kind() string {
-	return os.PathExtension(f.location)
+	return f.fs.PathExtension(f.location)
 }

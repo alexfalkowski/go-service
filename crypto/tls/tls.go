@@ -1,9 +1,13 @@
 package tls
 
-import "crypto/tls"
+import (
+	"crypto/tls"
+
+	"github.com/alexfalkowski/go-service/os"
+)
 
 // NewConfig for tls.
-func NewConfig(cfg *Config) (*tls.Config, error) {
+func NewConfig(fs *os.FS, cfg *Config) (*tls.Config, error) {
 	config := &tls.Config{
 		MinVersion: tls.VersionTLS12,
 		ClientAuth: tls.RequireAndVerifyClientCert,
@@ -13,12 +17,12 @@ func NewConfig(cfg *Config) (*tls.Config, error) {
 		return config, nil
 	}
 
-	cert, err := cfg.GetCert()
+	cert, err := cfg.GetCert(fs)
 	if err != nil {
 		return config, err
 	}
 
-	key, err := cfg.GetKey()
+	key, err := cfg.GetKey(fs)
 	if err != nil {
 		return config, err
 	}

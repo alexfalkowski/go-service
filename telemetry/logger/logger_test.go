@@ -20,7 +20,7 @@ func TestLogger(t *testing.T) {
 			Name:        test.Name,
 			Version:     test.Version,
 			Environment: test.Environment,
-			FileSystem:  &test.ErrFS{},
+			FileSystem:  test.ErrFS,
 		}
 
 		Convey("When I try to get a logger", func() {
