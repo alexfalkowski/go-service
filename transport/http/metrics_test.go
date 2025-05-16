@@ -9,16 +9,21 @@ import (
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/token"
 	"github.com/alexfalkowski/go-service/token/jwt"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	"github.com/alexfalkowski/go-service/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		cfg := test.NewToken("jwt")
 		ec := test.NewEd25519()
-		signer, _ := ed25519.NewSigner(ec)
-		verifier, _ := ed25519.NewVerifier(ec)
+		signer, _ := ed25519.NewSigner(test.PEM, ec)
+		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,

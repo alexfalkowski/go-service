@@ -43,7 +43,7 @@ func TestValidCipher(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I create an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.NewAES())
+		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
@@ -52,7 +52,7 @@ func TestValidCipher(t *testing.T) {
 	})
 
 	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.NewAES())
+		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -69,7 +69,7 @@ func TestValidCipher(t *testing.T) {
 	})
 
 	Convey("When I try to create a cipher with no config", t, func() {
-		cipher, err := aes.NewCipher(nil, nil)
+		cipher, err := aes.NewCipher(nil, nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no cipher", func() {
@@ -83,7 +83,7 @@ func TestInvalidCipher(t *testing.T) {
 	Convey("Given I have an cipher with invalid key", t, func() {
 		rand := rand.NewGenerator(rand.NewReader())
 
-		cipher, err := aes.NewCipher(rand, &aes.Config{Key: test.Path("secrets/aes_invalid")})
+		cipher, err := aes.NewCipher(rand, test.FS, &aes.Config{Key: test.Path("secrets/aes_invalid")})
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -106,7 +106,7 @@ func TestInvalidCipher(t *testing.T) {
 	Convey("Given I have an cipher with an erroneous rand", t, func() {
 		rand := rand.NewGenerator(&test.ErrReaderCloser{})
 
-		cipher, err := aes.NewCipher(rand, test.NewAES())
+		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
 		So(err, ShouldBeNil)
 
 		Convey("When I try to encrypt data", func() {
@@ -121,7 +121,7 @@ func TestInvalidCipher(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.NewAES())
+		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -138,7 +138,7 @@ func TestInvalidCipher(t *testing.T) {
 	})
 
 	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.NewAES())
+		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {

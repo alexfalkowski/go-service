@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/bytes"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/encoding/base64"
+	"github.com/alexfalkowski/go-service/os"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
@@ -25,12 +26,12 @@ func (g *Generator) Generate() (string, error) {
 }
 
 // New hook from config.
-func New(cfg *Config) (*hooks.Webhook, error) {
+func New(fs *os.FS, cfg *Config) (*hooks.Webhook, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	b, err := cfg.GetSecret()
+	b, err := cfg.GetSecret(fs)
 	if err != nil {
 		return nil, err
 	}

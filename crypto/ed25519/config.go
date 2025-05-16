@@ -19,8 +19,8 @@ type Config struct {
 }
 
 // PublicKey ed25519.
-func (c *Config) PublicKey() (ed25519.PublicKey, error) {
-	d, err := pem.Decode(c.Public, "PUBLIC KEY")
+func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
+	d, err := decoder.Decode(c.Public, "PUBLIC KEY")
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +34,8 @@ func (c *Config) PublicKey() (ed25519.PublicKey, error) {
 }
 
 // PrivateKey ed25519.
-func (c *Config) PrivateKey() (ed25519.PrivateKey, error) {
-	d, err := pem.Decode(c.Private, "PRIVATE KEY")
+func (c *Config) PrivateKey(decoder *pem.Decoder) (ed25519.PrivateKey, error) {
+	d, err := decoder.Decode(c.Private, "PRIVATE KEY")
 	if err != nil {
 		return nil, err
 	}

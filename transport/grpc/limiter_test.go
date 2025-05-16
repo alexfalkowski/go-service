@@ -5,10 +5,15 @@ import (
 
 	"github.com/alexfalkowski/go-service/internal/test"
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
+	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+func init() {
+	tg.Register(test.FS)
+}
 
 func TestLimiterLimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {

@@ -9,10 +9,15 @@ import (
 	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/meta"
 	"github.com/alexfalkowski/go-service/time"
+	tg "github.com/alexfalkowski/go-service/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
+
+func init() {
+	tg.Register(test.FS)
+}
 
 func TestInsecureUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {

@@ -19,8 +19,8 @@ type Config struct {
 }
 
 // PublicKey rsa.
-func (c *Config) PublicKey() (*rsa.PublicKey, error) {
-	d, err := pem.Decode(c.Public, "RSA PUBLIC KEY")
+func (c *Config) PublicKey(decoder *pem.Decoder) (*rsa.PublicKey, error) {
+	d, err := decoder.Decode(c.Public, "RSA PUBLIC KEY")
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +29,8 @@ func (c *Config) PublicKey() (*rsa.PublicKey, error) {
 }
 
 // PrivateKey rsa.
-func (c *Config) PrivateKey() (*rsa.PrivateKey, error) {
-	d, err := pem.Decode(c.Private, "RSA PRIVATE KEY")
+func (c *Config) PrivateKey(decoder *pem.Decoder) (*rsa.PrivateKey, error) {
+	d, err := decoder.Decode(c.Private, "RSA PRIVATE KEY")
 	if err != nil {
 		return nil, err
 	}

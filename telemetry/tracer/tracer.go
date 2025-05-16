@@ -32,7 +32,7 @@ func Register() {
 type Params struct {
 	fx.In
 	Lifecycle   fx.Lifecycle
-	FileSystem  os.FileSystem
+	FileSystem  *os.FS
 	Config      *Config
 	ID          env.ID
 	Name        env.Name

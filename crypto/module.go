@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/crypto/bcrypt"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
+	"github.com/alexfalkowski/go-service/crypto/pem"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 	"github.com/alexfalkowski/go-service/crypto/rsa"
 	"github.com/alexfalkowski/go-service/crypto/ssh"
@@ -13,6 +14,7 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
+	pem.Module,
 	rand.Module,
 	aes.Module,
 	bcrypt.Module,

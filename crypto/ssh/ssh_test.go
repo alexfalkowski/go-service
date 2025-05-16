@@ -45,10 +45,10 @@ func TestValid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewSSH()
 
-		signer, err := ssh.NewSigner(cfg)
+		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ssh.NewVerifier(cfg)
+		verifier, err := ssh.NewVerifier(test.FS, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
@@ -61,7 +61,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I try to create a signer with no configuration", t, func() {
-		signer, err := ssh.NewSigner(nil)
+		signer, err := ssh.NewSigner(nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no signer", func() {
@@ -70,7 +70,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I try to create a verifier with no configuration", t, func() {
-		verifier, err := ssh.NewVerifier(nil)
+		verifier, err := ssh.NewVerifier(nil, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no signer", func() {
@@ -82,7 +82,7 @@ func TestValid(t *testing.T) {
 //nolint:funlen
 func TestInvalid(t *testing.T) {
 	Convey("When I create a signer", t, func() {
-		_, err := ssh.NewSigner(&ssh.Config{})
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{})
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeError)
@@ -90,7 +90,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I create a verifier", t, func() {
-		_, err := ssh.NewVerifier(&ssh.Config{})
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{})
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeError)
@@ -100,10 +100,10 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewSSH()
 
-		signer, err := ssh.NewSigner(cfg)
+		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ssh.NewVerifier(cfg)
+		verifier, err := ssh.NewVerifier(test.FS, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign data", func() {
@@ -121,10 +121,10 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
 		cfg := test.NewSSH()
 
-		signer, err := ssh.NewSigner(cfg)
+		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
 
-		verifier, err := ssh.NewVerifier(cfg)
+		verifier, err := ssh.NewVerifier(test.FS, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I sign one message", func() {
@@ -137,7 +137,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I have an invalid public key", t, func() {
-		_, err := ssh.NewVerifier(&ssh.Config{Public: test.Path("secrets/redis")})
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.Path("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -145,7 +145,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I have an invalid private key", t, func() {
-		_, err := ssh.NewSigner(&ssh.Config{Private: test.Path("secrets/redis")})
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.Path("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -153,10 +153,13 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I have an missing private key", t, func() {
-		_, err := ssh.NewSigner(&ssh.Config{
-			Public:  test.Path("secrets/ssh_public"),
-			Private: test.Path("secrets/none"),
-		})
+		_, err := ssh.NewSigner(
+			test.FS,
+			&ssh.Config{
+				Public:  test.Path("secrets/ssh_public"),
+				Private: test.Path("secrets/none"),
+			},
+		)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

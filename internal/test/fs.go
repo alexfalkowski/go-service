@@ -1,25 +1,27 @@
 package test
 
-import "github.com/alexfalkowski/go-service/os"
+import (
+	"github.com/alexfalkowski/go-service/os"
+	"github.com/avfs/avfs"
+	"github.com/avfs/avfs/vfs/failfs"
+	"github.com/avfs/avfs/vfs/memfs"
+)
 
-// FS used for tests.
-var FS = os.NewFS()
+func init() {
+	f := failfs.New(memfs.New())
+	_ = f.SetFailFunc(fail)
 
-// ErrFS for test.
-type ErrFS struct{}
-
-func (f *ErrFS) ReadFile(_ string) ([]byte, error) {
-	return nil, ErrFailed
+	ErrFS = &os.FS{VFS: f}
 }
 
-func (*ErrFS) WriteFile(_ string, _ []byte, _ os.FileMode) error {
+var (
+	// FS used for tests.
+	FS = os.NewFS()
+
+	// ErrFS for tests.
+	ErrFS *os.FS
+)
+
+func fail(_ avfs.VFSBase, _ avfs.FnVFS, _ *failfs.FailParam) error {
 	return ErrFailed
-}
-
-func (f *ErrFS) PathExists(_ string) bool {
-	return true
-}
-
-func (f *ErrFS) IsNotExist(err error) bool {
-	return os.IsNotExist(err)
 }

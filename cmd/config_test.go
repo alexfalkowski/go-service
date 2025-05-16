@@ -81,14 +81,15 @@ func TestReadValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		home := os.UserHomeDir()
 		path := filepath.Join(home, ".config", test.Name.String())
+		fs := test.FS
 
-		err := os.MkdirAll(path, 0o777)
+		err := fs.MkdirAll(path, 0o777)
 		So(err, ShouldBeNil)
 
-		data, err := os.ReadFile(test.Path("configs/config.yml"))
+		data, err := fs.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
-		err = os.WriteFile(filepath.Join(path, test.Name.String()+".yml"), data, 0o600)
+		err = fs.WriteFile(filepath.Join(path, test.Name.String()+".yml"), data, 0o600)
 		So(err, ShouldBeNil)
 
 		Convey("When I read the config", func() {
@@ -106,7 +107,7 @@ func TestReadValidConfigFile(t *testing.T) {
 			})
 		})
 
-		err = os.RemoveAll(path)
+		err = fs.RemoveAll(path)
 		So(err, ShouldBeNil)
 	})
 }
@@ -115,8 +116,9 @@ func TestReadValidConfigFile(t *testing.T) {
 func TestWriteValidConfigFile(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
 		file := test.Path("configs/new_config.yml")
+		fs := test.FS
 
-		So(os.WriteFile(file, strings.Bytes("environment: development"), 0o600), ShouldBeNil)
+		So(fs.WriteFile(file, strings.Bytes("environment: development"), 0o600), ShouldBeNil)
 		t.Setenv("CONFIG_FILE", file)
 
 		set := cmd.NewFlagSet("test")
@@ -129,20 +131,21 @@ func TestWriteValidConfigFile(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				d, err := os.ReadFile(file)
+				d, err := fs.ReadFile(file)
 				So(err, ShouldBeNil)
 
 				So(bytes.String(d), ShouldEqual, "test")
 			})
 
-			So(os.Remove(file), ShouldBeNil)
+			So(fs.Remove(file), ShouldBeNil)
 		})
 	})
 
 	Convey("Given I have configuration file", t, func() {
 		file := test.Path("configs/new_config.yml")
+		fs := test.FS
 
-		So(os.WriteFile(file, strings.Bytes("environment: development"), 0o600), ShouldBeNil)
+		So(fs.WriteFile(file, strings.Bytes("environment: development"), 0o600), ShouldBeNil)
 
 		set := cmd.NewFlagSet("test")
 		set.AddOutput("file:" + file)
@@ -154,29 +157,30 @@ func TestWriteValidConfigFile(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				d, err := os.ReadFile(file)
+				d, err := fs.ReadFile(file)
 				So(err, ShouldBeNil)
 
 				So(bytes.String(d), ShouldEqual, "test")
 			})
 
-			So(os.Remove(file), ShouldBeNil)
+			So(fs.Remove(file), ShouldBeNil)
 		})
 	})
 
 	Convey("Given I have configuration file", t, func() {
 		home := os.UserHomeDir()
 		path := filepath.Join(home, ".config", test.Name.String())
+		fs := test.FS
 
-		err := os.MkdirAll(path, 0o777)
+		err := fs.MkdirAll(path, 0o777)
 		So(err, ShouldBeNil)
 
-		data, err := os.ReadFile(test.Path("configs/config.yml"))
+		data, err := fs.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
 		file := filepath.Join(path, test.Name.String()+".yml")
 
-		err = os.WriteFile(file, data, 0o600)
+		err = fs.WriteFile(file, data, 0o600)
 		So(err, ShouldBeNil)
 
 		set := cmd.NewFlagSet("test")
@@ -189,16 +193,16 @@ func TestWriteValidConfigFile(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
-				d, err := os.ReadFile(file)
+				d, err := fs.ReadFile(file)
 				So(err, ShouldBeNil)
 
 				So(bytes.String(d), ShouldEqual, "test")
 			})
 
-			So(os.Remove(file), ShouldBeNil)
+			So(fs.Remove(file), ShouldBeNil)
 		})
 
-		err = os.RemoveAll(path)
+		err = fs.RemoveAll(path)
 		So(err, ShouldBeNil)
 	})
 }

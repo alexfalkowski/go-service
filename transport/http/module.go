@@ -13,6 +13,7 @@ import (
 
 // Module for fx.
 var Module = fx.Options(
+	fx.Invoke(Register),
 	fx.Provide(http.NewServeMux),
 	fx.Provide(content.NewContent),
 	fx.Provide(mvc.NewFunctionMap),

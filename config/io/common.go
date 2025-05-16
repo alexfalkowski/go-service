@@ -9,15 +9,15 @@ import (
 )
 
 // NewCommon for io.
-func NewCommon(name env.Name, fs os.FileSystem) *Common {
-	location, kind := common(name)
+func NewCommon(name env.Name, fs *os.FS) *Common {
+	location, kind := common(name, fs)
 
 	return &Common{location: location, kind: kind, fs: fs}
 }
 
 // Common for io.
 type Common struct {
-	fs       os.FileSystem
+	fs       *os.FS
 	location string
 	kind     string
 }
@@ -49,7 +49,7 @@ func (c *Common) Kind() string {
 	return c.kind
 }
 
-func common(name env.Name) (string, string) {
+func common(name env.Name, fs *os.FS) (string, string) {
 	extensions := []string{".yaml", ".yml", ".toml", ".json"}
 	for _, extension := range extensions {
 		n := name.String()
@@ -62,8 +62,8 @@ func common(name env.Name) (string, string) {
 
 		for _, dir := range dirs {
 			name := filepath.Join(dir, file)
-			if os.PathExists(name) {
-				return name, os.PathExtension(name)
+			if fs.PathExists(name) {
+				return name, fs.PathExtension(name)
 			}
 		}
 	}

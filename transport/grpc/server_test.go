@@ -12,6 +12,10 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+func init() {
+	grpc.Register(test.FS)
+}
+
 func TestServer(t *testing.T) {
 	Convey("Given I have secure credentials", t, func() {
 		mux := http.NewServeMux()
@@ -43,12 +47,13 @@ func TestInvalidServer(t *testing.T) {
 				TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 			},
 		}
-		p := grpc.ServerParams{
+		params := grpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg,
+			FS:         test.FS,
 		}
 
-		_, err := grpc.NewServer(p)
+		_, err := grpc.NewServer(params)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

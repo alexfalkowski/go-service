@@ -55,6 +55,7 @@ func (s *Server) Register() {
 			Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.ID,
 			UserAgent: UserAgent, Version: Version,
+			FS: FS,
 		})
 		runtime.Must(err)
 
@@ -68,6 +69,7 @@ func (s *Server) Register() {
 			Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
 			Verifier: s.Verifier, ID: s.ID,
 			UserAgent: UserAgent, Version: Version,
+			FS: FS,
 		})
 		runtime.Must(err)
 
@@ -83,6 +85,7 @@ func (s *Server) Register() {
 			Mux:        mux,
 			Config:     s.DebugConfig,
 			Logger:     s.Logger,
+			FS:         FS,
 		})
 		runtime.Must(err)
 

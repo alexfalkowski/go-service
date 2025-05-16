@@ -17,8 +17,8 @@ func TestGenerate(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "none"} {
 		cfg := test.NewToken(kind)
 		ec := test.NewEd25519()
-		signer, _ := ed25519.NewSigner(ec)
-		verifier, _ := ed25519.NewVerifier(ec)
+		signer, _ := ed25519.NewSigner(test.PEM, ec)
+		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
@@ -42,8 +42,8 @@ func TestVerify(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		cfg := test.NewToken(kind)
 		ec := test.NewEd25519()
-		signer, _ := ed25519.NewSigner(ec)
-		verifier, _ := ed25519.NewVerifier(ec)
+		signer, _ := ed25519.NewSigner(test.PEM, ec)
+		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 		gen := &id.UUID{}
 		params := token.Params{
 			Config: cfg,
@@ -73,7 +73,7 @@ func TestVerify(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			SSH:    ssh.NewToken(cfg.SSH),
+			SSH:    ssh.NewToken(test.FS, cfg.SSH),
 		}
 		tkn := token.NewToken(params)
 

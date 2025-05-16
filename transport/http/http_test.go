@@ -5,8 +5,13 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/internal/test"
+	th "github.com/alexfalkowski/go-service/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
+
+func init() {
+	th.Register(test.FS)
+}
 
 func TestSecure(t *testing.T) {
 	Convey("Given I a secure client", t, func() {

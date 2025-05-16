@@ -13,7 +13,7 @@ func TestConfig(t *testing.T) {
 
 	for _, c := range configs {
 		Convey("When I try to create with missing config", t, func() {
-			c, err := tls.NewConfig(c)
+			c, err := tls.NewConfig(test.FS, c)
 
 			Convey("Then I should have a default TLS config", func() {
 				So(c, ShouldNotBeNil)
@@ -30,7 +30,7 @@ func TestConfig(t *testing.T) {
 
 	for _, c := range configs {
 		Convey("When I try to create with missing config", t, func() {
-			_, err := tls.NewConfig(c)
+			_, err := tls.NewConfig(test.FS, c)
 
 			Convey("Then I should have an errror", func() {
 				So(err, ShouldBeError)

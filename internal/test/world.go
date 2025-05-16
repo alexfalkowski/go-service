@@ -231,7 +231,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 
 	rest.Register(mux, Content, Pool)
 
-	h, err := hooks.New(NewHook())
+	h, err := hooks.New(FS, NewHook())
 	runtime.Must(err)
 
 	receiver := eh.NewReceiver(mux, hh.NewWebhook(h, id))
@@ -331,7 +331,7 @@ func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, metho
 
 // OpenDatabase for world.
 func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
-	dbs, err := pg.Open(w.Lifecycle, w.PG)
+	dbs, err := pg.Open(w.Lifecycle, FS, w.PG)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +437,7 @@ func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cacher.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	driver, err := driver.New(cfg)
+	driver, err := driver.New(FS, cfg)
 	runtime.Must(err)
 
 	params := cache.Params{

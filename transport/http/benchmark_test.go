@@ -25,6 +25,10 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
+func init() {
+	th.Register(test.FS)
+}
+
 //nolint:funlen
 func BenchmarkHTTP(b *testing.B) {
 	b.Run("std", func(b *testing.B) {

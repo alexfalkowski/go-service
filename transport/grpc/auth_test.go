@@ -161,15 +161,15 @@ func TestValidAuthUnary(t *testing.T) {
 		Convey("Given I have a gRPC server", t, func() {
 			cfg := test.NewToken(kind)
 			ec := test.NewEd25519()
-			signer, _ := ed25519.NewSigner(ec)
-			verifier, _ := ed25519.NewVerifier(ec)
+			signer, _ := ed25519.NewSigner(test.PEM, ec)
+			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 			gen := &id.UUID{}
 			params := token.Params{
 				Config: cfg,
 				Name:   test.Name,
 				JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
 				Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
-				SSH:    ssh.NewToken(cfg.SSH),
+				SSH:    ssh.NewToken(test.FS, cfg.SSH),
 			}
 			tkn := token.NewToken(params)
 

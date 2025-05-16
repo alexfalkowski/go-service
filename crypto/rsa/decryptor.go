@@ -4,16 +4,17 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 
+	"github.com/alexfalkowski/go-service/crypto/pem"
 	"github.com/alexfalkowski/go-service/crypto/rand"
 )
 
 // NewDecryptor for rsa.
-func NewDecryptor(generator *rand.Generator, cfg *Config) (*Decryptor, error) {
+func NewDecryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) (*Decryptor, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	pri, err := cfg.PrivateKey()
+	pri, err := cfg.PrivateKey(decoder)
 	if err != nil {
 		return nil, err
 	}

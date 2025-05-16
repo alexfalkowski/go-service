@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/id"
 	"github.com/alexfalkowski/go-service/limiter"
 	sg "github.com/alexfalkowski/go-service/net/grpc"
+	"github.com/alexfalkowski/go-service/os"
 	"github.com/alexfalkowski/go-service/server"
 	"github.com/alexfalkowski/go-service/telemetry/logger"
 	"github.com/alexfalkowski/go-service/telemetry/metrics"
@@ -42,6 +43,7 @@ type ServerParams struct {
 	UserAgent env.UserAgent
 	Version   env.Version
 	ID        id.Generator
+	FS        *os.FS
 	Limiter   *limiter.Limiter               `optional:"true"`
 	Verifier  token.Verifier                 `optional:"true"`
 	Unary     []grpc.UnaryServerInterceptor  `optional:"true"`
@@ -54,7 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	opt, err := creds(params.Config)
+	opt, err := creds(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -174,12 +176,12 @@ func streamServerOption(params ServerParams, server *tm.Server, interceptors ...
 	return grpc.ChainStreamInterceptor(sis...)
 }
 
-func creds(cfg *Config) (grpc.ServerOption, error) {
+func creds(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 	if !tls.IsEnabled(cfg.TLS) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
-	conf, err := tls.NewConfig(cfg.TLS)
+	conf, err := tls.NewConfig(fs, cfg.TLS)
 	if err != nil {
 		return grpc.EmptyServerOption{}, err
 	}

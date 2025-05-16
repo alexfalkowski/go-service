@@ -9,13 +9,13 @@ import (
 )
 
 // NewENV for io.
-func NewENV(location string, fs os.FileSystem) *ENV {
+func NewENV(location string, fs *os.FS) *ENV {
 	return &ENV{location: location, fs: fs}
 }
 
 // ENV reads and writes from environment variables to files.
 type ENV struct {
-	fs       os.FileSystem
+	fs       *os.FS
 	location string
 }
 
@@ -59,7 +59,7 @@ func (e *ENV) Kind() string {
 		return k
 	}
 
-	return os.PathExtension(e.name())
+	return e.fs.PathExtension(e.name())
 }
 
 func (e *ENV) name() string {

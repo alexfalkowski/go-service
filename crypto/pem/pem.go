@@ -15,9 +15,19 @@ var (
 	ErrInvalidKind = errors.New("pem: invalid kind")
 )
 
+// NewDecoder for pem.
+func NewDecoder(fs *os.FS) *Decoder {
+	return &Decoder{fs}
+}
+
+// Decoder for pem.
+type Decoder struct {
+	fs *os.FS
+}
+
 // Decode from path.
-func Decode(path, kind string) ([]byte, error) {
-	b, err := os.ReadFile(path)
+func (d *Decoder) Decode(path, kind string) ([]byte, error) {
+	b, err := d.fs.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

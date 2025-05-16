@@ -1,14 +1,18 @@
 package ed25519
 
-import "crypto/ed25519"
+import (
+	"crypto/ed25519"
+
+	"github.com/alexfalkowski/go-service/crypto/pem"
+)
 
 // NewSigner for ed25519.
-func NewSigner(cfg *Config) (*Signer, error) {
+func NewSigner(decoder *pem.Decoder, cfg *Config) (*Signer, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
 
-	pri, err := cfg.PrivateKey()
+	pri, err := cfg.PrivateKey(decoder)
 	if err != nil {
 		return nil, err
 	}

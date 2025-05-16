@@ -45,7 +45,7 @@ func TestValid(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I create an encryptor", t, func() {
-		cipher, err := rsa.NewEncryptor(rand, test.NewRSA())
+		cipher, err := rsa.NewEncryptor(rand, test.PEM, test.NewRSA())
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
@@ -54,7 +54,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I create an decryptor", t, func() {
-		cipher, err := rsa.NewDecryptor(rand, test.NewRSA())
+		cipher, err := rsa.NewDecryptor(rand, test.PEM, test.NewRSA())
 
 		Convey("Then I should not have an error", func() {
 			So(err, ShouldBeNil)
@@ -65,10 +65,10 @@ func TestValid(t *testing.T) {
 	Convey("Given I have an cipher", t, func() {
 		cfg := test.NewRSA()
 
-		encryptor, err := rsa.NewEncryptor(rand, cfg)
+		encryptor, err := rsa.NewEncryptor(rand, test.PEM, cfg)
 		So(err, ShouldBeNil)
 
-		decryptor, err := rsa.NewDecryptor(rand, cfg)
+		decryptor, err := rsa.NewDecryptor(rand, test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -85,14 +85,14 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I try to create a cipher with no configuration", t, func() {
-		encryptor, err := rsa.NewEncryptor(rand, nil)
+		encryptor, err := rsa.NewEncryptor(rand, test.PEM, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no encryptor", func() {
 			So(encryptor, ShouldBeNil)
 		})
 
-		decryptor, err := rsa.NewDecryptor(rand, nil)
+		decryptor, err := rsa.NewDecryptor(rand, test.PEM, nil)
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have no decryptor", func() {
@@ -106,7 +106,7 @@ func TestInvalid(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
 	Convey("When I create an invalid encryptor", t, func() {
-		encryptor, err := rsa.NewEncryptor(rand, &rsa.Config{})
+		encryptor, err := rsa.NewEncryptor(rand, test.PEM, &rsa.Config{})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -115,7 +115,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I create an invalid decryptor", t, func() {
-		decryptor, err := rsa.NewDecryptor(rand, &rsa.Config{})
+		decryptor, err := rsa.NewDecryptor(rand, test.PEM, &rsa.Config{})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -126,10 +126,10 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an cipher", t, func() {
 		cfg := test.NewRSA()
 
-		encryptor, err := rsa.NewEncryptor(rand, cfg)
+		encryptor, err := rsa.NewEncryptor(rand, test.PEM, cfg)
 		So(err, ShouldBeNil)
 
-		decryptor, err := rsa.NewDecryptor(rand, cfg)
+		decryptor, err := rsa.NewDecryptor(rand, test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {
@@ -148,7 +148,7 @@ func TestInvalid(t *testing.T) {
 	Convey("Given I have an cipher", t, func() {
 		cfg := test.NewRSA()
 
-		decryptor, err := rsa.NewDecryptor(rand, cfg)
+		decryptor, err := rsa.NewDecryptor(rand, test.PEM, cfg)
 		So(err, ShouldBeNil)
 
 		Convey("When I decrypt invalid data", func() {
@@ -165,7 +165,7 @@ func TestInvalid(t *testing.T) {
 			Public:  test.Path("secrets/rsa_public"),
 			Private: test.Path("secrets/ed25519_private"),
 		}
-		_, err := rsa.NewDecryptor(rand, config)
+		_, err := rsa.NewDecryptor(rand, test.PEM, config)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -177,7 +177,7 @@ func TestInvalid(t *testing.T) {
 			Public:  test.Path("secrets/ed25519_public"),
 			Private: test.Path("secrets/rsa_private"),
 		}
-		_, err := rsa.NewEncryptor(rand, config)
+		_, err := rsa.NewEncryptor(rand, test.PEM, config)
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

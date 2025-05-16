@@ -15,7 +15,7 @@ import (
 var ErrNoEncoder = errors.New("config: no encoder")
 
 // NewConfig for cmd.
-func NewConfig(name env.Name, flag string, enc *encoding.Map, fs os.FileSystem) *Config {
+func NewConfig(name env.Name, flag string, enc *encoding.Map, fs *os.FS) *Config {
 	kind, location := SplitFlag(flag)
 	rw := io.NewReadWriter(name, kind, location, fs)
 	encoder := enc.Get(rw.Kind())

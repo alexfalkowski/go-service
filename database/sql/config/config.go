@@ -24,6 +24,6 @@ type (
 )
 
 // GetPassword for SQL.
-func (d *DSN) GetURL() ([]byte, error) {
-	return os.ReadFile(d.URL)
+func (d *DSN) GetURL(fs *os.FS) ([]byte, error) {
+	return fs.ReadFile(d.URL)
 }
