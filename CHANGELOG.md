@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.611.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.611.0) - 2025-05-18
+
+- [`f51b7d9`](https://github.com/alexfalkowski/go-service/commit/f51b7d9a15302c803e6b78333e1d760fe36d6673) feat(deps): bump github.com/jackc/pgx/v5 from 5.7.4 to 5.7.5 (#1603)
+- [`b71c39e`](https://github.com/alexfalkowski/go-service/commit/b71c39e6ca7beab9966e6d39775abd1e5cc26485) docs(diagrams): update with make (#1602)
+
 ## [v1.610.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.610.0) - 2025-05-16
 
 - [`7696471`](https://github.com/alexfalkowski/go-service/commit/7696471ffa5b6a8e463d1c2f2ad1b456b262943e) feat(os): add avfs (#1601)
