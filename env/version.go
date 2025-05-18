@@ -4,12 +4,13 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/runtime"
 	"github.com/alexfalkowski/go-service/strings"
 )
 
 // NewVersion returns the version of the application.
 func NewVersion() Version {
-	return Version(cmp.Or(os.Getenv("SERVICE_VERSION"), "development"))
+	return Version(cmp.Or(os.Getenv("SERVICE_VERSION"), runtime.Version()))
 }
 
 // Version of the application.
