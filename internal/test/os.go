@@ -20,6 +20,9 @@ var (
 
 	// ErrFS for tests.
 	ErrFS *os.FS
+
+	// Exit for tests.
+	Exit = os.NewExitFunc()
 )
 
 func fail(_ avfs.VFSBase, _ avfs.FnVFS, _ *failfs.FailParam) error {

@@ -16,14 +16,15 @@ import (
 )
 
 // NewCommand for cmd.
-func NewCommand(name env.Name, version env.Version) *Command {
-	return &Command{name: name, cmds: []acmd.Command{}, version: version}
+func NewCommand(name env.Name, version env.Version, exit os.ExitFunc) *Command {
+	return &Command{name: name, exit: exit, version: version, cmds: []acmd.Command{}}
 }
 
 // Command for application.
 type Command struct {
 	name    env.Name
 	version env.Version
+	exit    os.ExitFunc
 	cmds    []acmd.Command
 }
 
@@ -39,7 +40,7 @@ func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSe
 			}
 
 			opts = append(opts, fx.Provide(flags.Provide), runtime.Module)
-			app := fx.New(options(opts)...)
+			app := fx.New(fxOptions(opts)...)
 			done := app.Done()
 
 			if err := app.Start(ctx); err != nil {
@@ -70,7 +71,7 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSe
 
 			opts = append(opts, fx.Provide(flags.Provide))
 
-			app := fx.New(options(opts)...)
+			app := fx.New(fxOptions(opts)...)
 
 			if err := app.Start(ctx); err != nil {
 				return prefix(name, err)
@@ -107,11 +108,11 @@ func (c *Command) Run(ctx context.Context, args ...string) error {
 func (c *Command) ExitOnError(ctx context.Context, args ...string) {
 	if err := c.Run(ctx, args...); err != nil {
 		slog.Error("could not start", logger.Error(err))
-		os.Exit(1)
+		c.exit(1)
 	}
 }
 
-func options(options []fx.Option) []fx.Option {
+func fxOptions(options []fx.Option) []fx.Option {
 	return append(options, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
 }
 

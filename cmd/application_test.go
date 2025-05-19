@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/cmd"
 	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/os"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -14,11 +13,15 @@ func TestApplicationRunWithServer(t *testing.T) {
 		t.Setenv("IN_CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			app := cmd.NewApplication(func(command *cmd.Command) {
-				flags := command.AddServer("server", "Start the server.", opts()...)
-				flags.AddInput("env:IN_CONFIG_FILE")
-				flags.AddOutput("env:OUT_CONFIG_FILE")
-			})
+			app := cmd.NewApplication(
+				func(command *cmd.Command) {
+					flags := command.AddServer("server", "Start the server.", opts()...)
+					flags.AddInput("env:IN_CONFIG_FILE")
+					flags.AddOutput("env:OUT_CONFIG_FILE")
+				},
+				cmd.WithApplicationName(test.Name),
+				cmd.WithApplicationVersion(test.Version),
+			)
 
 			Convey("Then I should not see an error", func() {
 				So(app.Run(t.Context(), test.Name.String(), "server"), ShouldBeNil)
@@ -32,16 +35,19 @@ func TestApplicationExitOnRun(t *testing.T) {
 		t.Setenv("CONFIG_FILE", test.Path("configs/invalid_http.config.yml"))
 
 		Convey("When I try to run an application", func() {
-			app := cmd.NewApplication(func(command *cmd.Command) {
-				flags := command.AddServer("server", "Start the server.", opts()...)
-				flags.AddInput("env:CONFIG_FILE")
-			})
-
 			var exitCode int
 
-			os.Exit = func(code int) {
+			exit := func(code int) {
 				exitCode = code
 			}
+
+			app := cmd.NewApplication(
+				func(command *cmd.Command) {
+					flags := command.AddServer("server", "Start the server.", opts()...)
+					flags.AddInput("env:CONFIG_FILE")
+				},
+				cmd.WithApplicationExit(exit),
+			)
 
 			app.ExitOnError(t.Context(), test.Name.String(), "server")
 
