@@ -20,7 +20,7 @@ func (n Name) String() string {
 	return string(n)
 }
 
-// IsSet the name.
-func (n Name) IsSet() bool {
-	return !strings.IsEmpty(n.String())
+// IsEmpty the name.
+func (n Name) IsEmpty() bool {
+	return strings.IsEmpty(n.String())
 }
