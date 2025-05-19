@@ -20,9 +20,6 @@ var (
 
 	// Unsetenv is an alias of os.Unsetenv.
 	Unsetenv = os.Unsetenv
-
-	// Exit is just an alias to os.Exit.
-	Exit = os.Exit
 )
 
 // Executable of the running application.

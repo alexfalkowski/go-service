@@ -25,3 +25,8 @@ func (v Version) String() string {
 
 	return s[1:]
 }
+
+// IsSet the version.
+func (v Version) IsSet() bool {
+	return !strings.IsEmpty(v.String())
+}
