@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.615.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.615.0) - 2025-05-19
+
+- [`f2c6d3c`](https://github.com/alexfalkowski/go-service/commit/f2c6d3c24142a61143c3d9e7ff0f989fd9bb1138) feat(cmd): add opts for application (#1609)
+
 ## [v1.614.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.614.0) - 2025-05-19
 
 - [`dedc5f6`](https://github.com/alexfalkowski/go-service/commit/dedc5f64f6ca306fcac2ecee2269ba7c3af02528) feat(cmd): add application to hide creating deps (#1608)
