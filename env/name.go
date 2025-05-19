@@ -7,8 +7,8 @@ import (
 )
 
 // NewName for this service.
-func NewName() Name {
-	return Name(cmp.Or(os.Getenv("SERVICE_NAME"), os.ExecutableName()))
+func NewName(fs *os.FS) Name {
+	return Name(cmp.Or(os.Getenv("SERVICE_NAME"), fs.ExecutableName()))
 }
 
 // Name of the service.

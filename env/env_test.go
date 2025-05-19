@@ -11,7 +11,7 @@ import (
 
 func TestName(t *testing.T) {
 	Convey("When I get a name", t, func() {
-		name := env.NewName()
+		name := env.NewName(test.FS)
 
 		Convey("Then I have a valid name", func() {
 			So(name.String(), ShouldEqual, "env.test")
@@ -22,7 +22,7 @@ func TestName(t *testing.T) {
 		t.Setenv("SERVICE_NAME", test.Name.String())
 
 		Convey("When I get a name", func() {
-			name := env.NewName()
+			name := env.NewName(test.FS)
 
 			Convey("Then I have a valid name", func() {
 				So(name.String(), ShouldEqual, "test")
