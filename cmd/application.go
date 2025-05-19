@@ -79,11 +79,11 @@ func applicationOptions(opts ...ApplicationOption) *applicationOpts {
 		o.apply(ops)
 	}
 
-	if !ops.name.IsSet() {
+	if ops.name.IsEmpty() {
 		ops.name = env.NewName(os.NewFS())
 	}
 
-	if !ops.version.IsSet() {
+	if ops.version.IsEmpty() {
 		ops.version = env.NewVersion()
 	}
 
