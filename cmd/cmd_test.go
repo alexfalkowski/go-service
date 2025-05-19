@@ -49,12 +49,12 @@ import (
 	"google.golang.org/grpc"
 )
 
-func TestRunWithServer(t *testing.T) {
+func TestCommandRunWithServer(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		t.Setenv("IN_CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
@@ -67,12 +67,12 @@ func TestRunWithServer(t *testing.T) {
 	})
 }
 
-func TestRun(t *testing.T) {
+func TestCommandRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		t.Setenv("CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
@@ -84,12 +84,12 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func TestRunWithInvalidFlag(t *testing.T) {
+func TestCommandRunWithInvalidFlag(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		t.Setenv("IN_CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run the application with an invalid flag", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
@@ -105,7 +105,7 @@ func TestRunWithInvalidFlag(t *testing.T) {
 		t.Setenv("IN_CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run the application with an invalid flag", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddClient("client", "Start the client.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
@@ -118,12 +118,12 @@ func TestRunWithInvalidFlag(t *testing.T) {
 	})
 }
 
-func TestRunWithInvalidParams(t *testing.T) {
+func TestCommandRunWithInvalidParams(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		t.Setenv("IN_CONFIG_FILE", test.Path("configs/config.yml"))
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:IN_CONFIG_FILE")
@@ -136,7 +136,7 @@ func TestRunWithInvalidParams(t *testing.T) {
 	})
 }
 
-func TestInvalid(t *testing.T) {
+func TestCommandInvalid(t *testing.T) {
 	configs := []string{
 		test.FilePath("configs/invalid_http.config.yml"),
 		test.FilePath("configs/invalid_grpc.config.yml"),
@@ -145,7 +145,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
@@ -160,9 +160,9 @@ func TestInvalid(t *testing.T) {
 	}
 }
 
-func TestDisabled(t *testing.T) {
+func TestCommandDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
-		command := cmd.New(test.Name, test.Version)
+		command := cmd.NewCommand(test.Name, test.Version)
 
 		flags := command.AddServer("server", "Start the server.", opts()...)
 		flags.AddInput("env:CONFIG_FILE")
@@ -173,12 +173,12 @@ func TestDisabled(t *testing.T) {
 	})
 }
 
-func TestExitOnRun(t *testing.T) {
+func TestCommandExitOnRun(t *testing.T) {
 	Convey("Given I have invalid configuration", t, func() {
 		t.Setenv("CONFIG_FILE", test.Path("configs/invalid_http.config.yml"))
 
 		Convey("When I try to run an application", func() {
-			command := cmd.New(test.Name, test.Version)
+			command := cmd.NewCommand(test.Name, test.Version)
 
 			flags := command.AddServer("server", "Start the server.", opts()...)
 			flags.AddInput("env:CONFIG_FILE")
@@ -198,10 +198,10 @@ func TestExitOnRun(t *testing.T) {
 	})
 }
 
-func TestClient(t *testing.T) {
+func TestCommandClient(t *testing.T) {
 	Convey("When I try to run a client", t, func() {
 		opts := []fx.Option{fx.NopLogger}
-		command := cmd.New(test.Name, test.Version)
+		command := cmd.NewCommand(test.Name, test.Version)
 
 		flags := command.AddClient("client", "Start the client.", opts...)
 		flags.AddInput("env:CONFIG_FILE")
@@ -212,7 +212,7 @@ func TestClient(t *testing.T) {
 	})
 }
 
-func TestInvalidClient(t *testing.T) {
+func TestCommandInvalidClient(t *testing.T) {
 	configs := []string{
 		test.Path("configs/invalid_http.config.yml"),
 		test.Path("configs/invalid_grpc.config.yml"),
@@ -223,7 +223,7 @@ func TestInvalidClient(t *testing.T) {
 			t.Setenv("TEST_CONFIG_FILE", config)
 
 			Convey("When I try to run an application", func() {
-				command := cmd.New(test.Name, test.Version)
+				command := cmd.NewCommand(test.Name, test.Version)
 
 				flags := command.AddClient("client", "Start the client.", opts()...)
 				flags.AddInput("env:CONFIG_FILE")

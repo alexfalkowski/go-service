@@ -15,8 +15,8 @@ import (
 	"go.uber.org/fx"
 )
 
-// New command.
-func New(name env.Name, version env.Version) *Command {
+// NewCommand for cmd.
+func NewCommand(name env.Name, version env.Version) *Command {
 	return &Command{name: name, cmds: []acmd.Command{}, version: version}
 }
 
@@ -39,8 +39,16 @@ func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSe
 			}
 
 			opts = append(opts, fx.Provide(flags.Provide), runtime.Module)
+			app := fx.New(options(opts)...)
+			done := app.Done()
 
-			return RunServer(ctx, name, opts...)
+			if err := app.Start(ctx); err != nil {
+				return prefix(name, err)
+			}
+
+			<-done
+
+			return prefix(name, app.Stop(ctx))
 		},
 	}
 
@@ -62,7 +70,13 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSe
 
 			opts = append(opts, fx.Provide(flags.Provide))
 
-			return RunClient(ctx, name, opts...)
+			app := fx.New(options(opts)...)
+
+			if err := app.Start(ctx); err != nil {
+				return prefix(name, err)
+			}
+
+			return prefix(name, app.Stop(ctx))
 		},
 	}
 
@@ -71,7 +85,7 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSe
 	return flags
 }
 
-// Run the command, do not return an error if it is context.Canceled.
+// Run the command.
 func (c *Command) Run(ctx context.Context, args ...string) error {
 	if len(args) == 0 {
 		args = SanitizeArgs(os.Args)
@@ -95,31 +109,6 @@ func (c *Command) ExitOnError(ctx context.Context, args ...string) {
 		slog.Error("could not start", logger.Error(err))
 		os.Exit(1)
 	}
-}
-
-// RunServer is a long running process.
-func RunServer(ctx context.Context, name string, opts ...fx.Option) error {
-	app := fx.New(options(opts)...)
-	done := app.Done()
-
-	if err := app.Start(ctx); err != nil {
-		return prefix(name, err)
-	}
-
-	<-done
-
-	return prefix(name, app.Stop(ctx))
-}
-
-// RunClient is a short lived process.
-func RunClient(ctx context.Context, name string, opts ...fx.Option) error {
-	app := fx.New(options(opts)...)
-
-	if err := app.Start(ctx); err != nil {
-		return prefix(name, err)
-	}
-
-	return prefix(name, app.Stop(ctx))
 }
 
 func options(options []fx.Option) []fx.Option {
