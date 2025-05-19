@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.616.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.616.0) - 2025-05-19
+
+- [`44ca235`](https://github.com/alexfalkowski/go-service/commit/44ca235b85f6b450721f0f1f206510806dec10c9) feat(deps): update github.com/lmittmann/tint to v1.1.0 (#1610)
+
 ## [v1.615.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.615.0) - 2025-05-19
 
 - [`f2c6d3c`](https://github.com/alexfalkowski/go-service/commit/f2c6d3c24142a61143c3d9e7ff0f989fd9bb1138) feat(cmd): add opts for application (#1609)
