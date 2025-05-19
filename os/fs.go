@@ -11,7 +11,7 @@ import (
 	"github.com/avfs/avfs/vfs/osfs"
 )
 
-// ModeAppend will append to an existing file.
+// ModeAppend is an alias to os.ModeAppend.
 const ModeAppend = os.ModeAppend
 
 // FileMode is an alias to os.FileMode.
@@ -76,4 +76,14 @@ func (fs *FS) ExpandPath(path string) string {
 // CleanPath makes sure that the path is expanded and in a clean format.
 func (fs *FS) CleanPath(path string) string {
 	return fs.ExpandPath(fs.Clean(path))
+}
+
+// ExecutableName of the running application.
+func (fs *FS) ExecutableName() string {
+	return fs.Base(Executable())
+}
+
+// ExecutableDir of the running application.
+func (fs *FS) ExecutableDir() string {
+	return fs.Dir(Executable())
 }

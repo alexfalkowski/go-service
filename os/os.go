@@ -1,9 +1,6 @@
 package os
 
-import (
-	"os"
-	"path/filepath"
-)
+import "os"
 
 // FileInfo is an alias of os.FileInfo.
 type FileInfo = os.FileInfo
@@ -14,17 +11,19 @@ var (
 
 	// Stdout is an alias for os.Stdout.
 	Stdout = os.Stdout
+
+	// Getenv is an alias of os.Getenv.
+	Getenv = os.Getenv
+
+	// Setenv is an alias of os.Setenv.
+	Setenv = os.Setenv
+
+	// Unsetenv is an alias of os.Unsetenv.
+	Unsetenv = os.Unsetenv
+
+	// Exit is just an alias to os.Exit.
+	Exit = os.Exit
 )
-
-// ExecutableName of the running application.
-func ExecutableName() string {
-	return filepath.Base(Executable())
-}
-
-// ExecutableDir of the running application.
-func ExecutableDir() string {
-	return filepath.Dir(Executable())
-}
 
 // Executable of the running application.
 func Executable() string {

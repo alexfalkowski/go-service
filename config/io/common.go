@@ -55,7 +55,7 @@ func common(name env.Name, fs *os.FS) (string, string) {
 		n := name.String()
 		file := n + extension
 		dirs := []string{
-			os.ExecutableDir(),
+			fs.ExecutableDir(),
 			filepath.Join(os.UserHomeDir(), ".config", n),
 			"/etc/" + n,
 		}
