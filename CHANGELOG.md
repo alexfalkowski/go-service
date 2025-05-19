@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v1.614.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.614.0) - 2025-05-19
+
+- [`dedc5f6`](https://github.com/alexfalkowski/go-service/commit/dedc5f64f6ca306fcac2ecee2269ba7c3af02528) feat(cmd): add application to hide creating deps (#1608)
+
 ## [v1.613.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.613.0) - 2025-05-19
 
 - [`97e29a6`](https://github.com/alexfalkowski/go-service/commit/97e29a6e41b2118a6317006ecdf325bd5b09bbaa) feat(os): use fs for executable (#1607)
