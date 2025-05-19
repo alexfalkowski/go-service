@@ -11,11 +11,13 @@ func newTintLogger(params Params) *slog.Logger {
 	opts := &tint.Options{
 		Level: level(params.Config),
 		ReplaceAttr: func(groups []string, attr slog.Attr) slog.Attr {
-			if err, ok := attr.Value.Any().(error); ok {
-				err := tint.Err(err)
-				err.Key = attr.Key
+			if attr.Value.Kind() == slog.KindAny {
+				if err, ok := attr.Value.Any().(error); ok {
+					err := tint.Err(err)
+					err.Key = attr.Key
 
-				return err
+					return err
+				}
 			}
 
 			return attr
