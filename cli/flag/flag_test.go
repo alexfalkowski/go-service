@@ -3,7 +3,7 @@ package flag_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cmd/flag"
+	"github.com/alexfalkowski/go-service/cli/flag"
 	"github.com/alexfalkowski/go-service/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )

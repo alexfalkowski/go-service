@@ -1,8 +1,8 @@
-package cmd
+package cli
 
 import (
-	"github.com/alexfalkowski/go-service/cmd/config"
-	"github.com/alexfalkowski/go-service/cmd/flag"
+	"github.com/alexfalkowski/go-service/cli/config"
+	"github.com/alexfalkowski/go-service/cli/flag"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
 	"github.com/alexfalkowski/go-service/os"

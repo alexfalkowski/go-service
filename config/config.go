@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/cli"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/database/sql"
 	"github.com/alexfalkowski/go-service/database/sql/pg"
@@ -32,7 +32,7 @@ import (
 var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
-func NewConfig[T comparable](input *cmd.InputConfig, validator *validator.Validator) (*T, error) {
+func NewConfig[T comparable](input *cli.InputConfig, validator *validator.Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := input.Decode(config); err != nil {
 		return nil, err
