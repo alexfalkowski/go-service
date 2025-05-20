@@ -1,0 +1,187 @@
+package cli
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/alexfalkowski/go-service/cli/flag"
+	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/telemetry/logger"
+	cmd "github.com/cristalhq/acmd"
+	"go.uber.org/dig"
+	"go.uber.org/fx"
+)
+
+// RegisterFunc for cmd.
+type RegisterFunc = func(commander Commander)
+
+// ApplicationOption for cmd.
+type ApplicationOption interface {
+	apply(opts *applicationOpts)
+}
+
+type applicationOpts struct {
+	exit    os.ExitFunc
+	name    env.Name
+	version env.Version
+}
+
+type applicationOptionFunc func(*applicationOpts)
+
+func (f applicationOptionFunc) apply(o *applicationOpts) {
+	f(o)
+}
+
+// WithApplicationName for cmd.
+func WithApplicationName(name env.Name) ApplicationOption {
+	return applicationOptionFunc(func(o *applicationOpts) {
+		o.name = name
+	})
+}
+
+// WithApplicationVersion for cmd.
+func WithApplicationVersion(version env.Version) ApplicationOption {
+	return applicationOptionFunc(func(o *applicationOpts) {
+		o.version = version
+	})
+}
+
+// WithApplicationExit for cmd.
+func WithApplicationExit(exit os.ExitFunc) ApplicationOption {
+	return applicationOptionFunc(func(o *applicationOpts) {
+		o.exit = exit
+	})
+}
+
+// NewApplication for cmd.
+func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
+	ops := options(opts...)
+	app := &Application{name: ops.name, version: ops.version, exit: ops.exit}
+
+	register(app)
+
+	return app
+}
+
+// Application for cmd.
+type Application struct {
+	name    env.Name
+	version env.Version
+	exit    os.ExitFunc
+	cmds    []cmd.Command
+}
+
+// AddServer sub command.
+func (a *Application) AddServer(name, description string, opts ...Option) *Command {
+	flags := flag.NewFlagSet(name)
+	cmd := cmd.Command{
+		Name:        name,
+		Description: description,
+		ExecFunc: func(ctx context.Context, args []string) error {
+			if err := flags.Parse(args); err != nil {
+				return err
+			}
+
+			opts = append(opts, fx.Provide(flags.Provide), runtime.Module)
+			app := fx.New(a.options(opts)...)
+			done := app.Done()
+
+			if err := app.Start(ctx); err != nil {
+				return a.prefix(name, err)
+			}
+
+			<-done
+
+			return a.prefix(name, app.Stop(ctx))
+		},
+	}
+
+	a.cmds = append(a.cmds, cmd)
+
+	return &Command{flags}
+}
+
+// AddClient sub command.
+func (a *Application) AddClient(name, description string, opts ...Option) *Command {
+	flags := flag.NewFlagSet(name)
+	cmd := cmd.Command{
+		Name:        name,
+		Description: description,
+		ExecFunc: func(ctx context.Context, args []string) error {
+			if err := flags.Parse(args); err != nil {
+				return err
+			}
+
+			opts = append(opts, fx.Provide(flags.Provide))
+			app := fx.New(a.options(opts)...)
+
+			if err := app.Start(ctx); err != nil {
+				return a.prefix(name, err)
+			}
+
+			return a.prefix(name, app.Stop(ctx))
+		},
+	}
+
+	a.cmds = append(a.cmds, cmd)
+
+	return &Command{flags}
+}
+
+// Run the application.
+func (a *Application) Run(ctx context.Context, args ...string) error {
+	if len(args) == 0 {
+		args = os.SanitizeArgs(os.Args)
+	}
+
+	name := a.name.String()
+	runner := cmd.RunnerOf(a.cmds, cmd.Config{
+		AppName:        name,
+		AppDescription: name,
+		Version:        a.version.String(),
+		Args:           args,
+		Context:        ctx,
+	})
+
+	return runner.Run()
+}
+
+// ExitOnError will run the application and exit on error.
+func (a *Application) ExitOnError(ctx context.Context, args ...string) {
+	if err := a.Run(ctx, args...); err != nil {
+		slog.Error("could not start", logger.Error(err))
+		a.exit(1)
+	}
+}
+
+func (a *Application) options(options []Option) []Option {
+	return append(options, fx.NopLogger)
+}
+
+func (a *Application) prefix(prefix string, err error) error {
+	return errors.Prefix(prefix+": failed to run", dig.RootCause(err))
+}
+
+func options(opts ...ApplicationOption) *applicationOpts {
+	ops := &applicationOpts{}
+	for _, o := range opts {
+		o.apply(ops)
+	}
+
+	if ops.name.IsEmpty() {
+		ops.name = env.NewName(os.NewFS())
+	}
+
+	if ops.version.IsEmpty() {
+		ops.version = env.NewVersion()
+	}
+
+	if ops.exit == nil {
+		ops.exit = os.NewExitFunc()
+	}
+
+	return ops
+}

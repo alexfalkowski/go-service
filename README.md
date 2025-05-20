@@ -15,22 +15,25 @@ This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/
 
 This framework heavily relies on [DI](https://en.wikipedia.org/wiki/Dependency_injection). We have chosen to use [Uber FX](https://github.com/uber-go/fx). So there is great information online to get you up to speed.
 
-## Commands
+## CLI
 
-A service has commands that are configured using [acmd](https://github.com/cristalhq/acmd). Each service has the following commands (you can add more):
-- `Server` - This will provide your server needs.
-- `Client` - This will provide your client needs.
+A service has commands that are configured using [acmd](https://github.com/cristalhq/acmd). Each service has the following commands:
+
+- `Server` - These are long running apps, e.g daemons.
+- `Client` - This are short lived apps, e.g control.
 
 These are configured in the main function.
 
 ## Configuration
 
 The supported configuration kinds are as follows:
+
 - [JSON](https://github.com/goccy/go-json)
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://github.com/go-yaml/yaml)
 
 The configuration can be read from multiple sources by specifying a flag called `--input` or `-i`. As per the following:
+
 - `env:CONFIG_FILE` - Read from an env variable called `CONFIG_FILE`. This is the default if nothing is passed. The env variable can be file path or the configuration. If it is the config, we expect the format of `extension:ENV_VARIABLE`, where extension is the supported kinds and `ENV_VARIABLE` contains the contents of the config that are *base64 encoded*. **This can be overridden.**
 - `file:path` - Read from the path.
 - If all the above fails it will try common locations, such as:
@@ -57,6 +60,7 @@ environment: development
 ## Compression
 
 We support the following:
+
 - None
 - [Zstd](https://github.com/klauspost/compress/tree/master/zstd)
 - [S2](https://github.com/klauspost/compress/tree/master/s2)
@@ -65,6 +69,7 @@ We support the following:
 ## Encoders
 
 We support the following:
+
 - [JSON](https://github.com/goccy/go-json)
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://gopkg.in/yaml.v3)
@@ -122,6 +127,7 @@ hooks:
 ## ID
 
 The framework supports the generation of ids. The following are supported:
+
 - [uuid](https://github.com/google/uuid)
 - [ksuid](https://github.com/segmentio/ksuid)
 - [nanoid](https://github.com/matoous/go-nanoid)
@@ -140,12 +146,14 @@ id:
 ## Runtime
 
 We enhance the runtime with the following:
+
 - [Automaxprocs](https://github.com/uber-go/automaxprocs)
 - [Automemlimit](https://github.com/KimMachineGun/automemlimit)
 
 ## SQL
 
 For SQL databases we support the following:
+
 - [Postgres](https://github.com/jackc/pgx)
 
 We also support master, slave combinations with the awesome [mssqlx](https://github.com/linxGnu/mssqlx).
@@ -177,6 +185,7 @@ sql:
 The health package is based on [go-health](https://github.com/alexfalkowski/go-health). This package allows us to create all sorts of ways to check external and internal systems.
 
 We also provide ways to integrate into container integration systems. So we provide the following endpoints:
+
 - `/healthz` - This allows us to check any external dependency and provide a breakdown of what is not functioning. This should only be used for verification.
 - `/livez`: Can be used for k8s [liveness](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command).
 - `/readyz`: Can be used for k8s [readiness](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes).
@@ -234,6 +243,7 @@ telemetry:
 ### Metrics
 
 For metrics we support the following:
+
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
 - [Prometheus](https://github.com/prometheus/client_golang)
 
@@ -267,6 +277,7 @@ telemetry:
 ### Trace
 
 For distributed tracing we support the following:
+
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
 
 #### Configuration
@@ -362,6 +373,7 @@ token:
 The framework allows you to define a [limiter](https://github.com/sethvargo/go-limiter). This will be applied to the different transports.
 
 The different kinds are:
+
 - [user-agent](transport/meta/key.go)
 - [ip](transport/meta/key.go)
 - [token](transport/meta/key.go)
@@ -380,6 +392,7 @@ limiter:
 ## Time
 
 The framework allows you use network time services. We use:
+
 - [ntp](https://github.com/beevik/ntp)
 - [nts](https://github.com/beevik/nts)
 
@@ -396,6 +409,7 @@ time:
 ## Transport
 
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
+
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
 - [REST](https://github.com/alexfalkowski/go-service/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/) and the awesome [resty](https://github.com/go-resty/resty).
 - [RPC](https://github.com/alexfalkowski/go-service/tree/master/net/http/rpc) - abstraction using [content negotiation](https://github.com/elnormous/contenttype).
@@ -405,11 +419,13 @@ The transport layer provides ways to abstract communication for in/out of the se
 ### gRPC
 
 Below is list of the provided interceptors:
+
 - [Limiter](https://github.com/sethvargo/go-limiter)
 
 ### REST
 
 Below is list of the provided handlers:
+
 - [Limiter](https://github.com/sethvargo/go-limiter)
 
 ### Configuration
@@ -553,7 +569,8 @@ We favour what is defined in the [Uber Go Style Guide](https://github.com/uber-g
 ### Dependencies
 
 Please setup the following:
-- https://github.com/FiloSottile/mkcert
+
+- <https://github.com/FiloSottile/mkcert>
 
 ### Setup
 
