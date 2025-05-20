@@ -3,8 +3,8 @@ package rpc
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // Route for rpc.

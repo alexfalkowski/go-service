@@ -5,9 +5,9 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/strings"
-	st "github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	st "github.com/alexfalkowski/go-service/v2/time"
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
 	"go.uber.org/fx"

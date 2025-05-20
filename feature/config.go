@@ -1,6 +1,6 @@
 package feature
 
-import "github.com/alexfalkowski/go-service/client"
+import "github.com/alexfalkowski/go-service/v2/client"
 
 // IsEnabled for feature.
 func IsEnabled(cfg *Config) bool {

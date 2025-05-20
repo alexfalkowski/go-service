@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/alexfalkowski/go-service/types/validator"
+	"github.com/alexfalkowski/go-service/v2/types/validator"
 	"go.uber.org/fx"
 )
 

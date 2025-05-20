@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/token/jwt"
-	th "github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/types/ptr"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

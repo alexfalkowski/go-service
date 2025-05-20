@@ -4,14 +4,14 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net"
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/transport/header"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
-	ts "github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/header"
+	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
+	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 // NewHandler for meta.

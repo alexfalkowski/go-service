@@ -1,10 +1,10 @@
 package config
 
 import (
-	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/paseto"
-	ts "github.com/alexfalkowski/go-service/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	ts "github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
 func tokenConfig(cfg *Config) *token.Config {

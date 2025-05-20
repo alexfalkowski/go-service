@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Transport for HTTP.

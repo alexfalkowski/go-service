@@ -1,11 +1,11 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/compress"
-	"github.com/alexfalkowski/go-service/compress/none"
-	"github.com/alexfalkowski/go-service/compress/s2"
-	"github.com/alexfalkowski/go-service/compress/snappy"
-	"github.com/alexfalkowski/go-service/compress/zstd"
+	"github.com/alexfalkowski/go-service/v2/compress"
+	"github.com/alexfalkowski/go-service/v2/compress/none"
+	"github.com/alexfalkowski/go-service/v2/compress/s2"
+	"github.com/alexfalkowski/go-service/v2/compress/snappy"
+	"github.com/alexfalkowski/go-service/v2/compress/zstd"
 )
 
 // Compressor for tests.

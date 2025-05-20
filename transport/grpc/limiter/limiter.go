@@ -4,8 +4,8 @@ import (
 	"context"
 	"path"
 
-	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

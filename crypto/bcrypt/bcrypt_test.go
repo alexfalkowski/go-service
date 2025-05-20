@@ -3,8 +3,8 @@ package bcrypt_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/bcrypt"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

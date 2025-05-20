@@ -3,7 +3,7 @@ package tracer
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/transport/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc/metadata"
 )

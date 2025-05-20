@@ -3,7 +3,7 @@ package test
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Timeout for tests.

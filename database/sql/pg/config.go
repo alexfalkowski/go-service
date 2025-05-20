@@ -1,6 +1,6 @@
 package pg
 
-import "github.com/alexfalkowski/go-service/database/sql/config"
+import "github.com/alexfalkowski/go-service/v2/database/sql/config"
 
 // IsEnabled for pg.
 func IsEnabled(cfg *Config) bool {

@@ -3,8 +3,8 @@ package test
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewGenerator for test.

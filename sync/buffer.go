@@ -1,6 +1,6 @@
 package sync
 
-import "github.com/alexfalkowski/go-service/bytes"
+import "github.com/alexfalkowski/go-service/v2/bytes"
 
 // NewBufferPool for sync.
 func NewBufferPool() *BufferPool {

@@ -3,8 +3,8 @@ package feature
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	hooks "github.com/open-feature/go-sdk-contrib/hooks/open-telemetry/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
 	"go.opentelemetry.io/otel/metric"

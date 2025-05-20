@@ -3,9 +3,9 @@ package grpc_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/internal/test"
-	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
-	tg "github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

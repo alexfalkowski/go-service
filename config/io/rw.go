@@ -1,8 +1,8 @@
 package io
 
 import (
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewReadWriter based on kind.

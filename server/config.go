@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/alexfalkowski/go-service/crypto/tls"
-	"github.com/alexfalkowski/go-service/retry"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/retry"
 )
 
 // IsEnabled for server.

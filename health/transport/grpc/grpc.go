@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"go.uber.org/fx"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )

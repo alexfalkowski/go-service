@@ -6,8 +6,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx/fxtest"

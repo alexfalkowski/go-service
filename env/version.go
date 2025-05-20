@@ -3,9 +3,9 @@ package env
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewVersion returns the version of the application.

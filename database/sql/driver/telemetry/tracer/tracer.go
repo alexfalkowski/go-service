@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql/driver"
 
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/ngrok/sqlmw"
 	"go.opentelemetry.io/otel/attribute"
 )

@@ -4,7 +4,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
 // Address returns a random address for tests.

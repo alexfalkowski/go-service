@@ -1,8 +1,8 @@
 package tracer
 
 import (
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/telemetry/header"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 )
 
 // IsEnabled for tracer.

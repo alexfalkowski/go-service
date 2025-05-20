@@ -1,9 +1,9 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/paseto"
-	"github.com/alexfalkowski/go-service/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"go.uber.org/fx"
 )
 

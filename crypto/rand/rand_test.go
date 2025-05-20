@@ -3,8 +3,8 @@ package rand_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

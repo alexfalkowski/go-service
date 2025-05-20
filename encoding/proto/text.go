@@ -3,7 +3,7 @@ package proto
 import (
 	"io"
 
-	"github.com/alexfalkowski/go-service/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )

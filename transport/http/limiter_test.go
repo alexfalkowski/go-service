@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/strings"
-	th "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

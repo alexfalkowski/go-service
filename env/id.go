@@ -3,8 +3,8 @@ package env
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewID for this service.

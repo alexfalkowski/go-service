@@ -3,8 +3,8 @@ package meta_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/meta"
-	tm "github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

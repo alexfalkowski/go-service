@@ -4,7 +4,7 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 const (

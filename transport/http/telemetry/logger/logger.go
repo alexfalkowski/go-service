@@ -4,11 +4,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/meta"
-	ts "github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
+	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 )
 

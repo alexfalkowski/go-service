@@ -3,8 +3,8 @@ package env
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewName for this service.

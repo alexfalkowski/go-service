@@ -1,12 +1,12 @@
 package encoding
 
 import (
-	"github.com/alexfalkowski/go-service/encoding/bytes"
-	"github.com/alexfalkowski/go-service/encoding/gob"
-	"github.com/alexfalkowski/go-service/encoding/json"
-	"github.com/alexfalkowski/go-service/encoding/proto"
-	"github.com/alexfalkowski/go-service/encoding/toml"
-	"github.com/alexfalkowski/go-service/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/gob"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
+	"github.com/alexfalkowski/go-service/v2/encoding/proto"
+	"github.com/alexfalkowski/go-service/v2/encoding/toml"
+	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 	"go.uber.org/fx"
 )
 

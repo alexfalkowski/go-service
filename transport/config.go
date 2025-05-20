@@ -1,8 +1,8 @@
 package transport
 
 import (
-	"github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/http"
 )
 
 // IsEnabled for transport.

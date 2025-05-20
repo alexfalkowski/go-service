@@ -1,6 +1,6 @@
 package time
 
-import "github.com/alexfalkowski/go-service/strings"
+import "github.com/alexfalkowski/go-service/v2/strings"
 
 // IsEnabled for time.
 func IsEnabled(cfg *Config) bool {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 	"go.opentelemetry.io/otel/attribute"

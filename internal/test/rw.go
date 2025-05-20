@@ -1,6 +1,6 @@
 package test
 
-import "github.com/alexfalkowski/go-service/os"
+import "github.com/alexfalkowski/go-service/v2/os"
 
 // BadReaderWriter for test.
 type BadReaderWriter struct{}

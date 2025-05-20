@@ -1,11 +1,11 @@
 package transport
 
 import (
-	"github.com/alexfalkowski/go-service/debug"
-	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/transport/grpc"
-	"github.com/alexfalkowski/go-service/transport/http"
-	"github.com/alexfalkowski/go-service/types/slices"
+	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/server"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/types/slices"
 	"go.uber.org/fx"
 )
 

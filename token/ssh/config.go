@@ -3,7 +3,7 @@ package ssh
 import (
 	"slices"
 
-	"github.com/alexfalkowski/go-service/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 )
 
 // IsEnabled for ssh.

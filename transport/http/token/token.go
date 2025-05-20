@@ -3,14 +3,14 @@ package token
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/token"
-	"github.com/alexfalkowski/go-service/transport/header"
-	"github.com/alexfalkowski/go-service/transport/meta"
-	ts "github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/header"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
+	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 // NewHandler for token.

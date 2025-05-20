@@ -3,7 +3,7 @@ package meta
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 type kind uint8

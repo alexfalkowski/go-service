@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/internal/test"
-	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/mime"
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/rpc"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	th "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

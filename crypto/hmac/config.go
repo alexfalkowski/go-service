@@ -1,6 +1,6 @@
 package hmac
 
-import "github.com/alexfalkowski/go-service/os"
+import "github.com/alexfalkowski/go-service/v2/os"
 
 // IsEnabled for hmac.
 func IsEnabled(cfg *Config) bool {

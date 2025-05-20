@@ -3,7 +3,7 @@ package slices_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/types/slices"
+	"github.com/alexfalkowski/go-service/v2/types/slices"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

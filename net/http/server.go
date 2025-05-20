@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/net"
+	"github.com/alexfalkowski/go-service/v2/net"
 )
 
 // NewServer for HTTP.

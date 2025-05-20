@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/encoding"
+	"github.com/alexfalkowski/go-service/v2/encoding"
 )
 
 type contextKey string

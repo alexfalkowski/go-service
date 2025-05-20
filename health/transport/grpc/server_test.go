@@ -3,7 +3,7 @@ package grpc_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/health/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/health/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

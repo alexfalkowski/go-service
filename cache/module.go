@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/cache/driver"
+	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"go.uber.org/fx"
 )
 

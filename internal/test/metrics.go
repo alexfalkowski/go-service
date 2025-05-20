@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-service/runtime"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 )

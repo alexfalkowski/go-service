@@ -1,10 +1,10 @@
 package pg
 
 import (
-	"github.com/alexfalkowski/go-service/database/sql/driver"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	pgx "github.com/jackc/pgx/v5/stdlib"
 	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx"

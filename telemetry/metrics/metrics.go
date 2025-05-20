@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"go.opentelemetry.io/otel/metric"
 )
 

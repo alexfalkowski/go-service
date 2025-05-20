@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"go.uber.org/fx"
 )
 

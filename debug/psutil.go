@@ -3,7 +3,7 @@ package debug
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/mem"
 )

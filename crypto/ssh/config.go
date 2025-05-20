@@ -3,7 +3,7 @@ package ssh
 import (
 	"crypto/ed25519"
 
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"golang.org/x/crypto/ssh"
 )
 

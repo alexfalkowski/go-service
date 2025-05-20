@@ -4,8 +4,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 
-	"github.com/alexfalkowski/go-service/crypto/errors"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewSigner for hmac.

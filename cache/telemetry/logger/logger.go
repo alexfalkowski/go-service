@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/cache/cacher"
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 )
 
 // NewCache for tracer.

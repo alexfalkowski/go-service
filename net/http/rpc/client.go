@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/net/http/client"
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/net/http/client"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 var (

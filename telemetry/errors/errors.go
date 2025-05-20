@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"github.com/alexfalkowski/go-service/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"go.opentelemetry.io/otel"
 )
 

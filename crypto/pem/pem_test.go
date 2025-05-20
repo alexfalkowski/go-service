@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/pem"
-	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

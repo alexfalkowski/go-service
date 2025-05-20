@@ -3,7 +3,7 @@ package tracer_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/metadata"
 )

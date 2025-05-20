@@ -3,7 +3,7 @@ package bytes
 import (
 	"io"
 
-	"github.com/alexfalkowski/go-service/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 )
 
 // NewEncoder for bytes.
