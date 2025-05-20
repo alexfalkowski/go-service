@@ -1,9 +1,10 @@
-package cmd
+package config
 
 import (
 	"errors"
 
 	"github.com/alexfalkowski/go-service/bytes"
+	"github.com/alexfalkowski/go-service/cmd/flag"
 	"github.com/alexfalkowski/go-service/config/io"
 	"github.com/alexfalkowski/go-service/encoding"
 	"github.com/alexfalkowski/go-service/env"
@@ -15,8 +16,8 @@ import (
 var ErrNoEncoder = errors.New("config: no encoder")
 
 // NewConfig for cmd.
-func NewConfig(name env.Name, flag string, enc *encoding.Map, fs *os.FS) *Config {
-	kind, location := SplitFlag(flag)
+func NewConfig(name env.Name, arg string, enc *encoding.Map, fs *os.FS) *Config {
+	kind, location := flag.SplitFlag(arg)
 	rw := io.NewReadWriter(name, kind, location, fs)
 	encoder := enc.Get(rw.Kind())
 
