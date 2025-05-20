@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.0.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.0.0) - 2025-05-20
+
+- [`7c733c0`](https://github.com/alexfalkowski/go-service/commit/7c733c0d485241d4b99ad58c0be92c59b2da8083) feat(cli): move from cmd (#1615)
+- [`9262ef3`](https://github.com/alexfalkowski/go-service/commit/9262ef38216bcceb77b325a46c2b2124cc4ee61e) refactor(cmd): move funcs (#1613)
+
 ## [v1.618.0](https://github.com/alexfalkowski/go-service/releases/tag/v1.618.0) - 2025-05-20
 
 - [`9628fa0`](https://github.com/alexfalkowski/go-service/commit/9628fa057b1453ca2598c0ba6f7564a89d345cae) feat(cmd): move files to other packages (#1612)
