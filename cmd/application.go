@@ -50,7 +50,7 @@ func WithApplicationExit(exit os.ExitFunc) ApplicationOption {
 
 // NewApplication for cmd.
 func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
-	ops := applicationOptions(opts...)
+	ops := options(opts...)
 
 	cmd := NewCommand(ops.name, ops.version, ops.exit)
 	register(cmd)
@@ -73,7 +73,7 @@ func (a *Application) ExitOnError(ctx context.Context, args ...string) {
 	a.cmd.ExitOnError(ctx, args...)
 }
 
-func applicationOptions(opts ...ApplicationOption) *applicationOpts {
+func options(opts ...ApplicationOption) *applicationOpts {
 	ops := &applicationOpts{}
 	for _, o := range opts {
 		o.apply(ops)

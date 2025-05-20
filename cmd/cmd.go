@@ -41,16 +41,16 @@ func (c *Command) AddServer(name, description string, opts ...fx.Option) *flag.F
 			}
 
 			opts = append(opts, fx.Provide(flags.Provide), runtime.Module)
-			app := fx.New(fxOptions(opts)...)
+			app := fx.New(c.options(opts)...)
 			done := app.Done()
 
 			if err := app.Start(ctx); err != nil {
-				return prefix(name, err)
+				return c.prefix(name, err)
 			}
 
 			<-done
 
-			return prefix(name, app.Stop(ctx))
+			return c.prefix(name, app.Stop(ctx))
 		},
 	}
 
@@ -71,14 +71,13 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *flag.F
 			}
 
 			opts = append(opts, fx.Provide(flags.Provide))
-
-			app := fx.New(fxOptions(opts)...)
+			app := fx.New(c.options(opts)...)
 
 			if err := app.Start(ctx); err != nil {
-				return prefix(name, err)
+				return c.prefix(name, err)
 			}
 
-			return prefix(name, app.Stop(ctx))
+			return c.prefix(name, app.Stop(ctx))
 		},
 	}
 
@@ -113,10 +112,10 @@ func (c *Command) ExitOnError(ctx context.Context, args ...string) {
 	}
 }
 
-func fxOptions(options []fx.Option) []fx.Option {
+func (c *Command) options(options []fx.Option) []fx.Option {
 	return append(options, fx.StartTimeout(time.Minute), fx.StopTimeout(time.Minute), fx.NopLogger)
 }
 
-func prefix(prefix string, err error) error {
+func (c *Command) prefix(prefix string, err error) error {
 	return se.Prefix(prefix+": failed to run", dig.RootCause(err))
 }
