@@ -6,9 +6,9 @@ import (
 	"io"
 	"path"
 
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	"go.opentelemetry.io/otel/metric"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

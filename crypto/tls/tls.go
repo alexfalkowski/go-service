@@ -3,7 +3,7 @@ package tls
 import (
 	"crypto/tls"
 
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewConfig for tls.

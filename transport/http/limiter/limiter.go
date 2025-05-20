@@ -3,9 +3,9 @@ package limiter
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 // Handler for limiter.

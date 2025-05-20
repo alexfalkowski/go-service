@@ -1,6 +1,6 @@
 package id
 
-import "github.com/alexfalkowski/go-service/strings"
+import "github.com/alexfalkowski/go-service/v2/strings"
 
 // IsEnabled the config.
 func IsEnabled(config *Config) bool {

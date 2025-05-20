@@ -3,8 +3,8 @@ package content
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/mime"
+	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/mime"
 	ct "github.com/elnormous/contenttype"
 )
 

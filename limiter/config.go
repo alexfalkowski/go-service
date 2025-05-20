@@ -1,6 +1,6 @@
 package limiter
 
-import "github.com/alexfalkowski/go-service/strings"
+import "github.com/alexfalkowski/go-service/v2/strings"
 
 // IsEnabled limiter.
 func IsEnabled(cfg *Config) bool {

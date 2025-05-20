@@ -5,9 +5,9 @@ import (
 	"database/sql/driver"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"github.com/ngrok/sqlmw"
 )
 

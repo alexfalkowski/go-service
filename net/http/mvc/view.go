@@ -5,10 +5,10 @@ import (
 	"html/template"
 	"path/filepath"
 
-	"github.com/alexfalkowski/go-service/meta"
-	hm "github.com/alexfalkowski/go-service/net/http/meta"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewLayout defines a full and partial layout.

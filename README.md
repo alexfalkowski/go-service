@@ -1,8 +1,8 @@
 ![Gopher](assets/gopher.png)
 [![CircleCI](https://circleci.com/gh/alexfalkowski/go-service.svg?style=shield)](https://circleci.com/gh/alexfalkowski/go-service)
 [![codecov](https://codecov.io/gh/alexfalkowski/go-service/graph/badge.svg?token=AGP01JOTM0)](https://codecov.io/gh/alexfalkowski/go-service)
-[![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service)](https://goreportcard.com/report/github.com/alexfalkowski/go-service)
-[![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service)
+[![Go Report Card](https://goreportcard.com/badge/github.com/alexfalkowski/go-service/v2)](https://goreportcard.com/report/github.com/alexfalkowski/go-service/v2)
+[![Go Reference](https://pkg.go.dev/badge/github.com/alexfalkowski/go-service/v2.svg)](https://pkg.go.dev/github.com/alexfalkowski/go-service/v2)
 [![Stability: Active](https://masterminds.github.io/stability/active.svg)](https://masterminds.github.io/stability/active.html)
 
 # Go Service
@@ -411,9 +411,9 @@ time:
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
 
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
-- [REST](https://github.com/alexfalkowski/go-service/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/) and the awesome [resty](https://github.com/go-resty/resty).
-- [RPC](https://github.com/alexfalkowski/go-service/tree/master/net/http/rpc) - abstraction using [content negotiation](https://github.com/elnormous/contenttype).
-- [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) - We have a simple [framework](https://github.com/alexfalkowski/go-service/tree/master/net/http/mvc).
+- [REST](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/) and the awesome [resty](https://github.com/go-resty/resty).
+- [RPC](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rpc) - abstraction using [content negotiation](https://github.com/elnormous/contenttype).
+- [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) - We have a simple [framework](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/mvc).
 - [CloudEvents](https://github.com/cloudevents/sdk-go) - A specification for describing event data in a common way.
 
 ### gRPC

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/net/http/meta"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/types/ptr"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/types/ptr"
 )
 
 // RequestHandler is a handler with a generic request and response.

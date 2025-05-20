@@ -2,9 +2,9 @@ package paseto
 
 import (
 	"aidanwoods.dev/go-paseto"
-	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // NewToken for paseto.

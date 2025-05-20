@@ -3,7 +3,7 @@ package cacher
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Cache allows marshaling and compressing items to the cache.

@@ -3,11 +3,11 @@ package http
 import (
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/mvc"
-	"github.com/alexfalkowski/go-service/net/http/rest"
-	"github.com/alexfalkowski/go-service/net/http/rpc"
-	"github.com/alexfalkowski/go-service/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
+	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"go.uber.org/fx"
 )
 

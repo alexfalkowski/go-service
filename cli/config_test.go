@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/cli/flag"
-	"github.com/alexfalkowski/go-service/encoding/base64"
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -3,9 +3,9 @@ package ssh_test
 import (
 	"testing"
 
-	cs "github.com/alexfalkowski/go-service/crypto/ssh"
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/token/ssh"
+	cs "github.com/alexfalkowski/go-service/v2/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

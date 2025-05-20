@@ -5,8 +5,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 )
 
 // NewGenerator for rsa.

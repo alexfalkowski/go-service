@@ -3,7 +3,7 @@ package ed25519
 import (
 	"crypto/ed25519"
 
-	"github.com/alexfalkowski/go-service/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 )
 
 // NewSigner for ed25519.

@@ -3,8 +3,8 @@ package meta
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/meta"
 )
 
 const (

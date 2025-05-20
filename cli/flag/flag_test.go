@@ -3,8 +3,8 @@ package flag_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/cli/flag"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -3,7 +3,7 @@ package transport
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/server"
+	"github.com/alexfalkowski/go-service/v2/server"
 	"go.uber.org/fx"
 )
 

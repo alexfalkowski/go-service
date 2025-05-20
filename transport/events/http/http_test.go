@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey"

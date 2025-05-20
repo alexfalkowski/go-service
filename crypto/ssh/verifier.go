@@ -3,8 +3,8 @@ package ssh
 import (
 	"crypto/ed25519"
 
-	crypto "github.com/alexfalkowski/go-service/crypto/errors"
-	"github.com/alexfalkowski/go-service/os"
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewVerifier for ssh.

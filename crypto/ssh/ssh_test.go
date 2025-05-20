@@ -3,11 +3,11 @@ package ssh_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/errors"
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/crypto/ssh"
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

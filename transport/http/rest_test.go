@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/internal/test"
-	"github.com/alexfalkowski/go-service/mime"
-	"github.com/alexfalkowski/go-service/net/http/rest"
-	th "github.com/alexfalkowski/go-service/transport/http"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

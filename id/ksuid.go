@@ -1,7 +1,7 @@
 package id
 
 import (
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/segmentio/ksuid"
 )
 

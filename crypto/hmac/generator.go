@@ -1,6 +1,6 @@
 package hmac
 
-import "github.com/alexfalkowski/go-service/crypto/rand"
+import "github.com/alexfalkowski/go-service/v2/crypto/rand"
 
 // NewGenerator for hmac.
 func NewGenerator(generator *rand.Generator) *Generator {

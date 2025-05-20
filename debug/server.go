@@ -4,13 +4,13 @@ import (
 	"cmp"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/crypto/tls"
-	"github.com/alexfalkowski/go-service/errors"
-	sh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/server"
-	"github.com/alexfalkowski/go-service/telemetry/logger"
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	sh "github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/server"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"go.uber.org/fx"
 )
 

@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/mime"
-	"github.com/alexfalkowski/go-service/net/http/content"
-	hm "github.com/alexfalkowski/go-service/net/http/meta"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // Delete method for mvc.

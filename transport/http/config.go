@@ -1,6 +1,6 @@
 package http
 
-import "github.com/alexfalkowski/go-service/server"
+import "github.com/alexfalkowski/go-service/v2/server"
 
 // IsEnabled for HTTP.
 func IsEnabled(cfg *Config) bool {

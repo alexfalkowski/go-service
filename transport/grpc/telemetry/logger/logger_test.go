@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/transport/grpc/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 )

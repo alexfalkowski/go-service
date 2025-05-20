@@ -5,8 +5,8 @@ import (
 	"crypto/cipher"
 	"errors"
 
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // ErrInvalidLength for aes.

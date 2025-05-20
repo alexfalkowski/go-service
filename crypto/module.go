@@ -1,14 +1,14 @@
 package crypto
 
 import (
-	"github.com/alexfalkowski/go-service/crypto/aes"
-	"github.com/alexfalkowski/go-service/crypto/bcrypt"
-	"github.com/alexfalkowski/go-service/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/crypto/hmac"
-	"github.com/alexfalkowski/go-service/crypto/pem"
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/crypto/rsa"
-	"github.com/alexfalkowski/go-service/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/crypto/aes"
+	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
+	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
+	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"go.uber.org/fx"
 )
 

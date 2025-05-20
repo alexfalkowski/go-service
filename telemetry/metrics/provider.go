@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/alexfalkowski/go-service/env"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	om "go.opentelemetry.io/otel/metric"

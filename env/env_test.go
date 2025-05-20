@@ -3,9 +3,9 @@ package env_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/internal/test"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

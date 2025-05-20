@@ -3,13 +3,13 @@ package config
 import (
 	"errors"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/cli/flag"
-	"github.com/alexfalkowski/go-service/config/io"
-	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/env"
-	se "github.com/alexfalkowski/go-service/errors"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/config/io"
+	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/env"
+	se "github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // ErrNoEncoder for cmd.

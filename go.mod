@@ -1,4 +1,4 @@
-module github.com/alexfalkowski/go-service
+module github.com/alexfalkowski/go-service/v2
 
 go 1.24.0
 

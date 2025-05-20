@@ -3,7 +3,7 @@ package id
 import (
 	"errors"
 
-	"github.com/alexfalkowski/go-service/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 )
 
 // ErrNotFound for id.

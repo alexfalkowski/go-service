@@ -3,8 +3,8 @@ package base64
 import (
 	"encoding/base64"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // Encode src to a string.

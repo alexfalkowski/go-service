@@ -5,10 +5,10 @@ import (
 	"context"
 	"net/http"
 
-	v1 "github.com/alexfalkowski/go-service/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/meta"
-	hm "github.com/alexfalkowski/go-service/net/http/meta"
-	h "github.com/alexfalkowski/go-service/net/http/status"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	h "github.com/alexfalkowski/go-service/v2/net/http/status"
 	"google.golang.org/grpc/codes"
 	g "google.golang.org/grpc/status"
 )

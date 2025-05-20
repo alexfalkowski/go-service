@@ -1,11 +1,11 @@
 package cli
 
 import (
-	"github.com/alexfalkowski/go-service/cli/config"
-	"github.com/alexfalkowski/go-service/cli/flag"
-	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/os"
+	"github.com/alexfalkowski/go-service/v2/cli/config"
+	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/os"
 )
 
 // NewOutputConfig for cmd.

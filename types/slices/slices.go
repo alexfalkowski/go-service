@@ -1,6 +1,6 @@
 package slices
 
-import "github.com/alexfalkowski/go-service/types/structs"
+import "github.com/alexfalkowski/go-service/v2/types/structs"
 
 // AppendNotZero elements to the slice, only if the element is not zero.
 func AppendNotZero[T comparable](slice []T, elems ...T) []T {

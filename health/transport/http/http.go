@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/net/http/rest"
-	"github.com/alexfalkowski/go-service/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/rest"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"go.uber.org/fx"
 )
 

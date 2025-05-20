@@ -3,8 +3,8 @@ package limiter_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/limiter"
-	"github.com/alexfalkowski/go-service/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"
 )

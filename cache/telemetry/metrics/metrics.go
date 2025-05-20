@@ -3,9 +3,9 @@ package metrics
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/cache/cacher"
-	"github.com/alexfalkowski/go-service/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )

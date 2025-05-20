@@ -1,7 +1,7 @@
 package time
 
 import (
-	"github.com/alexfalkowski/go-service/errors"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/beevik/nts"
 )
 

@@ -1,15 +1,15 @@
 package module
 
 import (
-	"github.com/alexfalkowski/go-service/compress"
-	"github.com/alexfalkowski/go-service/crypto"
-	"github.com/alexfalkowski/go-service/encoding"
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/id"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/sync"
-	"github.com/alexfalkowski/go-service/time"
-	"github.com/alexfalkowski/go-service/types"
+	"github.com/alexfalkowski/go-service/v2/compress"
+	"github.com/alexfalkowski/go-service/v2/crypto"
+	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/sync"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/types"
 	"go.uber.org/fx"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/v2/meta"
 )
 
 // Meta for logger.

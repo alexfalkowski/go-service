@@ -3,9 +3,9 @@ package tracer
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"

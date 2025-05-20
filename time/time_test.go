@@ -3,7 +3,7 @@ package time_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -3,9 +3,9 @@ package io
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/encoding/base64"
-	"github.com/alexfalkowski/go-service/os"
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewENV for io.

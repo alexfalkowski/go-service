@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/v2/meta"
 )
 
 // WriteError will write the error to the response writer.

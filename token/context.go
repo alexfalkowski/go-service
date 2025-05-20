@@ -3,7 +3,7 @@ package token
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/meta"
+	"github.com/alexfalkowski/go-service/v2/meta"
 )
 
 // SubjectKey for token.

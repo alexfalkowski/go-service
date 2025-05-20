@@ -3,7 +3,7 @@ package time
 import (
 	"time"
 
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
 const (

@@ -1,7 +1,7 @@
 package flag
 
 import (
-	"github.com/alexfalkowski/go-service/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/spf13/pflag"
 )
 

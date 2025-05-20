@@ -1,6 +1,6 @@
 package io
 
-import "github.com/alexfalkowski/go-service/os"
+import "github.com/alexfalkowski/go-service/v2/os"
 
 // NewFile for io.
 func NewFile(location string, fs *os.FS) *File {

@@ -5,13 +5,13 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/errors"
-	nh "github.com/alexfalkowski/go-service/net/http"
-	"github.com/alexfalkowski/go-service/net/http/content"
-	"github.com/alexfalkowski/go-service/net/http/status"
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/sync"
-	"github.com/alexfalkowski/go-service/time"
+	"github.com/alexfalkowski/go-service/v2/errors"
+	nh "github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/sync"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // ClientOption for http.

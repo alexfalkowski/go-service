@@ -212,7 +212,7 @@ const file_greet_v1_service_proto_rawDesc = "" +
 	"\amessage\x18\x01 \x01(\tR\amessage2\xb0\x01\n" +
 	"\x0eGreeterService\x12C\n" +
 	"\bSayHello\x12\x19.greet.v1.SayHelloRequest\x1a\x1a.greet.v1.SayHelloResponse\"\x00\x12Y\n" +
-	"\x0eSayStreamHello\x12\x1f.greet.v1.SayStreamHelloRequest\x1a .greet.v1.SayStreamHelloResponse\"\x00(\x010\x01B3Z1github.com/alexfalkowski/go-service/test/greet/v1b\x06proto3"
+	"\x0eSayStreamHello\x12\x1f.greet.v1.SayStreamHelloRequest\x1a .greet.v1.SayStreamHelloResponse\"\x00(\x010\x01B6Z4github.com/alexfalkowski/go-service/v2/test/greet/v1b\x06proto3"
 
 var (
 	file_greet_v1_service_proto_rawDescOnce sync.Once

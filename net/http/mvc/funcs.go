@@ -3,7 +3,7 @@ package mvc
 import (
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/runtime"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/go-sprout/sprout"
 	"github.com/go-sprout/sprout/registry/conversion"
 	"github.com/go-sprout/sprout/registry/maps"

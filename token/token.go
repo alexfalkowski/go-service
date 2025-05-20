@@ -3,13 +3,13 @@ package token
 import (
 	"context"
 
-	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/env"
-	"github.com/alexfalkowski/go-service/meta"
-	"github.com/alexfalkowski/go-service/strings"
-	"github.com/alexfalkowski/go-service/token/jwt"
-	"github.com/alexfalkowski/go-service/token/paseto"
-	"github.com/alexfalkowski/go-service/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/paseto"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"go.uber.org/fx"
 )
 

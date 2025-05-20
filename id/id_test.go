@@ -3,8 +3,8 @@ package id_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/crypto/rand"
-	"github.com/alexfalkowski/go-service/id"
+	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/id"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
