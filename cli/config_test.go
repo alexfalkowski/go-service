@@ -1,11 +1,11 @@
-package cmd_test
+package cli_test
 
 import (
 	"path/filepath"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/bytes"
-	"github.com/alexfalkowski/go-service/cmd/flag"
+	"github.com/alexfalkowski/go-service/cli/flag"
 	"github.com/alexfalkowski/go-service/encoding/base64"
 	"github.com/alexfalkowski/go-service/internal/test"
 	"github.com/alexfalkowski/go-service/os"

@@ -4,8 +4,8 @@ import (
 	"time"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/cmd"
-	"github.com/alexfalkowski/go-service/cmd/flag"
+	"github.com/alexfalkowski/go-service/cli"
+	"github.com/alexfalkowski/go-service/cli/flag"
 	"github.com/alexfalkowski/go-service/crypto/aes"
 	"github.com/alexfalkowski/go-service/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/crypto/hmac"
@@ -269,13 +269,13 @@ func NewPGConfig() *pg.Config {
 }
 
 // NewInputConfig for test.
-func NewInputConfig(set *flag.FlagSet) *cmd.InputConfig {
-	return cmd.NewInputConfig(Name, set, Encoder, FS)
+func NewInputConfig(set *flag.FlagSet) *cli.InputConfig {
+	return cli.NewInputConfig(Name, set, Encoder, FS)
 }
 
 // NewOutputConfig for test.
-func NewOutputConfig(set *flag.FlagSet) *cmd.OutputConfig {
-	return cmd.NewOutputConfig(Name, set, Encoder, FS)
+func NewOutputConfig(set *flag.FlagSet) *cli.OutputConfig {
+	return cli.NewOutputConfig(Name, set, Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.
