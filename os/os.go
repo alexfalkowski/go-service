@@ -1,6 +1,10 @@
 package os
 
-import "os"
+import (
+	"os"
+	"slices"
+	"strings"
+)
 
 // FileInfo is an alias of os.FileInfo.
 type FileInfo = os.FileInfo
@@ -34,4 +38,11 @@ func UserHomeDir() string {
 	home, _ := os.UserHomeDir()
 
 	return home
+}
+
+// SanitizeArgs removes all flags that start with -test.
+func SanitizeArgs(args []string) []string {
+	return slices.DeleteFunc(args, func(s string) bool {
+		return strings.HasPrefix(s, "-test")
+	})
 }

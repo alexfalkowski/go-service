@@ -1,8 +1,6 @@
-package cmd
+package flag
 
 import (
-	"slices"
-
 	"github.com/alexfalkowski/go-service/strings"
 	"github.com/spf13/pflag"
 )
@@ -48,16 +46,9 @@ func (f *FlagSet) Provide() *FlagSet {
 	return f
 }
 
-// SanitizeArgs removes all flags that start with -test.
-func SanitizeArgs(args []string) []string {
-	return slices.DeleteFunc(args, func(s string) bool {
-		return strings.HasPrefix(s, "-test")
-	})
-}
-
-// SplitFlag for cmd.
-func SplitFlag(flag string) (string, string) {
-	kind, name, ok := strings.Cut(flag, ":")
+// SplitFlag will split by : and give us the kind and name.
+func SplitFlag(arg string) (string, string) {
+	kind, name, ok := strings.Cut(arg, ":")
 	if !ok {
 		return "", ""
 	}

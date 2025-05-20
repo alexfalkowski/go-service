@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	cache "github.com/alexfalkowski/go-service/cache/config"
-	"github.com/alexfalkowski/go-service/cmd"
+	"github.com/alexfalkowski/go-service/cmd/flag"
 	"github.com/alexfalkowski/go-service/config"
 	"github.com/alexfalkowski/go-service/crypto"
 	"github.com/alexfalkowski/go-service/crypto/aes"
@@ -33,7 +33,7 @@ func TestValidEnvConfig(t *testing.T) {
 		Convey("Given I have configuration file", t, func() {
 			t.Setenv("CONFIG_FILE", file)
 
-			set := cmd.NewFlagSet("test")
+			set := flag.NewFlagSet("test")
 			set.AddInput("env:CONFIG_FILE")
 
 			input := test.NewInputConfig(set)
@@ -52,7 +52,7 @@ func TestValidEnvConfig(t *testing.T) {
 
 func TestValidFileConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		set := cmd.NewFlagSet("test")
+		set := flag.NewFlagSet("test")
 		set.AddInput(test.FilePath("configs/config.yml"))
 
 		input := test.NewInputConfig(set)
@@ -70,7 +70,7 @@ func TestValidFileConfig(t *testing.T) {
 
 func TestMissingFileConfig(t *testing.T) {
 	Convey("Given I have missing configuration file", t, func() {
-		set := cmd.NewFlagSet("test")
+		set := flag.NewFlagSet("test")
 		set.AddInput(test.FilePath("configs/missing.yml"))
 
 		input := test.NewInputConfig(set)
@@ -93,7 +93,7 @@ func TestInvalidFileConfig(t *testing.T) {
 
 	for _, file := range files {
 		Convey("Given I have configuration file", t, func() {
-			set := cmd.NewFlagSet("test")
+			set := flag.NewFlagSet("test")
 			set.AddInput(file)
 
 			input := test.NewInputConfig(set)
@@ -119,7 +119,7 @@ func TestValidMemConfig(t *testing.T) {
 		t.Setenv("CONFIG_FILE", "yaml:CONFIG")
 		t.Setenv("CONFIG", base64.Encode(d))
 
-		set := cmd.NewFlagSet("test")
+		set := flag.NewFlagSet("test")
 		set.AddInput("env:CONFIG_FILE")
 
 		input := test.NewInputConfig(set)

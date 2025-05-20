@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/cmd/flag"
 	"github.com/alexfalkowski/go-service/env"
 	se "github.com/alexfalkowski/go-service/errors"
 	"github.com/alexfalkowski/go-service/os"
@@ -29,8 +30,8 @@ type Command struct {
 }
 
 // AddServer to the command.
-func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSet {
-	flags := NewFlagSet(name)
+func (c *Command) AddServer(name, description string, opts ...fx.Option) *flag.FlagSet {
+	flags := flag.NewFlagSet(name)
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
@@ -59,8 +60,8 @@ func (c *Command) AddServer(name, description string, opts ...fx.Option) *FlagSe
 }
 
 // AddClient to the command.
-func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSet {
-	flags := NewFlagSet(name)
+func (c *Command) AddClient(name, description string, opts ...fx.Option) *flag.FlagSet {
+	flags := flag.NewFlagSet(name)
 	cmd := acmd.Command{
 		Name:        name,
 		Description: description,
@@ -89,7 +90,7 @@ func (c *Command) AddClient(name, description string, opts ...fx.Option) *FlagSe
 // Run the command.
 func (c *Command) Run(ctx context.Context, args ...string) error {
 	if len(args) == 0 {
-		args = SanitizeArgs(os.Args)
+		args = os.SanitizeArgs(os.Args)
 	}
 
 	name := c.name.String()
