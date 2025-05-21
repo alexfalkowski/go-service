@@ -8,7 +8,7 @@ import (
 	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 )
 
 // NewHandler for tracer.

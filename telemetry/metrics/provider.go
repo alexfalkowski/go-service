@@ -10,7 +10,7 @@ import (
 	om "go.opentelemetry.io/otel/metric"
 	sm "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 	"go.uber.org/fx"
 )
 
