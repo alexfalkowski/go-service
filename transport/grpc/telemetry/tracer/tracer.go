@@ -13,8 +13,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Tracer is an alias for tracer.Tracer.
+type Tracer = tracer.Tracer
+
 // UnaryServerInterceptor for tracer.
-func UnaryServerInterceptor(trace *tracer.Tracer) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -44,7 +47,7 @@ func UnaryServerInterceptor(trace *tracer.Tracer) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for tracer.
-func StreamServerInterceptor(trace *tracer.Tracer) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -77,7 +80,7 @@ func StreamServerInterceptor(trace *tracer.Tracer) grpc.StreamServerInterceptor 
 }
 
 // UnaryClientInterceptor for tracer.
-func UnaryClientInterceptor(trace *tracer.Tracer) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {
@@ -107,7 +110,7 @@ func UnaryClientInterceptor(trace *tracer.Tracer) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for tracer.
-func StreamClientInterceptor(trace *tracer.Tracer) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		service := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(service) {

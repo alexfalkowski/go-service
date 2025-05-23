@@ -5,11 +5,10 @@ import (
 	"path"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
-	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -17,11 +16,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type (
+	// Generator is an alias token.Generator.
+	Generator = token.Generator
+
+	// Verifier is an alias token.Verifier.
+	Verifier = token.Verifier
+)
+
 // UnaryServerInterceptor for token.
-func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		service := path.Dir(info.FullMethod)[1:]
-		if ts.IsObservable(service) {
+		if strings.IsObservable(service) {
 			return handler(ctx, req)
 		}
 
@@ -37,10 +44,10 @@ func UnaryServerInterceptor(verifier token.Verifier) grpc.UnaryServerInterceptor
 }
 
 // StreamServerInterceptor for token.
-func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		service := path.Dir(info.FullMethod)[1:]
-		if ts.IsObservable(service) {
+		if strings.IsObservable(service) {
 			return handler(srv, stream)
 		}
 
@@ -60,12 +67,12 @@ func StreamServerInterceptor(verifier token.Verifier) grpc.StreamServerIntercept
 }
 
 // NewPerRPCCredentials for token.
-func NewPerRPCCredentials(generator token.Generator) credentials.PerRPCCredentials {
+func NewPerRPCCredentials(generator Generator) credentials.PerRPCCredentials {
 	return &tokenPerRPCCredentials{generator: generator}
 }
 
 type tokenPerRPCCredentials struct {
-	generator token.Generator
+	generator Generator
 }
 
 func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {

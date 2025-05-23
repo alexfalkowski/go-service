@@ -11,14 +11,17 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 )
 
+// Tracer is an alias for tracer.Tracer.
+type Tracer = tracer.Tracer
+
 // NewHandler for tracer.
-func NewHandler(tracer *tracer.Tracer) *Handler {
+func NewHandler(tracer *Tracer) *Handler {
 	return &Handler{tracer: tracer}
 }
 
 // Handler for tracer.
 type Handler struct {
-	tracer *tracer.Tracer
+	tracer *Tracer
 }
 
 // ServeHTTP for tracer.
@@ -48,13 +51,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for tracer.
-func NewRoundTripper(tracer *tracer.Tracer, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(tracer *Tracer, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{tracer: tracer, RoundTripper: hrt}
 }
 
 // RoundTripper for tracer.
 type RoundTripper struct {
-	tracer *tracer.Tracer
+	tracer *Tracer
 	http.RoundTripper
 }
 

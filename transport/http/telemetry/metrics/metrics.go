@@ -13,6 +13,9 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
+// Meter is an alias for metrics.Meter.
+type Meter = metrics.Meter
+
 // Register prometheus.
 func Register(cfg *metrics.Config, mux *http.ServeMux) {
 	if !metrics.IsEnabled(cfg) || !cfg.IsPrometheus() {
@@ -23,7 +26,7 @@ func Register(cfg *metrics.Config, mux *http.ServeMux) {
 }
 
 // NewHandler for metrics.
-func NewHandler(meter *metrics.Meter) *Handler {
+func NewHandler(meter *Meter) *Handler {
 	started := meter.MustInt64Counter("http_server_started_total", "Total number of RPCs started on the server.")
 	received := meter.MustInt64Counter("http_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := meter.MustInt64Counter("http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -78,7 +81,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for metrics.
-func NewRoundTripper(meter *metrics.Meter, r http.RoundTripper) *RoundTripper {
+func NewRoundTripper(meter *Meter, r http.RoundTripper) *RoundTripper {
 	started := meter.MustInt64Counter("http_client_started_total", "Total number of RPCs started on the client.")
 	received := meter.MustInt64Counter("http_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := meter.MustInt64Counter("http_client_msg_sent_total", "Total number of RPC messages sent by the client.")

@@ -14,14 +14,17 @@ import (
 
 const service = "http"
 
+// Logger is an alias of logger.Logger.
+type Logger = logger.Logger
+
 // NewHandler for logger.
-func NewHandler(logger *logger.Logger) *Handler {
+func NewHandler(logger *Logger) *Handler {
 	return &Handler{logger: logger}
 }
 
 // Handler for logger.
 type Handler struct {
-	logger *logger.Logger
+	logger *Logger
 }
 
 // ServeHTTP or logger.
@@ -49,13 +52,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for logger.
-func NewRoundTripper(logger *logger.Logger, r http.RoundTripper) *RoundTripper {
+func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
 
 // RoundTripper for logger.
 type RoundTripper struct {
-	logger *logger.Logger
+	logger *Logger
 
 	http.RoundTripper
 }

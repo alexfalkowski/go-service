@@ -14,10 +14,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Logger is an alias of logger.Logger.
+type Logger = logger.Logger
+
 const service = "grpc"
 
 // UnaryServerInterceptor for logger.
-func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -42,7 +45,7 @@ func UnaryServerInterceptor(log *logger.Logger) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for logger.
-func StreamServerInterceptor(log *logger.Logger) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -68,7 +71,7 @@ func StreamServerInterceptor(log *logger.Logger) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for logger.
-func UnaryClientInterceptor(log *logger.Logger) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {
@@ -93,7 +96,7 @@ func UnaryClientInterceptor(log *logger.Logger) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for logger.
-func StreamClientInterceptor(log *logger.Logger) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := path.Dir(fullMethod)[1:]
 		if strings.IsObservable(p) {

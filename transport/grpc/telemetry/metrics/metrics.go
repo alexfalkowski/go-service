@@ -15,8 +15,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Meter is an alias for metrics.Meter.
+type Meter = metrics.Meter
+
 // NewServer for metrics.
-func NewServer(meter *metrics.Meter) *Server {
+func NewServer(meter *Meter) *Server {
 	started := meter.MustInt64Counter("grpc_server_started_total", "Total number of RPCs started on the server.")
 	received := meter.MustInt64Counter("grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := meter.MustInt64Counter("grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -152,7 +155,7 @@ func (s *ServerStream) RecvMsg(m any) error {
 }
 
 // NewClient for metrics.
-func NewClient(meter *metrics.Meter) *Client {
+func NewClient(meter *Meter) *Client {
 	started := meter.MustInt64Counter("grpc_client_started_total", "Total number of RPCs started on the client.")
 	received := meter.MustInt64Counter("grpc_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := meter.MustInt64Counter("grpc_client_msg_sent_total", "Total number of RPC messages sent by the client.")
