@@ -13,6 +13,9 @@ var (
 	// Args is an alias for os.Args.
 	Args = os.Args
 
+	// Exit is an alias for os.Exit.
+	Exit = os.Exit
+
 	// Stdout is an alias for os.Stdout.
 	Stdout = os.Stdout
 

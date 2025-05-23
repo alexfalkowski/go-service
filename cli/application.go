@@ -24,7 +24,6 @@ type ApplicationOption interface {
 }
 
 type applicationOpts struct {
-	exit    os.ExitFunc
 	name    env.Name
 	version env.Version
 }
@@ -49,17 +48,10 @@ func WithApplicationVersion(version env.Version) ApplicationOption {
 	})
 }
 
-// WithApplicationExit for cmd.
-func WithApplicationExit(exit os.ExitFunc) ApplicationOption {
-	return applicationOptionFunc(func(o *applicationOpts) {
-		o.exit = exit
-	})
-}
-
 // NewApplication for cmd.
 func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
 	ops := options(opts...)
-	app := &Application{name: ops.name, version: ops.version, exit: ops.exit}
+	app := &Application{name: ops.name, version: ops.version}
 
 	register(app)
 
@@ -70,7 +62,6 @@ func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Applicati
 type Application struct {
 	name    env.Name
 	version env.Version
-	exit    os.ExitFunc
 	cmds    []cmd.Command
 }
 
@@ -153,7 +144,7 @@ func (a *Application) Run(ctx context.Context, args ...string) error {
 func (a *Application) ExitOnError(ctx context.Context, args ...string) {
 	if err := a.Run(ctx, args...); err != nil {
 		slog.Error("could not start", logger.Error(err))
-		a.exit(1)
+		os.Exit(1)
 	}
 }
 
@@ -177,10 +168,6 @@ func options(opts ...ApplicationOption) *applicationOpts {
 
 	if ops.version.IsEmpty() {
 		ops.version = env.NewVersion()
-	}
-
-	if ops.exit == nil {
-		ops.exit = os.NewExitFunc()
 	}
 
 	return ops

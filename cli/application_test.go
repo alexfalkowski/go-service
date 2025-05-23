@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
@@ -38,7 +39,7 @@ func TestApplicationExitOnRun(t *testing.T) {
 		Convey("When I try to run an application", func() {
 			var exitCode int
 
-			exit := func(code int) {
+			os.Exit = func(code int) {
 				exitCode = code
 			}
 
@@ -47,7 +48,6 @@ func TestApplicationExitOnRun(t *testing.T) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
 					cmd.AddInput("env:CONFIG_FILE")
 				},
-				cli.WithApplicationExit(exit),
 			)
 
 			app.ExitOnError(t.Context(), test.Name.String(), "server")
@@ -71,7 +71,6 @@ func TestApplicationRun(t *testing.T) {
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
-				cli.WithApplicationExit(test.Exit),
 			)
 
 			Convey("Then I should see an error", func() {
@@ -94,7 +93,6 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
-				cli.WithApplicationExit(test.Exit),
 			)
 
 			Convey("Then I should see an error", func() {
@@ -115,7 +113,6 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
-				cli.WithApplicationExit(test.Exit),
 			)
 
 			Convey("Then I should see an error", func() {
@@ -138,7 +135,6 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
-				cli.WithApplicationExit(test.Exit),
 			)
 
 			Convey("Then I should not see an error", func() {
@@ -164,7 +160,6 @@ func TestApplicationInvalid(t *testing.T) {
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
-				cli.WithApplicationExit(test.Exit),
 			)
 
 			Convey("Then I should not see an error", func() {
@@ -186,7 +181,6 @@ func TestApplicationDisabled(t *testing.T) {
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
-			cli.WithApplicationExit(test.Exit),
 		)
 
 		Convey("Then I should see an error", func() {
@@ -205,7 +199,6 @@ func TestApplicationClient(t *testing.T) {
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
-			cli.WithApplicationExit(test.Exit),
 		)
 
 		Convey("Then I should not see an error", func() {
@@ -232,7 +225,6 @@ func TestApplicationInvalidClient(t *testing.T) {
 					},
 					cli.WithApplicationName(test.Name),
 					cli.WithApplicationVersion(test.Version),
-					cli.WithApplicationExit(test.Exit),
 				)
 
 				Convey("Then I should see an error", func() {
