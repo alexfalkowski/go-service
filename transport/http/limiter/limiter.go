@@ -8,14 +8,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
+// Limiter is just an alias for limiter.Limiter.
+type Limiter = limiter.Limiter
+
 // Handler for limiter.
-func NewHandler(limiter *limiter.Limiter) *Handler {
+func NewHandler(limiter *Limiter) *Handler {
 	return &Handler{limiter: limiter}
 }
 
 // Handler for tracer.
 type Handler struct {
-	limiter *limiter.Limiter
+	limiter *Limiter
 }
 
 // ServeHTTP for limiter.

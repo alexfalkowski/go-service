@@ -2,27 +2,22 @@ package http
 
 import (
 	"cmp"
-	"net/http"
 
-	ct "github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/limiter"
-	sh "github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/config"
+	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/server"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
-	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
-	tl "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	tm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	tt "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
-	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/urfave/negroni/v3"
 	"go.uber.org/fx"
@@ -59,15 +54,15 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
 	if params.Tracer != nil {
-		neg.Use(tt.NewHandler(params.Tracer))
+		neg.Use(tracer.NewHandler(params.Tracer))
 	}
 
 	if params.Logger != nil {
-		neg.Use(tl.NewHandler(params.Logger))
+		neg.Use(logger.NewHandler(params.Logger))
 	}
 
 	if params.Meter != nil {
-		neg.Use(tm.NewHandler(params.Meter))
+		neg.Use(metrics.NewHandler(params.Meter))
 	}
 
 	for _, hd := range params.Handlers {
@@ -75,11 +70,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Verifier != nil {
-		neg.Use(ht.NewHandler(params.Verifier))
+		neg.Use(token.NewHandler(params.Verifier))
 	}
 
 	if params.Limiter != nil {
-		neg.Use(hl.NewHandler(params.Limiter))
+		neg.Use(limiter.NewHandler(params.Limiter))
 	}
 
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
@@ -88,24 +83,20 @@ func NewServer(params ServerParams) (*Server, error) {
 		Handler:     neg,
 		ReadTimeout: timeout, WriteTimeout: timeout,
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
-		Protocols: sh.Protocols(),
+		Protocols: http.Protocols(),
 	}
 
-	c, err := config(params.FS, params.Config)
+	cfg, err := conf(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	serv, err := sh.NewServer(svr, c)
+	serv, err := server.NewService("http", svr, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	server := &Server{
-		Service: server.NewService("http", serv, params.Logger, params.Shutdowner),
-	}
-
-	return server, nil
+	return &Server{serv}, nil
 }
 
 // Server for HTTP.
@@ -122,16 +113,16 @@ func (s *Server) GetServer() *server.Service {
 	return s.Service
 }
 
-func config(fs *os.FS, cfg *Config) (*sh.Config, error) {
-	config := &sh.Config{
+func conf(fs *os.FS, cfg *Config) (*config.Config, error) {
+	config := &config.Config{
 		Address: cmp.Or(cfg.Address, ":8080"),
 	}
 
-	if !ct.IsEnabled(cfg.TLS) {
+	if !tls.IsEnabled(cfg.TLS) {
 		return config, nil
 	}
 
-	tls, err := ct.NewConfig(fs, cfg.TLS)
+	tls, err := tls.NewConfig(fs, cfg.TLS)
 	config.TLS = tls
 
 	return config, err

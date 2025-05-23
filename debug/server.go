@@ -6,9 +6,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/errors"
-	sh "github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/config"
+	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"go.uber.org/fx"
@@ -38,21 +38,17 @@ func NewServer(params ServerParams) (*Server, error) {
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 	}
 
-	c, err := config(params.FS, params.Config)
+	cfg, err := conf(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	serv, err := sh.NewServer(svr, c)
+	serv, err := server.NewService("debug", svr, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	server := &Server{
-		Service: server.NewService("debug", serv, params.Logger, params.Shutdowner),
-	}
-
-	return server, nil
+	return &Server{serv}, nil
 }
 
 // Server for debug.
@@ -69,8 +65,8 @@ func (s *Server) GetServer() *server.Service {
 	return s.Service
 }
 
-func config(fs *os.FS, cfg *Config) (*sh.Config, error) {
-	config := &sh.Config{
+func conf(fs *os.FS, cfg *Config) (*config.Config, error) {
+	config := &config.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}
 
