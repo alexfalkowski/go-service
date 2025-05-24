@@ -4,7 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	ts "github.com/alexfalkowski/go-service/v2/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
 func tokenConfig(cfg *Config) *token.Config {
@@ -31,7 +31,7 @@ func tokenPasetoConfig(cfg *Config) *paseto.Config {
 	return cfg.Token.Paseto
 }
 
-func tokenSSHConfig(cfg *Config) *ts.Config {
+func tokenSSHConfig(cfg *Config) *ssh.Config {
 	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}

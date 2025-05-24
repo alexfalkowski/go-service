@@ -6,12 +6,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
-	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
-	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 // NewHandler for meta.
@@ -27,7 +25,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if ts.IsObservable(req.URL.Path) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 
 		return
@@ -37,19 +35,19 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	header.Add("Service-Version", h.version.String())
 
 	ctx := req.Context()
-	ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
+	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 
 	requestID := extractRequestID(ctx, h.generator, req)
 
 	header.Set("Request-Id", requestID.Value())
-	ctx = tm.WithRequestID(ctx, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 
 	kind, ip := extractIP(req)
-	ctx = tm.WithIPAddr(ctx, ip)
-	ctx = tm.WithIPAddrKind(ctx, kind)
+	ctx = meta.WithIPAddr(ctx, ip)
+	ctx = meta.WithIPAddrKind(ctx, kind)
 
-	ctx = tm.WithGeolocation(ctx, extractGeolocation(req))
-	ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, req))
+	ctx = meta.WithGeolocation(ctx, extractGeolocation(req))
+	ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, req))
 
 	next(res, req.WithContext(ctx))
 }
@@ -72,18 +70,18 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	userAgent := extractUserAgent(ctx, req, r.userAgent)
 
 	req.Header.Set("User-Agent", userAgent.Value())
-	ctx = tm.WithUserAgent(ctx, userAgent)
+	ctx = meta.WithUserAgent(ctx, userAgent)
 
 	requestID := extractRequestID(ctx, r.generator, req)
 
 	req.Header.Set("Request-Id", requestID.Value())
-	ctx = tm.WithRequestID(ctx, requestID)
+	ctx = meta.WithRequestID(ctx, requestID)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }
 
 func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {
-	if ua := tm.UserAgent(ctx); !ua.IsEmpty() {
+	if ua := meta.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
@@ -95,7 +93,7 @@ func extractUserAgent(ctx context.Context, req *http.Request, userAgent env.User
 }
 
 func extractRequestID(ctx context.Context, generator id.Generator, req *http.Request) meta.Value {
-	if id := tm.RequestID(ctx); !id.IsEmpty() {
+	if id := meta.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 

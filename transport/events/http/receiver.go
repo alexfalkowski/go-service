@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/strings"
-	hh "github.com/alexfalkowski/go-service/v2/transport/events/http/hooks"
-	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	"github.com/alexfalkowski/go-service/v2/transport/events/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 )
 
@@ -33,7 +32,7 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 
 	// Error is only returned when an incorrect signature of a function is used (it uses reflection).
 	handler, _ = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
-	handler = hh.NewHandler(r.hook, handler)
+	handler = hooks.NewHandler(r.hook, handler)
 
 	r.mux.Handle(strings.Join(" ", http.MethodPost, path), handler)
 }
