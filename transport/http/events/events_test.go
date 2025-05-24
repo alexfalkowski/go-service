@@ -1,5 +1,5 @@
 //nolint:varnamelen
-package http_test
+package events_test
 
 import (
 	"net/http"
