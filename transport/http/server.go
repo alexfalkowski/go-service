@@ -48,8 +48,6 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	timeout := time.MustParseDuration(params.Config.Timeout)
-
 	neg := negroni.New()
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
@@ -79,12 +77,8 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
 
-	svr := &http.Server{
-		Handler:     neg,
-		ReadTimeout: timeout, WriteTimeout: timeout,
-		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
-		Protocols: http.Protocols(),
-	}
+	timeout := time.MustParseDuration(params.Config.Timeout)
+	svr := http.NewServer(timeout, neg)
 
 	cfg, err := conf(params.FS, params.Config)
 	if err != nil {

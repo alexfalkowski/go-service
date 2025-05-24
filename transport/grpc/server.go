@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
+	rpc "github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -20,9 +21,7 @@ import (
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor
-	"google.golang.org/grpc/keepalive"
-	"google.golang.org/grpc/reflection"
+	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor.
 )
 
 // ServerParams for gRPC.
@@ -61,26 +60,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	opts := []grpc.ServerOption{
-		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-			MinTime:             timeout,
-			PermitWithoutStream: true,
-		}),
-		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     timeout,
-			MaxConnectionAge:      timeout,
-			MaxConnectionAgeGrace: timeout,
-			Time:                  timeout,
-			Timeout:               timeout,
-		}),
+	svr := rpc.NewServer(timeout,
 		unaryServerOption(params, meter, params.Unary...),
 		streamServerOption(params, meter, params.Stream...),
 		opt,
-	}
-
-	svr := grpc.NewServer(opts...)
-	reflection.Register(svr)
-
+	)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, ":9090")}
 
 	serv, err := server.NewService("grpc", svr, cfg, params.Logger, params.Shutdowner)
