@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
-	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	prometheus "github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/metric"
@@ -53,7 +52,7 @@ type Handler struct {
 // ServeHTTP for metrics.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if ts.IsObservable(service) {
+	if strings.IsObservable(service) {
 		next(res, req)
 
 		return
@@ -108,7 +107,7 @@ type RoundTripper struct {
 
 // RoundTrip for metrics.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ts.IsObservable(req.URL.String()) {
+	if strings.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

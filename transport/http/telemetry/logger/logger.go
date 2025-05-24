@@ -4,11 +4,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
-	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 )
 
@@ -30,7 +29,7 @@ type Handler struct {
 // ServeHTTP or logger.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if ts.IsObservable(path) {
+	if strings.IsObservable(path) {
 		next(res, req)
 
 		return
@@ -65,7 +64,7 @@ type RoundTripper struct {
 
 // RoundTrip for logger.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if ts.IsObservable(req.URL.String()) {
+	if strings.IsObservable(req.URL.String()) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 

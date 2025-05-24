@@ -18,8 +18,17 @@ var (
 	// Bytes is an alias for strings.Bytes.
 	Bytes = strings.Bytes
 
+	// Cut is an alias for strings.Cut.
+	Cut = strings.Cut
+
 	// Join is an alias for strings.Join.
 	Join = strings.Join
+
+	// IsEmpty is an alias for strings.IsEmpty.
+	IsEmpty = strings.IsEmpty
+
+	// ToLower is an alias for strings.ToLower.
+	ToLower = strings.ToLower
 )
 
 // IsObservable in the text.

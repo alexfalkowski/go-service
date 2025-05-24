@@ -26,12 +26,32 @@ const (
 	DurationKey = "duration"
 )
 
+// Value is an alias for meta.Value.
+type Value = meta.Value
+
+var (
+	// String is an alias for meta.String.
+	String = meta.String
+
+	// WithAttribute is an alias for meta.WithAttribute.
+	WithAttribute = meta.WithAttribute
+
+	// Blank is an alias for meta.Blank.
+	Blank = meta.Blank
+
+	// Error is an alias for meta.Error.
+	Error = meta.Error
+
+	// Ignored is an alias for meta.Ignored.
+	Ignored = meta.Ignored
+)
+
 // WithRequestID for transport.
-func WithRequestID(ctx context.Context, id meta.Value) context.Context {
-	return meta.WithAttribute(ctx, RequestIDKey, id)
+func WithRequestID(ctx context.Context, id Value) context.Context {
+	return WithAttribute(ctx, RequestIDKey, id)
 }
 
 // RequestID for transport.
-func RequestID(ctx context.Context) meta.Value {
+func RequestID(ctx context.Context) Value {
 	return meta.Attribute(ctx, RequestIDKey)
 }

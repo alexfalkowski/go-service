@@ -6,12 +6,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
-	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
-	ts "github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -22,23 +20,23 @@ import (
 func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := path.Dir(info.FullMethod)[1:]
-		if ts.IsObservable(p) {
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
 		md := ExtractIncoming(ctx)
 
-		ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 
 		id := extractRequestID(ctx, generator, md)
-		ctx = tm.WithRequestID(ctx, id)
+		ctx = meta.WithRequestID(ctx, id)
 
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = tm.WithIPAddr(ctx, ip)
-		ctx = tm.WithIPAddrKind(ctx, kind)
+		ctx = meta.WithIPAddr(ctx, ip)
+		ctx = meta.WithIPAddrKind(ctx, kind)
 
-		ctx = tm.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, md))
+		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
+		ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		_ = grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", id.Value()))
 
@@ -50,7 +48,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := path.Dir(info.FullMethod)[1:]
-		if ts.IsObservable(p) {
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 
@@ -58,19 +56,19 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
-		ctx = tm.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
 
 		id := extractRequestID(ctx, generator, md)
 		_ = stream.SetHeader(metadata.Pairs("request-id", id.Value()))
 
-		ctx = tm.WithRequestID(ctx, id)
+		ctx = meta.WithRequestID(ctx, id)
 
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = tm.WithIPAddr(ctx, ip)
-		ctx = tm.WithIPAddrKind(ctx, kind)
+		ctx = meta.WithIPAddr(ctx, ip)
+		ctx = meta.WithIPAddrKind(ctx, kind)
 
-		ctx = tm.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = tm.WithAuthorization(ctx, extractAuthorization(ctx, md))
+		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
+		ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, md))
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -85,11 +83,11 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = tm.WithUserAgent(ctx, ua)
+		ctx = meta.WithUserAgent(ctx, ua)
 		md.Append("user-agent", ua.Value())
 
 		id := extractRequestID(ctx, generator, md)
-		ctx = tm.WithRequestID(ctx, id)
+		ctx = meta.WithRequestID(ctx, id)
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
@@ -104,11 +102,11 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = tm.WithUserAgent(ctx, ua)
+		ctx = meta.WithUserAgent(ctx, ua)
 		md.Append("user-agent", ua.Value())
 
 		id := extractRequestID(ctx, generator, md)
-		ctx = tm.WithRequestID(ctx, id)
+		ctx = meta.WithRequestID(ctx, id)
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
@@ -135,7 +133,7 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value)
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
-	if ua := tm.UserAgent(ctx); !ua.IsEmpty() {
+	if ua := meta.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
 
@@ -147,7 +145,7 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 }
 
 func extractRequestID(ctx context.Context, generator id.Generator, md metadata.MD) meta.Value {
-	if id := tm.RequestID(ctx); !id.IsEmpty() {
+	if id := meta.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
 

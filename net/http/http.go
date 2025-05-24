@@ -7,6 +7,9 @@ import (
 )
 
 type (
+	// Handler is an alias for http.Handler.
+	Handler = http.Handler
+
 	// ServeMux is an alias for http.ServeMux.
 	ServeMux = http.ServeMux
 
