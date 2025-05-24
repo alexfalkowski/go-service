@@ -1,8 +1,6 @@
 package test
 
 import (
-	"time"
-
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/v2/cache"
@@ -14,15 +12,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	cs "github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	sd "github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
-	shg "github.com/alexfalkowski/go-service/v2/health/transport/grpc"
-	shh "github.com/alexfalkowski/go-service/v2/health/transport/http"
+	hg "github.com/alexfalkowski/go-service/v2/health/transport/grpc"
+	hh "github.com/alexfalkowski/go-service/v2/health/transport/http"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/module"
@@ -31,16 +28,16 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	st "github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	ts "github.com/alexfalkowski/go-service/v2/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	geh "github.com/alexfalkowski/go-service/v2/transport/events/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	"github.com/open-feature/go-sdk/openfeature"
-	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
+	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
@@ -48,7 +45,7 @@ import (
 // Options for test.
 func Options() []fx.Option {
 	return []fx.Option{
-		module.Module, cli.Module, config.Module, sd.Module,
+		module.Module, cli.Module, config.Module, debug.Module,
 		feature.Module, transport.Module, telemetry.Module, health.Module,
 		sql.Module, hooks.Module, cache.Module, token.Module,
 		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
@@ -74,20 +71,20 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tr
 	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
 }
 
-func healthObserver(healthServer *server.Server) (*shh.HealthObserver, error) {
-	return &shh.HealthObserver{Observer: healthServer.Observe("noop")}, nil
+func healthObserver(healthServer *server.Server) (*hh.HealthObserver, error) {
+	return &hh.HealthObserver{Observer: healthServer.Observe("noop")}, nil
 }
 
-func livenessObserver(healthServer *server.Server) *shh.LivenessObserver {
-	return &shh.LivenessObserver{Observer: healthServer.Observe("noop")}
+func livenessObserver(healthServer *server.Server) *hh.LivenessObserver {
+	return &hh.LivenessObserver{Observer: healthServer.Observe("noop")}
 }
 
-func readinessObserver(healthServer *server.Server) *shh.ReadinessObserver {
-	return &shh.ReadinessObserver{Observer: healthServer.Observe("http", "online")}
+func readinessObserver(healthServer *server.Server) *hh.ReadinessObserver {
+	return &hh.ReadinessObserver{Observer: healthServer.Observe("http", "online")}
 }
 
-func grpcObserver(healthServer *server.Server) *shg.Observer {
-	return &shg.Observer{Observer: healthServer.Observe("http")}
+func grpcObserver(healthServer *server.Server) *hg.Observer {
+	return &hg.Observer{Observer: healthServer.Observe("http")}
 }
 
 func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}
@@ -100,11 +97,11 @@ func invokeMeter(_ *metrics.Meter) {}
 
 func invokeFeatureClient(_ *openfeature.Client) {}
 
-func invokeWebhooks(_ *h.Webhook, _ *geh.Receiver) {}
+func invokeWebhooks(_ *webhooks.Webhook, _ *events.Receiver) {}
 
 func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
-func invokeNetwork(_ st.Network) {}
+func invokeNetwork(_ time.Network) {}
 
 func invokeCrypt(
 	signer *bcrypt.Signer,
@@ -112,7 +109,7 @@ func invokeCrypt(
 	_ *rsa.Encryptor, _ *rsa.Decryptor,
 	_ *aes.Cipher,
 	_ *hmac.Signer,
-	_ *cs.Signer, _ *cs.Verifier,
+	_ *ssh.Signer, _ *ssh.Verifier,
 ) error {
 	msg := strings.Bytes("hello")
 
@@ -129,7 +126,7 @@ func invokeCrypt(
 	return nil
 }
 
-func invokeTokens(_ *jwt.Token, _ *paseto.Token, _ *ts.Token, _ *token.Token) {}
+func invokeTokens(_ *jwt.Token, _ *paseto.Token, _ *ssh.Token, _ *token.Token) {}
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {

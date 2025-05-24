@@ -8,6 +8,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
+type (
+	// Signer is an alias of ssh.Signer.
+	Signer = ssh.Signer
+
+	// Verifier is an alias of ssh.Verifier.
+	Verifier = ssh.Verifier
+)
+
 // NewToken for ssh.
 func NewToken(fs *os.FS, cfg *Config) *Token {
 	if !IsEnabled(cfg) {

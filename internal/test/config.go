@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	sql "github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -26,7 +25,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	ts "github.com/alexfalkowski/go-service/v2/token/ssh"
+	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -51,15 +50,15 @@ func NewToken(kind string) *token.Config {
 			Issuer:     "iss",
 			Expiration: "1h",
 		},
-		SSH: &ts.Config{
-			Key: &ts.Key{
+		SSH: &ssh.Config{
+			Key: &ssh.Key{
 				Name:   Name.String(),
-				Config: NewSSH(),
+				Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 			},
-			Keys: ts.Keys{
-				&ts.Key{
+			Keys: ssh.Keys{
+				&ssh.Key{
 					Name:   Name.String(),
-					Config: NewSSH(),
+					Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 				},
 			},
 		},
@@ -100,14 +99,6 @@ func NewHMAC() *hmac.Config {
 func NewHook() *hooks.Config {
 	return &hooks.Config{
 		Secret: Path("secrets/hooks"),
-	}
-}
-
-// NewSSH for test.
-func NewSSH() *ssh.Config {
-	return &ssh.Config{
-		Public:  Path("secrets/ssh_public"),
-		Private: Path("secrets/ssh_private"),
 	}
 }
 

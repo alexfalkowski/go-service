@@ -3,7 +3,6 @@ package ssh_test
 import (
 	"testing"
 
-	cs "github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
@@ -39,11 +38,8 @@ func TestInvalid(t *testing.T) {
 	Convey("When I generate a token with an invalid configuration", t, func() {
 		cfg := &ssh.Config{
 			Key: &ssh.Key{
-				Name: "test",
-				Config: &cs.Config{
-					Public:  test.Path("secrets/ssh_public"),
-					Private: test.Path("secrets/none"),
-				},
+				Name:   "test",
+				Config: test.NewSSH("secrets/ssh_public", "secrets/none"),
 			},
 		}
 
@@ -71,11 +67,8 @@ func TestInvalid(t *testing.T) {
 		cfg := &ssh.Config{
 			Keys: ssh.Keys{
 				&ssh.Key{
-					Name: "test",
-					Config: &cs.Config{
-						Public:  test.Path("secrets/none"),
-						Private: test.Path("secrets/ssh_private"),
-					},
+					Name:   "test",
+					Config: test.NewSSH("secrets/none", "secrets/ssh_private"),
 				},
 			},
 		}

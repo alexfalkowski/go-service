@@ -43,7 +43,7 @@ func TestGenerator(t *testing.T) {
 
 func TestValid(t *testing.T) {
 	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH()
+		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
 		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
@@ -98,7 +98,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH()
+		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
 		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
@@ -119,7 +119,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH()
+		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
 		signer, err := ssh.NewSigner(test.FS, cfg)
 		So(err, ShouldBeNil)
