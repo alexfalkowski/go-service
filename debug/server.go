@@ -2,10 +2,10 @@ package debug
 
 import (
 	"cmp"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -32,11 +32,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	svr := &http.Server{
-		Handler:     params.Mux,
-		ReadTimeout: timeout, WriteTimeout: timeout,
-		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
-	}
+	svr := http.NewServer(timeout, params.Mux)
 
 	cfg, err := conf(params.FS, params.Config)
 	if err != nil {
