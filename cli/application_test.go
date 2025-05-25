@@ -14,6 +14,8 @@ func TestApplicationRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		config := test.FilePath("configs/config.yml")
 
+		os.Args = []string{test.Name.String(), "server", "--input", config}
+
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
@@ -25,7 +27,7 @@ func TestApplicationRun(t *testing.T) {
 			)
 
 			Convey("Then I should not see an error", func() {
-				So(app.Run(t.Context(), test.Name.String(), "server", "--input", config), ShouldBeNil)
+				So(app.Run(t.Context()), ShouldBeNil)
 			})
 		})
 	})
@@ -34,6 +36,8 @@ func TestApplicationRun(t *testing.T) {
 func TestApplicationExitOnRun(t *testing.T) {
 	Convey("Given I have invalid configuration", t, func() {
 		config := test.FilePath("configs/invalid_http.config.yml")
+
+		os.Args = []string{test.Name.String(), "server", "--input", config}
 
 		Convey("When I try to run an application", func() {
 			var exitCode int
@@ -49,7 +53,7 @@ func TestApplicationExitOnRun(t *testing.T) {
 				},
 			)
 
-			app.ExitOnError(t.Context(), test.Name.String(), "server", "--input", config)
+			app.ExitOnError(t.Context())
 
 			Convey("Then it should exit with a code of 1", func() {
 				So(exitCode, ShouldEqual, 1)
@@ -60,6 +64,8 @@ func TestApplicationExitOnRun(t *testing.T) {
 
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
 	Convey("When I try to run the server with an invalid flag", t, func() {
+		os.Args = []string{test.Name.String(), "server", "--invalid-flag"}
+
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
@@ -70,11 +76,13 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		)
 
 		Convey("Then I should see an error", func() {
-			So(app.Run(t.Context(), test.Name.String(), "server", "--invalid-flag"), ShouldBeError)
+			So(app.Run(t.Context()), ShouldBeError)
 		})
 	})
 
 	Convey("When I try to run the client with an invalid flag", t, func() {
+		os.Args = []string{test.Name.String(), "client", "--invalid-flag"}
+
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", test.Options()...)
@@ -85,7 +93,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		)
 
 		Convey("Then I should see an error", func() {
-			So(app.Run(t.Context(), test.Name.String(), "client", "--invalid-flag"), ShouldBeError)
+			So(app.Run(t.Context()), ShouldBeError)
 		})
 	})
 }
@@ -93,6 +101,8 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 func TestApplicationRunWithInvalidParams(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		config := test.FilePath("configs/config.yml")
+
+		os.Args = []string{test.Name.String(), "server", "--input", config}
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			app := cli.NewApplication(
@@ -105,7 +115,7 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 			)
 
 			Convey("Then I should not see an error", func() {
-				So(app.Run(t.Context(), test.Name.String(), "server", "--input", config), ShouldBeNil)
+				So(app.Run(t.Context()), ShouldBeNil)
 			})
 		})
 	})
@@ -120,6 +130,8 @@ func TestApplicationInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
+			os.Args = []string{test.Name.String(), "server", "--input", config}
+
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
@@ -130,7 +142,7 @@ func TestApplicationInvalid(t *testing.T) {
 			)
 
 			Convey("Then I should not see an error", func() {
-				err := app.Run(t.Context(), test.Name.String(), "server", "--input", config)
+				err := app.Run(t.Context())
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "unknown port")
@@ -141,6 +153,8 @@ func TestApplicationInvalid(t *testing.T) {
 
 func TestApplicationDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
+		os.Args = []string{test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")}
+
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
@@ -151,13 +165,15 @@ func TestApplicationDisabled(t *testing.T) {
 		)
 
 		Convey("Then I should see an error", func() {
-			So(app.Run(t.Context(), test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")), ShouldBeNil)
+			So(app.Run(t.Context()), ShouldBeNil)
 		})
 	})
 }
 
 func TestApplicationClient(t *testing.T) {
 	Convey("When I try to run a client", t, func() {
+		os.Args = []string{test.Name.String(), "client"}
+
 		opts := []fx.Option{fx.NopLogger}
 		app := cli.NewApplication(
 			func(c cli.Commander) {
@@ -169,7 +185,7 @@ func TestApplicationClient(t *testing.T) {
 		)
 
 		Convey("Then I should not see an error", func() {
-			So(app.Run(t.Context(), test.Name.String(), "client"), ShouldBeNil)
+			So(app.Run(t.Context()), ShouldBeNil)
 		})
 	})
 }
@@ -182,6 +198,8 @@ func TestApplicationInvalidClient(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
+			os.Args = []string{test.Name.String(), "client", "--input", config}
+
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddClient("client", "Start the client.", test.Options()...)
@@ -192,7 +210,7 @@ func TestApplicationInvalidClient(t *testing.T) {
 			)
 
 			Convey("Then I should see an error", func() {
-				err := app.Run(t.Context(), test.Name.String(), "client", "--input", config)
+				err := app.Run(t.Context())
 
 				So(err, ShouldBeError)
 				So(err.Error(), ShouldContainSubstring, "unknown port")
