@@ -129,7 +129,7 @@ func (a *Application) Run(ctx context.Context, args ...string) error {
 		AppName:        name,
 		AppDescription: name,
 		Version:        a.version.String(),
-		Args:           args,
+		Args:           os.SanitizeArgs(args),
 		Context:        ctx,
 	})
 
