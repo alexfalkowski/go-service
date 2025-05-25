@@ -137,7 +137,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I have an invalid public key", t, func() {
-		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.Path("secrets/redis")})
+		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -145,7 +145,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	Convey("When I have an invalid private key", t, func() {
-		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.Path("secrets/redis")})
+		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -156,8 +156,8 @@ func TestInvalid(t *testing.T) {
 		_, err := ssh.NewSigner(
 			test.FS,
 			&ssh.Config{
-				Public:  test.Path("secrets/ssh_public"),
-				Private: test.Path("secrets/none"),
+				Public:  test.FilePath("secrets/ssh_public"),
+				Private: test.FilePath("secrets/none"),
 			},
 		)
 

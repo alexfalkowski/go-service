@@ -22,7 +22,7 @@ func TestHooks(t *testing.T) {
 	})
 
 	Convey("When I create a hook with an missing secret", t, func() {
-		_, err := hooks.New(test.FS, &hooks.Config{Secret: test.Path("secrets/none")})
+		_, err := hooks.New(test.FS, &hooks.Config{Secret: test.FilePath("secrets/none")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -30,7 +30,7 @@ func TestHooks(t *testing.T) {
 	})
 
 	Convey("When I create a hook with an invalid secret", t, func() {
-		_, err := hooks.New(test.FS, &hooks.Config{Secret: test.Path("secrets/redis")})
+		_, err := hooks.New(test.FS, &hooks.Config{Secret: test.FilePath("secrets/redis")})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

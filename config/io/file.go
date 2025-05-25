@@ -18,11 +18,6 @@ func (f *File) Read() ([]byte, error) {
 	return f.fs.ReadFile(f.location)
 }
 
-// Write to as file.
-func (f *File) Write(data []byte, mode os.FileMode) error {
-	return f.fs.WriteFile(f.location, data, mode)
-}
-
 // Kind for file, which is the file extension.
 func (f *File) Kind() string {
 	return f.fs.PathExtension(f.location)

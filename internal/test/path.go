@@ -1,18 +1,15 @@
 package test
 
-import (
-	"path/filepath"
-	"runtime"
-)
+import "runtime"
 
 // Path for test.
 //
 //nolint:dogsled
 func Path(path string) string {
 	_, b, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(b)
+	dir := FS.Dir(b)
 
-	return filepath.Join(dir, "../../test", path)
+	return FS.Join(dir, "../../test", path)
 }
 
 // FilePath for test.

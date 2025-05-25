@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestSplitFlag(t *testing.T) {
-	tuples := [][2]string{
+	tuples := []test.StringTuple{
 		{"file", "file.yaml"},
 		{"file", "file.test.yaml"},
 		{"file", "test/.config/existing.client.yaml"},

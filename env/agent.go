@@ -1,10 +1,8 @@
 package env
 
-import "path/filepath"
-
 // NewUserAgent for this service.
 func NewUserAgent(name Name, ver Version) UserAgent {
-	return UserAgent(filepath.Join(name.String(), ver.String()))
+	return UserAgent(name.String() + "/" + ver.String())
 }
 
 // UserAgent for this service.

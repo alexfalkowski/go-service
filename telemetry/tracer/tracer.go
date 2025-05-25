@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -32,7 +31,6 @@ func Register() {
 type Params struct {
 	fx.In
 	Lifecycle   fx.Lifecycle
-	FileSystem  *os.FS
 	Config      *Config
 	ID          env.ID
 	Name        env.Name
@@ -41,13 +39,9 @@ type Params struct {
 }
 
 // NewTracer for tracer.
-func NewTracer(params Params) (*Tracer, error) {
+func NewTracer(params Params) *Tracer {
 	if !IsEnabled(params.Config) {
-		return nil, nil
-	}
-
-	if err := params.Config.Headers.Secrets(params.FileSystem); err != nil {
-		return nil, prefix(err)
+		return nil
 	}
 
 	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
@@ -75,7 +69,7 @@ func NewTracer(params Params) (*Tracer, error) {
 		},
 	})
 
-	return &Tracer{provider.Tracer(params.Name.String())}, nil
+	return &Tracer{provider.Tracer(params.Name.String())}
 }
 
 // Tracer using otel.

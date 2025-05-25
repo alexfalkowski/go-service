@@ -28,12 +28,12 @@ func New(fs *os.FS, cfg *cache.Config) (Driver, error) {
 
 	switch cfg.Kind {
 	case "redis":
-		url, err := fs.ReadFile(cfg.Options["url"].(string))
+		data, err := fs.ReadSource(cfg.Options["url"].(string))
 		if err != nil {
 			return nil, err
 		}
 
-		opts, err := client.ParseURL(bytes.String(url))
+		opts, err := client.ParseURL(bytes.String(data))
 		if err != nil {
 			return nil, err
 		}

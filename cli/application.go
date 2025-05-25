@@ -124,10 +124,6 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 
 // Run the application.
 func (a *Application) Run(ctx context.Context, args ...string) error {
-	if len(args) == 0 {
-		args = os.SanitizeArgs(os.Args)
-	}
-
 	name := a.name.String()
 	runner := cmd.RunnerOf(a.cmds, cmd.Config{
 		AppName:        name,

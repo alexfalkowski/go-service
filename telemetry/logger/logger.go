@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/os"
 	"go.uber.org/fx"
 )
 
@@ -18,7 +17,6 @@ type Params struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
-	FileSystem  *os.FS
 	Config      *Config
 	ID          env.ID
 	Name        env.Name
@@ -74,9 +72,7 @@ func logger(params Params) (*slog.Logger, error) {
 	case !IsEnabled(params.Config):
 		return nil, nil
 	case params.Config.IsOTLP():
-		logger, err := newOtlpLogger(params)
-
-		return logger, prefix(err)
+		return newOtlpLogger(params), nil
 	case params.Config.IsJSON():
 		return newJSONLogger(params), nil
 	case params.Config.IsText():

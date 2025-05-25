@@ -88,7 +88,7 @@ func TestValid(t *testing.T) {
 func TestInvalid(t *testing.T) {
 	configs := []*ed25519.Config{
 		{},
-		{Public: test.Path("secrets/ed25519_public"), Private: test.Path("secrets/ed25519_private_invalid")},
+		{Public: test.FilePath("secrets/ed25519_public"), Private: test.FilePath("secrets/ed25519_private_invalid")},
 	}
 
 	for _, config := range configs {
@@ -103,7 +103,7 @@ func TestInvalid(t *testing.T) {
 
 	configs = []*ed25519.Config{
 		{},
-		{Public: test.Path("secrets/ed25519_public_invalid"), Private: test.Path("secrets/ed25519_private")},
+		{Public: test.FilePath("secrets/ed25519_public_invalid"), Private: test.FilePath("secrets/ed25519_private")},
 	}
 
 	for _, config := range configs {
@@ -160,8 +160,8 @@ func TestInvalid(t *testing.T) {
 		_, err := ed25519.NewVerifier(
 			test.PEM,
 			&ed25519.Config{
-				Public:  test.Path("secrets/rsa_public"),
-				Private: test.Path("secrets/ed25519_private"),
+				Public:  test.FilePath("secrets/rsa_public"),
+				Private: test.FilePath("secrets/ed25519_private"),
 			},
 		)
 
@@ -174,8 +174,8 @@ func TestInvalid(t *testing.T) {
 		_, err := ed25519.NewSigner(
 			test.PEM,
 			&ed25519.Config{
-				Public:  test.Path("secrets/ed25519_public"),
-				Private: test.Path("secrets/rsa_private"),
+				Public:  test.FilePath("secrets/ed25519_public"),
+				Private: test.FilePath("secrets/rsa_private"),
 			},
 		)
 

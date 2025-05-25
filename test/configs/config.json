@@ -9,27 +9,27 @@
     "encoder": "proto",
     "compressor": "snappy",
     "options": {
-      "url": "../test/secrets/redis"
+      "url": "file:../test/secrets/redis"
     }
   },
   "crypto": {
     "aes": {
-      "key": "../test/secrets/aes"
+      "key": "file:../test/secrets/aes"
     },
     "ed25519": {
-      "public": "../test/secrets/ed25519_public",
+      "public": "file:../test/secrets/ed25519_public",
       "private": "../test/secrets/ed25519_private"
     },
     "hmac": {
-      "key": "../test/secrets/hmac"
+      "key": "file:../test/secrets/hmac"
     },
     "rsa": {
-      "public": "../test/secrets/rsa_public",
-      "private": "../test/secrets/rsa_private"
+      "public": "file:../test/secrets/rsa_public",
+      "private": "file:../test/secrets/rsa_private"
     },
     "ssh": {
-      "public": "../test/secrets/ssh_public",
-      "private": "../test/secrets/ssh_private"
+      "public": "file:../test/secrets/ssh_public",
+      "private": "file:../test/secrets/ssh_private"
     }
   },
   "feature": {
@@ -42,7 +42,7 @@
     "timeout": "10s"
   },
   "hooks": {
-    "secret": "../test/secrets/hooks"
+    "secret": "file:../test/secrets/hooks"
   },
   "id": {
     "kind": "uuid"
@@ -56,12 +56,12 @@
     "pg": {
       "masters": [
         {
-          "url": "../test/secrets/pg"
+          "url": "file:../test/secrets/pg"
         }
       ],
       "slaves": [
         {
-          "url": "../test/secrets/pg"
+          "url": "file:../test/secrets/pg"
         }
       ],
       "max_open_conns": 5,
@@ -81,7 +81,7 @@
       "kind": "otlp",
       "url": "http://localhost:4318/v1/traces",
       "headers": {
-        "Authorization": "../test/secrets/telemetry"
+        "Authorization": "file:../test/secrets/telemetry"
       }
     }
   },
