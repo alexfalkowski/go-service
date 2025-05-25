@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.10.2](https://github.com/alexfalkowski/go-service/releases/tag/v2.10.2) - 2025-05-25
+
+- [`530001a`](https://github.com/alexfalkowski/go-service/commit/530001aaffec5bdb097cf03bf3c17c97c04820eb) fix(cli): args is empty (#1631)
+
 ## [v2.10.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.10.1) - 2025-05-25
 
 - [`928e9ed`](https://github.com/alexfalkowski/go-service/commit/928e9ed6b06b91918166291dedeb4386a67176bc) fix(os): sanitize args (#1630)
