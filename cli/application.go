@@ -123,17 +123,13 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 }
 
 // Run the application.
-func (a *Application) Run(ctx context.Context, args ...string) error {
-	if len(args) == 0 {
-		args = os.SanitizeArgs(os.Args)
-	}
-
+func (a *Application) Run(ctx context.Context) error {
 	name := a.name.String()
 	runner := cmd.RunnerOf(a.cmds, cmd.Config{
 		AppName:        name,
 		AppDescription: name,
 		Version:        a.version.String(),
-		Args:           args,
+		Args:           os.SanitizeArgs(os.Args),
 		Context:        ctx,
 	})
 
@@ -141,8 +137,8 @@ func (a *Application) Run(ctx context.Context, args ...string) error {
 }
 
 // ExitOnError will run the application and exit on error.
-func (a *Application) ExitOnError(ctx context.Context, args ...string) {
-	if err := a.Run(ctx, args...); err != nil {
+func (a *Application) ExitOnError(ctx context.Context) {
+	if err := a.Run(ctx); err != nil {
 		slog.Error("could not start", logger.Error(err))
 		os.Exit(1)
 	}
