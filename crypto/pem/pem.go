@@ -27,12 +27,12 @@ type Decoder struct {
 
 // Decode from path.
 func (d *Decoder) Decode(path, kind string) ([]byte, error) {
-	b, err := d.fs.ReadFile(path)
+	data, err := d.fs.ReadSource(path)
 	if err != nil {
 		return nil, err
 	}
 
-	block, _ := pem.Decode(b)
+	block, _ := pem.Decode(data)
 	if block == nil {
 		return nil, ErrInvalidBlock
 	}

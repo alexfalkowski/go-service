@@ -68,37 +68,37 @@ func NewToken(kind string) *token.Config {
 // NewEd25519 for test.
 func NewEd25519() *ed25519.Config {
 	return &ed25519.Config{
-		Public:  Path("secrets/ed25519_public"),
-		Private: Path("secrets/ed25519_private"),
+		Public:  FilePath("secrets/ed25519_public"),
+		Private: FilePath("secrets/ed25519_private"),
 	}
 }
 
 // NewRSA for test.
 func NewRSA() *rsa.Config {
 	return &rsa.Config{
-		Public:  Path("secrets/rsa_public"),
-		Private: Path("secrets/rsa_private"),
+		Public:  FilePath("secrets/rsa_public"),
+		Private: FilePath("secrets/rsa_private"),
 	}
 }
 
 // NewAES for test.
 func NewAES() *aes.Config {
 	return &aes.Config{
-		Key: Path("secrets/aes"),
+		Key: FilePath("secrets/aes"),
 	}
 }
 
 // NewHMAC for test.
 func NewHMAC() *hmac.Config {
 	return &hmac.Config{
-		Key: Path("secrets/hmac"),
+		Key: FilePath("secrets/hmac"),
 	}
 }
 
 // NewHook for test.
 func NewHook() *hooks.Config {
 	return &hooks.Config{
-		Secret: Path("secrets/hooks"),
+		Secret: FilePath("secrets/hooks"),
 	}
 }
 
@@ -129,8 +129,8 @@ func NewTLSServerConfig() *tls.Config {
 // NewTLSConfig for test.
 func NewTLSConfig(c, k string) *tls.Config {
 	tc := &tls.Config{
-		Cert: Path(c),
-		Key:  Path(k),
+		Cert: FilePath(c),
+		Key:  FilePath(k),
 	}
 
 	return tc
@@ -188,7 +188,7 @@ func NewOTLPLoggerConfig() *logger.Config {
 		Level: "debug",
 		URL:   "http://localhost:3100/loki/api/v1/push",
 		Headers: header.Map{
-			"Authorization": Path("secrets/telemetry"),
+			"Authorization": FilePath("secrets/telemetry"),
 		},
 	}
 }
@@ -230,7 +230,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 		Kind: "otlp",
 		URL:  "http://localhost:9009/otlp/v1/metrics",
 		Headers: header.Map{
-			"Authorization": Path("secrets/telemetry"),
+			"Authorization": FilePath("secrets/telemetry"),
 		},
 	}
 }
@@ -241,7 +241,7 @@ func NewOTLPTracerConfig() *tracer.Config {
 		Kind: "otlp",
 		URL:  "http://localhost:4318/v1/traces",
 		Headers: header.Map{
-			"Authorization": Path("secrets/telemetry"),
+			"Authorization": FilePath("secrets/telemetry"),
 		},
 	}
 }
@@ -250,8 +250,8 @@ func NewOTLPTracerConfig() *tracer.Config {
 func NewPGConfig() *pg.Config {
 	return &pg.Config{
 		Config: &sql.Config{
-			Masters:         []sql.DSN{{URL: Path("secrets/pg")}},
-			Slaves:          []sql.DSN{{URL: Path("secrets/pg")}},
+			Masters:         []sql.DSN{{URL: FilePath("secrets/pg")}},
+			Slaves:          []sql.DSN{{URL: FilePath("secrets/pg")}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
 			ConnMaxLifetime: time.Hour.String(),
@@ -262,11 +262,6 @@ func NewPGConfig() *pg.Config {
 // NewInputConfig for test.
 func NewInputConfig(set *flag.FlagSet) *cli.InputConfig {
 	return cli.NewInputConfig(Name, set, Encoder, FS)
-}
-
-// NewOutputConfig for test.
-func NewOutputConfig(set *flag.FlagSet) *cli.OutputConfig {
-	return cli.NewOutputConfig(Name, set, Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.
@@ -298,7 +293,7 @@ func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 		Kind:       kind,
 		Compressor: compressor, Encoder: encoder,
 		Options: map[string]any{
-			"url": Path("secrets/" + secret),
+			"url": FilePath("secrets/" + secret),
 		},
 	}
 }

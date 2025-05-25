@@ -9,28 +9,28 @@ kind = "redis"
 encoder = "proto"
 compressor = "snappy"
 [cache.options]
-url = "../test/secrets/redis"
+url = "file:../test/secrets/redis"
 
 [cache.redis.addresses]
 server = "localhost:6379"
 
 [crypto.aes]
-key = "../test/secrets/aes"
+key = "file:../test/secrets/aes"
 
 [crypto.ed25519]
-public = "../test/secrets/ed25519_public"
-private = "../test/secrets/ed25519_private"
+public = "file:../test/secrets/ed25519_public"
+private = "file:../test/secrets/ed25519_private"
 
 [crypto.hmac]
-key = "../test/secrets/hmac"
+key = "file:../test/secrets/hmac"
 
 [crypto.rsa]
-public = "../test/secrets/rsa_public"
-private = "../test/secrets/rsa_private"
+public = "file:../test/secrets/rsa_public"
+private = "file:../test/secrets/rsa_private"
 
 [crypto.ssh]
-public = "../test/secrets/ssh_public"
-private = "../test/secrets/ssh_private"
+public = "file:../test/secrets/ssh_public"
+private = "file:../test/secrets/ssh_private"
 
 [feature]
 address = "localhost:9000"
@@ -42,7 +42,7 @@ timeout = "1s"
 attempts = 3
 
 [hooks]
-secret = "../test/secrets/hooks"
+secret = "file:../test/secrets/hooks"
 
 [id]
 kind = "uuid"
@@ -58,10 +58,10 @@ max_idle_conns = 5
 conn_max_lifetime = "1h"
 
 [[sql.pg.masters]]
-url = "../test/secrets/pg"
+url = "file:../test/secrets/pg"
 
 [[sql.pg.slaves]]
-url = "../test/secrets/pg"
+url = "file:../test/secrets/pg"
 
 [telemetry.logger]
 kind = "text"
@@ -75,7 +75,7 @@ kind = "otlp"
 url = "http://localhost:4318/v1/traces"
 
 [telemetry.tracer.headers]
-Authorization = "../test/secrets/telemetry"
+Authorization = "file:../test/secrets/telemetry"
 
 [time]
 kind = "nts"

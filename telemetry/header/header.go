@@ -11,11 +11,7 @@ type Map map[string]string
 // Secrets will traverse the map and load any secrets that have been configured.
 func (m Map) Secrets(fs *os.FS) error {
 	for key, name := range m {
-		if !fs.PathExists(name) {
-			continue
-		}
-
-		data, err := fs.ReadFile(name)
+		data, err := fs.ReadSource(name)
 		if err != nil {
 			return err
 		}

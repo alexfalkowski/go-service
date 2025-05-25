@@ -15,9 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
@@ -110,22 +107,6 @@ func limiterConfig(cfg *Config) *limiter.Config {
 	return cfg.Limiter
 }
 
-func loggerConfig(cfg *Config) *logger.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
-		return nil
-	}
-
-	return cfg.Telemetry.Logger
-}
-
-func metricsConfig(cfg *Config) *metrics.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
-		return nil
-	}
-
-	return cfg.Telemetry.Metrics
-}
-
 func pgConfig(cfg *Config) *pg.Config {
 	if !sql.IsEnabled(cfg.SQL) {
 		return nil
@@ -140,12 +121,4 @@ func timeConfig(cfg *Config) *time.Config {
 	}
 
 	return cfg.Time
-}
-
-func tracerConfig(cfg *Config) *tracer.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) {
-		return nil
-	}
-
-	return cfg.Telemetry.Tracer
 }

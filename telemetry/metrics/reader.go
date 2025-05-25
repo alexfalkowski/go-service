@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/alexfalkowski/go-service/v2/os"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
@@ -14,15 +13,11 @@ import (
 var ErrNotFound = errors.New("metrics: reader not found")
 
 // NewReader for metrics. A nil reader means disabled.
-func NewReader(fs *os.FS, cfg *Config) (metric.Reader, error) {
+func NewReader(cfg *Config) (metric.Reader, error) {
 	switch {
 	case !IsEnabled(cfg):
 		return nil, nil
 	case cfg.IsOTLP():
-		if err := cfg.Headers.Secrets(fs); err != nil {
-			return nil, prefix(err)
-		}
-
 		exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 		if err != nil {
 			return nil, prefix(err)

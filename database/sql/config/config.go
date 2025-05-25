@@ -25,5 +25,5 @@ type (
 
 // GetPassword for SQL.
 func (d *DSN) GetURL(fs *os.FS) ([]byte, error) {
-	return fs.ReadFile(d.URL)
+	return fs.ReadSource(d.URL)
 }

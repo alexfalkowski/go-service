@@ -2,6 +2,7 @@ package os
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -12,10 +13,10 @@ import (
 )
 
 // ModeAppend is an alias to os.ModeAppend.
-const ModeAppend = os.ModeAppend
+const ModeAppend = fs.ModeAppend
 
 // FileMode is an alias to os.FileMode.
-type FileMode = os.FileMode
+type FileMode = fs.FileMode
 
 // NewFS for os.
 func NewFS() *FS {
@@ -86,4 +87,19 @@ func (fs *FS) ExecutableName() string {
 // ExecutableDir of the running application.
 func (fs *FS) ExecutableDir() string {
 	return fs.Dir(Executable())
+}
+
+// ReadSource will look at the source and read depending on env, file, etc.
+func (fs *FS) ReadSource(source string) ([]byte, error) {
+	kind, path, ok := strings.Cut(source, ":")
+	if ok {
+		switch kind {
+		case "env":
+			return strings.Bytes(Getenv(path)), nil
+		case "file":
+			return fs.ReadFile(path)
+		}
+	}
+
+	return strings.Bytes(source), nil
 }

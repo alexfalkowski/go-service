@@ -14,5 +14,5 @@ type Config struct {
 
 // GetCert for hooks.
 func (c *Config) GetSecret(fs *os.FS) ([]byte, error) {
-	return fs.ReadFile(c.Secret)
+	return fs.ReadSource(c.Secret)
 }

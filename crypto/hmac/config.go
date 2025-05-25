@@ -14,5 +14,5 @@ type Config struct {
 
 // GetKey for hmac.
 func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
-	return fs.ReadFile(c.Key)
+	return fs.ReadSource(c.Key)
 }

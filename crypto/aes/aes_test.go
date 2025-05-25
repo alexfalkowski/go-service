@@ -83,7 +83,7 @@ func TestInvalidCipher(t *testing.T) {
 	Convey("Given I have an cipher with invalid key", t, func() {
 		rand := rand.NewGenerator(rand.NewReader())
 
-		cipher, err := aes.NewCipher(rand, test.FS, &aes.Config{Key: test.Path("secrets/aes_invalid")})
+		cipher, err := aes.NewCipher(rand, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
 		So(err, ShouldBeNil)
 
 		Convey("When I encrypt data", func() {

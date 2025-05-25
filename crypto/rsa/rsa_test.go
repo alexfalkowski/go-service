@@ -162,8 +162,8 @@ func TestInvalid(t *testing.T) {
 
 	Convey("When I create an decryptor with an invalid public key", t, func() {
 		config := &rsa.Config{
-			Public:  test.Path("secrets/rsa_public"),
-			Private: test.Path("secrets/ed25519_private"),
+			Public:  test.FilePath("secrets/rsa_public"),
+			Private: test.FilePath("secrets/ed25519_private"),
 		}
 		_, err := rsa.NewDecryptor(rand, test.PEM, config)
 
@@ -174,8 +174,8 @@ func TestInvalid(t *testing.T) {
 
 	Convey("When I create an encryptor with an invalid private key", t, func() {
 		config := &rsa.Config{
-			Public:  test.Path("secrets/ed25519_public"),
-			Private: test.Path("secrets/rsa_private"),
+			Public:  test.FilePath("secrets/ed25519_public"),
+			Private: test.FilePath("secrets/rsa_private"),
 		}
 		_, err := rsa.NewEncryptor(rand, test.PEM, config)
 

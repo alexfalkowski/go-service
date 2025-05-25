@@ -1,8 +1,6 @@
 package test
 
 import (
-	"path/filepath"
-
 	"github.com/alexfalkowski/go-service/v2/env"
 )
 
@@ -21,4 +19,4 @@ const (
 )
 
 // UserAgent for test.
-var UserAgent = env.UserAgent(filepath.Join(Name.String(), Version.String()))
+var UserAgent = env.UserAgent(Name.String() + "/" + Version.String())

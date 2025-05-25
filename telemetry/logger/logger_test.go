@@ -10,28 +10,6 @@ import (
 )
 
 func TestLogger(t *testing.T) {
-	Convey("Given I have an invalid file system", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		cfg := test.NewOTLPLoggerConfig()
-		params := logger.Params{
-			Lifecycle:   lc,
-			Config:      cfg,
-			ID:          test.ID,
-			Name:        test.Name,
-			Version:     test.Version,
-			Environment: test.Environment,
-			FileSystem:  test.ErrFS,
-		}
-
-		Convey("When I try to get a logger", func() {
-			_, err := logger.NewLogger(params)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
-
 	Convey("Given I have an invalid configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		cfg := &logger.Config{Kind: "wrong", Level: "debug"}
@@ -42,7 +20,6 @@ func TestLogger(t *testing.T) {
 			Name:        test.Name,
 			Version:     test.Version,
 			Environment: test.Environment,
-			FileSystem:  test.FS,
 		}
 
 		Convey("When I try to get a logger", func() {

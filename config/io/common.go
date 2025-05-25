@@ -1,8 +1,6 @@
 package io
 
 import (
-	"path/filepath"
-
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -31,15 +29,6 @@ func (c *Common) Read() ([]byte, error) {
 	return c.fs.ReadFile(c.location)
 }
 
-// Write to the underlying read writer.
-func (c *Common) Write(data []byte, mode os.FileMode) error {
-	if strings.IsEmpty(c.location) {
-		return ErrLocationMissing
-	}
-
-	return c.fs.WriteFile(c.location, data, mode)
-}
-
 // Kind from the underlying read writer, otherwise YAML.
 func (c *Common) Kind() string {
 	if strings.IsEmpty(c.kind) {
@@ -56,12 +45,12 @@ func common(name env.Name, fs *os.FS) (string, string) {
 		file := n + extension
 		dirs := []string{
 			fs.ExecutableDir(),
-			filepath.Join(os.UserHomeDir(), ".config", n),
+			fs.Join(os.UserHomeDir(), ".config", n),
 			"/etc/" + n,
 		}
 
 		for _, dir := range dirs {
-			name := filepath.Join(dir, file)
+			name := fs.Join(dir, file)
 			if fs.PathExists(name) {
 				return name, fs.PathExtension(name)
 			}

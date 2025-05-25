@@ -16,8 +16,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-type tuple [2]any
-
 //nolint:funlen
 func TestValidCache(t *testing.T) {
 	configs := []*config.Config{
@@ -26,7 +24,7 @@ func TestValidCache(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		for _, value := range []tuple{
+		for _, value := range []test.AnyTuple{
 			{ptr.Value("hello?"), ptr.Zero[string]()},
 			{bytes.NewBufferString("hello?"), &bytes.Buffer{}},
 			{&v1.SayHelloRequest{Name: "hello?"}, &v1.SayHelloRequest{}},
@@ -308,30 +306,25 @@ func TestErroneousSave(t *testing.T) {
 }
 
 func TestErroneousGet(t *testing.T) {
-	type Tuple struct {
-		Config *config.Config
-		driver.Driver
+	values := []*test.KeyValue[*config.Config, driver.Driver]{
+		{Key: test.NewCacheConfig("sync", "snappy", "error", "redis"), Value: &test.Cache{Value: "d2hhdD8="}},
+		{Key: test.NewCacheConfig("sync", "error", "json", "redis"), Value: &test.Cache{Value: "d2hhdD8="}},
+		{Key: test.NewCacheConfig("sync", "snappy", "json", "redis"), Value: &test.Cache{Value: "what?"}},
+		{Key: test.NewCacheConfig("sync", "snappy", "json", "redis"), Value: &test.ErrCache{}},
 	}
 
-	tuples := []*Tuple{
-		{Config: test.NewCacheConfig("sync", "snappy", "error", "redis"), Driver: &test.Cache{Value: "d2hhdD8="}},
-		{Config: test.NewCacheConfig("sync", "error", "json", "redis"), Driver: &test.Cache{Value: "d2hhdD8="}},
-		{Config: test.NewCacheConfig("sync", "snappy", "json", "redis"), Driver: &test.Cache{Value: "what?"}},
-		{Config: test.NewCacheConfig("sync", "snappy", "json", "redis"), Driver: &test.ErrCache{}},
-	}
-
-	for _, tuple := range tuples {
+	for _, value := range values {
 		Convey("Given I have a cache", t, func() {
 			world := test.NewWorld(t)
 			world.Register()
 
 			params := cache.Params{
 				Lifecycle:  world.Lifecycle,
-				Config:     tuple.Config,
+				Config:     value.Key,
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
-				Driver:     tuple.Driver,
+				Driver:     value.Value,
 				Tracer:     world.NewTracer(),
 				Logger:     world.Logger,
 				Meter:      world.Server.Meter,

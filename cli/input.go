@@ -9,8 +9,8 @@ import (
 )
 
 // NewInputConfig for cmd.
-func NewInputConfig(name env.Name, set *flag.FlagSet, enc *encoding.Map, fs *os.FS) *InputConfig {
-	return &InputConfig{config.NewConfig(name, set.GetInput(), enc, fs)}
+func NewInputConfig(name env.Name, flags *flag.FlagSet, enc *encoding.Map, fs *os.FS) *InputConfig {
+	return &InputConfig{config.NewConfig(name, flags.GetInput(), enc, fs)}
 }
 
 // InputConfig for cmd.
