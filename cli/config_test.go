@@ -72,13 +72,12 @@ func TestReadValidConfigFile(t *testing.T) {
 	})
 }
 
-func TestValidConfigEnv(t *testing.T) {
+func TestValidEnvConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		t.Setenv("CONFIG_FILE", "yaml:CONFIG")
-		t.Setenv("CONFIG", "ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==")
+		t.Setenv("CONFIG", "yaml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==")
 
 		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG_FILE")
+		set.AddInput("env:CONFIG")
 
 		Convey("When I read the config", func() {
 			input := test.NewInputConfig(set)
@@ -95,7 +94,7 @@ func TestValidConfigEnv(t *testing.T) {
 func TestMissingConfig(t *testing.T) {
 	Convey("When I read the config", t, func() {
 		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG_FILE")
+		set.AddInput("")
 
 		input := test.NewInputConfig(set)
 
@@ -107,18 +106,14 @@ func TestMissingConfig(t *testing.T) {
 
 func TestNonExistentConfig(t *testing.T) {
 	Convey("Given I have non existent configuration file", t, func() {
-		t.Setenv("CONFIG_FILE", "../bob")
-
 		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG_FILE")
+		set.AddInput("file:../bob")
 
 		Convey("When I try to parse the configuration file", func() {
 			input := test.NewInputConfig(set)
 
 			Convey("Then I should have a invalid configuration", func() {
-				var d map[string]any
-
-				So(input.Decode(&d), ShouldBeError)
+				So(input.Decode(nil), ShouldBeError)
 			})
 		})
 	})
@@ -132,19 +127,15 @@ func TestInvalidKindConfig(t *testing.T) {
 		input := test.NewInputConfig(set)
 
 		Convey("Then I should have a invalid configuration", func() {
-			var d map[string]any
-
-			So(input.Decode(&d), ShouldBeError)
+			So(input.Decode(nil), ShouldBeError)
 		})
 	})
 }
 
 func TestInvalidConfig(t *testing.T) {
 	Convey("Given I have invalid kind configuration file", t, func() {
-		t.Setenv("CONFIG_FILE", "config.go")
-
 		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG_FILE")
+		set.AddInput("file:config.go")
 
 		Convey("When I try to parse the configuration file", func() {
 			input := test.NewInputConfig(set)

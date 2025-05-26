@@ -20,7 +20,7 @@ func TestApplicationRun(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("env:CONFIG_FILE")
+					cmd.AddInput("")
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
@@ -49,7 +49,7 @@ func TestApplicationExitOnRun(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("env:CONFIG_FILE")
+					cmd.AddInput("")
 				},
 			)
 
@@ -69,7 +69,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput("env:CONFIG_FILE")
+				cmd.AddInput("")
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
@@ -86,7 +86,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", test.Options()...)
-				cmd.AddInput("env:IN_CONFIG_FILE")
+				cmd.AddInput("")
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
@@ -108,7 +108,7 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("env:IN_CONFIG_FILE")
+					cmd.AddInput("")
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
@@ -135,7 +135,7 @@ func TestApplicationInvalid(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("env:CONFIG_FILE")
+					cmd.AddInput("")
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),
@@ -158,7 +158,7 @@ func TestApplicationDisabled(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput("env:CONFIG_FILE")
+				cmd.AddInput("")
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
@@ -178,7 +178,7 @@ func TestApplicationClient(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", opts...)
-				cmd.AddInput("env:CONFIG_FILE")
+				cmd.AddInput("")
 			},
 			cli.WithApplicationName(test.Name),
 			cli.WithApplicationVersion(test.Version),
@@ -203,7 +203,7 @@ func TestApplicationInvalidClient(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddClient("client", "Start the client.", test.Options()...)
-					cmd.AddInput("env:CONFIG_FILE")
+					cmd.AddInput("")
 				},
 				cli.WithApplicationName(test.Name),
 				cli.WithApplicationVersion(test.Version),

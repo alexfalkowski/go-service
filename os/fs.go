@@ -91,15 +91,13 @@ func (fs *FS) ExecutableDir() string {
 
 // ReadSource will look at the source and read depending on env, file, etc.
 func (fs *FS) ReadSource(source string) ([]byte, error) {
-	kind, path, ok := strings.Cut(source, ":")
-	if ok {
-		switch kind {
-		case "env":
-			return strings.Bytes(Getenv(path)), nil
-		case "file":
-			return fs.ReadFile(path)
-		}
+	kind, path := strings.CutColon(source)
+	switch kind {
+	case "env":
+		return strings.Bytes(Getenv(path)), nil
+	case "file":
+		return fs.ReadFile(path)
+	default:
+		return strings.Bytes(source), nil
 	}
-
-	return strings.Bytes(source), nil
 }

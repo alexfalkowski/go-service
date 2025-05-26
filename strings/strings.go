@@ -37,3 +37,13 @@ func Join(sep string, ss ...string) string {
 func Concat(ss ...string) string {
 	return Join("", ss...)
 }
+
+// CutColon will split by : and give before and after.
+func CutColon(arg string) (string, string) {
+	before, after, ok := strings.Cut(arg, ":")
+	if !ok {
+		return "", ""
+	}
+
+	return before, after
+}
