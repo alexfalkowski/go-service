@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.13.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.13.0) - 2025-05-26
+
+- [`509ccba`](https://github.com/alexfalkowski/go-service/commit/509ccba6d975bffa0deddd05330fc0d23269c299) feat(deps): bump google.golang.org/grpc from 1.72.1 to 1.72.2 (#1635)
+- [`3e27ba5`](https://github.com/alexfalkowski/go-service/commit/3e27ba551d6d0679483239a199dac15287af407b) build(ci): use new config (#1634)
+
 ## [v2.12.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.12.0) - 2025-05-26
 
 - [`3ec2c27`](https://github.com/alexfalkowski/go-service/commit/3ec2c27ff99c16ec4628a36ea2bc6f8133d4a64d) feat(config): env should just hold the config (#1633)
