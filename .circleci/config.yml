@@ -13,10 +13,9 @@ jobs:
         environment:
           REDIS_PASSWORD: test
       - image: alexfalkowski/status:latest
-        command: server -i env:CONFIG_FILE
+        command: server -i env:CONFIG
         environment:
-          CONFIG_FILE: yaml:CONFIG
-          CONFIG: ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IDo2MDAwCiAgICByZXRyeToKICAgICAgYmFja29mZjogMTAwbXMKICAgICAgdGltZW91dDogMXMKICAgICAgYXR0ZW1wdHM6IDMKICAgIHRpbWVvdXQ6IDEwcwogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgo=
+          CONFIG: yaml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50CmhlYWx0aDoKICBkdXJhdGlvbjogMXMKICB0aW1lb3V0OiAxcwppZDoKICBraW5kOiB1dWlkCnRlbGVtZXRyeToKICBsb2dnZXI6CiAgICBraW5kOiB0ZXh0CiAgICBsZXZlbDogaW5mbwp0cmFuc3BvcnQ6CiAgaHR0cDoKICAgIGFkZHJlc3M6IDo2MDAwCiAgICByZXRyeToKICAgICAgYmFja29mZjogMTAwbXMKICAgICAgdGltZW91dDogMXMKICAgICAgYXR0ZW1wdHM6IDMKICAgIHRpbWVvdXQ6IDEwcwogICAgdXNlcl9hZ2VudDogIlN0YXR1cy1zZXJ2ZXIvMS4wIGh0dHAvMS4wIgo=
       - image: grafana/mimir:latest
         command: -server.http-listen-port=9009 -auth.multitenancy-enabled=false -ingester.ring.replication-factor=1
     working_directory: ~/go-service
