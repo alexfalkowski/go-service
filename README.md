@@ -34,7 +34,7 @@ The supported configuration kinds are as follows:
 
 The configuration can be read from multiple sources by specifying a flag called `--input` or `-i`. As per the following:
 
-- `env:CONFIG` - Read from an env variable called `CONFIG`. The env variable must be a configuration and we expect the format of `extension:ENV_VARIABLE`, where extension is the supported kinds and `ENV_VARIABLE` contains the contents of the config that are *base64 encoded*.
+- `env:CONFIG` - Read from an env variable called `CONFIG`. The env variable must be a configuration and we expect the format of `extension:content`, where `extension` is the supported kinds and `content` contains the contents of the config that is *base64 encoded*.
 - `file:path` - Read from the path.
 - If all the above fails it will try common locations, such as:
   - The binary location.
@@ -49,7 +49,7 @@ This is the [configuration](config/config.go). We will outline the config requir
 
 You can specify the environment of the service.
 
-### Configuration
+### Environment Configuration
 
 To configure, please specify the following:
 
@@ -80,7 +80,7 @@ We support the following:
 
 The framework currently supports the following caching solutions from the awesome [Cachego](https://github.com/faabiosr/cachego).
 
-### Configuration
+### Compression Configuration
 
 To configure, please specify the following:
 
@@ -97,7 +97,7 @@ cache:
 
 The framework supports [OpenFeature](https://openfeature.dev/).
 
-### Configuration
+### Feature Configuration
 
 To configure, please specify the following:
 
@@ -115,7 +115,7 @@ feature:
 
 The framework supports [Standard Webhooks](https://www.standardwebhooks.com/).
 
-### Configuration
+### Hooks Configuration
 
 To configure, please specify the following:
 
@@ -134,7 +134,7 @@ The framework supports the generation of ids. The following are supported:
 - [ulid](https://github.com/oklog/ulid)
 - [xid](https://github.com/rs/xid)
 
-### Configuration
+### ID Configuration
 
 To configure, please specify the following:
 
@@ -158,7 +158,7 @@ For SQL databases we support the following:
 
 We also support master, slave combinations with the awesome [mssqlx](https://github.com/linxGnu/mssqlx).
 
-### Configuration
+### SQL Configuration
 
 To configure, please specify the following:
 
@@ -200,7 +200,7 @@ Telemetry is broken down in the following sections:
 
 For logging we use [slog](https://pkg.go.dev/log/slog).
 
-#### Configuration
+#### Logging Configuration
 
 We have multiple options for logging.
 
@@ -226,7 +226,7 @@ telemetry:
     level: info
 ```
 
-##### OpenTelemetry
+##### Logger OTLP
 
 To configure, please specify the following:
 
@@ -247,7 +247,7 @@ For metrics we support the following:
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
 - [Prometheus](https://github.com/prometheus/client_golang)
 
-#### Configuration
+#### Metrics Configuration
 
 Below is the configuration for each system.
 
@@ -261,7 +261,7 @@ telemetry:
     kind: prometheus
 ```
 
-##### OTLP
+##### Metrics OTLP
 
 To configure, please specify the following:
 
@@ -280,11 +280,11 @@ For distributed tracing we support the following:
 
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
 
-#### Configuration
+#### Trace Configuration
 
 Below is the configuration for each system.
 
-##### OTLP
+##### Trace OTLP
 
 To configure, please specify the following:
 
@@ -297,7 +297,7 @@ telemetry:
       Authorization: path to key
 ```
 
-### Dependencies
+### Telemetry Dependencies
 
 ![Dependencies](./assets/telemetry.png)
 
@@ -378,7 +378,7 @@ The different kinds are:
 - [ip](transport/meta/key.go)
 - [token](transport/meta/key.go)
 
-### Configuration
+### Limiter Configuration
 
 To configure, please specify the following:
 
@@ -396,7 +396,7 @@ The framework allows you use network time services. We use:
 - [ntp](https://github.com/beevik/ntp)
 - [nts](https://github.com/beevik/nts)
 
-### Configuration
+### Time Configuration
 
 To configure, please specify the following:
 
@@ -428,7 +428,7 @@ Below is list of the provided handlers:
 
 - [Limiter](https://github.com/sethvargo/go-limiter)
 
-### Configuration
+### Transport Configuration
 
 To configure, please specify the following:
 
@@ -464,7 +464,7 @@ transport:
       key: path of key
 ```
 
-### Dependencies
+### Transport Dependencies
 
 ![Dependencies](./assets/transport.png)
 
@@ -474,7 +474,7 @@ The crypto package provides sensible defaults for symmetric, asymmetric, hashing
 
 We rely on the awesome [crypto](https://pkg.go.dev/golang.org/x/crypto).
 
-### Configuration
+### Cryptography Configuration
 
 To configure, please specify the following:
 
@@ -495,7 +495,7 @@ crypto:
     private: path to the private
 ```
 
-### Dependencies
+### Cryptography Dependencies
 
 ![Dependencies](./assets/crypto.png)
 
@@ -539,7 +539,7 @@ GET http://localhost:6060/debug/psutil
 
 Check out [gopsutil](https://github.com/shirou/gopsutil).
 
-### Configuration
+### Debug Configuration
 
 To configure, please specify the following:
 
@@ -566,7 +566,7 @@ This section describes how to run and contribute to the project, if you are inte
 
 We favour what is defined in the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
 
-### Dependencies
+### Development Dependencies
 
 Please setup the following:
 
@@ -586,7 +586,7 @@ make create-certs
 make dep
 ```
 
-### Environment
+### Development Environment
 
 As we rely on external services these need to be configured:
 

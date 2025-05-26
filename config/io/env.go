@@ -8,35 +8,22 @@ import (
 
 // NewENV for io.
 func NewENV(location string) *ENV {
-	return &ENV{location: location}
+	kind, data := strings.CutColon(os.Getenv(location))
+
+	return &ENV{kind: kind, data: data}
 }
 
-// ENV reads and writes from environment variables to files.
+// ENV for io.
 type ENV struct {
-	location string
+	kind, data string
 }
 
-// Read a file from an environment variable.
-// The contents of the file could be inside the environment variable.
+// Read the data from the environment variable.
 func (e *ENV) Read() ([]byte, error) {
-	_, env := e.split()
-
-	return base64.Decode(os.Getenv(env))
+	return base64.Decode(e.data)
 }
 
-// Kind for env, which is the file extension or defined in the environment variable.
+// Kind for env, which is the in the environment variable.
 func (e *ENV) Kind() string {
-	kind, _ := e.split()
-
-	return kind
-}
-
-func (e *ENV) name() string {
-	return os.Getenv(e.location)
-}
-
-func (e *ENV) split() (string, string) {
-	kind, env, _ := strings.Cut(e.name(), ":")
-
-	return kind, env
+	return e.kind
 }

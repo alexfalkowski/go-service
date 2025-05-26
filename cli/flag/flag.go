@@ -1,9 +1,6 @@
 package flag
 
-import (
-	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/spf13/pflag"
-)
+import "github.com/spf13/pflag"
 
 // NewFlagSet creates a new flag set with the given name.
 func NewFlagSet(name string) *FlagSet {
@@ -32,14 +29,4 @@ func (f *FlagSet) GetInput() string {
 // Provide returns the flag set.
 func (f *FlagSet) Provide() *FlagSet {
 	return f
-}
-
-// SplitFlag will split by : and give us the kind and name.
-func SplitFlag(arg string) (string, string) {
-	kind, name, ok := strings.Cut(arg, ":")
-	if !ok {
-		return "", ""
-	}
-
-	return kind, name
 }
