@@ -259,9 +259,9 @@ func NewPGConfig() *pg.Config {
 	}
 }
 
-// NewInputConfig for test.
-func NewInputConfig(set *flag.FlagSet) *cli.InputConfig {
-	return cli.NewInputConfig(Name, set, Encoder, FS)
+// NewConfig for test.
+func NewConfig(set *flag.FlagSet) *cli.Config {
+	return cli.NewConfig(Name, set, Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.

@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"

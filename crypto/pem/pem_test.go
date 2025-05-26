@@ -1,10 +1,10 @@
 package pem_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )

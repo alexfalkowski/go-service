@@ -2,10 +2,10 @@ package logger
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"go.uber.org/fx"
 )
 

@@ -2,7 +2,6 @@ package metrics_test
 
 import (
 	"context"
-	"errors"
 	"io"
 	"testing"
 
@@ -39,7 +38,7 @@ func TestClientStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
 		c := metrics.NewClient(m)
-		st := c.Stream(&clientStream{err: errors.ErrUnsupported}, metric.WithAttributes())
+		st := c.Stream(&clientStream{err: test.ErrFailed}, metric.WithAttributes())
 
 		lc.RequireStart()
 
@@ -47,7 +46,7 @@ func TestClientStream(t *testing.T) {
 			err := st.RecvMsg(nil)
 
 			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError, errors.ErrUnsupported)
+				So(err, ShouldBeError, test.ErrFailed)
 			})
 		})
 
@@ -80,7 +79,7 @@ func TestServerStream(t *testing.T) {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
 		s := metrics.NewServer(m)
-		st := s.Stream(&serverStream{err: errors.ErrUnsupported}, metric.WithAttributes())
+		st := s.Stream(&serverStream{err: test.ErrFailed}, metric.WithAttributes())
 
 		lc.RequireStart()
 
@@ -88,7 +87,7 @@ func TestServerStream(t *testing.T) {
 			err := st.RecvMsg(nil)
 
 			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError, errors.ErrUnsupported)
+				So(err, ShouldBeError, test.ErrFailed)
 			})
 		})
 

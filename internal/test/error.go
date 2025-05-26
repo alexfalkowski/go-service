@@ -1,8 +1,7 @@
 package test
 
 import (
-	"errors"
-
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 )
 

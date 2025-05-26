@@ -22,6 +22,6 @@ type Reader interface {
 	// Read bytes.
 	Read() ([]byte, error)
 
-	// Kind of read writer.
+	// Kind of reader.
 	Kind() string
 }

@@ -34,7 +34,7 @@ func TestValidFileConfig(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(file)
 
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("When I try to parse the configuration file", func() {
 				config, err := config.NewConfig[config.Config](input, test.Validator)
@@ -53,7 +53,7 @@ func TestMissingFileConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput(test.FilePath("configs/missing.yml"))
 
-		input := test.NewInputConfig(set)
+		input := test.NewConfig(set)
 
 		Convey("When I try to parse the configuration file", func() {
 			_, err := config.NewConfig[*config.Config](input, test.Validator)
@@ -76,7 +76,7 @@ func TestInvalidFileConfig(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(file)
 
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("When I try to parse the configuration file", func() {
 				_, err := config.NewConfig[config.Config](input, test.Validator)
@@ -101,7 +101,7 @@ func TestValidEnvConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("env:CONFIG")
 
-		input := test.NewInputConfig(set)
+		input := test.NewConfig(set)
 
 		Convey("When I try to parse the configuration file", func() {
 			config, err := config.NewConfig[config.Config](input, test.Validator)

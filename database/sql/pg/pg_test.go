@@ -2,14 +2,14 @@
 package pg_test
 
 import (
-	"errors"
 	"testing"
-	"time"
 
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx/fxtest"

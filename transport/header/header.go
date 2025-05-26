@@ -1,9 +1,9 @@
 package header
 
 import (
-	"errors"
 	"slices"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 

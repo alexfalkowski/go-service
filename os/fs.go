@@ -1,12 +1,12 @@
 package os
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/avfs/avfs"
 	"github.com/avfs/avfs/vfs/osfs"

@@ -2,8 +2,8 @@ package breaker
 
 import (
 	"context"
-	"errors"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	breaker "github.com/sony/gobreaker"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

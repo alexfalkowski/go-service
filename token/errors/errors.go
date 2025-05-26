@@ -1,6 +1,6 @@
 package errors
 
-import "errors"
+import "github.com/alexfalkowski/go-service/v2/errors"
 
 var (
 	// ErrInvalidMatch for token.

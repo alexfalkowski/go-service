@@ -2,8 +2,8 @@ package metrics
 
 import (
 	"context"
-	"errors"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"

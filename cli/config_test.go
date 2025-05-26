@@ -15,7 +15,7 @@ func TestNoneConfig(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(arg)
 
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
 				So(input.Decode(nil), ShouldBeError)
@@ -30,7 +30,7 @@ func TestReadValidConfigFile(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(test.FilePath("configs/config.yml"))
 
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
 				var d map[string]any
@@ -58,7 +58,7 @@ func TestReadValidConfigFile(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput("")
 
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
 				var d map[string]any
@@ -80,7 +80,7 @@ func TestValidEnvConfig(t *testing.T) {
 		set.AddInput("env:CONFIG")
 
 		Convey("When I read the config", func() {
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have a valid configuration", func() {
 				var d map[string]any
@@ -96,7 +96,7 @@ func TestMissingConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("")
 
-		input := test.NewInputConfig(set)
+		input := test.NewConfig(set)
 
 		Convey("Then I should have a valid configuration", func() {
 			So(input, ShouldNotBeNil)
@@ -110,7 +110,7 @@ func TestNonExistentConfig(t *testing.T) {
 		set.AddInput("file:../bob")
 
 		Convey("When I try to parse the configuration file", func() {
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have a invalid configuration", func() {
 				So(input.Decode(nil), ShouldBeError)
@@ -124,7 +124,7 @@ func TestInvalidKindConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("test:test")
 
-		input := test.NewInputConfig(set)
+		input := test.NewConfig(set)
 
 		Convey("Then I should have a invalid configuration", func() {
 			So(input.Decode(nil), ShouldBeError)
@@ -138,7 +138,7 @@ func TestInvalidConfig(t *testing.T) {
 		set.AddInput("file:config.go")
 
 		Convey("When I try to parse the configuration file", func() {
-			input := test.NewInputConfig(set)
+			input := test.NewConfig(set)
 
 			Convey("Then I should have an error when decoding", func() {
 				So(input.Decode(nil), ShouldBeError)

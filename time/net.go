@@ -1,6 +1,6 @@
 package time
 
-import "errors"
+import "github.com/alexfalkowski/go-service/v2/errors"
 
 // ErrNotFound for metrics.
 var ErrNotFound = errors.New("time: network not found")

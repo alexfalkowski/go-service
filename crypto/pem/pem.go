@@ -2,8 +2,8 @@ package pem
 
 import (
 	"encoding/pem"
-	"errors"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 

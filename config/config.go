@@ -1,8 +1,6 @@
 package config
 
 import (
-	"errors"
-
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/crypto"
@@ -10,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -29,9 +28,9 @@ import (
 var ErrInvalidConfig = errors.New("config: invalid format")
 
 // NewConfig will decode and check its validity.
-func NewConfig[T comparable](input *cli.InputConfig, validator *validator.Validator) (*T, error) {
+func NewConfig[T comparable](cfg *cli.Config, validator *validator.Validator) (*T, error) {
 	config := ptr.Zero[T]()
-	if err := input.Decode(config); err != nil {
+	if err := cfg.Decode(config); err != nil {
 		return nil, err
 	}
 
