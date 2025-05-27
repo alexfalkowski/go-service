@@ -1,10 +1,10 @@
 package status
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"google.golang.org/grpc/status"
 )
 

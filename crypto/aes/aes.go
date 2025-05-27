@@ -3,9 +3,9 @@ package aes
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 

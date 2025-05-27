@@ -1,10 +1,9 @@
 package driver
 
 import (
-	"errors"
-
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/redis"

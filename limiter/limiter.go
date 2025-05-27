@@ -2,9 +2,9 @@ package limiter
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	st "github.com/alexfalkowski/go-service/v2/time"

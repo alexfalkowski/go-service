@@ -2,10 +2,10 @@ package metrics
 
 import (
 	"context"
-	"errors"
 	"io"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"

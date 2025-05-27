@@ -20,7 +20,7 @@ type Common struct {
 	kind     string
 }
 
-// It will first try to read from the underlying read writer, otherwise it will read a configuration file in commonly defined locations.
+// Read from the common location.
 func (c *Common) Read() ([]byte, error) {
 	if strings.IsEmpty(c.location) {
 		return nil, ErrLocationMissing
@@ -29,12 +29,8 @@ func (c *Common) Read() ([]byte, error) {
 	return c.fs.ReadFile(c.location)
 }
 
-// Kind from the underlying read writer, otherwise YAML.
+// Kind from the common location.
 func (c *Common) Kind() string {
-	if strings.IsEmpty(c.kind) {
-		return "yaml"
-	}
-
 	return c.kind
 }
 

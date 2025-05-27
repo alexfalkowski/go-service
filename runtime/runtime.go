@@ -1,8 +1,9 @@
 package runtime
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/alexfalkowski/go-service/v2/errors"
 )
 
 var ErrRecovered = errors.New("recovered")

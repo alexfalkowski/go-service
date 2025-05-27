@@ -2,9 +2,9 @@ package retry
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/hashicorp/go-retryablehttp"

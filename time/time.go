@@ -7,6 +7,9 @@ import (
 )
 
 const (
+	// Hour is an alias of time.Hour.
+	Hour = time.Hour
+
 	// Microsecond is an alias of time.Microsecond.
 	Microsecond = time.Microsecond
 

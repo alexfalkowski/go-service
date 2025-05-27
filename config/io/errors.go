@@ -1,6 +1,6 @@
 package io
 
-import "errors"
+import "github.com/alexfalkowski/go-service/v2/errors"
 
 var (
 	// ErrLocationMissing for cmd.

@@ -1,8 +1,7 @@
 package test
 
 import (
-	"errors"
-
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/embedded"
 )

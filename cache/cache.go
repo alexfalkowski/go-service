@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"errors"
 	"io"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -15,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
