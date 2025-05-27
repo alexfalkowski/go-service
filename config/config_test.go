@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/token"
 	. "github.com/smartystreets/goconvey/convey"
@@ -48,27 +49,15 @@ func TestValidFileConfig(t *testing.T) {
 	}
 }
 
-func TestMissingFileConfig(t *testing.T) {
-	Convey("Given I have missing configuration file", t, func() {
-		set := flag.NewFlagSet("test")
-		set.AddInput(test.FilePath("configs/missing.yml"))
-
-		input := test.NewConfig(set)
-
-		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[*config.Config](input, test.Validator)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
-}
-
 func TestInvalidFileConfig(t *testing.T) {
 	files := []string{
 		test.FilePath("configs/invalid.yml"),
 		test.FilePath("configs/invalid_trace.yml"),
+		test.FilePath("configs/missing.yml"),
+		test.FilePath("config.go"),
+		test.FilePath("../bob"),
+		"",
+		"env:BOB",
 	}
 
 	for _, file := range files {
@@ -91,9 +80,7 @@ func TestInvalidFileConfig(t *testing.T) {
 
 func TestValidEnvConfig(t *testing.T) {
 	Convey("Given I have configuration file", t, func() {
-		fs := test.FS
-
-		d, err := fs.ReadFile(test.Path("configs/config.yml"))
+		d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
 		So(err, ShouldBeNil)
 
 		t.Setenv("CONFIG", "yaml:"+base64.Encode(d))
@@ -109,6 +96,92 @@ func TestValidEnvConfig(t *testing.T) {
 
 			Convey("Then I should have a valid configuration", func() {
 				verifyConfig(config)
+			})
+		})
+	})
+}
+
+func TestInvalidEnvConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		t.Setenv("CONFIG", "yaml:not_good")
+
+		set := flag.NewFlagSet("test")
+		set.AddInput("env:CONFIG")
+
+		input := test.NewConfig(set)
+
+		Convey("When I try to parse the configuration file", func() {
+			_, err := config.NewConfig[config.Config](input, test.Validator)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+}
+
+func TestValidCommonConfig(t *testing.T) {
+	Convey("Given I have configuration file", t, func() {
+		home := os.UserHomeDir()
+		path := test.FS.Join(home, ".config", test.Name.String())
+
+		err := test.FS.MkdirAll(path, 0o777)
+		So(err, ShouldBeNil)
+
+		data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+		So(err, ShouldBeNil)
+
+		err = test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600)
+		So(err, ShouldBeNil)
+
+		set := flag.NewFlagSet("test")
+		set.AddInput("")
+
+		input := test.NewConfig(set)
+
+		Convey("When I try to parse the configuration file", func() {
+			config, err := config.NewConfig[config.Config](input, test.Validator)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have a valid configuration", func() {
+				verifyConfig(config)
+			})
+		})
+
+		err = test.FS.RemoveAll(path)
+		So(err, ShouldBeNil)
+	})
+}
+
+func TestInvalidCommonConfig(t *testing.T) {
+	Convey("Given I do not have a configuration file", t, func() {
+		set := flag.NewFlagSet("test")
+		set.AddInput("")
+
+		input := test.NewConfig(set)
+
+		Convey("When I try to parse the configuration file", func() {
+			_, err := config.NewConfig[config.Config](input, test.Validator)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
+			})
+		})
+	})
+}
+
+func TestInvalidKindConfig(t *testing.T) {
+	Convey("When I try to parse the configuration file", t, func() {
+		set := flag.NewFlagSet("test")
+		set.AddInput("test:test")
+
+		input := test.NewConfig(set)
+
+		Convey("When I try to parse the configuration file", func() {
+			_, err := config.NewConfig[config.Config](input, test.Validator)
+
+			Convey("Then I should have an error", func() {
+				So(err, ShouldBeError)
 			})
 		})
 	})

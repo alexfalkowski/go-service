@@ -2,11 +2,12 @@ package io
 
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// NewReader based on kind.
-func NewReader(name env.Name, kind, location string, fs *os.FS) Reader {
+// NewSource based on kind.
+func NewSource(name env.Name, kind, location string, fs *os.FS) Source {
 	switch kind {
 	case "file":
 		return NewFile(location, fs)
@@ -17,11 +18,11 @@ func NewReader(name env.Name, kind, location string, fs *os.FS) Reader {
 	}
 }
 
-// Reader for io.
-type Reader interface {
-	// Read bytes.
-	Read() ([]byte, error)
+// Source for io.
+type Source interface {
+	// Reader for source.
+	Reader() io.ReadCloser
 
-	// Kind of reader.
+	// Kind of source.
 	Kind() string
 }
