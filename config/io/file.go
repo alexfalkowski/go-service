@@ -1,6 +1,9 @@
 package io
 
-import "github.com/alexfalkowski/go-service/v2/os"
+import (
+	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/os"
+)
 
 // NewFile for io.
 func NewFile(location string, fs *os.FS) *File {
@@ -13,9 +16,14 @@ type File struct {
 	location string
 }
 
-// Read from a file.
-func (f *File) Read() ([]byte, error) {
-	return f.fs.ReadFile(f.location)
+// Reader from a file.
+func (f *File) Reader() io.ReadCloser {
+	file, err := f.fs.Open(f.location)
+	if err != nil {
+		return io.NewErrReadCloser(err)
+	}
+
+	return file
 }
 
 // Kind for file, which is the file extension.

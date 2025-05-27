@@ -2,6 +2,7 @@ package io
 
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -20,17 +21,26 @@ type Common struct {
 	kind     string
 }
 
-// Read from the common location.
-func (c *Common) Read() ([]byte, error) {
+// Reader from the common location.
+func (c *Common) Reader() io.ReadCloser {
 	if strings.IsEmpty(c.location) {
-		return nil, ErrLocationMissing
+		return io.NewErrReadCloser(ErrLocationMissing)
 	}
 
-	return c.fs.ReadFile(c.location)
+	file, err := c.fs.Open(c.location)
+	if err != nil {
+		return io.NewErrReadCloser(err)
+	}
+
+	return file
 }
 
 // Kind from the common location.
 func (c *Common) Kind() string {
+	if strings.IsEmpty(c.kind) {
+		return "yaml"
+	}
+
 	return c.kind
 }
 
