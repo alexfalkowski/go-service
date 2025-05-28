@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -60,4 +61,15 @@ func TestReadSource(t *testing.T) {
 			})
 		})
 	}
+}
+
+func TestReader(t *testing.T) {
+	Convey("When I try to read non existent file", t, func() {
+		reader := test.FS.Reader("bob")
+		_, _, err := io.ReadAll(reader)
+
+		Convey("Then I should have an error", func() {
+			So(err, ShouldBeError)
+		})
+	})
 }

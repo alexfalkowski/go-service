@@ -18,12 +18,7 @@ type File struct {
 
 // Reader from a file.
 func (f *File) Reader() io.ReadCloser {
-	file, err := f.fs.Open(f.location)
-	if err != nil {
-		return io.NewErrReadCloser(err)
-	}
-
-	return file
+	return f.fs.Reader(f.location)
 }
 
 // Kind for file, which is the file extension.
