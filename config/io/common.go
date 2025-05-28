@@ -27,12 +27,7 @@ func (c *Common) Reader() io.ReadCloser {
 		return io.NewErrReadCloser(ErrLocationMissing)
 	}
 
-	file, err := c.fs.Open(c.location)
-	if err != nil {
-		return io.NewErrReadCloser(err)
-	}
-
-	return file
+	return c.fs.Reader(c.location)
 }
 
 // Kind from the common location.

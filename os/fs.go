@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/avfs/avfs"
 	"github.com/avfs/avfs/vfs/osfs"
@@ -100,4 +101,14 @@ func (fs *FS) ReadSource(source string) ([]byte, error) {
 	default:
 		return strings.Bytes(source), nil
 	}
+}
+
+// Reader opens a file, if an error is encountered an erroneous io.ReadCloser is returned.
+func (fs *FS) Reader(name string) io.ReadCloser {
+	file, err := fs.Open(name)
+	if err != nil {
+		return io.NewErrReadCloser(err)
+	}
+
+	return file
 }
