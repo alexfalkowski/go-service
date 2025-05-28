@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
-	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/sync"
@@ -20,6 +19,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
+	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	"github.com/alexfalkowski/go-service/v2/types"
 	"go.uber.org/fx"
 )
@@ -46,7 +46,6 @@ var (
 		cli.Module,
 		config.Module,
 		feature.Module,
-		hooks.Module,
 		sql.Module,
 		telemetry.Module,
 		token.Module,
@@ -65,6 +64,5 @@ var (
 		sql.Module,
 		telemetry.Module,
 		token.Module,
-		transport.Module,
 	)
 )
