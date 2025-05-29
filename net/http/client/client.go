@@ -50,6 +50,9 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 	client := &http.Client{
 		Transport: os.roundTripper,
 		Timeout:   os.timeout,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
 	}
 
 	return &Client{client: client, content: content, pool: pool}

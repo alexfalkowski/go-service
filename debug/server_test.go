@@ -38,7 +38,7 @@ func TestInsecureDebug(t *testing.T) {
 				res, err := world.ResponseWithNoBody(t.Context(), "http", world.InsecureDebugHost(), http.MethodGet, path, header, http.NoBody)
 				So(err, ShouldBeNil)
 
-				So(res.StatusCode, ShouldEqual, 200)
+				So(res.StatusCode, ShouldBeBetween, 200, 399)
 			})
 
 			world.RequireStop()
@@ -59,7 +59,7 @@ func TestSecureDebug(t *testing.T) {
 				res, err := world.ResponseWithNoBody(t.Context(), "https", world.SecureDebugHost(), http.MethodGet, path, header, http.NoBody)
 				So(err, ShouldBeNil)
 
-				So(res.StatusCode, ShouldEqual, 200)
+				So(res.StatusCode, ShouldBeBetween, 200, 399)
 			})
 
 			world.RequireStop()
