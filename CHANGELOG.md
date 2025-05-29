@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.22.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.22.0) - 2025-05-29
+
+- [`7d6fb77`](https://github.com/alexfalkowski/go-service/commit/7d6fb77352d981644cec36adcdfde47895a8a692) feat(http): add alises (#1647)
+
 ## [v2.21.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.21.0) - 2025-05-29
 
 - [`15eaa62`](https://github.com/alexfalkowski/go-service/commit/15eaa6243aba3de6f235c39756eaaa82cc9d49a5) feat(http): add ability to ignore redirects (#1645)
