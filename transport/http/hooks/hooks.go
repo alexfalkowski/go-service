@@ -1,11 +1,11 @@
 package hooks
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"

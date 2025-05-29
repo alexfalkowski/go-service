@@ -2,15 +2,15 @@
 package events_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
 	. "github.com/smartystreets/goconvey/convey"
-	h "github.com/standard-webhooks/standard-webhooks/libraries/go"
+	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
 func TestSendReceiveWithRoundTripper(t *testing.T) {
@@ -110,7 +110,7 @@ type delRoundTripper struct {
 }
 
 func (r *delRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Del(h.HeaderWebhookID)
+	req.Header.Del(hooks.HeaderWebhookID)
 
 	return r.rt.RoundTrip(req)
 }

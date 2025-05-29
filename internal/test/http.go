@@ -1,6 +1,6 @@
 package test
 
-import "net/http"
+import "github.com/alexfalkowski/go-service/v2/net/http"
 
 // ErrResponseWriter for test.
 type ErrResponseWriter struct {

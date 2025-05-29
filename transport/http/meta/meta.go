@@ -2,11 +2,11 @@ package meta
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"

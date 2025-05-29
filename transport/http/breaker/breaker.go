@@ -1,8 +1,7 @@
 package breaker
 
 import (
-	"net/http"
-
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	breaker "github.com/sony/gobreaker"
 )
 

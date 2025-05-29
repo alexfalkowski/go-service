@@ -21,6 +21,24 @@ const (
 
 	// MethodPut is an alias of http.MethodPut.
 	MethodPut = http.MethodPut
+
+	// StatusBadRequest is an alias of http.StatusBadRequest.
+	StatusBadRequest = http.StatusBadRequest
+
+	// StatusOK is an alias of http.StatusOK.
+	StatusOK = http.StatusOK
+
+	// StatusInternalServerError is an alias of http.StatusInternalServerError.
+	StatusInternalServerError = http.StatusInternalServerError
+
+	// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
+	StatusServiceUnavailable = http.StatusServiceUnavailable
+
+	// StatusTooManyRequests is an alias of http.StatusTooManyRequests.
+	StatusTooManyRequests = http.StatusTooManyRequests
+
+	// StatusUnauthorized is an alias of http.StatusUnauthorized.
+	StatusUnauthorized = http.StatusUnauthorized
 )
 
 type (
@@ -29,6 +47,9 @@ type (
 
 	// Handler is an alias for http.Handler.
 	Handler = http.Handler
+
+	// HandlerFunc is an alias for http.HandlerFunc.
+	HandlerFunc = http.HandlerFunc
 
 	// Header is an alias for http.Header.
 	Header = http.Header
@@ -45,11 +66,23 @@ type (
 	// Server is an alias for http.Server.
 	Server = http.Server
 
+	// ResponseWriter is an alias for http.ResponseWriter.
+	ResponseWriter = http.ResponseWriter
+
 	// RoundTripper is an alias for http.RoundTripper.
 	RoundTripper = http.RoundTripper
 )
 
 var (
+	// DefaultTransport is an alias for http.DefaultTransport.
+	DefaultTransport = http.DefaultTransport
+
+	// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
+	ErrUseLastResponse = http.ErrUseLastResponse
+
+	// ErrServerClosed is an alias for http.ErrServerClosed.
+	ErrServerClosed = http.ErrServerClosed
+
 	// NewRequestWithContext is an alias for http.NewRequestWithContext.
 	NewRequestWithContext = http.NewRequestWithContext
 
@@ -61,9 +94,6 @@ var (
 
 	// StatusText is an alias for http.StatusText.
 	StatusText = http.StatusText
-
-	// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
-	ErrUseLastResponse = http.ErrUseLastResponse
 )
 
 // NewServer for http.

@@ -2,9 +2,9 @@ package status
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"google.golang.org/grpc/status"
 )
 

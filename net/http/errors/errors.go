@@ -1,9 +1,8 @@
 package errors
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
 // ServerError returns nil if the err http.ErrServerClosed.

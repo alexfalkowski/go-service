@@ -3,9 +3,9 @@ package status
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
 // WriteError will write the error to the response writer.

@@ -1,7 +1,6 @@
 package grpc_test
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
@@ -11,8 +10,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/health"
 	"github.com/alexfalkowski/go-service/v2/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -34,8 +33,8 @@ func TestUnary(t *testing.T) {
 
 		Convey("When I query health", func() {
 			ctx := t.Context()
-			ctx = tm.WithRequestID(ctx, meta.String("test-id"))
-			ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
+			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
+			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
 			conn := world.NewGRPC()
 			defer conn.Close()
