@@ -1,11 +1,10 @@
 package content
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/mime"
-	ct "github.com/elnormous/contenttype"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	content "github.com/elnormous/contenttype"
 )
 
 const (
@@ -28,7 +27,7 @@ type Content struct {
 
 // NewFromRequest for content.
 func (c *Content) NewFromRequest(req *http.Request) *Media {
-	t, err := ct.GetMediaType(req)
+	t, err := content.GetMediaType(req)
 	if err != nil {
 		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
 	}
@@ -38,7 +37,7 @@ func (c *Content) NewFromRequest(req *http.Request) *Media {
 
 // NewFromMedia for content.
 func (c *Content) NewFromMedia(mediaType string) *Media {
-	t, err := ct.ParseMediaType(mediaType)
+	t, err := content.ParseMediaType(mediaType)
 	if err != nil {
 		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
 	}
@@ -47,7 +46,7 @@ func (c *Content) NewFromMedia(mediaType string) *Media {
 }
 
 // NewMedia for content.
-func NewMedia(media ct.MediaType, enc *encoding.Map) *Media {
+func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
 	if media.Subtype == errorSubtype {
 		return &Media{Type: media.String(), Subtype: media.Subtype}
 	}

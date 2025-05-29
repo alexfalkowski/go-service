@@ -2,9 +2,21 @@ package meta
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/encoding"
+	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+)
+
+var (
+	// CamelStrings is an alias for meta.CamelStrings.
+	CamelStrings = meta.CamelStrings
+
+	// Error is an alias for meta.Error.
+	Error = meta.Error
+
+	// WithAttribute is an alias for meta.WithAttribute.
+	WithAttribute = meta.WithAttribute
 )
 
 type contextKey string

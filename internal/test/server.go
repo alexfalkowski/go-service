@@ -2,12 +2,12 @@ package test
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/id"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"

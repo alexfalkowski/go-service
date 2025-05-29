@@ -1,8 +1,7 @@
 package hooks
 
 import (
-	"net/http"
-
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 )
 

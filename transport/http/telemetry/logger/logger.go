@@ -2,8 +2,8 @@ package logger
 
 import (
 	"log/slog"
-	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"

@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/errors"
 	"github.com/alexfalkowski/go-service/v2/server"
