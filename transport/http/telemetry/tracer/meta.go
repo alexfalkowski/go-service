@@ -2,8 +2,8 @@ package tracer
 
 import (
 	"context"
-	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )

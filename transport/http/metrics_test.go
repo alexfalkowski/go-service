@@ -1,12 +1,12 @@
 package http_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"

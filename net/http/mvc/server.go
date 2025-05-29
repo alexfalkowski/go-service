@@ -2,13 +2,12 @@ package mvc
 
 import (
 	"io"
-	"net/http"
 	"path/filepath"
 
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -48,8 +47,8 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 		res.Header().Set(content.TypeKey, mime.HTMLMediaType)
 
 		ctx := req.Context()
-		ctx = hm.WithRequest(ctx, req)
-		ctx = hm.WithResponse(ctx, res)
+		ctx = meta.WithRequest(ctx, req)
+		ctx = meta.WithResponse(ctx, res)
 
 		view, model, err := controller(ctx)
 		if err != nil {

@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -9,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/token"

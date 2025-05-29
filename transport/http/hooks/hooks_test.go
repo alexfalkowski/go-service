@@ -1,10 +1,10 @@
 package hooks_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	. "github.com/smartystreets/goconvey/convey"
 )

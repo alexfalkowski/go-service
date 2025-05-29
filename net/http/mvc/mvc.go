@@ -2,8 +2,8 @@ package mvc
 
 import (
 	"io/fs"
-	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/go-sprout/sprout"
 	"go.uber.org/fx"
 )

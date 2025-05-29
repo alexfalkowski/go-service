@@ -2,20 +2,17 @@
 package http_test
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
 	"github.com/alexfalkowski/go-health/checker"
 	"github.com/alexfalkowski/go-health/server"
 	"github.com/alexfalkowski/go-service/v2/health"
-	shc "github.com/alexfalkowski/go-service/v2/health/checker"
-	shh "github.com/alexfalkowski/go-service/v2/health/transport/http"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	tm "github.com/alexfalkowski/go-service/v2/transport/meta"
+	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.uber.org/fx"
 )
@@ -33,19 +30,13 @@ func TestHealth(t *testing.T) {
 
 			o := so.Observe("http")
 
-			params := shh.RegisterParams{
-				Health:   &shh.HealthObserver{Observer: o},
-				Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-			}
-
-			shh.Register(params)
-
+			test.RegisterHealth(o, o, o)
 			world.RequireStart()
 
 			Convey("When I query "+check, func() {
 				ctx := t.Context()
-				ctx = tm.WithRequestID(ctx, meta.String("test-id"))
-				ctx = tm.WithUserAgent(ctx, meta.String("test-user-agent"))
+				ctx = meta.WithRequestID(ctx, meta.String("test-id"))
+				ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
 				header := http.Header{}
 				header.Set(content.TypeKey, mime.JSONMediaType)
@@ -74,12 +65,7 @@ func TestReadinessNoop(t *testing.T) {
 
 		o := so.Observe("http")
 
-		params := shh.RegisterParams{
-			Health:   &shh.HealthObserver{Observer: o},
-			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: so.Observe("noop")},
-		}
-
-		shh.Register(params)
+		test.RegisterHealth(o, o, so.Observe("noop"))
 		world.RequireStart()
 
 		Convey("When I query health", func() {
@@ -112,12 +98,7 @@ func TestInvalidHealth(t *testing.T) {
 
 		o := so.Observe("http")
 
-		params := shh.RegisterParams{
-			Health:   &shh.HealthObserver{Observer: o},
-			Liveness: &shh.LivenessObserver{Observer: o}, Readiness: &shh.ReadinessObserver{Observer: o},
-		}
-
-		shh.Register(params)
+		test.RegisterHealth(o, o, o)
 		world.RequireStart()
 
 		Convey("When I query health", func() {
@@ -138,12 +119,11 @@ func TestInvalidHealth(t *testing.T) {
 }
 
 func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, error) {
-	db, err := world.OpenDatabase()
+	dc, err := test.NewDBChecker(world)
 	if err != nil {
 		return nil, err
 	}
 
-	dc := shc.NewDBChecker(db, 1*time.Second)
 	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
 
 	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(world.NewHTTP().Transport))

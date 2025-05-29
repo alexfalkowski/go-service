@@ -3,11 +3,10 @@ package test
 import (
 	"cmp"
 	"context"
-	"net/http"
 
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/meta"
-	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
 	"google.golang.org/grpc/codes"
 	g "google.golang.org/grpc/status"
@@ -31,8 +30,8 @@ func NoContent(_ context.Context, _ *Request) (*Response, error) {
 
 // SuccessSayHello for test.
 func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
-	req := hm.Request(ctx)
-	_ = hm.Response(ctx)
+	req := meta.Request(ctx)
+	_ = meta.Response(ctx)
 	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 

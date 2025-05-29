@@ -1,10 +1,9 @@
 package test
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
