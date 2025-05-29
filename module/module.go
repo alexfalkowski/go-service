@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	// Module for packages in this library.
-	Module = fx.Options(
+	// Library module.
+	Library = fx.Options(
 		os.Module,
 		env.Module,
 		compress.Module,
@@ -40,7 +40,7 @@ var (
 
 	// Server module.
 	Server = fx.Options(
-		Module,
+		Library,
 		debug.Module,
 		cache.Module,
 		cli.Module,
@@ -55,7 +55,7 @@ var (
 
 	// Client module.
 	Client = fx.Options(
-		Module,
+		Library,
 		cache.Module,
 		cli.Module,
 		config.Module,

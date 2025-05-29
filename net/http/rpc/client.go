@@ -61,6 +61,7 @@ func NewClient(url string, opts ...ClientOption) *Client {
 	client := client.NewClient(cont, pool,
 		client.WithRoundTripper(os.roundTripper),
 		client.WithTimeout(os.timeout),
+		client.WithIgnoreRedirect(),
 	)
 
 	return &Client{client: client, url: url, contentType: os.contentType}
