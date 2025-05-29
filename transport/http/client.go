@@ -1,25 +1,18 @@
 package http
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
-	nh "github.com/alexfalkowski/go-service/v2/net/http"
-	sr "github.com/alexfalkowski/go-service/v2/retry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
-	tl "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	tm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	tt "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
-	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 )
 
@@ -34,7 +27,7 @@ type clientOpts struct {
 	roundTripper http.RoundTripper
 	gen          token.Generator
 	logger       *logger.Logger
-	retry        *sr.Config
+	retry        *retry.Config
 	tls          *tls.Config
 	generator    id.Generator
 	userAgent    env.UserAgent
@@ -78,7 +71,7 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientRetry for HTTP.
-func WithClientRetry(cfg *sr.Config) ClientOption {
+func WithClientRetry(cfg *retry.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
 	})
@@ -143,7 +136,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.gen != nil {
-		hrt = ht.NewRoundTripper(os.gen, hrt)
+		hrt = token.NewRoundTripper(os.gen, hrt)
 	}
 
 	if os.compression {
@@ -159,15 +152,15 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.logger != nil {
-		hrt = tl.NewRoundTripper(os.logger, hrt)
+		hrt = logger.NewRoundTripper(os.logger, hrt)
 	}
 
 	if os.meter != nil {
-		hrt = tm.NewRoundTripper(os.meter, hrt)
+		hrt = metrics.NewRoundTripper(os.meter, hrt)
 	}
 
 	if os.tracer != nil {
-		hrt = tt.NewRoundTripper(os.tracer, hrt)
+		hrt = tracer.NewRoundTripper(os.tracer, hrt)
 	}
 
 	hrt = meta.NewRoundTripper(os.userAgent, os.generator, hrt)
@@ -199,7 +192,7 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 	}
 
 	if !tls.IsEnabled(os.tls) {
-		return nh.Transport(nil), nil
+		return http.Transport(nil), nil
 	}
 
 	conf, err := tls.NewConfig(fs, os.tls)
@@ -207,7 +200,7 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 		return nil, err
 	}
 
-	return nh.Transport(conf), nil
+	return http.Transport(conf), nil
 }
 
 func options(opts ...ClientOption) *clientOpts {

@@ -3,10 +3,9 @@ package client
 import (
 	"cmp"
 	"context"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
-	nh "github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -20,8 +19,9 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	roundTripper http.RoundTripper
-	timeout      time.Duration
+	roundTripper   http.RoundTripper
+	timeout        time.Duration
+	ignoreRedirect bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -44,12 +44,25 @@ func WithTimeout(timeout time.Duration) ClientOption {
 	})
 }
 
+// WithIgnoreRedirect for http.
+func WithIgnoreRedirect() ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.ignoreRedirect = true
+	})
+}
+
 // NewClient for http.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := &http.Client{
 		Transport: os.roundTripper,
 		Timeout:   os.timeout,
+	}
+
+	if os.ignoreRedirect {
+		client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
 	}
 
 	return &Client{client: client, content: content, pool: pool}
@@ -60,6 +73,16 @@ type Options struct {
 	Request     any
 	Response    any
 	ContentType string
+}
+
+// HasRequest for options.
+func (o *Options) HasRequest() bool {
+	return o.Request != nil
+}
+
+// HasResponse for options.
+func (o *Options) HasResponse() bool {
+	return o.Response != nil
 }
 
 // NoOptions for http.
@@ -106,7 +129,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 
 	mediaType := c.content.NewFromMedia(opts.ContentType)
 
-	if opts.Request != nil {
+	if opts.HasRequest() {
 		if err := mediaType.Encoder.Encode(buffer, opts.Request); err != nil {
 			return errors.Prefix("http: encode", err)
 		}
@@ -146,7 +169,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts *Options) erro
 		return status.Error(response.StatusCode, strings.ToLower(http.StatusText(response.StatusCode)))
 	}
 
-	if opts.Response != nil {
+	if opts.HasResponse() {
 		if err := media.Encoder.Decode(buffer, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
@@ -166,7 +189,7 @@ func options(opts ...ClientOption) *clientOpts {
 	}
 
 	if os.roundTripper == nil {
-		os.roundTripper = nh.Transport(nil)
+		os.roundTripper = http.Transport(nil)
 	}
 
 	return os

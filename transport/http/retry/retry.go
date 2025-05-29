@@ -10,17 +10,20 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+// Config is an alias for retry.Config.
+type Config = retry.Config
+
 // ErrInvalidStatusCode for http retry.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
 // NewRoundTripper for retry.
-func NewRoundTripper(cfg *retry.Config, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{cfg: cfg, RoundTripper: hrt}
 }
 
 // RoundTripper for retry.
 type RoundTripper struct {
-	cfg *retry.Config
+	cfg *Config
 	http.RoundTripper
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
@@ -17,6 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
@@ -311,10 +311,10 @@ func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method,
 }
 
 // HTTPResponseNoBody for the world.
-func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, error) {
+func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header) (*http.Response, error) {
 	client := w.NewHTTP()
 
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
+	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), http.NoBody)
 	runtime.Must(err)
 
 	req.Header = header
