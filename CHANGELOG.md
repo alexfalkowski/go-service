@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.21.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.21.0) - 2025-05-29
+
+- [`15eaa62`](https://github.com/alexfalkowski/go-service/commit/15eaa6243aba3de6f235c39756eaaa82cc9d49a5) feat(http): add ability to ignore redirects (#1645)
+
 ## [v2.20.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.20.0) - 2025-05-28
 
 - [`beed5fa`](https://github.com/alexfalkowski/go-service/commit/beed5fa53cb46243d010b1d03b6d34d17ad06be4) feat(deps): bump github.com/lmittmann/tint from 1.1.0 to 1.1.1 (#1643)
