@@ -31,6 +31,9 @@ const (
 	// StatusInternalServerError is an alias of http.StatusInternalServerError.
 	StatusInternalServerError = http.StatusInternalServerError
 
+	// StatusNotFound is an alias of http.StatusNotFound.
+	StatusNotFound = http.StatusNotFound
+
 	// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
 	StatusServiceUnavailable = http.StatusServiceUnavailable
 
