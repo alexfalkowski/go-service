@@ -2,13 +2,11 @@ package config
 
 import (
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -21,16 +19,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	"github.com/alexfalkowski/go-service/v2/types/structs"
-	"github.com/alexfalkowski/go-service/v2/types/validator"
 )
 
-// ErrInvalidConfig when decoding fails.
-var ErrInvalidConfig = errors.New("config: invalid format")
-
 // NewConfig will decode and check its validity.
-func NewConfig[T comparable](cfg *cli.Config, validator *validator.Validator) (*T, error) {
+func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) {
 	config := ptr.Zero[T]()
-	if err := cfg.Decode(config); err != nil {
+	if err := decoder.Decode(config); err != nil {
 		return nil, err
 	}
 

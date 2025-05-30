@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cli/flag"
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
@@ -16,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/feature"
+	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/server"
@@ -35,10 +35,10 @@ func TestValidFileConfig(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(file)
 
-			input := test.NewConfig(set)
+			decoder := test.NewDecoder(set)
 
 			Convey("When I try to parse the configuration file", func() {
-				config, err := config.NewConfig[config.Config](input, test.Validator)
+				config, err := config.NewConfig[config.Config](decoder, test.Validator)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a valid configuration", func() {
@@ -54,8 +54,8 @@ func TestInvalidFileConfig(t *testing.T) {
 		test.FilePath("configs/invalid.yml"),
 		test.FilePath("configs/invalid_trace.yml"),
 		test.FilePath("configs/missing.yml"),
+		test.FilePath("configs/script.sh"),
 		test.FilePath("config.go"),
-		test.FilePath("../bob"),
 		"",
 		"env:BOB",
 	}
@@ -65,10 +65,10 @@ func TestInvalidFileConfig(t *testing.T) {
 			set := flag.NewFlagSet("test")
 			set.AddInput(file)
 
-			input := test.NewConfig(set)
+			decoder := test.NewDecoder(set)
 
 			Convey("When I try to parse the configuration file", func() {
-				_, err := config.NewConfig[config.Config](input, test.Validator)
+				_, err := config.NewConfig[config.Config](decoder, test.Validator)
 
 				Convey("Then I should have an error", func() {
 					So(err, ShouldBeError)
@@ -88,10 +88,10 @@ func TestValidEnvConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("env:CONFIG")
 
-		input := test.NewConfig(set)
+		decoder := test.NewDecoder(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](input, test.Validator)
+			config, err := config.NewConfig[config.Config](decoder, test.Validator)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -108,10 +108,10 @@ func TestInvalidEnvConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("env:CONFIG")
 
-		input := test.NewConfig(set)
+		decoder := test.NewDecoder(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](input, test.Validator)
+			_, err := config.NewConfig[config.Config](decoder, test.Validator)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -137,10 +137,10 @@ func TestValidCommonConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("")
 
-		input := test.NewConfig(set)
+		decoder := test.NewDecoder(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](input, test.Validator)
+			config, err := config.NewConfig[config.Config](decoder, test.Validator)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a valid configuration", func() {
@@ -158,10 +158,10 @@ func TestInvalidCommonConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("")
 
-		input := test.NewConfig(set)
+		decoder := test.NewDecoder(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](input, test.Validator)
+			_, err := config.NewConfig[config.Config](decoder, test.Validator)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -175,10 +175,10 @@ func TestInvalidKindConfig(t *testing.T) {
 		set := flag.NewFlagSet("test")
 		set.AddInput("test:test")
 
-		input := test.NewConfig(set)
+		decoder := test.NewDecoder(set)
 
 		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](input, test.Validator)
+			_, err := config.NewConfig[config.Config](decoder, test.Validator)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

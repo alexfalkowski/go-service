@@ -30,6 +30,7 @@ func Register() {
 // Params for tracer.
 type Params struct {
 	fx.In
+
 	Lifecycle   fx.Lifecycle
 	Config      *Config
 	ID          env.ID
