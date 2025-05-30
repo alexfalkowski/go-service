@@ -2,7 +2,6 @@ package module
 
 import (
 	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/crypto"
@@ -20,7 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
-	"github.com/alexfalkowski/go-service/v2/types"
 	"go.uber.org/fx"
 )
 
@@ -35,7 +33,6 @@ var (
 		time.Module,
 		sync.Module,
 		id.Module,
-		types.Module,
 	)
 
 	// Server module.
@@ -43,7 +40,6 @@ var (
 		Library,
 		debug.Module,
 		cache.Module,
-		cli.Module,
 		config.Module,
 		feature.Module,
 		sql.Module,
@@ -57,7 +53,6 @@ var (
 	Client = fx.Options(
 		Library,
 		cache.Module,
-		cli.Module,
 		config.Module,
 		feature.Module,
 		hooks.Module,

@@ -7,7 +7,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/errors"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/avfs/avfs"
 	"github.com/avfs/avfs/vfs/osfs"
@@ -68,7 +67,7 @@ func (*FS) PathExtension(path string) string {
 // ExpandPath will append the home dir if path starts with ~.
 func (fs *FS) ExpandPath(path string) string {
 	dir := UserHomeDir()
-	if strings.IsEmpty(dir) || len(path) == 0 || path[0] != '~' {
+	if strings.IsAnyEmpty(dir, path) || path[0] != '~' {
 		return path
 	}
 
@@ -101,14 +100,4 @@ func (fs *FS) ReadSource(source string) ([]byte, error) {
 	default:
 		return strings.Bytes(source), nil
 	}
-}
-
-// Reader opens a file, if an error is encountered an erroneous io.ReadCloser is returned.
-func (fs *FS) Reader(name string) io.ReadCloser {
-	file, err := fs.Open(name)
-	if err != nil {
-		return io.NewErrReadCloser(err)
-	}
-
-	return file
 }

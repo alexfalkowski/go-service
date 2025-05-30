@@ -1,6 +1,6 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/types/validator"
+import "github.com/alexfalkowski/go-service/v2/config"
 
 // Validator for testing.
-var Validator = validator.NewValidator()
+var Validator = config.NewValidator()

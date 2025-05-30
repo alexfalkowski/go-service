@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/alexfalkowski/go-service/v2/cli/flag"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"

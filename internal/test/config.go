@@ -4,8 +4,7 @@ import (
 	"time"
 
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
-	"github.com/alexfalkowski/go-service/v2/cli"
-	"github.com/alexfalkowski/go-service/v2/cli/flag"
+	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
@@ -14,6 +13,7 @@ import (
 	sql "github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/retry"
@@ -32,6 +32,18 @@ import (
 )
 
 const timeout = 2 * time.Second
+
+// NewDecoder for test.
+func NewDecoder(set *flag.FlagSet) config.Decoder {
+	decoder := config.NewDecoder(config.DecoderParams{
+		Name:    Name,
+		Flags:   set,
+		Encoder: Encoder,
+		FS:      FS,
+	})
+
+	return decoder
+}
 
 // NewToken for test.
 func NewToken(kind string) *token.Config {
@@ -257,11 +269,6 @@ func NewPGConfig() *pg.Config {
 			ConnMaxLifetime: time.Hour.String(),
 		},
 	}
-}
-
-// NewConfig for test.
-func NewConfig(set *flag.FlagSet) *cli.Config {
-	return cli.NewConfig(Name, set, Encoder, FS)
 }
 
 // NewInsecureDebugConfig for test.
