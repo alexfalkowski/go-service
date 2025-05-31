@@ -71,7 +71,7 @@ func TestRestRequestNoContent(t *testing.T) {
 func TestRestError(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tilt"))
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tint"))
 			world.Register()
 			world.RequireStart()
 

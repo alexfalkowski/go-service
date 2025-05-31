@@ -6,8 +6,23 @@ import (
 
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
+
+// RegisterHandlers for test.
+func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
+	rest.Delete(path, h)
+	rest.Get(path, h)
+}
+
+// RegisterRequestHandlers for test.
+func RegisterRequestHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
+	rest.Post(path, h)
+	rest.Put(path, h)
+	rest.Patch(path, h)
+}
 
 // RestInvalidStatusCode for test.
 func RestInvalidStatusCode(ctx context.Context) (*Response, error) {

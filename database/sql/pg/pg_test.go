@@ -441,7 +441,7 @@ func TestTransStatementExec(t *testing.T) {
 
 func TestInvalidStatementQuery(t *testing.T) {
 	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tilt"))
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tint"))
 		world.Register()
 
 		db, err := world.OpenDatabase()
