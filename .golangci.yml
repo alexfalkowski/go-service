@@ -39,6 +39,7 @@ linters:
         - fs
         - sh
         - ua
+        - rt
         - rw
   exclusions:
     generated: lax
