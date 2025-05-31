@@ -1,6 +1,16 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/time"
+import (
+	"github.com/alexfalkowski/go-service/v2/cache"
+	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
+	"go.uber.org/fx"
+)
 
 type Cache struct {
 	Value string
@@ -54,4 +64,25 @@ func (*ErrCache) Flush() error {
 
 func (*ErrCache) Save(_, _ string, _ time.Duration) error {
 	return ErrFailed
+}
+
+func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cacher.Cache {
+	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
+
+	driver, err := driver.New(FS, cfg)
+	runtime.Must(err)
+
+	params := cache.Params{
+		Lifecycle:  lc,
+		Config:     cfg,
+		Compressor: Compressor,
+		Encoder:    Encoder,
+		Pool:       Pool,
+		Driver:     driver,
+		Tracer:     NewTracer(lc, tracer),
+		Logger:     logger,
+		Meter:      meter,
+	}
+
+	return cache.NewCache(params)
 }

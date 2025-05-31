@@ -33,6 +33,9 @@ import (
 
 const timeout = 2 * time.Second
 
+// Validator for testing.
+var Validator = config.NewValidator()
+
 // NewDecoder for test.
 func NewDecoder(set *flag.FlagSet) config.Decoder {
 	decoder := config.NewDecoder(config.DecoderParams{

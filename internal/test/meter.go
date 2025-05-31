@@ -2,8 +2,12 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	hm "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/embedded"
+	"go.uber.org/fx"
 )
 
 var errInvalid = errors.New("invalid")
@@ -69,4 +73,15 @@ func (InvalidMeter) Float64Gauge(string, ...metric.Float64GaugeOption) (metric.F
 
 func (InvalidMeter) RegisterCallback(metric.Callback, ...metric.Observable) (metric.Registration, error) {
 	return nil, errInvalid
+}
+
+func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
+	if os.telemetry == "otlp" {
+		return NewOTLPMeter(lc)
+	}
+
+	config := NewPrometheusMetricsConfig()
+	hm.Register(config, mux)
+
+	return NewMeter(lc, config)
 }

@@ -11,6 +11,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
 
+// WithWorldRest for test.
+func WithWorldRest() WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.rest = true
+	})
+}
+
 // RegisterHandlers for test.
 func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
 	rest.Delete(path, h)
@@ -84,4 +91,15 @@ func RestError(_ context.Context) (*Response, error) {
 // RestRequestError for test.
 func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 	return nil, ErrInvalid
+}
+
+func restClient(client *Client, os *worldOpts) *rest.Client {
+	if os.rest {
+		return rest.NewClient(
+			rest.WithClientRoundTripper(client.NewHTTP().Transport),
+			rest.WithClientTimeout("10s"),
+		)
+	}
+
+	return rest.NewClient()
 }

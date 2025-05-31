@@ -5,7 +5,16 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token"
 )
+
+// WithWorldToken for test.
+func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.generator = generator
+		o.verifier = verifier
+	})
+}
 
 // NewGenerator for test.
 func NewGenerator(token string, err error) *Generator {
