@@ -17,7 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -302,15 +301,13 @@ func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method,
 		return nil, "", err
 	}
 
-	defer res.Body.Close()
-
 	data, err := io.ReadAll(res.Body)
 	runtime.Must(err)
 
-	return res, bytes.String(bytes.TrimSpace(data)), nil
+	return res, bytes.String(bytes.TrimSpace(data)), res.Body.Close()
 }
 
-// HTTPResponseNoBody for the world.
+// ResponseWithNoBody for the world.
 func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header) (*http.Response, error) {
 	client := w.NewHTTP()
 
@@ -324,9 +321,7 @@ func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, metho
 		return nil, err
 	}
 
-	defer res.Body.Close()
-
-	return res, nil
+	return res, res.Body.Close()
 }
 
 // OpenDatabase for world.
@@ -341,19 +336,6 @@ func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
 	return dbs, err
 }
 
-// RegisterHandlers for test.
-func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
-	rest.Delete(path, h)
-	rest.Get(path, h)
-}
-
-// RegisterRequestHandlers for test.
-func RegisterRequestHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
-	rest.Post(path, h)
-	rest.Put(path, h)
-	rest.Patch(path, h)
-}
-
 func createLogger(lc fx.Lifecycle, os *worldOpts) *logger.Logger {
 	if os.logger != nil {
 		return os.logger
@@ -366,7 +348,7 @@ func createLogger(lc fx.Lifecycle, os *worldOpts) *logger.Logger {
 		config = NewJSONLoggerConfig()
 	case "text":
 		config = NewTextLoggerConfig()
-	case "tilt":
+	case "tint":
 		config = NewTintLoggerConfig()
 	case "otlp":
 		config = NewOTLPLoggerConfig()
