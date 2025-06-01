@@ -90,8 +90,8 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	return s.server
 }
 
-// GetServer returns the server, if defined.
-func (s *Server) GetServer() *server.Service {
+// GetService returns the service, if defined.
+func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
 	}

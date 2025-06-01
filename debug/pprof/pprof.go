@@ -1,9 +1,13 @@
-package debug
+package pprof
 
-import "net/http/pprof"
+import (
+	"net/http/pprof"
 
-// RegisterPprof for debug.
-func RegisterPprof(mux *ServeMux) {
+	"github.com/alexfalkowski/go-service/v2/debug/http"
+)
+
+// Register for debug.
+func Register(mux *http.ServeMux) {
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)

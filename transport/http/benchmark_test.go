@@ -80,7 +80,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetServer()})
+		transport.Register(lc, []*server.Service{h.GetService()})
 
 		lc.RequireStart()
 
@@ -120,7 +120,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetServer()})
+		transport.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
@@ -163,7 +163,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetServer()})
+		transport.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
