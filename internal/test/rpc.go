@@ -7,6 +7,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
 	"google.golang.org/grpc/codes"
 	g "google.golang.org/grpc/status"
@@ -66,4 +67,8 @@ func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (
 // ErrorsInternalProtobufSayHello for test.
 func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, ErrInternal
+}
+
+func (w *World) registerRPC() {
+	rpc.Register(w.ServeMux, Content, Pool)
 }

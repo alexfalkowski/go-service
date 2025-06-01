@@ -13,11 +13,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -130,22 +127,6 @@ func options(opts ...WorldOption) *worldOpts {
 	return os
 }
 
-// World for test.
-type World struct {
-	*fxtest.Lifecycle
-	*http.ServeMux
-	*logger.Logger
-	Tracer *tracer.Config
-	PG     *pg.Config
-	*Server
-	*Client
-	*events.Event
-	*eh.Receiver
-	Cache  cacher.Cache
-	Sender client.Client
-	Rest   *rest.Client
-}
-
 // NewWorld for test.
 func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
@@ -177,14 +158,8 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Compression: os.compression, RoundTripper: os.rt,
 	}
 
-	mvc.Register(mvc.RegisterParams{
-		Mux:         mux,
-		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger.Logger}),
-		FileSystem:  FileSystem,
-		Layout:      Layout,
-	})
-
-	rest.Register(mux, Content, Pool)
+	registerMVC(mux, logger.Logger)
+	registerRest(mux)
 
 	receiver, sender := NewEvents(mux, os.rt, id)
 	cache := redisCache(lc, logger, meter, tracer)
@@ -199,11 +174,27 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	}
 }
 
+// World for test.
+type World struct {
+	*fxtest.Lifecycle
+	*http.ServeMux
+	*logger.Logger
+	Tracer *tracer.Config
+	PG     *pg.Config
+	*Server
+	*Client
+	*events.Event
+	*eh.Receiver
+	Cache  cacher.Cache
+	Sender client.Client
+	Rest   *rest.Client
+}
+
 // Register all packages.
 func (w *World) Register() {
-	rpc.Register(w.ServeMux, Content, Pool)
+	w.registerRPC()
 	w.registerDatabase()
-	errors.Register(errors.NewHandler(w.Logger))
+	w.registerTelemetry()
 }
 
 // InsecureServerHost for world.
