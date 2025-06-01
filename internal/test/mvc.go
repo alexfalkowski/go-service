@@ -2,7 +2,9 @@ package test
 
 import (
 	"embed"
+	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 )
 
@@ -40,3 +42,12 @@ var (
 		},
 	}
 )
+
+func registerMVC(mux *http.ServeMux, logger *slog.Logger) {
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger}),
+		FileSystem:  FileSystem,
+		Layout:      Layout,
+	})
+}

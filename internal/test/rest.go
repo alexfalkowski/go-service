@@ -93,6 +93,10 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 	return nil, ErrInvalid
 }
 
+func registerRest(mux *http.ServeMux) {
+	rest.Register(mux, Content, Pool)
+}
+
 func restClient(client *Client, os *worldOpts) *rest.Client {
 	if os.rest {
 		return rest.NewClient(

@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"go.uber.org/fx"
 )
@@ -26,6 +27,10 @@ func WithWorldLoggerConfig(config string) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.loggerConfig = config
 	})
+}
+
+func (w *World) registerTelemetry() {
+	errors.Register(errors.NewHandler(w.Logger))
 }
 
 func createLogger(lc fx.Lifecycle, os *worldOpts) *logger.Logger {
