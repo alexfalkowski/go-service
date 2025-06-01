@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.25.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.25.0) - 2025-06-01
+
+- [`38d0d07`](https://github.com/alexfalkowski/go-service/commit/38d0d0724e86ad4cb4360baa7a254452f6f28be6) feat(deps): bump github.com/shirou/gopsutil/v4 from 4.25.4 to 4.25.5 (#1655)
+- [`220104d`](https://github.com/alexfalkowski/go-service/commit/220104d99ce13a1b8c2e5138ca44f52a3a40348a) test(world): move to other files (#1654)
+- [`a3700d2`](https://github.com/alexfalkowski/go-service/commit/a3700d22dad3b59379935613f2cd714462c9f3dd) test(world): move to other files (#1653)
+- [`b0d8993`](https://github.com/alexfalkowski/go-service/commit/b0d8993d38369a02bd62ad6758a711cf34a12f05) test(logger): rename to tint (#1652)
+- [`62c47bd`](https://github.com/alexfalkowski/go-service/commit/62c47bdc76e48cbeb697ef5166a5f48dadb31610) refactor(config): rename file to decoder (#1651)
+
 ## [v2.24.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.24.0) - 2025-05-30
 
 - [`2015cb1`](https://github.com/alexfalkowski/go-service/commit/2015cb1de5b2545a1095f28743642e7d5e44ba9d) feat(config): move to encoding (#1650)
