@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.26.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.26.0) - 2025-06-01
+
+- [`4c5f24c`](https://github.com/alexfalkowski/go-service/commit/4c5f24c5d6e97a79701341b4cb39e292e3268b4c) feat(debug): move psutil to package (#1656)
+
 ## [v2.25.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.25.0) - 2025-06-01
 
 - [`38d0d07`](https://github.com/alexfalkowski/go-service/commit/38d0d0724e86ad4cb4360baa7a254452f6f28be6) feat(deps): bump github.com/shirou/gopsutil/v4 from 4.25.4 to 4.25.5 (#1655)
