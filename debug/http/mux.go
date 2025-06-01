@@ -1,4 +1,4 @@
-package debug
+package http
 
 import "github.com/alexfalkowski/go-service/v2/net/http"
 

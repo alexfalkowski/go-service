@@ -98,8 +98,8 @@ type Server struct {
 	*server.Service
 }
 
-// GetServer returns the server, if defined.
-func (s *Server) GetServer() *server.Service {
+// GetService returns the service, if defined.
+func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
 	}

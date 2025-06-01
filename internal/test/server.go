@@ -15,7 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/urfave/negroni/v3"
 	"go.uber.org/fx"
@@ -28,7 +28,7 @@ type Server struct {
 	Verifier        token.Verifier
 	Mux             *http.ServeMux
 	HTTPServer      *th.Server
-	GRPCServer      *tg.Server
+	GRPCServer      *grpc.Server
 	DebugServer     *debug.Server
 	TransportConfig *transport.Config
 	DebugConfig     *debug.Config
@@ -60,11 +60,11 @@ func (s *Server) Register() {
 		runtime.Must(err)
 
 		s.HTTPServer = httpServer
-		servers = append(servers, httpServer.GetServer())
+		servers = append(servers, httpServer.GetService())
 	}
 
 	if s.RegisterGRPC {
-		grpcServer, err := tg.NewServer(tg.ServerParams{
+		grpcServer, err := grpc.NewServer(grpc.ServerParams{
 			Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
 			Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
 			Verifier: s.Verifier, ID: s.ID,
@@ -75,29 +75,14 @@ func (s *Server) Register() {
 
 		s.GRPCServer = grpcServer
 		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService())
-		servers = append(servers, grpcServer.GetServer())
+		servers = append(servers, grpcServer.GetService())
 	}
 
 	if s.RegisterDebug {
-		mux := debug.NewServeMux()
-		debugServer, err := debug.NewServer(debug.ServerParams{
-			Shutdowner: NewShutdowner(),
-			Mux:        mux,
-			Config:     s.DebugConfig,
-			Logger:     s.Logger,
-			FS:         FS,
-		})
-		runtime.Must(err)
-
-		debug.RegisterPprof(mux)
-		debug.RegisterFgprof(mux)
-		debug.RegisterPsutil(mux, Content)
-
-		err = debug.RegisterStatsviz(mux)
-		runtime.Must(err)
+		debugServer := NewDebugServer(s.DebugConfig, s.Logger)
 
 		s.DebugServer = debugServer
-		servers = append(servers, debugServer.GetServer())
+		servers = append(servers, debugServer.GetService())
 	}
 
 	transport.Register(s.Lifecycle, servers)

@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	debug "github.com/alexfalkowski/go-service/v2/debug/http"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
@@ -19,7 +20,7 @@ type ServerParams struct {
 	fx.In
 
 	Shutdowner fx.Shutdowner
-	Mux        *ServeMux
+	Mux        *debug.ServeMux
 	Config     *Config
 	Logger     *logger.Logger
 	FS         *os.FS
@@ -52,8 +53,8 @@ type Server struct {
 	*server.Service
 }
 
-// GetServer returns the server, if defined.
-func (s *Server) GetServer() *server.Service {
+// GetService returns the service, if defined.
+func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
 	}
