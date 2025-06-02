@@ -31,8 +31,8 @@ func IsEmpty(s string) bool {
 }
 
 // IsAnyEmpty checks if any strings are empty.
-func IsAnyEmpty(s ...string) bool {
-	return slices.ContainsFunc(s, IsEmpty)
+func IsAnyEmpty(ss ...string) bool {
+	return slices.ContainsFunc(ss, IsEmpty)
 }
 
 // Join strings by a separator.
@@ -47,8 +47,8 @@ func Concat(ss ...string) string {
 }
 
 // CutColon will split by : and give before and after.
-func CutColon(arg string) (string, string) {
-	before, after, ok := strings.Cut(arg, ":")
+func CutColon(s string) (string, string) {
+	before, after, ok := strings.Cut(s, ":")
 	if !ok {
 		return "", ""
 	}
