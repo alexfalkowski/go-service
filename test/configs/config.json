@@ -92,8 +92,6 @@
   "token": {
     "kind": "jwt",
     "jwt": {
-      "sub": "sub",
-      "aud": "aud",
       "iss": "iss",
       "exp": "1h",
       "kid": "1234567890"

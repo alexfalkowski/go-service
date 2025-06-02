@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token/context"
 )
 
 type (
@@ -32,7 +33,7 @@ type Token struct {
 }
 
 // Generate an SSH token.
-func (t *Token) Generate() (string, error) {
+func (t *Token) Generate(_ context.Context) (string, error) {
 	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
 	if err != nil {
 		return "", err
@@ -45,7 +46,7 @@ func (t *Token) Generate() (string, error) {
 }
 
 // Verify an SSH token.
-func (t *Token) Verify(token string) error {
+func (t *Token) Verify(_ context.Context, token string) error {
 	name, key, ok := strings.Cut(token, "-")
 	if !ok {
 		return errors.ErrInvalidMatch

@@ -1,12 +1,10 @@
 package token
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token/context"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -51,15 +49,15 @@ type Token struct {
 func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	switch {
 	case t.cfg.IsSSH():
-		token, err := t.ssh.Generate()
+		token, err := t.ssh.Generate(ctx)
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate()
+		token, err := t.jwt.Generate(ctx)
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.paseto.Generate()
+		token, err := t.paseto.Generate(ctx)
 
 		return ctx, strings.Bytes(token), err
 	}
@@ -72,15 +70,15 @@ func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, erro
 
 	switch {
 	case t.cfg.IsSSH():
-		return ctx, t.ssh.Verify(tkn)
+		return ctx, t.ssh.Verify(ctx, tkn)
 	case t.cfg.IsJWT():
-		subject, err := t.jwt.Verify(tkn)
+		ctx, err := t.jwt.Verify(ctx, tkn)
 
-		return WithSubject(ctx, meta.String(subject)), err
+		return ctx, err
 	case t.cfg.IsPaseto():
-		subject, err := t.paseto.Verify(tkn)
+		ctx, err := t.paseto.Verify(ctx, tkn)
 
-		return WithSubject(ctx, meta.String(subject)), err
+		return ctx, err
 	}
 
 	return ctx, nil

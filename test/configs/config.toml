@@ -85,8 +85,6 @@ address = "time.cloudflare.com"
 kind = "jwt"
 
 [token.jwt]
-sub = "sub"
-aud = "aud"
 iss = "iss"
 exp = "1h"
 kid = "1234567890"

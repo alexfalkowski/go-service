@@ -12,7 +12,7 @@ func TestValid(t *testing.T) {
 	Convey("When I generate a SSH token", t, func() {
 		token := ssh.NewToken(test.FS, test.NewToken("ssh").SSH)
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate(t.Context())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -20,7 +20,7 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			err := token.Verify(tkn)
+			err := token.Verify(t.Context(), tkn)
 			So(err, ShouldBeNil)
 		})
 	})
@@ -44,7 +44,7 @@ func TestInvalid(t *testing.T) {
 		}
 
 		token := ssh.NewToken(test.FS, cfg)
-		_, err := token.Generate()
+		_, err := token.Generate(t.Context())
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -55,7 +55,7 @@ func TestInvalid(t *testing.T) {
 		token := ssh.NewToken(test.FS, test.NewToken("ssh").SSH)
 
 		Convey("When I verify a token", t, func() {
-			err := token.Verify(tkn)
+			err := token.Verify(t.Context(), tkn)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -74,7 +74,7 @@ func TestInvalid(t *testing.T) {
 		}
 
 		token := ssh.NewToken(test.FS, cfg)
-		err := token.Verify("test-bob")
+		err := token.Verify(t.Context(), "test-bob")
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

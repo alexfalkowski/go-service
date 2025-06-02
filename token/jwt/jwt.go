@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/token/context"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -26,7 +27,8 @@ type Token struct {
 }
 
 // Generate JWT token.
-func (t *Token) Generate() (string, error) {
+func (t *Token) Generate(ctx context.Context) (string, error) {
+	opts := context.Opts(ctx)
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
 	now := time.Now()
@@ -37,8 +39,8 @@ func (t *Token) Generate() (string, error) {
 		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    t.cfg.Issuer,
 		NotBefore: &jwt.NumericDate{Time: now},
-		Subject:   t.cfg.Subject,
-		Audience:  []string{t.cfg.Audience},
+		Subject:   opts.GetString("sub"),
+		Audience:  []string{opts.GetString("aud")},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
@@ -48,23 +50,24 @@ func (t *Token) Generate() (string, error) {
 }
 
 // Verify JWT token.
-func (t *Token) Verify(token string) (string, error) {
+func (t *Token) Verify(ctx context.Context, token string) (context.Context, error) {
+	opts := context.Opts(ctx)
 	claims := &jwt.RegisteredClaims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, t.validate)
 	if err != nil {
-		return "", err
+		return ctx, err
 	}
 
 	if !claims.VerifyIssuer(t.cfg.Issuer, true) {
-		return "", errors.ErrInvalidIssuer
+		return ctx, errors.ErrInvalidIssuer
 	}
 
-	if !claims.VerifyAudience(t.cfg.Audience, true) {
-		return "", errors.ErrInvalidAudience
+	if !claims.VerifyAudience(opts.GetString("aud"), true) {
+		return ctx, errors.ErrInvalidAudience
 	}
 
-	return claims.Subject, nil
+	return context.AddToOpts(ctx, "sub", claims.Subject), nil
 }
 
 func (j *Token) validate(_ *jwt.Token) (any, error) {
