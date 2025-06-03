@@ -2,17 +2,16 @@ package token
 
 import (
 	"context"
-	"path"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
-	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -27,14 +26,14 @@ type (
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
-		token := meta.Authorization(ctx).Value()
+		auth := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, strings.Bytes(token))
+		ctx, err := verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -46,15 +45,15 @@ func UnaryServerInterceptor(verifier Verifier) grpc.UnaryServerInterceptor {
 // StreamServerInterceptor for token.
 func StreamServerInterceptor(verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 
 		ctx := stream.Context()
-		token := meta.Authorization(ctx).Value()
+		auth := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, strings.Bytes(token))
+		ctx, err := verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -66,32 +65,54 @@ func StreamServerInterceptor(verifier Verifier) grpc.StreamServerInterceptor {
 	}
 }
 
-// NewPerRPCCredentials for token.
-func NewPerRPCCredentials(generator Generator) credentials.PerRPCCredentials {
-	return &tokenPerRPCCredentials{generator: generator}
+// UnaryClientInterceptor for token.
+func UnaryClientInterceptor(generator Generator) grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		p := fullMethod[1:]
+
+		_, token, err := generator.Generate(ctx, token.Options{Path: p})
+		if err != nil {
+			return status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		if len(token) == 0 {
+			return status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
+		}
+
+		auth := meta.Ignored(strings.Join(" ", header.BearerAuthorization, bytes.String(token)))
+
+		md := meta.ExtractOutgoing(ctx)
+		md.Append("authorization", auth.Value())
+
+		ctx = meta.WithAuthorization(ctx, auth)
+		ctx = metadata.NewOutgoingContext(ctx, md)
+
+		return invoker(ctx, fullMethod, req, resp, conn, opts...)
+	}
 }
 
-type tokenPerRPCCredentials struct {
-	generator Generator
-}
+// StreamClientInterceptor for token.
+func StreamClientInterceptor(generator Generator) grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		p := fullMethod[1:]
 
-func (p *tokenPerRPCCredentials) GetRequestMetadata(ctx context.Context, _ ...string) (map[string]string, error) {
-	_, token, err := p.generator.Generate(ctx)
-	if err != nil {
-		return nil, err
+		_, token, err := generator.Generate(ctx, token.Options{Path: p})
+		if err != nil {
+			return nil, status.Error(codes.Unauthenticated, err.Error())
+		}
+
+		if len(token) == 0 {
+			return nil, status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
+		}
+
+		auth := meta.Ignored(strings.Join(" ", header.BearerAuthorization, bytes.String(token)))
+
+		md := meta.ExtractOutgoing(ctx)
+		md.Append("authorization", auth.Value())
+
+		ctx = meta.WithAuthorization(ctx, auth)
+		ctx = metadata.NewOutgoingContext(ctx, md)
+
+		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}
-
-	if len(token) == 0 {
-		return nil, header.ErrInvalidAuthorization
-	}
-
-	meta := map[string]string{
-		"authorization": strings.Join(" ", header.BearerAuthorization, bytes.String(token)),
-	}
-
-	return meta, nil
-}
-
-func (p *tokenPerRPCCredentials) RequireTransportSecurity() bool {
-	return false
 }

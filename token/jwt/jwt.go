@@ -26,7 +26,7 @@ type Token struct {
 }
 
 // Generate JWT token.
-func (t *Token) Generate() (string, error) {
+func (t *Token) Generate(aud string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
 	now := time.Now()
@@ -38,7 +38,7 @@ func (t *Token) Generate() (string, error) {
 		Issuer:    t.cfg.Issuer,
 		NotBefore: &jwt.NumericDate{Time: now},
 		Subject:   t.cfg.Subject,
-		Audience:  []string{t.cfg.Audience},
+		Audience:  []string{aud},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
@@ -48,7 +48,7 @@ func (t *Token) Generate() (string, error) {
 }
 
 // Verify JWT token.
-func (t *Token) Verify(token string) (string, error) {
+func (t *Token) Verify(token, aud string) (string, error) {
 	claims := &jwt.RegisteredClaims{}
 
 	_, err := jwt.ParseWithClaims(token, claims, t.validate)
@@ -60,7 +60,7 @@ func (t *Token) Verify(token string) (string, error) {
 		return "", errors.ErrInvalidIssuer
 	}
 
-	if !claims.VerifyAudience(t.cfg.Audience, true) {
+	if !claims.VerifyAudience(aud, true) {
 		return "", errors.ErrInvalidAudience
 	}
 

@@ -13,6 +13,12 @@ import (
 	"go.uber.org/fx"
 )
 
+// Options for token.
+type Options struct {
+	// Path that is used as an audience, such as users/1 or package.service/method
+	Path string
+}
+
 // Params for token.
 type Params struct {
 	fx.In
@@ -48,18 +54,18 @@ type Token struct {
 	name   env.Name
 }
 
-func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
+func (t *Token) Generate(ctx context.Context, opts Options) (context.Context, []byte, error) {
 	switch {
 	case t.cfg.IsSSH():
 		token, err := t.ssh.Generate()
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate()
+		token, err := t.jwt.Generate(opts.Path)
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.paseto.Generate()
+		token, err := t.paseto.Generate(opts.Path)
 
 		return ctx, strings.Bytes(token), err
 	}
@@ -67,18 +73,18 @@ func (t *Token) Generate(ctx context.Context) (context.Context, []byte, error) {
 	return ctx, nil, nil
 }
 
-func (t *Token) Verify(ctx context.Context, token []byte) (context.Context, error) {
+func (t *Token) Verify(ctx context.Context, token []byte, opts Options) (context.Context, error) {
 	tkn := bytes.String(token)
 
 	switch {
 	case t.cfg.IsSSH():
 		return ctx, t.ssh.Verify(tkn)
 	case t.cfg.IsJWT():
-		subject, err := t.jwt.Verify(tkn)
+		subject, err := t.jwt.Verify(tkn, opts.Path)
 
 		return WithSubject(ctx, meta.String(subject)), err
 	case t.cfg.IsPaseto():
-		subject, err := t.paseto.Verify(tkn)
+		subject, err := t.paseto.Verify(tkn, opts.Path)
 
 		return WithSubject(ctx, meta.String(subject)), err
 	}

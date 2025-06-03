@@ -7,10 +7,10 @@ import (
 
 var (
 	// ErrGenerate for test.
-	ErrGenerate = errors.New("token error")
+	ErrGenerate = errors.New("token: generation issue")
 
 	// ErrInvalid for test.
-	ErrInvalid = errors.New("invalid match")
+	ErrInvalid = errors.New("token: invalid match")
 
 	// ErrFailed for test.
 	ErrFailed = errors.New("failed")

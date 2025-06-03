@@ -25,7 +25,7 @@ type Token struct {
 }
 
 // Generate paseto token.
-func (t *Token) Generate() (string, error) {
+func (t *Token) Generate(aud string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	now := time.Now()
 
@@ -36,7 +36,7 @@ func (t *Token) Generate() (string, error) {
 	token.SetExpiration(now.Add(exp))
 	token.SetIssuer(t.cfg.Issuer)
 	token.SetSubject(t.cfg.Subject)
-	token.SetAudience(t.cfg.Audience)
+	token.SetAudience(aud)
 
 	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(t.signer.PrivateKey)
 	if err != nil {
@@ -47,12 +47,12 @@ func (t *Token) Generate() (string, error) {
 }
 
 // Verify Paseto token.
-func (t *Token) Verify(token string) (string, error) {
+func (t *Token) Verify(token, aud string) (string, error) {
 	parser := paseto.NewParser()
 	parser.AddRule(paseto.IssuedBy(t.cfg.Issuer))
 	parser.AddRule(paseto.NotExpired())
 	parser.AddRule(paseto.ValidAt(time.Now()))
-	parser.AddRule(paseto.ForAudience(t.cfg.Audience))
+	parser.AddRule(paseto.ForAudience(aud))
 
 	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(t.verifier.PublicKey)
 	if err != nil {

@@ -235,7 +235,6 @@ func verifyConfig(config *config.Config) {
 	So(config.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
 	So(token.IsEnabled(config.Token), ShouldBeTrue)
 	So(config.Token.Kind, ShouldEqual, "jwt")
-	So(config.Token.JWT.Audience, ShouldEqual, "aud")
 	So(config.Token.JWT.Expiration, ShouldEqual, "1h")
 	So(config.Token.JWT.Issuer, ShouldEqual, "iss")
 	So(config.Token.JWT.Subject, ShouldEqual, "sub")

@@ -51,15 +51,15 @@ type Handler struct {
 
 // ServeHTTP for metrics.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	service, method := req.URL.Path, strings.ToLower(req.Method)
-	if strings.IsObservable(service) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		next(res, req)
 
 		return
 	}
 
 	opts := metric.WithAttributes(
-		serviceAttribute.String(service),
+		serviceAttribute.String(p),
 		methodAttribute.String(method),
 	)
 
@@ -107,16 +107,16 @@ type RoundTripper struct {
 
 // RoundTrip for metrics.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if strings.IsObservable(req.URL.String()) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	service, method := req.URL.Hostname(), strings.ToLower(req.Method)
 	start := time.Now()
 	ctx := req.Context()
 
 	opts := metric.WithAttributes(
-		serviceAttribute.String(service),
+		serviceAttribute.String(p),
 		methodAttribute.String(method),
 	)
 

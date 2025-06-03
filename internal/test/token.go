@@ -27,7 +27,7 @@ type Generator struct {
 	token string
 }
 
-func (g *Generator) Generate(ctx context.Context) (context.Context, []byte, error) {
+func (g *Generator) Generate(ctx context.Context, _ token.Options) (context.Context, []byte, error) {
 	return ctx, strings.Bytes(g.token), g.err
 }
 
@@ -41,7 +41,7 @@ type Verifier struct {
 	token string
 }
 
-func (v *Verifier) Verify(ctx context.Context, token []byte) (context.Context, error) {
+func (v *Verifier) Verify(ctx context.Context, token []byte, _ token.Options) (context.Context, error) {
 	if bytes.String(token) != v.token {
 		return ctx, ErrInvalid
 	}
