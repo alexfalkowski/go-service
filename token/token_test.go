@@ -23,13 +23,23 @@ func TestGenerate(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
-			Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
+			JWT: jwt.NewToken(jwt.TokenParams{
+				Config:    cfg.JWT,
+				Signer:    signer,
+				Verifier:  verifier,
+				Generator: gen,
+			}),
+			Paseto: paseto.NewToken(paseto.TokenParams{
+				Config:    cfg.Paseto,
+				Signer:    signer,
+				Verifier:  verifier,
+				Generator: gen,
+			}),
 		}
 		tkn := token.NewToken(params)
 
 		Convey("When I try to generate", t, func() {
-			_, _, err := tkn.Generate(t.Context(), token.Options{Path: "aud"})
+			_, _, err := tkn.Generate(t.Context(), test.TokenOptions)
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
@@ -38,6 +48,7 @@ func TestGenerate(t *testing.T) {
 	}
 }
 
+//nolint:funlen
 func TestVerify(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto"} {
 		cfg := test.NewToken(kind)
@@ -48,21 +59,31 @@ func TestVerify(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
-			Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
+			JWT: jwt.NewToken(jwt.TokenParams{
+				Config:    cfg.JWT,
+				Signer:    signer,
+				Verifier:  verifier,
+				Generator: gen,
+			}),
+			Paseto: paseto.NewToken(paseto.TokenParams{
+				Config:    cfg.Paseto,
+				Signer:    signer,
+				Verifier:  verifier,
+				Generator: gen,
+			}),
 		}
 		tkn := token.NewToken(params)
 
 		Convey("Given I generate a token", t, func() {
-			_, gen, err := tkn.Generate(t.Context(), token.Options{Path: "aud"})
+			_, gen, err := tkn.Generate(t.Context(), test.TokenOptions)
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				ctx, err := tkn.Verify(t.Context(), gen, token.Options{Path: "aud"})
+				ctx, err := tkn.Verify(t.Context(), gen, test.TokenOptions)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
-					So(token.Subject(ctx).String(), ShouldEqual, "sub")
+					So(token.Subject(ctx).String(), ShouldEqual, test.UserID.String())
 				})
 			})
 		})

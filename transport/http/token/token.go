@@ -2,6 +2,7 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -19,13 +20,14 @@ type (
 )
 
 // NewHandler for token.
-func NewHandler(verifier Verifier) *Handler {
-	return &Handler{verifier: verifier}
+func NewHandler(id env.UserID, verifier Verifier) *Handler {
+	return &Handler{id: id, verifier: verifier}
 }
 
 // Handler for token.
 type Handler struct {
 	verifier Verifier
+	id       env.UserID
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -37,9 +39,10 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	ctx := req.Context()
+	opts := token.Options{Path: p, UserID: h.id.String()}
 	auth := meta.Authorization(ctx).Value()
 
-	ctx, err := h.verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
+	ctx, err := h.verifier.Verify(ctx, strings.Bytes(auth), opts)
 	if err != nil {
 		status.WriteError(ctx, res, status.UnauthorizedError(err))
 
@@ -50,21 +53,22 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for token.
-func NewRoundTripper(generator token.Generator, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{generator: generator, RoundTripper: hrt}
+func NewRoundTripper(id env.UserID, generator token.Generator, hrt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{id: id, generator: generator, RoundTripper: hrt}
 }
 
 // RoundTripper for token.
 type RoundTripper struct {
 	generator Generator
-
 	http.RoundTripper
+	id env.UserID
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	p := http.Path(req)
+	opts := token.Options{Path: p, UserID: r.id.String()}
 
-	ctx, token, err := r.generator.Generate(req.Context(), token.Options{Path: p})
+	ctx, token, err := r.generator.Generate(req.Context(), opts)
 	if err != nil {
 		return nil, status.UnauthorizedError(err)
 	}

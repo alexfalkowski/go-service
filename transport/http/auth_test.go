@@ -29,9 +29,19 @@ func TestTokenAuthUnary(t *testing.T) {
 			params := token.Params{
 				Config: cfg,
 				Name:   test.Name,
-				JWT:    jwt.NewToken(cfg.JWT, signer, verifier, gen),
-				Paseto: paseto.NewToken(cfg.Paseto, signer, verifier, gen),
-				SSH:    ssh.NewToken(test.FS, cfg.SSH),
+				JWT: jwt.NewToken(jwt.TokenParams{
+					Config:    cfg.JWT,
+					Signer:    signer,
+					Verifier:  verifier,
+					Generator: gen,
+				}),
+				Paseto: paseto.NewToken(paseto.TokenParams{
+					Config:    cfg.Paseto,
+					Signer:    signer,
+					Verifier:  verifier,
+					Generator: gen,
+				}),
+				SSH: ssh.NewToken(test.FS, cfg.SSH),
 			}
 			tkn := token.NewToken(params)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
@@ -24,7 +25,7 @@ type (
 )
 
 // UnaryServerInterceptor for token.
-func UnaryServerInterceptor(verifier Verifier) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := info.FullMethod[1:]
 		if strings.IsObservable(p) {
@@ -43,7 +44,7 @@ func UnaryServerInterceptor(verifier Verifier) grpc.UnaryServerInterceptor {
 }
 
 // StreamServerInterceptor for token.
-func StreamServerInterceptor(verifier Verifier) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		p := info.FullMethod[1:]
 		if strings.IsObservable(p) {
@@ -66,7 +67,7 @@ func StreamServerInterceptor(verifier Verifier) grpc.StreamServerInterceptor {
 }
 
 // UnaryClientInterceptor for token.
-func UnaryClientInterceptor(generator Generator) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := fullMethod[1:]
 
@@ -92,7 +93,7 @@ func UnaryClientInterceptor(generator Generator) grpc.UnaryClientInterceptor {
 }
 
 // StreamClientInterceptor for token.
-func StreamClientInterceptor(generator Generator) grpc.StreamClientInterceptor {
+func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := fullMethod[1:]
 

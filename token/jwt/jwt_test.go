@@ -17,9 +17,14 @@ func TestValid(t *testing.T) {
 
 	Convey("When I generate a JWT token", t, func() {
 		cfg := test.NewToken("jwt")
-		token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
+		token := jwt.NewToken(jwt.TokenParams{
+			Config:    cfg.JWT,
+			Signer:    signer,
+			Verifier:  verifier,
+			Generator: &id.UUID{},
+		})
 
-		tkn, err := token.Generate("aud")
+		tkn, err := token.Generate(test.UserID.String(), test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -27,10 +32,10 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			sub, err := token.Verify(tkn, "aud")
+			sub, err := token.Verify(tkn, test.UserID.String())
 			So(err, ShouldBeNil)
 
-			So(sub, ShouldEqual, "sub")
+			So(sub, ShouldEqual, test.UserID.String())
 		})
 	})
 }
@@ -41,7 +46,12 @@ func TestInvalid(t *testing.T) {
 	ec := test.NewEd25519()
 	signer, _ := ed25519.NewSigner(test.PEM, ec)
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-	token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
+	token := jwt.NewToken(jwt.TokenParams{
+		Config:    cfg.JWT,
+		Signer:    signer,
+		Verifier:  verifier,
+		Generator: &id.UUID{},
+	})
 
 	tokens := []string{
 		"invalid",
@@ -60,12 +70,15 @@ func TestInvalid(t *testing.T) {
 
 	Convey("When I generate a JWT token with invalid aud", t, func() {
 		cfg := test.NewToken("jwt")
-		token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
+		token := jwt.NewToken(jwt.TokenParams{
+			Config:    cfg.JWT,
+			Signer:    signer,
+			Verifier:  verifier,
+			Generator: &id.UUID{},
+		})
 
-		tkn, err := token.Generate("aud")
+		tkn, err := token.Generate(test.UserID.String(), "aud")
 		So(err, ShouldBeNil)
-
-		token = jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
 
 		Convey("Then I should have a token", func() {
 			So(tkn, ShouldNotBeBlank)
@@ -79,18 +92,27 @@ func TestInvalid(t *testing.T) {
 
 	Convey("When I generate a JWT token with invalid iss", t, func() {
 		jcf := &jwt.Config{
-			Subject:    "sub",
 			Issuer:     "test",
 			Expiration: "1h",
 			KeyID:      "1234567890",
 		}
-		token := jwt.NewToken(jcf, signer, verifier, &id.UUID{})
+		token := jwt.NewToken(jwt.TokenParams{
+			Config:    jcf,
+			Signer:    signer,
+			Verifier:  verifier,
+			Generator: &id.UUID{},
+		})
 
-		tkn, err := token.Generate("aud")
+		tkn, err := token.Generate(test.UserID.String(), "aud")
 		So(err, ShouldBeNil)
 
 		cfg := test.NewToken("jwt")
-		token = jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
+		token = jwt.NewToken(jwt.TokenParams{
+			Config:    cfg.JWT,
+			Signer:    signer,
+			Verifier:  verifier,
+			Generator: &id.UUID{},
+		})
 
 		Convey("Then I should have a token", func() {
 			So(tkn, ShouldNotBeBlank)

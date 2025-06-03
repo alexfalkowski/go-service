@@ -53,13 +53,11 @@ func NewToken(kind string) *token.Config {
 	return &token.Config{
 		Kind: kind,
 		JWT: &jwt.Config{
-			Subject:    "sub",
 			Issuer:     "iss",
 			Expiration: "1h",
 			KeyID:      "1234567890",
 		},
 		Paseto: &paseto.Config{
-			Subject:    "sub",
 			Issuer:     "iss",
 			Expiration: "1h",
 		},

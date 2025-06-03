@@ -5,15 +5,31 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"go.uber.org/fx"
 )
 
+// TokenParams for paseto.
+type TokenParams struct {
+	fx.In
+
+	Config    *Config
+	Signer    *ed25519.Signer
+	Verifier  *ed25519.Verifier
+	Generator id.Generator
+}
+
 // NewToken for paseto.
-func NewToken(cfg *Config, signer *ed25519.Signer, verifier *ed25519.Verifier, generator id.Generator) *Token {
-	if !IsEnabled(cfg) {
+func NewToken(params TokenParams) *Token {
+	if !IsEnabled(params.Config) {
 		return nil
 	}
 
-	return &Token{cfg: cfg, signer: signer, verifier: verifier, generator: generator}
+	return &Token{
+		cfg:       params.Config,
+		signer:    params.Signer,
+		verifier:  params.Verifier,
+		generator: params.Generator,
+	}
 }
 
 // Token for paseto.
@@ -25,7 +41,7 @@ type Token struct {
 }
 
 // Generate paseto token.
-func (t *Token) Generate(aud string) (string, error) {
+func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	now := time.Now()
 
@@ -35,8 +51,8 @@ func (t *Token) Generate(aud string) (string, error) {
 	token.SetNotBefore(now)
 	token.SetExpiration(now.Add(exp))
 	token.SetIssuer(t.cfg.Issuer)
-	token.SetSubject(t.cfg.Subject)
 	token.SetAudience(aud)
+	token.SetSubject(sub)
 
 	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(t.signer.PrivateKey)
 	if err != nil {
