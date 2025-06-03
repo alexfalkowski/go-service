@@ -6,15 +6,31 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/golang-jwt/jwt/v4"
+	"go.uber.org/fx"
 )
 
+// TokenParams for jwt.
+type TokenParams struct {
+	fx.In
+
+	Config    *Config
+	Signer    *ed25519.Signer
+	Verifier  *ed25519.Verifier
+	Generator id.Generator
+}
+
 // NewToken for jwt.
-func NewToken(cfg *Config, signer *ed25519.Signer, verifier *ed25519.Verifier, generator id.Generator) *Token {
-	if !IsEnabled(cfg) {
+func NewToken(params TokenParams) *Token {
+	if !IsEnabled(params.Config) {
 		return nil
 	}
 
-	return &Token{cfg: cfg, signer: signer, verifier: verifier, generator: generator}
+	return &Token{
+		cfg:       params.Config,
+		signer:    params.Signer,
+		verifier:  params.Verifier,
+		generator: params.Generator,
+	}
 }
 
 // Token for jwt.
@@ -26,7 +42,7 @@ type Token struct {
 }
 
 // Generate JWT token.
-func (t *Token) Generate(aud string) (string, error) {
+func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
 	now := time.Now()
@@ -37,8 +53,8 @@ func (t *Token) Generate(aud string) (string, error) {
 		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    t.cfg.Issuer,
 		NotBefore: &jwt.NumericDate{Time: now},
-		Subject:   t.cfg.Subject,
 		Audience:  []string{aud},
+		Subject:   sub,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)

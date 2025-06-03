@@ -22,15 +22,16 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	tracer       *tracer.Tracer
-	meter        *metrics.Meter
-	roundTripper http.RoundTripper
 	gen          token.Generator
+	generator    id.Generator
+	roundTripper http.RoundTripper
+	tls          *tls.Config
 	logger       *logger.Logger
 	retry        *retry.Config
-	tls          *tls.Config
-	generator    id.Generator
+	tracer       *tracer.Tracer
+	meter        *metrics.Meter
 	userAgent    env.UserAgent
+	id           env.UserID
 	timeout      time.Duration
 	breaker      bool
 	compression  bool
@@ -50,8 +51,9 @@ func WithClientCompression() ClientOption {
 }
 
 // WithClientTokenGenerator for HTTP.
-func WithClientTokenGenerator(gen token.Generator) ClientOption {
+func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
+		o.id = id
 		o.gen = gen
 	})
 }
@@ -136,7 +138,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.gen != nil {
-		hrt = token.NewRoundTripper(os.gen, hrt)
+		hrt = token.NewRoundTripper(os.id, os.gen, hrt)
 	}
 
 	if os.compression {

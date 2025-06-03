@@ -31,14 +31,15 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	tracer      *tracer.Tracer
+	generator   id.Generator
+	gen         token.Generator
 	meter       *metrics.Meter
 	security    *tls.Config
-	gen         token.Generator
 	logger      *logger.Logger
 	retry       *retry.Config
+	tracer      *tracer.Tracer
 	userAgent   env.UserAgent
-	generator   id.Generator
+	id          env.UserID
 	opts        []grpc.DialOption
 	unary       []grpc.UnaryClientInterceptor
 	stream      []grpc.StreamClientInterceptor
@@ -61,8 +62,9 @@ func WithClientCompression() ClientOption {
 }
 
 // WithClientTokenGenerator for gRPC.
-func WithClientTokenGenerator(gen token.Generator) ClientOption {
+func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
+		o.id = id
 		o.gen = gen
 	})
 }
@@ -240,7 +242,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.gen != nil {
-		unary = append(unary, tkn.UnaryClientInterceptor(os.gen))
+		unary = append(unary, tkn.UnaryClientInterceptor(os.id, os.gen))
 	}
 
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
@@ -265,7 +267,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	}
 
 	if opts.gen != nil {
-		stream = append(stream, tkn.StreamClientInterceptor(opts.gen))
+		stream = append(stream, tkn.StreamClientInterceptor(opts.id, opts.gen))
 	}
 
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))

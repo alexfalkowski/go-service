@@ -27,7 +27,12 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		params := token.Params{
 			Config: cfg,
 			Name:   test.Name,
-			JWT:    jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{}),
+			JWT: jwt.NewToken(jwt.TokenParams{
+				Config:    cfg.JWT,
+				Signer:    signer,
+				Verifier:  verifier,
+				Generator: &id.UUID{},
+			}),
 		}
 		tkn := token.NewToken(params)
 

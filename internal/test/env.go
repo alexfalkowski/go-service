@@ -11,6 +11,9 @@ const (
 	// Name for test.
 	Name = env.Name("test")
 
+	// UserID for test.
+	UserID = env.UserID("test@test")
+
 	// Version for test.
 	Version = env.Version("1.0.0")
 

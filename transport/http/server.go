@@ -35,6 +35,7 @@ type ServerParams struct {
 	Meter      *metrics.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
+	UserID     env.UserID
 	ID         id.Generator
 	FS         *os.FS
 	Limiter    *limiter.Limiter  `optional:"true"`
@@ -68,7 +69,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Verifier != nil {
-		neg.Use(token.NewHandler(params.Verifier))
+		neg.Use(token.NewHandler(params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {

@@ -17,6 +17,9 @@ import (
 type Options struct {
 	// Path that is used as an audience, such as users/1 or package.service/method
 	Path string
+
+	// UserID is the current user.
+	UserID string
 }
 
 // Params for token.
@@ -61,11 +64,11 @@ func (t *Token) Generate(ctx context.Context, opts Options) (context.Context, []
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsJWT():
-		token, err := t.jwt.Generate(opts.Path)
+		token, err := t.jwt.Generate(opts.Path, opts.UserID)
 
 		return ctx, strings.Bytes(token), err
 	case t.cfg.IsPaseto():
-		token, err := t.paseto.Generate(opts.Path)
+		token, err := t.paseto.Generate(opts.Path, opts.UserID)
 
 		return ctx, strings.Bytes(token), err
 	}

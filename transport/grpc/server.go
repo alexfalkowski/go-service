@@ -35,6 +35,7 @@ type ServerParams struct {
 	Meter      *metrics.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
+	UserID     env.UserID
 	ID         id.Generator
 	FS         *os.FS
 	Limiter    *limiter.Limiter               `optional:"true"`
@@ -115,7 +116,7 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 	}
 
 	if params.Verifier != nil {
-		uis = append(uis, token.UnaryServerInterceptor(params.Verifier))
+		uis = append(uis, token.UnaryServerInterceptor(params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {
@@ -143,7 +144,7 @@ func streamServerOption(params ServerParams, server *metrics.Server, interceptor
 	}
 
 	if params.Verifier != nil {
-		sis = append(sis, token.StreamServerInterceptor(params.Verifier))
+		sis = append(sis, token.StreamServerInterceptor(params.UserID, params.Verifier))
 	}
 
 	sis = append(sis, interceptors...)

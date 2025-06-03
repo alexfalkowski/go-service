@@ -53,7 +53,7 @@ func (s *Server) Register() {
 			Config: s.TransportConfig.HTTP, Logger: s.Logger,
 			Tracer: tracer, Meter: s.Meter,
 			Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
-			Verifier: s.Verifier, ID: s.ID,
+			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			FS: FS,
 		})
@@ -67,7 +67,7 @@ func (s *Server) Register() {
 		grpcServer, err := grpc.NewServer(grpc.ServerParams{
 			Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
 			Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
-			Verifier: s.Verifier, ID: s.ID,
+			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			FS: FS,
 		})

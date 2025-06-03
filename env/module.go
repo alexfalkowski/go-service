@@ -8,4 +8,5 @@ var Module = fx.Options(
 	fx.Provide(NewName),
 	fx.Provide(NewVersion),
 	fx.Provide(NewUserAgent),
+	fx.Provide(NewUserID),
 )

@@ -237,7 +237,6 @@ func verifyConfig(config *config.Config) {
 	So(config.Token.Kind, ShouldEqual, "jwt")
 	So(config.Token.JWT.Expiration, ShouldEqual, "1h")
 	So(config.Token.JWT.Issuer, ShouldEqual, "iss")
-	So(config.Token.JWT.Subject, ShouldEqual, "sub")
 	So(config.Token.JWT.KeyID, ShouldEqual, "1234567890")
 	So(server.IsEnabled(config.Transport.GRPC.Config), ShouldBeTrue)
 	So(config.Transport.GRPC.Address, ShouldEqual, ":12000")
