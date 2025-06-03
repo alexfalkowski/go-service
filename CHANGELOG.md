@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.28.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.28.0) - 2025-06-03
+
+- [`209d53c`](https://github.com/alexfalkowski/go-service/commit/209d53cafa47ab42056337e3725d134501fb7e10) feat(token): remove sub (#1663)
+
 ## [v2.27.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.27.0) - 2025-06-03
 
 - [`21a7a8d`](https://github.com/alexfalkowski/go-service/commit/21a7a8d9d8bc2c6c9b19602b1116c6d57641f2e4) feat(token): move audience to per request (#1662)
