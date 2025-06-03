@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.27.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.27.0) - 2025-06-03
+
+- [`21a7a8d`](https://github.com/alexfalkowski/go-service/commit/21a7a8d9d8bc2c6c9b19602b1116c6d57641f2e4) feat(token): move audience to per request (#1662)
+- [`e6180f1`](https://github.com/alexfalkowski/go-service/commit/e6180f180eeec7cc621caa954ffdc56b234bf85e) refactor(strings): rename to ss (#1659)
+- [`8805b4d`](https://github.com/alexfalkowski/go-service/commit/8805b4da1ea0e3bc5fa841b1f0d2a5673083ad85) build(ci): use alexfalkowski/go:2.24 (#1658)
+- [`c9c1d18`](https://github.com/alexfalkowski/go-service/commit/c9c1d181a47e34f32a12377cbbdf55c101b4f0bd) build(deps): bump bin from `810b10e` to `9c21752` (#1657)
+
 ## [v2.26.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.26.0) - 2025-06-01
 
 - [`4c5f24c`](https://github.com/alexfalkowski/go-service/commit/4c5f24c5d6e97a79701341b4cb39e292e3268b4c) feat(debug): move psutil to package (#1656)
