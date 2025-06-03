@@ -28,8 +28,8 @@ type Handler struct {
 
 // ServeHTTP or logger.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if strings.IsObservable(path) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		next(res, req)
 
 		return
@@ -38,14 +38,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	attrs := []slog.Attr{
 		slog.String(meta.ServiceKey, service),
-		slog.String(meta.PathKey, path),
+		slog.String(meta.PathKey, p),
 		slog.String(meta.MethodKey, method),
 	}
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
 	attrs = append(attrs, slog.String(meta.DurationKey, m.Duration.String()), slog.Int(meta.CodeKey, m.Code))
-	message := message(strings.Join(" ", method, path))
+	message := message(strings.Join(" ", method, p))
 
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), logger.NewText(message), attrs...)
 }
@@ -64,18 +64,18 @@ type RoundTripper struct {
 
 // RoundTrip for logger.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if strings.IsObservable(req.URL.String()) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	path, method := req.URL.Path, strings.ToLower(req.Method)
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	attrs := []slog.Attr{
 		slog.String(meta.DurationKey, time.Since(start).String()),
 		slog.String(meta.ServiceKey, service),
-		slog.String(meta.PathKey, path),
+		slog.String(meta.PathKey, p),
 		slog.String(meta.MethodKey, method),
 	}
 
@@ -83,7 +83,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		attrs = append(attrs, slog.Int(meta.CodeKey, resp.StatusCode))
 	}
 
-	message := message(strings.Join(" ", method, path))
+	message := message(strings.Join(" ", method, p))
 
 	r.logger.LogAttrs(ctx, respToLevel(resp), logger.NewMessage(message, err), attrs...)
 

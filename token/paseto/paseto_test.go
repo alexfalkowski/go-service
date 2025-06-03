@@ -18,7 +18,7 @@ func TestValid(t *testing.T) {
 	paseto := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
 
 	Convey("When I generate a paseto token", t, func() {
-		token, err := paseto.Generate()
+		token, err := paseto.Generate("aud")
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -26,7 +26,7 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			sub, err := paseto.Verify(token)
+			sub, err := paseto.Verify(token, "aud")
 			So(err, ShouldBeNil)
 
 			So(sub, ShouldEqual, "sub")
@@ -41,18 +41,12 @@ func TestInvalid(t *testing.T) {
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 
 	Convey("When I generate a paseto token with invalid aud", t, func() {
-		pcf := &paseto.Config{
-			Subject:    "sub",
-			Audience:   "test",
-			Issuer:     "iss",
-			Expiration: "1h",
-		}
-		token := paseto.NewToken(pcf, signer, verifier, &id.UUID{})
+		cfg := test.NewToken("paseto")
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate("aud")
 		So(err, ShouldBeNil)
 
-		cfg := test.NewToken("paseto")
 		token = paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
 
 		Convey("Then I should have a token", func() {
@@ -60,7 +54,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "test")
 			So(err, ShouldBeError)
 		})
 	})
@@ -68,13 +62,12 @@ func TestInvalid(t *testing.T) {
 	Convey("When I generate a JWT token with invalid iss", t, func() {
 		pcf := &paseto.Config{
 			Subject:    "sub",
-			Audience:   "aud",
 			Issuer:     "test",
 			Expiration: "1h",
 		}
 		token := paseto.NewToken(pcf, signer, verifier, &id.UUID{})
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate("aud")
 		So(err, ShouldBeNil)
 
 		cfg := test.NewToken("paseto")
@@ -85,7 +78,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "aud")
 			So(err, ShouldBeError)
 		})
 	})
@@ -95,7 +88,7 @@ func TestInvalid(t *testing.T) {
 		token := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
 
 		Convey("When I verify an invalid token", t, func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "aud")
 
 			Convey("Then I should have a error", func() {
 				So(err, ShouldBeError)
@@ -109,7 +102,7 @@ func TestInvalid(t *testing.T) {
 		Convey("When I generate a token", func() {
 			token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, &id.UUID{})
 
-			_, err := token.Generate()
+			_, err := token.Generate("aud")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -119,7 +112,7 @@ func TestInvalid(t *testing.T) {
 		Convey("When I verify a token", func() {
 			token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, &id.UUID{})
 
-			_, err := token.Verify("")
+			_, err := token.Verify("", "aud")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

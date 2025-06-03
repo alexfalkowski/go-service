@@ -186,10 +186,6 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 		ops = append(ops, grpc.WithDefaultCallOptions(grpc.UseCompressor("gzip")))
 	}
 
-	if os.gen != nil {
-		ops = append(ops, grpc.WithPerRPCCredentials(tkn.NewPerRPCCredentials(os.gen)))
-	}
-
 	ops = append(ops, os.opts...)
 
 	return ops, nil
@@ -243,6 +239,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, tt.UnaryClientInterceptor(os.tracer))
 	}
 
+	if os.gen != nil {
+		unary = append(unary, tkn.UnaryClientInterceptor(os.gen))
+	}
+
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
 
 	return unary
@@ -262,6 +262,10 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 
 	if opts.tracer != nil {
 		stream = append(stream, tt.StreamClientInterceptor(opts.tracer))
+	}
+
+	if opts.gen != nil {
+		stream = append(stream, tkn.StreamClientInterceptor(opts.gen))
 	}
 
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))

@@ -24,8 +24,8 @@ type Handler struct {
 
 // ServeHTTP for tracer.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	path, method := req.URL.Path, strings.ToLower(req.Method)
-	if strings.IsObservable(path) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		next(res, req)
 
 		return
@@ -33,11 +33,11 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := extract(req.Context(), req)
 	attrs := []attribute.KeyValue{
-		semconv.HTTPRoute(path),
+		semconv.HTTPRoute(p),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 
-	op := operationName(strings.Join(" ", method, path))
+	op := operationName(strings.Join(" ", method, p))
 
 	ctx, span := h.tracer.StartServer(ctx, op, attrs...)
 	defer span.End()
@@ -61,14 +61,14 @@ type RoundTripper struct {
 
 // RoundTrip for tracer.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if strings.IsObservable(req.URL.String()) {
+	p, method := http.Path(req), strings.ToLower(req.Method)
+	if strings.IsObservable(p) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	method := strings.ToLower(req.Method)
 	ctx := req.Context()
 	attrs := []attribute.KeyValue{
-		semconv.HTTPRoute(req.URL.Path),
+		semconv.HTTPRoute(p),
 		semconv.HTTPRequestMethodKey.String(method),
 	}
 

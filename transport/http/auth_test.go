@@ -238,7 +238,7 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "token error")
+				So(err.Error(), ShouldContainSubstring, "token: generation issue")
 			})
 
 			world.RequireStop()

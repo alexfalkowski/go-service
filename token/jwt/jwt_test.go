@@ -19,7 +19,7 @@ func TestValid(t *testing.T) {
 		cfg := test.NewToken("jwt")
 		token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate("aud")
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -27,7 +27,7 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			sub, err := token.Verify(tkn)
+			sub, err := token.Verify(tkn, "aud")
 			So(err, ShouldBeNil)
 
 			So(sub, ShouldEqual, "sub")
@@ -50,7 +50,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, tkn := range tokens {
 		Convey("When I verify an invalid token", t, func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "aud")
 
 			Convey("Then I should have a error", func() {
 				So(err, ShouldBeError)
@@ -59,19 +59,12 @@ func TestInvalid(t *testing.T) {
 	}
 
 	Convey("When I generate a JWT token with invalid aud", t, func() {
-		jcf := &jwt.Config{
-			Subject:    "sub",
-			Audience:   "test",
-			Issuer:     "iss",
-			Expiration: "1h",
-			KeyID:      "1234567890",
-		}
-		token := jwt.NewToken(jcf, signer, verifier, &id.UUID{})
+		cfg := test.NewToken("jwt")
+		token := jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate("aud")
 		So(err, ShouldBeNil)
 
-		cfg := test.NewToken("jwt")
 		token = jwt.NewToken(cfg.JWT, signer, verifier, &id.UUID{})
 
 		Convey("Then I should have a token", func() {
@@ -79,7 +72,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "test")
 			So(err, ShouldBeError)
 		})
 	})
@@ -87,14 +80,13 @@ func TestInvalid(t *testing.T) {
 	Convey("When I generate a JWT token with invalid iss", t, func() {
 		jcf := &jwt.Config{
 			Subject:    "sub",
-			Audience:   "aud",
 			Issuer:     "test",
 			Expiration: "1h",
 			KeyID:      "1234567890",
 		}
 		token := jwt.NewToken(jcf, signer, verifier, &id.UUID{})
 
-		tkn, err := token.Generate()
+		tkn, err := token.Generate("aud")
 		So(err, ShouldBeNil)
 
 		cfg := test.NewToken("jwt")
@@ -105,7 +97,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn)
+			_, err := token.Verify(tkn, "aud")
 			So(err, ShouldBeError)
 		})
 	})

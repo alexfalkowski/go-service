@@ -18,29 +18,11 @@ linters:
     - revive
     - tagalign
     - tagliatelle
+    - varnamelen
     - wrapcheck
   settings:
     lll:
       line-length: 180
-    varnamelen:
-      ignore-names:
-        - k
-        - v
-        - w
-        - i
-        - r
-        - fn
-        - ok
-        - lc
-        - db
-        - id
-        - os
-        - md
-        - fs
-        - sh
-        - ua
-        - rt
-        - rw
   exclusions:
     generated: lax
     presets:

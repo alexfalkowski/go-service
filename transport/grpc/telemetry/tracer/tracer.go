@@ -19,8 +19,8 @@ type Tracer = tracer.Tracer
 // UnaryServerInterceptor for tracer.
 func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
@@ -29,7 +29,7 @@ func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 		method := path.Base(info.FullMethod)
 		attrs := []attribute.KeyValue{
 			semconv.RPCSystemGRPC,
-			semconv.RPCService(service),
+			semconv.RPCService(p),
 			semconv.RPCMethod(method),
 		}
 
@@ -49,8 +49,8 @@ func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 // StreamServerInterceptor for tracer.
 func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 
@@ -59,7 +59,7 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 		method := path.Base(info.FullMethod)
 		attrs := []attribute.KeyValue{
 			semconv.RPCSystemGRPC,
-			semconv.RPCService(service),
+			semconv.RPCService(p),
 			semconv.RPCMethod(method),
 		}
 
@@ -82,15 +82,15 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for tracer.
 func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		service := path.Dir(fullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := fullMethod[1:]
+		if strings.IsObservable(p) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
 		method := path.Base(fullMethod)
 		attrs := []attribute.KeyValue{
 			semconv.RPCSystemGRPC,
-			semconv.RPCService(service),
+			semconv.RPCService(p),
 			semconv.RPCMethod(method),
 		}
 
@@ -112,15 +112,15 @@ func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for tracer.
 func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		service := path.Dir(fullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := fullMethod[1:]
+		if strings.IsObservable(p) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
 		method := path.Base(fullMethod)
 		attrs := []attribute.KeyValue{
 			semconv.RPCSystemGRPC,
-			semconv.RPCService(service),
+			semconv.RPCService(p),
 			semconv.RPCMethod(method),
 		}
 

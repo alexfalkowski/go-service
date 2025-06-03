@@ -29,7 +29,7 @@ func TestGenerate(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("When I try to generate", t, func() {
-			_, _, err := tkn.Generate(t.Context())
+			_, _, err := tkn.Generate(t.Context(), token.Options{Path: "aud"})
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
@@ -54,11 +54,11 @@ func TestVerify(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("Given I generate a token", t, func() {
-			_, gen, err := tkn.Generate(t.Context())
+			_, gen, err := tkn.Generate(t.Context(), token.Options{Path: "aud"})
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				ctx, err := tkn.Verify(t.Context(), gen)
+				ctx, err := tkn.Verify(t.Context(), gen, token.Options{Path: "aud"})
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
@@ -78,11 +78,11 @@ func TestVerify(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("Given I generate a token", t, func() {
-			_, gen, err := tkn.Generate(t.Context())
+			_, gen, err := tkn.Generate(t.Context(), token.Options{})
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				_, err := tkn.Verify(t.Context(), gen)
+				_, err := tkn.Verify(t.Context(), gen, token.Options{})
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)

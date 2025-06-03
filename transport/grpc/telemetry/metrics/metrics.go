@@ -45,8 +45,8 @@ type Server struct {
 // UnaryInterceptor for metrics.
 func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(ctx, req)
 		}
 
@@ -54,7 +54,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
-			serviceAttribute.String(service),
+			pathAttribute.String(p),
 			methodAttribute.String(method),
 		)
 
@@ -75,8 +75,8 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 // StreamInterceptor for metrics.
 func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		service := path.Dir(info.FullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := info.FullMethod[1:]
+		if strings.IsObservable(p) {
 			return handler(srv, stream)
 		}
 
@@ -84,7 +84,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		method := path.Base(info.FullMethod)
 		opts := metric.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
-			serviceAttribute.String(service),
+			pathAttribute.String(p),
 			methodAttribute.String(method),
 		)
 		err := handler(srv, s.Stream(stream, opts))
@@ -181,8 +181,8 @@ type Client struct {
 // UnaryInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
 func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		service := path.Dir(fullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := fullMethod[1:]
+		if strings.IsObservable(p) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
@@ -190,7 +190,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
-			serviceAttribute.String(service),
+			pathAttribute.String(p),
 			methodAttribute.String(method),
 		)
 
@@ -211,8 +211,8 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 // StreamInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Streaming RPCs.
 func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		service := path.Dir(fullMethod)[1:]
-		if strings.IsObservable(service) {
+		p := fullMethod[1:]
+		if strings.IsObservable(p) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
@@ -220,7 +220,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		method := path.Base(fullMethod)
 		measurement := metric.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
-			serviceAttribute.String(service),
+			pathAttribute.String(p),
 			methodAttribute.String(method),
 		)
 

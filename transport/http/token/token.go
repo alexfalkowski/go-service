@@ -2,7 +2,6 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -30,18 +29,19 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsObservable(req.URL.Path) {
+	p := http.Path(req)
+	if strings.IsObservable(p) {
 		next(res, req)
 
 		return
 	}
 
 	ctx := req.Context()
-	token := meta.Authorization(ctx).Value()
+	auth := meta.Authorization(ctx).Value()
 
-	ctx, err := h.verifier.Verify(ctx, strings.Bytes(token))
+	ctx, err := h.verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
 	if err != nil {
-		status.WriteError(ctx, res, status.UnauthorizedError(errors.Prefix("token", err)))
+		status.WriteError(ctx, res, status.UnauthorizedError(err))
 
 		return
 	}
@@ -62,13 +62,15 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	ctx, token, err := r.generator.Generate(req.Context())
+	p := http.Path(req)
+
+	ctx, token, err := r.generator.Generate(req.Context(), token.Options{Path: p})
 	if err != nil {
-		return nil, err
+		return nil, status.UnauthorizedError(err)
 	}
 
 	if len(token) == 0 {
-		return nil, header.ErrInvalidAuthorization
+		return nil, status.UnauthorizedError(header.ErrInvalidAuthorization)
 	}
 
 	req = req.WithContext(ctx)
