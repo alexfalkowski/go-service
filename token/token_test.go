@@ -21,7 +21,7 @@ func TestGenerate(t *testing.T) {
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 		gen := &id.UUID{}
-		params := token.Params{
+		params := token.TokenParams{
 			Config: cfg,
 			Name:   test.Name,
 			JWT: jwt.NewToken(jwt.TokenParams{
@@ -57,7 +57,7 @@ func TestVerify(t *testing.T) {
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 		gen := &id.UUID{}
-		params := token.Params{
+		params := token.TokenParams{
 			Config: cfg,
 			Name:   test.Name,
 			JWT: jwt.NewToken(jwt.TokenParams{
@@ -92,7 +92,7 @@ func TestVerify(t *testing.T) {
 
 	for _, kind := range []string{"ssh", "none"} {
 		cfg := test.NewToken(kind)
-		params := token.Params{
+		params := token.TokenParams{
 			Config: cfg,
 			Name:   test.Name,
 			SSH:    ssh.NewToken(test.FS, cfg.SSH),
@@ -116,7 +116,7 @@ func TestVerify(t *testing.T) {
 
 func TestWithNoConfig(t *testing.T) {
 	Convey("When I try to create a token with no config", t, func() {
-		params := token.Params{Name: test.Name}
+		params := token.TokenParams{Name: test.Name}
 		tkn := token.NewToken(params)
 
 		Convey("Then I should have bo token", func() {

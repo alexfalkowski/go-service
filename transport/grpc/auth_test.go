@@ -164,7 +164,7 @@ func TestValidAuthUnary(t *testing.T) {
 			signer, _ := ed25519.NewSigner(test.PEM, ec)
 			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 			gen := &id.UUID{}
-			params := token.Params{
+			params := token.TokenParams{
 				Config: cfg,
 				Name:   test.Name,
 				JWT: jwt.NewToken(jwt.TokenParams{
