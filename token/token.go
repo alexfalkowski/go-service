@@ -22,8 +22,8 @@ type Options struct {
 	UserID string
 }
 
-// Params for token.
-type Params struct {
+// TokenParams for token.
+type TokenParams struct {
 	fx.In
 
 	Config *Config
@@ -34,7 +34,7 @@ type Params struct {
 }
 
 // NewToken based on config.
-func NewToken(params Params) *Token {
+func NewToken(params TokenParams) *Token {
 	if !IsEnabled(params.Config) {
 		return nil
 	}
@@ -57,6 +57,7 @@ type Token struct {
 	name   env.Name
 }
 
+// Generate a token based on kind.
 func (t *Token) Generate(ctx context.Context, opts Options) (context.Context, []byte, error) {
 	switch {
 	case t.cfg.IsSSH():
@@ -76,6 +77,7 @@ func (t *Token) Generate(ctx context.Context, opts Options) (context.Context, []
 	return ctx, nil, nil
 }
 
+// Verify a token based on kind.
 func (t *Token) Verify(ctx context.Context, token []byte, opts Options) (context.Context, error) {
 	tkn := bytes.String(token)
 

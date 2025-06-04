@@ -24,7 +24,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		ec := test.NewEd25519()
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		params := token.Params{
+		params := token.TokenParams{
 			Config: cfg,
 			Name:   test.Name,
 			JWT: jwt.NewToken(jwt.TokenParams{
