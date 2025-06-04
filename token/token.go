@@ -5,9 +5,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/meta"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"go.uber.org/fx"
@@ -85,11 +85,11 @@ func (t *Token) Verify(ctx context.Context, token []byte, opts Options) (context
 	case t.cfg.IsJWT():
 		subject, err := t.jwt.Verify(tkn, opts.Path)
 
-		return WithSubject(ctx, meta.String(subject)), err
+		return meta.WithUserID(ctx, meta.Ignored(subject)), err
 	case t.cfg.IsPaseto():
 		subject, err := t.paseto.Verify(tkn, opts.Path)
 
-		return WithSubject(ctx, meta.String(subject)), err
+		return meta.WithUserID(ctx, meta.Ignored(subject)), err
 	}
 
 	return ctx, nil
