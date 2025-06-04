@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	"github.com/alexfalkowski/go-service/v2/token/meta"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
@@ -83,7 +84,7 @@ func TestVerify(t *testing.T) {
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
-					So(token.Subject(ctx).String(), ShouldEqual, test.UserID.String())
+					So(meta.UserID(ctx).Value(), ShouldEqual, test.UserID.String())
 				})
 			})
 		})
