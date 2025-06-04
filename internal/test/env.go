@@ -12,7 +12,7 @@ const (
 	Name = env.Name("test")
 
 	// UserID for test.
-	UserID = env.UserID("test@test")
+	UserID = env.UserID(Name)
 
 	// Version for test.
 	Version = env.Version("1.0.0")

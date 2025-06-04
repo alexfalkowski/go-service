@@ -72,12 +72,12 @@ func NewToken(kind string) *token.Config {
 		},
 		SSH: &ssh.Config{
 			Key: &ssh.Key{
-				Name:   Name.String(),
+				Name:   UserID.String(),
 				Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 			},
 			Keys: ssh.Keys{
 				&ssh.Key{
-					Name:   Name.String(),
+					Name:   UserID.String(),
 					Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),
 				},
 			},

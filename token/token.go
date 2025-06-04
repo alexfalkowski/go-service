@@ -79,18 +79,19 @@ func (t *Token) Generate(ctx context.Context, opts Options) (context.Context, []
 func (t *Token) Verify(ctx context.Context, token []byte, opts Options) (context.Context, error) {
 	tkn := bytes.String(token)
 
+	var (
+		user string
+		err  error
+	)
+
 	switch {
 	case t.cfg.IsSSH():
-		return ctx, t.ssh.Verify(tkn)
+		user, err = t.ssh.Verify(tkn)
 	case t.cfg.IsJWT():
-		subject, err := t.jwt.Verify(tkn, opts.Path)
-
-		return meta.WithUserID(ctx, meta.Ignored(subject)), err
+		user, err = t.jwt.Verify(tkn, opts.Path)
 	case t.cfg.IsPaseto():
-		subject, err := t.paseto.Verify(tkn, opts.Path)
-
-		return meta.WithUserID(ctx, meta.Ignored(subject)), err
+		user, err = t.paseto.Verify(tkn, opts.Path)
 	}
 
-	return ctx, nil
+	return meta.WithUserID(ctx, meta.Ignored(user)), err
 }
