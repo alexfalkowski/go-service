@@ -305,6 +305,19 @@ telemetry:
 
 The framework allows you to define different token generators and verifiers.
 
+### Access
+
+We have support for different access controls using [casbin](https://github.com/casbin/casbin).
+
+To configure, please specify the following:
+
+```yaml
+token:
+  access:
+    model: path to model file
+    policy: path to policy file
+```
+
 ### JWT
 
 We use the awesome [JWT](https://github.com/golang-jwt/jwt).
