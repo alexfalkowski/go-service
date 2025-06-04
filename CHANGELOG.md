@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.31.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.31.0) - 2025-06-04
+
+- [`d08807d`](https://github.com/alexfalkowski/go-service/commit/d08807d9331c36257801df84812f14962d71bf42) feat(token): set user id for ssh (#1667)
+- [`605bc16`](https://github.com/alexfalkowski/go-service/commit/605bc16c04e97305d5344f02cbdd6d218916e7f6) docs(token): add access (#1666)
+
 ## [v2.30.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.30.0) - 2025-06-04
 
 - [`1ebef1a`](https://github.com/alexfalkowski/go-service/commit/1ebef1a8adfe19f4c052d0f4b9ca92bb3bb36ba0) feat(token): add access controller (#1665)
