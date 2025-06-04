@@ -9,7 +9,7 @@ import (
 )
 
 // TokenOptions for test.
-var TokenOptions = token.Options{Path: "aud", UserID: UserID.String()}
+var TokenOptions = token.Options{Path: "hello", UserID: UserID.String()}
 
 // WithWorldToken for test.
 func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {

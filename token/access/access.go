@@ -19,13 +19,15 @@ func NewController(cfg *Config) (Controller, error) {
 		return nil, err
 	}
 
-	return &controller{e}, nil
+	return &CasbinController{e}, nil
 }
 
-type controller struct {
+// CasbinController for access.
+type CasbinController struct {
 	*casbin.Enforcer
 }
 
-func (c *controller) HasAccess(user, system, action string) (bool, error) {
+// HasAccess just calls Enforce.
+func (c *CasbinController) HasAccess(user, system, action string) (bool, error) {
 	return c.Enforce(user, system, action)
 }

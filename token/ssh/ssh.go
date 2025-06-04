@@ -45,26 +45,26 @@ func (t *Token) Generate() (string, error) {
 }
 
 // Verify an SSH token.
-func (t *Token) Verify(token string) error {
+func (t *Token) Verify(token string) (string, error) {
 	name, key, ok := strings.Cut(token, "-")
 	if !ok {
-		return errors.ErrInvalidMatch
+		return "", errors.ErrInvalidMatch
 	}
 
 	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
-		return errors.ErrInvalidMatch
+		return "", errors.ErrInvalidMatch
 	}
 
 	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	sig, err := base64.Decode(key)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return verifier.Verify(sig, strings.Bytes(name))
+	return name, verifier.Verify(sig, strings.Bytes(name))
 }
