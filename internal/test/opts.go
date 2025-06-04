@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -43,6 +44,7 @@ func Options() []fx.Option {
 		fx.Invoke(shutdown), fx.Invoke(invokeFeatureClient), fx.Invoke(invokeWebhooks), fx.Invoke(invokeConfigs),
 		fx.Invoke(invokeMeter), fx.Invoke(invokeNetwork), fx.Invoke(invokeCache),
 		fx.Invoke(invokeCrypt), fx.Invoke(invokeEnvironment), fx.Invoke(invokeTokens),
+		fx.Invoke(invokeAccessController),
 	}
 }
 
@@ -92,6 +94,8 @@ func invokeWebhooks(_ *webhooks.Webhook, _ *events.Receiver) {}
 func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func invokeNetwork(_ time.Network) {}
+
+func invokeAccessController(_ access.Controller) {}
 
 func invokeCrypt(
 	signer *bcrypt.Signer,

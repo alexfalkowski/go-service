@@ -11,6 +11,7 @@ require (
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
+	github.com/casbin/casbin/v2 v2.106.0
 	github.com/cloudevents/sdk-go/v2 v2.16.0
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
@@ -78,6 +79,8 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
+	github.com/casbin/govaluate v1.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

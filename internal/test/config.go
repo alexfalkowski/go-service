@@ -23,6 +23,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -35,6 +36,14 @@ const timeout = 2 * time.Second
 
 // Validator for testing.
 var Validator = config.NewValidator()
+
+// NewAccessConfig for test.
+func NewAccessConfig() *access.Config {
+	return &access.Config{
+		Model:  Path("configs/rbac.conf"),
+		Policy: Path("configs/rbac.csv"),
+	}
+}
 
 // NewDecoder for test.
 func NewDecoder(set *flag.FlagSet) config.Decoder {
