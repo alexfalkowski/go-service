@@ -84,6 +84,10 @@ address = "time.cloudflare.com"
 [token]
 kind = "jwt"
 
+[token.access]
+model = "../test/configs/rbac.conf"
+policy = "../test/configs/rbac.csv"
+
 [token.jwt]
 iss = "iss"
 exp = "1h"

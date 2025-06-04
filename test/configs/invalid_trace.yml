@@ -37,9 +37,6 @@ limiter:
   kind: user-agent
   tokens: 10
   interval: 1s
-time:
-  kind: nts
-  address: time.cloudflare.com
 sql:
   pg:
     masters:
@@ -60,7 +57,13 @@ telemetry:
     url: "this is not a URL"
     headers:
       Authorization: file:../test/secrets/telemetry
+time:
+  kind: nts
+  address: time.cloudflare.com
 token:
+  access:
+    model: ../test/configs/rbac.conf
+    policy: ../test/configs/rbac.csv
   kind: "jwt"
   iss: "iss"
   exp: "1h"
