@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/meta"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
@@ -40,7 +39,7 @@ func TestGenerate(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("When I try to generate", t, func() {
-			_, _, err := tkn.Generate(t.Context(), test.TokenOptions)
+			_, err := tkn.Generate("hello", test.UserID.String())
 
 			Convey("Then I should have no error", func() {
 				So(err, ShouldBeNil)
@@ -76,15 +75,15 @@ func TestVerify(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("Given I generate a token", t, func() {
-			_, gen, err := tkn.Generate(t.Context(), test.TokenOptions)
+			gen, err := tkn.Generate("hello", test.UserID.String())
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				ctx, err := tkn.Verify(t.Context(), gen, test.TokenOptions)
+				sub, err := tkn.Verify(gen, "hello")
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)
-					So(meta.UserID(ctx).Value(), ShouldEqual, test.UserID.String())
+					So(sub, ShouldEqual, test.UserID.String())
 				})
 			})
 		})
@@ -100,11 +99,11 @@ func TestVerify(t *testing.T) {
 		tkn := token.NewToken(params)
 
 		Convey("Given I generate a token", t, func() {
-			_, gen, err := tkn.Generate(t.Context(), token.Options{})
+			gen, err := tkn.Generate("", "")
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				_, err := tkn.Verify(t.Context(), gen, token.Options{})
+				_, err := tkn.Verify(gen, "")
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)

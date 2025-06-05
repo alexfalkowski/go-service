@@ -34,10 +34,12 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 		auth := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
+		sub, err := verifier.Verify(strings.Bytes(auth), p)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
+
+		ctx = meta.WithUserID(ctx, meta.Ignored(sub))
 
 		return handler(ctx, req)
 	}
@@ -54,10 +56,12 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 		ctx := stream.Context()
 		auth := meta.Authorization(ctx).Value()
 
-		ctx, err := verifier.Verify(ctx, strings.Bytes(auth), token.Options{Path: p})
+		sub, err := verifier.Verify(strings.Bytes(auth), p)
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
+
+		ctx = meta.WithUserID(ctx, meta.Ignored(sub))
 
 		wrapped := middleware.WrapServerStream(stream)
 		wrapped.WrappedContext = ctx
@@ -71,7 +75,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		p := fullMethod[1:]
 
-		_, token, err := generator.Generate(ctx, token.Options{Path: p})
+		token, err := generator.Generate(p, id.String())
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -97,7 +101,7 @@ func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClie
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		p := fullMethod[1:]
 
-		_, token, err := generator.Generate(ctx, token.Options{Path: p})
+		token, err := generator.Generate(p, id.String())
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}

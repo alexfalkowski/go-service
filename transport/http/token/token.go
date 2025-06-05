@@ -39,15 +39,16 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	ctx := req.Context()
-	opts := token.Options{Path: p, UserID: h.id.String()}
 	auth := meta.Authorization(ctx).Value()
 
-	ctx, err := h.verifier.Verify(ctx, strings.Bytes(auth), opts)
+	sub, err := h.verifier.Verify(strings.Bytes(auth), p)
 	if err != nil {
 		status.WriteError(ctx, res, status.UnauthorizedError(err))
 
 		return
 	}
+
+	ctx = meta.WithUserID(ctx, meta.Ignored(sub))
 
 	next(res, req.WithContext(ctx))
 }
@@ -66,9 +67,8 @@ type RoundTripper struct {
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	p := http.Path(req)
-	opts := token.Options{Path: p, UserID: r.id.String()}
 
-	ctx, token, err := r.generator.Generate(req.Context(), opts)
+	token, err := r.generator.Generate(p, r.id.String())
 	if err != nil {
 		return nil, status.UnauthorizedError(err)
 	}
@@ -77,7 +77,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, status.UnauthorizedError(header.ErrInvalidAuthorization)
 	}
 
-	req = req.WithContext(ctx)
 	req.Header.Add(
 		"Authorization",
 		strings.Join(" ", header.BearerAuthorization, bytes.String(token)),

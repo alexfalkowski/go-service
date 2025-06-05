@@ -4,22 +4,16 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/retry"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
-	tl "github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
-	tm "github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
-	tt "github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
-	tkn "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	ri "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	ti "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
@@ -209,20 +203,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary := []grpc.UnaryClientInterceptor{}
 
 	unary = append(unary, os.unary...)
-	unary = append(unary, ti.UnaryClientInterceptor(os.timeout))
+	unary = append(unary, timeout.UnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
-		timeout := time.MustParseDuration(os.retry.Timeout)
-		backoff := time.MustParseDuration(os.retry.Backoff)
-
-		unary = append(unary,
-			ri.UnaryClientInterceptor(
-				ri.WithCodes(codes.Unavailable, codes.DataLoss),
-				ri.WithMax(uint(os.retry.Attempts)),
-				ri.WithBackoff(ri.BackoffLinear(backoff)),
-				ri.WithPerRetryTimeout(timeout),
-			),
-		)
+		unary = append(unary, retry.UnaryClientInterceptor(os.retry))
 	}
 
 	if os.breaker {
@@ -230,19 +214,19 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.logger != nil {
-		unary = append(unary, tl.UnaryClientInterceptor(os.logger))
+		unary = append(unary, logger.UnaryClientInterceptor(os.logger))
 	}
 
 	if os.meter != nil {
-		unary = append(unary, tm.NewClient(os.meter).UnaryInterceptor())
+		unary = append(unary, metrics.NewClient(os.meter).UnaryInterceptor())
 	}
 
 	if os.tracer != nil {
-		unary = append(unary, tt.UnaryClientInterceptor(os.tracer))
+		unary = append(unary, tracer.UnaryClientInterceptor(os.tracer))
 	}
 
 	if os.gen != nil {
-		unary = append(unary, tkn.UnaryClientInterceptor(os.id, os.gen))
+		unary = append(unary, token.UnaryClientInterceptor(os.id, os.gen))
 	}
 
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
@@ -255,19 +239,19 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
-		stream = append(stream, tl.StreamClientInterceptor(opts.logger))
+		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
 	}
 
 	if opts.meter != nil {
-		stream = append(stream, tm.NewClient(opts.meter).StreamInterceptor())
+		stream = append(stream, metrics.NewClient(opts.meter).StreamInterceptor())
 	}
 
 	if opts.tracer != nil {
-		stream = append(stream, tt.StreamClientInterceptor(opts.tracer))
+		stream = append(stream, tracer.StreamClientInterceptor(opts.tracer))
 	}
 
 	if opts.gen != nil {
-		stream = append(stream, tkn.StreamClientInterceptor(opts.id, opts.gen))
+		stream = append(stream, token.StreamClientInterceptor(opts.id, opts.gen))
 	}
 
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))

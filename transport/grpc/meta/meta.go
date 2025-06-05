@@ -22,6 +22,9 @@ var (
 	// Ignored is an alias for meta.Ignored.
 	Ignored = meta.Ignored
 
+	// WithUserID is an alias for meta.WithUserID.
+	WithUserID = meta.WithUserID
+
 	// WithAuthorization is an alias for meta.WithAuthorization.
 	WithAuthorization = meta.WithAuthorization
 )
