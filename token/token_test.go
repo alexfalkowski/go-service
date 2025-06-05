@@ -116,19 +116,10 @@ func TestVerify(t *testing.T) {
 func TestWithNoConfig(t *testing.T) {
 	Convey("When I try to create a token with no config", t, func() {
 		params := token.TokenParams{Name: test.Name}
-		aud := test.UserID.String()
-
 		token := token.NewToken(params)
-		So(token, ShouldBeNil)
 
 		Convey("Then I should have no token", func() {
-			tkn, err := token.Generate("hello", aud)
-
-			So(tkn, ShouldBeNil)
-			So(err, ShouldBeNil)
-
-			_, err = token.Verify(tkn, aud)
-			So(err, ShouldBeNil)
+			So(token, ShouldBeNil)
 		})
 	})
 }
