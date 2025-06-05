@@ -7,6 +7,16 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func TestUserID(t *testing.T) {
+	Convey("When I set user-id", t, func() {
+		ctx := meta.WithUserID(t.Context(), meta.String("user-id"))
+
+		Convey("Then I should have user-id", func() {
+			So(meta.UserID(ctx), ShouldEqual, meta.String("user-id"))
+		})
+	})
+}
+
 func TestGeolocation(t *testing.T) {
 	Convey("When I set user-agent", t, func() {
 		ctx := meta.WithGeolocation(t.Context(), meta.String("user-agent"))
