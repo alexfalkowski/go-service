@@ -2,7 +2,11 @@ package token
 
 // NewVerifier for token.
 func NewVerifier(token *Token) Verifier {
-	return token
+	if token != nil {
+		return token
+	}
+
+	return nil
 }
 
 // Verifier allows the implementation of different types of verifiers.

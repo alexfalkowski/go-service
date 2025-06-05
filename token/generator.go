@@ -2,7 +2,11 @@ package token
 
 // NewGenerator for token.
 func NewGenerator(token *Token) Generator {
-	return token
+	if token != nil {
+		return token
+	}
+
+	return nil
 }
 
 // Generator allows the implementation of different types generators.

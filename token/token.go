@@ -47,10 +47,6 @@ type Token struct {
 
 // Generate a token based on kind.
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
-	if t == nil {
-		return nil, nil
-	}
-
 	switch {
 	case t.cfg.IsSSH():
 		token, err := t.ssh.Generate()
@@ -71,10 +67,6 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 
 // Verify a token based on kind.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
-	if t == nil {
-		return "", nil
-	}
-
 	tkn := bytes.String(token)
 
 	var (
