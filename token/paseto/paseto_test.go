@@ -23,7 +23,7 @@ func TestValid(t *testing.T) {
 	})
 
 	Convey("When I generate a paseto token", t, func() {
-		token, err := paseto.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		token, err := paseto.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -31,7 +31,7 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			sub, err := paseto.Verify(token, test.TokenOptions.Path)
+			sub, err := paseto.Verify(token, "hello")
 			So(err, ShouldBeNil)
 
 			So(sub, ShouldEqual, test.UserID.String())
@@ -54,7 +54,7 @@ func TestInvalid(t *testing.T) {
 			Generator: &id.UUID{},
 		})
 
-		token, err := paseto.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		token, err := paseto.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -79,7 +79,7 @@ func TestInvalid(t *testing.T) {
 			Generator: &id.UUID{},
 		})
 
-		tkn, err := token.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		tkn, err := token.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewToken("paseto")
@@ -95,7 +95,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn, test.TokenOptions.Path)
+			_, err := token.Verify(tkn, "hello")
 			So(err, ShouldBeError)
 		})
 	})
@@ -129,7 +129,7 @@ func TestInvalid(t *testing.T) {
 				Generator: &id.UUID{},
 			})
 
-			_, err := token.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+			_, err := token.Generate("hello", test.UserID.String())
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

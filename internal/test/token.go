@@ -1,15 +1,10 @@
 package test
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 )
-
-// TokenOptions for test.
-var TokenOptions = token.Options{Path: "hello", UserID: UserID.String()}
 
 // WithWorldToken for test.
 func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
@@ -30,8 +25,8 @@ type Generator struct {
 	token string
 }
 
-func (g *Generator) Generate(ctx context.Context, _ token.Options) (context.Context, []byte, error) {
-	return ctx, strings.Bytes(g.token), g.err
+func (g *Generator) Generate(_, _ string) ([]byte, error) {
+	return strings.Bytes(g.token), g.err
 }
 
 // NewVerifier for test.
@@ -44,10 +39,10 @@ type Verifier struct {
 	token string
 }
 
-func (v *Verifier) Verify(ctx context.Context, token []byte, _ token.Options) (context.Context, error) {
+func (v *Verifier) Verify(token []byte, aud string) (string, error) {
 	if bytes.String(token) != v.token {
-		return ctx, ErrInvalid
+		return "", ErrInvalid
 	}
 
-	return ctx, nil
+	return UserID.String(), nil
 }

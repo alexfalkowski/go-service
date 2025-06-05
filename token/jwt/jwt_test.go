@@ -24,7 +24,7 @@ func TestValid(t *testing.T) {
 			Generator: &id.UUID{},
 		})
 
-		tkn, err := token.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		tkn, err := token.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -32,7 +32,7 @@ func TestValid(t *testing.T) {
 		})
 
 		Convey("Then I should be able to verify the token", func() {
-			sub, err := token.Verify(tkn, test.TokenOptions.Path)
+			sub, err := token.Verify(tkn, "hello")
 			So(err, ShouldBeNil)
 
 			So(sub, ShouldEqual, test.UserID.String())
@@ -60,7 +60,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, tkn := range tokens {
 		Convey("When I verify an invalid token", t, func() {
-			_, err := token.Verify(tkn, test.TokenOptions.Path)
+			_, err := token.Verify(tkn, "hello")
 
 			Convey("Then I should have a error", func() {
 				So(err, ShouldBeError)
@@ -77,7 +77,7 @@ func TestInvalid(t *testing.T) {
 			Generator: &id.UUID{},
 		})
 
-		tkn, err := token.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		tkn, err := token.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
@@ -103,7 +103,7 @@ func TestInvalid(t *testing.T) {
 			Generator: &id.UUID{},
 		})
 
-		tkn, err := token.Generate(test.TokenOptions.Path, test.TokenOptions.UserID)
+		tkn, err := token.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		cfg := test.NewToken("jwt")
@@ -119,7 +119,7 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := token.Verify(tkn, test.TokenOptions.Path)
+			_, err := token.Verify(tkn, "hello")
 			So(err, ShouldBeError)
 		})
 	})
