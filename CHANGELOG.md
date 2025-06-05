@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.33.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.33.0) - 2025-06-05
+
+- [`af50f2b`](https://github.com/alexfalkowski/go-service/commit/af50f2b331150e2eae1c7a26a5715f6ff26c9998) feat(token): use in memory model for rbac (#1671)
+- [`0ce2bc9`](https://github.com/alexfalkowski/go-service/commit/0ce2bc9ff638237b2c2aca28d99bd49a9e722da9) test(token): verify user id (#1670)
+
 ## [v2.32.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.32.0) - 2025-06-05
 
 - [`e61e685`](https://github.com/alexfalkowski/go-service/commit/e61e68593a1b844a1d0c445291d606080e706547) feat(token): save context in transport (#1669)
