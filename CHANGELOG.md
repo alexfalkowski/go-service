@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.34.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.34.0) - 2025-06-05
+
+- [`24bc507`](https://github.com/alexfalkowski/go-service/commit/24bc507801aa7031590ce13f14f6e54571f6bb7c) feat(token): add generator and verifier to module (#1672)
+
 ## [v2.33.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.33.0) - 2025-06-05
 
 - [`af50f2b`](https://github.com/alexfalkowski/go-service/commit/af50f2b331150e2eae1c7a26a5715f6ff26c9998) feat(token): use in memory model for rbac (#1671)
