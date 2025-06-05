@@ -38,8 +38,8 @@ type ServerParams struct {
 	UserID     env.UserID
 	ID         id.Generator
 	FS         *os.FS
-	Limiter    *limiter.Limiter               `optional:"true"`
-	Verifier   token.Verifier                 `optional:"true"`
+	Limiter    *limiter.Limiter
+	Verifier   token.Verifier
 	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
 	Stream     []grpc.StreamServerInterceptor `optional:"true"`
 }
