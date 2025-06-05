@@ -314,9 +314,10 @@ To configure, please specify the following:
 ```yaml
 token:
   access:
-    model: path to model file
     policy: path to policy file
 ```
+
+The model is based on the following [config](https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf).
 
 ### JWT
 
