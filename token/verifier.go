@@ -1,5 +1,10 @@
 package token
 
+// NewVerifier for token.
+func NewVerifier(token *Token) Verifier {
+	return token
+}
+
 // Verifier allows the implementation of different types of verifiers.
 type Verifier interface {
 	// Verify a token or error.

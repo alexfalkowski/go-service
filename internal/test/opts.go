@@ -24,8 +24,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
@@ -120,7 +118,8 @@ func invokeCrypt(
 	return nil
 }
 
-func invokeTokens(_ *jwt.Token, _ *paseto.Token, _ *ssh.Token, _ *token.Token) {}
+func invokeTokens(_ token.Generator, _ token.Verifier) {
+}
 
 func shutdown(s fx.Shutdowner) {
 	go func(s fx.Shutdowner) {
