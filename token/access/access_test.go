@@ -10,7 +10,9 @@ import (
 
 func TestNewController(t *testing.T) {
 	Convey("When I try to create an access controller with an invalid config", t, func() {
-		_, err := access.NewController(&access.Config{})
+		_, err := access.NewController(&access.Config{
+			Policy: test.Path("configs/bob"),
+		})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)
@@ -35,7 +37,7 @@ func TestHasAccess(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("Which I check for access", func() {
-			ok, err := controller.HasAccess("alice", "service", "read")
+			ok, err := controller.HasAccess("alice", "service:read")
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have access", func() {

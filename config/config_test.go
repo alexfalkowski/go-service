@@ -234,7 +234,6 @@ func verifyConfig(config *config.Config) {
 	So(config.Telemetry.Tracer.URL, ShouldEqual, "http://localhost:4318/v1/traces")
 	So(config.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
 	So(token.IsEnabled(config.Token), ShouldBeTrue)
-	So(config.Token.Access.Model, ShouldEqual, "../test/configs/rbac.conf")
 	So(config.Token.Access.Policy, ShouldEqual, "../test/configs/rbac.csv")
 	So(config.Token.Kind, ShouldEqual, "jwt")
 	So(config.Token.JWT.Expiration, ShouldEqual, "1h")

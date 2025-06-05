@@ -91,7 +91,6 @@
   },
   "token": {
     "access" : {
-      "model": "../test/configs/rbac.conf",
       "policy": "../test/configs/rbac.csv"
     },
     "kind": "jwt",

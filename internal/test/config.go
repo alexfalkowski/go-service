@@ -40,7 +40,6 @@ var Validator = config.NewValidator()
 // NewAccessConfig for test.
 func NewAccessConfig() *access.Config {
 	return &access.Config{
-		Model:  Path("configs/rbac.conf"),
 		Policy: Path("configs/rbac.csv"),
 	}
 }
