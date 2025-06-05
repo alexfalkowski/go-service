@@ -15,4 +15,6 @@ var Module = fx.Options(
 	paseto.Module,
 	ssh.Module,
 	fx.Provide(NewToken),
+	fx.Provide(NewGenerator),
+	fx.Provide(NewVerifier),
 )
