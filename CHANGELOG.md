@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.40.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.40.0) - 2025-06-06
+
+- [`073cc13`](https://github.com/alexfalkowski/go-service/commit/073cc131690170049640cd0a6df3cb39c1da2bd2) feat(grpc): add aliases (#1682)
+
 ## [v2.39.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.39.0) - 2025-06-06
 
 - [`f056099`](https://github.com/alexfalkowski/go-service/commit/f05609922769d6b0bb7fa4d98a3674fbd68e4550) feat(deps): bump github.com/redis/go-redis/v9 from 9.9.0 to 9.10.0 (#1681)
