@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
@@ -12,11 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/keepalive"
 )
 
 // ClientOption for gRPC.
@@ -159,22 +155,18 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 			return nil, err
 		}
 
-		creds := credentials.NewTLS(conf)
+		creds := grpc.NewTLS(conf)
 
 		security = grpc.WithTransportCredentials(creds)
 	} else {
-		security = grpc.WithTransportCredentials(insecure.NewCredentials())
+		security = grpc.WithTransportCredentials(grpc.NewInsecureCredentials())
 	}
 
 	cis := UnaryClientInterceptors(opts...)
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent.String()),
-		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                os.timeout,
-			Timeout:             os.timeout,
-			PermitWithoutStream: true,
-		}),
+		grpc.WithKeepaliveParams(os.timeout),
 		grpc.WithChainUnaryInterceptor(cis...), sto, security,
 	}
 
@@ -203,7 +195,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary := []grpc.UnaryClientInterceptor{}
 
 	unary = append(unary, os.unary...)
-	unary = append(unary, timeout.UnaryClientInterceptor(os.timeout))
+	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
 		unary = append(unary, retry.UnaryClientInterceptor(os.retry))

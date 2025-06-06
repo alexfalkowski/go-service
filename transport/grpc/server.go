@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
-	rpc "github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -19,9 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"go.uber.org/fx"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor.
 )
 
 // ServerParams for gRPC.
@@ -61,7 +58,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	svr := rpc.NewServer(timeout,
+	svr := grpc.NewServer(timeout,
 		unaryServerOption(params, meter, params.Unary...),
 		streamServerOption(params, meter, params.Stream...),
 		opt,
@@ -162,7 +159,7 @@ func creds(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 		return grpc.EmptyServerOption{}, err
 	}
 
-	creds := credentials.NewTLS(conf)
+	creds := grpc.NewTLS(conf)
 
 	return grpc.Creds(creds), nil
 }
