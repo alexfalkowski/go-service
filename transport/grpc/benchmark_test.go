@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
@@ -15,8 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport"
 	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"go.uber.org/fx/fxtest"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func init() {
@@ -31,7 +30,7 @@ func BenchmarkGRPC(b *testing.B) {
 		l, err := net.Listen(test.Address())
 		runtime.Must(err)
 
-		server := grpc.NewServer()
+		server := grpc.NewServer(test.DefaultTimeout)
 		defer server.GracefulStop()
 
 		v1.RegisterGreeterServiceServer(server, test.NewService())
@@ -39,7 +38,7 @@ func BenchmarkGRPC(b *testing.B) {
 		//nolint:errcheck
 		go server.Serve(l)
 
-		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
 		runtime.Must(err)
 
 		client := v1.NewGreeterServiceClient(conn)
