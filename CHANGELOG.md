@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.39.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.39.0) - 2025-06-06
+
+- [`f056099`](https://github.com/alexfalkowski/go-service/commit/f05609922769d6b0bb7fa4d98a3674fbd68e4550) feat(deps): bump github.com/redis/go-redis/v9 from 9.9.0 to 9.10.0 (#1681)
+- [`437dd81`](https://github.com/alexfalkowski/go-service/commit/437dd811371fbf3a1eaf93b7a715803b344d662c) build(ci): remove token from config (#1680)
+- [`f9352c6`](https://github.com/alexfalkowski/go-service/commit/f9352c6d8bc1e5e630e048e4c7e72cfcf383498b) build(ci): use alexfalkowski/go:2.26 (#1679)
+
 ## [v2.38.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.38.0) - 2025-06-06
 
 - [`6e77d97`](https://github.com/alexfalkowski/go-service/commit/6e77d9718ba5ef8a53a89f9324b23296e8053be7) feat(deps): bump golang.org/x/net from 0.40.0 to 0.41.0 (#1678)
