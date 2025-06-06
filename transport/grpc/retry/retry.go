@@ -1,11 +1,11 @@
 package retry
 
 import (
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	config "github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 )
 
 // Config is an alias retry.Config.

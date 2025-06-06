@@ -5,15 +5,14 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 type (
@@ -90,7 +89,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 		md.Append("authorization", auth.Value())
 
 		ctx = meta.WithAuthorization(ctx, auth)
-		ctx = metadata.NewOutgoingContext(ctx, md)
+		ctx = meta.NewOutgoingContext(ctx, md)
 
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
 	}
@@ -116,7 +115,7 @@ func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClie
 		md.Append("authorization", auth.Value())
 
 		ctx = meta.WithAuthorization(ctx, auth)
-		ctx = metadata.NewOutgoingContext(ctx, md)
+		ctx = meta.NewOutgoingContext(ctx, md)
 
 		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}

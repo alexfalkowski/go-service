@@ -12,8 +12,14 @@ import (
 )
 
 type (
+	// CallOption is an alias of grpc.CallOption.
+	CallOption = grpc.CallOption
+
 	// ClientConn is an alias of grpc.ClientConn.
 	ClientConn = grpc.ClientConn
+
+	// ClientStream is an alias of grpc.ClientStream.
+	ClientStream = grpc.ClientStream
 
 	// DialOption is an alias of grpc.DialOption.
 	DialOption = grpc.DialOption
@@ -21,11 +27,17 @@ type (
 	// EmptyServerOption is an alias of grpc.EmptyServerOption.
 	EmptyServerOption = grpc.EmptyServerOption
 
+	// UnaryInvoker is an alias of grpc.UnaryInvoker.
+	UnaryInvoker = grpc.UnaryInvoker
+
 	// ServerOption is an alias of grpc.ServerOption.
 	ServerOption = grpc.ServerOption
 
 	// Server is an alias of grpc.Server.
 	Server = grpc.Server
+
+	// ServerStream is an alias of grpc.ServerStream.
+	ServerStream = grpc.ServerStream
 
 	// ServiceRegistrar is an alias of grpc.ServiceRegistrar.
 	ServiceRegistrar = grpc.ServiceRegistrar
@@ -33,11 +45,29 @@ type (
 	// StreamClientInterceptor is an alias of grpc.StreamClientInterceptor.
 	StreamClientInterceptor = grpc.StreamClientInterceptor
 
+	// StreamDesc is an alias of grpc.StreamDesc.
+	StreamDesc = grpc.StreamDesc
+
+	// Streamer is an alias of grpc.Streamer.
+	Streamer = grpc.Streamer
+
+	// StreamHandler is an alias of grpc.StreamHandler.
+	StreamHandler = grpc.StreamHandler
+
+	// StreamServerInfo is an alias of grpc.StreamServerInfo.
+	StreamServerInfo = grpc.StreamServerInfo
+
 	// StreamServerInterceptor is an alias of grpc.StreamServerInterceptor.
 	StreamServerInterceptor = grpc.StreamServerInterceptor
 
 	// UnaryClientInterceptor is an alias of grpc.UnaryClientInterceptor.
 	UnaryClientInterceptor = grpc.UnaryClientInterceptor
+
+	// UnaryHandler is an alias of grpc.UnaryHandler.
+	UnaryHandler = grpc.UnaryHandler
+
+	// UnaryServerInfo is an alias of grpc.UnaryServerInfo.
+	UnaryServerInfo = grpc.UnaryServerInfo
 
 	// UnaryServerInterceptor is an alias of grpc.UnaryServerInterceptor.
 	UnaryServerInterceptor = grpc.UnaryServerInterceptor
@@ -61,6 +91,9 @@ var (
 
 	// NewClient is an alias of credentials.NewTLS.
 	NewTLS = credentials.NewTLS
+
+	// SetHeader is an alias of grpc.SetHeader.
+	SetHeader = grpc.SetHeader
 
 	// TimeoutUnaryClientInterceptor is an alias of timeout.UnaryClientInterceptor.
 	TimeoutUnaryClientInterceptor = timeout.UnaryClientInterceptor

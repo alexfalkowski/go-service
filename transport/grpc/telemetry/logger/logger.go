@@ -4,13 +4,13 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Logger is an alias of logger.Logger.
@@ -120,8 +120,6 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 }
 
 // CodeToLevel translates a gRPC status code to a slog.Level.
-//
-//nolint:exhaustive
 func CodeToLevel(code codes.Code) slog.Level {
 	switch code {
 	case codes.OK:

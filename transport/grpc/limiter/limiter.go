@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 // Limiter is just an alias for limiter.Limiter.
@@ -33,18 +33,14 @@ func UnaryServerInterceptor(limiter *Limiter) grpc.UnaryServerInterceptor {
 func limit(ctx context.Context, limiter *Limiter) error {
 	ok, info, err := limiter.Take(ctx)
 	if err != nil {
-		return internalError(err)
+		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 	}
 
-	_ = grpc.SetHeader(ctx, metadata.Pairs("ratelimit", info))
+	_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", info))
 
 	if !ok {
 		return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", info)
 	}
 
 	return nil
-}
-
-func internalError(err error) error {
-	return status.Errorf(codes.Internal, "limiter: %s", err.Error())
 }
