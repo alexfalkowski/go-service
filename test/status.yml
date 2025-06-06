@@ -8,8 +8,6 @@ telemetry:
   logger:
     kind: text
     level: info
-token:
-  kind: none
 transport:
   http:
     address: :6000
