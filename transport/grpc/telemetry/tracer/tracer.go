@@ -4,13 +4,12 @@ import (
 	"context"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
-	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 )
 
 // Tracer is an alias for tracer.Tracer.
@@ -25,22 +24,20 @@ func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 		}
 
 		ctx = extract(ctx)
-
 		method := path.Base(info.FullMethod)
-		attrs := []attribute.KeyValue{
-			semconv.RPCSystemGRPC,
-			semconv.RPCService(p),
-			semconv.RPCMethod(method),
-		}
 
-		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod), attrs...)
+		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
+			attributes.RPCSystemGRPC,
+			attributes.RPCService(p),
+			attributes.RPCMethod(method))
 		defer span.End()
 
 		resp, err := handler(ctx, req)
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
-		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
+
+		span.SetAttributes(attributes.GRPCStatusCode(int64(status.Code(err))))
 
 		return resp, err
 	}
@@ -55,15 +52,12 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 		}
 
 		ctx := extract(stream.Context())
-
 		method := path.Base(info.FullMethod)
-		attrs := []attribute.KeyValue{
-			semconv.RPCSystemGRPC,
-			semconv.RPCService(p),
-			semconv.RPCMethod(method),
-		}
 
-		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod), attrs...)
+		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
+			attributes.RPCSystemGRPC,
+			attributes.RPCService(p),
+			attributes.RPCMethod(method))
 		defer span.End()
 
 		wrappedStream := middleware.WrapServerStream(stream)
@@ -73,7 +67,7 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
-		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
+		span.SetAttributes(attributes.GRPCStatusCode(int64(status.Code(err))))
 
 		return err
 	}
@@ -88,13 +82,11 @@ func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 		}
 
 		method := path.Base(fullMethod)
-		attrs := []attribute.KeyValue{
-			semconv.RPCSystemGRPC,
-			semconv.RPCService(p),
-			semconv.RPCMethod(method),
-		}
 
-		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod), attrs...)
+		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
+			attributes.RPCSystemGRPC,
+			attributes.RPCService(p),
+			attributes.RPCMethod(method))
 		defer span.End()
 
 		ctx = inject(ctx)
@@ -103,7 +95,7 @@ func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
-		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
+		span.SetAttributes(attributes.GRPCStatusCode(int64(status.Code(err))))
 
 		return err
 	}
@@ -118,13 +110,11 @@ func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 		}
 
 		method := path.Base(fullMethod)
-		attrs := []attribute.KeyValue{
-			semconv.RPCSystemGRPC,
-			semconv.RPCService(p),
-			semconv.RPCMethod(method),
-		}
 
-		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod), attrs...)
+		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
+			attributes.RPCSystemGRPC,
+			attributes.RPCService(p),
+			attributes.RPCMethod(method))
 		defer span.End()
 
 		ctx = inject(ctx)
@@ -133,7 +123,7 @@ func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 
 		tracer.Error(err, span)
 		tracer.Meta(ctx, span)
-		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int64(int64(status.Code(err))))
+		span.SetAttributes(attributes.GRPCStatusCode(int64(status.Code(err))))
 
 		return stream, err
 	}

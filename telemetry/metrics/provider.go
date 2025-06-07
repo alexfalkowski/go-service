@@ -5,12 +5,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
-	om "go.opentelemetry.io/otel/metric"
-	sm "go.opentelemetry.io/otel/sdk/metric"
+	sdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 	"go.uber.org/fx"
 )
 
@@ -20,7 +19,7 @@ type MeterProviderParams struct {
 
 	Lifecycle   fx.Lifecycle
 	Config      *Config
-	Reader      sm.Reader
+	Reader      sdk.Reader
 	ID          env.ID
 	Name        env.Name
 	Version     env.Version
@@ -28,20 +27,20 @@ type MeterProviderParams struct {
 }
 
 // NewMeterProvider for metrics.
-func NewMeterProvider(params MeterProviderParams) om.MeterProvider {
+func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !IsEnabled(params.Config) || params.Reader == nil {
 		return nil
 	}
 
 	reader := params.Reader
 	attrs := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.HostID(params.ID.String()),
-		semconv.ServiceName(params.Name.String()),
-		semconv.ServiceVersion(params.Version.String()),
-		semconv.DeploymentEnvironmentName(params.Environment.String()),
+		attributes.SchemaURL,
+		attributes.HostID(params.ID.String()),
+		attributes.ServiceName(params.Name.String()),
+		attributes.ServiceVersion(params.Version.String()),
+		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
-	provider := sm.NewMeterProvider(sm.WithReader(reader), sm.WithResource(attrs))
+	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
 
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(_ context.Context) error {
