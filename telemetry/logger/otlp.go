@@ -5,12 +5,12 @@ import (
 	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
-	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 	"go.uber.org/fx"
 )
 
@@ -19,11 +19,11 @@ func newOtlpLogger(params Params) *slog.Logger {
 	runtime.Must(err)
 
 	attrs := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.HostID(params.ID.String()),
-		semconv.ServiceName(params.Name.String()),
-		semconv.ServiceVersion(params.Version.String()),
-		semconv.DeploymentEnvironmentName(params.Environment.String()),
+		attributes.SchemaURL,
+		attributes.HostID(params.ID.String()),
+		attributes.ServiceName(params.Name.String()),
+		attributes.ServiceVersion(params.Version.String()),
+		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
 
 	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter)), log.WithResource(attrs))

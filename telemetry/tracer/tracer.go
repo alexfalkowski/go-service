@@ -5,14 +5,13 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
+	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 )
@@ -48,13 +47,13 @@ func NewTracer(params Params) *Tracer {
 	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
 	exporter := otlptrace.NewUnstarted(client)
 	attrs := resource.NewWithAttributes(
-		semconv.SchemaURL,
-		semconv.HostID(params.ID.String()),
-		semconv.ServiceName(params.Name.String()),
-		semconv.ServiceVersion(params.Version.String()),
-		semconv.DeploymentEnvironmentName(params.Environment.String()),
+		attributes.SchemaURL,
+		attributes.HostID(params.ID.String()),
+		attributes.ServiceName(params.Name.String()),
+		attributes.ServiceVersion(params.Version.String()),
+		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
-	provider := sdktrace.NewTracerProvider(sdktrace.WithResource(attrs), sdktrace.WithBatcher(exporter))
+	provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
 
 	otel.SetTracerProvider(provider)
 
@@ -81,7 +80,7 @@ type Tracer struct {
 // StartClient starts a new client span.
 //
 //nolint:spancheck
-func (t *Tracer) StartClient(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+func (t *Tracer) StartClient(ctx context.Context, spanName string, attrs ...attributes.KeyValue) (context.Context, trace.Span) {
 	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	ctx = WithTraceID(ctx, span)
 
@@ -91,7 +90,7 @@ func (t *Tracer) StartClient(ctx context.Context, spanName string, attrs ...attr
 // StartServer starts a new server span.
 //
 //nolint:spancheck
-func (t *Tracer) StartServer(ctx context.Context, spanName string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
+func (t *Tracer) StartServer(ctx context.Context, spanName string, attrs ...attributes.KeyValue) (context.Context, trace.Span) {
 	ctx = trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx))
 	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 	ctx = WithTraceID(ctx, span)
