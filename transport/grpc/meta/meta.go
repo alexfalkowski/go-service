@@ -15,12 +15,21 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
+// Map is an alias for metadata.MD.
+type Map = metadata.MD
+
 var (
 	// Authorization is an alias for meta.Authorization.
 	Authorization = meta.Authorization
 
 	// Ignored is an alias for meta.Ignored.
 	Ignored = meta.Ignored
+
+	// NewOutgoingContext is an alias for metadata.NewOutgoingContext.
+	NewOutgoingContext = metadata.NewOutgoingContext
+
+	// Pairs is an alias for metadata.Pairs.
+	Pairs = metadata.Pairs
 
 	// WithUserID is an alias for meta.WithUserID.
 	WithUserID = meta.WithUserID

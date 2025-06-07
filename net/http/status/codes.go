@@ -3,7 +3,7 @@ package status
 import (
 	"net/http"
 
-	"google.golang.org/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 )
 
 // Taken from https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go

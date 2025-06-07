@@ -5,12 +5,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"go.opentelemetry.io/otel"
-	"google.golang.org/grpc/metadata"
 )
 
 // Carrier for tracer.
 type Carrier struct {
-	Metadata metadata.MD
+	Metadata meta.Map
 }
 
 // Get returns the value associated with the passed key.
@@ -47,7 +46,7 @@ func inject(ctx context.Context) context.Context {
 
 	prop.Inject(ctx, &Carrier{Metadata: md})
 
-	return metadata.NewOutgoingContext(ctx, md)
+	return meta.NewOutgoingContext(ctx, md)
 }
 
 func extract(ctx context.Context) context.Context {

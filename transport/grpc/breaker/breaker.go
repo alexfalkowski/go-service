@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	breaker "github.com/sony/gobreaker"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // UnaryClientInterceptor for breaker.
