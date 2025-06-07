@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-func newTextLogger(params Params) *slog.Logger {
+func newTextLogger(params LoggerParams) *slog.Logger {
 	return slog.New(slog.NewTextHandler(os.Stdout, handlerOptions(params.Config))).With(
 		slog.String("id", params.ID.String()),
 		slog.String("name", params.Name.String()),

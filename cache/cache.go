@@ -24,8 +24,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Params for cache.
-type Params struct {
+// CacheParams for cache.
+type CacheParams struct {
 	fx.In
 
 	Lifecycle  fx.Lifecycle
@@ -40,7 +40,7 @@ type Params struct {
 }
 
 // NewCache from config.
-func NewCache(params Params) cacher.Cache {
+func NewCache(params CacheParams) cacher.Cache {
 	if !config.IsEnabled(params.Config) {
 		return nil
 	}

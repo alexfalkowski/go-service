@@ -45,8 +45,8 @@ var (
 	String = slog.String
 )
 
-// Params for logger.
-type Params struct {
+// LoggerParams for logger.
+type LoggerParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
@@ -58,7 +58,7 @@ type Params struct {
 }
 
 // NewLogger using slog.
-func NewLogger(params Params) (*Logger, error) {
+func NewLogger(params LoggerParams) (*Logger, error) {
 	logger, err := logger(params)
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (l *Logger) GetLogger() *slog.Logger {
 	return l.Logger
 }
 
-func logger(params Params) (*slog.Logger, error) {
+func logger(params LoggerParams) (*slog.Logger, error) {
 	switch {
 	case !IsEnabled(params.Config):
 		return nil, nil

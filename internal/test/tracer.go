@@ -7,7 +7,7 @@ import (
 
 // NewTracer for test.
 func NewTracer(lc fx.Lifecycle, config *tracer.Config) *tracer.Tracer {
-	params := tracer.Params{
+	params := tracer.TracerParams{
 		Lifecycle:   lc,
 		Environment: Environment,
 		Name:        Name,

@@ -7,7 +7,7 @@ import (
 	"github.com/lmittmann/tint"
 )
 
-func newTintLogger(params Params) *slog.Logger {
+func newTintLogger(params LoggerParams) *slog.Logger {
 	opts := &tint.Options{
 		Level: level(params.Config),
 		ReplaceAttr: func(groups []string, attr slog.Attr) slog.Attr {

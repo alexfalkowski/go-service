@@ -37,7 +37,7 @@ func TestValidCache(t *testing.T) {
 				driver, err := driver.New(test.FS, config)
 				So(err, ShouldBeNil)
 
-				params := cache.Params{
+				params := cache.CacheParams{
 					Lifecycle:  world.Lifecycle,
 					Config:     config,
 					Compressor: test.Compressor,
@@ -98,7 +98,7 @@ func TestGenericValidCache(t *testing.T) {
 		driver, err := driver.New(test.FS, config)
 		So(err, ShouldBeNil)
 
-		params := cache.Params{
+		params := cache.CacheParams{
 			Lifecycle:  world.Lifecycle,
 			Config:     config,
 			Compressor: test.Compressor,
@@ -145,7 +145,7 @@ func TestExpiredCache(t *testing.T) {
 		driver, err := driver.New(test.FS, config)
 		So(err, ShouldBeNil)
 
-		params := cache.Params{
+		params := cache.CacheParams{
 			Lifecycle:  world.Lifecycle,
 			Config:     config,
 			Compressor: test.Compressor,
@@ -236,7 +236,7 @@ func TestDisabledCache(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			params := cache.Params{
+			params := cache.CacheParams{
 				Lifecycle:  world.Lifecycle,
 				Config:     config,
 				Compressor: test.Compressor,
@@ -275,7 +275,7 @@ func TestErroneousSave(t *testing.T) {
 			driver, err := driver.New(test.FS, config)
 			So(err, ShouldBeNil)
 
-			params := cache.Params{
+			params := cache.CacheParams{
 				Lifecycle:  world.Lifecycle,
 				Config:     config,
 				Compressor: test.Compressor,
@@ -318,7 +318,7 @@ func TestErroneousGet(t *testing.T) {
 			world := test.NewWorld(t)
 			world.Register()
 
-			params := cache.Params{
+			params := cache.CacheParams{
 				Lifecycle:  world.Lifecycle,
 				Config:     value.Key,
 				Compressor: test.Compressor,
