@@ -8,14 +8,19 @@ import (
 // Key is an alias of attribute.Key.
 type Key = attribute.Key
 
-// String for metrics.
-func String(key, value string) attribute.KeyValue {
-	return attribute.Key(key).String(value)
+// Float64 for metrics.
+func Float64(key string, value float64) attribute.KeyValue {
+	return attribute.Key(key).Float64(value)
 }
 
 // Int64 for metrics.
 func Int64(key string, value int64) attribute.KeyValue {
 	return attribute.Key(key).Int64(value)
+}
+
+// String for metrics.
+func String(key, value string) attribute.KeyValue {
+	return attribute.Key(key).String(value)
 }
 
 // DBSystem for metrics.
