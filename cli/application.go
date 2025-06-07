@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -139,7 +138,7 @@ func (a *Application) Run(ctx context.Context) error {
 // ExitOnError will run the application and exit on error.
 func (a *Application) ExitOnError(ctx context.Context) {
 	if err := a.Run(ctx); err != nil {
-		slog.Error("could not start", logger.Error(err))
+		logger.LogError("could not start", logger.Error(err))
 		os.Exit(1)
 	}
 }

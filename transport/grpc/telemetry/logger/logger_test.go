@@ -1,7 +1,6 @@
 package logger_test
 
 import (
-	"log/slog"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
@@ -10,11 +9,11 @@ import (
 )
 
 func TestLogger(t *testing.T) {
-	Convey("When I try to get a level", t, func() {
+	Convey("When I try to get a level for a timeout", t, func() {
 		level := logger.CodeToLevel(codes.DeadlineExceeded)
 
-		Convey("Then I should a valid logger func", func() {
-			So(level, ShouldEqual, slog.LevelError)
+		Convey("Then I should an level of error", func() {
+			So(level, ShouldEqual, logger.LevelError)
 		})
 	})
 }

@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
@@ -13,10 +12,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
+// LevelError is an alias of logger.LevelError.
+const LevelError = logger.LevelError
+
 // Logger is an alias of logger.Logger.
 type Logger = logger.Logger
-
-const service = "grpc"
 
 // UnaryServerInterceptor for logger.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
@@ -28,14 +28,14 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 		start := time.Now()
 		resp, err := handler(ctx, req)
-		attrs := []slog.Attr{
-			slog.String(meta.DurationKey, time.Since(start).String()),
-			slog.String(meta.ServiceKey, service),
-			slog.String(meta.PathKey, p),
+		attrs := []logger.Attr{
+			logger.String(meta.DurationKey, time.Since(start).String()),
+			logger.String(meta.ServiceKey, "grpc"),
+			logger.String(meta.PathKey, p),
 		}
 
 		code := status.Code(err)
-		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
+		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
 		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
@@ -54,14 +54,14 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 		start := time.Now()
 		ctx := stream.Context()
 		err := handler(srv, stream)
-		attrs := []slog.Attr{
-			slog.String(meta.DurationKey, time.Since(start).String()),
-			slog.String(meta.ServiceKey, service),
-			slog.String(meta.PathKey, p),
+		attrs := []logger.Attr{
+			logger.String(meta.DurationKey, time.Since(start).String()),
+			logger.String(meta.ServiceKey, "grpc"),
+			logger.String(meta.PathKey, p),
 		}
 
 		code := status.Code(err)
-		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
+		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
 		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(info.FullMethod), err), attrs...)
 
@@ -79,14 +79,14 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
-		attrs := []slog.Attr{
-			slog.String(meta.DurationKey, time.Since(start).String()),
-			slog.String(meta.ServiceKey, service),
-			slog.String(meta.PathKey, fullMethod),
+		attrs := []logger.Attr{
+			logger.String(meta.DurationKey, time.Since(start).String()),
+			logger.String(meta.ServiceKey, "grpc"),
+			logger.String(meta.PathKey, fullMethod),
 		}
 
 		code := status.Code(err)
-		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
+		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
 		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
@@ -104,14 +104,14 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
-		attrs := []slog.Attr{
-			slog.String(meta.DurationKey, time.Since(start).String()),
-			slog.String(meta.ServiceKey, service),
-			slog.String(meta.PathKey, fullMethod),
+		attrs := []logger.Attr{
+			logger.String(meta.DurationKey, time.Since(start).String()),
+			logger.String(meta.ServiceKey, "grpc"),
+			logger.String(meta.PathKey, fullMethod),
 		}
 
 		code := status.Code(err)
-		attrs = append(attrs, slog.String(meta.CodeKey, code.String()))
+		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
 
 		log.LogAttrs(ctx, CodeToLevel(code), logger.NewMessage(message(conn.Target()+fullMethod), err), attrs...)
 
@@ -119,16 +119,16 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	}
 }
 
-// CodeToLevel translates a gRPC status code to a slog.Level.
-func CodeToLevel(code codes.Code) slog.Level {
+// CodeToLevel translates a gRPC status code to a logger.Level.
+func CodeToLevel(code codes.Code) logger.Level {
 	switch code {
 	case codes.OK:
-		return slog.LevelInfo
+		return logger.LevelInfo
 	case codes.Canceled, codes.InvalidArgument, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.Unauthenticated,
 		codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange:
-		return slog.LevelWarn
+		return logger.LevelWarn
 	default:
-		return slog.LevelError
+		return logger.LevelError
 	}
 }
 

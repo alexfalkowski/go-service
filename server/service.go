@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
@@ -28,17 +27,17 @@ func (s *Service) Start() {
 }
 
 func (s *Service) start() {
-	addr := slog.String("addr", s.server.String())
+	addr := logger.String("addr", s.server.String())
 
 	s.log(func(l *logger.Logger) {
-		l.Info("starting server", addr, slog.String(meta.ServiceKey, s.name))
+		l.Info("starting server", addr, logger.String(meta.ServiceKey, s.name))
 	})
 
 	if err := s.server.Serve(); err != nil {
 		_ = s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", slog.String(meta.ServiceKey, s.name), addr, logger.Error(err))
+			l.Error("could not start server", logger.String(meta.ServiceKey, s.name), addr, logger.Error(err))
 		})
 	}
 }
@@ -48,7 +47,7 @@ func (s *Service) Stop(ctx context.Context) {
 	_ = s.server.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("stopping server", slog.String(meta.ServiceKey, s.name))
+		l.Info("stopping server", logger.String(meta.ServiceKey, s.name))
 	})
 }
 
