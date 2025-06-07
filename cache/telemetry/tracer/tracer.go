@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // NewCache for tracer.
@@ -28,17 +28,14 @@ func (c *Cache) Close(ctx context.Context) error {
 
 // Remove a cached key.
 func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("cache.key").String(key),
-		attribute.Key("cache.kind").String(c.kind),
-	}
-
-	ctx, span := c.tracer.StartClient(ctx, operationName("remove"), attrs...)
+	ctx, span := c.tracer.StartClient(ctx, operationName("remove"),
+		attributes.String("cache.key", key),
+		attributes.String("cache.kind", c.kind))
 	defer span.End()
 
 	ok, err := c.cache.Remove(ctx, key)
 
-	span.SetAttributes(attribute.Key("cache.found").Bool(ok))
+	span.SetAttributes(attributes.Bool("cache.found", ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
@@ -47,17 +44,14 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 
 // Get a cached value.
 func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("cache.key").String(key),
-		attribute.Key("cache.kind").String(c.kind),
-	}
-
-	ctx, span := c.tracer.StartClient(ctx, operationName("get"), attrs...)
+	ctx, span := c.tracer.StartClient(ctx, operationName("get"),
+		attributes.String("cache.key", key),
+		attributes.String("cache.kind", c.kind))
 	defer span.End()
 
 	ok, err := c.cache.Get(ctx, key, value)
 
-	span.SetAttributes(attribute.Key("cache.found").Bool(ok))
+	span.SetAttributes(attributes.Bool("cache.found", ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 
@@ -66,13 +60,10 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 
 // Persist a value with key and TTL.
 func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Duration) error {
-	attrs := []attribute.KeyValue{
-		attribute.Key("cache.key").String(key),
-		attribute.Key("cache.kind").String(c.kind),
-		attribute.Key("cache.ttl").String(ttl.String()),
-	}
-
-	ctx, span := c.tracer.StartClient(ctx, operationName("persist"), attrs...)
+	ctx, span := c.tracer.StartClient(ctx, operationName("persist"),
+		attributes.String("cache.key", key),
+		attributes.String("cache.kind", c.kind),
+		attributes.String("cache.ttl", ttl.String()))
 	defer span.End()
 
 	err := c.cache.Persist(ctx, key, value, ttl)
