@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.51.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.51.0) - 2025-06-07
+
+- [`d876dba`](https://github.com/alexfalkowski/go-service/commit/d876dba1d10ee8254d48cca0432742adf78fc208) feat(io): remove NoopWriter (#1694)
+
 ## [v2.50.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.50.0) - 2025-06-07
 
 - [`9b2b092`](https://github.com/alexfalkowski/go-service/commit/9b2b092626926ccaa67a5307447abab93fd8e2ee) feat(params): rename type (#1693)
