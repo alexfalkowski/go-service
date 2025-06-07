@@ -12,7 +12,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
-	"go.opentelemetry.io/otel/metric"
+)
+
+const (
+	kindAttribute   = metrics.Key("kind")
+	pathAttribute   = metrics.Key("path")
+	methodAttribute = metrics.Key("method")
+	codeAttribute   = metrics.Key("code")
 )
 
 // Meter is an alias for metrics.Meter.
@@ -35,11 +41,11 @@ func NewServer(meter *Meter) *Server {
 
 // Server for metrics.
 type Server struct {
-	started          metric.Int64Counter
-	received         metric.Int64Counter
-	sent             metric.Int64Counter
-	handled          metric.Int64Counter
-	handledHistogram metric.Float64Histogram
+	started          metrics.Int64Counter
+	received         metrics.Int64Counter
+	sent             metrics.Int64Counter
+	handled          metrics.Int64Counter
+	handledHistogram metrics.Float64Histogram
 }
 
 // UnaryInterceptor for metrics.
@@ -52,7 +58,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 
 		start := time.Now()
 		method := path.Base(info.FullMethod)
-		opts := metric.WithAttributes(
+		opts := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
 			pathAttribute.String(p),
 			methodAttribute.String(method),
@@ -82,7 +88,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 
 		start := time.Now()
 		method := path.Base(info.FullMethod)
-		opts := metric.WithAttributes(
+		opts := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
 			pathAttribute.String(p),
 			methodAttribute.String(method),
@@ -97,7 +103,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 }
 
 // Stream for the server.
-func (s *Server) Stream(stream grpc.ServerStream, opts metric.MeasurementOption) grpc.ServerStream {
+func (s *Server) Stream(stream grpc.ServerStream, opts metrics.MeasurementOption) grpc.ServerStream {
 	return &ServerStream{
 		opts:             opts,
 		received:         s.received,
@@ -110,11 +116,11 @@ func (s *Server) Stream(stream grpc.ServerStream, opts metric.MeasurementOption)
 
 // ServerStream wraps grpc.ServerStream allowing each Sent/Recv of message to increment counters.
 type ServerStream struct {
-	opts             metric.MeasurementOption
-	received         metric.Int64Counter
-	sent             metric.Int64Counter
-	handled          metric.Int64Counter
-	handledHistogram metric.Float64Histogram
+	opts             metrics.MeasurementOption
+	received         metrics.Int64Counter
+	sent             metrics.Int64Counter
+	handled          metrics.Int64Counter
+	handledHistogram metrics.Float64Histogram
 
 	grpc.ServerStream
 }
@@ -171,11 +177,11 @@ func NewClient(meter *Meter) *Client {
 
 // Client for metrics.
 type Client struct {
-	started          metric.Int64Counter
-	received         metric.Int64Counter
-	sent             metric.Int64Counter
-	handled          metric.Int64Counter
-	handledHistogram metric.Float64Histogram
+	started          metrics.Int64Counter
+	received         metrics.Int64Counter
+	sent             metrics.Int64Counter
+	handled          metrics.Int64Counter
+	handledHistogram metrics.Float64Histogram
 }
 
 // UnaryInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
@@ -188,7 +194,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 
 		start := time.Now()
 		method := path.Base(fullMethod)
-		measurement := metric.WithAttributes(
+		measurement := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
 			pathAttribute.String(p),
 			methodAttribute.String(method),
@@ -218,7 +224,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 
 		start := time.Now()
 		method := path.Base(fullMethod)
-		measurement := metric.WithAttributes(
+		measurement := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
 			pathAttribute.String(p),
 			methodAttribute.String(method),
@@ -236,7 +242,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 }
 
 // Stream fpr client.
-func (c *Client) Stream(stream grpc.ClientStream, opts metric.MeasurementOption) grpc.ClientStream {
+func (c *Client) Stream(stream grpc.ClientStream, opts metrics.MeasurementOption) grpc.ClientStream {
 	return &ClientStream{
 		opts:             opts,
 		received:         c.received,
@@ -249,11 +255,11 @@ func (c *Client) Stream(stream grpc.ClientStream, opts metric.MeasurementOption)
 
 // ClientStream wraps grpc.ClientStream allowing each Sent/Recv of message to increment counters.
 type ClientStream struct {
-	opts             metric.MeasurementOption
-	received         metric.Int64Counter
-	sent             metric.Int64Counter
-	handled          metric.Int64Counter
-	handledHistogram metric.Float64Histogram
+	opts             metrics.MeasurementOption
+	received         metrics.Int64Counter
+	sent             metrics.Int64Counter
+	handled          metrics.Int64Counter
+	handledHistogram metrics.Float64Histogram
 
 	grpc.ClientStream
 }
@@ -293,7 +299,7 @@ func (s *ClientStream) RecvMsg(m any) error {
 	return nil
 }
 
-func handle(ctx context.Context, h metric.Int64Counter, hs metric.Float64Histogram, o metric.MeasurementOption, c codes.Code, s time.Time) {
-	h.Add(ctx, 1, o, metric.WithAttributes(codeAttribute.String(c.String())))
+func handle(ctx context.Context, h metrics.Int64Counter, hs metrics.Float64Histogram, o metrics.MeasurementOption, c codes.Code, s time.Time) {
+	h.Add(ctx, 1, o, metrics.WithAttributes(codeAttribute.String(c.String())))
 	hs.Record(ctx, time.Since(s).Seconds(), o)
 }

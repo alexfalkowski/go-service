@@ -3,8 +3,46 @@ package metrics
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
+
+type (
+	// Float64Histogram is an alias of metric.Float64Histogram.
+	Float64Histogram = metric.Float64Histogram
+
+	// Float64ObservableCounter is an alias of metric.Float64ObservableCounter.
+	Float64ObservableCounter = metric.Float64ObservableCounter
+
+	// Int64Counter is an alias of metric.Int64Counter.
+	Int64Counter = metric.Int64Counter
+
+	// Int64ObservableGauge is an alias of metric.Int64ObservableGauge.
+	Int64ObservableGauge = metric.Int64ObservableGauge
+
+	// Int64ObservableCounter is an alias of metric.Int64ObservableCounter.
+	Int64ObservableCounter = metric.Int64ObservableCounter
+
+	// Key is an alias of attribute.Key.
+	Key = attribute.Key
+
+	// MeasurementOption is an alias of metric.MeasurementOption.
+	MeasurementOption = metric.MeasurementOption
+
+	// Observer is an alias of metric.Observer.
+	Observer = metric.Observer
+
+	// MeterProvider is an alias of metric.MeterProvider.
+	MeterProvider = metric.MeterProvider
+)
+
+// WithAttributes is an alias of metric.WithAttributes.
+var WithAttributes = metric.WithAttributes
+
+// StringAttr for metrics.
+func StringAttr(key, value string) attribute.KeyValue {
+	return attribute.Key(key).String(value)
+}
 
 // NewMeter for metrics.
 func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
