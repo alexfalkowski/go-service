@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -29,7 +30,7 @@ import (
 
 func init() {
 	meta.RegisterKeys()
-	tracer.Register()
+	telemetry.Register()
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }

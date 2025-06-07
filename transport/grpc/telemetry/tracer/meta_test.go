@@ -10,7 +10,8 @@ import (
 
 func TestCarrier(t *testing.T) {
 	Convey("Given I have a carrier", t, func() {
-		carrier := &tracer.Carrier{Metadata: metadata.MD{}}
+		md := metadata.MD{}
+		carrier := tracer.NewCarrier(md)
 
 		Convey("When I set some keys", func() {
 			carrier.Set("test", "test")

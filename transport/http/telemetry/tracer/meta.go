@@ -4,18 +4,13 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
+	"github.com/alexfalkowski/go-service/v2/telemetry"
 )
 
 func extract(ctx context.Context, r *http.Request) context.Context {
-	prop := otel.GetTextMapPropagator()
-
-	return prop.Extract(ctx, propagation.HeaderCarrier(r.Header))
+	return telemetry.Extract(ctx, telemetry.HeaderCarrier(r.Header))
 }
 
 func inject(ctx context.Context, r *http.Request) {
-	prop := otel.GetTextMapPropagator()
-
-	prop.Inject(ctx, propagation.HeaderCarrier(r.Header))
+	telemetry.Inject(ctx, telemetry.HeaderCarrier(r.Header))
 }
