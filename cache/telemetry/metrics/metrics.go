@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
@@ -36,7 +37,7 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 
 // Get a cached value.
 func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
-	opts := metrics.WithAttributes(metrics.StringAttr("kind", c.kind))
+	opts := metrics.WithAttributes(attributes.String("kind", c.kind))
 
 	ok, err := c.cache.Get(ctx, key, value)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
@@ -15,7 +16,7 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 		return
 	}
 
-	opts := metrics.WithAttributes(metrics.StringAttr("db_driver", dbs.DriverName()))
+	opts := metrics.WithAttributes(attributes.String("db_driver", dbs.DriverName()))
 	maxOpen := meter.MustInt64ObservableGauge("sql_max_open_total", "Maximum number of open connections to the database.")
 	open := meter.MustInt64ObservableGauge("sql_open_total", "The number of established connections both in use and idle.")
 	inUse := meter.MustInt64ObservableGauge("sql_in_use_total", "The number of connections currently in use.")
@@ -54,14 +55,14 @@ type Metrics struct {
 func (m *Metrics) callback(_ context.Context, observer metrics.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
-		opts := metrics.WithAttributes(metrics.StringAttr("db_name", "master_"+strconv.Itoa(i)))
+		opts := metrics.WithAttributes(attributes.String("db_name", "master_"+strconv.Itoa(i)))
 
 		m.collect(ma, observer, opts)
 	}
 
 	ss, _ := m.dbs.GetAllSlaves()
 	for i, s := range ss {
-		opts := metrics.WithAttributes(metrics.StringAttr("db_name", "slave_"+strconv.Itoa(i)))
+		opts := metrics.WithAttributes(attributes.String("db_name", "slave_"+strconv.Itoa(i)))
 
 		m.collect(s, observer, opts)
 	}
