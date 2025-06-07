@@ -45,6 +45,11 @@ var (
 	DeploymentEnvironmentName = semconv.DeploymentEnvironmentName
 )
 
+// Bool for attributes.
+func Bool(key string, value bool) attribute.KeyValue {
+	return attribute.Key(key).Bool(value)
+}
+
 // Float64 for attributes.
 func Float64(key string, value float64) attribute.KeyValue {
 	return attribute.Key(key).Float64(value)

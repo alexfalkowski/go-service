@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql/driver"
 
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/ngrok/sqlmw"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // NewInterceptor for tracer.
@@ -34,11 +34,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 }
 
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("db.sql.query").String(query),
-	}
-
-	ctx, span := i.tracer.StartClient(ctx, operationName("exec conn"), attrs...)
+	ctx, span := i.tracer.StartClient(ctx, operationName("exec conn"), attributes.String("db.sql.query", query))
 	defer span.End()
 
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
@@ -50,11 +46,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 }
 
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("db.sql.query").String(query),
-	}
-
-	ctx, span := i.tracer.StartClient(ctx, operationName("query conn"), attrs...)
+	ctx, span := i.tracer.StartClient(ctx, operationName("query conn"), attributes.String("db.sql.query", query))
 	defer span.End()
 
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
@@ -86,11 +78,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 }
 
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("db.sql.query").String(query),
-	}
-
-	ctx, span := i.tracer.StartClient(ctx, operationName("exec statement"), attrs...)
+	ctx, span := i.tracer.StartClient(ctx, operationName("exec statement"), attributes.String("db.sql.query", query))
 	defer span.End()
 
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
@@ -102,11 +90,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 }
 
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
-	attrs := []attribute.KeyValue{
-		attribute.Key("db.sql.query").String(query),
-	}
-
-	ctx, span := i.tracer.StartClient(ctx, operationName("query statement"), attrs...)
+	ctx, span := i.tracer.StartClient(ctx, operationName("query statement"), attributes.String("db.sql.query", query))
 	defer span.End()
 
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/meta"
-	"go.opentelemetry.io/otel/attribute"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -13,7 +13,7 @@ func Meta(ctx context.Context, span trace.Span) {
 	strings := meta.SnakeStrings(ctx, "meta.")
 
 	for k, v := range strings {
-		span.SetAttributes(attribute.Key(k).String(v))
+		span.SetAttributes(attributes.String(k, v))
 	}
 }
 
