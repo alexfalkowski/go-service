@@ -9,7 +9,6 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -19,11 +18,6 @@ import (
 // OperationName for tracer.
 func OperationName(area, name string) string {
 	return strings.Join(": ", area, name)
-}
-
-// Register for tracer.
-func Register() {
-	otel.SetTextMapPropagator(propagation.TraceContext{})
 }
 
 // Params for tracer.

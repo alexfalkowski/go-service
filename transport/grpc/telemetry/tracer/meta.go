@@ -3,18 +3,23 @@ package tracer
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
-	"go.opentelemetry.io/otel"
 )
+
+// NewCarrier for tracer.
+func NewCarrier(meta meta.Map) *Carrier {
+	return &Carrier{meta: meta}
+}
 
 // Carrier for tracer.
 type Carrier struct {
-	Metadata meta.Map
+	meta meta.Map
 }
 
 // Get returns the value associated with the passed key.
 func (s *Carrier) Get(key string) string {
-	values := s.Metadata.Get(key)
+	values := s.meta.Get(key)
 	if len(values) == 0 {
 		return ""
 	}
@@ -24,15 +29,15 @@ func (s *Carrier) Get(key string) string {
 
 // Set stores the key-value pair.
 func (s *Carrier) Set(key string, value string) {
-	s.Metadata.Set(key, value)
+	s.meta.Set(key, value)
 }
 
 // Keys lists the keys stored in this carrier.
 func (s *Carrier) Keys() []string {
-	out := make([]string, len(s.Metadata))
+	out := make([]string, len(s.meta))
 	cnt := 0
 
-	for key := range s.Metadata {
+	for key := range s.meta {
 		out[cnt] = key
 		cnt++
 	}
@@ -42,16 +47,13 @@ func (s *Carrier) Keys() []string {
 
 func inject(ctx context.Context) context.Context {
 	md := meta.ExtractOutgoing(ctx)
-	prop := otel.GetTextMapPropagator()
-
-	prop.Inject(ctx, &Carrier{Metadata: md})
+	telemetry.Inject(ctx, NewCarrier(md))
 
 	return meta.NewOutgoingContext(ctx, md)
 }
 
 func extract(ctx context.Context) context.Context {
 	md := meta.ExtractIncoming(ctx)
-	prop := otel.GetTextMapPropagator()
 
-	return prop.Extract(ctx, &Carrier{Metadata: md})
+	return telemetry.Extract(ctx, NewCarrier(md))
 }

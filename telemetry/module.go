@@ -14,4 +14,5 @@ var Module = fx.Options(
 	metrics.Module,
 	tracer.Module,
 	errors.Module,
+	fx.Invoke(Register),
 )
