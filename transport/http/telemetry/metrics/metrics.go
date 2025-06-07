@@ -9,7 +9,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	snoop "github.com/felixge/httpsnoop"
 	prometheus "github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.opentelemetry.io/otel/metric"
+)
+
+const (
+	serviceAttribute    = metrics.Key("service")
+	methodAttribute     = metrics.Key("method")
+	statusCodeAttribute = metrics.Key("status_code")
 )
 
 // Meter is an alias for metrics.Meter.
@@ -42,11 +47,11 @@ func NewHandler(meter *Meter) *Handler {
 
 // Handler for metrics.
 type Handler struct {
-	started     metric.Int64Counter
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+	started     metrics.Int64Counter
+	received    metrics.Int64Counter
+	sent        metrics.Int64Counter
+	handled     metrics.Int64Counter
+	handledHist metrics.Float64Histogram
 }
 
 // ServeHTTP for metrics.
@@ -58,7 +63,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	opts := metric.WithAttributes(
+	opts := metrics.WithAttributes(
 		serviceAttribute.String(p),
 		methodAttribute.String(method),
 	)
@@ -69,13 +74,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	h.started.Add(ctx, 1, opts)
 	h.received.Add(ctx, 1, opts)
 
-	metrics := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
+	captured := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
-	if metrics.Code >= 200 && metrics.Code <= 299 {
+	if captured.Code >= 200 && captured.Code <= 299 {
 		h.sent.Add(ctx, 1, opts)
 	}
 
-	h.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(metrics.Code))))
+	h.handled.Add(ctx, 1, opts, metrics.WithAttributes(statusCodeAttribute.String(strconv.Itoa(captured.Code))))
 	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 }
 
@@ -96,11 +101,11 @@ func NewRoundTripper(meter *Meter, r http.RoundTripper) *RoundTripper {
 
 // RoundTripper for metrics.
 type RoundTripper struct {
-	started     metric.Int64Counter
-	received    metric.Int64Counter
-	sent        metric.Int64Counter
-	handled     metric.Int64Counter
-	handledHist metric.Float64Histogram
+	started     metrics.Int64Counter
+	received    metrics.Int64Counter
+	sent        metrics.Int64Counter
+	handled     metrics.Int64Counter
+	handledHist metrics.Float64Histogram
 
 	http.RoundTripper
 }
@@ -115,7 +120,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now()
 	ctx := req.Context()
 
-	opts := metric.WithAttributes(
+	opts := metrics.WithAttributes(
 		serviceAttribute.String(p),
 		methodAttribute.String(method),
 	)
@@ -129,7 +134,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	r.received.Add(ctx, 1, opts)
-	r.handled.Add(ctx, 1, opts, metric.WithAttributes(statusCodeAttribute.String(strconv.Itoa(resp.StatusCode))))
+	r.handled.Add(ctx, 1, opts, metrics.WithAttributes(statusCodeAttribute.String(strconv.Itoa(resp.StatusCode))))
 	r.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return resp, nil

@@ -7,8 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 // Register for metrics.
@@ -17,7 +15,7 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 		return
 	}
 
-	opts := metric.WithAttributes(attribute.Key("db_driver").String(dbs.DriverName()))
+	opts := metrics.WithAttributes(metrics.StringAttr("db_driver", dbs.DriverName()))
 	maxOpen := meter.MustInt64ObservableGauge("sql_max_open_total", "Maximum number of open connections to the database.")
 	open := meter.MustInt64ObservableGauge("sql_open_total", "The number of established connections both in use and idle.")
 	inUse := meter.MustInt64ObservableGauge("sql_in_use_total", "The number of connections currently in use.")
@@ -40,34 +38,30 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 // Metrics for SQL.
 type Metrics struct {
 	dbs  *mssqlx.DBs
-	opts metric.MeasurementOption
+	opts metrics.MeasurementOption
 
-	maxOpen           metric.Int64ObservableGauge
-	open              metric.Int64ObservableGauge
-	inUse             metric.Int64ObservableGauge
-	idle              metric.Int64ObservableGauge
-	waited            metric.Int64ObservableCounter
-	blocked           metric.Float64ObservableCounter
-	maxIdleClosed     metric.Int64ObservableCounter
-	maxIdleTimeClosed metric.Int64ObservableCounter
-	maxLifetimeClosed metric.Int64ObservableCounter
+	maxOpen           metrics.Int64ObservableGauge
+	open              metrics.Int64ObservableGauge
+	inUse             metrics.Int64ObservableGauge
+	idle              metrics.Int64ObservableGauge
+	waited            metrics.Int64ObservableCounter
+	blocked           metrics.Float64ObservableCounter
+	maxIdleClosed     metrics.Int64ObservableCounter
+	maxIdleTimeClosed metrics.Int64ObservableCounter
+	maxLifetimeClosed metrics.Int64ObservableCounter
 }
 
-func (m *Metrics) callback(_ context.Context, observer metric.Observer) error {
+func (m *Metrics) callback(_ context.Context, observer metrics.Observer) error {
 	ms, _ := m.dbs.GetAllMasters()
 	for i, ma := range ms {
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String("master_" + strconv.Itoa(i)),
-		)
+		opts := metrics.WithAttributes(metrics.StringAttr("db_name", "master_"+strconv.Itoa(i)))
 
 		m.collect(ma, observer, opts)
 	}
 
 	ss, _ := m.dbs.GetAllSlaves()
 	for i, s := range ss {
-		opts := metric.WithAttributes(
-			attribute.Key("db_name").String("slave_" + strconv.Itoa(i)),
-		)
+		opts := metrics.WithAttributes(metrics.StringAttr("db_name", "slave_"+strconv.Itoa(i)))
 
 		m.collect(s, observer, opts)
 	}
@@ -75,7 +69,7 @@ func (m *Metrics) callback(_ context.Context, observer metric.Observer) error {
 	return nil
 }
 
-func (m *Metrics) collect(db *sqlx.DB, observer metric.Observer, opts metric.MeasurementOption) {
+func (m *Metrics) collect(db *sqlx.DB, observer metrics.Observer, opts metrics.MeasurementOption) {
 	stats := db.Stats()
 
 	observer.ObserveInt64(m.maxOpen, int64(stats.MaxOpenConnections), m.opts, opts)

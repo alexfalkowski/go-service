@@ -6,8 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 // NewCache for metrics.
@@ -21,8 +19,8 @@ func NewCache(kind string, meter *metrics.Meter, cache cacher.Cache) *Cache {
 // Cache for metrics.
 type Cache struct {
 	cache  cacher.Cache
-	hits   metric.Int64Counter
-	misses metric.Int64Counter
+	hits   metrics.Int64Counter
+	misses metrics.Int64Counter
 	kind   string
 }
 
@@ -38,8 +36,7 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 
 // Get a cached value.
 func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
-	kind := attribute.Key("kind")
-	opts := metric.WithAttributes(kind.String(c.kind))
+	opts := metrics.WithAttributes(metrics.StringAttr("kind", c.kind))
 
 	ok, err := c.cache.Get(ctx, key, value)
 	if err != nil {

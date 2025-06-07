@@ -5,9 +5,9 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	hooks "github.com/open-feature/go-sdk-contrib/hooks/open-telemetry/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 )
 
@@ -16,7 +16,7 @@ type ProviderParams struct {
 	fx.In
 
 	Lifecycle       fx.Lifecycle
-	MetricProvider  metric.MeterProvider
+	MetricProvider  metrics.MeterProvider
 	FeatureProvider openfeature.FeatureProvider `optional:"true"`
 	Name            env.Name
 }
