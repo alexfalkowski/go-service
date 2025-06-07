@@ -13,7 +13,7 @@ func TestLogger(t *testing.T) {
 	Convey("Given I have an invalid configuration", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		cfg := &logger.Config{Kind: "wrong", Level: "debug"}
-		params := logger.Params{
+		params := logger.LoggerParams{
 			Lifecycle:   lc,
 			Config:      cfg,
 			ID:          test.ID,

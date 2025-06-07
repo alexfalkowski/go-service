@@ -106,7 +106,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 		cfg := test.NewInsecureTransportConfig()
 
 		h, err := th.NewServer(th.ServerParams{
@@ -147,7 +147,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 		tracer := test.NewTracer(lc, nil)
 		cfg := test.NewInsecureTransportConfig()
 
@@ -189,7 +189,7 @@ func BenchmarkHTTP(b *testing.B) {
 func BenchmarkMVC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.Params{})
+	logger, _ := logger.NewLogger(logger.LoggerParams{})
 
 	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 	world.Register()
@@ -227,7 +227,7 @@ func BenchmarkRPC(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
 		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 		world.Register()
@@ -264,7 +264,7 @@ func BenchmarkRPC(b *testing.B) {
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
 		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 		world.Register()
@@ -303,7 +303,7 @@ func BenchmarkRest(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
 		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 		world.Register()
@@ -362,7 +362,7 @@ func BenchmarkRest(b *testing.B) {
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.Params{})
+		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
 		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 		world.Register()

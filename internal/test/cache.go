@@ -72,7 +72,7 @@ func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tr
 	driver, err := driver.New(FS, cfg)
 	runtime.Must(err)
 
-	params := cache.Params{
+	params := cache.CacheParams{
 		Lifecycle:  lc,
 		Config:     cfg,
 		Compressor: Compressor,

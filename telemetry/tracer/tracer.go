@@ -20,8 +20,8 @@ func OperationName(area, name string) string {
 	return strings.Join(": ", area, name)
 }
 
-// Params for tracer.
-type Params struct {
+// TracerParams for tracer.
+type TracerParams struct {
 	fx.In
 
 	Lifecycle   fx.Lifecycle
@@ -33,7 +33,7 @@ type Params struct {
 }
 
 // NewTracer for tracer.
-func NewTracer(params Params) *Tracer {
+func NewTracer(params TracerParams) *Tracer {
 	if !IsEnabled(params.Config) {
 		return nil
 	}

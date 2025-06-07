@@ -14,7 +14,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func newOtlpLogger(params Params) *slog.Logger {
+func newOtlpLogger(params LoggerParams) *slog.Logger {
 	exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
 	runtime.Must(err)
 
