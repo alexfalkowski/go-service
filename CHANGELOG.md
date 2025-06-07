@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.48.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.48.0) - 2025-06-07
+
+- [`7469234`](https://github.com/alexfalkowski/go-service/commit/7469234ccccd628e110b4fb8ae9ffd16195effea) feat(tracer): use attributes package (#1690)
+
 ## [v2.47.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.47.0) - 2025-06-07
 
 - [`5249357`](https://github.com/alexfalkowski/go-service/commit/5249357692fcd09cb1403a3d2c0c4c3f133a12f6) feat(telemetry): move to attributes (#1689)
