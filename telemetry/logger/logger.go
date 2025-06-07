@@ -9,8 +9,41 @@ import (
 	"go.uber.org/fx"
 )
 
-// ErrNotFound for logger.
-var ErrNotFound = errors.New("logger: not found")
+const (
+	// LevelError is an alias of slog.LevelError.
+	LevelError = slog.LevelError
+
+	// LevelInfo is an alias of slog.LevelInfo.
+	LevelInfo = slog.LevelInfo
+
+	// LevelWarn is an alias of slog.LevelWarn.
+	LevelWarn = slog.LevelWarn
+)
+
+type (
+	// Attr is an alias of slog.Attr.
+	Attr = slog.Attr
+
+	// Level is an alias of slog.Level.
+	Level = slog.Level
+)
+
+var (
+	// ErrNotFound for logger.
+	ErrNotFound = errors.New("logger: not found")
+
+	// Bool is an alias of slog.Bool.
+	Bool = slog.Bool
+
+	// Int is an alias of slog.Int.
+	Int = slog.Int
+
+	// LogError is an alias of slog.Error.
+	LogError = slog.Error
+
+	// String is an alias of slog.String.
+	String = slog.String
+)
 
 // Params for logger.
 type Params struct {

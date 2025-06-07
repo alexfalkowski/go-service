@@ -1,8 +1,6 @@
 package logger
 
 import (
-	"log/slog"
-
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -36,15 +34,15 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	ctx := req.Context()
-	attrs := []slog.Attr{
-		slog.String(meta.ServiceKey, service),
-		slog.String(meta.PathKey, p),
-		slog.String(meta.MethodKey, method),
+	attrs := []logger.Attr{
+		logger.String(meta.ServiceKey, service),
+		logger.String(meta.PathKey, p),
+		logger.String(meta.MethodKey, method),
 	}
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 
-	attrs = append(attrs, slog.String(meta.DurationKey, m.Duration.String()), slog.Int(meta.CodeKey, m.Code))
+	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
 	message := message(strings.Join(" ", method, p))
 
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), logger.NewText(message), attrs...)
@@ -72,15 +70,15 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
-	attrs := []slog.Attr{
-		slog.String(meta.DurationKey, time.Since(start).String()),
-		slog.String(meta.ServiceKey, service),
-		slog.String(meta.PathKey, p),
-		slog.String(meta.MethodKey, method),
+	attrs := []logger.Attr{
+		logger.String(meta.DurationKey, time.Since(start).String()),
+		logger.String(meta.ServiceKey, service),
+		logger.String(meta.PathKey, p),
+		logger.String(meta.MethodKey, method),
 	}
 
 	if resp != nil {
-		attrs = append(attrs, slog.Int(meta.CodeKey, resp.StatusCode))
+		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
 
 	message := message(strings.Join(" ", method, p))
@@ -90,7 +88,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func respToLevel(resp *http.Response) slog.Level {
+func respToLevel(resp *http.Response) logger.Level {
 	var code int
 
 	if resp != nil {
@@ -102,16 +100,16 @@ func respToLevel(resp *http.Response) slog.Level {
 	return codeToLevel(code)
 }
 
-func codeToLevel(code int) slog.Level {
+func codeToLevel(code int) logger.Level {
 	if code >= 400 && code <= 499 {
-		return slog.LevelWarn
+		return logger.LevelWarn
 	}
 
 	if code >= 500 && code <= 599 {
-		return slog.LevelError
+		return logger.LevelError
 	}
 
-	return slog.LevelInfo
+	return logger.LevelInfo
 }
 
 func message(msg string) string {
