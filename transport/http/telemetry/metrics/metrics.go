@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
@@ -12,9 +13,9 @@ import (
 )
 
 const (
-	serviceAttribute    = metrics.Key("service")
-	methodAttribute     = metrics.Key("method")
-	statusCodeAttribute = metrics.Key("status_code")
+	serviceAttribute    = attributes.Key("service")
+	methodAttribute     = attributes.Key("method")
+	statusCodeAttribute = attributes.Key("status_code")
 )
 
 // Meter is an alias for metrics.Meter.

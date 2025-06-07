@@ -9,16 +9,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 const (
-	kindAttribute   = metrics.Key("kind")
-	pathAttribute   = metrics.Key("path")
-	methodAttribute = metrics.Key("method")
-	codeAttribute   = metrics.Key("code")
+	kindAttribute   = attributes.Key("kind")
+	pathAttribute   = attributes.Key("path")
+	methodAttribute = attributes.Key("method")
+	codeAttribute   = attributes.Key("code")
 )
 
 // Meter is an alias for metrics.Meter.

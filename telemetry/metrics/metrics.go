@@ -3,7 +3,6 @@ package metrics
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
@@ -23,9 +22,6 @@ type (
 	// Int64ObservableCounter is an alias of metric.Int64ObservableCounter.
 	Int64ObservableCounter = metric.Int64ObservableCounter
 
-	// Key is an alias of attribute.Key.
-	Key = attribute.Key
-
 	// MeasurementOption is an alias of metric.MeasurementOption.
 	MeasurementOption = metric.MeasurementOption
 
@@ -38,11 +34,6 @@ type (
 
 // WithAttributes is an alias of metric.WithAttributes.
 var WithAttributes = metric.WithAttributes
-
-// StringAttr for metrics.
-func StringAttr(key, value string) attribute.KeyValue {
-	return attribute.Key(key).String(value)
-}
 
 // NewMeter for metrics.
 func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
