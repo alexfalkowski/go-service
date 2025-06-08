@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.58.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.58.0) - 2025-06-08
+
+- [`310bf6c`](https://github.com/alexfalkowski/go-service/commit/310bf6cbec16a0a463ea44c1b6d45aa8375522b5) feat(grpc): pass ServiceRegistrar for health (#1703)
+- [`b8ad0ee`](https://github.com/alexfalkowski/go-service/commit/b8ad0ee9883c8eb9515738618ff67f76e64191cb) refactor(logger): remove const (#1702)
+
 ## [v2.57.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.57.0) - 2025-06-08
 
 - [`e55f58e`](https://github.com/alexfalkowski/go-service/commit/e55f58ef93d725e8a4de0946dfc6247b97596270) feat(params): pass to register (#1701)
