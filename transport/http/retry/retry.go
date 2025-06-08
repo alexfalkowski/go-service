@@ -5,13 +5,14 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/retry"
+	config "github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/sethvargo/go-retry"
 )
 
 // Config is an alias for retry.Config.
-type Config = retry.Config
+type Config = config.Config
 
 // ErrInvalidStatusCode for http retry.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
@@ -29,6 +30,8 @@ type RoundTripper struct {
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	timeout := time.MustParseDuration(r.cfg.Timeout)
+	back := retry.NewConstant(time.MustParseDuration(r.cfg.Backoff))
+	back = retry.WithMaxRetries(r.cfg.Attempts, back)
 
 	var (
 		res *http.Response
@@ -56,7 +59,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil
 	}
 
-	_ = retry.Try(ctx, operation, r.cfg)
+	_ = retry.Do(ctx, back, operation)
 
 	return res, err
 }
