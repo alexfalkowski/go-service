@@ -70,5 +70,9 @@ func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*
 }
 
 func (w *World) registerRPC() {
-	rpc.Register(w.ServeMux, Content, Pool)
+	rpc.Register(rpc.RegisterParams{
+		Mux:     w.ServeMux,
+		Pool:    Pool,
+		Content: Content,
+	})
 }

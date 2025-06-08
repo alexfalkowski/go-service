@@ -94,7 +94,11 @@ func RestRequestError(_ context.Context, _ *Request) (*Response, error) {
 }
 
 func registerRest(mux *http.ServeMux) {
-	rest.Register(mux, Content, Pool)
+	rest.Register(rest.RegisterParams{
+		Mux:     mux,
+		Pool:    Pool,
+		Content: Content,
+	})
 }
 
 func restClient(client *Client, os *worldOpts) *rest.Client {
