@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.57.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.57.0) - 2025-06-08
+
+- [`e55f58e`](https://github.com/alexfalkowski/go-service/commit/e55f58ef93d725e8a4de0946dfc6247b97596270) feat(params): pass to register (#1701)
+
 ## [v2.56.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.56.0) - 2025-06-08
 
 - [`f042628`](https://github.com/alexfalkowski/go-service/commit/f042628acec5426145429309d8519e97ad60819c) feat(http): calculate backoff before request (#1700)
