@@ -19,20 +19,23 @@ var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
 // NewRoundTripper for retry.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{cfg: cfg, RoundTripper: hrt}
+	timeout := time.MustParseDuration(cfg.Timeout)
+	backoff := retry.WithMaxRetries(cfg.Attempts, retry.NewConstant(time.MustParseDuration(cfg.Backoff)))
+
+	return &RoundTripper{RoundTripper: hrt, timeout: timeout, backoff: backoff}
 }
 
 // RoundTripper for retry.
 type RoundTripper struct {
-	cfg *Config
 	http.RoundTripper
+
+	backoff retry.Backoff
+	timeout time.Duration
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	timeout := time.MustParseDuration(r.cfg.Timeout)
-	back := retry.WithMaxRetries(r.cfg.Attempts, retry.NewConstant(time.MustParseDuration(r.cfg.Backoff)))
 	operation := func(ctx context.Context) (*http.Response, error) {
-		ctx, cancel := context.WithTimeout(ctx, timeout)
+		ctx, cancel := context.WithTimeout(ctx, r.timeout)
 		defer cancel()
 
 		res, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
@@ -43,5 +46,5 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return res, err
 	}
 
-	return retry.DoValue(req.Context(), back, operation)
+	return retry.DoValue(req.Context(), r.backoff, operation)
 }

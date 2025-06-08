@@ -15,6 +15,7 @@ func NewRoundTripper(hrt http.RoundTripper) *RoundTripper {
 // RoundTripper for breaker.
 type RoundTripper struct {
 	cb *breaker.CircuitBreaker
+
 	http.RoundTripper
 }
 

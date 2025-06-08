@@ -55,14 +55,15 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 // NewRoundTripper for token.
 func NewRoundTripper(id env.UserID, generator token.Generator, hrt http.RoundTripper) *RoundTripper {
-	return &RoundTripper{id: id, generator: generator, RoundTripper: hrt}
+	return &RoundTripper{RoundTripper: hrt, id: id, generator: generator}
 }
 
 // RoundTripper for token.
 type RoundTripper struct {
-	generator Generator
 	http.RoundTripper
-	id env.UserID
+
+	generator Generator
+	id        env.UserID
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
