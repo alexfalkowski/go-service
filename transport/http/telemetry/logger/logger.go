@@ -9,8 +9,6 @@ import (
 	snoop "github.com/felixge/httpsnoop"
 )
 
-const service = "http"
-
 // Logger is an alias of logger.Logger.
 type Logger = logger.Logger
 
@@ -35,7 +33,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, service),
+		logger.String(meta.ServiceKey, "http"),
 		logger.String(meta.PathKey, p),
 		logger.String(meta.MethodKey, method),
 	}
@@ -72,7 +70,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := r.RoundTripper.RoundTrip(req)
 	attrs := []logger.Attr{
 		logger.String(meta.DurationKey, time.Since(start).String()),
-		logger.String(meta.ServiceKey, service),
+		logger.String(meta.ServiceKey, "http"),
 		logger.String(meta.PathKey, p),
 		logger.String(meta.MethodKey, method),
 	}
