@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"go.uber.org/fx"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -10,15 +10,15 @@ import (
 type RegisterParams struct {
 	fx.In
 
-	GRPC   *grpc.Server
-	Server *Server
+	Registrar grpc.ServiceRegistrar
+	Server    *Server
 }
 
 // Register health for gRPC.
 func Register(params RegisterParams) {
-	if params.GRPC == nil || params.Server == nil {
+	if params.Registrar == nil || params.Server == nil {
 		return
 	}
 
-	health.RegisterHealthServer(params.GRPC.ServiceRegistrar(), params.Server)
+	health.RegisterHealthServer(params.Registrar, params.Server)
 }
