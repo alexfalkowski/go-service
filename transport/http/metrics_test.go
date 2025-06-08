@@ -51,7 +51,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		ptr := ptr.Zero[string]()
 
-		ok, err := world.Cache.Get(t.Context(), "not_existent", ptr)
+		ok, err := world.Get(t.Context(), "not_existent", ptr)
 		So(ok, ShouldBeFalse)
 		So(err, ShouldBeNil)
 

@@ -1,4 +1,4 @@
-package grpc
+package health
 
 import "github.com/alexfalkowski/go-health/subscriber"
 

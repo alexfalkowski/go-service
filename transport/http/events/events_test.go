@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package events_test
 
 import (

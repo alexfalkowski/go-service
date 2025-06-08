@@ -1,20 +1,14 @@
-//nolint:varnamelen
-package http_test
+package health_test
 
 import (
 	"testing"
-	"time"
 
-	"github.com/alexfalkowski/go-health/checker"
-	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-service/v2/health"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 )
 
 func TestHealth(t *testing.T) {
@@ -25,9 +19,7 @@ func TestHealth(t *testing.T) {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 			world.Register()
 
-			so, err := observer(world.Lifecycle, test.StatusURL("200"), world)
-			So(err, ShouldBeNil)
-
+			so := world.HealthServer(test.StatusURL("200"))
 			o := so.Observe("http")
 
 			test.RegisterHealth(o, o, o)
@@ -60,9 +52,7 @@ func TestReadinessNoop(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 
-		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)
-		So(err, ShouldBeNil)
-
+		so := world.HealthServer(test.StatusURL("500"))
 		o := so.Observe("http")
 
 		test.RegisterHealth(o, o, so.Observe("noop"))
@@ -93,9 +83,7 @@ func TestInvalidHealth(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 		world.Register()
 
-		so, err := observer(world.Lifecycle, test.StatusURL("500"), world)
-		So(err, ShouldBeNil)
-
+		so := world.HealthServer(test.StatusURL("500"))
 		o := so.Observe("http")
 
 		test.RegisterHealth(o, o, o)
@@ -116,23 +104,4 @@ func TestInvalidHealth(t *testing.T) {
 			world.RequireStop()
 		})
 	})
-}
-
-func observer(lc fx.Lifecycle, url string, world *test.World) (*server.Server, error) {
-	dc, err := test.NewDBChecker(world)
-	if err != nil {
-		return nil, err
-	}
-
-	dr := server.NewRegistration("db", 10*time.Millisecond, dc)
-
-	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(world.NewHTTP().Transport))
-	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-
-	no := checker.NewNoopChecker()
-	nr := server.NewRegistration("noop", 10*time.Millisecond, no)
-
-	regs := health.Registrations{hr, nr, dr}
-
-	return health.NewServer(lc, regs), nil
 }

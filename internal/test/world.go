@@ -186,7 +186,7 @@ type World struct {
 	*Client
 	*events.Event
 	*eh.Receiver
-	Cache  cacher.Cache
+	cacher.Cache
 	Sender client.Client
 	Rest   *rest.Client
 }
