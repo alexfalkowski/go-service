@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.52.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.52.0) - 2025-06-08
+
+- [`e4e1e15`](https://github.com/alexfalkowski/go-service/commit/e4e1e1537505b466b056bc0baf83ff446baeaf07) feat(retry): move retry to http (#1696)
+- [`5b99685`](https://github.com/alexfalkowski/go-service/commit/5b9968518b7cea909883aa59710fc07707bbb81b) test(io): remove from .gocov (#1695)
+
 ## [v2.51.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.51.0) - 2025-06-07
 
 - [`d876dba`](https://github.com/alexfalkowski/go-service/commit/d876dba1d10ee8254d48cca0432742adf78fc208) feat(io): remove NoopWriter (#1694)
