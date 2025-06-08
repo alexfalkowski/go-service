@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/sync"
+	"go.uber.org/fx"
 )
 
 var (
@@ -12,7 +13,18 @@ var (
 	pool *sync.BufferPool
 )
 
+// RegisterParams for rpc.
+type RegisterParams struct {
+	fx.In
+
+	Mux     *http.ServeMux
+	Content *content.Content
+	Pool    *sync.BufferPool
+}
+
 // Register for rpc.
-func Register(mu *http.ServeMux, ct *content.Content, p *sync.BufferPool) {
-	mux, cont, pool = mu, ct, p
+func Register(params RegisterParams) {
+	mux = params.Mux
+	cont = params.Content
+	pool = params.Pool
 }
