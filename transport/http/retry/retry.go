@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	config "github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/hashicorp/go-retryablehttp"
+	retryable "github.com/hashicorp/go-retryablehttp"
 	"github.com/sethvargo/go-retry"
 )
 
@@ -30,36 +30,18 @@ type RoundTripper struct {
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	timeout := time.MustParseDuration(r.cfg.Timeout)
-	back := retry.NewConstant(time.MustParseDuration(r.cfg.Backoff))
-	back = retry.WithMaxRetries(r.cfg.Attempts, back)
-
-	var (
-		res *http.Response
-		err error
-	)
-
-	ctx := req.Context()
-	operation := func(ctx context.Context) error {
+	back := retry.WithMaxRetries(r.cfg.Attempts, retry.NewConstant(time.MustParseDuration(r.cfg.Backoff)))
+	operation := func(ctx context.Context) (*http.Response, error) {
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		res, err = r.RoundTripper.RoundTrip(req.WithContext(ctx))
-		ok, perr := retryablehttp.ErrorPropagatedRetryPolicy(ctx, res, err)
-
-		if ok {
-			if perr != nil {
-				return perr
-			}
-
-			if err != nil {
-				return err
-			}
+		res, err := r.RoundTripper.RoundTrip(req.WithContext(ctx))
+		if ok, _ := retryable.DefaultRetryPolicy(ctx, res, err); ok {
+			err = retry.RetryableError(err)
 		}
 
-		return nil
+		return res, err
 	}
 
-	_ = retry.Do(ctx, back, operation)
-
-	return res, err
+	return retry.DoValue(req.Context(), back, operation)
 }
