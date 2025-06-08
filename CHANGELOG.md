@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.53.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.53.0) - 2025-06-08
+
+- [`668e6e0`](https://github.com/alexfalkowski/go-service/commit/668e6e0619162f3426d21ee562bd7f7b6af91d2a) feat(retry): use do value to return response with error (#1697)
+
 ## [v2.52.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.52.0) - 2025-06-08
 
 - [`e4e1e15`](https://github.com/alexfalkowski/go-service/commit/e4e1e1537505b466b056bc0baf83ff446baeaf07) feat(retry): move retry to http (#1696)
