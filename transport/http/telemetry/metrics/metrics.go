@@ -3,6 +3,7 @@ package metrics
 import (
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -22,12 +23,12 @@ const (
 type Meter = metrics.Meter
 
 // Register prometheus.
-func Register(cfg *metrics.Config, mux *http.ServeMux) {
+func Register(name env.Name, cfg *metrics.Config, mux *http.ServeMux) {
 	if !metrics.IsEnabled(cfg) || !cfg.IsPrometheus() {
 		return
 	}
 
-	mux.Handle("GET /metrics", prometheus.Handler())
+	mux.Handle("GET "+http.Pattern("/metrics", name), prometheus.Handler())
 }
 
 // NewHandler for metrics.
