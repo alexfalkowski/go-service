@@ -62,11 +62,13 @@ var (
 	Ignored = meta.Ignored
 )
 
-// RegisterKeys for limiter.
-func RegisterKeys() {
-	limiter.RegisterKey("user-agent", UserAgent)
-	limiter.RegisterKey("ip", IPAddr)
-	limiter.RegisterKey("token", Authorization)
+// NewKeyMap for limiter.
+func NewKeyMap() limiter.KeyMap {
+	return limiter.KeyMap{
+		"user-agent": UserAgent,
+		"ip":         IPAddr,
+		"token":      Authorization,
+	}
 }
 
 // WithUserAgent for transport.
