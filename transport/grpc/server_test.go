@@ -51,6 +51,7 @@ func TestInvalidServer(t *testing.T) {
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg,
 			FS:         test.FS,
+			Name:       test.Name,
 		}
 
 		_, err := grpc.NewServer(params)

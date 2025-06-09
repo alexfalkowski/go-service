@@ -4,15 +4,22 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // NewCache for metrics.
-func NewCache(kind string, meter *metrics.Meter, cache cacher.Cache) *Cache {
-	hits := meter.MustInt64Counter("cache_hits_total", "The number of hits in the cache.")
-	misses := meter.MustInt64Counter("cache_misses_total", "The number of misses in the cache.")
+func NewCache(kind string, name env.Name, meter *metrics.Meter, cache cacher.Cache) *Cache {
+	hits := meter.MustInt64Counter(
+		metrics.Name(name, "cache_hits_total"),
+		"The number of hits in the cache.",
+	)
+	misses := meter.MustInt64Counter(
+		metrics.Name(name, "cache_misses_total"),
+		"The number of misses in the cache.",
+	)
 
 	return &Cache{kind: kind, hits: hits, misses: misses, cache: cache}
 }

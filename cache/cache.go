@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -37,6 +38,7 @@ type CacheParams struct {
 	Tracer     *tracer.Tracer
 	Logger     *logger.Logger
 	Meter      *metrics.Meter
+	Name       env.Name
 }
 
 // NewCache from config.
@@ -62,7 +64,7 @@ func NewCache(params CacheParams) cacher.Cache {
 	}
 
 	if params.Meter != nil {
-		cache = cm.NewCache(params.Config.Kind, params.Meter, cache)
+		cache = cm.NewCache(params.Config.Kind, params.Name, params.Meter, cache)
 	}
 
 	params.Lifecycle.Append(fx.Hook{

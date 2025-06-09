@@ -30,6 +30,7 @@ type ServerParams struct {
 	Logger     *logger.Logger
 	Tracer     *tracer.Tracer
 	Meter      *metrics.Meter
+	Name       env.Name
 	UserAgent  env.UserAgent
 	Version    env.Version
 	UserID     env.UserID
@@ -54,7 +55,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	var meter *metrics.Server
 	if params.Meter != nil {
-		meter = metrics.NewServer(params.Meter)
+		meter = metrics.NewServer(params.Name, params.Meter)
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)

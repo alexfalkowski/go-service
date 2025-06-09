@@ -20,7 +20,7 @@ func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
 		return nil, err
 	}
 
-	metrics.Register(dbs, w.Server.Meter)
+	metrics.Register(Name, dbs, w.Server.Meter)
 
 	return dbs, err
 }

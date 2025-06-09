@@ -47,6 +47,7 @@ func TestValidCache(t *testing.T) {
 					Tracer:     world.NewTracer(),
 					Logger:     world.Logger,
 					Meter:      world.Server.Meter,
+					Name:       test.Name,
 				}
 
 				cache := cache.NewCache(params)
@@ -108,6 +109,7 @@ func TestGenericValidCache(t *testing.T) {
 			Tracer:     world.NewTracer(),
 			Logger:     world.Logger,
 			Meter:      world.Server.Meter,
+			Name:       test.Name,
 		}
 
 		kind := cache.NewCache(params)
@@ -155,6 +157,7 @@ func TestExpiredCache(t *testing.T) {
 			Tracer:     world.NewTracer(),
 			Logger:     world.Logger,
 			Meter:      world.Server.Meter,
+			Name:       test.Name,
 		}
 
 		kind := cache.NewCache(params)
@@ -246,6 +249,7 @@ func TestDisabledCache(t *testing.T) {
 				Logger:     world.Logger,
 				Meter:      world.Server.Meter,
 				Driver:     &test.Cache{},
+				Name:       test.Name,
 			}
 
 			kind := cache.NewCache(params)
@@ -285,6 +289,7 @@ func TestErroneousSave(t *testing.T) {
 				Tracer:     world.NewTracer(),
 				Logger:     world.Logger,
 				Meter:      world.Server.Meter,
+				Name:       test.Name,
 			}
 
 			kind := cache.NewCache(params)
@@ -328,6 +333,7 @@ func TestErroneousGet(t *testing.T) {
 				Tracer:     world.NewTracer(),
 				Logger:     world.Logger,
 				Meter:      world.Server.Meter,
+				Name:       test.Name,
 			}
 
 			kind := cache.NewCache(params)

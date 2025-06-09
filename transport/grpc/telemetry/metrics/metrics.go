@@ -5,6 +5,7 @@ import (
 	"io"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
@@ -26,13 +27,27 @@ const (
 type Meter = metrics.Meter
 
 // NewServer for metrics.
-func NewServer(meter *Meter) *Server {
-	started := meter.MustInt64Counter("grpc_server_started_total", "Total number of RPCs started on the server.")
-	received := meter.MustInt64Counter("grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
-	sent := meter.MustInt64Counter("grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
-	handled := meter.MustInt64Counter("grpc_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
-	handledHist := meter.MustFloat64Histogram("grpc_server_handling_seconds",
-		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.")
+func NewServer(name env.Name, meter *Meter) *Server {
+	started := meter.MustInt64Counter(
+		metrics.Name(name, "grpc_server_started_total"),
+		"Total number of RPCs started on the server.",
+	)
+	received := meter.MustInt64Counter(
+		metrics.Name(name, "grpc_server_msg_received_total"),
+		"Total number of RPC messages received on the server.",
+	)
+	sent := meter.MustInt64Counter(
+		metrics.Name(name, "grpc_server_msg_sent_total"),
+		"Total number of RPC messages sent by the server.",
+	)
+	handled := meter.MustInt64Counter(
+		metrics.Name(name, "grpc_server_handled_total"),
+		"Total number of RPCs completed on the server, regardless of success or failure.",
+	)
+	handledHist := meter.MustFloat64Histogram(
+		metrics.Name(name, "grpc_server_handling_seconds"),
+		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.",
+	)
 
 	return &Server{
 		started: started, received: received, sent: sent,

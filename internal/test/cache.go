@@ -82,6 +82,7 @@ func redisCache(lc fx.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tr
 		Tracer:     NewTracer(lc, tracer),
 		Logger:     logger,
 		Meter:      meter,
+		Name:       Name,
 	}
 
 	return cache.NewCache(params)

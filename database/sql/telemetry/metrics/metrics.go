@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/jmoiron/sqlx"
@@ -11,21 +12,48 @@ import (
 )
 
 // Register for metrics.
-func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
+func Register(name env.Name, dbs *mssqlx.DBs, meter *metrics.Meter) {
 	if dbs == nil {
 		return
 	}
 
 	opts := metrics.WithAttributes(attributes.String("db_driver", dbs.DriverName()))
-	maxOpen := meter.MustInt64ObservableGauge("sql_max_open_total", "Maximum number of open connections to the database.")
-	open := meter.MustInt64ObservableGauge("sql_open_total", "The number of established connections both in use and idle.")
-	inUse := meter.MustInt64ObservableGauge("sql_in_use_total", "The number of connections currently in use.")
-	idle := meter.MustInt64ObservableGauge("sql_idle_total", "The number of idle connections.")
-	waited := meter.MustInt64ObservableCounter("sql_waited_for_total", "The total number of connections waited for.")
-	blocked := meter.MustFloat64ObservableCounter("sql_blocked_seconds_total", "The total time blocked waiting for a new connection.")
-	maxIdleClosed := meter.MustInt64ObservableCounter("sql_closed_max_idle_total", "The total number of connections closed due to SetMaxIdleConns.")
-	maxIdleTimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_lifetime_total", "The total number of connections closed due to SetConnMaxIdleTime.")
-	maxLifetimeClosed := meter.MustInt64ObservableCounter("sql_closed_max_idle_time_total", "The total number of connections closed due to SetConnMaxLifetime.")
+	maxOpen := meter.MustInt64ObservableGauge(
+		metrics.Name(name, "sql_max_open_total"),
+		"Maximum number of open connections to the database.",
+	)
+	open := meter.MustInt64ObservableGauge(
+		metrics.Name(name, "sql_open_total"),
+		"The number of established connections both in use and idle.",
+	)
+	inUse := meter.MustInt64ObservableGauge(
+		metrics.Name(name, "sql_in_use_total"),
+		"The number of connections currently in use.",
+	)
+	idle := meter.MustInt64ObservableGauge(
+		metrics.Name(name, "sql_idle_total"),
+		"The number of idle connections.",
+	)
+	waited := meter.MustInt64ObservableCounter(
+		metrics.Name(name, "sql_waited_for_total"),
+		"The total number of connections waited for.",
+	)
+	blocked := meter.MustFloat64ObservableCounter(
+		metrics.Name(name, "sql_blocked_seconds_total"),
+		"The total time blocked waiting for a new connection.",
+	)
+	maxIdleClosed := meter.MustInt64ObservableCounter(
+		metrics.Name(name, "sql_closed_max_idle_total"),
+		"The total number of connections closed due to SetMaxIdleConns.",
+	)
+	maxIdleTimeClosed := meter.MustInt64ObservableCounter(
+		metrics.Name(name, "sql_closed_max_lifetime_total"),
+		"The total number of connections closed due to SetConnMaxIdleTime.",
+	)
+	maxLifetimeClosed := meter.MustInt64ObservableCounter(
+		metrics.Name(name, "sql_closed_max_idle_time_total"),
+		"The total number of connections closed due to SetConnMaxLifetime.",
+	)
 
 	metrics := &Metrics{
 		dbs: dbs, opts: opts, maxOpen: maxOpen, open: open,

@@ -62,7 +62,9 @@ func BenchmarkGRPC(b *testing.B) {
 		g, err := tg.NewServer(tg.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC,
-			UserAgent:  test.UserAgent, Version: test.Version,
+			UserAgent:  test.UserAgent,
+			Version:    test.Version,
+			Name:       test.Name,
 		})
 		runtime.Must(err)
 
@@ -100,7 +102,9 @@ func BenchmarkGRPC(b *testing.B) {
 		g, err := tg.NewServer(tg.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC, Logger: logger,
-			UserAgent: test.UserAgent, Version: test.Version,
+			UserAgent: test.UserAgent,
+			Version:   test.Version,
+			Name:      test.Name,
 		})
 		runtime.Must(err)
 
@@ -139,8 +143,11 @@ func BenchmarkGRPC(b *testing.B) {
 
 		g, err := tg.NewServer(tg.ServerParams{
 			Shutdowner: test.NewShutdowner(),
-			Config:     cfg.GRPC, Logger: logger, Tracer: tracer,
-			UserAgent: test.UserAgent, Version: test.Version,
+			Config:     cfg.GRPC,
+			Logger:     logger, Tracer: tracer,
+			UserAgent: test.UserAgent,
+			Version:   test.Version,
+			Name:      test.Name,
 		})
 		runtime.Must(err)
 

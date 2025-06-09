@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-//nolint:dupl
 func TestClientStream(t *testing.T) {
 	Convey("Given I have a client stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
@@ -54,12 +53,11 @@ func TestClientStream(t *testing.T) {
 	})
 }
 
-//nolint:dupl
 func TestServerStream(t *testing.T) {
 	Convey("Given I have a server stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		s := metrics.NewServer(m)
+		s := metrics.NewServer(test.Name, m)
 		st := s.Stream(&serverStream{err: io.EOF}, metric.WithAttributes())
 
 		lc.RequireStart()
@@ -78,7 +76,7 @@ func TestServerStream(t *testing.T) {
 	Convey("Given I have a server stream", t, func() {
 		lc := fxtest.NewLifecycle(t)
 		m := test.NewPrometheusMeter(lc)
-		s := metrics.NewServer(m)
+		s := metrics.NewServer(test.Name, m)
 		st := s.Stream(&serverStream{err: test.ErrFailed}, metric.WithAttributes())
 
 		lc.RequireStart()

@@ -35,6 +35,11 @@ type (
 // WithAttributes is an alias of metric.WithAttributes.
 var WithAttributes = metric.WithAttributes
 
+// Name will prefix the env name with the metric name.
+func Name(name env.Name, metric string) string {
+	return name.String() + "_" + metric
+}
+
 // NewMeter for metrics.
 func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
 	if provider == nil {

@@ -75,6 +75,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Config:     cfg.HTTP,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
+			Name:       test.Name,
 			ID:         &id.UUID{},
 		})
 		runtime.Must(err)
@@ -115,6 +116,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Logger:     logger,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
+			Name:       test.Name,
 			ID:         &id.UUID{},
 		})
 		runtime.Must(err)
@@ -158,6 +160,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Tracer:     tracer,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
+			Name:       test.Name,
 			ID:         &id.UUID{},
 		})
 		runtime.Must(err)

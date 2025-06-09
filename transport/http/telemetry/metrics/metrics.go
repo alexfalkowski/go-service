@@ -32,13 +32,27 @@ func Register(name env.Name, cfg *metrics.Config, mux *http.ServeMux) {
 }
 
 // NewHandler for metrics.
-func NewHandler(meter *Meter) *Handler {
-	started := meter.MustInt64Counter("http_server_started_total", "Total number of RPCs started on the server.")
-	received := meter.MustInt64Counter("http_server_msg_received_total", "Total number of RPC messages received on the server.")
-	sent := meter.MustInt64Counter("http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
-	handled := meter.MustInt64Counter("http_server_handled_total", "Total number of RPCs completed on the server, regardless of success or failure.")
-	handledHist := meter.MustFloat64Histogram("http_server_handling_seconds",
-		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.")
+func NewHandler(name env.Name, meter *Meter) *Handler {
+	started := meter.MustInt64Counter(
+		metrics.Name(name, "http_server_started_total"),
+		"Total number of RPCs started on the server.",
+	)
+	received := meter.MustInt64Counter(
+		metrics.Name(name, "http_server_msg_received_total"),
+		"Total number of RPC messages received on the server.",
+	)
+	sent := meter.MustInt64Counter(
+		metrics.Name(name, "http_server_msg_sent_total"),
+		"Total number of RPC messages sent by the server.",
+	)
+	handled := meter.MustInt64Counter(
+		metrics.Name(name, "http_server_handled_total"),
+		"Total number of RPCs completed on the server, regardless of success or failure.",
+	)
+	handledHist := meter.MustFloat64Histogram(
+		metrics.Name(name, "http_server_handling_seconds"),
+		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.",
+	)
 
 	return &Handler{
 		started: started, received: received,

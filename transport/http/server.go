@@ -33,6 +33,7 @@ type ServerParams struct {
 	Logger     *logger.Logger
 	Tracer     *tracer.Tracer
 	Meter      *metrics.Meter
+	Name       env.Name
 	UserAgent  env.UserAgent
 	Version    env.Version
 	UserID     env.UserID
@@ -61,7 +62,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Meter != nil {
-		neg.Use(metrics.NewHandler(params.Meter))
+		neg.Use(metrics.NewHandler(params.Name, params.Meter))
 	}
 
 	for _, hd := range params.Handlers {
