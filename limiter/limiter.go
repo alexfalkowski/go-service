@@ -13,23 +13,19 @@ import (
 	"go.uber.org/fx"
 )
 
-// KeyFunc for the limiter.
-type KeyFunc func(context.Context) meta.Value
+type (
+	// KeyFunc for the limiter.
+	KeyFunc func(context.Context) meta.Value
 
-var (
-	// ErrMissingKey for limiter.
-	ErrMissingKey = errors.New("limiter: missing key")
-
-	keys = map[string]KeyFunc{}
+	// KeyMap of kind and KeyFunc.
+	KeyMap map[string]KeyFunc
 )
 
-// RegisterKey with name and fn. Last register wins.
-func RegisterKey(name string, fn KeyFunc) {
-	keys[name] = fn
-}
+// ErrMissingKey for limiter.
+var ErrMissingKey = errors.New("limiter: missing key")
 
 // New limiter.
-func New(lc fx.Lifecycle, cfg *Config) (*Limiter, error) {
+func New(lc fx.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
