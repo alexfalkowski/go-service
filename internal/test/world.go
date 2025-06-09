@@ -29,7 +29,6 @@ import (
 )
 
 func init() {
-	meta.RegisterKeys()
 	telemetry.Register()
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
@@ -281,7 +280,7 @@ func tlsConfig(os *worldOpts) *tls.Config {
 
 func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
 	if os.limiter != nil {
-		l, err := limiter.New(lc, os.limiter)
+		l, err := limiter.New(lc, meta.NewKeyMap(), os.limiter)
 		runtime.Must(err)
 
 		return l
