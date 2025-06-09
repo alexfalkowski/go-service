@@ -1,4 +1,3 @@
-//nolint:varnamelen
 package http_test
 
 import (

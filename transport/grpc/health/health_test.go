@@ -1,19 +1,13 @@
-package grpc_test
+package health_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-health/checker"
-	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-health/subscriber"
-	"github.com/alexfalkowski/go-service/v2/health"
-	"github.com/alexfalkowski/go-service/v2/health/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 )
@@ -23,9 +17,10 @@ func TestUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("200"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -59,9 +54,10 @@ func TestInvalidUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("500"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -94,9 +90,10 @@ func TestIgnoreAuthUnary(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("200"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -126,9 +123,10 @@ func TestStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("200"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -161,9 +159,10 @@ func TestInvalidStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("500"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("500"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -196,9 +195,10 @@ func TestIgnoreAuthStream(t *testing.T) {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 		world.Register()
 
-		o := observer(world.Lifecycle, test.StatusURL("200"), world.NewHTTP())
-		server := grpc.NewServer(grpc.ServerParams{Observer: &grpc.Observer{Observer: o}})
-		grpc.Register(grpc.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
+		so := world.HealthServer(test.StatusURL("200"))
+		o := so.Observe("http")
+		server := health.NewServer(health.ServerParams{Observer: &health.Observer{Observer: o}})
+		health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 		world.RequireStart()
 
@@ -224,13 +224,4 @@ func TestIgnoreAuthStream(t *testing.T) {
 			world.RequireStop()
 		})
 	})
-}
-
-func observer(lc fx.Lifecycle, url string, client *http.Client) *subscriber.Observer {
-	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(client.Transport))
-	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
-	regs := health.Registrations{hr}
-	hs := health.NewServer(lc, regs)
-
-	return hs.Observe("http")
 }

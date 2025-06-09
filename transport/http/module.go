@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
+	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
 	"go.uber.org/fx"
 )
@@ -21,4 +22,5 @@ var Module = fx.Options(
 	fx.Invoke(rest.Register),
 	fx.Provide(NewServer),
 	fx.Invoke(metrics.Register),
+	health.Module,
 )

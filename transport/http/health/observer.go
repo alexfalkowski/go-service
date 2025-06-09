@@ -1,4 +1,4 @@
-package http
+package health
 
 import "github.com/alexfalkowski/go-health/subscriber"
 
