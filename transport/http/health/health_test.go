@@ -33,7 +33,7 @@ func TestHealth(t *testing.T) {
 				header := http.Header{}
 				header.Set(content.TypeKey, mime.JSONMediaType)
 
-				res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, check, header, http.NoBody)
+				res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, test.URL(check), header, http.NoBody)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a healthy response", func() {
@@ -64,7 +64,7 @@ func TestReadinessNoop(t *testing.T) {
 			header.Add("User-Agent", "test-user-agent")
 			header.Set(content.TypeKey, mime.JSONMediaType)
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "readyz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("readyz"), header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a healthy response", func() {
@@ -92,7 +92,7 @@ func TestInvalidHealth(t *testing.T) {
 		Convey("When I query health", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "healthz", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("healthz"), header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {

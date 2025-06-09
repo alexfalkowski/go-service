@@ -1,8 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -107,4 +110,19 @@ func NewServer(timeout time.Duration, handler Handler) *Server {
 		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
 		Protocols: Protocols(),
 	}
+}
+
+// Path will strip / from the start.
+func Path(req *http.Request) string {
+	path := req.URL.Path
+	if strings.IsEmpty(path) {
+		return path
+	}
+
+	return path[1:]
+}
+
+// Pattern will create a pattern with the format /name/pattern.
+func Pattern(pattern string, name env.Name) string {
+	return fmt.Sprintf("/%s%s", name.String(), pattern)
 }

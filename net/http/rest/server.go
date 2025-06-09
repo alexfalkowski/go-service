@@ -7,36 +7,36 @@ import (
 )
 
 // Delete for rest.
-func Delete[Res any](path string, handler content.Handler[Res]) {
-	Route(strings.Join(" ", http.MethodDelete, path), handler)
+func Delete[Res any](pattern string, handler content.Handler[Res]) {
+	Route(strings.Join(" ", http.MethodDelete, pattern), handler)
 }
 
 // Get for rest.
-func Get[Res any](path string, handler content.Handler[Res]) {
-	Route(strings.Join(" ", http.MethodGet, path), handler)
+func Get[Res any](pattern string, handler content.Handler[Res]) {
+	Route(strings.Join(" ", http.MethodGet, pattern), handler)
 }
 
 // Post for rest.
-func Post[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(strings.Join(" ", http.MethodPost, path), handler)
+func Post[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+	RouteRequest(strings.Join(" ", http.MethodPost, pattern), handler)
 }
 
 // Put for rest.
-func Put[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(strings.Join(" ", http.MethodPut, path), handler)
+func Put[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+	RouteRequest(strings.Join(" ", http.MethodPut, pattern), handler)
 }
 
 // Patch for rest.
-func Patch[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	RouteRequest(strings.Join(" ", http.MethodPatch, path), handler)
+func Patch[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+	RouteRequest(strings.Join(" ", http.MethodPatch, pattern), handler)
 }
 
 // RouteRequest for rest.
-func RouteRequest[Req any, Res any](path string, handler content.RequestHandler[Req, Res]) {
-	mux.HandleFunc(path, content.NewRequestHandler(cont, handler))
+func RouteRequest[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
+	mux.HandleFunc(pattern, content.NewRequestHandler(cont, handler))
 }
 
 // Route for rest.
-func Route[Res any](path string, handler content.Handler[Res]) {
-	mux.HandleFunc(path, content.NewHandler(cont, handler))
+func Route[Res any](pattern string, handler content.Handler[Res]) {
+	mux.HandleFunc(pattern, content.NewHandler(cont, handler))
 }

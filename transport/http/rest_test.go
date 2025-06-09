@@ -26,7 +26,7 @@ func TestRestNoContent(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestNoContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 
 				Convey("Then I should have no error", func() {
@@ -50,7 +50,7 @@ func TestRestRequestNoContent(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				req := &test.Request{Name: "test"}
 				opts := &rest.Options{
 					ContentType: mime.JSONMediaType,
@@ -78,7 +78,7 @@ func TestRestError(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestError)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 
 				Convey("Then I should have an error", func() {
@@ -102,7 +102,7 @@ func TestRestRequestError(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestError)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				req := &test.Request{Name: "test"}
 				opts := &rest.Options{
 					ContentType: mime.JSONMediaType,
@@ -130,7 +130,7 @@ func TestRestWithContent(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				resp := &test.Response{}
 				opts := &rest.Options{
 					Response: resp,
@@ -158,7 +158,7 @@ func TestRestRequestWithContent(t *testing.T) {
 			test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
 			Convey("When I send data", func() {
-				url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+				url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 				req := &test.Request{Name: "test"}
 				resp := &test.Response{}
 				opts := &rest.Options{
@@ -188,7 +188,7 @@ func TestRestInvalidStatusCode(t *testing.T) {
 		test.RegisterHandlers("/hello", test.RestInvalidStatusCode)
 
 		Convey("When I send data", func() {
-			url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+			url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 			err := world.Rest.Get(t.Context(), url, rest.NoOptions)
 
 			Convey("Then I should have a get error", func() {
@@ -205,7 +205,7 @@ func TestRestInvalidStatusCode(t *testing.T) {
 		test.RegisterRequestHandlers("/hello", test.RestRequestInvalidStatusCode)
 
 		Convey("When I send request data", func() {
-			url := fmt.Sprintf("http://%s/hello", world.InsecureServerHost())
+			url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
 			req := &test.Request{}
 			opts := &rest.Options{Request: req}
 
