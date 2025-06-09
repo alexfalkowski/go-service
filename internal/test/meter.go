@@ -81,7 +81,7 @@ func meter(lc fx.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
 	}
 
 	config := NewPrometheusMetricsConfig()
-	hm.Register(config, mux)
+	hm.Register(Name, config, mux)
 
 	return NewMeter(lc, config)
 }

@@ -16,13 +16,13 @@ func init() {
 }
 
 var paths = []string{
-	"debug/statsviz",
-	"debug/pprof/",
-	"debug/pprof/cmdline",
-	"debug/pprof/symbol",
-	"debug/pprof/trace",
-	"debug/fgprof?seconds=1",
-	"debug/psutil",
+	test.URL("debug/statsviz"),
+	test.URL("debug/pprof/"),
+	test.URL("debug/pprof/cmdline"),
+	test.URL("debug/pprof/symbol"),
+	test.URL("debug/pprof/trace"),
+	test.URL("debug/fgprof?seconds=1"),
+	test.URL("debug/psutil"),
 }
 
 func TestInsecureDebug(t *testing.T) {

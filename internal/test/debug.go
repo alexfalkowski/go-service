@@ -23,11 +23,11 @@ func NewDebugServer(config *debug.Config, logger *logger.Logger) *debug.Server {
 	})
 	runtime.Must(err)
 
-	pprof.Register(mux)
-	fgprof.Register(mux)
-	psutil.Register(mux, Content)
+	pprof.Register(Name, mux)
+	fgprof.Register(Name, mux)
+	psutil.Register(Name, Content, mux)
 
-	err = statsviz.Register(mux)
+	err = statsviz.Register(Name, mux)
 	runtime.Must(err)
 
 	return server

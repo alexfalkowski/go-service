@@ -13,32 +13,32 @@ import (
 )
 
 // Delete method for mvc.
-func Delete[Model any](path string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodDelete, path), controller)
+func Delete[Model any](pattern string, controller Controller[Model]) bool {
+	return Route(strings.Join(" ", http.MethodDelete, pattern), controller)
 }
 
 // Get method for mvc.
-func Get[Model any](path string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodGet, path), controller)
+func Get[Model any](pattern string, controller Controller[Model]) bool {
+	return Route(strings.Join(" ", http.MethodGet, pattern), controller)
 }
 
 // Post method for mvc.
-func Post[Model any](path string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPost, path), controller)
+func Post[Model any](pattern string, controller Controller[Model]) bool {
+	return Route(strings.Join(" ", http.MethodPost, pattern), controller)
 }
 
 // Put method for mvc.
-func Put[Model any](path string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPut, path), controller)
+func Put[Model any](pattern string, controller Controller[Model]) bool {
+	return Route(strings.Join(" ", http.MethodPut, pattern), controller)
 }
 
 // Patch method for mvc.
-func Patch[Model any](path string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPatch, path), controller)
+func Patch[Model any](pattern string, controller Controller[Model]) bool {
+	return Route(strings.Join(" ", http.MethodPatch, pattern), controller)
 }
 
 // Route the path with controller for mvc.
-func Route[Model any](path string, controller Controller[Model]) bool {
+func Route[Model any](pattern string, controller Controller[Model]) bool {
 	if !IsDefined() {
 		return false
 	}
@@ -61,13 +61,13 @@ func Route[Model any](path string, controller Controller[Model]) bool {
 		}
 	}
 
-	mux.HandleFunc(path, handler)
+	mux.HandleFunc(pattern, handler)
 
 	return true
 }
 
 // StaticFile to be served via path.
-func StaticFile(path, name string) bool {
+func StaticFile(pattern, name string) bool {
 	if !IsDefined() {
 		return false
 	}
@@ -81,13 +81,13 @@ func StaticFile(path, name string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(" ", http.MethodGet, path), handler)
+	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
 
 	return true
 }
 
 // StaticPathValue to be served from a dedicated path value.
-func StaticPathValue(path, value, prefix string) bool {
+func StaticPathValue(pattern, value, prefix string) bool {
 	if !IsDefined() {
 		return false
 	}
@@ -102,7 +102,7 @@ func StaticPathValue(path, value, prefix string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(" ", http.MethodGet, path), handler)
+	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
 
 	return true
 }

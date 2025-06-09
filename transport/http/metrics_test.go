@@ -58,7 +58,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("metrics"), header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
@@ -93,7 +93,7 @@ func TestPrometheusHTTP(t *testing.T) {
 
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, "metrics", header, http.NoBody)
+			res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, test.URL("metrics"), header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {

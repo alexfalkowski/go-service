@@ -17,6 +17,7 @@ func RegisterHealth(health, live, ready *subscriber.Observer) {
 		Health:    &hh.HealthObserver{Observer: health},
 		Liveness:  &hh.LivenessObserver{Observer: live},
 		Readiness: &hh.ReadinessObserver{Observer: ready},
+		Name:      Name,
 	}
 
 	hh.Register(params)
