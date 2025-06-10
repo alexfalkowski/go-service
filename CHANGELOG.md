@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.65.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.65.0) - 2025-06-10
+
+- [`8ce8184`](https://github.com/alexfalkowski/go-service/commit/8ce8184ec36d13742febbba544ea4c50617e0f66) feat(di): move fx to di (#1716)
+
 ## [v2.64.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.64.0) - 2025-06-10
 
 - [`7813011`](https://github.com/alexfalkowski/go-service/commit/7813011ba37e91aaa1c243b2588021f681c4f7db) feat(cli): move to vars (#1715)
