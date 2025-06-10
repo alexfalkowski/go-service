@@ -15,6 +15,8 @@ func TestApplicationRun(t *testing.T) {
 		config := test.FilePath("configs/config.yml")
 
 		os.Args = []string{test.Name.String(), "server", "--input", config}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			app := cli.NewApplication(
@@ -22,8 +24,6 @@ func TestApplicationRun(t *testing.T) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
 					cmd.AddInput("")
 				},
-				cli.WithApplicationName(test.Name),
-				cli.WithApplicationVersion(test.Version),
 			)
 
 			Convey("Then I should not see an error", func() {
@@ -65,14 +65,14 @@ func TestApplicationExitOnRun(t *testing.T) {
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
 	Convey("When I try to run the server with an invalid flag", t, func() {
 		os.Args = []string{test.Name.String(), "server", "--invalid-flag"}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
 				cmd.AddInput("")
 			},
-			cli.WithApplicationName(test.Name),
-			cli.WithApplicationVersion(test.Version),
 		)
 
 		Convey("Then I should see an error", func() {
@@ -82,14 +82,14 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 
 	Convey("When I try to run the client with an invalid flag", t, func() {
 		os.Args = []string{test.Name.String(), "client", "--invalid-flag"}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", test.Options()...)
 				cmd.AddInput("")
 			},
-			cli.WithApplicationName(test.Name),
-			cli.WithApplicationVersion(test.Version),
 		)
 
 		Convey("Then I should see an error", func() {
@@ -103,6 +103,8 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 		config := test.FilePath("configs/config.yml")
 
 		os.Args = []string{test.Name.String(), "server", "--input", config}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		Convey("When I try to run an application that will shutdown in a second", func() {
 			app := cli.NewApplication(
@@ -110,8 +112,6 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
 					cmd.AddInput("")
 				},
-				cli.WithApplicationName(test.Name),
-				cli.WithApplicationVersion(test.Version),
 			)
 
 			Convey("Then I should not see an error", func() {
@@ -131,14 +131,14 @@ func TestApplicationInvalid(t *testing.T) {
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
 			os.Args = []string{test.Name.String(), "server", "--input", config}
+			cli.Name = test.Name
+			cli.Version = test.Version
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
 					cmd.AddInput("")
 				},
-				cli.WithApplicationName(test.Name),
-				cli.WithApplicationVersion(test.Version),
 			)
 
 			Convey("Then I should not see an error", func() {
@@ -154,14 +154,14 @@ func TestApplicationInvalid(t *testing.T) {
 func TestApplicationDisabled(t *testing.T) {
 	Convey("When I try to run an application", t, func() {
 		os.Args = []string{test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
 				cmd.AddInput("")
 			},
-			cli.WithApplicationName(test.Name),
-			cli.WithApplicationVersion(test.Version),
 		)
 
 		Convey("Then I should see an error", func() {
@@ -173,6 +173,8 @@ func TestApplicationDisabled(t *testing.T) {
 func TestApplicationClient(t *testing.T) {
 	Convey("When I try to run a client", t, func() {
 		os.Args = []string{test.Name.String(), "client"}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
 		opts := []fx.Option{fx.NopLogger}
 		app := cli.NewApplication(
@@ -180,8 +182,6 @@ func TestApplicationClient(t *testing.T) {
 				cmd := c.AddClient("client", "Start the client.", opts...)
 				cmd.AddInput("")
 			},
-			cli.WithApplicationName(test.Name),
-			cli.WithApplicationVersion(test.Version),
 		)
 
 		Convey("Then I should not see an error", func() {
@@ -199,14 +199,14 @@ func TestApplicationInvalidClient(t *testing.T) {
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
 			os.Args = []string{test.Name.String(), "client", "--input", config}
+			cli.Name = test.Name
+			cli.Version = test.Version
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddClient("client", "Start the client.", test.Options()...)
 					cmd.AddInput("")
 				},
-				cli.WithApplicationName(test.Name),
-				cli.WithApplicationVersion(test.Version),
 			)
 
 			Convey("Then I should see an error", func() {

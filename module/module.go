@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -25,7 +24,6 @@ import (
 var (
 	// Library module.
 	Library = fx.Options(
-		os.Module,
 		env.Module,
 		compress.Module,
 		encoding.Module,
