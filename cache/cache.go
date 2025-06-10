@@ -12,6 +12,7 @@ import (
 	cm "github.com/alexfalkowski/go-service/v2/cache/telemetry/metrics"
 	ct "github.com/alexfalkowski/go-service/v2/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/compress"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -20,15 +21,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"go.uber.org/fx"
 	"google.golang.org/protobuf/proto"
 )
 
 // CacheParams for cache.
 type CacheParams struct {
-	fx.In
+	di.In
 
-	Lifecycle  fx.Lifecycle
+	Lifecycle  di.Lifecycle
 	Config     *config.Config
 	Encoder    *encoding.Map
 	Pool       *sync.BufferPool
@@ -65,7 +65,7 @@ func NewCache(params CacheParams) cacher.Cache {
 		cache = cm.NewCache(params.Config.Kind, params.Meter, cache)
 	}
 
-	params.Lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {
 			return cache.Close(ctx)
 		},

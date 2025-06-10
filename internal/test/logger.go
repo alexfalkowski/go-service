@@ -1,14 +1,14 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"go.uber.org/fx"
 )
 
 // NewLogger for test.
-func NewLogger(lc fx.Lifecycle, config *logger.Config) *logger.Logger {
+func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
 	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: config, Version: Version})
 	runtime.Must(err)
 
@@ -33,7 +33,7 @@ func (w *World) registerTelemetry() {
 	errors.Register(errors.NewHandler(w.Logger))
 }
 
-func createLogger(lc fx.Lifecycle, os *worldOpts) *logger.Logger {
+func createLogger(lc di.Lifecycle, os *worldOpts) *logger.Logger {
 	if os.logger != nil {
 		return os.logger
 	}

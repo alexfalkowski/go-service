@@ -3,11 +3,11 @@ package sql
 import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // Module for fx.
-var Module = fx.Options(
+var Module = di.Module(
 	pg.Module,
 	telemetry.Module,
 )

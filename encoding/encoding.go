@@ -4,18 +4,18 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
-	"go.uber.org/fx"
 )
 
 // MapParams for encoding.
 type MapParams struct {
-	fx.In
+	di.In
 
 	JSON        *json.Encoder
 	YAML        *yaml.Encoder

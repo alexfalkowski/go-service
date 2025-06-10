@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
-	"go.uber.org/fx"
 )
 
 const (
@@ -47,9 +47,9 @@ var (
 
 // LoggerParams for logger.
 type LoggerParams struct {
-	fx.In
+	di.In
 
-	Lifecycle   fx.Lifecycle
+	Lifecycle   di.Lifecycle
 	Config      *Config
 	ID          env.ID
 	Name        env.Name
@@ -117,6 +117,6 @@ func logger(params LoggerParams) (*slog.Logger, error) {
 	return nil, ErrNotFound
 }
 
-func provide(logger *Logger) *slog.Logger {
+func newLogger(logger *Logger) *slog.Logger {
 	return logger.GetLogger()
 }

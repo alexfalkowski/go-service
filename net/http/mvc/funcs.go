@@ -3,6 +3,7 @@ package mvc
 import (
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/go-sprout/sprout"
 	"github.com/go-sprout/sprout/registry/conversion"
@@ -13,12 +14,11 @@ import (
 	"github.com/go-sprout/sprout/registry/std"
 	"github.com/go-sprout/sprout/registry/strings"
 	"github.com/go-sprout/sprout/registry/time"
-	"go.uber.org/fx"
 )
 
 // FunctionMapParams for sprout.
 type FunctionMapParams struct {
-	fx.In
+	di.In
 
 	Logger     *slog.Logger
 	Registries []sprout.Registry `optional:"true"`

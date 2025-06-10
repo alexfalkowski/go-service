@@ -1,17 +1,17 @@
 package config
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"go.uber.org/fx"
 )
 
 // DecoderParams for config.
 type DecoderParams struct {
-	fx.In
+	di.In
 
 	Flags   *flag.FlagSet
 	Encoder *encoding.Map

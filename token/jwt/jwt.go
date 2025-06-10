@@ -2,16 +2,16 @@ package jwt
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/golang-jwt/jwt/v4"
-	"go.uber.org/fx"
 )
 
 // TokenParams for jwt.
 type TokenParams struct {
-	fx.In
+	di.In
 
 	Config    *Config
 	Signer    *ed25519.Signer

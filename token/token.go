@@ -2,17 +2,17 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
-	"go.uber.org/fx"
 )
 
 // TokenParams for token.
 type TokenParams struct {
-	fx.In
+	di.In
 
 	Config *Config
 	JWT    *jwt.Token

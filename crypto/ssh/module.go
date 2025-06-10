@@ -1,10 +1,10 @@
 package ssh
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(NewGenerator),
-	fx.Provide(NewSigner),
-	fx.Provide(NewVerifier),
+var Module = di.Module(
+	di.Constructor(NewGenerator),
+	di.Constructor(NewSigner),
+	di.Constructor(NewVerifier),
 )

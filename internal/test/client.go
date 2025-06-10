@@ -2,7 +2,9 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -12,13 +14,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport"
 	g "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	h "github.com/alexfalkowski/go-service/v2/transport/http"
-	"go.uber.org/fx"
-	"google.golang.org/grpc"
 )
 
 // Client for test.
 type Client struct {
-	Lifecycle    fx.Lifecycle
+	Lifecycle    di.Lifecycle
 	Logger       *logger.Logger
 	Tracer       *tracer.Config
 	Transport    *transport.Config

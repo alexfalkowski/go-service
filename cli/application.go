@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/flag"
@@ -10,8 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	cmd "github.com/cristalhq/acmd"
-	"go.uber.org/dig"
-	"go.uber.org/fx"
 )
 
 // RegisterFunc for cmd.
@@ -44,8 +43,8 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 				return err
 			}
 
-			opts = append(opts, fx.Provide(Provide), fx.Provide(flags.Provide), runtime.Module, fx.NopLogger)
-			app := fx.New(opts...)
+			opts = append(opts, di.Constructor(Provide), di.Constructor(flags.Provide), runtime.Module, di.NoLogger)
+			app := di.New(opts...)
 			done := app.Done()
 
 			if err := app.Start(ctx); err != nil {
@@ -74,8 +73,8 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 				return err
 			}
 
-			opts = append(opts, fx.Provide(Provide), fx.Provide(flags.Provide), fx.NopLogger)
-			app := fx.New(opts...)
+			opts = append(opts, di.Constructor(Provide), di.Constructor(flags.Provide), di.NoLogger)
+			app := di.New(opts...)
 
 			if err := app.Start(ctx); err != nil {
 				return a.prefix(name, err)
@@ -113,5 +112,5 @@ func (a *Application) ExitOnError(ctx context.Context) {
 }
 
 func (a *Application) prefix(prefix string, err error) error {
-	return errors.Prefix(prefix+": failed to run", dig.RootCause(err))
+	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
 }

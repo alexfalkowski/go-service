@@ -3,13 +3,13 @@ package transport
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/server"
-	"go.uber.org/fx"
 )
 
 // Register all the transports.
-func Register(lc fx.Lifecycle, servers []*server.Service) {
-	lc.Append(fx.Hook{
+func Register(lc di.Lifecycle, servers []*server.Service) {
+	lc.Append(di.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range servers {
 				s.Start()

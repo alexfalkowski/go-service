@@ -3,14 +3,14 @@ package paseto
 import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"go.uber.org/fx"
 )
 
 // TokenParams for paseto.
 type TokenParams struct {
-	fx.In
+	di.In
 
 	Config    *Config
 	Signer    *ed25519.Signer

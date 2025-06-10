@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
@@ -11,7 +12,6 @@ import (
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.uber.org/fx"
 )
 
 func newOtlpLogger(params LoggerParams) *slog.Logger {
@@ -29,7 +29,7 @@ func newOtlpLogger(params LoggerParams) *slog.Logger {
 	provider := log.NewLoggerProvider(log.WithProcessor(log.NewBatchProcessor(exporter)), log.WithResource(attrs))
 	global.SetLoggerProvider(provider)
 
-	params.Lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {
 			_ = provider.Shutdown(ctx)
 			_ = exporter.Shutdown(ctx)

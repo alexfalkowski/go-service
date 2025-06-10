@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
@@ -10,14 +11,13 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"go.uber.org/fx"
 )
 
 // MeterProviderParams for metrics.
 type MeterProviderParams struct {
-	fx.In
+	di.In
 
-	Lifecycle   fx.Lifecycle
+	Lifecycle   di.Lifecycle
 	Config      *Config
 	Reader      sdk.Reader
 	ID          env.ID
@@ -42,7 +42,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
 
-	params.Lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
 			err := errors.Join(runtime.Start(runtime.WithMeterProvider(provider)), host.Start(host.WithMeterProvider(provider)))
 

@@ -3,11 +3,11 @@ package server
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
 
@@ -15,7 +15,7 @@ import (
 type Service = server.Service
 
 // NewService for gRPC.
-func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logger.Logger, sh fx.Shutdowner) (*Service, error) {
+func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
 	serv, err := NewServer(grpc, cfg)
 	if err != nil {
 		return nil, err

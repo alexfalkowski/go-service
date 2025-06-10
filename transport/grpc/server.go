@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -18,14 +19,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"go.uber.org/fx"
 )
 
 // ServerParams for gRPC.
 type ServerParams struct {
-	fx.In
+	di.In
 
-	Shutdowner fx.Shutdowner
+	Shutdowner di.Shutdowner
 	Config     *Config
 	Logger     *logger.Logger
 	Tracer     *tracer.Tracer
@@ -164,7 +164,7 @@ func creds(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 	return grpc.Creds(creds), nil
 }
 
-func provide(server *Server) grpc.ServiceRegistrar {
+func registrar(server *Server) grpc.ServiceRegistrar {
 	return server.ServiceRegistrar()
 }
 

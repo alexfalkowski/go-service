@@ -2,10 +2,10 @@ package telemetry
 
 import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry/metrics"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // Module for fx.
-var Module = fx.Options(
+var Module = di.Module(
 	metrics.Module,
 )

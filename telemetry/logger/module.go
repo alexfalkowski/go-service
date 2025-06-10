@@ -1,9 +1,9 @@
 package logger
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(NewLogger),
-	fx.Provide(provide),
+var Module = di.Module(
+	di.Constructor(NewLogger),
+	di.Constructor(newLogger),
 )

@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	debug "github.com/alexfalkowski/go-service/v2/debug/http"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
@@ -12,14 +13,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"go.uber.org/fx"
 )
 
 // ServerParams for debug.
 type ServerParams struct {
-	fx.In
+	di.In
 
-	Shutdowner fx.Shutdowner
+	Shutdowner di.Shutdowner
 	Mux        *debug.ServeMux
 	Config     *Config
 	Logger     *logger.Logger

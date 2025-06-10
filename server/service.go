@@ -3,20 +3,20 @@ package server
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
-	"go.uber.org/fx"
 )
 
 // NewService that can start and stop an underlying server.
-func NewService(name string, server Server, logger *logger.Logger, sh fx.Shutdowner) *Service {
+func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdowner) *Service {
 	return &Service{name: name, server: server, logger: logger, sh: sh}
 }
 
 // Service handles the starting and stopping of a server.
 type Service struct {
 	server Server
-	sh     fx.Shutdowner
+	sh     di.Shutdowner
 	logger *logger.Logger
 	name   string
 }

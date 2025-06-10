@@ -1,9 +1,9 @@
 package cli
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
-// Option is an alias of fx.Option.
-type Option = fx.Option
+// Option is an alias of di.Option.
+type Option = di.Option
 
 // Commander allows adding different sub commands.
 type Commander interface {

@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.uber.org/fx"
 )
 
 func TestApplicationRun(t *testing.T) {
@@ -176,7 +176,7 @@ func TestApplicationClient(t *testing.T) {
 		cli.Name = test.Name
 		cli.Version = test.Version
 
-		opts := []fx.Option{fx.NopLogger}
+		opts := []di.Option{di.NoLogger}
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", opts...)

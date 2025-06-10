@@ -3,9 +3,9 @@ package mvc
 import (
 	"io/fs"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/go-sprout/sprout"
-	"go.uber.org/fx"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 
 // RegisterParams for mvc.
 type RegisterParams struct {
-	fx.In
+	di.In
 
 	Mux         *http.ServeMux
 	FunctionMap sprout.FunctionMap

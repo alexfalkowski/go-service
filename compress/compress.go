@@ -5,12 +5,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/compress/s2"
 	"github.com/alexfalkowski/go-service/v2/compress/snappy"
 	"github.com/alexfalkowski/go-service/v2/compress/zstd"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // MapParams for compressor.
 type MapParams struct {
-	fx.In
+	di.In
 
 	Zstd   *zstd.Compressor
 	S2     *s2.Compressor

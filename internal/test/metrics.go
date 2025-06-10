@@ -1,39 +1,39 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/fx"
 )
 
 // NewOTLPMeter for test.
-func NewOTLPMeter(lc fx.Lifecycle) *metrics.Meter {
+func NewOTLPMeter(lc di.Lifecycle) *metrics.Meter {
 	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeter for test.
-func NewPrometheusMeter(lc fx.Lifecycle) *metrics.Meter {
+func NewPrometheusMeter(lc di.Lifecycle) *metrics.Meter {
 	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeter for test.
-func NewMeter(lc fx.Lifecycle, c *metrics.Config) *metrics.Meter {
+func NewMeter(lc di.Lifecycle, c *metrics.Config) *metrics.Meter {
 	return metrics.NewMeter(Name, Version, NewMeterProvider(lc, c))
 }
 
 // NewOTLPMeterProvider for test.
-func NewOTLPMeterProvider(lc fx.Lifecycle) metric.MeterProvider {
+func NewOTLPMeterProvider(lc di.Lifecycle) metric.MeterProvider {
 	return NewMeterProvider(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeterProvider for test.
-func NewPrometheusMeterProvider(lc fx.Lifecycle) metric.MeterProvider {
+func NewPrometheusMeterProvider(lc di.Lifecycle) metric.MeterProvider {
 	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeterProvider for test.
-func NewMeterProvider(lc fx.Lifecycle, config *metrics.Config) metric.MeterProvider {
+func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) metric.MeterProvider {
 	r, err := metrics.NewReader(Name, config)
 	runtime.Must(err)
 

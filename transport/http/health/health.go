@@ -4,17 +4,17 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-health/subscriber"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"go.uber.org/fx"
 )
 
 // RegisterParams for health.
 type RegisterParams struct {
-	fx.In
+	di.In
 
 	Health    *HealthObserver
 	Liveness  *LivenessObserver

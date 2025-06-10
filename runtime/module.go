@@ -1,9 +1,9 @@
 package runtime
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Invoke(RegisterMaxProcs),
-	fx.Invoke(RegisterMemLimit),
+var Module = di.Module(
+	di.Register(RegisterMaxProcs),
+	di.Register(RegisterMemLimit),
 )

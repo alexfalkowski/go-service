@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-health/server"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // NewServer for health.
-func NewServer(lc fx.Lifecycle, regs Registrations) *server.Server {
+func NewServer(lc di.Lifecycle, regs Registrations) *server.Server {
 	server := server.NewServer()
 	server.Register(regs...)
 
-	lc.Append(fx.Hook{
+	lc.Append(di.Hook{
 		OnStart: func(context.Context) error {
 			server.Start()
 
