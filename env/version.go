@@ -25,8 +25,3 @@ func (v Version) String() string {
 
 	return s[1:]
 }
-
-// IsEmpty the version.
-func (v Version) IsEmpty() bool {
-	return strings.IsEmpty(v.String())
-}

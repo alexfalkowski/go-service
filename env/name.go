@@ -4,7 +4,6 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewName for this service.
@@ -18,9 +17,4 @@ type Name string
 // String representation of the name.
 func (n Name) String() string {
 	return string(n)
-}
-
-// IsEmpty the name.
-func (n Name) IsEmpty() bool {
-	return strings.IsEmpty(n.String())
 }
