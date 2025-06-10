@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
@@ -29,20 +30,19 @@ import (
 	hh "github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
-	"go.uber.org/fx"
 	"google.golang.org/grpc"
 )
 
 // Options for test.
-func Options() []fx.Option {
-	return []fx.Option{
+func Options() []di.Option {
+	return []di.Option{
 		module.Server,
-		fx.Provide(registrations), fx.Provide(healthObserver), fx.Provide(livenessObserver),
-		fx.Provide(readinessObserver), fx.Provide(grpcObserver), fx.Invoke(invokeServiceRegistrar),
-		fx.Invoke(shutdown), fx.Invoke(invokeFeatureClient), fx.Invoke(invokeWebhooks), fx.Invoke(invokeConfigs),
-		fx.Invoke(invokeMeter), fx.Invoke(invokeNetwork), fx.Invoke(invokeCache),
-		fx.Invoke(invokeCrypt), fx.Invoke(invokeEnvironment), fx.Invoke(invokeTokens),
-		fx.Invoke(invokeAccessController),
+		di.Constructor(registrations), di.Constructor(healthObserver), di.Constructor(livenessObserver),
+		di.Constructor(readinessObserver), di.Constructor(grpcObserver), di.Register(invokeServiceRegistrar),
+		di.Register(shutdown), di.Register(invokeFeatureClient), di.Register(invokeWebhooks), di.Register(invokeConfigs),
+		di.Register(invokeMeter), di.Register(invokeNetwork), di.Register(invokeCache),
+		di.Register(invokeCrypt), di.Register(invokeEnvironment), di.Register(invokeTokens),
+		di.Register(invokeAccessController),
 	}
 }
 
@@ -121,8 +121,8 @@ func invokeCrypt(
 func invokeTokens(_ token.Generator, _ token.Verifier) {
 }
 
-func shutdown(s fx.Shutdowner) {
-	go func(s fx.Shutdowner) {
+func shutdown(s di.Shutdowner) {
+	go func(s di.Shutdowner) {
 		time.Sleep(time.Second)
 
 		_ = s.Shutdown()

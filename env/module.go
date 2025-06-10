@@ -1,10 +1,10 @@
 package env
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(NewID),
-	fx.Provide(NewUserAgent),
-	fx.Provide(NewUserID),
+var Module = di.Module(
+	di.Constructor(NewID),
+	di.Constructor(NewUserAgent),
+	di.Constructor(NewUserID),
 )

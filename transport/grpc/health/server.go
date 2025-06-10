@@ -3,13 +3,13 @@ package health
 import (
 	"context"
 
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // ServerParams for health.
 type ServerParams struct {
-	fx.In
+	di.In
 
 	Observer *Observer `optional:"true"`
 }

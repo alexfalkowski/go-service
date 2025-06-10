@@ -1,12 +1,12 @@
 package hooks
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/hooks"
-	"go.uber.org/fx"
 )
 
 // Module for fx.
-var Module = fx.Options(
+var Module = di.Module(
 	hooks.Module,
-	fx.Provide(NewWebhook),
+	di.Constructor(NewWebhook),
 )

@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -24,7 +25,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -278,7 +278,7 @@ func tlsConfig(os *worldOpts) *tls.Config {
 	return nil
 }
 
-func serverLimiter(lc fx.Lifecycle, os *worldOpts) *limiter.Limiter {
+func serverLimiter(lc di.Lifecycle, os *worldOpts) *limiter.Limiter {
 	if os.limiter != nil {
 		l, err := limiter.New(lc, meta.NewKeyMap(), os.limiter)
 		runtime.Must(err)

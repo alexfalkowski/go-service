@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/limiter"
@@ -18,12 +19,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/urfave/negroni/v3"
-	"go.uber.org/fx"
 )
 
 // Server for test.
 type Server struct {
-	Lifecycle       fx.Lifecycle
+	Lifecycle       di.Lifecycle
 	Meter           *metrics.Meter
 	Verifier        token.Verifier
 	Mux             *http.ServeMux

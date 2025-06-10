@@ -4,20 +4,20 @@ import (
 	"context"
 	"crypto/tls"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/errors"
 	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"go.uber.org/fx"
 )
 
 // Service is an alias for server.Service.
 type Service = server.Service
 
 // NewService for http.
-func NewService(name string, http *http.Server, cfg *config.Config, logger *logger.Logger, sh fx.Shutdowner) (*Service, error) {
+func NewService(name string, http *http.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
 	serv, err := NewServer(http, cfg)
 	if err != nil {
 		return nil, err

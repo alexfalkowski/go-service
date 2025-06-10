@@ -6,15 +6,15 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug/pprof"
 	"github.com/alexfalkowski/go-service/v2/debug/psutil"
 	"github.com/alexfalkowski/go-service/v2/debug/statsviz"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(http.NewServeMux),
-	fx.Provide(NewServer),
-	fx.Invoke(statsviz.Register),
-	fx.Invoke(pprof.Register),
-	fx.Invoke(fgprof.Register),
-	fx.Invoke(psutil.Register),
+var Module = di.Module(
+	di.Constructor(http.NewServeMux),
+	di.Constructor(NewServer),
+	di.Register(statsviz.Register),
+	di.Register(pprof.Register),
+	di.Register(fgprof.Register),
+	di.Register(psutil.Register),
 )

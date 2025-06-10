@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/feature"
@@ -18,12 +19,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
-	"go.uber.org/fx"
 )
 
 var (
 	// Library module.
-	Library = fx.Options(
+	Library = di.Module(
 		env.Module,
 		compress.Module,
 		encoding.Module,
@@ -34,7 +34,7 @@ var (
 	)
 
 	// Server module.
-	Server = fx.Options(
+	Server = di.Module(
 		Library,
 		debug.Module,
 		cache.Module,
@@ -48,7 +48,7 @@ var (
 	)
 
 	// Client module.
-	Client = fx.Options(
+	Client = di.Module(
 		Library,
 		cache.Module,
 		config.Module,

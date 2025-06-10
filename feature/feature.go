@@ -3,19 +3,19 @@ package feature
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	hooks "github.com/open-feature/go-sdk-contrib/hooks/open-telemetry/pkg"
 	"github.com/open-feature/go-sdk/openfeature"
-	"go.uber.org/fx"
 )
 
 // ProviderParams for feature.
 type ProviderParams struct {
-	fx.In
+	di.In
 
-	Lifecycle       fx.Lifecycle
+	Lifecycle       di.Lifecycle
 	MetricProvider  metrics.MeterProvider
 	FeatureProvider openfeature.FeatureProvider `optional:"true"`
 	Name            env.Name
@@ -34,7 +34,7 @@ func Register(params ProviderParams) {
 		openfeature.AddHooks(h, hooks.NewTracesHook(hooks.WithErrorStatusEnabled()))
 	}
 
-	params.Lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
 			return openfeature.SetProviderAndWait(params.FeatureProvider)
 		},

@@ -1,10 +1,10 @@
 package metrics
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(NewReader),
-	fx.Provide(NewMeterProvider),
-	fx.Provide(NewMeter),
+var Module = di.Module(
+	di.Constructor(NewReader),
+	di.Constructor(NewMeterProvider),
+	di.Constructor(NewMeter),
 )

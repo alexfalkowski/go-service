@@ -3,6 +3,7 @@ package tracer
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
@@ -12,7 +13,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/fx"
 )
 
 // OperationName for tracer.
@@ -22,9 +22,9 @@ func OperationName(area, name string) string {
 
 // TracerParams for tracer.
 type TracerParams struct {
-	fx.In
+	di.In
 
-	Lifecycle   fx.Lifecycle
+	Lifecycle   di.Lifecycle
 	Config      *Config
 	ID          env.ID
 	Name        env.Name
@@ -51,7 +51,7 @@ func NewTracer(params TracerParams) *Tracer {
 
 	otel.SetTracerProvider(provider)
 
-	params.Lifecycle.Append(fx.Hook{
+	params.Lifecycle.Append(di.Hook{
 		OnStart: func(ctx context.Context) error {
 			return prefix(exporter.Start(ctx))
 		},

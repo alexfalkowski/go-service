@@ -9,11 +9,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 // Module for fx.
-var Module = fx.Options(
+var Module = di.Module(
 	pem.Module,
 	rand.Module,
 	aes.Module,

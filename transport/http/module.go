@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
@@ -8,19 +9,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	"go.uber.org/fx"
 )
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Invoke(Register),
-	fx.Provide(http.NewServeMux),
-	fx.Provide(content.NewContent),
-	fx.Provide(mvc.NewFunctionMap),
-	fx.Invoke(mvc.Register),
-	fx.Invoke(rpc.Register),
-	fx.Invoke(rest.Register),
-	fx.Provide(NewServer),
-	fx.Invoke(metrics.Register),
+var Module = di.Module(
+	di.Register(Register),
+	di.Constructor(http.NewServeMux),
+	di.Constructor(content.NewContent),
+	di.Constructor(mvc.NewFunctionMap),
+	di.Register(mvc.Register),
+	di.Register(rpc.Register),
+	di.Register(rest.Register),
+	di.Constructor(NewServer),
+	di.Register(metrics.Register),
 	health.Module,
 )

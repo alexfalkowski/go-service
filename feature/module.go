@@ -1,9 +1,9 @@
 package feature
 
-import "go.uber.org/fx"
+import "github.com/alexfalkowski/go-service/v2/di"
 
 // Module for fx.
-var Module = fx.Options(
-	fx.Provide(NewClient),
-	fx.Invoke(Register),
+var Module = di.Module(
+	di.Constructor(NewClient),
+	di.Register(Register),
 )

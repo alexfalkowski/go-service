@@ -4,6 +4,7 @@ import (
 	"cmp"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -20,14 +21,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/urfave/negroni/v3"
-	"go.uber.org/fx"
 )
 
 // ServerParams for HTTP.
 type ServerParams struct {
-	fx.In
+	di.In
 
-	Shutdowner fx.Shutdowner
+	Shutdowner di.Shutdowner
 	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *logger.Logger

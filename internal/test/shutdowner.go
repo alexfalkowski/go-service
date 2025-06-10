@@ -3,7 +3,7 @@ package test
 import (
 	"sync"
 
-	"go.uber.org/fx"
+	"github.com/alexfalkowski/go-service/v2/di"
 )
 
 func NewShutdowner() *Shutdowner {
@@ -22,7 +22,7 @@ func (s *Shutdowner) Called() bool {
 	return s.called
 }
 
-func (s *Shutdowner) Shutdown(...fx.ShutdownOption) error {
+func (s *Shutdowner) Shutdown(...di.ShutdownOption) error {
 	s.m.Lock()
 	defer s.m.Unlock()
 

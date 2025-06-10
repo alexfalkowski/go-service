@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -17,7 +18,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"
 	"github.com/ngrok/sqlmw"
-	"go.uber.org/fx"
 )
 
 // Driver is an alias for the driver.Driver type.
@@ -46,7 +46,7 @@ func New(name string, driver Driver, trace *tracer.Tracer, log *logger.Logger) D
 }
 
 // Open a DB pool.
-func Open(lc fx.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
+func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
 	for i, m := range cfg.Masters {
@@ -74,7 +74,7 @@ func Open(lc fx.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 		return nil, err
 	}
 
-	lc.Append(fx.Hook{
+	lc.Append(di.Hook{
 		OnStop: func(_ context.Context) error {
 			return errors.Join(db.Destroy()...)
 		},
