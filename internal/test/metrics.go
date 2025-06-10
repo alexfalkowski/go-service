@@ -19,7 +19,7 @@ func NewPrometheusMeter(lc fx.Lifecycle) *metrics.Meter {
 
 // NewMeter for test.
 func NewMeter(lc fx.Lifecycle, c *metrics.Config) *metrics.Meter {
-	return metrics.NewMeter(NewMeterProvider(lc, c), Name)
+	return metrics.NewMeter(Name, Version, NewMeterProvider(lc, c))
 }
 
 // NewOTLPMeterProvider for test.
