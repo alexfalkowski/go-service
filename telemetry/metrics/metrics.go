@@ -36,12 +36,14 @@ type (
 var WithAttributes = metric.WithAttributes
 
 // NewMeter for metrics.
-func NewMeter(provider metric.MeterProvider, name env.Name) *Meter {
+func NewMeter(name env.Name, version env.Version, provider metric.MeterProvider) *Meter {
 	if provider == nil {
 		return nil
 	}
 
-	return &Meter{provider.Meter(name.String())}
+	return &Meter{
+		provider.Meter(name.String(), metric.WithInstrumentationVersion(version.String())),
+	}
 }
 
 // Meter using otel.
