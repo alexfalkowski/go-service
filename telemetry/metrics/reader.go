@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
@@ -13,7 +14,7 @@ import (
 var ErrNotFound = errors.New("metrics: reader not found")
 
 // NewReader for metrics. A nil reader means disabled.
-func NewReader(cfg *Config) (metric.Reader, error) {
+func NewReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	switch {
 	case !IsEnabled(cfg):
 		return nil, nil
@@ -25,7 +26,7 @@ func NewReader(cfg *Config) (metric.Reader, error) {
 
 		return metric.NewPeriodicReader(exporter), nil
 	case cfg.IsPrometheus():
-		exporter, err := prometheus.New()
+		exporter, err := prometheus.New(prometheus.WithNamespace(name.String()))
 		if err != nil {
 			return nil, prefix(err)
 		}
