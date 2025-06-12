@@ -16,7 +16,6 @@ var (
 	Version = env.NewVersion()
 )
 
-// Provide is used for fx.
-func Provide() (*os.FS, env.Name, env.Version) {
+func provide() (*os.FS, env.Name, env.Version) {
 	return FS, Name, Version
 }

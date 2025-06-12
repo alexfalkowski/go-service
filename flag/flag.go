@@ -25,8 +25,3 @@ func (f *FlagSet) GetInput() string {
 
 	return input
 }
-
-// Provide returns the flag set.
-func (f *FlagSet) Provide() *FlagSet {
-	return f
-}
