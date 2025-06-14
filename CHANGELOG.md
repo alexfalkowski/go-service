@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.68.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.68.0) - 2025-06-14
+
+- [`7b173e1`](https://github.com/alexfalkowski/go-service/commit/7b173e11939bab453c5edf95bc8cb575fc4f39d2) feat(deps): bump github.com/KimMachineGun/automemlimit from 0.7.2 to 0.7.3 (#1723)
+
 ## [v2.67.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.67.0) - 2025-06-14
 
 - [`b771c4d`](https://github.com/alexfalkowski/go-service/commit/b771c4df8505a3b937cd9dd0a49d15b84467c16b) feat(deps): bump github.com/go-sprout/sprout from 1.0.0 to 1.0.1 (#1719)
