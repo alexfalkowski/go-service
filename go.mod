@@ -19,7 +19,7 @@ require (
 	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-playground/validator/v10 v10.26.0
-	github.com/go-sprout/sprout v1.0.0
+	github.com/go-sprout/sprout v1.0.1
 	github.com/goccy/go-json v0.10.5
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
@@ -75,7 +75,7 @@ require (
 
 require (
 	aidanwoods.dev/go-result v0.3.1 // indirect
-	dario.cat/mergo v1.0.1 // indirect
+	dario.cat/mergo v1.0.2 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/aead/cmac v0.0.0-20160719120800-7af84192f0b1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -118,7 +118,7 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
 	github.com/smarty/assertions v1.15.0 // indirect
-	github.com/spf13/cast v1.7.1 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
