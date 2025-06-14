@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.67.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.67.0) - 2025-06-14
+
+- [`b771c4d`](https://github.com/alexfalkowski/go-service/commit/b771c4df8505a3b937cd9dd0a49d15b84467c16b) feat(deps): bump github.com/go-sprout/sprout from 1.0.0 to 1.0.1 (#1719)
+- [`d69ea48`](https://github.com/alexfalkowski/go-service/commit/d69ea48d93ce6aa359297b6c7e1c391c0e3c482c) build(deps): bump bin from `f4ba54b` to `c9044eb` (#1722)
+
 ## [v2.66.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.66.0) - 2025-06-12
 
 - [`8dd2a8d`](https://github.com/alexfalkowski/go-service/commit/8dd2a8d6c44ac58384ccd4d00b3744ef6b0335f9) feat(cli): move creating flag set to cmd (#1720)
