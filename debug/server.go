@@ -35,7 +35,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	timeout := time.MustParseDuration(params.Config.Timeout)
 	svr := http.NewServer(timeout, params.Mux)
 
-	cfg, err := conf(params.FS, params.Config)
+	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -62,7 +62,7 @@ func (s *Server) GetService() *server.Service {
 	return s.Service
 }
 
-func conf(fs *os.FS, cfg *Config) (*config.Config, error) {
+func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
 		Address: cmp.Or(cfg.Address, ":6060"),
 	}

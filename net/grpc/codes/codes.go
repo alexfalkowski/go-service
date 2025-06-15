@@ -5,7 +5,7 @@ import "google.golang.org/grpc/codes"
 // Code is an alias for codes.Code.
 type Code = codes.Code
 
-var (
+const (
 	// Aborted is an alias for codes.Aborted.
 	Aborted = codes.Aborted
 
