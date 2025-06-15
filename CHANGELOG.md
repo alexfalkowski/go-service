@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.70.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.70.0) - 2025-06-15
+
+- [`57291d2`](https://github.com/alexfalkowski/go-service/commit/57291d230d041840822f55fd8dfbb1c6650ff7c8) feat(deps): bump github.com/cloudevents/sdk-go/v2 from 2.16.0 to 2.16.1 (#1725)
+
 ## [v2.69.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.69.0) - 2025-06-15
 
 - [`9c78b4f`](https://github.com/alexfalkowski/go-service/commit/9c78b4f68947459d74921207fe43a8ed50642cd4) feat(grpc): use const for codes (#1724)
