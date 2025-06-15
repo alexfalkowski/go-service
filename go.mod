@@ -12,7 +12,7 @@ require (
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
 	github.com/casbin/casbin/v2 v2.107.0
-	github.com/cloudevents/sdk-go/v2 v2.16.0
+	github.com/cloudevents/sdk-go/v2 v2.16.1
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/faabiosr/cachego v0.26.0
@@ -131,7 +131,6 @@ require (
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
-	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250519155744-55703ea1f237 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250519155744-55703ea1f237 // indirect
 )
