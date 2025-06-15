@@ -28,6 +28,15 @@ const (
 	// StatusBadRequest is an alias of http.StatusBadRequest.
 	StatusBadRequest = http.StatusBadRequest
 
+	// StatusConflict is an alias of http.StatusConflict.
+	StatusConflict = http.StatusConflict
+
+	// StatusForbidden is an alias of http.StatusForbidden.
+	StatusForbidden = http.StatusForbidden
+
+	// StatusGatewayTimeout is an alias of http.StatusGatewayTimeout.
+	StatusGatewayTimeout = http.StatusGatewayTimeout
+
 	// StatusOK is an alias of http.StatusOK.
 	StatusOK = http.StatusOK
 
@@ -36,6 +45,9 @@ const (
 
 	// StatusNotFound is an alias of http.StatusNotFound.
 	StatusNotFound = http.StatusNotFound
+
+	// StatusNotImplemented is an alias of http.StatusNotImplemented.
+	StatusNotImplemented = http.StatusNotImplemented
 
 	// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
 	StatusServiceUnavailable = http.StatusServiceUnavailable

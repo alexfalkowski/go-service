@@ -1,9 +1,8 @@
 package status
 
 import (
-	"net/http"
-
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
 // Taken from https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go

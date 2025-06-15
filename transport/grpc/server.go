@@ -47,7 +47,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	opt, err := creds(params.FS, params.Config)
+	opt, err := credsServerOption(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -149,7 +149,7 @@ func streamServerOption(params ServerParams, server *metrics.Server, interceptor
 	return grpc.ChainStreamInterceptor(sis...)
 }
 
-func creds(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
+func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 	if !tls.IsEnabled(cfg.TLS) {
 		return grpc.EmptyServerOption{}, nil
 	}
