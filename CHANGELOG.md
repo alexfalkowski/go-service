@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.71.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.71.0) - 2025-06-17
+
+- [`032e531`](https://github.com/alexfalkowski/go-service/commit/032e53111641ce01b8f3c9a1030810f12c5f6d3a) feat(deps): bump github.com/open-feature/go-sdk-contrib/hooks/open-telemetry from 0.3.4 to 0.3.5 (#1727)
+
 ## [v2.70.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.70.0) - 2025-06-15
 
 - [`57291d2`](https://github.com/alexfalkowski/go-service/commit/57291d230d041840822f55fd8dfbb1c6650ff7c8) feat(deps): bump github.com/cloudevents/sdk-go/v2 from 2.16.0 to 2.16.1 (#1725)
