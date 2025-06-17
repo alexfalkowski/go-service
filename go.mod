@@ -34,8 +34,8 @@ require (
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/oklog/ulid v1.3.1
-	github.com/open-feature/go-sdk v1.14.1
-	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.4
+	github.com/open-feature/go-sdk v1.15.1
+	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.5
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.10.0
 	github.com/rs/xid v1.6.0
@@ -86,7 +86,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/ebitengine/purego v0.8.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -125,9 +125,9 @@ require (
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel/sdk/log/logtest v0.0.0-20250521132538-355c8ccc2694 // indirect
 	go.opentelemetry.io/proto/otlp v1.6.0 // indirect
+	go.uber.org/mock v0.5.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
