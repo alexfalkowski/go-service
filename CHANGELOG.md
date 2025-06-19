@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.72.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.72.0) - 2025-06-19
+
+- [`d67eba2`](https://github.com/alexfalkowski/go-service/commit/d67eba2681b83c1a082e887fd47daeeb1cc7462b) feat(deps): bump github.com/hashicorp/go-retryablehttp from 0.7.7 to 0.7.8 (#1728)
+
 ## [v2.71.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.71.0) - 2025-06-17
 
 - [`032e531`](https://github.com/alexfalkowski/go-service/commit/032e53111641ce01b8f3c9a1030810f12c5f6d3a) feat(deps): bump github.com/open-feature/go-sdk-contrib/hooks/open-telemetry from 0.3.4 to 0.3.5 (#1727)
