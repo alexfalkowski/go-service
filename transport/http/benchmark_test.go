@@ -3,6 +3,7 @@ package http_test
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -206,7 +207,10 @@ func BenchmarkMVC(b *testing.B) {
 	b.Run("html", func(b *testing.B) {
 		client := world.NewHTTP()
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, fmt.Sprintf("http://%s/hello", world.InsecureServerHost()), http.NoBody)
+		url, err := url.JoinPath(world.ServerURL("http"), "hello")
+		runtime.Must(err)
+
+		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
 
 		req.Header.Set(content.TypeKey, mime.HTMLMediaType)
@@ -239,8 +243,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 			cl := world.NewHTTP()
-			url := "http://" + world.InsecureServerHost()
-			client := rpc.NewClient(url,
+			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport),
 			)
@@ -276,8 +279,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 			cl := world.NewHTTP()
-			url := "http://" + world.InsecureServerHost()
-			client := rpc.NewClient(url,
+			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport))
 
@@ -316,7 +318,10 @@ func BenchmarkRest(b *testing.B) {
 
 		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 			cl := world.NewHTTP()
-			url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
+
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "hello")
+			runtime.Must(err)
+
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			b.Run(mt, func(b *testing.B) {
@@ -337,7 +342,10 @@ func BenchmarkRest(b *testing.B) {
 
 		b.Run("static", func(b *testing.B) {
 			cl := world.NewHTTP()
-			url := "http://" + world.InsecureServerHost() + "/robots.txt"
+
+			url, err := url.JoinPath(world.ServerURL("http"), "robots.txt")
+			runtime.Must(err)
+
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			for b.Loop() {
@@ -374,7 +382,10 @@ func BenchmarkRest(b *testing.B) {
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 			cl := world.NewHTTP()
-			url := fmt.Sprintf("http://%s/%s", world.InsecureServerHost(), test.URL("hello"))
+
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "hello")
+			runtime.Must(err)
+
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			b.Run(mt, func(b *testing.B) {

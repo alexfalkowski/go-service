@@ -1,6 +1,7 @@
 package health_test
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -33,7 +34,10 @@ func TestHealth(t *testing.T) {
 				header := http.Header{}
 				header.Set(content.TypeKey, mime.JSONMediaType)
 
-				res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, test.URL(check), header, http.NoBody)
+				url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), check)
+				So(err, ShouldBeNil)
+
+				res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 				So(err, ShouldBeNil)
 
 				Convey("Then I should have a healthy response", func() {
@@ -64,7 +68,10 @@ func TestReadinessNoop(t *testing.T) {
 			header.Add("User-Agent", "test-user-agent")
 			header.Set(content.TypeKey, mime.JSONMediaType)
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("readyz"), header, http.NoBody)
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "readyz")
+			So(err, ShouldBeNil)
+
+			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have a healthy response", func() {
@@ -92,7 +99,10 @@ func TestInvalidHealth(t *testing.T) {
 		Convey("When I query health", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("healthz"), header, http.NoBody)
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "healthz")
+			So(err, ShouldBeNil)
+
+			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an unhealthy response", func() {

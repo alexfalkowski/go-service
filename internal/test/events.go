@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	"fmt"
+	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -34,5 +34,8 @@ func (w *World) RegisterEvents(ctx context.Context) {
 
 // EventsContext for world.
 func (w *World) EventsContext(ctx context.Context) context.Context {
-	return cloudevents.ContextWithTarget(ctx, fmt.Sprintf("http://%s/events", w.InsecureServerHost()))
+	url, err := url.JoinPath(w.ServerURL("http"), "events")
+	runtime.Must(err)
+
+	return cloudevents.ContextWithTarget(ctx, url)
 }

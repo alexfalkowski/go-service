@@ -21,8 +21,3 @@ func (w *ErrResponseWriter) Write([]byte) (int, error) {
 func (w *ErrResponseWriter) WriteHeader(code int) {
 	w.Code = code
 }
-
-// URL for test.
-func URL(path string) string {
-	return Name.String() + "/" + path
-}
