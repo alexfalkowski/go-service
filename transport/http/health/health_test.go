@@ -1,7 +1,6 @@
 package health_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -34,8 +33,7 @@ func TestHealth(t *testing.T) {
 				header := http.Header{}
 				header.Set(content.TypeKey, mime.JSONMediaType)
 
-				url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), check)
-				So(err, ShouldBeNil)
+				url := world.NamedServerURL("http", check)
 
 				res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 				So(err, ShouldBeNil)
@@ -68,8 +66,7 @@ func TestReadinessNoop(t *testing.T) {
 			header.Add("User-Agent", "test-user-agent")
 			header.Set(content.TypeKey, mime.JSONMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "readyz")
-			So(err, ShouldBeNil)
+			url := world.NamedServerURL("http", "readyz")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -98,9 +95,7 @@ func TestInvalidHealth(t *testing.T) {
 
 		Convey("When I query health", func() {
 			header := http.Header{}
-
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "healthz")
-			So(err, ShouldBeNil)
+			url := world.NamedServerURL("http", "healthz")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)

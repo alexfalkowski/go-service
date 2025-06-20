@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
@@ -58,9 +57,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		Convey("When I query metrics", func() {
 			header := http.Header{}
-
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "metrics")
-			So(err, ShouldBeNil)
+			url := world.NamedServerURL("http", "metrics")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -96,9 +93,7 @@ func TestPrometheusHTTP(t *testing.T) {
 			defer cancel()
 
 			header := http.Header{}
-
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "metrics")
-			So(err, ShouldBeNil)
+			url := world.NamedServerURL("http", "metrics")
 
 			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)

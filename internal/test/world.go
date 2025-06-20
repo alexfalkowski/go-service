@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"io"
+	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
@@ -196,9 +197,19 @@ func (w *World) Register() {
 	w.registerTelemetry()
 }
 
+// NamedServerURL for world.
+func (w *World) NamedServerURL(protocol, path string) string {
+	return w.namedURL(w.ServerURL(protocol), path)
+}
+
 // ServerURL for world.
 func (w *World) ServerURL(protocol string) string {
 	return w.url(protocol, w.TransportConfig.HTTP.Address)
+}
+
+// NamedDebugURL for world.
+func (w *World) NamedDebugURL(protocol, path string) string {
+	return w.namedURL(w.DebugURL(protocol), path)
 }
 
 // DebugURL for world.
@@ -241,6 +252,13 @@ func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, head
 	}
 
 	return res, res.Body.Close()
+}
+
+func (w *World) namedURL(host, path string) string {
+	url, err := url.JoinPath(host, Name.String(), path)
+	runtime.Must(err)
+
+	return url
 }
 
 func (w *World) url(protocol, host string) string {
