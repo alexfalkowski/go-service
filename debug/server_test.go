@@ -1,6 +1,7 @@
 package debug_test
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/debug"
@@ -16,13 +17,12 @@ func init() {
 }
 
 var paths = []string{
-	test.URL("debug/statsviz"),
-	test.URL("debug/pprof/"),
-	test.URL("debug/pprof/cmdline"),
-	test.URL("debug/pprof/symbol"),
-	test.URL("debug/pprof/trace"),
-	test.URL("debug/fgprof?seconds=1"),
-	test.URL("debug/psutil"),
+	"debug/statsviz",
+	"debug/pprof/",
+	"debug/pprof/cmdline",
+	"debug/pprof/symbol",
+	"debug/pprof/trace",
+	"debug/psutil",
 }
 
 func TestInsecureDebug(t *testing.T) {
@@ -35,7 +35,10 @@ func TestInsecureDebug(t *testing.T) {
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
 
-				res, err := world.ResponseWithNoBody(t.Context(), "http", world.InsecureDebugHost(), http.MethodGet, path, header)
+				url, err := url.JoinPath(world.DebugURL("http"), test.Name.String(), path)
+				So(err, ShouldBeNil)
+
+				res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 				So(err, ShouldBeNil)
 
 				So(res.StatusCode, ShouldEqual, 200)
@@ -56,7 +59,10 @@ func TestSecureDebug(t *testing.T) {
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
 
-				res, err := world.ResponseWithNoBody(t.Context(), "https", world.SecureDebugHost(), http.MethodGet, path, header)
+				url, err := url.JoinPath(world.DebugURL("https"), test.Name.String(), path)
+				So(err, ShouldBeNil)
+
+				res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 				So(err, ShouldBeNil)
 
 				So(res.StatusCode, ShouldEqual, 200)

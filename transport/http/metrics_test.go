@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
@@ -58,7 +59,10 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		Convey("When I query metrics", func() {
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(t.Context(), "http", world.InsecureServerHost(), http.MethodGet, test.URL("metrics"), header, http.NoBody)
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "metrics")
+			So(err, ShouldBeNil)
+
+			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {
@@ -93,7 +97,10 @@ func TestPrometheusHTTP(t *testing.T) {
 
 			header := http.Header{}
 
-			res, body, err := world.ResponseWithBody(ctx, "http", world.InsecureServerHost(), http.MethodGet, test.URL("metrics"), header, http.NoBody)
+			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "metrics")
+			So(err, ShouldBeNil)
+
+			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have valid metrics", func() {

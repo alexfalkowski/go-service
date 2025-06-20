@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -197,31 +196,21 @@ func (w *World) Register() {
 	w.registerTelemetry()
 }
 
-// InsecureServerHost for world.
-func (w *World) InsecureServerHost() string {
-	return w.TransportConfig.HTTP.Address
+// ServerURL for world.
+func (w *World) ServerURL(protocol string) string {
+	return w.url(protocol, w.TransportConfig.HTTP.Address)
 }
 
-// SecureServerHost for world.
-func (w *World) SecureServerHost() string {
-	return w.TransportConfig.HTTP.Address
-}
-
-// InsecureDebugHost for world.
-func (w *World) InsecureDebugHost() string {
-	return w.DebugConfig.Address
-}
-
-// SecureDebugHost for world.
-func (w *World) SecureDebugHost() string {
-	return w.DebugConfig.Address
+// DebugURL for world.
+func (w *World) DebugURL(protocol string) string {
+	return w.url(protocol, w.DebugConfig.Address)
 }
 
 // ResponseWithBody for the world.
-func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method, path string, header http.Header, body io.Reader) (*http.Response, string, error) {
+func (w *World) ResponseWithBody(ctx context.Context, url, method string, header http.Header, body io.Reader) (*http.Response, string, error) {
 	client := w.NewHTTP()
 
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), body)
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	runtime.Must(err)
 
 	req.Header = header
@@ -238,10 +227,10 @@ func (w *World) ResponseWithBody(ctx context.Context, protocol, address, method,
 }
 
 // ResponseWithNoBody for the world.
-func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, method, path string, header http.Header) (*http.Response, error) {
+func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, header http.Header) (*http.Response, error) {
 	client := w.NewHTTP()
 
-	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s://%s/%s", protocol, address, path), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, method, url, http.NoBody)
 	runtime.Must(err)
 
 	req.Header = header
@@ -252,6 +241,10 @@ func (w *World) ResponseWithNoBody(ctx context.Context, protocol, address, metho
 	}
 
 	return res, res.Body.Close()
+}
+
+func (w *World) url(protocol, host string) string {
+	return protocol + "://" + host
 }
 
 func transportConfig(os *worldOpts) *transport.Config {
