@@ -318,10 +318,7 @@ func BenchmarkRest(b *testing.B) {
 
 		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 			cl := world.NewHTTP()
-
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "hello")
-			runtime.Must(err)
-
+			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			b.Run(mt, func(b *testing.B) {
@@ -382,10 +379,7 @@ func BenchmarkRest(b *testing.B) {
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 			cl := world.NewHTTP()
-
-			url, err := url.JoinPath(world.ServerURL("http"), test.Name.String(), "hello")
-			runtime.Must(err)
-
+			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			b.Run(mt, func(b *testing.B) {

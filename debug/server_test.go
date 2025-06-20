@@ -1,7 +1,6 @@
 package debug_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/debug"
@@ -34,9 +33,7 @@ func TestInsecureDebug(t *testing.T) {
 
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
-
-				url, err := url.JoinPath(world.DebugURL("http"), test.Name.String(), path)
-				So(err, ShouldBeNil)
+				url := world.NamedDebugURL("http", path)
 
 				res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 				So(err, ShouldBeNil)
@@ -58,9 +55,7 @@ func TestSecureDebug(t *testing.T) {
 
 			Convey("Then all the debug URLs are valid", func() {
 				header := http.Header{}
-
-				url, err := url.JoinPath(world.DebugURL("https"), test.Name.String(), path)
-				So(err, ShouldBeNil)
+				url := world.NamedDebugURL("https", path)
 
 				res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 				So(err, ShouldBeNil)
