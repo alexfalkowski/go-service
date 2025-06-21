@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
@@ -28,6 +29,7 @@ type clientOpts struct {
 	logger      *logger.Logger
 	retry       *retry.Config
 	tracer      *tracer.Tracer
+	limiter     *limiter.Limiter
 	userAgent   env.UserAgent
 	id          env.UserID
 	opts        []grpc.DialOption
@@ -143,6 +145,13 @@ func WithClientID(generator id.Generator) ClientOption {
 	})
 }
 
+// WithClientLimiter for gRPC.
+func WithClientLimiter(limiter *limiter.Limiter) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.limiter = limiter
+	})
+}
+
 // NewDialOptions for gRPC.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
@@ -196,6 +205,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 	unary = append(unary, os.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
+
+	if os.limiter != nil {
+		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
+	}
 
 	if os.retry != nil {
 		unary = append(unary, retry.UnaryClientInterceptor(os.retry))

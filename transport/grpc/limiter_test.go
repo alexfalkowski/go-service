@@ -5,19 +5,40 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func init() {
-	tg.Register(test.FS)
+func TestServerLimiterUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+		world.Register()
+		world.RequireStart()
+
+		Convey("When I query repeatedly", func() {
+			conn := world.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			_, _ = client.SayHello(t.Context(), req)
+			_, err := client.SayHello(t.Context(), req)
+
+			Convey("Then I should have exhausted resources", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
+			})
+		})
+
+		world.RequireStop()
+	})
 }
 
-func TestLimiterLimitedUnary(t *testing.T) {
+func TestClientLimiterUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
@@ -43,7 +64,13 @@ func TestLimiterLimitedUnary(t *testing.T) {
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+		cfg := test.NewLimiterConfig("user-agent", "1s", 10)
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldClientLimiter(cfg),
+			test.WithWorldServerLimiter(cfg),
+			test.WithWorldGRPC(),
+		)
 		world.Register()
 		world.RequireStart()
 
@@ -69,7 +96,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
-			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
+			test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
 			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
 			test.WithWorldGRPC(),
 		)
@@ -98,13 +125,13 @@ func TestLimiterAuthUnary(t *testing.T) {
 	})
 }
 
-func TestClosedLimiterUnary(t *testing.T) {
+func TestServerClosedLimiterUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 		world.RequireStart()
 
-		err := world.Limiter.Close(t.Context())
+		err := world.Server.Limiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
 		Convey("When  I query for a greet", func() {
@@ -115,6 +142,34 @@ func TestClosedLimiterUnary(t *testing.T) {
 			req := &v1.SayHelloRequest{Name: "test"}
 
 			_, err := client.SayHello(t.Context(), req)
+
+			Convey("Then I should have an internal error", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, codes.Internal)
+			})
+		})
+
+		world.RequireStop()
+	})
+}
+
+func TestClientClosedLimiterUnary(t *testing.T) {
+	Convey("Given I have a gRPC server", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+		world.Register()
+		world.RequireStart()
+
+		Convey("When  I query for a greet", func() {
+			conn := world.NewGRPC()
+			defer conn.Close()
+
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
+
+			err := world.Client.Limiter.Close(t.Context())
+			So(err, ShouldBeNil)
+
+			_, err = client.SayHello(t.Context(), req)
 
 			Convey("Then I should have an internal error", func() {
 				So(err, ShouldBeError)

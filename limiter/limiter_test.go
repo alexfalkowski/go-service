@@ -18,7 +18,7 @@ func TestLimiter(t *testing.T) {
 		config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
 
 		Convey("When I try to create a limiter", func() {
-			_, err := limiter.New(lc, m, config)
+			_, err := limiter.NewLimiter(lc, m, config)
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -32,7 +32,7 @@ func TestLimiter(t *testing.T) {
 		}
 
 		Convey("When I try to create a limiter", func() {
-			limiter, err := limiter.New(lc, m, nil)
+			limiter, err := limiter.NewLimiter(lc, m, nil)
 
 			Convey("Then I should have no limiter", func() {
 				So(err, ShouldBeNil)
@@ -48,7 +48,7 @@ func TestLimiter(t *testing.T) {
 
 		Convey("When I try to create a limiter", func() {
 			config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
-			limiter, err := limiter.New(lc, m, config)
+			limiter, err := limiter.NewLimiter(lc, m, config)
 
 			Convey("Then I should have a limiter", func() {
 				So(err, ShouldBeNil)
@@ -67,7 +67,7 @@ func TestLimiter(t *testing.T) {
 
 		config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
 
-		limiter, err := limiter.New(lc, m, config)
+		limiter, err := limiter.NewLimiter(lc, m, config)
 		So(err, ShouldBeNil)
 
 		Convey("When I try take when the limiter is closed", func() {

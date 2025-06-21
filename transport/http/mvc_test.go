@@ -3,7 +3,6 @@ package http_test
 import (
 	"context"
 	"log/slog"
-	"net/url"
 	"strings"
 	"testing"
 
@@ -13,14 +12,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/net/html"
 )
-
-func init() {
-	th.Register(test.FS)
-}
 
 func TestRouteSuccess(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
@@ -44,8 +38,7 @@ func TestRouteSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.HTMLMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -80,8 +73,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.HTMLMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -114,8 +106,7 @@ func TestRouteError(t *testing.T) {
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.HTMLMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -146,8 +137,7 @@ func TestStaticFileSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.TextMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), "robots.txt")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "robots.txt")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -173,9 +163,7 @@ func TestStaticFileError(t *testing.T) {
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
-
-			url, err := url.JoinPath(world.ServerURL("http"), "robots.txt")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "robots.txt")
 
 			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -201,8 +189,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.TextMediaType)
 
-			url, err := url.JoinPath(world.ServerURL("http"), "robots.txt")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "robots.txt")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)
@@ -228,9 +215,7 @@ func TestStaticPathValueError(t *testing.T) {
 
 		Convey("When I query for hello", func() {
 			header := http.Header{}
-
-			url, err := url.JoinPath(world.ServerURL("http"), "bob.txt")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "bob.txt")
 
 			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 			So(err, ShouldBeNil)

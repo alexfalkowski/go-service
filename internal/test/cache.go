@@ -69,7 +69,7 @@ func (*ErrCache) Save(_, _ string, _ time.Duration) error {
 func redisCache(lc di.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cacher.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	driver, err := driver.New(FS, cfg)
+	driver, err := driver.NewDriver(FS, cfg)
 	runtime.Must(err)
 
 	params := cache.CacheParams{

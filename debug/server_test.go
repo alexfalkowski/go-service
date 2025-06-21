@@ -7,13 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/server"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func init() {
-	th.Register(test.FS)
-}
 
 var paths = []string{
 	"debug/statsviz",

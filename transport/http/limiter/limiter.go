@@ -31,20 +31,48 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ctx := req.Context()
 
-	ok, info, err := h.limiter.Take(ctx)
+	ok, header, err := h.limiter.Take(ctx)
 	if err != nil {
 		status.WriteError(ctx, res, status.InternalServerError(err))
 
 		return
 	}
 
-	res.Header().Add("RateLimit", info)
+	res.Header().Add("RateLimit", header)
 
 	if !ok {
-		status.WriteError(ctx, res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", info))
+		status.WriteError(ctx, res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header))
 
 		return
 	}
 
 	next(res, req)
+}
+
+// NewRoundTripper for limiter.
+func NewRoundTripper(limiter *Limiter, rt http.RoundTripper) *RoundTripper {
+	return &RoundTripper{limiter: limiter, RoundTripper: rt}
+}
+
+// RoundTripper for limiter.
+type RoundTripper struct {
+	limiter *Limiter
+
+	http.RoundTripper
+}
+
+// RoundTrip for limiter.
+func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	ctx := req.Context()
+
+	ok, header, err := r.limiter.Take(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return nil, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header)
+	}
+
+	return r.RoundTripper.RoundTrip(req)
 }

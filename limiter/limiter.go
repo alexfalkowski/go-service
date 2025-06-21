@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	st "github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/sethvargo/go-limiter"
 	"github.com/sethvargo/go-limiter/memorystore"
 )
@@ -24,8 +24,8 @@ type (
 // ErrMissingKey for limiter.
 var ErrMissingKey = errors.New("limiter: missing key")
 
-// New limiter.
-func New(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
+// NewLimiter limiter.
+func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}
@@ -38,7 +38,7 @@ func New(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	// Memory store does not return an error.
 	store, _ := memorystore.New(&memorystore.Config{
 		Tokens:   cfg.Tokens,
-		Interval: st.MustParseDuration(cfg.Interval),
+		Interval: time.MustParseDuration(cfg.Interval),
 	})
 
 	limiter := &Limiter{

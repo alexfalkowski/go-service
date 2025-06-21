@@ -9,11 +9,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func init() {
-	grpc.Register(test.FS)
-}
-
 func TestClient(t *testing.T) {
+	grpc.Register(test.FS)
+
 	Convey("Given I have invalid credentials", t, func() {
 		c := &tls.Config{Cert: "bob", Key: "bob"}
 

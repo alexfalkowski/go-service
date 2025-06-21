@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -16,7 +15,7 @@ import (
 
 // NewEvents for test.
 func NewEvents(mux *http.ServeMux, rt http.RoundTripper, id *id.UUID) (*events.Receiver, client.Client) {
-	h, err := hooks.New(FS, NewHook())
+	h, err := hooks.NewHook(FS, NewHook())
 	runtime.Must(err)
 
 	receiver := events.NewReceiver(mux, hh.NewWebhook(h, id))
@@ -34,8 +33,5 @@ func (w *World) RegisterEvents(ctx context.Context) {
 
 // EventsContext for world.
 func (w *World) EventsContext(ctx context.Context) context.Context {
-	url, err := url.JoinPath(w.ServerURL("http"), "events")
-	runtime.Must(err)
-
-	return cloudevents.ContextWithTarget(ctx, url)
+	return cloudevents.ContextWithTarget(ctx, w.PathServerURL("http", "events"))
 }

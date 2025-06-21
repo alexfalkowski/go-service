@@ -19,8 +19,8 @@ var (
 	ErrExpired = cachego.ErrCacheExpired
 )
 
-// New creates a new cache driver with different backends.
-func New(fs *os.FS, cfg *cache.Config) (Driver, error) {
+// NewDriver creates a new cache driver with different backends.
+func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 	if !cache.IsEnabled(cfg) {
 		return nil, nil
 	}

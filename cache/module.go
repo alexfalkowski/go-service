@@ -7,7 +7,7 @@ import (
 
 // Module for fx.
 var Module = di.Module(
-	di.Constructor(driver.New),
+	di.Constructor(driver.NewDriver),
 	di.Constructor(NewCache),
 	di.Register(Register),
 )

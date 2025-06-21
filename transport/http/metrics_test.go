@@ -9,14 +9,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func init() {
-	th.Register(test.FS)
-}
 
 func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
@@ -38,7 +33,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("prometheus"),
-			test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+			test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 			test.WithWorldToken(tkn, tkn),
 			test.WithWorldHTTP(),
 		)
@@ -80,7 +75,7 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 
 func TestPrometheusHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 
 		_, err := world.OpenDatabase()
