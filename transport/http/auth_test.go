@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -59,8 +58,7 @@ func TestTokenAuthUnary(t *testing.T) {
 				header.Set("X-Forwarded-For", "127.0.0.1")
 				header.Set("Geolocation", "geo:47,11")
 
-				url, err := url.JoinPath(world.ServerURL("http"), "hello")
-				So(err, ShouldBeNil)
+				url := world.PathServerURL("http", "hello")
 
 				res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 				So(err, ShouldBeNil)
@@ -90,8 +88,7 @@ func TestValidAuthUnary(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("X-Forwarded-For", "127.0.0.1")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
@@ -119,8 +116,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
@@ -149,8 +145,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 			header.Set("Request-Id", "test")
 			header.Set("Authorization", "What Invalid")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
@@ -179,8 +174,7 @@ func TestMissingAuthUnary(t *testing.T) {
 			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
@@ -208,10 +202,8 @@ func TestEmptyAuthUnary(t *testing.T) {
 			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
-
-			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+			url := world.PathServerURL("http", "hello")
+			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an auth error", func() {
 				So(err, ShouldBeError)
@@ -237,8 +229,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 			So(err, ShouldBeNil)
@@ -266,10 +257,8 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 			header.Set(content.TypeKey, mime.JSONMediaType)
 			header.Set("Request-Id", "test")
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
-
-			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+			url := world.PathServerURL("http", "hello")
+			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
@@ -294,8 +283,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			var err error
 
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			for range 10 {
 				header := http.Header{}

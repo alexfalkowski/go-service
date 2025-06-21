@@ -1,7 +1,6 @@
 package http_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -12,18 +11,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func init() {
-	th.Register(test.FS)
-}
 
 func TestRPCNoContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml"} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -53,7 +47,7 @@ func TestRPCNoContent(t *testing.T) {
 func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -83,7 +77,7 @@ func TestRPCWithContent(t *testing.T) {
 func TestSuccessProtobufRPC(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -116,7 +110,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 	for _, handler := range handlers {
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 			Convey("Given I have all the servers", t, func() {
-				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 				world.Register()
 				world.RequireStart()
 
@@ -144,15 +138,14 @@ func TestErroneousProtobufRPC(t *testing.T) {
 func TestErroneousUnmarshalRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
 			Convey("When I post data", func() {
-				url, err := url.JoinPath(world.ServerURL("http"), "hello")
-				So(err, ShouldBeNil)
+				url := world.PathServerURL("http", "hello")
 
 				header := http.Header{}
 				header.Set(content.TypeKey, "application/"+mt)
@@ -180,7 +173,7 @@ func TestErrorRPC(t *testing.T) {
 	for _, handler := range handlers {
 		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 			Convey("Given I have all the servers", t, func() {
-				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+				world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 				world.Register()
 				world.RequireStart()
 
@@ -198,8 +191,7 @@ func TestErrorRPC(t *testing.T) {
 					err := enc.Encode(b, test.Request{Name: "Bob"})
 					So(err, ShouldBeNil)
 
-					url, err := url.JoinPath(world.ServerURL("http"), "hello")
-					So(err, ShouldBeNil)
+					url := world.PathServerURL("http", "hello")
 
 					res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, b)
 					So(err, ShouldBeNil)
@@ -219,7 +211,7 @@ func TestErrorRPC(t *testing.T) {
 func TestAllowedRPC(t *testing.T) {
 	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -248,7 +240,7 @@ func TestDisallowedRPC(t *testing.T) {
 	for _, mt := range []string{mime.JSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t,
-				test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+				test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 				test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP(),
 			)
 			world.Register()
@@ -279,7 +271,7 @@ func TestDisallowedRPC(t *testing.T) {
 func TestInvalidRPCRequest(t *testing.T) {
 	for _, mt := range []string{"gob"} {
 		Convey("Given I have routes ready", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 
@@ -304,7 +296,7 @@ func TestInvalidRPCRequest(t *testing.T) {
 func TestInvalidRPCResponse(t *testing.T) {
 	for _, mt := range []string{"json"} {
 		Convey("Given I have routes ready", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
 

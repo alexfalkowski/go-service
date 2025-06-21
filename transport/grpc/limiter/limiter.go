@@ -14,7 +14,7 @@ import (
 // Limiter is just an alias for limiter.Limiter.
 type Limiter = limiter.Limiter
 
-// UnaryServerInterceptor for gRPC.
+// UnaryServerInterceptor for limiter.
 func UnaryServerInterceptor(limiter *Limiter) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := info.FullMethod[1:]
@@ -22,25 +22,33 @@ func UnaryServerInterceptor(limiter *Limiter) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		if err := limit(ctx, limiter); err != nil {
-			return nil, err
+		ok, header, err := limiter.Take(ctx)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "limiter: %s", err.Error())
+		}
+
+		_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", header))
+
+		if !ok {
+			return nil, status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", header)
 		}
 
 		return handler(ctx, req)
 	}
 }
 
-func limit(ctx context.Context, limiter *Limiter) error {
-	ok, info, err := limiter.Take(ctx)
-	if err != nil {
-		return status.Errorf(codes.Internal, "limiter: %s", err.Error())
+// UnaryClientInterceptor for limiter.
+func UnaryClientInterceptor(limiter *Limiter) grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		ok, header, err := limiter.Take(ctx)
+		if err != nil {
+			return status.Errorf(codes.Internal, "limiter: %s", err.Error())
+		}
+
+		if !ok {
+			return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", header)
+		}
+
+		return invoker(ctx, fullMethod, req, resp, conn, opts...)
 	}
-
-	_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", info))
-
-	if !ok {
-		return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", info)
-	}
-
-	return nil
 }

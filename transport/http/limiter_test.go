@@ -1,35 +1,31 @@
 package http_test
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/strings"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func init() {
-	th.Register(test.FS)
-}
-
-func TestGet(t *testing.T) {
+func TestUnlimited(t *testing.T) {
 	Convey("Given I have all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+		cfg := test.NewLimiterConfig("user-agent", "1s", 100)
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldClientLimiter(cfg),
+			test.WithWorldServerLimiter(cfg),
+			test.WithWorldHTTP(),
+		)
 		world.Register()
+		world.HandleHello()
 		world.RequireStart()
 
-		world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-			_, _ = w.Write(strings.Bytes("hello!"))
-		})
-
 		Convey("When I query for a greet", func() {
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
-			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 			So(err, ShouldBeNil)
 
 			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
@@ -45,22 +41,18 @@ func TestGet(t *testing.T) {
 	})
 }
 
-func TestLimiter(t *testing.T) {
+func TestServerLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		Convey("Given I have a all the servers", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
 			world.Register()
+			world.HandleHello()
 			world.RequireStart()
 
-			world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-				_, _ = w.Write(strings.Bytes("hello!"))
-			})
-
 			Convey("When I query for a greet", func() {
-				url, err := url.JoinPath(world.ServerURL("http"), "hello")
-				So(err, ShouldBeNil)
+				url := world.PathServerURL("http", "hello")
 
-				_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+				_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 				So(err, ShouldBeNil)
 
 				res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
@@ -77,28 +69,76 @@ func TestLimiter(t *testing.T) {
 	}
 }
 
-func TestClosedLimiter(t *testing.T) {
+func TestClientLimiter(t *testing.T) {
+	for _, f := range []string{"user-agent", "ip"} {
+		Convey("Given I have a all the servers", t, func() {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
+			world.Register()
+			world.HandleHello()
+			world.RequireStart()
+
+			Convey("When I query for a greet", func() {
+				url := world.PathServerURL("http", "hello")
+
+				_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+				So(err, ShouldBeNil)
+
+				_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+
+				Convey("Then I should have been rate limited", func() {
+					So(err, ShouldBeError)
+					So(status.Code(err), ShouldEqual, http.StatusTooManyRequests)
+				})
+
+				world.RequireStop()
+			})
+		})
+	}
+}
+
+func TestServerClosedLimiter(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
+		world.HandleHello()
 		world.RequireStart()
 
-		err := world.Limiter.Close(t.Context())
+		err := world.Server.Limiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
-		world.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
-			_, _ = w.Write(strings.Bytes("hello!"))
-		})
-
 		Convey("When I query for a greet", func() {
-			url, err := url.JoinPath(world.ServerURL("http"), "hello")
-			So(err, ShouldBeNil)
+			url := world.PathServerURL("http", "hello")
 
 			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 			So(err, ShouldBeNil)
 
 			Convey("Then I should have an internal error", func() {
 				So(res.StatusCode, ShouldEqual, http.StatusInternalServerError)
+			})
+
+			world.RequireStop()
+		})
+	})
+}
+
+func TestClientClosedLimiter(t *testing.T) {
+	Convey("Given I have a all the servers", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+		world.Register()
+		world.HandleHello()
+		world.RequireStart()
+
+		Convey("When I query for a greet", func() {
+			url := world.PathServerURL("http", "hello")
+
+			err := world.Client.Limiter.Close(t.Context())
+			So(err, ShouldBeNil)
+
+			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+
+			Convey("Then I should have an internal error", func() {
+				So(err, ShouldBeError)
+				So(status.Code(err), ShouldEqual, http.StatusInternalServerError)
 			})
 
 			world.RequireStop()

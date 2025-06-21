@@ -3,7 +3,6 @@ package http_test
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -24,10 +23,6 @@ import (
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"go.uber.org/fx/fxtest"
 )
-
-func init() {
-	th.Register(test.FS)
-}
 
 //nolint:funlen
 func BenchmarkHTTP(b *testing.B) {
@@ -206,9 +201,7 @@ func BenchmarkMVC(b *testing.B) {
 
 	b.Run("html", func(b *testing.B) {
 		client := world.NewHTTP()
-
-		url, err := url.JoinPath(world.ServerURL("http"), "hello")
-		runtime.Must(err)
+		url := world.PathServerURL("http", "hello")
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
 		runtime.Must(err)
@@ -339,10 +332,7 @@ func BenchmarkRest(b *testing.B) {
 
 		b.Run("static", func(b *testing.B) {
 			cl := world.NewHTTP()
-
-			url, err := url.JoinPath(world.ServerURL("http"), "robots.txt")
-			runtime.Must(err)
-
+			url := world.PathServerURL("http", "robots.txt")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
 			for b.Loop() {

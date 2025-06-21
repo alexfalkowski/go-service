@@ -16,20 +16,25 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	eh "github.com/alexfalkowski/go-service/v2/transport/http/events"
+	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	"github.com/alexfalkowski/go-service/v2/transport/meta"
-	events "github.com/cloudevents/sdk-go/v2"
+	sdk "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
 	telemetry.Register()
+	tg.Register(FS)
+	th.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }
@@ -40,20 +45,21 @@ type WorldOption interface {
 }
 
 type worldOpts struct {
-	verifier     token.Verifier
-	rt           http.RoundTripper
-	generator    token.Generator
-	logger       *logger.Logger
-	limiter      *limiter.Config
-	pg           *pg.Config
-	telemetry    string
-	loggerConfig string
-	secure       bool
-	compression  bool
-	http         bool
-	grpc         bool
-	debug        bool
-	rest         bool
+	verifier      token.Verifier
+	rt            http.RoundTripper
+	generator     token.Generator
+	logger        *logger.Logger
+	clientLimiter *limiter.Config
+	serverLimiter *limiter.Config
+	pg            *pg.Config
+	telemetry     string
+	loggerConfig  string
+	secure        bool
+	compression   bool
+	http          bool
+	grpc          bool
+	debug         bool
+	rest          bool
 }
 
 type worldOptionFunc func(*worldOpts)
@@ -76,10 +82,17 @@ func WithWorldTelemetry(kind string) WorldOption {
 	})
 }
 
-// WithWorldLimiter for test.
-func WithWorldLimiter(config *limiter.Config) WorldOption {
+// WithWorldClientLimiter for test.
+func WithWorldClientLimiter(config *limiter.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
-		o.limiter = config
+		o.clientLimiter = config
+	})
+}
+
+// WithWorldServerLimiter for test.
+func WithWorldServerLimiter(config *limiter.Config) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.serverLimiter = config
 	})
 }
 
@@ -140,13 +153,12 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	debugConfig := debugConfig(os)
 	tlsConfig := tlsConfig(os)
 	meter := meter(lc, mux, os)
-	limiter := serverLimiter(lc, os)
 	pgConfig := pgConfig(os)
 
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
-		Meter: meter, Mux: mux, Limiter: limiter,
+		Meter: meter, Mux: mux, Limiter: newLimiter(lc, os.serverLimiter),
 		Verifier: os.verifier, ID: id,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
@@ -156,6 +168,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
 		Meter: meter, TLS: tlsConfig, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
+		Limiter: newLimiter(lc, os.clientLimiter),
 	}
 
 	registerMVC(mux, logger.Logger)
@@ -183,8 +196,8 @@ type World struct {
 	PG     *pg.Config
 	*Server
 	*Client
-	*events.Event
-	*eh.Receiver
+	*sdk.Event
+	*events.Receiver
 	cacher.Cache
 	Sender client.Client
 	Rest   *rest.Client
@@ -197,9 +210,21 @@ func (w *World) Register() {
 	w.registerTelemetry()
 }
 
+// HandleHello for world.
+func (w *World) HandleHello() {
+	w.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(strings.Bytes("hello!"))
+	})
+}
+
 // NamedServerURL for world.
 func (w *World) NamedServerURL(protocol, path string) string {
 	return w.namedURL(w.ServerURL(protocol), path)
+}
+
+// PathServerURL for world.
+func (w *World) PathServerURL(protocol, path string) string {
+	return w.pathURL(w.ServerURL(protocol), path)
 }
 
 // ServerURL for world.
@@ -210,6 +235,11 @@ func (w *World) ServerURL(protocol string) string {
 // NamedDebugURL for world.
 func (w *World) NamedDebugURL(protocol, path string) string {
 	return w.namedURL(w.DebugURL(protocol), path)
+}
+
+// PathDebugURL for world.
+func (w *World) PathDebugURL(protocol, path string) string {
+	return w.pathURL(w.DebugURL(protocol), path)
 }
 
 // DebugURL for world.
@@ -261,6 +291,13 @@ func (w *World) namedURL(host, path string) string {
 	return url
 }
 
+func (w *World) pathURL(host, path string) string {
+	url, err := url.JoinPath(host, path)
+	runtime.Must(err)
+
+	return url
+}
+
 func (w *World) url(protocol, host string) string {
 	return protocol + "://" + host
 }
@@ -289,9 +326,9 @@ func tlsConfig(os *worldOpts) *tls.Config {
 	return nil
 }
 
-func serverLimiter(lc di.Lifecycle, os *worldOpts) *limiter.Limiter {
-	if os.limiter != nil {
-		l, err := limiter.New(lc, meta.NewKeyMap(), os.limiter)
+func newLimiter(lc di.Lifecycle, cfg *limiter.Config) *limiter.Limiter {
+	if cfg != nil {
+		l, err := limiter.NewLimiter(lc, meta.NewKeyMap(), cfg)
 		runtime.Must(err)
 
 		return l

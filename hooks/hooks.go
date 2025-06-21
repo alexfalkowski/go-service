@@ -25,8 +25,8 @@ func (g *Generator) Generate() (string, error) {
 	return base64.Encode(b), err
 }
 
-// New hook from config.
-func New(fs *os.FS, cfg *Config) (*hooks.Webhook, error) {
+// NewHook from config.
+func NewHook(fs *os.FS, cfg *Config) (*hooks.Webhook, error) {
 	if !IsEnabled(cfg) {
 		return nil, nil
 	}

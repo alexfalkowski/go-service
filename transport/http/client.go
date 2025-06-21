@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
+	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
@@ -25,11 +26,12 @@ type clientOpts struct {
 	gen          token.Generator
 	generator    id.Generator
 	roundTripper http.RoundTripper
-	tls          *tls.Config
+	tracer       *tracer.Tracer
 	logger       *logger.Logger
 	retry        *retry.Config
-	tracer       *tracer.Tracer
+	tls          *tls.Config
 	meter        *metrics.Meter
+	limiter      *limiter.Limiter
 	userAgent    env.UserAgent
 	id           env.UserID
 	timeout      time.Duration
@@ -128,6 +130,13 @@ func WithClientID(generator id.Generator) ClientOption {
 	})
 }
 
+// WithClientLimiter for HTTP.
+func WithClientLimiter(limiter *limiter.Limiter) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.limiter = limiter
+	})
+}
+
 // NewRoundTripper for HTTP.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
@@ -143,6 +152,10 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 
 	if os.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
+	}
+
+	if os.limiter != nil {
+		hrt = limiter.NewRoundTripper(os.limiter, hrt)
 	}
 
 	if os.retry != nil {

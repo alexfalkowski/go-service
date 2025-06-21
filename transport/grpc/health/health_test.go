@@ -14,7 +14,7 @@ import (
 
 func TestUnary(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
 		world.Register()
 
 		so := world.HealthServer(test.StatusURL("200"))
@@ -120,7 +120,7 @@ func TestIgnoreAuthUnary(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	Convey("Given I register the health handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 		world.Register()
 
 		so := world.HealthServer(test.StatusURL("200"))
