@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.73.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.73.0) - 2025-06-21
+
+- [`1179668`](https://github.com/alexfalkowski/go-service/commit/1179668b024d66d0c842edf34044a47419d98eee) feat(limiter): add client limiter (#1731)
+- [`8c60809`](https://github.com/alexfalkowski/go-service/commit/8c608094d55d84ba936f5e48342be70cd9d1f202) test(world): add named url (#1730)
+- [`eb21d73`](https://github.com/alexfalkowski/go-service/commit/eb21d73f63efe0c19ec86cc674d9189ec2c3af51) test(world): use url.JoinPath (#1729)
+
 ## [v2.72.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.72.0) - 2025-06-19
 
 - [`d67eba2`](https://github.com/alexfalkowski/go-service/commit/d67eba2681b83c1a082e887fd47daeeb1cc7462b) feat(deps): bump github.com/hashicorp/go-retryablehttp from 0.7.7 to 0.7.8 (#1728)
