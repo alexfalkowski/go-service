@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/health"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -43,6 +44,7 @@ var (
 		sql.Module,
 		telemetry.Module,
 		token.Module,
+		limiter.Module,
 		transport.Module,
 		health.Module,
 	)
@@ -57,5 +59,6 @@ var (
 		sql.Module,
 		telemetry.Module,
 		token.Module,
+		limiter.Module,
 	)
 )

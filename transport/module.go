@@ -2,7 +2,6 @@ package transport
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
@@ -15,7 +14,6 @@ var Module = di.Module(
 	http.Module,
 	events.Module,
 	meta.Module,
-	limiter.Module,
 	di.Constructor(NewServers),
 	di.Register(Register),
 )
