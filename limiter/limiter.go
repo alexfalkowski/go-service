@@ -21,6 +21,15 @@ type (
 	KeyMap map[string]KeyFunc
 )
 
+// NewKeyMap for limiter.
+func NewKeyMap() KeyMap {
+	return KeyMap{
+		"user-agent": meta.UserAgent,
+		"ip":         meta.IPAddr,
+		"token":      meta.Authorization,
+	}
+}
+
 // ErrMissingKey for limiter.
 var ErrMissingKey = errors.New("limiter: missing key")
 

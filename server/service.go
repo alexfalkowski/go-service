@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/meta"
 )
 
 // NewService that can start and stop an underlying server.
