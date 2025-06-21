@@ -35,12 +35,14 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 		return nil, ErrMissingKey
 	}
 
-	// Memory store does not return an error.
-	store, _ := memorystore.New(&memorystore.Config{
-		Tokens:   cfg.Tokens,
-		Interval: time.MustParseDuration(cfg.Interval),
-	})
-
+	interval := time.MustParseDuration(cfg.Interval)
+	config := &memorystore.Config{
+		Tokens:        cfg.Tokens,
+		Interval:      interval,
+		SweepMinTTL:   time.Hour,
+		SweepInterval: time.Hour,
+	}
+	store, _ := memorystore.New(config)
 	limiter := &Limiter{
 		store: store,
 		key:   k,
