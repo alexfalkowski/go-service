@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql/driver"
 
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	"github.com/ngrok/sqlmw"
 )
 

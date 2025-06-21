@@ -25,7 +25,6 @@ import (
 	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	"github.com/alexfalkowski/go-service/v2/transport/meta"
 	sdk "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"go.uber.org/fx/fxtest"
@@ -328,7 +327,7 @@ func tlsConfig(os *worldOpts) *tls.Config {
 
 func newLimiter(lc di.Lifecycle, cfg *limiter.Config) *limiter.Limiter {
 	if cfg != nil {
-		l, err := limiter.NewLimiter(lc, meta.NewKeyMap(), cfg)
+		l, err := limiter.NewLimiter(lc, limiter.NewKeyMap(), cfg)
 		runtime.Must(err)
 
 		return l
