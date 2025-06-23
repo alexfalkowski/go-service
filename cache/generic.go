@@ -1,9 +1,8 @@
 package cache
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 )

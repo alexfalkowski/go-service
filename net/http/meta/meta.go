@@ -1,19 +1,16 @@
 package meta
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
-type contextKey string
-
 const (
-	requestKey  = contextKey("request")
-	responseKey = contextKey("response")
-	encoderKey  = contextKey("encoder")
+	requestKey  = context.Key("request")
+	responseKey = context.Key("response")
+	encoderKey  = context.Key("encoder")
 )
 
 // Map is just an alias for meta.Map.

@@ -1,9 +1,9 @@
 package tracer
 
 import (
-	"context"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"

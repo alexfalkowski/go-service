@@ -1,11 +1,11 @@
 package http_test
 
 import (
-	"context"
 	"log/slog"
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"

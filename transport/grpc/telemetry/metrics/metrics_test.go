@@ -1,10 +1,10 @@
 package metrics_test
 
 import (
-	"context"
 	"io"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
 	. "github.com/smartystreets/goconvey/convey"

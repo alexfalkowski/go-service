@@ -1,8 +1,7 @@
 package meta
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"google.golang.org/grpc/metadata"
 )
 

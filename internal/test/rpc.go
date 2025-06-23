@@ -2,8 +2,8 @@ package test
 
 import (
 	"cmp"
-	"context"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	g "github.com/alexfalkowski/go-service/v2/net/grpc/status"

@@ -1,6 +1,6 @@
 package meta
 
-import "context"
+import "github.com/alexfalkowski/go-service/v2/context"
 
 const (
 	// RequestIDKey for meta.

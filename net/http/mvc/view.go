@@ -1,10 +1,10 @@
 package mvc
 
 import (
-	"context"
 	"html/template"
 	"path/filepath"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
