@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.79.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.79.0) - 2025-06-23
+
+- [`d05d2bf`](https://github.com/alexfalkowski/go-service/commit/d05d2bf0e5b8508a0c1c32de589f0507ccf90cc1) feat(os): alias fs.DirEntry (#1738)
+
 ## [v2.78.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.78.0) - 2025-06-23
 
 - [`657ce17`](https://github.com/alexfalkowski/go-service/commit/657ce171895bc0da6ddbcb4f0ed1c4f35517ddf7) feat(context): move to context package (#1737)
