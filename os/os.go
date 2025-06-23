@@ -7,9 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// FileInfo is an alias of os.FileInfo.
-type FileInfo = os.FileInfo
-
 var (
 	// Args is an alias for os.Args.
 	Args = os.Args
