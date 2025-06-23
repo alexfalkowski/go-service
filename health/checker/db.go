@@ -1,9 +1,8 @@
 package checker
 
 import (
-	"context"
-
 	"github.com/alexfalkowski/go-health/checker"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"

@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	"context"
 	"strconv"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/jmoiron/sqlx"

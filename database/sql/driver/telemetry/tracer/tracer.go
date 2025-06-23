@@ -1,9 +1,9 @@
 package tracer
 
 import (
-	"context"
 	"database/sql/driver"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/ngrok/sqlmw"

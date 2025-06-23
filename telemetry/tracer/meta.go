@@ -1,8 +1,7 @@
 package tracer
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/otel/trace"

@@ -1,14 +1,11 @@
 package meta
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/iancoleman/strcase"
 )
 
-type contextKey string
-
-const meta = contextKey("meta")
+const meta = context.Key("meta")
 
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key string, value Value) context.Context {

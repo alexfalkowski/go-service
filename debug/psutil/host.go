@@ -1,8 +1,7 @@
 package psutil
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/shirou/gopsutil/v4/host"
 )
 

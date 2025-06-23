@@ -1,11 +1,11 @@
 package driver
 
 import (
-	"context"
 	"database/sql"
 	"database/sql/driver"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	tl "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/logger"
 	tt "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/tracer"

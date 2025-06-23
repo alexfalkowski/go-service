@@ -1,8 +1,9 @@
 package server
 
 import (
-	"context"
 	"fmt"
+
+	"github.com/alexfalkowski/go-service/v2/context"
 )
 
 // Server allows transports to create their own.

@@ -1,8 +1,7 @@
 package test
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 )
 

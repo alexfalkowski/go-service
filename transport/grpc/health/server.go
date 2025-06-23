@@ -1,8 +1,7 @@
 package health
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	health "google.golang.org/grpc/health/grpc_health_v1"
 )

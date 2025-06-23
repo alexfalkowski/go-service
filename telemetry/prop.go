@@ -1,8 +1,7 @@
 package telemetry
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
