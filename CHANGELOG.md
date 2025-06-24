@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.80.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.80.0) - 2025-06-24
+
+- [`17c7d81`](https://github.com/alexfalkowski/go-service/commit/17c7d819fa26e09b70a1d7614ecab7bc5473b863) feat(deps): bump github.com/redis/go-redis/v9 from 9.10.0 to 9.11.0 (#1739)
+
 ## [v2.79.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.79.0) - 2025-06-23
 
 - [`d05d2bf`](https://github.com/alexfalkowski/go-service/commit/d05d2bf0e5b8508a0c1c32de589f0507ccf90cc1) feat(os): alias fs.DirEntry (#1738)
