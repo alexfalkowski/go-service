@@ -188,8 +188,11 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	return ops, nil
 }
 
+// ClientConn is an alias for grpc.ClientConn.
+type ClientConn = grpc.ClientConn
+
 // NewClient for gRPC.
-func NewClient(target string, opts ...ClientOption) (*grpc.ClientConn, error) {
+func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 	os, err := NewDialOptions(opts...)
 	if err != nil {
 		return nil, err
