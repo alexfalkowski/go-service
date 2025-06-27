@@ -15,7 +15,7 @@ import (
 )
 
 func TestRPCNoContent(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml"} {
+	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
 		Convey("Given I have all the servers", t, func() {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()

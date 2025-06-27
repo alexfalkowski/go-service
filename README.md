@@ -72,7 +72,7 @@ We support the following:
 
 - [JSON](https://github.com/goccy/go-json)
 - [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://gopkg.in/yaml.v3)
+- [YAML](https://github.com/goccy/go-yaml)
 - [Proto](https://google.golang.org/protobuf/proto)
 - [GOB](https://pkg.go.dev/encoding/gob)
 
