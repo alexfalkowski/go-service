@@ -26,7 +26,7 @@ type Response struct {
 
 // NoContent for test.
 func NoContent(_ context.Context, _ *Request) (*Response, error) {
-	return nil, nil
+	return &Response{}, nil
 }
 
 // SuccessSayHello for test.
