@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.85.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.85.0) - 2025-07-02
+
+- [`43b8525`](https://github.com/alexfalkowski/go-service/commit/43b85254bcbe64add0530577935c61556f42085c) feat(deps): bump github.com/go-playground/validator/v10 from 10.26.0 to 10.27.0 (#1744)
+
 ## [v2.84.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.84.0) - 2025-07-01
 
 - [`355a751`](https://github.com/alexfalkowski/go-service/commit/355a751e8bde40104fcd9dd6350c080b2fb6b71d) feat(deps): use github.com/goccy/go-yaml (#1742)
