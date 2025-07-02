@@ -18,7 +18,7 @@ require (
 	github.com/faabiosr/cachego v0.26.0
 	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.0.4
-	github.com/go-playground/validator/v10 v10.26.0
+	github.com/go-playground/validator/v10 v10.27.0
 	github.com/go-sprout/sprout v1.0.1
 	github.com/goccy/go-json v0.10.5
 	github.com/goccy/go-yaml v1.18.0
