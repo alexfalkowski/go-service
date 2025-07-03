@@ -20,7 +20,8 @@ type Config struct {
 // Key configuration with a name and ssh key.
 type Key struct {
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
-	Name        string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
+
+	Name string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 }
 
 // Keys configuration with a names and ssh keys.

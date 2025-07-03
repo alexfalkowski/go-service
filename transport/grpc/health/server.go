@@ -25,6 +25,7 @@ func NewServer(params ServerParams) *Server {
 // Server represents a gRPC health server.
 type Server struct {
 	health.UnimplementedHealthServer
+
 	observer *Observer
 }
 
