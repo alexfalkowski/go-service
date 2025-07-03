@@ -39,6 +39,7 @@ func Register(name string, driver Driver) (err error) {
 // NewDriver creates a new driver with telemetry.
 func NewDriver(name string, driver Driver, trace *tracer.Tracer, log *logger.Logger) Driver {
 	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
+
 	interceptor = tt.NewInterceptor(name, trace, interceptor)
 	interceptor = tl.NewInterceptor(name, log, interceptor)
 
