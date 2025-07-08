@@ -4,6 +4,7 @@ import (
 	"os"
 	"slices"
 
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -29,16 +30,26 @@ var (
 
 // Executable of the running application.
 func Executable() string {
-	path, _ := os.Executable()
+	path, err := os.Executable()
+	runtime.Must(err)
 
 	return path
 }
 
 // UserHomeDir of the current user.
 func UserHomeDir() string {
-	home, _ := os.UserHomeDir()
+	dir, err := os.UserHomeDir()
+	runtime.Must(err)
 
-	return home
+	return dir
+}
+
+// UserConfigDir of the current user.
+func UserConfigDir() string {
+	dir, err := os.UserConfigDir()
+	runtime.Must(err)
+
+	return dir
 }
 
 // SanitizeArgs removes all flags that start with -test.

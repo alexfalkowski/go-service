@@ -28,9 +28,7 @@ func (c *Common) Decode(v any) error {
 
 	defer file.Close()
 
-	enc := c.enc.Get(kind)
-
-	return enc.Decode(file, v)
+	return c.enc.Get(kind).Decode(file, v)
 }
 
 func (c *Common) find() (string, io.ReadCloser, error) {
@@ -40,7 +38,7 @@ func (c *Common) find() (string, io.ReadCloser, error) {
 		file := n + extension
 		dirs := []string{
 			c.fs.ExecutableDir(),
-			c.fs.Join(os.UserHomeDir(), ".config", n),
+			c.fs.Join(os.UserConfigDir(), n),
 			"/etc/" + n,
 		}
 
