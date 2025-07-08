@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.37
+      - image: alexfalkowski/go:2.38
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
@@ -27,24 +27,34 @@ jobs:
       - run: make create-certs
       - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9009 -timeout 1m
       - restore_cache:
-          name: restore deps
+          name: restore go cache
           keys:
             - go-service-go-cache-{{ checksum "go.sum" }}
             - go-service-go-cache-
       - run: make clean
       - run: make dep
       - save_cache:
-          name: save deps
+          name: save go cache
           key: go-service-go-cache-{{ checksum "go.sum" }}
           paths:
-            - /home/circleci/go/pkg/mod
+            - ~/go/pkg/mod
       - restore_cache:
           name: restore go build cache
           keys:
             - go-service-go-build-cache-{{ checksum "go.sum" }}
             - go-service-go-build-cache-
       - run: make clean
+      - restore_cache:
+          name: restore go lint cache
+          keys:
+            - go-service-go-lint-cache-{{ checksum "go.sum" }}
+            - go-service-go-lint-cache-
       - run: make lint
+      - save_cache:
+          name: save go lint cache
+          key: go-service-go-lint-cache-{{ checksum "go.sum" }}
+          paths:
+            - ~/.cache/golangci-lint
       - run: make sec
       - run: make specs
       - run: make benchmarks
@@ -52,7 +62,7 @@ jobs:
           name: save go build cache
           key: go-service-go-build-cache-{{ checksum "go.sum" }}
           paths:
-            - /home/circleci/.cache/go-build
+            - ~/.cache/go-build
       - run: make coverage
       - store_test_results:
           path: test/reports
