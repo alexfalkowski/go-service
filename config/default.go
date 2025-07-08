@@ -7,20 +7,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// NewCommon for config.
-func NewCommon(name env.Name, enc *encoding.Map, fs *os.FS) *Common {
-	return &Common{name: name, enc: enc, fs: fs}
+// NewDefault for config.
+func NewDefault(name env.Name, enc *encoding.Map, fs *os.FS) *Default {
+	return &Default{name: name, enc: enc, fs: fs}
 }
 
-// Common for config.
-type Common struct {
+// Default for config.
+type Default struct {
 	enc  *encoding.Map
 	fs   *os.FS
 	name env.Name
 }
 
-// Decode to v.
-func (c *Common) Decode(v any) error {
+// Decode to v, by looking in default places.
+func (c *Default) Decode(v any) error {
 	kind, file, err := c.find()
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (c *Common) Decode(v any) error {
 	return c.enc.Get(kind).Decode(file, v)
 }
 
-func (c *Common) find() (string, io.ReadCloser, error) {
+func (c *Default) find() (string, io.ReadCloser, error) {
 	extensions := []string{".yaml", ".yml", ".toml", ".json"}
 	for _, extension := range extensions {
 		n := c.name.String()

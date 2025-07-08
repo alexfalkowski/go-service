@@ -29,7 +29,7 @@ func NewDecoder(params DecoderParams) Decoder {
 	case "env":
 		return NewENV(location, params.Encoder)
 	default:
-		return NewCommon(params.Name, params.Encoder, params.FS)
+		return NewDefault(params.Name, params.Encoder, params.FS)
 	}
 }
 
