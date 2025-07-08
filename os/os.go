@@ -54,7 +54,5 @@ func UserConfigDir() string {
 
 // SanitizeArgs removes all flags that start with -test.
 func SanitizeArgs(args []string) []string {
-	return slices.DeleteFunc(args, func(s string) bool {
-		return strings.HasPrefix(s, "-test")
-	})
+	return slices.DeleteFunc(args, func(s string) bool { return strings.HasPrefix(s, "-test") })
 }

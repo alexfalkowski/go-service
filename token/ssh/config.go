@@ -1,9 +1,8 @@
 package ssh
 
 import (
-	"slices"
-
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/types/slices"
 )
 
 // IsEnabled for ssh.
@@ -29,10 +28,7 @@ type Keys []*Key
 
 // Get a key by name.
 func (c Keys) Get(name string) *Key {
-	index := slices.IndexFunc(c, func(k *Key) bool { return k.Name == name })
-	if index == -1 {
-		return nil
-	}
+	key, _ := slices.ElemFunc(c, func(k *Key) bool { return k.Name == name })
 
-	return c[index]
+	return key
 }
