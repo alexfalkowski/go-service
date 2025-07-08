@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.86.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.86.0) - 2025-07-08
+
+- [`67f9af3`](https://github.com/alexfalkowski/go-service/commit/67f9af3336c2c8f969a61bd72c540afbfa6d1d90) feat(config): read from UserConfigDir (#1748)
+- [`1d1cb38`](https://github.com/alexfalkowski/go-service/commit/1d1cb387acdfcce7326ceefde602edf3d3a7594d) build(ci): use alexfalkowski/go:2.37 (#1747)
+- [`79adb2c`](https://github.com/alexfalkowski/go-service/commit/79adb2cf10b479b7b3b5009ffc7e3f0d83d641ee) build(ci): use alexfalkowski/go:2.33 (#1745)
+
 ## [v2.85.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.85.0) - 2025-07-02
 
 - [`43b8525`](https://github.com/alexfalkowski/go-service/commit/43b85254bcbe64add0530577935c61556f42085c) feat(deps): bump github.com/go-playground/validator/v10 from 10.26.0 to 10.27.0 (#1744)
