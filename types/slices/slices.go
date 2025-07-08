@@ -1,6 +1,10 @@
 package slices
 
-import "github.com/alexfalkowski/go-service/v2/types/structs"
+import (
+	"slices"
+
+	"github.com/alexfalkowski/go-service/v2/types/structs"
+)
 
 // AppendNotZero elements to the slice, only if the element is not zero.
 func AppendNotZero[T comparable](slice []T, elems ...T) []T {
@@ -26,4 +30,14 @@ func AppendNotNil[T any](slice []*T, elems ...*T) []*T {
 	}
 
 	return slice
+}
+
+// ElemFunc is just slices.IndexFunc, returning the element and if it was found.
+func ElemFunc[T any](slice []*T, f func(*T) bool) (*T, bool) {
+	index := slices.IndexFunc(slice, f)
+	if index == -1 {
+		return nil, false
+	}
+
+	return slice[index], true
 }
