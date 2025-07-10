@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.38
+      - image: alexfalkowski/go:2.40
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
@@ -29,30 +29,30 @@ jobs:
       - restore_cache:
           name: restore go cache
           keys:
-            - go-service-go-cache-{{ checksum "go.sum" }}
+            - go-service-go-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
             - go-service-go-cache-
       - run: make clean
       - run: make dep
       - save_cache:
           name: save go cache
-          key: go-service-go-cache-{{ checksum "go.sum" }}
+          key: go-service-go-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
           paths:
             - ~/go/pkg/mod
       - restore_cache:
           name: restore go build cache
           keys:
-            - go-service-go-build-cache-{{ checksum "go.sum" }}
+            - go-service-go-build-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
             - go-service-go-build-cache-
       - run: make clean
       - restore_cache:
           name: restore go lint cache
           keys:
-            - go-service-go-lint-cache-{{ checksum "go.sum" }}
+            - go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
             - go-service-go-lint-cache-
       - run: make lint
       - save_cache:
           name: save go lint cache
-          key: go-service-go-lint-cache-{{ checksum "go.sum" }}
+          key: go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
           paths:
             - ~/.cache/golangci-lint
       - run: make sec
@@ -60,7 +60,7 @@ jobs:
       - run: make benchmarks
       - save_cache:
           name: save go build cache
-          key: go-service-go-build-cache-{{ checksum "go.sum" }}
+          key: go-service-go-build-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
           paths:
             - ~/.cache/go-build
       - run: make coverage
@@ -72,7 +72,7 @@ jobs:
     resource_class: large
   release:
     docker:
-      - image: alexfalkowski/release:3.28
+      - image: alexfalkowski/release:3.30
     working_directory: ~/go-service
     steps:
       - checkout
