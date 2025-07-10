@@ -29,7 +29,7 @@ jobs:
       - restore_cache:
           name: restore go cache
           keys:
-            - go-service-go-cache-{{ checksum "go.sum" }}
+            - go-service-go-cache-{{ .Environment.GO_VERSION }}-{{ checksum "go.sum" }}
             - go-service-go-cache-
       - run: make clean
       - run: make dep
