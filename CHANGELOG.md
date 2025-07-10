@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.89.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.89.0) - 2025-07-10
+
+- [`f558840`](https://github.com/alexfalkowski/go-service/commit/f558840151b577800ba7a705bd569abcb29fc7f0) feat(deps): bump golang.org/x/crypto from 0.39.0 to 0.40.0 (#1754)
+- [`249a7ab`](https://github.com/alexfalkowski/go-service/commit/249a7abe7b4b112e361ebc021beb4973a4382ced) build(ci): move make clean (#1756)
+- [`f851d4c`](https://github.com/alexfalkowski/go-service/commit/f851d4c7b4f41bd6c2c7b4f57b6cb6eaf31363a4) build(ci): add checksum ~/.go-version (#1753)
+- [`3bd85dd`](https://github.com/alexfalkowski/go-service/commit/3bd85dd02429c5499d7ae7039a351cb5a8d093ee) build(deps): bump bin from `ce6b0e8` to `07bcffa` (#1751)
+
 ## [v2.88.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.88.0) - 2025-07-08
 
 - [`3fc5269`](https://github.com/alexfalkowski/go-service/commit/3fc5269e3ff211eee1dcf4df7c6d1e25d44ea7d5) feat(slices): add element (#1750)
