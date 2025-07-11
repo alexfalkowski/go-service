@@ -68,7 +68,7 @@ require (
 	go.uber.org/dig v1.19.0
 	go.uber.org/fx v1.24.0
 	golang.org/x/crypto v0.40.0
-	golang.org/x/net v0.41.0
+	golang.org/x/net v0.42.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )
