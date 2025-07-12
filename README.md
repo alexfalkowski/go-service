@@ -449,14 +449,14 @@ To configure, please specify the following:
 ```yaml
 transport:
   http:
-    address: :8000
+    address: tcp://localhost:8000
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
     timeout: 10s
   grpc:
-    address: :9000
+    address: tcp://localhost:9000
     retry:
       backoff: 100ms
       timeout: 1s
@@ -559,7 +559,7 @@ To configure, please specify the following:
 
 ```yaml
 debug:
-  address: :6060
+  address: tcp://localhost:6060
   timeout: 10s
 ```
 

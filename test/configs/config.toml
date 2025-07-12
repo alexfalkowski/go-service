@@ -1,7 +1,7 @@
 environment = "development"
 
 [debug]
-address = ":6060"
+address = "tcp://localhost:6060"
 timeout = "10s"
 
 [cache]
@@ -93,7 +93,7 @@ exp = "1h"
 kid = "1234567890"
 
 [transport.http]
-address = ":11000"
+address = "tcp://localhost:11000"
 user_agent = "Service http/1.0"
 timeout = "10s"
 
@@ -103,7 +103,7 @@ timeout = "1s"
 attempts = 3
 
 [transport.grpc]
-address = ":12000"
+address = "tcp://localhost:12000"
 user_agent = "Service grpc/1.0"
 timeout = "10s"
 
