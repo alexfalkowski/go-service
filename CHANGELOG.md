@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.93.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.93.1) - 2025-07-12
+
+- [`0d6f00b`](https://github.com/alexfalkowski/go-service/commit/0d6f00b6e603f90d08058530346c7fe8c180961f) fix(transport): prefix default with tcp:// (#1760)
+
 ## [v2.93.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.93.0) - 2025-07-12
 
 - [`8b68eb4`](https://github.com/alexfalkowski/go-service/commit/8b68eb4ca55853d5e61ecd7f2532861767a82815) feat(transport): allow to have network in address (#1759)
