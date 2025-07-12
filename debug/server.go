@@ -64,7 +64,7 @@ func (s *Server) GetService() *server.Service {
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
-		Address: cmp.Or(cfg.Address, ":6060"),
+		Address: cmp.Or(cfg.Address, "tcp://:6060"),
 	}
 
 	if !tls.IsEnabled(cfg.TLS) {

@@ -63,7 +63,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		streamServerOption(params, meter, params.Stream...),
 		opt,
 	)
-	cfg := &config.Config{Address: cmp.Or(params.Config.Address, ":9090")}
+	cfg := &config.Config{Address: cmp.Or(params.Config.Address, "tcp://:9090")}
 
 	serv, err := server.NewService("grpc", svr, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
