@@ -107,6 +107,9 @@ var (
 	// WithChainStreamInterceptor is an alias of grpc.WithChainStreamInterceptor.
 	WithChainStreamInterceptor = grpc.WithChainStreamInterceptor
 
+	// WithContextDialer is an alias of grpc.WithContextDialer.
+	WithContextDialer = grpc.WithContextDialer
+
 	// WithDefaultCallOptions is an alias of grpc.WithDefaultCallOptions.
 	WithDefaultCallOptions = grpc.WithDefaultCallOptions
 

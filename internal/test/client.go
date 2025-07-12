@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -75,7 +76,9 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		opts = append(opts, g.WithClientCompression())
 	}
 
-	conn, err := g.NewClient(c.Transport.GRPC.Address, opts...)
+	_, target := net.NetworkAddress(c.Transport.GRPC.Address)
+
+	conn, err := g.NewClient(target, opts...)
 	runtime.Must(err)
 
 	return conn

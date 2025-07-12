@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -297,8 +298,10 @@ func (w *World) pathURL(host, path string) string {
 	return url
 }
 
-func (w *World) url(protocol, host string) string {
-	return protocol + "://" + host
+func (w *World) url(protocol, address string) string {
+	_, host := net.NetworkAddress(address)
+
+	return strings.Concat(protocol, "://", host)
 }
 
 func transportConfig(os *worldOpts) *transport.Config {

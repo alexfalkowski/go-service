@@ -3,5 +3,5 @@ id:
   kind: uuid
 transport:
   http:
-    address: ":invalid"
+    address: "tcp://localhost:invalid"
     timeout: 10s

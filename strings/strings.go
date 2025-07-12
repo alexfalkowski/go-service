@@ -18,6 +18,9 @@ var (
 	// Repeat is an alias for strings.Repeat.
 	Repeat = strings.Repeat
 
+	// ReplaceAll is an alias for strings.ReplaceAll.
+	ReplaceAll = strings.ReplaceAll
+
 	// ToLower is an alias for strings.ToLower.
 	ToLower = strings.ToLower
 
@@ -48,10 +51,7 @@ func Concat(ss ...string) string {
 
 // CutColon will split by : and give before and after.
 func CutColon(s string) (string, string) {
-	before, after, ok := strings.Cut(s, ":")
-	if !ok {
-		return "", ""
-	}
+	before, after, _ := Cut(s, ":")
 
 	return before, after
 }

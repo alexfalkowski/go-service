@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
@@ -32,9 +33,11 @@ func BenchmarkHTTP(b *testing.B) {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 
+		addr := test.RandomHost()
+
 		server := &http.Server{
 			Handler:           mux,
-			Addr:              test.Address(),
+			Addr:              addr,
 			ReadHeaderTimeout: time.Second,
 		}
 		defer server.Close()
@@ -43,7 +46,7 @@ func BenchmarkHTTP(b *testing.B) {
 		go server.ListenAndServe()
 
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", server.Addr)
+		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
@@ -79,8 +82,9 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
+		_, addr := net.NetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
@@ -120,8 +124,9 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
+		_, addr := net.NetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
@@ -163,8 +168,9 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
+		_, addr := net.NetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", cfg.HTTP.Address)
+		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 

@@ -26,7 +26,7 @@ func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
 		b.ReportAllocs()
 
-		l, err := net.Listen(test.Address())
+		l, err := net.Listen(test.RandomAddress())
 		runtime.Must(err)
 
 		server := grpc.NewServer(test.DefaultTimeout)
@@ -71,7 +71,8 @@ func BenchmarkGRPC(b *testing.B) {
 
 		lc.RequireStart()
 
-		cl := &client.Config{Address: cfg.GRPC.Address}
+		_, addr := net.NetworkAddress(cfg.GRPC.Address)
+		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
 		runtime.Must(err)
@@ -110,7 +111,8 @@ func BenchmarkGRPC(b *testing.B) {
 
 		lc.RequireStart()
 
-		cl := &client.Config{Address: cfg.GRPC.Address}
+		_, addr := net.NetworkAddress(cfg.GRPC.Address)
+		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
 		runtime.Must(err)
@@ -150,7 +152,8 @@ func BenchmarkGRPC(b *testing.B) {
 
 		lc.RequireStart()
 
-		cl := &client.Config{Address: cfg.GRPC.Address}
+		_, addr := net.NetworkAddress(cfg.GRPC.Address)
+		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
 		runtime.Must(err)

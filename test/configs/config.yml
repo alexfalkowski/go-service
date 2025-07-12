@@ -1,6 +1,6 @@
 environment: development
 debug:
-  address: :6060
+  address: tcp://localhost:6060
   timeout: 10s
 cache:
   kind: redis
@@ -70,7 +70,7 @@ token:
     kid: "1234567890"
 transport:
   http:
-    address: :11000
+    address: tcp://localhost:11000
     retry:
       backoff: 100ms
       timeout: 1s
@@ -78,7 +78,7 @@ transport:
     timeout: 10s
     user_agent: Service http/1.0
   grpc:
-    address: :12000
+    address: tcp://localhost:12000
     retry:
       backoff: 100ms
       timeout: 1s
