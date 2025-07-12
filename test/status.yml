@@ -10,7 +10,7 @@ telemetry:
     level: info
 transport:
   http:
-    address: :6000
+    address: tcp://:6000
     retry:
       backoff: 100ms
       timeout: 1s
