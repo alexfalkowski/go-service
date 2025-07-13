@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.40
+      - image: alexfalkowski/go:2.41
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
@@ -46,13 +46,13 @@ jobs:
       - restore_cache:
           name: restore go lint cache
           keys:
-            - go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
+            - go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}
             - go-service-go-lint-cache-
       - run: make clean
       - run: make lint
       - save_cache:
           name: save go lint cache
-          key: go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}
+          key: go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}
           paths:
             - ~/.cache/golangci-lint
       - run: make sec
