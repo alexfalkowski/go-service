@@ -22,7 +22,7 @@ func RandomHost() string {
 
 // RandomNetworkHost for tests.
 func RandomNetworkHost() (string, string) {
-	l, err := net.Listen("tcp://localhost:0")
+	l, err := net.Listen("tcp", "localhost:0")
 	runtime.Must(err)
 
 	defer l.Close()

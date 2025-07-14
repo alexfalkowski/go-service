@@ -17,16 +17,14 @@ type (
 	Listener = net.Listener
 )
 
+// Listen is an alias for net.Listen.
+var Listen = net.Listen
+
 // NetworkAddress takes an address like tcp://localhost:3000 and returns "tcp" "localhost:3000".
 func NetworkAddress(address string) (string, string) {
 	scheme, host, _ := strings.Cut(address, "://")
 
 	return scheme, host
-}
-
-// Listen to an address, the address has a network and address, e.g tcp://localhost:3000.
-func Listen(address string) (Listener, error) {
-	return net.Listen(NetworkAddress(address))
 }
 
 // Host from the address, if it can be split.
