@@ -7,6 +7,7 @@ import (
 	debug "github.com/alexfalkowski/go-service/v2/debug/http"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
@@ -64,7 +65,7 @@ func (s *Server) GetService() *server.Service {
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
-		Address: cmp.Or(cfg.Address, "tcp://:6060"),
+		Address: cmp.Or(cfg.Address, net.DefaultAddress("6060")),
 	}
 
 	if !tls.IsEnabled(cfg.TLS) {

@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
@@ -63,7 +64,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		streamServerOption(params, meter, params.Stream...),
 		opt,
 	)
-	cfg := &config.Config{Address: cmp.Or(params.Config.Address, "tcp://:9090")}
+	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
 	serv, err := server.NewService("grpc", svr, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
