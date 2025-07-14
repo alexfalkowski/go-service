@@ -30,7 +30,7 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	srv := &Server{server: server, tls: cfg.TLS}
 
-	l, err := net.Listen(cfg.Address)
+	l, err := net.Listen(net.NetworkAddress(cfg.Address))
 	if err != nil {
 		return srv, err
 	}
