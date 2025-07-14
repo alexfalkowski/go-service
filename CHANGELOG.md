@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.95.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.95.0) - 2025-07-14
+
+- [`49a247e`](https://github.com/alexfalkowski/go-service/commit/49a247e6bdf6da6624ca0c21f60d4536e17af2af) feat(net): add default address (#1764)
+
 ## [v2.94.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.94.0) - 2025-07-14
 
 - [`3d9cfbc`](https://github.com/alexfalkowski/go-service/commit/3d9cfbc0737da7f84a1b339ba448479c6ccaef0a) feat(net): use NetworkAddress for Listen (#1763)
