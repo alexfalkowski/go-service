@@ -36,3 +36,8 @@ func Host(addr string) string {
 
 	return host
 }
+
+// DefaultAddress for servers in the form of tcp://:port
+func DefaultAddress(port string) string {
+	return "tcp://:" + port
+}
