@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.94.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.94.0) - 2025-07-14
+
+- [`3d9cfbc`](https://github.com/alexfalkowski/go-service/commit/3d9cfbc0737da7f84a1b339ba448479c6ccaef0a) feat(net): use NetworkAddress for Listen (#1763)
+- [`29d4943`](https://github.com/alexfalkowski/go-service/commit/29d494394dc7b677980fe9688ec458cfd21fd351) build(ci): use .source-key (#1762)
+- [`c3826cf`](https://github.com/alexfalkowski/go-service/commit/c3826cf15dada55b8197349767f78a0e0a4c753b) build(ci): use go-lint-version (#1761)
+
 ## [v2.93.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.93.1) - 2025-07-12
 
 - [`0d6f00b`](https://github.com/alexfalkowski/go-service/commit/0d6f00b6e603f90d08058530346c7fe8c180961f) fix(transport): prefix default with tcp:// (#1760)
