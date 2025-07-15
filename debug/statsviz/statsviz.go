@@ -8,5 +8,5 @@ import (
 
 // Register for debug.
 func Register(name env.Name, mux *http.ServeMux) error {
-	return statsviz.Register(mux.ServeMux, statsviz.Root(http.Pattern("/debug/statsviz", name)))
+	return statsviz.Register(mux.ServeMux, statsviz.Root(http.Pattern(name, "/debug/statsviz")))
 }
