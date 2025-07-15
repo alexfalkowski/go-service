@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.96.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.96.0) - 2025-07-15
+
+- [`5f5b3db`](https://github.com/alexfalkowski/go-service/commit/5f5b3db34cccfd32fe6920a40edec3571a6ebb22) feat(net): pass name first to http.Pattern (#1766)
+- [`7499f2a`](https://github.com/alexfalkowski/go-service/commit/7499f2a91f83d62d2d4d0b7b818354cddbf998a4) build(deps): bump bin from `6df8f09` to `a13f4bb` (#1765)
+
 ## [v2.95.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.95.0) - 2025-07-14
 
 - [`49a247e`](https://github.com/alexfalkowski/go-service/commit/49a247e6bdf6da6624ca0c21f60d4536e17af2af) feat(net): add default address (#1764)
