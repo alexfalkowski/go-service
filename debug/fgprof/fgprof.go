@@ -8,5 +8,5 @@ import (
 
 // Register for debug.
 func Register(name env.Name, mux *http.ServeMux) {
-	mux.Handle(http.Pattern("/debug/fgprof", name), fgprof.Handler())
+	mux.Handle(http.Pattern(name, "/debug/fgprof"), fgprof.Handler())
 }

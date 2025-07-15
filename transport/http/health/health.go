@@ -23,9 +23,9 @@ type RegisterParams struct {
 
 // Register health for HTTP.
 func Register(params RegisterParams) {
-	resister("/healthz", params.Name, params.Health.Observer)
-	resister("/livez", params.Name, params.Liveness.Observer)
-	resister("/readyz", params.Name, params.Readiness.Observer)
+	resister(params.Name, "/healthz", params.Health.Observer)
+	resister(params.Name, "/livez", params.Liveness.Observer)
+	resister(params.Name, "/readyz", params.Readiness.Observer)
 }
 
 // Response for health.
@@ -34,8 +34,8 @@ type Response struct {
 	Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 }
 
-func resister(pattern string, name env.Name, ob *subscriber.Observer) {
-	rest.Get(http.Pattern(pattern, name), func(ctx context.Context) (*Response, error) {
+func resister(name env.Name, pattern string, ob *subscriber.Observer) {
+	rest.Get(http.Pattern(name, pattern), func(ctx context.Context) (*Response, error) {
 		if err := ob.Error(); err != nil {
 			return nil, status.ServiceUnavailableError(err)
 		}

@@ -8,5 +8,5 @@ import (
 
 // Register for debug.
 func Register(name env.Name, cont *content.Content, mux *http.ServeMux) {
-	mux.HandleFunc(http.Pattern("/debug/psutil", name), NewHandler(cont))
+	mux.HandleFunc(http.Pattern(name, "/debug/psutil"), NewHandler(cont))
 }

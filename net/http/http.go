@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -135,6 +134,6 @@ func Path(req *http.Request) string {
 }
 
 // Pattern will create a pattern with the format /name/pattern.
-func Pattern(pattern string, name env.Name) string {
-	return fmt.Sprintf("/%s%s", name.String(), pattern)
+func Pattern(name env.Name, pattern string) string {
+	return strings.Concat("/", name.String(), pattern)
 }

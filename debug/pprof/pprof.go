@@ -9,9 +9,9 @@ import (
 
 // Register for debug.
 func Register(name env.Name, mux *http.ServeMux) {
-	mux.HandleFunc(http.Pattern("/debug/pprof/", name), pprof.Index)
-	mux.HandleFunc(http.Pattern("/debug/pprof/cmdline", name), pprof.Cmdline)
-	mux.HandleFunc(http.Pattern("/debug/pprof/profile", name), pprof.Profile)
-	mux.HandleFunc(http.Pattern("/debug/pprof/symbol", name), pprof.Symbol)
-	mux.HandleFunc(http.Pattern("/debug/pprof/trace", name), pprof.Trace)
+	mux.HandleFunc(http.Pattern(name, "/debug/pprof/"), pprof.Index)
+	mux.HandleFunc(http.Pattern(name, "/debug/pprof/cmdline"), pprof.Cmdline)
+	mux.HandleFunc(http.Pattern(name, "/debug/pprof/profile"), pprof.Profile)
+	mux.HandleFunc(http.Pattern(name, "/debug/pprof/symbol"), pprof.Symbol)
+	mux.HandleFunc(http.Pattern(name, "/debug/pprof/trace"), pprof.Trace)
 }

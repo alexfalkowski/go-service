@@ -20,15 +20,15 @@ func WithWorldRest() WorldOption {
 
 // RegisterHandlers for test.
 func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
-	rest.Delete(http.Pattern(path, Name), h)
-	rest.Get(http.Pattern(path, Name), h)
+	rest.Delete(http.Pattern(Name, path), h)
+	rest.Get(http.Pattern(Name, path), h)
 }
 
 // RegisterRequestHandlers for test.
 func RegisterRequestHandlers[Req any, Res any](path string, h content.RequestHandler[Req, Res]) {
-	rest.Post(http.Pattern(path, Name), h)
-	rest.Put(http.Pattern(path, Name), h)
-	rest.Patch(http.Pattern(path, Name), h)
+	rest.Post(http.Pattern(Name, path), h)
+	rest.Put(http.Pattern(Name, path), h)
+	rest.Patch(http.Pattern(Name, path), h)
 }
 
 // RestInvalidStatusCode for test.

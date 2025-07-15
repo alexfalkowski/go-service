@@ -24,11 +24,9 @@ type Meter = metrics.Meter
 
 // Register prometheus.
 func Register(name env.Name, cfg *metrics.Config, mux *http.ServeMux) {
-	if !metrics.IsEnabled(cfg) || !cfg.IsPrometheus() {
-		return
+	if metrics.IsEnabled(cfg) && cfg.IsPrometheus() {
+		mux.Handle("GET "+http.Pattern(name, "/metrics"), prometheus.Handler())
 	}
-
-	mux.Handle("GET "+http.Pattern("/metrics", name), prometheus.Handler())
 }
 
 // NewHandler for metrics.
