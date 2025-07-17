@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.98.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.98.0) - 2025-07-17
+
+- [`4d3366e`](https://github.com/alexfalkowski/go-service/commit/4d3366e9cdb1fc415ac665d67bcacba5ccc8050b) feat(deps): bump github.com/spf13/pflag from 1.0.6 to 1.0.7 (#1769)
+- [`f85a9ab`](https://github.com/alexfalkowski/go-service/commit/f85a9ab5a4eb5d0758541f6f43f19daf0bd6ea8b) build(ci): use alexfalkowski/go:2.42 (#1768)
+
 ## [v2.97.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.97.0) - 2025-07-16
 
 - [`f34f23b`](https://github.com/alexfalkowski/go-service/commit/f34f23be86bf323780fe1df9ab541fc6123809a6) feat(deps): upgraded google.golang.org/grpc v1.73.0 => v1.74.0 (#1767)
