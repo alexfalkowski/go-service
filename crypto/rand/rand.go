@@ -37,7 +37,6 @@ func (g *Generator) Read(b []byte) (int, error) {
 // GenerateBytes returns a cryptographically random byte slice of size.
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	s, err := g.generate(size, letters)
-
 	return strings.Bytes(s), err
 }
 

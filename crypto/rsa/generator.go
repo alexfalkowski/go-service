@@ -28,6 +28,5 @@ func (g *Generator) Generate() (string, string, error) {
 
 	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&public.PublicKey)})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(public)})
-
 	return bytes.String(pub), bytes.String(pri), nil
 }

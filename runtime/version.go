@@ -8,6 +8,5 @@ func Version() string {
 	if info != nil {
 		return info.Main.Version
 	}
-
 	return "development"
 }

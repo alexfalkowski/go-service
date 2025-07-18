@@ -45,7 +45,6 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
 	now := time.Now()
-
 	claims := &jwt.RegisteredClaims{
 		ExpiresAt: &jwt.NumericDate{Time: now.Add(exp)},
 		ID:        t.generator.Generate(),
@@ -55,7 +54,6 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 		Audience:  []string{aud},
 		Subject:   sub,
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
 	token.Header["kid"] = t.cfg.KeyID
 

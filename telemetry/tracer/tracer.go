@@ -45,8 +45,8 @@ func NewTracer(params TracerParams) *Tracer {
 		attributes.ServiceVersion(params.Version.String()),
 		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
-	provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
 
+	provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
 	otel.SetTracerProvider(provider)
 
 	params.Lifecycle.Append(di.Hook{
@@ -75,7 +75,6 @@ type Tracer struct {
 func (t *Tracer) StartClient(ctx context.Context, spanName string, attrs ...attributes.KeyValue) (context.Context, trace.Span) {
 	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindClient), trace.WithAttributes(attrs...))
 	ctx = WithTraceID(ctx, span)
-
 	return ctx, span
 }
 
@@ -86,6 +85,5 @@ func (t *Tracer) StartServer(ctx context.Context, spanName string, attrs ...attr
 	ctx = trace.ContextWithRemoteSpanContext(ctx, trace.SpanContextFromContext(ctx))
 	ctx, span := t.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindServer), trace.WithAttributes(attrs...))
 	ctx = WithTraceID(ctx, span)
-
 	return ctx, span
 }

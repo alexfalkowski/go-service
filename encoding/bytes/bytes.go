@@ -22,7 +22,6 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 	}
 
 	_, err := to.WriteTo(w)
-
 	return err
 }
 
@@ -34,6 +33,5 @@ func (e *Encoder) Decode(r io.Reader, v any) error {
 	}
 
 	_, err := from.ReadFrom(r)
-
 	return err
 }

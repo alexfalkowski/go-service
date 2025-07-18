@@ -12,6 +12,5 @@ func RegisterMaxProcs(logger *slog.Logger) {
 	if logger != nil {
 		opts = append(opts, maxprocs.Logger(logger.Info))
 	}
-
 	_, _ = maxprocs.Set(opts...)
 }

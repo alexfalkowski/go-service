@@ -43,7 +43,6 @@ type Token struct {
 func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	now := time.Now()
-
 	token := paseto.NewToken()
 	token.SetJti(t.generator.Generate())
 	token.SetIssuedAt(now)

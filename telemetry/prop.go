@@ -22,13 +22,11 @@ func Register() {
 // Extract from the carrier.
 func Extract(ctx context.Context, carrier Carrier) context.Context {
 	prop := otel.GetTextMapPropagator()
-
 	return prop.Extract(ctx, carrier)
 }
 
 // Inject the carrier.
 func Inject(ctx context.Context, carrier Carrier) {
 	prop := otel.GetTextMapPropagator()
-
 	prop.Inject(ctx, carrier)
 }

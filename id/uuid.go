@@ -12,6 +12,5 @@ type UUID struct{}
 func (g *UUID) Generate() string {
 	id, err := uuid.NewV7()
 	runtime.Must(err)
-
 	return id.String()
 }

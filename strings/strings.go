@@ -52,6 +52,5 @@ func Concat(ss ...string) string {
 // CutColon will split by : and give before and after.
 func CutColon(s string) (string, string) {
 	before, after, _ := Cut(s, ":")
-
 	return before, after
 }

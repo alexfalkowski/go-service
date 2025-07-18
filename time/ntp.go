@@ -19,6 +19,5 @@ type NTPNetwork struct {
 // Now returns the current time from the NTP server.
 func (n *NTPNetwork) Now() (Time, error) {
 	t, err := ntp.Time(n.address)
-
 	return t, errors.Prefix("ntp", err)
 }

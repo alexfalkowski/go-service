@@ -28,7 +28,6 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 	}
 
 	_, err = w.Write(bytes)
-
 	return err
 }
 

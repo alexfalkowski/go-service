@@ -19,7 +19,6 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	}
 
 	k, err := cfg.GetKey(fs)
-
 	return &Cipher{gen: gen, key: k}, err
 }
 
@@ -57,7 +56,6 @@ func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
 	}
 
 	nonce, text := msg[:size], msg[size:]
-
 	return aead.Open(nil, nonce, text, nil)
 }
 

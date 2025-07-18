@@ -33,6 +33,5 @@ func NewConfig(fs *os.FS, cfg *Config) (*tls.Config, error) {
 	}
 
 	config.Certificates = []tls.Certificate{pair}
-
 	return config, nil
 }

@@ -9,9 +9,7 @@ import (
 
 // NewULID creates a new ULID generator.
 func NewULID(reader rand.Reader) *ULID {
-	return &ULID{
-		reader: reader,
-	}
+	return &ULID{reader: reader}
 }
 
 // ULID generator.
@@ -23,6 +21,5 @@ type ULID struct {
 func (k *ULID) Generate() string {
 	id, err := ulid.New(ulid.Timestamp(time.Now()), k.reader)
 	runtime.Must(err)
-
 	return id.String()
 }
