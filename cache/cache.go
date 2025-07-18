@@ -7,9 +7,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	cl "github.com/alexfalkowski/go-service/v2/cache/telemetry/logger"
-	cm "github.com/alexfalkowski/go-service/v2/cache/telemetry/metrics"
-	ct "github.com/alexfalkowski/go-service/v2/cache/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/cache/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/cache/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -17,9 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/sync"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"google.golang.org/protobuf/proto"
 )
@@ -51,17 +48,14 @@ func NewCache(params CacheParams) cacher.Cache {
 		pool:   params.Pool,
 		driver: params.Driver,
 	}
-
 	if params.Tracer != nil {
-		cache = ct.NewCache(params.Config.Kind, params.Tracer, cache)
+		cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
 	}
-
 	if params.Logger != nil {
-		cache = cl.NewCache(params.Config.Kind, params.Logger, cache)
+		cache = logger.NewCache(params.Config.Kind, params.Logger, cache)
 	}
-
 	if params.Meter != nil {
-		cache = cm.NewCache(params.Config.Kind, params.Meter, cache)
+		cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
 	}
 
 	params.Lifecycle.Append(di.Hook{

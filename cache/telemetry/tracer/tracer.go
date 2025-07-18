@@ -8,6 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
+// Tracer is an alias for tracer.Tracer.
+type Tracer = tracer.Tracer
+
 // NewCache for tracer.
 func NewCache(kind string, tracer *tracer.Tracer, cache cacher.Cache) *Cache {
 	return &Cache{kind: kind, tracer: tracer, cache: cache}
