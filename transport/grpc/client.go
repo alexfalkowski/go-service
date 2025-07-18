@@ -238,7 +238,6 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
-
 	return unary
 }
 
@@ -263,7 +262,6 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	}
 
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
-
 	return grpc.WithChainStreamInterceptor(stream...)
 }
 
@@ -272,11 +270,9 @@ func options(opts ...ClientOption) *clientOpts {
 	for _, o := range opts {
 		o.apply(os)
 	}
-
 	if os.timeout == 0 {
 		os.timeout = 30 * time.Second
 	}
-
 	if os.generator == nil {
 		os.generator = &id.UUID{}
 	}

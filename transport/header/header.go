@@ -32,7 +32,6 @@ func ParseAuthorization(header string) (string, string, error) {
 	if !ok {
 		return "", "", ErrInvalidAuthorization
 	}
-
 	if !containsAuthorization(key) {
 		return "", "", ErrNotSupportedAuthorization
 	}

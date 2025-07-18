@@ -38,7 +38,6 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 		}
 
 		ctx = meta.WithUserID(ctx, meta.Ignored(sub))
-
 		return handler(ctx, req)
 	}
 }
@@ -60,7 +59,6 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 		}
 
 		ctx = meta.WithUserID(ctx, meta.Ignored(sub))
-
 		wrapped := middleware.WrapServerStream(stream)
 		wrapped.WrappedContext = ctx
 
