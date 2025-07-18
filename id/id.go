@@ -31,7 +31,7 @@ func NewGenerator(config *Config, reader rand.Reader) (Generator, error) {
 		return NewULID(reader), nil
 	case "xid":
 		return &XID{}, nil
+	default:
+		return nil, ErrNotFound
 	}
-
-	return nil, ErrNotFound
 }

@@ -52,10 +52,7 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 		SweepInterval: time.Hour,
 	}
 	store, _ := memorystore.New(config)
-	limiter := &Limiter{
-		store: store,
-		key:   k,
-	}
+	limiter := &Limiter{store: store, key: k}
 
 	lc.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {

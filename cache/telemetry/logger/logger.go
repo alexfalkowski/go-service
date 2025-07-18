@@ -32,15 +32,13 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 		logger.String(meta.ServiceKey, c.kind),
 		logger.String(meta.PathKey, key),
 	}
-
 	ok, err := c.cache.Remove(ctx, key)
-
 	attrs = append(attrs,
 		logger.String(meta.DurationKey, time.Since(start).String()),
 		logger.Bool("exists", ok),
 	)
-	c.logger.Log(ctx, logger.NewMessage(message("remove"), err), attrs...)
 
+	c.logger.Log(ctx, logger.NewMessage(message("remove"), err), attrs...)
 	return ok, err
 }
 
@@ -51,15 +49,13 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 		logger.String(meta.ServiceKey, c.kind),
 		logger.String(meta.PathKey, key),
 	}
-
 	ok, err := c.cache.Get(ctx, key, value)
-
 	attrs = append(attrs,
 		logger.String(meta.DurationKey, time.Since(start).String()),
 		logger.Bool("exists", ok),
 	)
-	c.logger.Log(ctx, logger.NewMessage(message("get"), err), attrs...)
 
+	c.logger.Log(ctx, logger.NewMessage(message("get"), err), attrs...)
 	return ok, err
 }
 
@@ -70,12 +66,10 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 		logger.String(meta.ServiceKey, c.kind),
 		logger.String(meta.PathKey, key),
 	}
-
 	err := c.cache.Persist(ctx, key, value, ttl)
-
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	c.logger.Log(ctx, logger.NewMessage(message("persist"), err), attrs...)
 
+	c.logger.Log(ctx, logger.NewMessage(message("persist"), err), attrs...)
 	return err
 }
 

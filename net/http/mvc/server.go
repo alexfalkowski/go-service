@@ -62,7 +62,6 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 	}
 
 	mux.HandleFunc(pattern, handler)
-
 	return true
 }
 
@@ -82,7 +81,6 @@ func StaticFile(pattern, name string) bool {
 	}
 
 	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
-
 	return true
 }
 
@@ -103,7 +101,6 @@ func StaticPathValue(pattern, value, prefix string) bool {
 	}
 
 	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
-
 	return true
 }
 
@@ -114,6 +111,5 @@ func writeFile(name string, writer io.Writer) error {
 	}
 
 	_, err = io.Copy(writer, f)
-
 	return err
 }

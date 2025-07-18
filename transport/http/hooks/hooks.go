@@ -30,11 +30,8 @@ func (h *Webhook) Sign(req *http.Request) error {
 	}
 
 	req.Body = body
-
 	now := time.Now()
 	id := h.generator.Generate()
-
-	// Sign does not return an error.
 	signature, _ := h.hook.Sign(id, now, payload)
 
 	req.Header.Add(hooks.HeaderWebhookID, id)

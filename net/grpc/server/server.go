@@ -33,7 +33,6 @@ func NewServer(server *grpc.Server, cfg *config.Config) (*Server, error) {
 	}
 
 	srv.listener = l
-
 	return srv, nil
 }
 
@@ -51,7 +50,6 @@ func (s *Server) Serve() error {
 // Shutdown the underlying server.
 func (s *Server) Shutdown(_ context.Context) error {
 	s.server.GracefulStop()
-
 	return nil
 }
 

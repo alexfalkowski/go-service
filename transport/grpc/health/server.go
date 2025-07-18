@@ -30,7 +30,6 @@ type Server struct {
 // Check the health.
 func (s *Server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
 	var status health.HealthCheckResponse_ServingStatus
-
 	if err := s.observer.Error(); err != nil {
 		status = health.HealthCheckResponse_NOT_SERVING
 	} else {
@@ -43,7 +42,6 @@ func (s *Server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health
 // Watch the health.
 func (s *Server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
 	var status health.HealthCheckResponse_ServingStatus
-
 	if err := s.observer.Error(); err != nil {
 		status = health.HealthCheckResponse_NOT_SERVING
 	} else {

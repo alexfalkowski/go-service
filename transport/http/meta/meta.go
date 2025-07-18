@@ -27,7 +27,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p := http.Path(req)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -38,7 +37,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
 
 	requestID := extractRequestID(ctx, h.generator, req)
-
 	header.Set("Request-Id", requestID.Value())
 	ctx = meta.WithRequestID(ctx, requestID)
 

@@ -36,7 +36,6 @@ func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	}
 
 	srv.listener = l
-
 	return srv, nil
 }
 

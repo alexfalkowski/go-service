@@ -17,7 +17,6 @@ type RegisterFunc = func(commander Commander)
 // NewApplication for cmd.
 func NewApplication(register RegisterFunc) *Application {
 	app := &Application{name: Name, version: Version}
-
 	register(app)
 
 	return app

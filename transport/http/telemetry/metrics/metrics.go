@@ -59,7 +59,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p, method := http.Path(req), strings.ToLower(req.Method)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -67,7 +66,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		serviceAttribute.String(p),
 		methodAttribute.String(method),
 	)
-
 	start := time.Now()
 	ctx := req.Context()
 
@@ -75,7 +73,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	h.received.Add(ctx, 1, opts)
 
 	captured := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
-
 	if captured.Code >= 200 && captured.Code <= 299 {
 		h.sent.Add(ctx, 1, opts)
 	}
