@@ -16,7 +16,6 @@ type (
 // Add a value with key.
 func (s Storage) Add(key string, value Value) Storage {
 	s[key] = value
-
 	return s
 }
 
@@ -28,13 +27,11 @@ func (s Storage) Get(key string) Value {
 // Strings will create a map that is converts the key.
 func (s Storage) Strings(prefix string, converter Converter) Map {
 	attributes := make(Map, len(s))
-
 	for k, v := range s {
 		if v := v.String(); !strings.IsEmpty(v) {
 			attributes[s.key(prefix, converter(k))] = v
 		}
 	}
-
 	return attributes
 }
 

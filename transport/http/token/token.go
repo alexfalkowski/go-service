@@ -34,7 +34,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p := http.Path(req)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -44,12 +43,10 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	sub, err := h.verifier.Verify(strings.Bytes(auth), p)
 	if err != nil {
 		status.WriteError(ctx, res, status.UnauthorizedError(err))
-
 		return
 	}
 
 	ctx = meta.WithUserID(ctx, meta.Ignored(sub))
-
 	next(res, req.WithContext(ctx))
 }
 
@@ -72,7 +69,6 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, status.UnauthorizedError(err)
 	}
-
 	if len(token) == 0 {
 		return nil, status.UnauthorizedError(header.ErrInvalidAuthorization)
 	}
@@ -81,6 +77,5 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		"Authorization",
 		strings.Join(" ", header.BearerAuthorization, bytes.String(token)),
 	)
-
 	return r.RoundTripper.RoundTrip(req)
 }

@@ -27,7 +27,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p, method := http.Path(req), strings.ToLower(req.Method)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -37,13 +36,11 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		logger.String(meta.PathKey, p),
 		logger.String(meta.MethodKey, method),
 	}
-
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
-
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
-	message := message(strings.Join(" ", method, p))
+	message := logger.NewText(message(strings.Join(" ", method, p)))
 
-	h.logger.LogAttrs(ctx, codeToLevel(m.Code), logger.NewText(message), attrs...)
+	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
 
 // NewRoundTripper for logger.
@@ -73,21 +70,17 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		logger.String(meta.PathKey, p),
 		logger.String(meta.MethodKey, method),
 	}
-
 	if resp != nil {
 		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
+	message := logger.NewText(message(strings.Join(" ", method, p)))
 
-	message := message(strings.Join(" ", method, p))
-
-	r.logger.LogAttrs(ctx, respToLevel(resp), logger.NewMessage(message, err), attrs...)
-
+	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)
 	return resp, err
 }
 
 func respToLevel(resp *http.Response) logger.Level {
 	var code int
-
 	if resp != nil {
 		code = resp.StatusCode
 	} else {

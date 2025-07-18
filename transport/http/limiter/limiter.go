@@ -25,7 +25,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p := http.Path(req)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -34,7 +33,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ok, header, err := h.limiter.Take(ctx)
 	if err != nil {
 		status.WriteError(ctx, res, status.InternalServerError(err))
-
 		return
 	}
 
@@ -42,7 +40,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	if !ok {
 		status.WriteError(ctx, res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header))
-
 		return
 	}
 

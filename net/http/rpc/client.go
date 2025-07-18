@@ -78,17 +78,11 @@ func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 	if req == nil {
 		return ErrInvalidRequest
 	}
-
 	if res == nil {
 		return ErrInvalidResponse
 	}
 
-	opts := &client.Options{
-		ContentType: c.contentType,
-		Request:     req,
-		Response:    res,
-	}
-
+	opts := &client.Options{ContentType: c.contentType, Request: req, Response: res}
 	return c.client.Post(ctx, c.url+path, opts)
 }
 
@@ -97,6 +91,5 @@ func options(opts ...ClientOption) *clientOpts {
 	for _, o := range opts {
 		o.apply(os)
 	}
-
 	return os
 }

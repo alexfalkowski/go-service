@@ -33,7 +33,6 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 // NewSender for HTTP.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
 	os := options(opts...)
-
 	rt := os.roundTripper
 	rt = hooks.NewRoundTripper(hook, rt)
 

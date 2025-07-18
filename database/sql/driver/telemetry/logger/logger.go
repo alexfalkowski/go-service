@@ -43,12 +43,10 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 	attrs := []logger.Attr{
 		logger.String(meta.ServiceKey, i.name),
 	}
-
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
-
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, logger.NewMessage(message("exec conn"), err), attrs...)
 
+	i.logger.Log(ctx, logger.NewMessage(message("exec conn"), err), attrs...)
 	return res, err
 }
 
@@ -58,12 +56,10 @@ func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerC
 	attrs := []logger.Attr{
 		logger.String(meta.ServiceKey, i.name),
 	}
-
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
-
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, logger.NewMessage(message("query conn"), err), attrs...)
 
+	i.logger.Log(ctx, logger.NewMessage(message("query conn"), err), attrs...)
 	return ctx, res, err
 }
 
@@ -98,12 +94,10 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 	attrs := []logger.Attr{
 		logger.String(meta.ServiceKey, i.name),
 	}
-
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
-
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, logger.NewMessage(message("exec statement"), err), attrs...)
 
+	i.logger.Log(ctx, logger.NewMessage(message("exec statement"), err), attrs...)
 	return res, err
 }
 
@@ -113,12 +107,10 @@ func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQuer
 	attrs := []logger.Attr{
 		logger.String(meta.ServiceKey, i.name),
 	}
-
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
-
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-	i.logger.Log(ctx, logger.NewMessage(message("query statement"), err), attrs...)
 
+	i.logger.Log(ctx, logger.NewMessage(message("query statement"), err), attrs...)
 	return ctx, res, err
 }
 

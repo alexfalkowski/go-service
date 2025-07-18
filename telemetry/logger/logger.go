@@ -63,13 +63,11 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if logger == nil {
 		return nil, nil
 	}
 
 	slog.SetDefault(logger)
-
 	return &Logger{logger}, nil
 }
 

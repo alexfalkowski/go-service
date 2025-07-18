@@ -23,14 +23,14 @@ var (
 )
 
 // Copy bytes to a new slice.
-func Copy(bytes []byte) []byte {
-	newBytes := make([]byte, len(bytes))
-	copy(newBytes, bytes)
+func Copy(b []byte) []byte {
+	bytes := make([]byte, len(b))
+	copy(bytes, b)
 
-	return newBytes
+	return bytes
 }
 
 // String from the bytes.
-func String(bytes []byte) string {
-	return *(*string)(unsafe.Pointer(&bytes))
+func String(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }

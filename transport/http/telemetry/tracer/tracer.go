@@ -26,7 +26,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	p, method := http.Path(req), strings.ToLower(req.Method)
 	if strings.IsObservable(p) {
 		next(res, req)
-
 		return
 	}
 
@@ -39,7 +38,6 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	defer span.End()
 
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
-
 	span.SetAttributes(attributes.HTTPResponseStatusCode(m.Code))
 	tracer.Meta(ctx, span)
 }
