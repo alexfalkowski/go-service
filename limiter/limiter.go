@@ -82,7 +82,6 @@ func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
 		", remaining=",
 		strconv.FormatUint(remaining, 10),
 	)
-
 	return ok, header, nil
 }
 

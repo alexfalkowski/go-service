@@ -12,6 +12,5 @@ type KSUID struct{}
 func (k *KSUID) Generate() string {
 	id, err := ksuid.NewRandom()
 	runtime.Must(err)
-
 	return id.String()
 }

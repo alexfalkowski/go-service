@@ -22,6 +22,5 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode for proto.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	_, err := toml.NewDecoder(r).Decode(v)
-
 	return err
 }

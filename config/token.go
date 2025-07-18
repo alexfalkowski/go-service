@@ -16,7 +16,6 @@ func tokenAccessConfig(cfg *Config) *access.Config {
 	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}
-
 	return cfg.Token.Access
 }
 
@@ -24,7 +23,6 @@ func tokenJWTConfig(cfg *Config) *jwt.Config {
 	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}
-
 	return cfg.Token.JWT
 }
 
@@ -32,7 +30,6 @@ func tokenPasetoConfig(cfg *Config) *paseto.Config {
 	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}
-
 	return cfg.Token.Paseto
 }
 
@@ -40,6 +37,5 @@ func tokenSSHConfig(cfg *Config) *ssh.Config {
 	if !token.IsEnabled(cfg.Token) {
 		return nil
 	}
-
 	return cfg.Token.SSH
 }

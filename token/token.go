@@ -59,15 +59,14 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 		token, err := t.paseto.Generate(aud, sub)
 
 		return strings.Bytes(token), err
+	default:
+		return nil, nil
 	}
-
-	return nil, nil
 }
 
 // Verify a token based on kind.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	tkn := bytes.String(token)
-
 	var (
 		user string
 		err  error

@@ -48,7 +48,6 @@ var (
 // LoggerParams for logger.
 type LoggerParams struct {
 	di.In
-
 	Lifecycle   di.Lifecycle
 	Config      *Config
 	ID          env.ID
@@ -110,9 +109,9 @@ func logger(params LoggerParams) (*slog.Logger, error) {
 		return newTextLogger(params), nil
 	case params.Config.IsTint():
 		return newTintLogger(params), nil
+	default:
+		return nil, ErrNotFound
 	}
-
-	return nil, ErrNotFound
 }
 
 func newLogger(logger *Logger) *slog.Logger {

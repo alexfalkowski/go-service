@@ -21,7 +21,6 @@ type Generator struct {
 // Generate for hooks.
 func (g *Generator) Generate() (string, error) {
 	b, err := g.gen.GenerateBytes(32)
-
 	return base64.Encode(b), err
 }
 

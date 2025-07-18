@@ -11,7 +11,6 @@ import (
 // NewENV for config.
 func NewENV(location string, enc *encoding.Map) *ENV {
 	kind, data := strings.CutColon(os.Getenv(location))
-
 	return &ENV{kind: kind, data: data, enc: enc}
 }
 

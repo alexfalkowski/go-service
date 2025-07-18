@@ -23,7 +23,6 @@ func (f *File) Decode(v any) error {
 	if err != nil {
 		return err
 	}
-
 	defer file.Close()
 
 	enc := f.enc.Get(f.fs.PathExtension(f.location))

@@ -39,7 +39,6 @@ func (g *Generator) Generate() (string, string, error) {
 
 	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: mpr})
-
 	return bytes.String(pub), bytes.String(pri), nil
 }
 

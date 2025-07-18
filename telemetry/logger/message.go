@@ -23,6 +23,5 @@ func (m Message) Level() slog.Level {
 	if m.Error != nil {
 		return slog.LevelError
 	}
-
 	return slog.LevelInfo
 }

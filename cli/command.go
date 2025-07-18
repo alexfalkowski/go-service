@@ -8,7 +8,6 @@ import (
 // NewCommand creates a new command with the given name.
 func NewCommand(name string) *Command {
 	set := flag.NewFlagSet(name)
-
 	return &Command{FlagSet: set}
 }
 

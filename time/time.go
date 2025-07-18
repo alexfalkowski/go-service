@@ -55,6 +55,5 @@ var (
 func MustParseDuration(s string) time.Duration {
 	t, err := ParseDuration(s)
 	runtime.Must(err)
-
 	return t
 }

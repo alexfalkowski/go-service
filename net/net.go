@@ -23,7 +23,6 @@ var Listen = net.Listen
 // NetworkAddress takes an address like tcp://localhost:3000 and returns "tcp" "localhost:3000".
 func NetworkAddress(address string) (string, string) {
 	scheme, host, _ := strings.Cut(address, "://")
-
 	return scheme, host
 }
 
@@ -33,7 +32,6 @@ func Host(addr string) string {
 	if err != nil {
 		return addr
 	}
-
 	return host
 }
 

@@ -9,7 +9,6 @@ func NewPool[T any]() *Pool[T] {
 			return new(T)
 		},
 	}
-
 	return &Pool[T]{pool: pool}
 }
 

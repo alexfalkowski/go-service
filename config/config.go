@@ -27,11 +27,9 @@ func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) 
 	if err := decoder.Decode(config); err != nil {
 		return nil, err
 	}
-
 	if structs.IsEmpty(config) {
 		return nil, ErrInvalidConfig
 	}
-
 	if err := validator.Struct(config); err != nil {
 		return nil, err
 	}
@@ -76,7 +74,6 @@ func grpcConfig(cfg *Config) *grpc.Config {
 	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
-
 	return cfg.Transport.GRPC
 }
 
@@ -92,7 +89,6 @@ func httpConfig(cfg *Config) *http.Config {
 	if !transport.IsEnabled(cfg.Transport) {
 		return nil
 	}
-
 	return cfg.Transport.HTTP
 }
 
@@ -104,7 +100,6 @@ func pgConfig(cfg *Config) *pg.Config {
 	if !sql.IsEnabled(cfg.SQL) {
 		return nil
 	}
-
 	return cfg.SQL.PG
 }
 
@@ -112,6 +107,5 @@ func timeConfig(cfg *Config) *time.Config {
 	if !time.IsEnabled(cfg.Time) {
 		return nil
 	}
-
 	return cfg.Time
 }

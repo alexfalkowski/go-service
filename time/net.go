@@ -14,9 +14,9 @@ func NewNetwork(cfg *Config) (Network, error) {
 		return NewNTPNetwork(cfg.Address), nil
 	case cfg.IsNTS():
 		return NewNTSNetwork(cfg.Address), nil
+	default:
+		return nil, ErrNotFound
 	}
-
-	return nil, ErrNotFound
 }
 
 // Network for time.

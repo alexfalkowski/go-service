@@ -40,7 +40,6 @@ func (t *Token) Generate() (string, error) {
 
 	signature, err := sig.Sign(strings.Bytes(t.cfg.Key.Name))
 	token := strings.Join("-", t.cfg.Key.Name, base64.Encode(signature))
-
 	return token, err
 }
 

@@ -5,7 +5,6 @@ import "github.com/spf13/pflag"
 // NewFlagSet creates a new flag set with the given name.
 func NewFlagSet(name string) *FlagSet {
 	set := pflag.NewFlagSet(name, pflag.ContinueOnError)
-
 	return &FlagSet{FlagSet: set}
 }
 
@@ -22,6 +21,5 @@ func (f *FlagSet) AddInput(value string) {
 // GetInput retrieves the input flag value from the flag set.
 func (f *FlagSet) GetInput() string {
 	input, _ := f.GetString("input")
-
 	return input
 }

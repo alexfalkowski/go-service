@@ -21,7 +21,6 @@ type DecoderParams struct {
 // NewDecoder for config.
 func NewDecoder(params DecoderParams) Decoder {
 	kind, location := strings.CutColon(params.Flags.GetInput())
-
 	switch kind {
 	case "file":
 		return NewFile(location, params.Encoder, params.FS)

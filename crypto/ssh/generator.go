@@ -39,7 +39,6 @@ func (g *Generator) Generate() (string, string, error) {
 
 	pub := ssh.MarshalAuthorizedKey(mpu)
 	pri := pem.EncodeToMemory(mpr)
-
 	return bytes.String(pub), bytes.String(pri), nil
 }
 

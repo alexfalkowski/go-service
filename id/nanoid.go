@@ -12,6 +12,5 @@ type NanoID struct{}
 func (n *NanoID) Generate() string {
 	id, err := nanoid.Nanoid()
 	runtime.Must(err)
-
 	return id
 }

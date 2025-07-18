@@ -16,7 +16,6 @@ func loggerConfig(cfg *Config, fs *os.FS) *logger.Config {
 
 	err := cfg.Telemetry.Logger.Headers.Secrets(fs)
 	runtime.Must(err)
-
 	return cfg.Telemetry.Logger
 }
 
@@ -27,7 +26,6 @@ func metricsConfig(cfg *Config, fs *os.FS) *metrics.Config {
 
 	err := cfg.Telemetry.Metrics.Headers.Secrets(fs)
 	runtime.Must(err)
-
 	return cfg.Telemetry.Metrics
 }
 
@@ -38,6 +36,5 @@ func tracerConfig(cfg *Config, fs *os.FS) *tracer.Config {
 
 	err := cfg.Telemetry.Tracer.Headers.Secrets(fs)
 	runtime.Must(err)
-
 	return cfg.Telemetry.Tracer
 }

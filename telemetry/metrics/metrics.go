@@ -55,7 +55,6 @@ type Meter struct {
 func (m *Meter) MustInt64ObservableCounter(name, description string) metric.Int64ObservableCounter {
 	c, err := m.Int64ObservableCounter(name, metric.WithDescription(description))
 	runtime.Must(err)
-
 	return c
 }
 
@@ -63,7 +62,6 @@ func (m *Meter) MustInt64ObservableCounter(name, description string) metric.Int6
 func (m *Meter) MustFloat64ObservableCounter(name, description string) metric.Float64ObservableCounter {
 	c, err := m.Float64ObservableCounter(name, metric.WithDescription(description))
 	runtime.Must(err)
-
 	return c
 }
 
@@ -71,7 +69,6 @@ func (m *Meter) MustFloat64ObservableCounter(name, description string) metric.Fl
 func (m *Meter) MustInt64Counter(name, description string) metric.Int64Counter {
 	c, err := m.Int64Counter(name, metric.WithDescription(description))
 	runtime.Must(err)
-
 	return c
 }
 
@@ -79,7 +76,6 @@ func (m *Meter) MustInt64Counter(name, description string) metric.Int64Counter {
 func (m *Meter) MustFloat64Histogram(name, description string) metric.Float64Histogram {
 	h, err := m.Float64Histogram(name, metric.WithDescription(description), metric.WithUnit("s"))
 	runtime.Must(err)
-
 	return h
 }
 
@@ -87,7 +83,6 @@ func (m *Meter) MustFloat64Histogram(name, description string) metric.Float64His
 func (m *Meter) MustInt64ObservableGauge(name, description string) metric.Int64ObservableGauge {
 	g, err := m.Int64ObservableGauge(name, metric.WithDescription(description))
 	runtime.Must(err)
-
 	return g
 }
 
@@ -95,6 +90,5 @@ func (m *Meter) MustInt64ObservableGauge(name, description string) metric.Int64O
 func (m *Meter) MustRegisterCallback(f metric.Callback, instruments ...metric.Observable) metric.Registration {
 	reg, err := m.RegisterCallback(f, instruments...)
 	runtime.Must(err)
-
 	return reg
 }

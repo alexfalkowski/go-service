@@ -15,7 +15,6 @@ func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
 	}
 
 	k, err := cfg.GetKey(fs)
-
 	return &Signer{key: k}, err
 }
 
