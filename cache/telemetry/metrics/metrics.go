@@ -8,6 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
+// Meter is an alias for metrics.Meter.
+type Meter = metrics.Meter
+
 // NewCache for metrics.
 func NewCache(kind string, meter *metrics.Meter, cache cacher.Cache) *Cache {
 	hits := meter.MustInt64Counter("cache_hits_total", "The number of hits in the cache.")

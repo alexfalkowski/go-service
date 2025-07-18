@@ -8,6 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
+// Logger is an alias of logger.Logger.
+type Logger = logger.Logger
+
 // NewCache for tracer.
 func NewCache(kind string, logger *logger.Logger, cache cacher.Cache) *Cache {
 	return &Cache{kind: kind, logger: logger, cache: cache}
