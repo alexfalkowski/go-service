@@ -64,10 +64,8 @@ func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
 type Media struct {
 	// The encoder for the media type.
 	Encoder encoding.Encoder
-
 	// The type, e.g. text.
 	Type string
-
 	// The sub type, e.g. plain.
 	Subtype string
 }

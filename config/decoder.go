@@ -12,7 +12,6 @@ import (
 // DecoderParams for config.
 type DecoderParams struct {
 	di.In
-
 	Flags   *flag.FlagSet
 	Encoder *encoding.Map
 	FS      *os.FS

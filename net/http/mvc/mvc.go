@@ -18,7 +18,6 @@ var (
 // RegisterParams for mvc.
 type RegisterParams struct {
 	di.In
-
 	Mux         *http.ServeMux
 	FunctionMap sprout.FunctionMap
 	FileSystem  fs.FS   `optional:"true"`

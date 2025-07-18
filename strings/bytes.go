@@ -4,7 +4,6 @@ import "unsafe"
 
 type stringCap struct {
 	string
-
 	Cap int
 }
 

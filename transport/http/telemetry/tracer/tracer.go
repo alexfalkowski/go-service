@@ -52,7 +52,6 @@ func NewRoundTripper(tracer *Tracer, hrt http.RoundTripper) *RoundTripper {
 // RoundTripper for tracer.
 type RoundTripper struct {
 	tracer *Tracer
-
 	http.RoundTripper
 }
 

@@ -3,7 +3,6 @@ package ptr
 // Zero pointer of T.
 func Zero[T any]() *T {
 	var t T
-
 	return &t
 }
 

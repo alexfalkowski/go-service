@@ -15,7 +15,6 @@ import (
 // MeterProviderParams for metrics.
 type MeterProviderParams struct {
 	di.In
-
 	Lifecycle   di.Lifecycle
 	Config      *Config
 	Reader      sdk.Reader

@@ -9,7 +9,6 @@ import (
 // RegisterParams for gRPC.
 type RegisterParams struct {
 	di.In
-
 	Registrar grpc.ServiceRegistrar
 	Server    *Server
 }

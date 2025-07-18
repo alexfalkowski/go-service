@@ -60,7 +60,6 @@ func NewRoundTripper(userAgent env.UserAgent, generator id.Generator, hrt http.R
 // RoundTripper for meta.
 type RoundTripper struct {
 	http.RoundTripper
-
 	generator id.Generator
 	userAgent env.UserAgent
 }

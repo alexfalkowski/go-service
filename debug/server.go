@@ -19,7 +19,6 @@ import (
 // ServerParams for debug.
 type ServerParams struct {
 	di.In
-
 	Shutdowner di.Shutdowner
 	Mux        *debug.ServeMux
 	Config     *Config

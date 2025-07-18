@@ -16,7 +16,6 @@ var (
 // RegisterParams for rpc.
 type RegisterParams struct {
 	di.In
-
 	Mux     *http.ServeMux
 	Content *content.Content
 	Pool    *sync.BufferPool
