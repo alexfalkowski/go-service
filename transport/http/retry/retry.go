@@ -27,7 +27,6 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 // RoundTripper for retry.
 type RoundTripper struct {
 	http.RoundTripper
-
 	backoff retry.Backoff
 	timeout time.Duration
 }

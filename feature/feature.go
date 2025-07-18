@@ -13,7 +13,6 @@ import (
 // ProviderParams for feature.
 type ProviderParams struct {
 	di.In
-
 	Lifecycle       di.Lifecycle
 	MetricProvider  metrics.MeterProvider
 	FeatureProvider openfeature.FeatureProvider `optional:"true"`

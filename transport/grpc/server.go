@@ -25,7 +25,6 @@ import (
 // ServerParams for gRPC.
 type ServerParams struct {
 	di.In
-
 	Shutdowner di.Shutdowner
 	Config     *Config
 	Logger     *logger.Logger

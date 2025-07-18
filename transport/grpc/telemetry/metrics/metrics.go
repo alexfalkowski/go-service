@@ -122,7 +122,6 @@ type ServerStream struct {
 	sent             metrics.Int64Counter
 	handled          metrics.Int64Counter
 	handledHistogram metrics.Float64Histogram
-
 	grpc.ServerStream
 }
 
@@ -261,7 +260,6 @@ type ClientStream struct {
 	sent             metrics.Int64Counter
 	handled          metrics.Int64Counter
 	handledHistogram metrics.Float64Histogram
-
 	grpc.ClientStream
 }
 

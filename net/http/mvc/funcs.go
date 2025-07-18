@@ -19,7 +19,6 @@ import (
 // FunctionMapParams for sprout.
 type FunctionMapParams struct {
 	di.In
-
 	Logger     *slog.Logger
 	Registries []sprout.Registry `optional:"true"`
 }

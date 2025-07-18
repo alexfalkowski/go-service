@@ -27,7 +27,6 @@ import (
 // CacheParams for cache.
 type CacheParams struct {
 	di.In
-
 	Lifecycle  di.Lifecycle
 	Config     *config.Config
 	Encoder    *encoding.Map

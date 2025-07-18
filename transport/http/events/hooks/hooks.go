@@ -16,7 +16,6 @@ func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 // Handler for hooks.
 type Handler struct {
 	handler *hooks.Handler
-
 	http.Handler
 }
 

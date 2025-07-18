@@ -1,8 +1,6 @@
 version: "2"
 linters:
   default: all
-  enable:
-    - wsl_v5
   disable:
     - bodyclose
     - depguard
@@ -16,6 +14,7 @@ linters:
     - mnd
     - nakedret
     - nilnil
+    - nlreturn
     - nonamedreturns
     - noinlineerr
     - paralleltest
@@ -25,13 +24,10 @@ linters:
     - varnamelen
     - wrapcheck
     - wsl
+    - wsl_v5
   settings:
     lll:
       line-length: 180
-    wsl_v5:
-      allow-first-in-block: true
-      allow-whole-block: false
-      branch-max-lines: 2
   exclusions:
     generated: lax
     presets:

@@ -22,7 +22,6 @@ func OperationName(area, name string) string {
 // TracerParams for tracer.
 type TracerParams struct {
 	di.In
-
 	Lifecycle   di.Lifecycle
 	Config      *Config
 	ID          env.ID

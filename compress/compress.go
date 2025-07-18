@@ -11,7 +11,6 @@ import (
 // MapParams for compressor.
 type MapParams struct {
 	di.In
-
 	Zstd   *zstd.Compressor
 	S2     *s2.Compressor
 	Snappy *snappy.Compressor

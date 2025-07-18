@@ -38,9 +38,8 @@ func Register(dbs *mssqlx.DBs, meter *metrics.Meter) {
 
 // Metrics for SQL.
 type Metrics struct {
-	dbs  *mssqlx.DBs
-	opts metrics.MeasurementOption
-
+	dbs               *mssqlx.DBs
+	opts              metrics.MeasurementOption
 	maxOpen           metrics.Int64ObservableGauge
 	open              metrics.Int64ObservableGauge
 	inUse             metrics.Int64ObservableGauge

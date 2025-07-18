@@ -16,7 +16,6 @@ import (
 // MapParams for encoding.
 type MapParams struct {
 	di.In
-
 	JSON        *json.Encoder
 	YAML        *yaml.Encoder
 	TOML        *toml.Encoder

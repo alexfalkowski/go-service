@@ -57,7 +57,6 @@ func NewRoundTripper(limiter *Limiter, rt http.RoundTripper) *RoundTripper {
 // RoundTripper for limiter.
 type RoundTripper struct {
 	limiter *Limiter
-
 	http.RoundTripper
 }
 

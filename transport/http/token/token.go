@@ -61,7 +61,6 @@ func NewRoundTripper(id env.UserID, generator token.Generator, hrt http.RoundTri
 // RoundTripper for token.
 type RoundTripper struct {
 	http.RoundTripper
-
 	generator Generator
 	id        env.UserID
 }

@@ -27,7 +27,6 @@ import (
 // ServerParams for HTTP.
 type ServerParams struct {
 	di.In
-
 	Shutdowner di.Shutdowner
 	Mux        *http.ServeMux
 	Config     *Config

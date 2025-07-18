@@ -106,7 +106,6 @@ type RoundTripper struct {
 	sent        metrics.Int64Counter
 	handled     metrics.Int64Counter
 	handledHist metrics.Float64Histogram
-
 	http.RoundTripper
 }
 

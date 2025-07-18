@@ -12,7 +12,6 @@ import (
 // TokenParams for jwt.
 type TokenParams struct {
 	di.In
-
 	Config    *Config
 	Signer    *ed25519.Signer
 	Verifier  *ed25519.Verifier

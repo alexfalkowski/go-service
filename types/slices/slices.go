@@ -12,10 +12,8 @@ func AppendNotZero[T comparable](slice []T, elems ...T) []T {
 		if structs.IsZero(elem) {
 			continue
 		}
-
 		slice = append(slice, elem)
 	}
-
 	return slice
 }
 
@@ -25,10 +23,8 @@ func AppendNotNil[T any](slice []*T, elems ...*T) []*T {
 		if structs.IsNil(elem) {
 			continue
 		}
-
 		slice = append(slice, elem)
 	}
-
 	return slice
 }
 

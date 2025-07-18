@@ -12,7 +12,6 @@ import (
 // ServersParams for transport.
 type ServersParams struct {
 	di.In
-
 	HTTP  *http.Server
 	GRPC  *grpc.Server
 	Debug *debug.Server

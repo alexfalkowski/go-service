@@ -54,7 +54,6 @@ func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 // RoundTripper for logger.
 type RoundTripper struct {
 	logger *Logger
-
 	http.RoundTripper
 }
 

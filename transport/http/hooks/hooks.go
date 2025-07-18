@@ -89,7 +89,6 @@ func NewRoundTripper(hook *Webhook, rt http.RoundTripper) *RoundTripper {
 // RoundTripper for hooks.
 type RoundTripper struct {
 	hook *Webhook
-
 	http.RoundTripper
 }
 

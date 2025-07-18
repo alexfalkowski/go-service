@@ -14,7 +14,6 @@ import (
 // RegisterParams for health.
 type RegisterParams struct {
 	di.In
-
 	Health    *HealthObserver
 	Liveness  *LivenessObserver
 	Readiness *ReadinessObserver

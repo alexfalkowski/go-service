@@ -13,7 +13,6 @@ import (
 // TokenParams for token.
 type TokenParams struct {
 	di.In
-
 	Config *Config
 	JWT    *jwt.Token
 	Paseto *paseto.Token
