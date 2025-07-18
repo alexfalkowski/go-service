@@ -39,11 +39,6 @@ func resister(name env.Name, pattern string, ob *subscriber.Observer) {
 			return nil, status.ServiceUnavailableError(err)
 		}
 
-		res := &Response{
-			Status: "SERVING",
-			Meta:   meta.CamelStrings(ctx, ""),
-		}
-
-		return res, nil
+		return &Response{Status: "SERVING", Meta: meta.CamelStrings(ctx, "")}, nil
 	})
 }

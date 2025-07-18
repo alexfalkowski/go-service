@@ -112,7 +112,6 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
-
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
 	}
 }
@@ -131,7 +130,6 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 		md.Append("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
-
 		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}
 }
@@ -157,7 +155,6 @@ func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAge
 	if ua := meta.UserAgent(ctx); !ua.IsEmpty() {
 		return ua
 	}
-
 	if ua := md.Get("user-agent"); len(ua) > 0 {
 		return meta.String(ua[0])
 	}
@@ -169,7 +166,6 @@ func extractRequestID(ctx context.Context, generator id.Generator, md metadata.M
 	if id := meta.RequestID(ctx); !id.IsEmpty() {
 		return id
 	}
-
 	if id := md.Get("request-id"); len(id) > 0 {
 		return meta.String(id[0])
 	}

@@ -39,6 +39,5 @@ type CasbinController struct {
 // HasAccess just calls Enforce.
 func (c *CasbinController) HasAccess(user, permission string) (bool, error) {
 	system, action := strings.CutColon(permission)
-
 	return c.Enforce(user, system, action)
 }
