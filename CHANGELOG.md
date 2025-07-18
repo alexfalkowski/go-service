@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.99.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.99.0) - 2025-07-18
+
+- [`6222578`](https://github.com/alexfalkowski/go-service/commit/6222578eb45514e0ac75760db8291672d6ede129) feat(cache): add aliases (#1773)
+- [`0f6d023`](https://github.com/alexfalkowski/go-service/commit/0f6d023f49bbb9375c209662622045da8ec8cd23) refactor(style): remove extra new lines (#1772)
+- [`e95a65c`](https://github.com/alexfalkowski/go-service/commit/e95a65c10fd7809726616b69647c5a01e6bde472) refactor(style): remove extra new lines (#1771)
+- [`ffba294`](https://github.com/alexfalkowski/go-service/commit/ffba294b87d07a3873660a2fdc92b05ff92403d0) refactor(style): remove wsl and nlreturn (#1770)
+
 ## [v2.98.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.98.0) - 2025-07-17
 
 - [`4d3366e`](https://github.com/alexfalkowski/go-service/commit/4d3366e9cdb1fc415ac665d67bcacba5ccc8050b) feat(deps): bump github.com/spf13/pflag from 1.0.6 to 1.0.7 (#1769)
