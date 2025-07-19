@@ -58,7 +58,6 @@ func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
 	}
-
 	return s.Service
 }
 
@@ -66,15 +65,17 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
 		Address: cmp.Or(cfg.Address, net.DefaultAddress("6060")),
 	}
-
 	if !tls.IsEnabled(cfg.TLS) {
 		return config, nil
 	}
 
-	t, err := tls.NewConfig(fs, cfg.TLS)
-	config.TLS = t
+	tls, err := tls.NewConfig(fs, cfg.TLS)
+	if err != nil {
+		return nil, prefix(err)
+	}
 
-	return config, err
+	config.TLS = tls
+	return config, nil
 }
 
 func prefix(err error) error {

@@ -40,8 +40,8 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 		logger.String(meta.DurationKey, time.Since(start).String()),
 		logger.Bool("exists", ok),
 	)
-
 	c.logger.Log(ctx, logger.NewMessage(message("remove"), err), attrs...)
+
 	return ok, err
 }
 
@@ -57,8 +57,8 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 		logger.String(meta.DurationKey, time.Since(start).String()),
 		logger.Bool("exists", ok),
 	)
-
 	c.logger.Log(ctx, logger.NewMessage(message("get"), err), attrs...)
+
 	return ok, err
 }
 
@@ -71,8 +71,8 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	}
 	err := c.cache.Persist(ctx, key, value, ttl)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
-
 	c.logger.Log(ctx, logger.NewMessage(message("persist"), err), attrs...)
+
 	return err
 }
 

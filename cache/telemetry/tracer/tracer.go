@@ -36,7 +36,6 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 	defer span.End()
 
 	ok, err := c.cache.Remove(ctx, key)
-
 	span.SetAttributes(attributes.Bool("cache.found", ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
@@ -52,7 +51,6 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	defer span.End()
 
 	ok, err := c.cache.Get(ctx, key, value)
-
 	span.SetAttributes(attributes.Bool("cache.found", ok))
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
@@ -69,7 +67,6 @@ func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Dur
 	defer span.End()
 
 	err := c.cache.Persist(ctx, key, value, ttl)
-
 	tracer.Error(err, span)
 	tracer.Meta(ctx, span)
 

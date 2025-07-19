@@ -5,7 +5,6 @@ func NewGenerator(token *Token) Generator {
 	if token != nil {
 		return token
 	}
-
 	return nil
 }
 

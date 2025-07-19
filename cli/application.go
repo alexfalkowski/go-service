@@ -18,7 +18,6 @@ type RegisterFunc = func(commander Commander)
 func NewApplication(register RegisterFunc) *Application {
 	app := &Application{name: Name, version: Version}
 	register(app)
-
 	return app
 }
 
@@ -53,7 +52,6 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			return a.prefix(name, app.Stop(ctx))
 		},
 	}
-
 	a.cmds = append(a.cmds, cmd)
 
 	return server
@@ -80,7 +78,6 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			return a.prefix(name, app.Stop(ctx))
 		},
 	}
-
 	a.cmds = append(a.cmds, cmd)
 
 	return client
@@ -96,7 +93,6 @@ func (a *Application) Run(ctx context.Context) error {
 		Args:           os.SanitizeArgs(os.Args),
 		Context:        ctx,
 	})
-
 	return runner.Run()
 }
 
