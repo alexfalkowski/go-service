@@ -45,7 +45,6 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	if err != nil {
 		return ok, err
 	}
-
 	if ok {
 		c.hits.Add(ctx, 1, opts)
 	} else {

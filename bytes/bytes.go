@@ -26,7 +26,6 @@ var (
 func Copy(b []byte) []byte {
 	bytes := make([]byte, len(b))
 	copy(bytes, b)
-
 	return bytes
 }
 

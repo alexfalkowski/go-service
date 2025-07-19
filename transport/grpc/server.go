@@ -84,7 +84,6 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	if s == nil {
 		return nil
 	}
-
 	return s.server
 }
 
@@ -93,7 +92,6 @@ func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
 	}
-
 	return s.Service
 }
 
@@ -156,12 +154,10 @@ func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 
 	conf, err := tls.NewConfig(fs, cfg.TLS)
 	if err != nil {
-		return grpc.EmptyServerOption{}, err
+		return grpc.EmptyServerOption{}, prefix(err)
 	}
 
-	creds := grpc.NewTLS(conf)
-
-	return grpc.Creds(creds), nil
+	return grpc.Creds(grpc.NewTLS(conf)), nil
 }
 
 func registrar(server *Server) grpc.ServiceRegistrar {

@@ -5,7 +5,6 @@ func NewVerifier(token *Token) Verifier {
 	if token != nil {
 		return token
 	}
-
 	return nil
 }
 
