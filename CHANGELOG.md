@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.101.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.101.0) - 2025-07-21
+
+- [`90fceda`](https://github.com/alexfalkowski/go-service/commit/90fceda08e77b06e8b34cf4f6b5971b993eac42e) feat(deps): bump github.com/casbin/casbin/v2 from 2.109.0 to 2.110.0 (#1777)
+- [`14822a7`](https://github.com/alexfalkowski/go-service/commit/14822a75bb2bebdef16588382fc11790289b433d) build(deps): bump bin from `a13f4bb` to `f024fdf` (#1776)
+
 ## [v2.100.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.100.0) - 2025-07-19
 
 - [`39cccee`](https://github.com/alexfalkowski/go-service/commit/39cccee59ce47bacb90b788aea8370b60b4715f3) feat(server): prefix tls error (#1775)
