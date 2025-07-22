@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.42
+      - image: alexfalkowski/go:2.43
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
@@ -73,7 +73,7 @@ jobs:
     resource_class: large
   release:
     docker:
-      - image: alexfalkowski/release:3.32
+      - image: alexfalkowski/release:4.3
     working_directory: ~/go-service
     steps:
       - checkout
