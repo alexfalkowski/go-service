@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.102.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.102.0) - 2025-07-22
+
+- [`ee8edca`](https://github.com/alexfalkowski/go-service/commit/ee8edcae44201185c26832620649037c9ff1025a) feat(deps): bump go.opentelemetry.io/otel/exporters/prometheus from 0.59.0 to 0.59.1 (#1778)
+
 ## [v2.101.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.101.0) - 2025-07-21
 
 - [`90fceda`](https://github.com/alexfalkowski/go-service/commit/90fceda08e77b06e8b34cf4f6b5971b993eac42e) feat(deps): bump github.com/casbin/casbin/v2 from 2.109.0 to 2.110.0 (#1777)
