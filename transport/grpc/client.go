@@ -46,7 +46,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithClientBreaker for gRPC.
+// WithClientCompression for gRPC.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.compression = true

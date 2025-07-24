@@ -15,7 +15,9 @@ type (
 )
 
 // NopCloser is an alias for io.NopCloser.
-var NopCloser = io.NopCloser
+func NopCloser(r Reader) ReadCloser {
+	return io.NopCloser(r)
+}
 
 // ReadAll reads all the bytes from the io.Reader and returns the bytes with an io.ReadCloser.
 func ReadAll(r io.Reader) ([]byte, io.ReadCloser, error) {

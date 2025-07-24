@@ -5,6 +5,9 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.30.0"
 )
 
+// SchemaURL is an alias of semconv.SchemaURL.
+const SchemaURL = semconv.SchemaURL
+
 type (
 	// Key is an alias of attribute.Key.
 	Key = attribute.Key
@@ -13,37 +16,48 @@ type (
 	KeyValue = attribute.KeyValue
 )
 
-var (
-	// HostID is an alias of semconv.HostID.
-	HostID = semconv.HostID
+// RPCSystemGRPC is an alias of semconv.RPCSystemGRPC.
+var RPCSystemGRPC = semconv.RPCSystemGRPC
 
-	// HTTPResponseStatusCode is an alias of semconv.HTTPResponseStatusCode.
-	HTTPResponseStatusCode = semconv.HTTPResponseStatusCode
+// HostID is an alias of semconv.HostID.
+func HostID(val string) attribute.KeyValue {
+	return semconv.HostID(val)
+}
 
-	// HTTPRoute is an alias of semconv.HTTPRoute.
-	HTTPRoute = semconv.HTTPRoute
+// HTTPResponseStatusCode is an alias of semconv.HTTPResponseStatusCode.
+func HTTPResponseStatusCode(val int) attribute.KeyValue {
+	return semconv.HTTPResponseStatusCode(val)
+}
 
-	// RPCSystemGRPC is an alias of semconv.RPCSystemGRPC.
-	RPCSystemGRPC = semconv.RPCSystemGRPC
+// HTTPRoute is an alias of semconv.HTTPRoute.
+func HTTPRoute(val string) attribute.KeyValue {
+	return semconv.HTTPRoute(val)
+}
 
-	// RPCService is an alias of semconv.RPCService.
-	RPCService = semconv.RPCService
+// RPCService is an alias of semconv.RPCService.
+func RPCService(val string) attribute.KeyValue {
+	return semconv.RPCService(val)
+}
 
-	// RPCMethod is an alias of semconv.RPCMethod.
-	RPCMethod = semconv.RPCMethod
+// RPCMethod is an alias of semconv.RPCMethod.
+func RPCMethod(val string) attribute.KeyValue {
+	return semconv.RPCMethod(val)
+}
 
-	// SchemaURL is an alias of semconv.SchemaURL.
-	SchemaURL = semconv.SchemaURL
+// ServiceName is an alias of semconv.ServiceName.
+func ServiceName(val string) attribute.KeyValue {
+	return semconv.ServiceName(val)
+}
 
-	// ServiceName is an alias of semconv.ServiceName.
-	ServiceName = semconv.ServiceName
+// ServiceVersion is an alias of semconv.ServiceVersion.
+func ServiceVersion(val string) attribute.KeyValue {
+	return semconv.ServiceVersion(val)
+}
 
-	// ServiceVersion is an alias of semconv.ServiceVersion.
-	ServiceVersion = semconv.ServiceVersion
-
-	// DeploymentEnvironmentName is an alias of semconv.DeploymentEnvironmentName.
-	DeploymentEnvironmentName = semconv.DeploymentEnvironmentName
-)
+// DeploymentEnvironmentName is an alias of semconv.DeploymentEnvironmentName.
+func DeploymentEnvironmentName(val string) attribute.KeyValue {
+	return semconv.DeploymentEnvironmentName(val)
+}
 
 // Bool for attributes.
 func Bool(key string, value bool) attribute.KeyValue {

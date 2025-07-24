@@ -3,6 +3,7 @@ package net
 import (
 	"net"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -18,7 +19,10 @@ type (
 )
 
 // Listen is an alias for net.Listen.
-var Listen = net.Listen
+func Listen(ctx context.Context, network, address string) (Listener, error) {
+	config := &net.ListenConfig{}
+	return config.Listen(ctx, network, address)
+}
 
 // NetworkAddress takes an address like tcp://localhost:3000 and returns "tcp" "localhost:3000".
 func NetworkAddress(address string) (string, string) {

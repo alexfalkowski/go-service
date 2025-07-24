@@ -1,6 +1,8 @@
 package test
 
 import (
+	"context"
+
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -22,7 +24,7 @@ func RandomHost() string {
 
 // RandomNetworkHost for tests.
 func RandomNetworkHost() (string, string) {
-	l, err := net.Listen("tcp", "localhost:0")
+	l, err := net.Listen(context.Background(), "tcp", "localhost:0")
 	runtime.Must(err)
 
 	defer l.Close()

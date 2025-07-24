@@ -5,28 +5,40 @@ import (
 	"strings"
 )
 
-var (
-	// Contains is an alias for strings.Contains.
-	Contains = strings.Contains
+// Contains is an alias for strings.Contains.
+func Contains(s, substr string) bool {
+	return strings.Contains(s, substr)
+}
 
-	// Cut is an alias for strings.Cut.
-	Cut = strings.Cut
+// Cut is an alias for strings.Cut.
+func Cut(s, sep string) (string, string, bool) {
+	return strings.Cut(s, sep)
+}
 
-	// HasPrefix is an alias for strings.HasPrefix.
-	HasPrefix = strings.HasPrefix
+// HasPrefix is an alias for strings.HasPrefix.
+func HasPrefix(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
 
-	// Repeat is an alias for strings.Repeat.
-	Repeat = strings.Repeat
+// Repeat is an alias for strings.Repeat.
+func Repeat(s string, count int) string {
+	return strings.Repeat(s, count)
+}
 
-	// ReplaceAll is an alias for strings.ReplaceAll.
-	ReplaceAll = strings.ReplaceAll
+// ReplaceAll is an alias for strings.ReplaceAll.
+func ReplaceAll(s, o, n string) string {
+	return strings.ReplaceAll(s, o, n)
+}
 
-	// ToLower is an alias for strings.ToLower.
-	ToLower = strings.ToLower
+// ToLower is an alias for strings.ToLower.
+func ToLower(s string) string {
+	return strings.ToLower(s)
+}
 
-	// TrimSpace is an alias for strings.TrimSpace.
-	TrimSpace = strings.TrimSpace
-)
+// TrimSpace is an alias for strings.TrimSpace.
+func TrimSpace(s string) string {
+	return strings.TrimSpace(s)
+}
 
 // IsEmpty checks if a string is empty.
 func IsEmpty(s string) bool {

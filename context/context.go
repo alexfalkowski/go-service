@@ -1,6 +1,10 @@
 package context
 
-import "context"
+import (
+	"context"
+
+	"github.com/alexfalkowski/go-service/v2/time"
+)
 
 type (
 	// CancelFunc is an alias for context.CancelFunc.
@@ -13,16 +17,22 @@ type (
 	Key string
 )
 
-var (
-	// Background is an alias for context.WithValue.
-	Background = context.Background
+// Background is an alias for context.WithValue.
+func Background() Context {
+	return context.Background()
+}
 
-	// WithDeadline is an alias for context.WithDeadline.
-	WithDeadline = context.WithDeadline
+// WithDeadline is an alias for context.WithDeadline.
+func WithDeadline(parent Context, d time.Time) (Context, CancelFunc) {
+	return context.WithDeadline(parent, d)
+}
 
-	// WithTimeout is an alias for context.WithTimeout.
-	WithTimeout = context.WithTimeout
+// WithTimeout is an alias for context.WithTimeout.
+func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
+	return context.WithTimeout(parent, timeout)
+}
 
-	// WithValue is an alias for context.WithValue.
-	WithValue = context.WithValue
-)
+// WithValue is an alias for context.WithValue.
+func WithValue(parent Context, key, val any) Context {
+	return context.WithValue(parent, key, val)
+}

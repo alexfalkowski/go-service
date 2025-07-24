@@ -16,16 +16,20 @@ const (
 // Map is just an alias for meta.Map.
 type Map = meta.Map
 
-var (
-	// CamelStrings is an alias for meta.CamelStrings.
-	CamelStrings = meta.CamelStrings
+// CamelStrings is an alias for meta.CamelStrings.
+func CamelStrings(ctx context.Context, prefix string) Map {
+	return meta.CamelStrings(ctx, prefix)
+}
 
-	// Error is an alias for meta.Error.
-	Error = meta.Error
+// Error is an alias for meta.Error.
+func Error(err error) meta.Value {
+	return meta.Error(err)
+}
 
-	// WithAttribute is an alias for meta.WithAttribute.
-	WithAttribute = meta.WithAttribute
-)
+// WithAttribute is an alias for meta.WithAttribute.
+func WithAttribute(ctx context.Context, key string, value meta.Value) context.Context {
+	return meta.WithAttribute(ctx, key, value)
+}
 
 // WithRequest for http.
 func WithRequest(ctx context.Context, req *http.Request) context.Context {

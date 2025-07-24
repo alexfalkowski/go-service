@@ -1,6 +1,10 @@
 package grpc
 
 import (
+	"crypto/tls"
+
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -8,6 +12,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor.
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -73,52 +78,80 @@ type (
 	UnaryServerInterceptor = grpc.UnaryServerInterceptor
 )
 
-var (
-	// ChainUnaryInterceptor is an alias of grpc.ChainUnaryInterceptor.
-	ChainUnaryInterceptor = grpc.ChainUnaryInterceptor
+// ChainUnaryInterceptor is an alias of grpc.ChainUnaryInterceptor.
+func ChainUnaryInterceptor(interceptors ...UnaryServerInterceptor) ServerOption {
+	return grpc.ChainUnaryInterceptor(interceptors...)
+}
 
-	// ChainStreamInterceptor is an alias of grpc.ChainStreamInterceptor.
-	ChainStreamInterceptor = grpc.ChainStreamInterceptor
+// ChainStreamInterceptor is an alias of grpc.ChainStreamInterceptor.
+func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOption {
+	return grpc.ChainStreamInterceptor(interceptors...)
+}
 
-	// Creds is an alias of grpc.Creds.
-	Creds = grpc.Creds
+// Creds is an alias of grpc.Creds.
+func Creds(c credentials.TransportCredentials) ServerOption {
+	return grpc.Creds(c)
+}
 
-	// NewClient is an alias of grpc.NewClient.
-	NewClient = grpc.NewClient
+// NewClient is an alias of grpc.NewClient.
+func NewClient(target string, opts ...DialOption) (*ClientConn, error) {
+	return grpc.NewClient(target, opts...)
+}
 
-	// NewInsecureCredentials is an alias for insecure.NewCredentials.
-	NewInsecureCredentials = insecure.NewCredentials
+// NewInsecureCredentials is an alias for insecure.NewCredentials.
+func NewInsecureCredentials() credentials.TransportCredentials {
+	return insecure.NewCredentials()
+}
 
-	// NewClient is an alias of credentials.NewTLS.
-	NewTLS = credentials.NewTLS
+// NewClient is an alias of credentials.NewTLS.
+func NewTLS(c *tls.Config) credentials.TransportCredentials {
+	return credentials.NewTLS(c)
+}
 
-	// SetHeader is an alias of grpc.SetHeader.
-	SetHeader = grpc.SetHeader
+// SetHeader is an alias of grpc.SetHeader.
+func SetHeader(ctx context.Context, md metadata.MD) error {
+	return grpc.SetHeader(ctx, md)
+}
 
-	// TimeoutUnaryClientInterceptor is an alias of timeout.UnaryClientInterceptor.
-	TimeoutUnaryClientInterceptor = timeout.UnaryClientInterceptor
+// TimeoutUnaryClientInterceptor is an alias of timeout.UnaryClientInterceptor.
+func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor {
+	return timeout.UnaryClientInterceptor(d)
+}
 
-	// UseCompressor is an alias of grpc.UseCompressor.
-	UseCompressor = grpc.UseCompressor
+// UseCompressor is an alias of grpc.UseCompressor.
+func UseCompressor(name string) CallOption {
+	return grpc.UseCompressor(name)
+}
 
-	// WithChainUnaryInterceptor is an alias of grpc.WithChainUnaryInterceptor.
-	WithChainUnaryInterceptor = grpc.WithChainUnaryInterceptor
+// WithChainUnaryInterceptor is an alias of grpc.WithChainUnaryInterceptor.
+func WithChainUnaryInterceptor(interceptors ...UnaryClientInterceptor) DialOption {
+	return grpc.WithChainUnaryInterceptor(interceptors...)
+}
 
-	// WithChainStreamInterceptor is an alias of grpc.WithChainStreamInterceptor.
-	WithChainStreamInterceptor = grpc.WithChainStreamInterceptor
+// WithChainStreamInterceptor is an alias of grpc.WithChainStreamInterceptor.
+func WithChainStreamInterceptor(interceptors ...StreamClientInterceptor) DialOption {
+	return grpc.WithChainStreamInterceptor(interceptors...)
+}
 
-	// WithContextDialer is an alias of grpc.WithContextDialer.
-	WithContextDialer = grpc.WithContextDialer
+// WithContextDialer is an alias of grpc.WithContextDialer.
+func WithContextDialer(f func(context.Context, string) (net.Conn, error)) DialOption {
+	return grpc.WithContextDialer(f)
+}
 
-	// WithDefaultCallOptions is an alias of grpc.WithDefaultCallOptions.
-	WithDefaultCallOptions = grpc.WithDefaultCallOptions
+// WithDefaultCallOptions is an alias of grpc.WithDefaultCallOptions.
+func WithDefaultCallOptions(cos ...CallOption) DialOption {
+	return grpc.WithDefaultCallOptions(cos...)
+}
 
-	// WithUserAgent is an alias of grpc.WithUserAgent.
-	WithUserAgent = grpc.WithUserAgent
+// WithUserAgent is an alias of grpc.WithUserAgent.
+func WithUserAgent(s string) DialOption {
+	return grpc.WithUserAgent(s)
+}
 
-	// WithTransportCredentials is an alias of grpc.WithTransportCredentials.
-	WithTransportCredentials = grpc.WithTransportCredentials
-)
+// WithTransportCredentials is an alias of grpc.WithTransportCredentials.
+func WithTransportCredentials(creds credentials.TransportCredentials) DialOption {
+	return grpc.WithTransportCredentials(creds)
+}
 
 // WithKeepaliveParams for grpc.
 func WithKeepaliveParams(timeout time.Duration) DialOption {

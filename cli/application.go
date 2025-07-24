@@ -11,18 +11,48 @@ import (
 	cmd "github.com/cristalhq/acmd"
 )
 
-// RegisterFunc for cmd.
+type (
+	// Application for cli.
+	ApplicationOption interface {
+		apply(opts *applicationOpts)
+	}
+
+	// ExitFunc for cli.
+	ExitFunc = func(code int)
+
+	applicationOpts struct {
+		exiter ExitFunc
+	}
+)
+
+type applicationOptionFunc func(*applicationOpts)
+
+func (f applicationOptionFunc) apply(o *applicationOpts) {
+	f(o)
+}
+
+// WithApplicationExit for cli.
+func WithApplicationExit(exiter ExitFunc) ApplicationOption {
+	return applicationOptionFunc(func(o *applicationOpts) {
+		o.exiter = exiter
+	})
+}
+
+// RegisterFunc for cli.
 type RegisterFunc = func(commander Commander)
 
-// NewApplication for cmd.
-func NewApplication(register RegisterFunc) *Application {
-	app := &Application{name: Name, version: Version}
+// NewApplication for cli.
+func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
+	options := options(opts...)
+	app := &Application{name: Name, version: Version, exiter: options.exiter}
+
 	register(app)
 	return app
 }
 
-// Application for cmd.
+// Application for cli.
 type Application struct {
+	exiter  ExitFunc
 	name    env.Name
 	version env.Version
 	cmds    []cmd.Command
@@ -99,11 +129,23 @@ func (a *Application) Run(ctx context.Context) error {
 // ExitOnError will run the application and exit on error.
 func (a *Application) ExitOnError(ctx context.Context) {
 	if err := a.Run(ctx); err != nil {
-		logger.LogError("could not start", logger.Error(err))
-		os.Exit(1)
+		logger.LogError(ctx, "could not start", logger.Error(err))
+		a.exiter(1)
 	}
 }
 
 func (a *Application) prefix(prefix string, err error) error {
 	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
+}
+
+func options(opts ...ApplicationOption) *applicationOpts {
+	options := &applicationOpts{}
+	for _, o := range opts {
+		o.apply(options)
+	}
+	if options.exiter == nil {
+		options.exiter = os.Exit
+	}
+
+	return options
 }

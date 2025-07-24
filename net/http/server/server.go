@@ -29,8 +29,9 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 // NewServer for http.
 func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	srv := &Server{server: server, tls: cfg.TLS}
+	n, a := net.NetworkAddress(cfg.Address)
 
-	l, err := net.Listen(net.NetworkAddress(cfg.Address))
+	l, err := net.Listen(context.Background(), n, a)
 	if err != nil {
 		return srv, err
 	}
