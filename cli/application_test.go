@@ -40,17 +40,19 @@ func TestApplicationExitOnRun(t *testing.T) {
 		os.Args = []string{test.Name.String(), "server", "--input", config}
 
 		Convey("When I try to run an application", func() {
-			var exitCode int
-
-			os.Exit = func(code int) {
-				exitCode = code
-			}
+			var (
+				exitCode int
+				exit     = func(code int) {
+					exitCode = code
+				}
+			)
 
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
 					cmd.AddInput("")
 				},
+				cli.WithApplicationExit(exit),
 			)
 
 			app.ExitOnError(t.Context())

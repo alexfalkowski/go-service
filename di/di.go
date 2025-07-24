@@ -25,25 +25,35 @@ type (
 	ShutdownOption = fx.ShutdownOption
 )
 
-var (
-	// Constructor is an alias for fx.Provide.
-	Constructor = fx.Provide
+// NoLogger is an alias for fx.NopLogger.
+var NoLogger = fx.NopLogger
 
-	// Decorate is an alias for fx.Decorate.
-	Decorate = fx.Decorate
+// Constructor is an alias for fx.Provide.
+func Constructor(constructors ...any) Option {
+	return fx.Provide(constructors...)
+}
 
-	// New is an alias for fx.New.
-	New = fx.New
+// Decorate is an alias for fx.Decorate.
+func Decorate(decorators ...any) Option {
+	return fx.Decorate(decorators...)
+}
 
-	// NoLogger is an alias for fx.NopLogger.
-	NoLogger = fx.NopLogger
+// New is an alias for fx.New.
+func New(opts ...Option) *fx.App {
+	return fx.New(opts...)
+}
 
-	// Module is an alias for fx.Options.
-	Module = fx.Options
+// Module is an alias for fx.Options.
+func Module(opts ...Option) Option {
+	return fx.Options(opts...)
+}
 
-	// Module is an alias for fx.Invoke.
-	Register = fx.Invoke
+// Module is an alias for fx.Invoke.
+func Register(funcs ...any) Option {
+	return fx.Invoke(funcs...)
+}
 
-	// RootCause is an alias for dig.RootCause.
-	RootCause = dig.RootCause
-)
+// RootCause is an alias for dig.RootCause.
+func RootCause(err error) error {
+	return dig.RootCause(err)
+}

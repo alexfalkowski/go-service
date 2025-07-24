@@ -37,19 +37,25 @@ type (
 	Duration = time.Duration
 )
 
-var (
-	// Now is just an alias to time.Now.
-	Now = time.Now
+// Now is just an alias to time.Now.
+func Now() Time {
+	return time.Now()
+}
 
-	// ParseDuration is just an alias to time.ParseDuration.
-	ParseDuration = time.ParseDuration
+// ParseDuration is just an alias to time.ParseDuration.
+func ParseDuration(s string) (Duration, error) {
+	return time.ParseDuration(s)
+}
 
-	// Since is just an alias to time.Since.
-	Since = time.Since
+// Since is just an alias to time.Since.
+func Since(t Time) Duration {
+	return time.Since(t)
+}
 
-	// Sleep is just an alias to time.Sleep.
-	Sleep = time.Sleep
-)
+// Sleep is just an alias to time.Sleep.
+func Sleep(d Duration) {
+	time.Sleep(d)
+}
 
 // MustParseDuration for time.
 func MustParseDuration(s string) time.Duration {

@@ -3,7 +3,9 @@ package http
 import (
 	"net/http"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
@@ -100,18 +102,24 @@ var (
 	// ErrServerClosed is an alias for http.ErrServerClosed.
 	ErrServerClosed = http.ErrServerClosed
 
-	// NewRequestWithContext is an alias for http.NewRequestWithContext.
-	NewRequestWithContext = http.NewRequestWithContext
-
-	// NewServeMux is an alias for http.NewServeMux.
-	NewServeMux = http.NewServeMux
-
 	// NoBody is an alias for http.NoBody.
 	NoBody = http.NoBody
-
-	// StatusText is an alias for http.StatusText.
-	StatusText = http.StatusText
 )
+
+// NewRequestWithContext is an alias for http.NewRequestWithContext.
+func NewRequestWithContext(ctx context.Context, method, url string, body io.Reader) (*Request, error) {
+	return http.NewRequestWithContext(ctx, method, url, body)
+}
+
+// NewServeMux is an alias for http.NewServeMux.
+func NewServeMux() *ServeMux {
+	return http.NewServeMux()
+}
+
+// StatusText is an alias for http.StatusText.
+func StatusText(code int) string {
+	return http.StatusText(code)
+}
 
 // NewServer for http.
 func NewServer(timeout time.Duration, handler Handler) *Server {

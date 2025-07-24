@@ -17,25 +17,35 @@ import (
 // Map is an alias for metadata.MD.
 type Map = metadata.MD
 
-var (
-	// Authorization is an alias for meta.Authorization.
-	Authorization = meta.Authorization
+// Authorization is an alias for meta.Authorization.
+func Authorization(ctx context.Context) meta.Value {
+	return meta.Authorization(ctx)
+}
 
-	// Ignored is an alias for meta.Ignored.
-	Ignored = meta.Ignored
+// Ignored is an alias for meta.Ignored.
+func Ignored(value string) meta.Value {
+	return meta.Ignored(value)
+}
 
-	// NewOutgoingContext is an alias for metadata.NewOutgoingContext.
-	NewOutgoingContext = metadata.NewOutgoingContext
+// NewOutgoingContext is an alias for metadata.NewOutgoingContext.
+func NewOutgoingContext(ctx context.Context, md Map) context.Context {
+	return metadata.NewOutgoingContext(ctx, md)
+}
 
-	// Pairs is an alias for metadata.Pairs.
-	Pairs = metadata.Pairs
+// Pairs is an alias for metadata.Pairs.
+func Pairs(kv ...string) Map {
+	return metadata.Pairs(kv...)
+}
 
-	// WithUserID is an alias for meta.WithUserID.
-	WithUserID = meta.WithUserID
+// WithUserID is an alias for meta.WithUserID.
+func WithUserID(ctx context.Context, id meta.Value) context.Context {
+	return meta.WithUserID(ctx, id)
+}
 
-	// WithAuthorization is an alias for meta.WithAuthorization.
-	WithAuthorization = meta.WithAuthorization
-)
+// WithAuthorization is an alias for meta.WithAuthorization.
+func WithAuthorization(ctx context.Context, auth meta.Value) context.Context {
+	return meta.WithAuthorization(ctx, auth)
+}
 
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {

@@ -5,6 +5,7 @@ linters:
     - bodyclose
     - depguard
     - embeddedstructfieldcheck
+    - err113
     - exhaustruct
     - forcetypeassert
     - funcorder

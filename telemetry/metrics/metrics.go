@@ -3,6 +3,7 @@ package metrics
 import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
@@ -33,7 +34,9 @@ type (
 )
 
 // WithAttributes is an alias of metric.WithAttributes.
-var WithAttributes = metric.WithAttributes
+func WithAttributes(attributes ...attribute.KeyValue) MeasurementOption {
+	return metric.WithAttributes(attributes...)
+}
 
 // NewMeter for metrics.
 func NewMeter(name env.Name, version env.Version, provider metric.MeterProvider) *Meter {

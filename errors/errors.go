@@ -5,19 +5,25 @@ import (
 	"fmt"
 )
 
-var (
-	// As is an alias for errors.As.
-	As = errors.As
+// As is an alias for errors.As.
+func As(err error, target any) bool {
+	return errors.As(err, target)
+}
 
-	// New is an alias for errors.New.
-	New = errors.New
+// New is an alias for errors.New.
+func New(text string) error {
+	return errors.New(text)
+}
 
-	// Is is an alias for errors.Is.
-	Is = errors.Is
+// Is is an alias for errors.Is.
+func Is(err, target error) bool {
+	return errors.Is(err, target)
+}
 
-	// Join is an alias for errors.Join.
-	Join = errors.Join
-)
+// Join is an alias for errors.Join.
+func Join(errs ...error) error {
+	return errors.Join(errs...)
+}
 
 // Prefix an error.
 func Prefix(prefix string, err error) error {

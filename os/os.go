@@ -12,21 +12,29 @@ var (
 	// Args is an alias for os.Args.
 	Args = os.Args
 
-	// Exit is an alias for os.Exit.
-	Exit = os.Exit
-
 	// Stdout is an alias for os.Stdout.
 	Stdout = os.Stdout
-
-	// Getenv is an alias of os.Getenv.
-	Getenv = os.Getenv
-
-	// Setenv is an alias of os.Setenv.
-	Setenv = os.Setenv
-
-	// Unsetenv is an alias of os.Unsetenv.
-	Unsetenv = os.Unsetenv
 )
+
+// Getenv is an alias of os.Getenv.
+func Getenv(key string) string {
+	return os.Getenv(key)
+}
+
+// Setenv is an alias of os.Setenv.
+func Setenv(key, value string) error {
+	return os.Setenv(key, value)
+}
+
+// Unsetenv is an alias of os.Unsetenv.
+func Unsetenv(key string) error {
+	return os.Unsetenv(key)
+}
+
+// Exit is an alias for os.Exit.
+func Exit(code int) {
+	os.Exit(code)
+}
 
 // Executable of the running application.
 func Executable() string {

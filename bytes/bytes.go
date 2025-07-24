@@ -8,19 +8,25 @@ import (
 // Buffer is an alias bytes.Buffer.
 type Buffer = bytes.Buffer
 
-var (
-	// NewBuffer is an alias bytes.NewBuffer.
-	NewBuffer = bytes.NewBuffer
+// NewBuffer is an alias bytes.NewBuffer.
+func NewBuffer(buf []byte) *bytes.Buffer {
+	return bytes.NewBuffer(buf)
+}
 
-	// NewBufferString is an alias bytes.NewBufferString.
-	NewBufferString = bytes.NewBufferString
+// NewBufferString is an alias bytes.NewBufferString.
+func NewBufferString(s string) *bytes.Buffer {
+	return bytes.NewBufferString(s)
+}
 
-	// NewReader is an alias bytes.NewReader.
-	NewReader = bytes.NewReader
+// NewReader is an alias bytes.NewReader.
+func NewReader(b []byte) *bytes.Reader {
+	return bytes.NewReader(b)
+}
 
-	// TrimSpace is an alias bytes.TrimSpace.
-	TrimSpace = bytes.TrimSpace
-)
+// TrimSpace is an alias bytes.TrimSpace.
+func TrimSpace(s []byte) []byte {
+	return bytes.TrimSpace(s)
+}
 
 // Copy bytes to a new slice.
 func Copy(b []byte) []byte {

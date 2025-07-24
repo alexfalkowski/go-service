@@ -26,7 +26,9 @@ func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
 		b.ReportAllocs()
 
-		l, err := net.Listen(net.NetworkAddress(test.RandomAddress()))
+		n, a := net.NetworkAddress(test.RandomAddress())
+
+		l, err := net.Listen(b.Context(), n, a)
 		runtime.Must(err)
 
 		server := grpc.NewServer(test.DefaultTimeout)

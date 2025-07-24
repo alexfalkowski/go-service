@@ -28,22 +28,28 @@ type (
 	Level = slog.Level
 )
 
-var (
-	// ErrNotFound for logger.
-	ErrNotFound = errors.New("logger: not found")
+// ErrNotFound for logger.
+var ErrNotFound = errors.New("logger: not found")
 
-	// Bool is an alias of slog.Bool.
-	Bool = slog.Bool
+// Bool is an alias of slog.Bool.
+func Bool(key string, v bool) Attr {
+	return slog.Bool(key, v)
+}
 
-	// Int is an alias of slog.Int.
-	Int = slog.Int
+// Int is an alias of slog.Int.
+func Int(key string, value int) Attr {
+	return slog.Int(key, value)
+}
 
-	// LogError is an alias of slog.Error.
-	LogError = slog.Error
+// LogError is an alias of slog.ErrorContext.
+func LogError(ctx context.Context, msg string, args ...any) {
+	slog.ErrorContext(ctx, msg, args...)
+}
 
-	// String is an alias of slog.String.
-	String = slog.String
-)
+// String is an alias of slog.String.
+func String(key, value string) Attr {
+	return slog.String(key, value)
+}
 
 // LoggerParams for logger.
 type LoggerParams struct {
