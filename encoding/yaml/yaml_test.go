@@ -33,10 +33,9 @@ func TestEncoder(t *testing.T) {
 
 	Convey("Given I have YAML encoder", t, func() {
 		encoder := yaml.NewEncoder()
+		var msg map[string]string
 
 		Convey("When I decode the YAML", func() {
-			var msg map[string]string
-
 			err := encoder.Decode(bytes.NewBufferString("test: test"), &msg)
 			So(err, ShouldBeNil)
 

@@ -39,7 +39,6 @@ func createLogger(lc di.Lifecycle, os *worldOpts) *logger.Logger {
 	}
 
 	var config *logger.Config
-
 	switch os.loggerConfig {
 	case "json":
 		config = NewJSONLoggerConfig()

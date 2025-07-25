@@ -33,12 +33,11 @@ func TestEncoder(t *testing.T) {
 
 	Convey("Given I have gob encoder", t, func() {
 		encoder := gob.NewEncoder()
+		var msg map[string]string
 
 		Convey("When I decode the gob", func() {
 			m, err := base64.Decode("DX8EAQL/gAABDAEMAAAO/4AAAQR0ZXN0BHRlc3Q=")
 			So(err, ShouldBeNil)
-
-			var msg map[string]string
 
 			err = encoder.Decode(bytes.NewReader(m), &msg)
 			So(err, ShouldBeNil)

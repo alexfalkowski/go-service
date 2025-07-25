@@ -38,7 +38,6 @@ func TestBinaryEncoder(t *testing.T) {
 			defer test.Pool.Put(bytes)
 
 			var msg string
-
 			err := encoder.Encode(bytes, &msg)
 
 			Convey("Then I should have an error", func() {
@@ -56,7 +55,6 @@ func TestBinaryEncoder(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			var decode string
-
 			err = encoder.Decode(bytes, &decode)
 
 			Convey("Then I should have an error", func() {
@@ -66,7 +64,7 @@ func TestBinaryEncoder(t *testing.T) {
 	})
 }
 
-//nolint:dupl,funlen
+//nolint:dupl
 func TestTextEncoder(t *testing.T) {
 	Convey("Given I have text encoder", t, func() {
 		encoder := proto.NewText()
@@ -88,10 +86,9 @@ func TestTextEncoder(t *testing.T) {
 
 	Convey("Given I have text encoder", t, func() {
 		encoder := proto.NewText()
+		var msg grpc_health_v1.HealthCheckResponse
 
 		Convey("When I decode the proto", func() {
-			var msg grpc_health_v1.HealthCheckResponse
-
 			err := encoder.Decode(bytes.NewBufferString("status:SERVING"), &msg)
 			So(err, ShouldBeNil)
 
@@ -105,7 +102,6 @@ func TestTextEncoder(t *testing.T) {
 			defer test.Pool.Put(bytes)
 
 			var msg string
-
 			err := encoder.Encode(bytes, &msg)
 
 			Convey("Then I should have an error", func() {
@@ -123,7 +119,6 @@ func TestTextEncoder(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			var decode string
-
 			err = encoder.Decode(bytes, &decode)
 
 			Convey("Then I should have an error", func() {
@@ -133,7 +128,7 @@ func TestTextEncoder(t *testing.T) {
 	})
 }
 
-//nolint:dupl,funlen
+//nolint:dupl
 func TestJSONEncoder(t *testing.T) {
 	Convey("Given I have json encoder", t, func() {
 		encoder := proto.NewJSON()
@@ -155,10 +150,9 @@ func TestJSONEncoder(t *testing.T) {
 
 	Convey("Given I have json encoder", t, func() {
 		encoder := proto.NewJSON()
+		var msg grpc_health_v1.HealthCheckResponse
 
 		Convey("When I decode the proto", func() {
-			var msg grpc_health_v1.HealthCheckResponse
-
 			err := encoder.Decode(bytes.NewBufferString(`{"status":"SERVING"}`), &msg)
 			So(err, ShouldBeNil)
 
@@ -172,7 +166,6 @@ func TestJSONEncoder(t *testing.T) {
 			defer test.Pool.Put(bytes)
 
 			var msg string
-
 			err := encoder.Encode(bytes, &msg)
 
 			Convey("Then I should have an error", func() {
@@ -190,7 +183,6 @@ func TestJSONEncoder(t *testing.T) {
 			So(err, ShouldBeNil)
 
 			var decode string
-
 			err = encoder.Decode(bytes, &decode)
 
 			Convey("Then I should have an error", func() {
@@ -203,10 +195,9 @@ func TestJSONEncoder(t *testing.T) {
 func TestErrEncoder(t *testing.T) {
 	Convey("Given I have binary encoder", t, func() {
 		encoder := proto.NewBinary()
+		var msg grpc_health_v1.HealthCheckResponse
 
 		Convey("When I decode the proto with an erroneous reader", func() {
-			var msg grpc_health_v1.HealthCheckResponse
-
 			err := encoder.Decode(&test.ErrReaderCloser{}, &msg)
 
 			Convey("Then I should have an error", func() {
@@ -217,10 +208,9 @@ func TestErrEncoder(t *testing.T) {
 
 	Convey("Given I have text encoder", t, func() {
 		encoder := proto.NewText()
+		var msg grpc_health_v1.HealthCheckResponse
 
 		Convey("When I decode the proto with an erroneous reader", func() {
-			var msg grpc_health_v1.HealthCheckResponse
-
 			err := encoder.Decode(&test.ErrReaderCloser{}, &msg)
 
 			Convey("Then I should have an error", func() {
@@ -231,10 +221,9 @@ func TestErrEncoder(t *testing.T) {
 
 	Convey("Given I have json encoder", t, func() {
 		encoder := proto.NewJSON()
+		var msg grpc_health_v1.HealthCheckResponse
 
 		Convey("When I decode the proto with an erroneous reader", func() {
-			var msg grpc_health_v1.HealthCheckResponse
-
 			err := encoder.Decode(&test.ErrReaderCloser{}, &msg)
 
 			Convey("Then I should have an error", func() {

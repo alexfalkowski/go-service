@@ -30,7 +30,6 @@ func TestEncoder(t *testing.T) {
 
 		Convey("When I encode an invalid type", func() {
 			var str string
-
 			err := encoder.Encode(buffer, &str)
 
 			Convey("Then I should have an error", func() {
@@ -55,7 +54,6 @@ func TestEncoder(t *testing.T) {
 
 		Convey("When I decode with an invalid type", func() {
 			var msg string
-
 			err := encoder.Decode(bytes.NewBufferString("test"), &msg)
 
 			Convey("Then I should have an error", func() {

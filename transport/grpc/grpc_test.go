@@ -29,7 +29,6 @@ func TestInsecureUnary(t *testing.T) {
 
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
-
 			var header metadata.MD
 
 			resp, err := client.SayHello(ctx, req, grpc.Header(&header))

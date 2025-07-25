@@ -111,7 +111,6 @@ func TestLimiterAuthUnary(t *testing.T) {
 			req := &v1.SayHelloRequest{Name: "test"}
 
 			var err error
-
 			for range 10 {
 				_, err = client.SayHello(t.Context(), req)
 			}

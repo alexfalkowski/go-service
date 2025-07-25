@@ -157,7 +157,6 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
 
 	var security grpc.DialOption
-
 	if tls.IsEnabled(os.security) {
 		conf, err := tls.NewConfig(fs, os.security)
 		if err != nil {
