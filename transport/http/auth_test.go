@@ -282,7 +282,6 @@ func TestBreakerAuthUnary(t *testing.T) {
 
 		Convey("When I query for a unauthenticated greet multiple times", func() {
 			var err error
-
 			url := world.PathServerURL("http", "hello")
 
 			for range 10 {
