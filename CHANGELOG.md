@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.106.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.106.0) - 2025-07-26
+
+- [`ba33da9`](https://github.com/alexfalkowski/go-service/commit/ba33da9c73660cb7de312b65600a811644d91a56) feat(health): update github.com/alexfalkowski/go-health/v2 to v2.3.0 (#1786)
+- [`1a07ab3`](https://github.com/alexfalkowski/go-service/commit/1a07ab3511703d1dbd8d43de2c5605a2c0f14d45) refactor(style): remove extra new lines (#1785)
+- [`c32d210`](https://github.com/alexfalkowski/go-service/commit/c32d21019fa1918528760d6015f6cea0200c96c3) build(ci): use latest published images (#1784)
+
 ## [v2.105.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.105.0) - 2025-07-24
 
 - [`4795330`](https://github.com/alexfalkowski/go-service/commit/479533081d7daa4d06209dbd1e5727ebe0748bfb) feat(alias): move from var to func (#1783)
