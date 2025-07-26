@@ -1,52 +1,66 @@
 package health
 
 import (
+	health "github.com/alexfalkowski/go-health/v2/server"
+	"github.com/alexfalkowski/go-health/v2/subscriber"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
-	health "google.golang.org/grpc/health/grpc_health_v1"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // ServerParams for health.
 type ServerParams struct {
 	di.In
-	Observer *Observer `optional:"true"`
+	Server *health.Server
 }
 
 // NewServer creates a new gRPC health server.
 func NewServer(params ServerParams) *Server {
-	if params.Observer == nil {
-		return nil
-	}
-
-	return &Server{observer: params.Observer}
+	return &Server{server: params.Server}
 }
 
 // Server represents a gRPC health server.
 type Server struct {
-	health.UnimplementedHealthServer
-	observer *Observer
+	v1.UnimplementedHealthServer
+	server *health.Server
 }
 
 // Check the health.
-func (s *Server) Check(_ context.Context, _ *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
-	var status health.HealthCheckResponse_ServingStatus
-	if err := s.observer.Error(); err != nil {
-		status = health.HealthCheckResponse_NOT_SERVING
-	} else {
-		status = health.HealthCheckResponse_SERVING
+func (s *Server) Check(_ context.Context, req *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error) {
+	observer, err := s.server.Observer(req.GetService(), "grpc")
+	if err != nil {
+		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	return &health.HealthCheckResponse{Status: status}, nil
+	return &v1.HealthCheckResponse{Status: s.status(observer)}, nil
+}
+
+// List for health.
+func (s *Server) List(_ context.Context, req *v1.HealthListRequest) (*v1.HealthListResponse, error) {
+	res := &v1.HealthListResponse{Statuses: map[string]*v1.HealthCheckResponse{}}
+	for name, observer := range s.server.Observers("grpc") {
+		res.Statuses[name] = &v1.HealthCheckResponse{Status: s.status(observer)}
+	}
+
+	return res, nil
 }
 
 // Watch the health.
-func (s *Server) Watch(_ *health.HealthCheckRequest, w health.Health_WatchServer) error {
-	var status health.HealthCheckResponse_ServingStatus
-	if err := s.observer.Error(); err != nil {
-		status = health.HealthCheckResponse_NOT_SERVING
-	} else {
-		status = health.HealthCheckResponse_SERVING
+func (s *Server) Watch(req *v1.HealthCheckRequest, w v1.Health_WatchServer) error {
+	observer, err := s.server.Observer(req.GetService(), "grpc")
+	if err != nil {
+		return status.Error(codes.NotFound, err.Error())
 	}
 
-	return w.Send(&health.HealthCheckResponse{Status: status})
+	return w.Send(&v1.HealthCheckResponse{Status: s.status(observer)})
+}
+
+func (s *Server) status(observer *subscriber.Observer) v1.HealthCheckResponse_ServingStatus {
+	if err := observer.Error(); err != nil {
+		return v1.HealthCheckResponse_NOT_SERVING
+	}
+
+	return v1.HealthCheckResponse_SERVING
 }

@@ -1,6 +1,6 @@
 package health
 
-import "github.com/alexfalkowski/go-health/server"
+import health "github.com/alexfalkowski/go-health/v2/server"
 
 // Registrations for health.
-type Registrations = []*server.Registration
+type Registrations = []*health.Registration

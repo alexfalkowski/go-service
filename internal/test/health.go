@@ -1,9 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-health/checker"
-	"github.com/alexfalkowski/go-health/server"
-	"github.com/alexfalkowski/go-health/subscriber"
+	"github.com/alexfalkowski/go-health/v2/checker"
+	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/health"
 	hc "github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -12,19 +11,17 @@ import (
 )
 
 // RegisterHealth for test.
-func RegisterHealth(health, live, ready *subscriber.Observer) {
+func RegisterHealth(server *server.Server) {
 	params := hh.RegisterParams{
-		Health:    &hh.HealthObserver{Observer: health},
-		Liveness:  &hh.LivenessObserver{Observer: live},
-		Readiness: &hh.ReadinessObserver{Observer: ready},
-		Name:      Name,
+		Name:   Name,
+		Server: server,
 	}
 
 	hh.Register(params)
 }
 
 // HealthServer for test.
-func (w *World) HealthServer(url string) *server.Server {
+func (w *World) HealthServer(name, url string) *server.Server {
 	db, err := w.OpenDatabase()
 	runtime.Must(err)
 
@@ -40,5 +37,7 @@ func (w *World) HealthServer(url string) *server.Server {
 
 	regs := health.Registrations{hr, nr, dr}
 
-	return health.NewServer(w.Lifecycle, regs)
+	server := health.NewServer(w.Lifecycle)
+	server.Register(name, regs...)
+	return server
 }

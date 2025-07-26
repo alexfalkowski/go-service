@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/alexfalkowski/go-health/checker"
-	"github.com/alexfalkowski/go-health/server"
+	"github.com/alexfalkowski/go-health/v2/checker"
+	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
@@ -24,10 +24,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
-	hg "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	hh "github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"google.golang.org/grpc"
@@ -37,8 +35,10 @@ import (
 func Options() []di.Option {
 	return []di.Option{
 		module.Server,
-		di.Constructor(registrations), di.Constructor(healthObserver), di.Constructor(livenessObserver),
-		di.Constructor(readinessObserver), di.Constructor(grpcObserver), di.Register(invokeServiceRegistrar),
+		di.Constructor(registrations),
+		di.Register(healthRegister), di.Register(healthObserver),
+		di.Register(livenessObserver), di.Register(readinessObserver),
+		di.Register(grpcObserver), di.Register(invokeServiceRegistrar),
 		di.Register(shutdown), di.Register(invokeFeatureClient), di.Register(invokeWebhooks), di.Register(invokeConfigs),
 		di.Register(invokeMeter), di.Register(invokeNetwork), di.Register(invokeCache),
 		di.Register(invokeCrypt), di.Register(invokeEnvironment), di.Register(invokeTokens),
@@ -61,20 +61,24 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tr
 	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
 }
 
-func healthObserver(healthServer *server.Server) (*hh.HealthObserver, error) {
-	return &hh.HealthObserver{Observer: healthServer.Observe("noop")}, nil
+func healthRegister(name env.Name, server *server.Server, regs health.Registrations) {
+	server.Register(name.String(), regs...)
 }
 
-func livenessObserver(healthServer *server.Server) *hh.LivenessObserver {
-	return &hh.LivenessObserver{Observer: healthServer.Observe("noop")}
+func healthObserver(name env.Name, server *server.Server) error {
+	return server.Observe(name.String(), "healthz", "noop")
 }
 
-func readinessObserver(healthServer *server.Server) *hh.ReadinessObserver {
-	return &hh.ReadinessObserver{Observer: healthServer.Observe("http", "online")}
+func livenessObserver(name env.Name, server *server.Server) error {
+	return server.Observe(name.String(), "livez", "noop")
 }
 
-func grpcObserver(healthServer *server.Server) *hg.Observer {
-	return &hg.Observer{Observer: healthServer.Observe("http")}
+func readinessObserver(name env.Name, server *server.Server) error {
+	return server.Observe(name.String(), "readyz", "http", "online")
+}
+
+func grpcObserver(name env.Name, server *server.Server) error {
+	return server.Observe(name.String(), "grpc", "http")
 }
 
 func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}

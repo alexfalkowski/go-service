@@ -1,7 +1,7 @@
 package health
 
 import (
-	"github.com/alexfalkowski/go-health/subscriber"
+	health "github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -14,17 +14,15 @@ import (
 // RegisterParams for health.
 type RegisterParams struct {
 	di.In
-	Health    *HealthObserver
-	Liveness  *LivenessObserver
-	Readiness *ReadinessObserver
-	Name      env.Name
+	Server *health.Server
+	Name   env.Name
 }
 
 // Register health for HTTP.
 func Register(params RegisterParams) {
-	resister(params.Name, "/healthz", params.Health.Observer)
-	resister(params.Name, "/livez", params.Liveness.Observer)
-	resister(params.Name, "/readyz", params.Readiness.Observer)
+	resister(params.Name, "/healthz", params.Server)
+	resister(params.Name, "/livez", params.Server)
+	resister(params.Name, "/readyz", params.Server)
 }
 
 // Response for health.
@@ -33,9 +31,13 @@ type Response struct {
 	Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 }
 
-func resister(name env.Name, pattern string, ob *subscriber.Observer) {
+func resister(name env.Name, pattern string, server *health.Server) {
 	rest.Get(http.Pattern(name, pattern), func(ctx context.Context) (*Response, error) {
-		if err := ob.Error(); err != nil {
+		observer, err := server.Observer(name.String(), pattern[1:])
+		if err != nil {
+			return nil, status.ServiceUnavailableError(err)
+		}
+		if err := observer.Error(); err != nil {
 			return nil, status.ServiceUnavailableError(err)
 		}
 
