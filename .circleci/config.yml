@@ -9,9 +9,7 @@ jobs:
           POSTGRES_DB: test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-      - image: bitnami/redis:7.4
-        environment:
-          REDIS_PASSWORD: test
+      - image: redis:8
       - image: alexfalkowski/status:latest
         command: server -i env:CONFIG
         environment:
