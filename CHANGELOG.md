@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.108.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.108.0) - 2025-07-31
+
+- [`3958839`](https://github.com/alexfalkowski/go-service/commit/395883906ef05910c6d2c7ef1cc26a8a1997546f) feat(deps): bump github.com/casbin/casbin/v2 from 2.110.0 to 2.111.0 (#1794)
+- [`72daeef`](https://github.com/alexfalkowski/go-service/commit/72daeef5cda8dbd5b4fe0aa1382a8a44545cd64e) refactor(cache): rename file (#1792)
+- [`71aff79`](https://github.com/alexfalkowski/go-service/commit/71aff7918f151e6ddd3c7fe1bfdb152b363eec49) build(ci): use redis:8 (#1791)
+- [`566e622`](https://github.com/alexfalkowski/go-service/commit/566e622bcc957d55323a582a4f9878110884bdb1) build(ci): update submodule (#1790)
+- [`97ea310`](https://github.com/alexfalkowski/go-service/commit/97ea3107291823fd787489565dbb3bf9dc83a5a7) build(deps): bump bin from `911aa21` to `30d8508` (#1789)
+- [`0b9385b`](https://github.com/alexfalkowski/go-service/commit/0b9385b795c80a3288cd0df2753ae3db2b2d44a1) build(ci): use latest published images (#1788)
+
 ## [v2.107.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.107.0) - 2025-07-26
 
 - [`ca5341d`](https://github.com/alexfalkowski/go-service/commit/ca5341de2e67c4f7f454155b77d2f3057fbb6ecb) feat(deps): bump github.com/arl/statsviz from 0.6.0 to 0.7.0 (#1787)
