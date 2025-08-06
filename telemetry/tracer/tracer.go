@@ -32,7 +32,7 @@ type TracerParams struct {
 
 // NewTracer for tracer.
 func NewTracer(params TracerParams) *Tracer {
-	if !IsEnabled(params.Config) {
+	if !params.Config.IsEnabled() {
 		return nil
 	}
 

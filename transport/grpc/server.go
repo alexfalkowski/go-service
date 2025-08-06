@@ -43,7 +43,7 @@ type ServerParams struct {
 
 // NewServer for gRPC.
 func NewServer(params ServerParams) (*Server, error) {
-	if !IsEnabled(params.Config) {
+	if !params.Config.IsEnabled() {
 		return nil, nil
 	}
 
@@ -148,7 +148,7 @@ func streamServerOption(params ServerParams, server *metrics.Server, interceptor
 }
 
 func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
-	if !tls.IsEnabled(cfg.TLS) {
+	if !cfg.TLS.IsEnabled() {
 		return grpc.EmptyServerOption{}, nil
 	}
 

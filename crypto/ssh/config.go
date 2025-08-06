@@ -7,15 +7,15 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// IsEnabled for ssh.
-func IsEnabled(cfg *Config) bool {
-	return cfg != nil
-}
-
 // Config for ssh.
 type Config struct {
 	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
 	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
+}
+
+// IsEnabled for ssh.
+func (c *Config) IsEnabled() bool {
+	return c != nil
 }
 
 // PublicKey ssh.

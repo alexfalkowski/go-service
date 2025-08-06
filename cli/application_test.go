@@ -141,7 +141,7 @@ func TestApplicationInvalid(t *testing.T) {
 				},
 			)
 
-			Convey("Then I should not see an error", func() {
+			Convey("Then I should see an error", func() {
 				err := app.Run(t.Context())
 
 				So(err, ShouldBeError)
@@ -164,7 +164,7 @@ func TestApplicationDisabled(t *testing.T) {
 			},
 		)
 
-		Convey("Then I should see an error", func() {
+		Convey("Then I should not see an error", func() {
 			So(app.Run(t.Context()), ShouldBeNil)
 		})
 	})

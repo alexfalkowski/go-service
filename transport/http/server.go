@@ -45,7 +45,7 @@ type ServerParams struct {
 
 // NewServer for HTTP.
 func NewServer(params ServerParams) (*Server, error) {
-	if !IsEnabled(params.Config) {
+	if !params.Config.IsEnabled() {
 		return nil, nil
 	}
 
@@ -111,7 +111,7 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
 		Address: cmp.Or(cfg.Address, net.DefaultAddress("8080")),
 	}
-	if !tls.IsEnabled(cfg.TLS) {
+	if !cfg.TLS.IsEnabled() {
 		return config, nil
 	}
 

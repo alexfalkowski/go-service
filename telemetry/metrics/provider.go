@@ -26,7 +26,7 @@ type MeterProviderParams struct {
 
 // NewMeterProvider for metrics.
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
-	if !IsEnabled(params.Config) || params.Reader == nil {
+	if !params.Config.IsEnabled() || params.Reader == nil {
 		return nil
 	}
 

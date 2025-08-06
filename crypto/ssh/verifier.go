@@ -9,7 +9,7 @@ import (
 
 // NewVerifier for ssh.
 func NewVerifier(fs *os.FS, cfg *Config) (*Verifier, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

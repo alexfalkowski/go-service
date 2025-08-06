@@ -8,11 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 )
 
-// IsEnabled for crypto.
-func IsEnabled(cfg *Config) bool {
-	return cfg != nil
-}
-
 // Config for crypto.
 type Config struct {
 	AES     *aes.Config     `yaml:"aes,omitempty" json:"aes,omitempty" toml:"aes,omitempty"`
@@ -20,4 +15,9 @@ type Config struct {
 	HMAC    *hmac.Config    `yaml:"hmac,omitempty" json:"hmac,omitempty" toml:"hmac,omitempty"`
 	RSA     *rsa.Config     `yaml:"rsa,omitempty" json:"rsa,omitempty" toml:"rsa,omitempty"`
 	SSH     *ssh.Config     `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
+}
+
+// IsEnabled for crypto.
+func (c *Config) IsEnabled() bool {
+	return c != nil
 }

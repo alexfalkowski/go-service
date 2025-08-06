@@ -26,7 +26,7 @@ func (g *Generator) Generate() (string, error) {
 
 // NewHook from config.
 func NewHook(fs *os.FS, cfg *Config) (*hooks.Webhook, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

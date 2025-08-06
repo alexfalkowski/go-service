@@ -22,7 +22,7 @@ type TokenParams struct {
 
 // NewToken based on config.
 func NewToken(params TokenParams) *Token {
-	if !IsEnabled(params.Config) {
+	if !params.Config.IsEnabled() {
 		return nil
 	}
 
