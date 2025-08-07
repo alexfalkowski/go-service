@@ -8,7 +8,7 @@ var ErrNotFound = errors.New("time: network not found")
 // NewNetwork for time.
 func NewNetwork(cfg *Config) (Network, error) {
 	switch {
-	case !IsEnabled(cfg):
+	case !cfg.IsEnabled():
 		return nil, nil
 	case cfg.IsNTP():
 		return NewNTPNetwork(cfg.Address), nil

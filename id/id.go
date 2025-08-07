@@ -16,7 +16,7 @@ type Generator interface {
 
 // NewGenerator from config.
 func NewGenerator(config *Config, reader rand.Reader) (Generator, error) {
-	if !IsEnabled(config) {
+	if !config.IsEnabled() {
 		return nil, nil
 	}
 

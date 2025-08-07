@@ -3,23 +3,11 @@ package config_test
 import (
 	"testing"
 
-	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/config"
-	"github.com/alexfalkowski/go-service/v2/crypto"
-	"github.com/alexfalkowski/go-service/v2/crypto/aes"
-	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
-	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
-	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
-	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/server"
-	"github.com/alexfalkowski/go-service/v2/token"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -190,29 +178,29 @@ func TestInvalidKindConfig(t *testing.T) {
 //nolint:funlen
 func verifyConfig(config *config.Config) {
 	So(config.Debug.Address, ShouldEqual, "tcp://localhost:6060")
-	So(tls.IsEnabled(config.Debug.TLS), ShouldBeFalse)
-	So(cache.IsEnabled(config.Cache), ShouldBeTrue)
+	So(config.Debug.TLS.IsEnabled(), ShouldBeFalse)
+	So(config.Cache.IsEnabled(), ShouldBeTrue)
 	So(config.Cache.Kind, ShouldEqual, "redis")
 	So(config.Cache.Compressor, ShouldEqual, "snappy")
 	So(config.Cache.Encoder, ShouldEqual, "proto")
 	So(config.Cache.Options["url"], ShouldEqual, "file:../test/secrets/redis")
-	So(crypto.IsEnabled(config.Crypto), ShouldBeTrue)
-	So(aes.IsEnabled(config.Crypto.AES), ShouldBeTrue)
+	So(config.Crypto.IsEnabled(), ShouldBeTrue)
+	So(config.Crypto.AES.IsEnabled(), ShouldBeTrue)
 	So(config.Crypto.AES.Key, ShouldNotBeBlank)
-	So(ed25519.IsEnabled(config.Crypto.Ed25519), ShouldBeTrue)
+	So(config.Crypto.Ed25519.IsEnabled(), ShouldBeTrue)
 	So(config.Crypto.Ed25519.Public, ShouldNotBeBlank)
 	So(config.Crypto.Ed25519.Private, ShouldNotBeBlank)
-	So(hmac.IsEnabled(config.Crypto.HMAC), ShouldBeTrue)
+	So(config.Crypto.HMAC.IsEnabled(), ShouldBeTrue)
 	So(config.Crypto.HMAC.Key, ShouldNotBeBlank)
-	So(rsa.IsEnabled(config.Crypto.RSA), ShouldBeTrue)
+	So(config.Crypto.RSA.IsEnabled(), ShouldBeTrue)
 	So(config.Crypto.RSA.Public, ShouldNotBeBlank)
 	So(config.Crypto.RSA.Private, ShouldNotBeBlank)
-	So(ssh.IsEnabled(config.Crypto.SSH), ShouldBeTrue)
+	So(config.Crypto.SSH.IsEnabled(), ShouldBeTrue)
 	So(config.Crypto.SSH.Public, ShouldNotBeBlank)
 	So(config.Crypto.SSH.Private, ShouldNotBeBlank)
-	So(debug.IsEnabled(config.Debug), ShouldBeTrue)
+	So(config.Debug.IsEnabled(), ShouldBeTrue)
 	So(config.Environment.String(), ShouldEqual, "development")
-	So(feature.IsEnabled(config.Feature), ShouldBeTrue)
+	So(config.Feature.IsEnabled(), ShouldBeTrue)
 	So(config.Feature.Address, ShouldEqual, "localhost:9000")
 	So(config.ID.Kind, ShouldEqual, "uuid")
 	So(config.Hooks.Secret, ShouldEqual, "file:../test/secrets/hooks")
@@ -233,20 +221,20 @@ func verifyConfig(config *config.Config) {
 	So(config.Time.Address, ShouldEqual, "time.cloudflare.com")
 	So(config.Telemetry.Tracer.URL, ShouldEqual, "http://localhost:4318/v1/traces")
 	So(config.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
-	So(token.IsEnabled(config.Token), ShouldBeTrue)
+	So(config.Token.IsEnabled(), ShouldBeTrue)
 	So(config.Token.Access.Policy, ShouldEqual, "../test/configs/rbac.csv")
 	So(config.Token.Kind, ShouldEqual, "jwt")
 	So(config.Token.JWT.Expiration, ShouldEqual, "1h")
 	So(config.Token.JWT.Issuer, ShouldEqual, "iss")
 	So(config.Token.JWT.KeyID, ShouldEqual, "1234567890")
-	So(server.IsEnabled(config.Transport.GRPC.Config), ShouldBeTrue)
+	So(config.Transport.GRPC.Config.IsEnabled(), ShouldBeTrue)
 	So(config.Transport.GRPC.Address, ShouldEqual, "tcp://localhost:12000")
 	So(config.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
 	So(config.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
-	So(tls.IsEnabled(config.Transport.GRPC.TLS), ShouldBeFalse)
-	So(server.IsEnabled(config.Transport.HTTP.Config), ShouldBeTrue)
+	So(config.Transport.GRPC.TLS.IsEnabled(), ShouldBeFalse)
+	So(config.Transport.HTTP.Config.IsEnabled(), ShouldBeTrue)
 	So(config.Transport.HTTP.Address, ShouldEqual, "tcp://localhost:11000")
 	So(config.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
 	So(config.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
-	So(tls.IsEnabled(config.Transport.HTTP.TLS), ShouldBeFalse)
+	So(config.Transport.HTTP.TLS.IsEnabled(), ShouldBeFalse)
 }

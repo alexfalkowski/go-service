@@ -8,20 +8,16 @@ import (
 )
 
 func TestInvalid(t *testing.T) {
-	configs := []*time.Config{nil, {}}
+	Convey("When I try to create a network with nil config", t, func() {
+		net, err := time.NewNetwork(nil)
+		So(err, ShouldBeNil)
 
-	for _, config := range configs {
-		Convey("When I try to create a network", t, func() {
-			net, err := time.NewNetwork(config)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should not have a network", func() {
-				So(net, ShouldBeNil)
-			})
+		Convey("Then I should not have a network", func() {
+			So(net, ShouldBeNil)
 		})
-	}
+	})
 
-	Convey("When I try to create a network", t, func() {
+	Convey("When I try to create a network with invalid config", t, func() {
 		_, err := time.NewNetwork(&time.Config{Kind: "invalid"})
 
 		Convey("Then I should not have an error", func() {

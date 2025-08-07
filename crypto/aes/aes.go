@@ -14,7 +14,7 @@ var ErrInvalidLength = errors.New("aes: invalid length")
 
 // NewCipher for aes.
 func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

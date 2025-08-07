@@ -10,7 +10,7 @@ import (
 
 // NewSigner for hmac.
 func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

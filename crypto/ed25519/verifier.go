@@ -9,7 +9,7 @@ import (
 
 // NewSigner for ed25519.
 func NewVerifier(decoder *pem.Decoder, cfg *Config) (*Verifier, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

@@ -3,14 +3,13 @@ package config
 import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
 func loggerConfig(cfg *Config, fs *os.FS) *logger.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) || !logger.IsEnabled(cfg.Telemetry.Logger) {
+	if !cfg.Telemetry.IsEnabled() || !cfg.Telemetry.Logger.IsEnabled() {
 		return nil
 	}
 
@@ -20,7 +19,7 @@ func loggerConfig(cfg *Config, fs *os.FS) *logger.Config {
 }
 
 func metricsConfig(cfg *Config, fs *os.FS) *metrics.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) || !metrics.IsEnabled(cfg.Telemetry.Metrics) {
+	if !cfg.Telemetry.IsEnabled() || !cfg.Telemetry.Metrics.IsEnabled() {
 		return nil
 	}
 
@@ -30,7 +29,7 @@ func metricsConfig(cfg *Config, fs *os.FS) *metrics.Config {
 }
 
 func tracerConfig(cfg *Config, fs *os.FS) *tracer.Config {
-	if !telemetry.IsEnabled(cfg.Telemetry) || !tracer.IsEnabled(cfg.Telemetry.Tracer) {
+	if !cfg.Telemetry.IsEnabled() || !cfg.Telemetry.Tracer.IsEnabled() {
 		return nil
 	}
 

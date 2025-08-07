@@ -13,7 +13,7 @@ func NewConfig(fs *os.FS, cfg *Config) (*tls.Config, error) {
 		ClientAuth: tls.RequireAndVerifyClientCert,
 	}
 
-	if !IsEnabled(cfg) || !cfg.HasKeyPair() {
+	if !cfg.IsEnabled() || !cfg.HasKeyPair() {
 		return config, nil
 	}
 

@@ -21,7 +21,7 @@ var (
 
 // NewDriver creates a new cache driver with different backends.
 func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
-	if !cache.IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

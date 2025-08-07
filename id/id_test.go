@@ -34,23 +34,16 @@ func TestValidID(t *testing.T) {
 }
 
 func TestInvalidID(t *testing.T) {
-	configs := []*id.Config{
-		nil,
-		{},
-	}
+	Convey("When I create a generator with a nil config", t, func() {
+		gen, err := id.NewGenerator(nil, rand.NewReader())
+		So(err, ShouldBeNil)
 
-	for _, config := range configs {
-		Convey("When I create a generator", t, func() {
-			gen, err := id.NewGenerator(config, rand.NewReader())
-			So(err, ShouldBeNil)
-
-			Convey("Then I should not have a generator", func() {
-				So(gen, ShouldBeNil)
-			})
+		Convey("Then I should not have a generator", func() {
+			So(gen, ShouldBeNil)
 		})
-	}
+	})
 
-	Convey("When I create a generator", t, func() {
+	Convey("When I create a generator with an invalid config", t, func() {
 		_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, rand.NewReader())
 
 		Convey("Then I should have an error", func() {

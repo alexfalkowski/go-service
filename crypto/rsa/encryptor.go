@@ -10,7 +10,7 @@ import (
 
 // NewEncryptor for rsa.
 func NewEncryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) (*Encryptor, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 

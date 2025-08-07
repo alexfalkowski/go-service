@@ -105,7 +105,7 @@ func (l *Logger) GetLogger() *slog.Logger {
 
 func logger(params LoggerParams) (*slog.Logger, error) {
 	switch {
-	case !IsEnabled(params.Config):
+	case !params.Config.IsEnabled():
 		return nil, nil
 	case params.Config.IsOTLP():
 		return newOtlpLogger(params), nil

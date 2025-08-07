@@ -18,7 +18,7 @@ type (
 
 // NewToken for ssh.
 func NewToken(fs *os.FS, cfg *Config) *Token {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil
 	}
 

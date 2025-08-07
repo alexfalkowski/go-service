@@ -1,17 +1,11 @@
 package token
 
 import (
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
-
-// IsEnabled for token.
-func IsEnabled(cfg *Config) bool {
-	return cfg != nil && !strings.IsEmpty(cfg.Kind)
-}
 
 // Config for token.
 type Config struct {
@@ -20,6 +14,11 @@ type Config struct {
 	Paseto *paseto.Config `yaml:"paseto,omitempty" json:"paseto,omitempty" toml:"paseto,omitempty"`
 	SSH    *ssh.Config    `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
 	Kind   string         `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
+}
+
+// IsEnabled for configuration.
+func (c *Config) IsEnabled() bool {
+	return c != nil
 }
 
 // IsJWT for configuration.

@@ -37,7 +37,7 @@ type CacheParams struct {
 
 // NewCache from config.
 func NewCache(params CacheParams) cacher.Cache {
-	if !config.IsEnabled(params.Config) {
+	if !params.Config.IsEnabled() {
 		return nil
 	}
 

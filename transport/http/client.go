@@ -206,7 +206,7 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 		return hrt, nil
 	}
 
-	if !tls.IsEnabled(os.tls) {
+	if !os.tls.IsEnabled() {
 		return http.Transport(nil), nil
 	}
 

@@ -15,7 +15,7 @@ var ErrNotFound = errors.New("metrics: reader not found")
 // NewReader for metrics. A nil reader means disabled.
 func NewReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	switch {
-	case !IsEnabled(cfg):
+	case !cfg.IsEnabled():
 		return nil, nil
 	case cfg.IsOTLP():
 		exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))

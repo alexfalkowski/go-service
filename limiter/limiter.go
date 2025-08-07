@@ -35,7 +35,7 @@ var ErrMissingKey = errors.New("limiter: missing key")
 
 // NewLimiter limiter.
 func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
-	if !IsEnabled(cfg) {
+	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 
