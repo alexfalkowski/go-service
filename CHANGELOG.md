@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.115.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.115.0) - 2025-08-07
+
+- [`40312c2`](https://github.com/alexfalkowski/go-service/commit/40312c2cd5cc836c5f49a77056dafbcdcff696b1) feat(config): move checking if enabled to struct func (#1805)
+
 ## [v2.114.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.114.0) - 2025-08-05
 
 - [`baacafc`](https://github.com/alexfalkowski/go-service/commit/baacafc4f324a6f2c28658e7b61f64db9c1a4df1) feat(deps): bump github.com/redis/go-redis/v9 from 9.11.0 to 9.12.0 (#1804)
