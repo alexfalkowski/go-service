@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.116.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.116.0) - 2025-08-08
+
+- [`bbe69e1`](https://github.com/alexfalkowski/go-service/commit/bbe69e10f1a36466514df77fa38b759396a7a034) feat(deps): bump google.golang.org/protobuf from 1.36.6 to 1.36.7 (#1808)
+- [`ff5d51b`](https://github.com/alexfalkowski/go-service/commit/ff5d51b216d288178697f192909088373418ff6f) build(deps): bump bin from `4dda9b0` to `bf35764` (#1809)
+- [`749e3b0`](https://github.com/alexfalkowski/go-service/commit/749e3b01e436dd0e3e6b1d508d495e8b9a9d8ae5) build(ci): use latest published images (#1807)
+- [`e647a10`](https://github.com/alexfalkowski/go-service/commit/e647a10f86560e7382e14bfbb4c22b76c7ab3164) build(ci): use latest published images (#1806)
+
 ## [v2.115.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.115.0) - 2025-08-07
 
 - [`40312c2`](https://github.com/alexfalkowski/go-service/commit/40312c2cd5cc836c5f49a77056dafbcdcff696b1) feat(config): move checking if enabled to struct func (#1805)
