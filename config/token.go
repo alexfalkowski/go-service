@@ -13,29 +13,29 @@ func tokenConfig(cfg *Config) *token.Config {
 }
 
 func tokenAccessConfig(cfg *Config) *access.Config {
-	if !cfg.Token.IsEnabled() {
-		return nil
+	if cfg.Token.IsEnabled() {
+		return cfg.Token.Access
 	}
-	return cfg.Token.Access
+	return nil
 }
 
 func tokenJWTConfig(cfg *Config) *jwt.Config {
-	if !cfg.Token.IsEnabled() {
-		return nil
+	if cfg.Token.IsEnabled() {
+		return cfg.Token.JWT
 	}
-	return cfg.Token.JWT
+	return nil
 }
 
 func tokenPasetoConfig(cfg *Config) *paseto.Config {
-	if !cfg.Token.IsEnabled() {
-		return nil
+	if cfg.Token.IsEnabled() {
+		return cfg.Token.Paseto
 	}
-	return cfg.Token.Paseto
+	return nil
 }
 
 func tokenSSHConfig(cfg *Config) *ssh.Config {
-	if !cfg.Token.IsEnabled() {
-		return nil
+	if cfg.Token.IsEnabled() {
+		return cfg.Token.SSH
 	}
-	return cfg.Token.SSH
+	return nil
 }
