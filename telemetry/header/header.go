@@ -3,6 +3,7 @@ package header
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
 // Map is a key-value map.
@@ -20,4 +21,9 @@ func (m Map) Secrets(fs *os.FS) error {
 	}
 
 	return nil
+}
+
+// MustSecrets will do exactly what Secrets does, but will panic if an error occurs.
+func (m Map) MustSecrets(fs *os.FS) {
+	runtime.Must(m.Secrets(fs))
 }

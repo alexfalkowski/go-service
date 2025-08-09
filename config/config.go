@@ -71,10 +71,10 @@ func featureConfig(cfg *Config) *feature.Config {
 }
 
 func grpcConfig(cfg *Config) *grpc.Config {
-	if !cfg.Transport.IsEnabled() {
-		return nil
+	if cfg.Transport.IsEnabled() {
+		return cfg.Transport.GRPC
 	}
-	return cfg.Transport.GRPC
+	return nil
 }
 
 func idConfig(cfg *Config) *id.Config {
@@ -86,10 +86,10 @@ func hooksConfig(cfg *Config) *hooks.Config {
 }
 
 func httpConfig(cfg *Config) *http.Config {
-	if !cfg.Transport.IsEnabled() {
-		return nil
+	if cfg.Transport.IsEnabled() {
+		return cfg.Transport.HTTP
 	}
-	return cfg.Transport.HTTP
+	return nil
 }
 
 func limiterConfig(cfg *Config) *limiter.Config {
@@ -97,15 +97,15 @@ func limiterConfig(cfg *Config) *limiter.Config {
 }
 
 func pgConfig(cfg *Config) *pg.Config {
-	if !cfg.SQL.IsEnabled() {
-		return nil
+	if cfg.SQL.IsEnabled() {
+		return cfg.SQL.PG
 	}
-	return cfg.SQL.PG
+	return nil
 }
 
 func timeConfig(cfg *Config) *time.Config {
-	if !cfg.Time.IsEnabled() {
-		return nil
+	if cfg.Time.IsEnabled() {
+		return cfg.Time
 	}
-	return cfg.Time
+	return nil
 }
