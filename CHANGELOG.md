@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.120.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.120.0) - 2025-08-09
+
+- [`5f12691`](https://github.com/alexfalkowski/go-service/commit/5f12691fdcc47e950e6839831846bb384d2f1400) feat(config): simplify expressions (#1814)
+
 ## [v2.119.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.119.0) - 2025-08-08
 
 - [`8faa608`](https://github.com/alexfalkowski/go-service/commit/8faa608875a8af2c8cbb4cdd58382d6b2c15c37f) feat(deps): bump github.com/arl/statsviz from 0.7.0 to 0.7.1 (#1810)
