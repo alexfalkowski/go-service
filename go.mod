@@ -1,6 +1,6 @@
 module github.com/alexfalkowski/go-service/v2
 
-go 1.24.0
+go 1.25.0
 
 require (
 	aidanwoods.dev/go-paseto v1.5.4
