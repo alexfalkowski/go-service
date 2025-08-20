@@ -82,6 +82,7 @@ jobs:
 
 workflows:
   go-service:
+    max_auto_reruns: 3
     jobs:
       - build
       - version:
