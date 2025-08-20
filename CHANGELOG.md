@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.127.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.127.0) - 2025-08-20
+
+- [`268463e`](https://github.com/alexfalkowski/go-service/commit/268463e735f5437b272144a87d515a8dd8914f30) feat(deps): bump google.golang.org/grpc from 1.74.2 to 1.75.0 (#1827)
+- [`16c4871`](https://github.com/alexfalkowski/go-service/commit/16c4871d9cca4e5c21d787f9405c7c708a4a41f8) build(ci): add max_auto_reruns (#1828)
+- [`87f3450`](https://github.com/alexfalkowski/go-service/commit/87f34507206ebbac3b0227a864aa9d38859793f3) build(deps): bump bin from `e92253b` to `901fb2b` (#1826)
+
 ## [v2.126.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.126.0) - 2025-08-15
 
 - [`f4c5c81`](https://github.com/alexfalkowski/go-service/commit/f4c5c81fe521ccaf7688156eac9cca69e3e15efc) feat(deps): bump github.com/casbin/casbin/v2 from 2.119.0 to 2.120.0 (#1824)
