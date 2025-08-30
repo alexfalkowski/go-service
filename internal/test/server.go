@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/server"
@@ -16,7 +15,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	gl "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/urfave/negroni/v3"
 )
 
@@ -32,7 +33,8 @@ type Server struct {
 	TransportConfig *transport.Config
 	DebugConfig     *debug.Config
 	Tracer          *tracer.Config
-	Limiter         *limiter.Limiter
+	GRPCLimiter     *gl.Server
+	HTTPLimiter     *hl.Server
 	Logger          *logger.Logger
 	ID              id.Generator
 	RegisterHTTP    bool
@@ -47,15 +49,17 @@ func (s *Server) Register() {
 	servers := []*server.Service{}
 
 	if s.RegisterHTTP {
-		httpServer, err := th.NewServer(th.ServerParams{
+		params := th.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
 			Config: s.TransportConfig.HTTP, Logger: s.Logger,
-			Tracer: tracer, Meter: s.Meter,
-			Limiter: s.Limiter, Handlers: []negroni.Handler{&EmptyHandler{}},
+			Tracer: tracer, Meter: s.Meter, Limiter: s.HTTPLimiter,
+			Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			FS: FS,
-		})
+		}
+
+		httpServer, err := th.NewServer(params)
 		runtime.Must(err)
 
 		s.HTTPServer = httpServer
@@ -63,13 +67,15 @@ func (s *Server) Register() {
 	}
 
 	if s.RegisterGRPC {
-		grpcServer, err := grpc.NewServer(grpc.ServerParams{
-			Shutdowner: sh, Config: s.TransportConfig.GRPC, Logger: s.Logger,
-			Tracer: tracer, Meter: s.Meter, Limiter: s.Limiter,
+		params := grpc.ServerParams{
+			Shutdowner: sh, Config: s.TransportConfig.GRPC,
+			Logger: s.Logger, Tracer: tracer, Meter: s.Meter,
 			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
-			FS: FS,
-		})
+			FS: FS, Limiter: s.GRPCLimiter,
+		}
+
+		grpcServer, err := grpc.NewServer(params)
 		runtime.Must(err)
 
 		s.GRPCServer = grpcServer

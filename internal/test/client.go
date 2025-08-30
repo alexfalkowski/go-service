@@ -4,7 +4,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -15,7 +14,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	g "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	gl "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	h "github.com/alexfalkowski/go-service/v2/transport/http"
+	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 )
 
 // Client for test.
@@ -29,7 +30,8 @@ type Client struct {
 	RoundTripper http.RoundTripper
 	Meter        *metrics.Meter
 	Generator    token.Generator
-	Limiter      *limiter.Limiter
+	HTTPLimiter  *hl.Client
+	GRPCLimiter  *gl.Client
 	Compression  bool
 }
 
@@ -47,7 +49,8 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
 		h.WithClientTokenGenerator(UserID, c.Generator), h.WithClientTimeout("1m"),
-		h.WithClientTLS(c.TLS), h.WithClientID(c.ID), h.WithClientLimiter(c.Limiter),
+		h.WithClientTLS(c.TLS), h.WithClientID(c.ID),
+		h.WithClientLimiter(c.HTTPLimiter),
 	}
 
 	if c.Compression {
@@ -69,7 +72,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(UserID, c.Generator), g.WithClientTimeout("1m"),
 		g.WithClientDialOption(), g.WithClientTLS(c.TLS), g.WithClientID(c.ID),
-		g.WithClientLimiter(c.Limiter),
+		g.WithClientLimiter(c.GRPCLimiter),
 	}
 
 	if c.Compression {

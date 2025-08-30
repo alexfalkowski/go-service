@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -45,7 +44,6 @@ type Config struct {
 	Feature     *feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
 	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
 	ID          *id.Config        `yaml:"id,omitempty" json:"id,omitempty" toml:"id,omitempty"`
-	Limiter     *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
 	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
 	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
 	Time        *time.Config      `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
@@ -90,10 +88,6 @@ func httpConfig(cfg *Config) *http.Config {
 		return cfg.Transport.HTTP
 	}
 	return nil
-}
-
-func limiterConfig(cfg *Config) *limiter.Config {
-	return cfg.Limiter
 }
 
 func pgConfig(cfg *Config) *pg.Config {

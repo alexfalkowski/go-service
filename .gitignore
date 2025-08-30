@@ -7,3 +7,4 @@ vendor
 *.xml
 *.test
 test/new_config.yml
+test/reports/coverage.html

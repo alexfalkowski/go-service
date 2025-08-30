@@ -392,17 +392,6 @@ The different kinds are:
 - [ip](transport/meta/key.go)
 - [token](transport/meta/key.go)
 
-### Limiter Configuration
-
-To configure, please specify the following:
-
-```yaml
-limiter:
-  kind: user-agent
-  tokens: 10
-  interval: 1s
-```
-
 ## Time
 
 The framework allows you use network time services. We use:
@@ -476,6 +465,22 @@ transport:
     tls:
       cert: path of cert
       key: path of key
+```
+
+If you would like to enable a limiter, do the following:
+
+```yaml
+transport:
+  http:
+    limiter:
+      kind: user-agent
+      tokens: 10
+      interval: 1s
+  grpc:
+    limiter:
+      kind: user-agent
+      tokens: 10
+      interval: 1s
 ```
 
 ### Transport Dependencies

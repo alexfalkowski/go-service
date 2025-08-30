@@ -8,6 +8,7 @@ import (
 // Module for fx.
 var Module = di.Module(
 	di.Register(Register),
+	di.Constructor(NewServerLimiter),
 	di.Constructor(NewServer),
 	di.Constructor(registrar),
 	health.Module,

@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
@@ -10,11 +11,30 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// Limiter is just an alias for limiter.Limiter.
-type Limiter = limiter.Limiter
+// KeyMap is just an alias for limiter.KeyMap.
+type KeyMap = limiter.KeyMap
+
+// NewServerLimiter for gRPC.
+func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Server{limiter}, nil
+}
+
+// Server limiter.
+type Server struct {
+	*limiter.Limiter
+}
 
 // UnaryServerInterceptor for limiter.
-func UnaryServerInterceptor(limiter *Limiter) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		p := info.FullMethod[1:]
 		if strings.IsObservable(p) {
@@ -36,8 +56,27 @@ func UnaryServerInterceptor(limiter *Limiter) grpc.UnaryServerInterceptor {
 	}
 }
 
+// NewClientLimiter for gRPC.
+func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{limiter}, nil
+}
+
+// Client limiter.
+type Client struct {
+	*limiter.Limiter
+}
+
 // UnaryClientInterceptor for limiter.
-func UnaryClientInterceptor(limiter *Limiter) grpc.UnaryClientInterceptor {
+func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ok, header, err := limiter.Take(ctx)
 		if err != nil {

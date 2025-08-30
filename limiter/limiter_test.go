@@ -9,7 +9,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-//nolint:funlen
 func TestLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 
@@ -22,21 +21,6 @@ func TestLimiter(t *testing.T) {
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
-			})
-		})
-	})
-
-	Convey("Given I have a disabled config", t, func() {
-		m := limiter.KeyMap{
-			"user-agent": meta.UserAgent,
-		}
-
-		Convey("When I try to create a limiter", func() {
-			limiter, err := limiter.NewLimiter(lc, m, nil)
-
-			Convey("Then I should have no limiter", func() {
-				So(err, ShouldBeNil)
-				So(limiter, ShouldBeNil)
 			})
 		})
 	})

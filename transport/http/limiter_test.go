@@ -103,7 +103,7 @@ func TestServerClosedLimiter(t *testing.T) {
 		world.HandleHello()
 		world.RequireStart()
 
-		err := world.Server.Limiter.Close(t.Context())
+		err := world.Server.HTTPLimiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
 		Convey("When I query for a greet", func() {
@@ -131,7 +131,7 @@ func TestClientClosedLimiter(t *testing.T) {
 		Convey("When I query for a greet", func() {
 			url := world.PathServerURL("http", "hello")
 
-			err := world.Client.Limiter.Close(t.Context())
+			err := world.Client.HTTPLimiter.Close(t.Context())
 			So(err, ShouldBeNil)
 
 			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)

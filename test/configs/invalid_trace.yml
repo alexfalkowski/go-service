@@ -33,10 +33,6 @@ hooks:
   secret: file:../test/secrets/hooks
 id:
   kind: uuid
-limiter:
-  kind: user-agent
-  tokens: 10
-  interval: 1s
 sql:
   pg:
     masters:
@@ -70,17 +66,23 @@ token:
 transport:
   http:
     address: tcp://localhost:11000
+    limiter:
+      kind: user-agent
+      tokens: 10
+      interval: 1s
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
     timeout: 10s
-    user_agent: Service http/1.0
   grpc:
     address: tcp://localhost:12000
+    limiter:
+      kind: user-agent
+      tokens: 10
+      interval: 1s
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
     timeout: 10s
-    user_agent: Service grpc/1.0
