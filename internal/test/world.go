@@ -10,7 +10,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net"
@@ -158,8 +157,10 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: tranConfig, DebugConfig: debugConfig,
-		Meter: meter, Mux: mux, Limiter: newLimiter(lc, os.serverLimiter),
-		Verifier: os.verifier, ID: id,
+		Meter: meter, Mux: mux,
+		GRPCLimiter: NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
+		HTTPLimiter: NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
+		Verifier:    os.verifier, ID: id,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	server.Register()
@@ -168,7 +169,8 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
 		Meter: meter, TLS: tlsConfig, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
-		Limiter: newLimiter(lc, os.clientLimiter),
+		HTTPLimiter: NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
+		GRPCLimiter: NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
 	}
 
 	registerMVC(mux, logger.Logger)
@@ -323,17 +325,6 @@ func debugConfig(os *worldOpts) *debug.Config {
 func tlsConfig(os *worldOpts) *tls.Config {
 	if os.secure {
 		return NewTLSClientConfig()
-	}
-
-	return nil
-}
-
-func newLimiter(lc di.Lifecycle, cfg *limiter.Config) *limiter.Limiter {
-	if cfg != nil {
-		l, err := limiter.NewLimiter(lc, limiter.NewKeyMap(), cfg)
-		runtime.Must(err)
-
-		return l
 	}
 
 	return nil

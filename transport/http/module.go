@@ -20,6 +20,7 @@ var Module = di.Module(
 	di.Register(mvc.Register),
 	di.Register(rpc.Register),
 	di.Register(rest.Register),
+	di.Constructor(NewServerLimiter),
 	di.Constructor(NewServer),
 	di.Register(metrics.Register),
 	health.Module,

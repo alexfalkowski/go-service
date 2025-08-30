@@ -9,7 +9,6 @@ transport:
       backoff: 100ms
       timeout: 1s
       attempts: 3
-    user_agent: Service http/1.0
   grpc:
     address: "tcp://localhost:invalid"
     timeout: 10s

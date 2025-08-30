@@ -47,11 +47,6 @@
   "id": {
     "kind": "uuid"
   },
-  "limiter": {
-    "kind": "user-agent",
-    "tokens": 10,
-    "interval": "1s"
-  },
   "sql": {
     "pg": {
       "masters": [
@@ -103,22 +98,30 @@
   "transport": {
     "http": {
       "address": "tcp://localhost:11000",
+      "limiter": {
+        "kind": "user-agent",
+        "tokens": 10,
+        "interval": "1s"
+      },
       "retry": {
         "backoff": "100ms",
         "timeout": "1s",
         "attempts": 3
       },
-      "user_agent": "Service http/1.0",
       "timeout": "10s"
     },
     "grpc": {
       "address": "tcp://localhost:12000",
+      "limiter": {
+        "kind": "user-agent",
+        "tokens": 10,
+        "interval": "1s"
+      },
       "retry": {
         "backoff": "100ms",
         "timeout": "1s",
         "attempts": 3
       },
-      "user_agent": "Service grpc/1.0",
       "timeout": "10s"
     }
   }

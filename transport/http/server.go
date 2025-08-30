@@ -24,6 +24,15 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
+// NewServerLimiter for HTTP.
+func NewServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *Config) (*limiter.Server, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	return limiter.NewServerLimiter(lc, keys, cfg.Limiter)
+}
+
 // ServerParams for HTTP.
 type ServerParams struct {
 	di.In
@@ -38,7 +47,7 @@ type ServerParams struct {
 	UserID     env.UserID
 	ID         id.Generator
 	FS         *os.FS
-	Limiter    *limiter.Limiter
+	Limiter    *limiter.Server
 	Verifier   token.Verifier
 	Handlers   []negroni.Handler `optional:"true"`
 }

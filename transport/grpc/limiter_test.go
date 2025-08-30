@@ -130,7 +130,7 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 		world.Register()
 		world.RequireStart()
 
-		err := world.Server.Limiter.Close(t.Context())
+		err := world.Server.GRPCLimiter.Close(t.Context())
 		So(err, ShouldBeNil)
 
 		Convey("When  I query for a greet", func() {
@@ -165,7 +165,7 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 			client := v1.NewGreeterServiceClient(conn)
 			req := &v1.SayHelloRequest{Name: "test"}
 
-			err := world.Client.Limiter.Close(t.Context())
+			err := world.Client.GRPCLimiter.Close(t.Context())
 			So(err, ShouldBeNil)
 
 			_, err = client.SayHello(t.Context(), req)

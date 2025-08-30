@@ -1,23 +1,43 @@
 package limiter
 
 import (
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// Limiter is just an alias for limiter.Limiter.
-type Limiter = limiter.Limiter
+// KeyMap is just an alias for limiter.KeyMap.
+type KeyMap = limiter.KeyMap
+
+// NewServerLimiter for http.
+func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Server{limiter}, nil
+}
+
+// Server limiter.
+type Server struct {
+	*limiter.Limiter
+}
 
 // Handler for limiter.
-func NewHandler(limiter *Limiter) *Handler {
+func NewHandler(limiter *Server) *Handler {
 	return &Handler{limiter: limiter}
 }
 
 // Handler for tracer.
 type Handler struct {
-	limiter *Limiter
+	limiter *Server
 }
 
 // ServeHTTP for limiter.
@@ -46,14 +66,33 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req)
 }
 
+// NewClientLimiter for http.
+func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	limiter, err := limiter.NewLimiter(lc, keys, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{limiter}, nil
+}
+
+// Client limiter.
+type Client struct {
+	*limiter.Limiter
+}
+
 // NewRoundTripper for limiter.
-func NewRoundTripper(limiter *Limiter, rt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(limiter *Client, rt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{limiter: limiter, RoundTripper: rt}
 }
 
 // RoundTripper for limiter.
 type RoundTripper struct {
-	limiter *Limiter
+	limiter *Client
 	http.RoundTripper
 }
 

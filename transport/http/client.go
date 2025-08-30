@@ -31,7 +31,7 @@ type clientOpts struct {
 	retry        *retry.Config
 	tls          *tls.Config
 	meter        *metrics.Meter
-	limiter      *limiter.Limiter
+	limiter      *limiter.Client
 	userAgent    env.UserAgent
 	id           env.UserID
 	timeout      time.Duration
@@ -131,7 +131,7 @@ func WithClientID(generator id.Generator) ClientOption {
 }
 
 // WithClientLimiter for HTTP.
-func WithClientLimiter(limiter *limiter.Limiter) ClientOption {
+func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.limiter = limiter
 	})
