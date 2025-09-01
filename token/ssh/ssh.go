@@ -17,18 +17,17 @@ type (
 )
 
 // NewToken for ssh.
-func NewToken(fs *os.FS, cfg *Config) *Token {
+func NewToken(cfg *Config, fs *os.FS) *Token {
 	if !cfg.IsEnabled() {
 		return nil
 	}
-
-	return &Token{fs: fs, cfg: cfg}
+	return &Token{cfg: cfg, fs: fs}
 }
 
 // Token for ssh.
 type Token struct {
-	fs  *os.FS
 	cfg *Config
+	fs  *os.FS
 }
 
 // Generate an SSH token.

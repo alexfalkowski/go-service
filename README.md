@@ -309,78 +309,17 @@ The framework allows you to define different token generators and verifiers.
 
 We have support for different access controls using [casbin](https://github.com/casbin/casbin).
 
-To configure, please specify the following:
-
-```yaml
-token:
-  access:
-    policy: path to policy file
-```
-
-The model is based on the following [config](https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf).
-
 ### JWT
 
 We use the awesome [JWT](https://github.com/golang-jwt/jwt).
-
-To configure, please specify the following:
-
-```yaml
-token:
-  kind: jwt
-  jwt:
-    sub: subject
-    aud: audience
-    iss: issuer
-    exp: 1h
-    kid: 1234567890
-```
 
 ### Paseto
 
 We use the awesome [Paseto](https://github.com/aidantwoods/go-paseto).
 
-To configure, please specify the following:
-
-```yaml
-token:
-  kind: paseto
-  paseto:
-    sub: subject
-    aud: audience
-    iss: issuer
-    exp: 1h
-```
-
 ### SSH
 
 We use the awesome [SSH](https://pkg.go.dev/golang.org/x/crypto/ssh).
-
-#### Generation
-
-To configure, please specify the following:
-
-```yaml
-token:
-  kind: ssh
-  ssh:
-    key:
-      name: test
-      private: path to key
-```
-
-#### Verification
-
-To configure, please specify the following:
-
-```yaml
-token:
-  kind: ssh
-  ssh:
-    keys:
-      - name: test
-        public: path to key
-```
 
 ## Limiter
 
@@ -481,6 +420,96 @@ transport:
       kind: user-agent
       tokens: 10
       interval: 1s
+```
+
+#### Transport Token Access
+
+To configure, please specify the following:
+
+```yaml
+transport:
+  http:
+    token:
+      access:
+        policy: path to policy file
+  grpc:
+    token:
+      access:
+        policy: path to policy file
+```
+
+The model is based on the following [config](https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf).
+
+#### Transport Token JWT
+
+To configure, please specify the following:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: jwt
+      jwt:
+        sub: subject
+        aud: audience
+        iss: issuer
+        exp: 1h
+        kid: 1234567890
+  grpc:
+    token:
+      kind: jwt
+      jwt:
+        sub: subject
+        aud: audience
+        iss: issuer
+        exp: 1h
+        kid: 1234567890
+```
+
+#### Transport Token Paseto
+
+To configure, please specify the following:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: paseto
+      paseto:
+        sub: subject
+        aud: audience
+        iss: issuer
+        exp: 1h
+  grpc:
+    token:
+      kind: jwt
+      paseto:
+        sub: subject
+        aud: audience
+        iss: issuer
+        exp: 1h
+```
+
+#### Transport Token SSH
+
+To verify, please specify the following:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: ssh
+      ssh:
+        keys:
+          - name: test
+            public: path to key
+  grpc:
+    token:
+      kind: ssh
+      ssh:
+        keys:
+          - name: test
+            public: path to key
 ```
 
 ### Transport Dependencies

@@ -2,34 +2,18 @@ package jwt
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// TokenParams for jwt.
-type TokenParams struct {
-	di.In
-	Config    *Config
-	Signer    *ed25519.Signer
-	Verifier  *ed25519.Verifier
-	Generator id.Generator
-}
-
 // NewToken for jwt.
-func NewToken(params TokenParams) *Token {
-	if !params.Config.IsEnabled() {
+func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+	if !cfg.IsEnabled() {
 		return nil
 	}
-
-	return &Token{
-		cfg:       params.Config,
-		signer:    params.Signer,
-		verifier:  params.Verifier,
-		generator: params.Generator,
-	}
+	return &Token{cfg: cfg, signer: sig, verifier: ver, generator: gen}
 }
 
 // Token for jwt.

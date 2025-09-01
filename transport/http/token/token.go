@@ -2,22 +2,53 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-type (
-	// Generator is an alias token.Generator.
-	Generator = token.Generator
+// NewAccessController for HTTP.
+func NewAccessController(cfg *token.Config) (AccessController, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+	return access.NewController(cfg.Access)
+}
 
-	// Verifier is an alias token.Verifier.
-	Verifier = token.Verifier
-)
+// AccessController is an alias for access.Controller.
+type AccessController access.Controller
+
+// NewToken for HTTP.
+func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+	if !cfg.IsEnabled() {
+		return nil
+	}
+	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
+}
+
+// Token for HTTP.
+type Token struct {
+	*token.Token
+}
+
+// NewVerifier for HTTP.
+func NewVerifier(token *Token) Verifier {
+	if token != nil {
+		return token
+	}
+	return nil
+}
+
+// Verifier is an alias token.Verifier.
+type Verifier token.Verifier
 
 // NewHandler for token.
 func NewHandler(id env.UserID, verifier Verifier) *Handler {
@@ -50,8 +81,19 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req.WithContext(ctx))
 }
 
+// NewGenerator for token.
+func NewGenerator(token *Token) Generator {
+	if token != nil {
+		return token
+	}
+	return nil
+}
+
+// Generator is an alias token.Generator.
+type Generator token.Generator
+
 // NewRoundTripper for token.
-func NewRoundTripper(id env.UserID, generator token.Generator, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(id env.UserID, generator Generator, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{RoundTripper: hrt, id: id, generator: generator}
 }
 

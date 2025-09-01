@@ -3,24 +3,55 @@ package token
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 )
 
-type (
-	// Generator is an alias token.Generator.
-	Generator = token.Generator
+// NewAccessController for gRPC.
+func NewAccessController(cfg *token.Config) (AccessController, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+	return access.NewController(cfg.Access)
+}
 
-	// Verifier is an alias token.Verifier.
-	Verifier = token.Verifier
-)
+// AccessController is an alias of access.Controller.
+type AccessController access.Controller
+
+// NewToken for gRPC.
+func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+	if !cfg.IsEnabled() {
+		return nil
+	}
+	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
+}
+
+// Token for gRPC.
+type Token struct {
+	*token.Token
+}
+
+// NewVerifier for gRPC.
+func NewVerifier(token *Token) Verifier {
+	if token != nil {
+		return token
+	}
+	return nil
+}
+
+// Verifier is an alias token.Verifier.
+type Verifier token.Verifier
 
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
@@ -65,6 +96,17 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 		return handler(srv, wrapped)
 	}
 }
+
+// NewGenerator for token.
+func NewGenerator(token *Token) Generator {
+	if token != nil {
+		return token
+	}
+	return nil
+}
+
+// Generator is an alias token.Generator.
+type Generator token.Generator
 
 // UnaryClientInterceptor for token.
 func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClientInterceptor {

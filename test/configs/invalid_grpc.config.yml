@@ -3,7 +3,7 @@ id:
   kind: uuid
 transport:
   http:
-    address: :0
+    address: "tcp://localhost:0"
     timeout: 10s
     retry:
       backoff: 100ms

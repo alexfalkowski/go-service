@@ -2,36 +2,23 @@ package token
 
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
-// TokenParams for token.
-type TokenParams struct {
-	di.In
-	Config *Config
-	JWT    *jwt.Token
-	Paseto *paseto.Token
-	SSH    *ssh.Token
-	Name   env.Name
-}
-
 // NewToken based on config.
-func NewToken(params TokenParams) *Token {
-	if !params.Config.IsEnabled() {
-		return nil
-	}
-
+func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	return &Token{
-		cfg:    params.Config,
-		name:   params.Name,
-		jwt:    params.JWT,
-		paseto: params.Paseto,
-		ssh:    params.SSH,
+		name: name, cfg: cfg,
+		jwt:    jwt.NewToken(cfg.JWT, sig, ver, gen),
+		paseto: paseto.NewToken(cfg.Paseto, sig, ver, gen),
+		ssh:    ssh.NewToken(cfg.SSH, fs),
 	}
 }
 

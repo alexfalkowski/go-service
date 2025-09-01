@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -19,17 +18,8 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 		ec := test.NewEd25519()
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		params := token.TokenParams{
-			Config: cfg,
-			Name:   test.Name,
-			JWT: jwt.NewToken(jwt.TokenParams{
-				Config:    cfg.JWT,
-				Signer:    signer,
-				Verifier:  verifier,
-				Generator: &id.UUID{},
-			}),
-		}
-		tkn := token.NewToken(params)
+		gen := &id.UUID{}
+		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("prometheus"),

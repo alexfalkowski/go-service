@@ -10,7 +10,7 @@ import (
 
 func TestValid(t *testing.T) {
 	Convey("When I generate a SSH token", t, func() {
-		token := ssh.NewToken(test.FS, test.NewToken("ssh").SSH)
+		token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 		tkn, err := token.Generate()
 		So(err, ShouldBeNil)
@@ -44,7 +44,7 @@ func TestInvalid(t *testing.T) {
 			},
 		}
 
-		token := ssh.NewToken(test.FS, cfg)
+		token := ssh.NewToken(cfg, test.FS)
 		_, err := token.Generate()
 
 		Convey("Then I should have an error", func() {
@@ -53,7 +53,7 @@ func TestInvalid(t *testing.T) {
 	})
 
 	for _, tkn := range []string{"", "none-", "test-", "test-bob"} {
-		token := ssh.NewToken(test.FS, test.NewToken("ssh").SSH)
+		token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 		Convey("When I verify a token", t, func() {
 			_, err := token.Verify(tkn)
@@ -74,7 +74,7 @@ func TestInvalid(t *testing.T) {
 			},
 		}
 
-		token := ssh.NewToken(test.FS, cfg)
+		token := ssh.NewToken(cfg, test.FS)
 		_, err := token.Verify("test-bob")
 
 		Convey("Then I should have an error", func() {
