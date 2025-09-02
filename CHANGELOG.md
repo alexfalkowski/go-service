@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.139.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.139.0) - 2025-09-02
+
+- [`59c38ca`](https://github.com/alexfalkowski/go-service/commit/59c38ca183f52d11e6740238c20f4e78469e83db) feat(io): use NopCloser (#1857)
+- [`d29f2e1`](https://github.com/alexfalkowski/go-service/commit/d29f2e1c8d707079e74de69605afb7bf3e9a22ba) build(codecov): set patch: off (#1856)
+
 ## [v2.138.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.138.0) - 2025-09-02
 
 - [`680c378`](https://github.com/alexfalkowski/go-service/commit/680c37837fbcf7f7947da131c46a2bcde8234dcb) feat(token): remove var (#1855)
