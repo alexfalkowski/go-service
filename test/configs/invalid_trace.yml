@@ -56,13 +56,6 @@ telemetry:
 time:
   kind: nts
   address: time.cloudflare.com
-token:
-  access:
-    policy: ../test/configs/rbac.csv
-  kind: "jwt"
-  iss: "iss"
-  exp: "1h"
-  kid: "1234567890"
 transport:
   http:
     address: tcp://localhost:11000

@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 )
 
 // Module for fx.
@@ -21,6 +22,10 @@ var Module = di.Module(
 	di.Register(rpc.Register),
 	di.Register(rest.Register),
 	di.Constructor(NewServerLimiter),
+	di.Constructor(NewController),
+	di.Constructor(NewToken),
+	di.Constructor(token.NewGenerator),
+	di.Constructor(token.NewVerifier),
 	di.Constructor(NewServer),
 	di.Register(metrics.Register),
 	health.Module,

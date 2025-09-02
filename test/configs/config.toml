@@ -76,17 +76,6 @@ Authorization = "file:../test/secrets/telemetry"
 kind = "nts"
 address = "time.cloudflare.com"
 
-[token]
-kind = "jwt"
-
-[token.access]
-policy = "../test/configs/rbac.csv"
-
-[token.jwt]
-iss = "iss"
-exp = "1h"
-kid = "1234567890"
-
 [transport.http]
 address = "tcp://localhost:11000"
 user_agent = "Service http/1.0"
@@ -102,6 +91,17 @@ backoff = "100ms"
 timeout = "1s"
 attempts = 3
 
+[transport.http.token]
+kind = "jwt"
+
+[transport.http.token.access]
+policy = "../test/configs/rbac.csv"
+
+[transport.http.token.jwt]
+iss = "iss"
+exp = "1h"
+kid = "1234567890"
+
 [transport.grpc]
 address = "tcp://localhost:12000"
 user_agent = "Service grpc/1.0"
@@ -116,3 +116,14 @@ interval = "1s"
 backoff = "100ms"
 timeout = "1s"
 attempts = 3
+
+[transport.grpc.token]
+kind = "jwt"
+
+[transport.grpc.token.access]
+policy = "../test/configs/rbac.csv"
+
+[transport.grpc.token.jwt]
+iss = "iss"
+exp = "1h"
+kid = "1234567890"

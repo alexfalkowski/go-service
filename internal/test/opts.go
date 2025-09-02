@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
+	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -21,11 +22,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
+	gt "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
+	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"google.golang.org/grpc"
@@ -97,7 +97,9 @@ func invokeEnvironment(_ env.Name, _ env.UserAgent, _ env.Version) {}
 
 func invokeNetwork(_ time.Network) {}
 
-func invokeAccessController(_ access.Controller) {}
+func invokeAccessController(_ ht.AccessController, _ gt.AccessController) {}
+
+func invokeTokens(_ ht.Generator, _ ht.Verifier, _ gt.Generator, _ gt.Verifier) {}
 
 func invokeCrypt(
 	signer *bcrypt.Signer,
@@ -120,9 +122,6 @@ func invokeCrypt(
 	}
 
 	return nil
-}
-
-func invokeTokens(_ token.Generator, _ token.Verifier) {
 }
 
 func shutdown(s di.Shutdowner) {

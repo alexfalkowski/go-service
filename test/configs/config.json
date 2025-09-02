@@ -84,17 +84,6 @@
     "kind": "nts",
     "address": "time.cloudflare.com"
   },
-  "token": {
-    "access" : {
-      "policy": "../test/configs/rbac.csv"
-    },
-    "kind": "jwt",
-    "jwt": {
-      "iss": "iss",
-      "exp": "1h",
-      "kid": "1234567890"
-    }
-  },
   "transport": {
     "http": {
       "address": "tcp://localhost:11000",
@@ -108,7 +97,18 @@
         "timeout": "1s",
         "attempts": 3
       },
-      "timeout": "10s"
+      "timeout": "10s",
+      "token": {
+        "access": {
+          "policy": "../test/configs/rbac.csv"
+        },
+        "kind": "jwt",
+        "jwt": {
+          "iss": "iss",
+          "exp": "1h",
+          "kid": "1234567890"
+        }
+      }
     },
     "grpc": {
       "address": "tcp://localhost:12000",
@@ -122,7 +122,18 @@
         "timeout": "1s",
         "attempts": 3
       },
-      "timeout": "10s"
+      "timeout": "10s",
+      "token": {
+        "access": {
+          "policy": "../test/configs/rbac.csv"
+        },
+        "kind": "jwt",
+        "jwt": {
+          "iss": "iss",
+          "exp": "1h",
+          "kid": "1234567890"
+        }
+      }
     }
   }
 }

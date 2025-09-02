@@ -24,15 +24,6 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
-// NewServerLimiter for HTTP.
-func NewServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *Config) (*limiter.Server, error) {
-	if !cfg.IsEnabled() {
-		return nil, nil
-	}
-
-	return limiter.NewServerLimiter(lc, keys, cfg.Limiter)
-}
-
 // ServerParams for HTTP.
 type ServerParams struct {
 	di.In

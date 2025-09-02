@@ -8,9 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	"github.com/alexfalkowski/go-service/v2/token/paseto"
-	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -164,24 +161,7 @@ func TestValidAuthUnary(t *testing.T) {
 			signer, _ := ed25519.NewSigner(test.PEM, ec)
 			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 			gen := &id.UUID{}
-			params := token.TokenParams{
-				Config: cfg,
-				Name:   test.Name,
-				JWT: jwt.NewToken(jwt.TokenParams{
-					Config:    cfg.JWT,
-					Signer:    signer,
-					Verifier:  verifier,
-					Generator: gen,
-				}),
-				Paseto: paseto.NewToken(paseto.TokenParams{
-					Config:    cfg.Paseto,
-					Signer:    signer,
-					Verifier:  verifier,
-					Generator: gen,
-				}),
-				SSH: ssh.NewToken(test.FS, cfg.SSH),
-			}
-			tkn := token.NewToken(params)
+			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
 			world.Register()
