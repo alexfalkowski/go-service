@@ -54,19 +54,15 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 // Verify a token based on kind.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	tkn := bytes.String(token)
-	var (
-		user string
-		err  error
-	)
 
 	switch {
 	case t.cfg.IsSSH():
-		user, err = t.ssh.Verify(tkn)
+		return t.ssh.Verify(tkn)
 	case t.cfg.IsJWT():
-		user, err = t.jwt.Verify(tkn, aud)
+		return t.jwt.Verify(tkn, aud)
 	case t.cfg.IsPaseto():
-		user, err = t.paseto.Verify(tkn, aud)
+		return t.paseto.Verify(tkn, aud)
+	default:
+		return "", nil
 	}
-
-	return user, err
 }
