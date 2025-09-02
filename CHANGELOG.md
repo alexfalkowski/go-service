@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.138.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.138.0) - 2025-09-02
+
+- [`680c378`](https://github.com/alexfalkowski/go-service/commit/680c37837fbcf7f7947da131c46a2bcde8234dcb) feat(token): remove var (#1855)
+
 ## [v2.137.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.137.0) - 2025-09-02
 
 - [`b91e404`](https://github.com/alexfalkowski/go-service/commit/b91e4046faa9ada96bda1de89b1dd3a01409be60) feat(token): allow to configure per transport (#1853)
