@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.140.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.140.0) - 2025-09-03
+
+- [`a78fa76`](https://github.com/alexfalkowski/go-service/commit/a78fa76d6f78e96d1caf9f8f589afe421cbe1940) feat(deps): bump github.com/spf13/pflag from 1.0.9 to 1.0.10 (#1859)
+- [`1b7d287`](https://github.com/alexfalkowski/go-service/commit/1b7d287b483ed62e1083c0216622952864164a88) build(ci): use latest published images (#1858)
+
 ## [v2.139.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.139.0) - 2025-09-02
 
 - [`59c38ca`](https://github.com/alexfalkowski/go-service/commit/59c38ca183f52d11e6740238c20f4e78469e83db) feat(io): use NopCloser (#1857)
