@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.141.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.141.0) - 2025-09-04
+
+- [`b286a35`](https://github.com/alexfalkowski/go-service/commit/b286a351095ef2c09476ba8333378d85ad51ca20) feat(deps): bump github.com/redis/go-redis/v9 from 9.12.1 to 9.13.0 (#1861)
+- [`db64228`](https://github.com/alexfalkowski/go-service/commit/db64228970f5226717de03894ae7a04271d2a392) build(ci): use latest published images (#1860)
+
 ## [v2.140.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.140.0) - 2025-09-03
 
 - [`a78fa76`](https://github.com/alexfalkowski/go-service/commit/a78fa76d6f78e96d1caf9f8f589afe421cbe1940) feat(deps): bump github.com/spf13/pflag from 1.0.9 to 1.0.10 (#1859)
