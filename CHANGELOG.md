@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.144.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.144.0) - 2025-09-05
+
+- [`19c4c10`](https://github.com/alexfalkowski/go-service/commit/19c4c1065f5c6bc8b81723ae7670bac311fae1ec) feat(cache): expired err will never happen (#1869)
+- [`6578d6a`](https://github.com/alexfalkowski/go-service/commit/6578d6a4069d04f4cb2df3e51dbeac83b92f12a9) test(di): missing cases (#1868)
+- [`06bb6e1`](https://github.com/alexfalkowski/go-service/commit/06bb6e1bb253c4420630a417035577d8f90c2ae1) test(os): missing cases (#1867)
+- [`d7887ee`](https://github.com/alexfalkowski/go-service/commit/d7887eed62705b228bbb9c8d1f9908f82a944581) test(token): missing cases (#1866)
+
 ## [v2.143.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.143.0) - 2025-09-05
 
 - [`bfe4e5a`](https://github.com/alexfalkowski/go-service/commit/bfe4e5af304f78e957049fa5f1268d83144a8165) feat(deps): bump github.com/prometheus/client_golang from 1.23.0 to 1.23.1 (#1864)
