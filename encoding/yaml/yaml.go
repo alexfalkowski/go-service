@@ -3,7 +3,7 @@ package yaml
 import (
 	"io"
 
-	"github.com/goccy/go-yaml"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 // NewEncoder for yaml.
