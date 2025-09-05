@@ -1,9 +1,8 @@
 package json
 
 import (
+	"encoding/json"
 	"io"
-
-	"github.com/goccy/go-json"
 )
 
 // NewEncoder for json.

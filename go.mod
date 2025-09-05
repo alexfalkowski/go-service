@@ -20,8 +20,6 @@ require (
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/go-sprout/sprout v1.0.2
-	github.com/goccy/go-json v0.10.5
-	github.com/goccy/go-yaml v1.18.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
@@ -65,6 +63,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.38.0
 	go.uber.org/dig v1.19.0
 	go.uber.org/fx v1.24.0
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/crypto v0.41.0
 	golang.org/x/net v0.43.0
 	google.golang.org/grpc v1.75.0
