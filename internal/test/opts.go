@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
@@ -35,6 +36,7 @@ import (
 func Options() []di.Option {
 	return []di.Option{
 		module.Server,
+		di.Decorate(decorateConfig),
 		di.Constructor(registrations),
 		di.Register(healthRegister), di.Register(healthObserver),
 		di.Register(livenessObserver), di.Register(readinessObserver),
@@ -79,6 +81,10 @@ func readinessObserver(name env.Name, server *server.Server) error {
 
 func grpcObserver(name env.Name, server *server.Server) error {
 	return server.Observe(name.String(), "grpc", "http")
+}
+
+func decorateConfig(cfg *config.Config) *config.Config {
+	return cfg
 }
 
 func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}
