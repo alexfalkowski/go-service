@@ -32,7 +32,7 @@ The supported configuration kinds are as follows:
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://github.com/go-yaml/yaml)
 
-The configuration can be read from multiple sources by specifying a flag called `--input` or `-i`. As per the following:
+The configuration can be read from multiple sources by specifying a flag called `-i`. As per the following:
 
 - `env:CONFIG` - Read from an env variable called `CONFIG`. The env variable must be a configuration and we expect the format of `extension:content`, where `extension` is the supported kinds and `content` contains the contents of the config that is *base64 encoded*.
 - `file:path` - Read from the path.
