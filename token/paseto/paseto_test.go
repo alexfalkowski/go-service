@@ -39,20 +39,21 @@ func TestInvalid(t *testing.T) {
 	ec := test.NewEd25519()
 	signer, _ := ed25519.NewSigner(test.PEM, ec)
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := &id.UUID{}
 
 	Convey("When I generate a paseto token with invalid aud", t, func() {
 		cfg := test.NewToken("paseto")
-		paseto := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
 
-		token, err := paseto.Generate("hello", test.UserID.String())
+		tkn, err := token.Generate("hello", test.UserID.String())
 		So(err, ShouldBeNil)
 
 		Convey("Then I should have a token", func() {
-			So(token, ShouldNotBeBlank)
+			So(tkn, ShouldNotBeBlank)
 		})
 
 		Convey("Then I should have an error", func() {
-			_, err := paseto.Verify(token, "test")
+			_, err := token.Verify(tkn, "test")
 			So(err, ShouldBeError)
 		})
 	})
@@ -62,7 +63,7 @@ func TestInvalid(t *testing.T) {
 			Issuer:     "test",
 			Expiration: "1h",
 		}
-		gen := &id.UUID{}
+
 		token := paseto.NewToken(pcf, signer, verifier, gen)
 
 		tkn, err := token.Generate("hello", test.UserID.String())
@@ -83,7 +84,7 @@ func TestInvalid(t *testing.T) {
 
 	for _, tkn := range []string{"invalid"} {
 		cfg := test.NewToken("paseto")
-		token := paseto.NewToken(cfg.Paseto, signer, verifier, &id.UUID{})
+		token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
 
 		Convey("When I verify an invalid token", t, func() {
 			_, err := token.Verify(tkn, "aud")
@@ -98,7 +99,7 @@ func TestInvalid(t *testing.T) {
 		cfg := test.NewToken("paseto")
 
 		Convey("When I generate a token", func() {
-			token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, &id.UUID{})
+			token := paseto.NewToken(cfg.Paseto, &ed25519.Signer{}, verifier, gen)
 			_, err := token.Generate("hello", test.UserID.String())
 
 			Convey("Then I should have an error", func() {
@@ -107,12 +108,20 @@ func TestInvalid(t *testing.T) {
 		})
 
 		Convey("When I verify a token", func() {
-			token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, &id.UUID{})
+			token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, gen)
 			_, err := token.Verify("", "aud")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)
 			})
+		})
+	})
+
+	Convey("When I try to create a paseto token", t, func() {
+		token := paseto.NewToken(nil, signer, verifier, gen)
+
+		Convey("Then I should have no token", func() {
+			So(token, ShouldBeNil)
 		})
 	})
 }
