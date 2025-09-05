@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.145.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.145.0) - 2025-09-05
+
+- [`a723807`](https://github.com/alexfalkowski/go-service/commit/a723807d3f13dd6bb4a466aa5941fb31ba90fa1b) feat(pflag): remove github.com/spf13/pflag (#1870)
+
 ## [v2.144.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.144.0) - 2025-09-05
 
 - [`19c4c10`](https://github.com/alexfalkowski/go-service/commit/19c4c1065f5c6bc8b81723ae7670bac311fae1ec) feat(cache): expired err will never happen (#1869)
