@@ -11,13 +11,8 @@ import (
 	client "github.com/redis/go-redis/v9"
 )
 
-var (
-	// ErrNotFound for driver.
-	ErrNotFound = errors.New("cache: driver not found")
-
-	// ErrExpired is an alias of cachego.ErrCacheExpired.
-	ErrExpired = cachego.ErrCacheExpired
-)
+// ErrNotFound for driver.
+var ErrNotFound = errors.New("cache: driver not found")
 
 // NewDriver creates a new cache driver with different backends.
 func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
