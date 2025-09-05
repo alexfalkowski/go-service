@@ -14,7 +14,7 @@ func TestApplicationRun(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		config := test.FilePath("configs/config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "--input", config}
+		os.Args = []string{test.Name.String(), "server", "-i", config}
 		cli.Name = test.Name
 		cli.Version = test.Version
 
@@ -37,7 +37,7 @@ func TestApplicationExitOnRun(t *testing.T) {
 	Convey("Given I have invalid configuration", t, func() {
 		config := test.FilePath("configs/invalid_http.config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "--input", config}
+		os.Args = []string{test.Name.String(), "server", "-i", config}
 
 		Convey("When I try to run an application", func() {
 			var exitCode int
@@ -102,7 +102,7 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 	Convey("Given I have valid configuration", t, func() {
 		config := test.FilePath("configs/config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "--input", config}
+		os.Args = []string{test.Name.String(), "server", "-i", config}
 		cli.Name = test.Name
 		cli.Version = test.Version
 
@@ -130,7 +130,7 @@ func TestApplicationInvalid(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
-			os.Args = []string{test.Name.String(), "server", "--input", config}
+			os.Args = []string{test.Name.String(), "server", "-i", config}
 			cli.Name = test.Name
 			cli.Version = test.Version
 
@@ -198,7 +198,7 @@ func TestApplicationInvalidClient(t *testing.T) {
 
 	for _, config := range configs {
 		Convey("When I try to run an application", t, func() {
-			os.Args = []string{test.Name.String(), "client", "--input", config}
+			os.Args = []string{test.Name.String(), "client", "-i", config}
 			cli.Name = test.Name
 			cli.Version = test.Version
 
