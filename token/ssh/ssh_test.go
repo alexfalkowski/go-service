@@ -81,4 +81,12 @@ func TestInvalid(t *testing.T) {
 			So(err, ShouldBeError)
 		})
 	})
+
+	Convey("When I try to create a ssh token", t, func() {
+		token := ssh.NewToken(nil, test.FS)
+
+		Convey("Then I should have no token", func() {
+			So(token, ShouldBeNil)
+		})
+	})
 }
