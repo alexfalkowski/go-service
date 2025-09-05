@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"google.golang.org/protobuf/proto"
@@ -108,10 +107,6 @@ func (c *Cache) Get(_ context.Context, key string, value any) (bool, error) {
 
 	val, err := c.driver.Fetch(key)
 	if err != nil {
-		if errors.Is(err, driver.ErrExpired) {
-			return false, nil
-		}
-
 		return false, err
 	}
 
