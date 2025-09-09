@@ -4,6 +4,8 @@ jobs:
   build:
     docker:
       - image: alexfalkowski/go:2.56
+        environment:
+          GOEXPERIMENT: jsonv2
       - image: postgres:17-bullseye
         environment:
           POSTGRES_DB: test
