@@ -14,22 +14,22 @@ var ErrNotFound = errors.New("metrics: reader not found")
 
 // NewReader for metrics. A nil reader means disabled.
 func NewReader(name env.Name, cfg *Config) (metric.Reader, error) {
-	switch {
-	case !cfg.IsEnabled():
+	if !cfg.IsEnabled() {
 		return nil, nil
-	case cfg.IsOTLP():
+	}
+
+	switch cfg.Kind {
+	case "otlp":
 		exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 		if err != nil {
 			return nil, prefix(err)
 		}
-
 		return metric.NewPeriodicReader(exporter), nil
-	case cfg.IsPrometheus():
+	case "prometheus":
 		exporter, err := prometheus.New(prometheus.WithNamespace(name.String()))
 		if err != nil {
 			return nil, prefix(err)
 		}
-
 		return exporter, nil
 	default:
 		return nil, ErrNotFound
