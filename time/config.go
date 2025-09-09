@@ -10,13 +10,3 @@ type Config struct {
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
-
-// IsNTP for configuration.
-func (c *Config) IsNTP() bool {
-	return c.Kind == "ntp"
-}
-
-// IsNTS for configuration.
-func (c *Config) IsNTS() bool {
-	return c.Kind == "nts"
-}
