@@ -33,18 +33,15 @@ type Token struct {
 
 // Generate a token based on kind.
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
-	switch {
-	case t.cfg.IsSSH():
-		token, err := t.ssh.Generate()
-
-		return strings.Bytes(token), err
-	case t.cfg.IsJWT():
+	switch t.cfg.Kind {
+	case "jwt":
 		token, err := t.jwt.Generate(aud, sub)
-
 		return strings.Bytes(token), err
-	case t.cfg.IsPaseto():
+	case "paseto":
 		token, err := t.paseto.Generate(aud, sub)
-
+		return strings.Bytes(token), err
+	case "ssh":
+		token, err := t.ssh.Generate()
 		return strings.Bytes(token), err
 	default:
 		return nil, nil
@@ -53,15 +50,13 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 
 // Verify a token based on kind.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
-	tkn := bytes.String(token)
-
-	switch {
-	case t.cfg.IsSSH():
-		return t.ssh.Verify(tkn)
-	case t.cfg.IsJWT():
-		return t.jwt.Verify(tkn, aud)
-	case t.cfg.IsPaseto():
-		return t.paseto.Verify(tkn, aud)
+	switch t.cfg.Kind {
+	case "jwt":
+		return t.jwt.Verify(bytes.String(token), aud)
+	case "paseto":
+		return t.paseto.Verify(bytes.String(token), aud)
+	case "ssh":
+		return t.ssh.Verify(bytes.String(token))
 	default:
 		return "", nil
 	}

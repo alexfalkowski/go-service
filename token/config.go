@@ -20,18 +20,3 @@ type Config struct {
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
-
-// IsJWT for configuration.
-func (c *Config) IsJWT() bool {
-	return c.Kind == "jwt"
-}
-
-// IsPaseto for configuration.
-func (c *Config) IsPaseto() bool {
-	return c.Kind == "paseto"
-}
-
-// IsSSH for configuration.
-func (c *Config) IsSSH() bool {
-	return c.Kind == "ssh"
-}
