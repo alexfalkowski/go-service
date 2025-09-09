@@ -14,11 +14,6 @@ func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
-// IsOTLP configuration.
-func (c *Config) IsOTLP() bool {
-	return c.Kind == "otlp"
-}
-
 // IsPrometheus configuration.
 func (c *Config) IsPrometheus() bool {
 	return c.Kind == "prometheus"

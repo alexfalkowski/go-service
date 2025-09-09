@@ -104,16 +104,18 @@ func (l *Logger) GetLogger() *slog.Logger {
 }
 
 func logger(params LoggerParams) (*slog.Logger, error) {
-	switch {
-	case !params.Config.IsEnabled():
+	if !params.Config.IsEnabled() {
 		return nil, nil
-	case params.Config.IsOTLP():
+	}
+
+	switch params.Config.Kind {
+	case "otlp":
 		return newOtlpLogger(params), nil
-	case params.Config.IsJSON():
+	case "json":
 		return newJSONLogger(params), nil
-	case params.Config.IsText():
+	case "text":
 		return newTextLogger(params), nil
-	case params.Config.IsTint():
+	case "tint":
 		return newTintLogger(params), nil
 	default:
 		return nil, ErrNotFound

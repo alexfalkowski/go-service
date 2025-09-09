@@ -14,23 +14,3 @@ type Config struct {
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }
-
-// IsOTLP logger.
-func (c *Config) IsOTLP() bool {
-	return c.Kind == "otlp"
-}
-
-// IsJSON logger.
-func (c *Config) IsJSON() bool {
-	return c.Kind == "json"
-}
-
-// IsText logger.
-func (c *Config) IsText() bool {
-	return c.Kind == "text"
-}
-
-// IsTint logger.
-func (c *Config) IsTint() bool {
-	return c.Kind == "tint"
-}
