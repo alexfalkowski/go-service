@@ -16,4 +16,3 @@ transport:
       timeout: 1s
       attempts: 3
     timeout: 10s
-    user_agent: "Status-server/1.0 http/1.0"
