@@ -25,3 +25,7 @@ http-benchmarks:
 
 grpc-benchmarks:
 	@make package=transport/grpc benchmark
+
+# Generate for tests.
+generate:
+	@make -C internal/test generate
