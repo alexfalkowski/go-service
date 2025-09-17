@@ -11,7 +11,7 @@ require (
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
-	github.com/casbin/casbin/v2 v2.123.0
+	github.com/casbin/casbin/v2 v2.125.0
 	github.com/cloudevents/sdk-go/v2 v2.16.1
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
