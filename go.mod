@@ -11,7 +11,7 @@ require (
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
-	github.com/casbin/casbin/v2 v2.126.0
+	github.com/casbin/casbin/v2 v2.127.0
 	github.com/cloudevents/sdk-go/v2 v2.16.1
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
@@ -116,6 +116,7 @@ require (
 	github.com/prometheus/otlptranslator v0.0.2 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/secure-io/siv-go v0.0.0-20180922214919-5ff40651e2c4 // indirect
+	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
