@@ -12,7 +12,7 @@ require (
 	github.com/beevik/ntp v1.4.3
 	github.com/beevik/nts v0.2.1
 	github.com/casbin/casbin/v2 v2.127.0
-	github.com/cloudevents/sdk-go/v2 v2.16.1
+	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/cristalhq/acmd v0.12.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/faabiosr/cachego v0.26.0
