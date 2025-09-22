@@ -135,7 +135,7 @@ func NewTLSClientConfig() *tls.Config {
 	return NewTLSConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
-// NewSecureClientConfig for test.
+// NewInsecureConfig for test.
 func NewInsecureConfig() *tls.Config {
 	return &tls.Config{}
 }
@@ -289,7 +289,7 @@ func NewInsecureDebugConfig() *debug.Config {
 	}
 }
 
-// NewInsecureDebugConfig for test.
+// NewSecureDebugConfig for test.
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{

@@ -22,7 +22,7 @@ var (
 	// ErrInvalidAuthorization header.
 	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
 
-	// ErrNotSupportedScheme for http.
+	// ErrNotSupportedAuthorization for http.
 	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
 

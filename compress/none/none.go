@@ -1,6 +1,6 @@
 package none
 
-// NewNone for none.
+// NewCompressor for none.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }

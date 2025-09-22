@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 )
 
-// .NewController for HTTP.
+// NewController for HTTP.
 func NewController(cfg *Config) (token.AccessController, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

@@ -48,7 +48,7 @@ func Module(opts ...Option) Option {
 	return fx.Options(opts...)
 }
 
-// Module is an alias for fx.Invoke.
+// Register is an alias for fx.Invoke.
 func Register(funcs ...any) Option {
 	return fx.Invoke(funcs...)
 }

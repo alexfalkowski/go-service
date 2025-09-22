@@ -6,7 +6,7 @@ import (
 	"github.com/linxGnu/mssqlx"
 )
 
-// WithWorldRedisConfig for test.
+// WithWorldPGConfig for test.
 func WithWorldPGConfig(config *pg.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.pg = config

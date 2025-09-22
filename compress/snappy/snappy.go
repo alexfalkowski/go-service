@@ -2,7 +2,7 @@ package snappy
 
 import "github.com/klauspost/compress/snappy"
 
-// NewNone for snappy.
+// NewCompressor for snappy.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }

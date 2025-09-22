@@ -103,7 +103,7 @@ func NewInsecureCredentials() credentials.TransportCredentials {
 	return insecure.NewCredentials()
 }
 
-// NewClient is an alias of credentials.NewTLS.
+// NewTLS is an alias of credentials.NewTLS.
 func NewTLS(c *tls.Config) credentials.TransportCredentials {
 	return credentials.NewTLS(c)
 }

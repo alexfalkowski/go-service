@@ -2,7 +2,7 @@ package s2
 
 import "github.com/klauspost/compress/s2"
 
-// NewNone for s2.
+// NewCompressor for s2.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }

@@ -21,7 +21,7 @@ type DSN struct {
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty"`
 }
 
-// GetPassword for SQL.
+// GetURL for SQL.
 func (d *DSN) GetURL(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(d.URL)
 }

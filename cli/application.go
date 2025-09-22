@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	// Application for cli.
+	// ApplicationOption for cli.
 	ApplicationOption interface {
 		apply(opts *applicationOpts)
 	}

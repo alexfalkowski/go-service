@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 )
 
-// NewSigner for ed25519.
+// NewVerifier for ed25519.
 func NewVerifier(decoder *pem.Decoder, cfg *Config) (*Verifier, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
-// .NewController for gRPC.
+// NewController for gRPC.
 func NewController(cfg *Config) (token.AccessController, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

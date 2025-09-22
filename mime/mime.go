@@ -19,10 +19,10 @@ const (
 	// ProtobufMediaType mime.
 	ProtobufMediaType = "application/protobuf"
 
-	// ProtobufMediaType mime.
+	// ProtobufJSONMediaType mime.
 	ProtobufJSONMediaType = "application/pbjson"
 
-	// ProtobufMediaType mime.
+	// ProtobufTextMediaType mime.
 	ProtobufTextMediaType = "application/pbtxt"
 
 	// TextMediaType mime.

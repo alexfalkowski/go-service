@@ -14,7 +14,7 @@ type Controller interface {
 	HasAccess(user, permission string) (bool, error)
 }
 
-// .NewController for access.
+// NewController for access.
 func NewController(cfg *Config) (Controller, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
