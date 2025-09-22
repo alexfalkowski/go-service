@@ -28,7 +28,7 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithSenderRoundTripper for rest.
+// WithClientRoundTripper for rest.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt

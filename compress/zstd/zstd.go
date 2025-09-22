@@ -2,7 +2,7 @@ package zstd
 
 import "github.com/klauspost/compress/zstd"
 
-// NewNone for zstd.
+// NewCompressor for zstd.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }

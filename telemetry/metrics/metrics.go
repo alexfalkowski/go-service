@@ -82,7 +82,7 @@ func (m *Meter) MustFloat64Histogram(name, description string) metric.Float64His
 	return h
 }
 
-// MustFloat64Histogram for metrics.
+// MustInt64ObservableGauge for metrics.
 func (m *Meter) MustInt64ObservableGauge(name, description string) metric.Int64ObservableGauge {
 	g, err := m.Int64ObservableGauge(name, metric.WithDescription(description))
 	runtime.Must(err)

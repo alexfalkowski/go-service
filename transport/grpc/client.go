@@ -103,7 +103,7 @@ func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOpt
 	})
 }
 
-// WithClientUnaryInterceptors for gRPC.
+// WithClientStreamInterceptors for gRPC.
 func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.stream = stream
@@ -131,7 +131,7 @@ func WithClientMetrics(meter *metrics.Meter) ClientOption {
 	})
 }
 
-// WithUserAgent for gRPC.
+// WithClientUserAgent for gRPC.
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent

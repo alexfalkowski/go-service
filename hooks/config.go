@@ -12,7 +12,7 @@ func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
-// GetCert for hooks.
+// GetSecret for hooks.
 func (c *Config) GetSecret(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.Secret)
 }

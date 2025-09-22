@@ -57,7 +57,7 @@ func RestRequestNoContent(_ context.Context, _ *Request) (*Response, error) {
 	return nil, nil
 }
 
-// RestNoContent for test.
+// RestContent for test.
 func RestContent(ctx context.Context) (*Response, error) {
 	req := meta.Request(ctx)
 	_ = meta.Response(ctx)

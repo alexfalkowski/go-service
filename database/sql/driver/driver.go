@@ -33,7 +33,7 @@ func Register(name string, driver Driver) (err error) {
 
 	sql.Register(name, driver)
 
-	return
+	return err
 }
 
 // NewDriver creates a new driver with telemetry.

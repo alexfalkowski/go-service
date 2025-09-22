@@ -30,7 +30,7 @@ type Server struct {
 	*limiter.Limiter
 }
 
-// Handler for limiter.
+// NewHandler for limiter.
 func NewHandler(limiter *Server) *Handler {
 	return &Handler{limiter: limiter}
 }

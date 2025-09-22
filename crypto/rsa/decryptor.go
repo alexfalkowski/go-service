@@ -22,7 +22,7 @@ func NewDecryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) 
 	return &Decryptor{generator: generator, privateKey: pri}, nil
 }
 
-// Cipher for rsa.
+// Decryptor for rsa.
 type Decryptor struct {
 	generator  *rand.Generator
 	privateKey *rsa.PrivateKey

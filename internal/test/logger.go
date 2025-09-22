@@ -22,7 +22,7 @@ func WithWorldLogger(logger *logger.Logger) WorldOption {
 	})
 }
 
-// WithWorldLogger for test.
+// WithWorldLoggerConfig for test.
 func WithWorldLoggerConfig(config string) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.loggerConfig = config

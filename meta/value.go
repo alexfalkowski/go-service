@@ -15,22 +15,22 @@ const (
 	redacted
 )
 
-// NewIgnored for meta.
+// Ignored for meta.
 func Ignored(value string) Value {
 	return Value{kind: ignored, value: value}
 }
 
-// NewRedacted for meta.
+// Redacted for meta.
 func Redacted(value string) Value {
 	return Value{kind: redacted, value: value}
 }
 
-// NewBlank for meta.
+// Blank for meta.
 func Blank() Value {
 	return Value{kind: blank, value: ""}
 }
 
-// NewString for meta.
+// String for meta.
 func String(value string) Value {
 	return Value{kind: normal, value: value}
 }

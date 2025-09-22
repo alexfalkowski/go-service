@@ -30,10 +30,10 @@ const (
 	// IPAddrKey for meta.
 	IPAddrKey = "ipAddr"
 
-	// Authorization for meta.
+	// AuthorizationKey for meta.
 	AuthorizationKey = "authorization"
 
-	// GeoLocation for meta.
+	// GeolocationKey for meta.
 	GeolocationKey = "geoLocation"
 )
 

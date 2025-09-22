@@ -95,7 +95,7 @@ func WithWorldServerLimiter(config *limiter.Config) WorldOption {
 	})
 }
 
-// WithWorldLimiter for test.
+// WithWorldCompression for test.
 func WithWorldCompression() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.compression = true
