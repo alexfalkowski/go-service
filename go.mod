@@ -9,7 +9,7 @@ require (
 	github.com/alexfalkowski/go-health/v2 v2.4.0
 	github.com/arl/statsviz v0.7.1
 	github.com/avfs/avfs v0.35.0
-	github.com/beevik/ntp v1.4.3
+	github.com/beevik/ntp v1.5.0
 	github.com/beevik/nts v0.2.1
 	github.com/casbin/casbin/v2 v2.127.0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
