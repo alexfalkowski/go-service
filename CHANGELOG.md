@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.165.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.165.0) - 2025-10-04
+
+- [`81f2876`](https://github.com/alexfalkowski/go-service/commit/81f28763d5cf2329594e141e33c93ce06c609915) feat(deps): bump github.com/beevik/ntp from 1.4.3 to 1.5.0 (#1904)
+- [`3637d24`](https://github.com/alexfalkowski/go-service/commit/3637d2490bbd8b4b2a30b22cfe6c9771614228b7) build(ci): use blobless (#1903)
+- [`d3b7dd9`](https://github.com/alexfalkowski/go-service/commit/d3b7dd9a2b81812b031f695ee072f50263b68c80) build(deps): bump bin from `d437cb4` to `7794421` (#1902)
+
 ## [v2.164.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.164.0) - 2025-10-02
 
 - [`19eedd5`](https://github.com/alexfalkowski/go-service/commit/19eedd5ef7819467c58e6893077dbca373846de1) feat(deps): bump google.golang.org/protobuf from 1.36.9 to 1.36.10 (#1901)
