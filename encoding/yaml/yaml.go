@@ -3,7 +3,7 @@ package yaml
 import (
 	"io"
 
-	yaml "go.yaml.in/yaml/v3"
+	yaml "go.yaml.in/yaml/v4"
 )
 
 // NewEncoder for yaml.
