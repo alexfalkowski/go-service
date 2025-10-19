@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.172.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.172.0) - 2025-10-19
+
+- [`fafc8fa`](https://github.com/alexfalkowski/go-service/commit/fafc8fad4d0d628f9e18de107076e8d60aa316ec) feat(deps): bump github.com/redis/go-redis/v9 from 9.14.0 to 9.14.1 (#1921)
+- [`50ad3b8`](https://github.com/alexfalkowski/go-service/commit/50ad3b8a3c89f91215b08a35c5c8e7107ae6e299) build(deps): bump bin from `09a61a1` to `5563606` (#1920)
+- [`23a724b`](https://github.com/alexfalkowski/go-service/commit/23a724bcb49cbd8c06d9ce68059dd69ba6e550ca) build(ci): use latest published images (#1919)
+- [`4e67b9e`](https://github.com/alexfalkowski/go-service/commit/4e67b9ef128487cf411af524d00deacbc6ada020) build(ci): use latest published images (#1916)
+
 ## [v2.171.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.171.0) - 2025-10-10
 
 - [`a9d3b07`](https://github.com/alexfalkowski/go-service/commit/a9d3b070f4a76a3abd7c7a5f046942b06a0b0bf9) feat(deps): bump github.com/casbin/casbin/v2 from 2.127.0 to 2.128.0 (#1914)
