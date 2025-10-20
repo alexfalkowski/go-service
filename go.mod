@@ -27,7 +27,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/klauspost/compress v1.18.0
+	github.com/klauspost/compress v1.18.1
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/lmittmann/tint v1.1.2
 	github.com/matoous/go-nanoid v1.5.1
