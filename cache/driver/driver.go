@@ -9,6 +9,7 @@ import (
 	"github.com/faabiosr/cachego/redis"
 	"github.com/faabiosr/cachego/sync"
 	client "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9/maintnotifications"
 )
 
 // ErrNotFound for driver.
@@ -30,6 +31,10 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 		opts, err := client.ParseURL(bytes.String(data))
 		if err != nil {
 			return nil, err
+		}
+
+		opts.MaintNotificationsConfig = &maintnotifications.Config{
+			Mode: maintnotifications.ModeDisabled,
 		}
 
 		return redis.New(client.NewClient(opts)), nil
