@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.176.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.176.0) - 2025-10-29
+
+- [`aceeefa`](https://github.com/alexfalkowski/go-service/commit/aceeefaee21381f641bdda31ee8caef7a0491da8) feat(strings): add space and empty (#1927)
+- [`b5d2d3e`](https://github.com/alexfalkowski/go-service/commit/b5d2d3e8e0bcc95412c798c9fec2001ffeaa434a) build(ci): use latest published images (#1926)
+
 ## [v2.175.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.175.0) - 2025-10-23
 
 - [`cb9b906`](https://github.com/alexfalkowski/go-service/commit/cb9b9061e0cb068c72cdc0e14b38bf355b7f31a2) feat(deps): bump github.com/KimMachineGun/automemlimit from 0.7.4 to 0.7.5 (#1925)
