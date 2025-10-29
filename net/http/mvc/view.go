@@ -62,14 +62,14 @@ func NewViewPair(name string) (*View, *View) {
 
 // NewFullView to render.
 func NewFullView(name string) *View {
-	template := template.Must(template.New("").Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
+	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
 
 	return &View{name: layout.FullName(), template: template}
 }
 
 // NewPartialView to render.
 func NewPartialView(name string) *View {
-	template := template.Must(template.New("").Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
+	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
 
 	return &View{name: layout.PartialName(), template: template}
 }
@@ -84,7 +84,7 @@ type View struct {
 func (v *View) Render(ctx context.Context, model any) {
 	res := hm.Response(ctx)
 	template := &Template{
-		Meta:  meta.Strings(ctx, ""),
+		Meta:  meta.Strings(ctx, strings.Empty),
 		Model: model,
 	}
 

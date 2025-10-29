@@ -28,12 +28,12 @@ var (
 
 // ParseAuthorization header into type and credentials or error.
 func ParseAuthorization(header string) (string, string, error) {
-	key, value, ok := strings.Cut(header, " ")
+	key, value, ok := strings.Cut(header, strings.Space)
 	if !ok {
-		return "", "", ErrInvalidAuthorization
+		return strings.Empty, strings.Empty, ErrInvalidAuthorization
 	}
 	if !containsAuthorization(key) {
-		return "", "", ErrNotSupportedAuthorization
+		return strings.Empty, strings.Empty, ErrNotSupportedAuthorization
 	}
 
 	return key, value, nil

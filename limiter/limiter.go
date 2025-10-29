@@ -69,7 +69,7 @@ type Limiter struct {
 func (l *Limiter) Take(ctx context.Context) (bool, string, error) {
 	tokens, remaining, _, ok, err := l.store.Take(ctx, l.key(ctx).Value())
 	if err != nil {
-		return false, "", err
+		return false, strings.Empty, err
 	}
 
 	header := strings.Concat(

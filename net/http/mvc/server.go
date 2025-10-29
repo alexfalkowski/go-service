@@ -14,27 +14,27 @@ import (
 
 // Delete method for mvc.
 func Delete[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodDelete, pattern), controller)
+	return Route(strings.Join(strings.Space, http.MethodDelete, pattern), controller)
 }
 
 // Get method for mvc.
 func Get[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodGet, pattern), controller)
+	return Route(strings.Join(strings.Space, http.MethodGet, pattern), controller)
 }
 
 // Post method for mvc.
 func Post[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPost, pattern), controller)
+	return Route(strings.Join(strings.Space, http.MethodPost, pattern), controller)
 }
 
 // Put method for mvc.
 func Put[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPut, pattern), controller)
+	return Route(strings.Join(strings.Space, http.MethodPut, pattern), controller)
 }
 
 // Patch method for mvc.
 func Patch[Model any](pattern string, controller Controller[Model]) bool {
-	return Route(strings.Join(" ", http.MethodPatch, pattern), controller)
+	return Route(strings.Join(strings.Space, http.MethodPatch, pattern), controller)
 }
 
 // Route the path with controller for mvc.
@@ -80,7 +80,7 @@ func StaticFile(pattern, name string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
+	mux.HandleFunc(strings.Join(strings.Space, http.MethodGet, pattern), handler)
 	return true
 }
 
@@ -100,7 +100,7 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(" ", http.MethodGet, pattern), handler)
+	mux.HandleFunc(strings.Join(strings.Space, http.MethodGet, pattern), handler)
 	return true
 }
 

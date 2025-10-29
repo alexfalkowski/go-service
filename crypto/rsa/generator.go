@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewGenerator for rsa.
@@ -23,7 +24,7 @@ type Generator struct {
 func (g *Generator) Generate() (string, string, error) {
 	public, err := rsa.GenerateKey(g.generator, 4096)
 	if err != nil {
-		return "", "", err
+		return strings.Empty, strings.Empty, err
 	}
 
 	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&public.PublicKey)})

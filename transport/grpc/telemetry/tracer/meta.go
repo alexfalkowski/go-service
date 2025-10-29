@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 )
@@ -20,7 +21,7 @@ type Carrier struct {
 func (s *Carrier) Get(key string) string {
 	values := s.meta.Get(key)
 	if len(values) == 0 {
-		return ""
+		return strings.Empty
 	}
 
 	return values[0]

@@ -30,7 +30,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	}
 
 	ctx := extract(req.Context(), req)
-	op := operationName(strings.Join(" ", method, p))
+	op := operationName(strings.Join(strings.Space, method, p))
 
 	ctx, span := h.tracer.StartServer(ctx, op,
 		attributes.HTTPRoute(p),
@@ -61,7 +61,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	ctx := req.Context()
-	op := operationName(strings.Join(" ", method, req.URL.Redacted()))
+	op := operationName(strings.Join(strings.Space, method, req.URL.Redacted()))
 
 	ctx, span := r.tracer.StartClient(ctx, op,
 		attributes.HTTPRoute(p),

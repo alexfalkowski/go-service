@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+const (
+	// Empty for strings.
+	Empty = ""
+
+	// Space for strings.
+	Space = " "
+)
+
 // Contains is an alias for strings.Contains.
 func Contains(s, substr string) bool {
 	return strings.Contains(s, substr)
@@ -51,7 +59,7 @@ func IsAnyEmpty(ss ...string) bool {
 }
 
 // Join strings by a separator.
-// This allows to do strings.Join(" ", "1", "2").
+// This allows to do strings.Join(strings.Space, "1", "2").
 func Join(sep string, ss ...string) string {
 	return strings.Join(ss, sep)
 }

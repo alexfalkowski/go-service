@@ -122,7 +122,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 			return status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
 		}
 
-		auth := meta.Ignored(strings.Join(" ", header.BearerAuthorization, bytes.String(token)))
+		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))
 
 		md := meta.ExtractOutgoing(ctx)
 		md.Append("authorization", auth.Value())
@@ -148,7 +148,7 @@ func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClie
 			return nil, status.Error(codes.Unauthenticated, header.ErrInvalidAuthorization.Error())
 		}
 
-		auth := meta.Ignored(strings.Join(" ", header.BearerAuthorization, bytes.String(token)))
+		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))
 
 		md := meta.ExtractOutgoing(ctx)
 		md.Append("authorization", auth.Value())

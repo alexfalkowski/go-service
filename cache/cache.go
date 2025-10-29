@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"google.golang.org/protobuf/proto"
@@ -131,7 +132,7 @@ func (c *Cache) encode(value any) (string, error) {
 	defer c.pool.Put(buf)
 
 	if err := c.encoder(value).Encode(buf, value); err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	data := buf.Bytes()
