@@ -203,14 +203,12 @@ func authorization(md metadata.MD) string {
 	if a := md.Get("authorization"); len(a) > 0 {
 		return a[0]
 	}
-
-	return ""
+	return strings.Empty
 }
 
 func extractGeolocation(md metadata.MD) meta.Value {
 	if id := md.Get("geolocation"); len(id) > 0 {
 		return meta.String(id[0])
 	}
-
 	return meta.Blank()
 }

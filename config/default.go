@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewDefault for config.
@@ -54,5 +55,5 @@ func (c *Default) find() (string, io.ReadCloser, error) {
 		}
 	}
 
-	return "", nil, ErrLocationMissing
+	return strings.Empty, nil, ErrLocationMissing
 }

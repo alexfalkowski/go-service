@@ -34,7 +34,7 @@ type Token struct {
 func (t *Token) Generate() (string, error) {
 	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	signature, err := sig.Sign(strings.Bytes(t.cfg.Key.Name))
@@ -46,22 +46,22 @@ func (t *Token) Generate() (string, error) {
 func (t *Token) Verify(token string) (string, error) {
 	name, key, ok := strings.Cut(token, "-")
 	if !ok {
-		return "", errors.ErrInvalidMatch
+		return strings.Empty, errors.ErrInvalidMatch
 	}
 
 	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
-		return "", errors.ErrInvalidMatch
+		return strings.Empty, errors.ErrInvalidMatch
 	}
 
 	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	sig, err := base64.Decode(key)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	return name, verifier.Verify(sig, strings.Bytes(name))

@@ -4,6 +4,7 @@ import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -38,7 +39,7 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 
 	s, err := paseto.NewV4AsymmetricSecretKeyFromBytes(t.signer.PrivateKey)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	return token.V4Sign(s, nil), nil
@@ -54,12 +55,12 @@ func (t *Token) Verify(token, aud string) (string, error) {
 
 	s, err := paseto.NewV4AsymmetricPublicKeyFromBytes(t.verifier.PublicKey)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	to, err := parser.ParseV4Public(s, token, nil)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	return to.GetSubject()

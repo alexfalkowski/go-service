@@ -27,7 +27,7 @@ func Redacted(value string) Value {
 
 // Blank for meta.
 func Blank() Value {
-	return Value{kind: blank, value: ""}
+	return Value{kind: blank, value: strings.Empty}
 }
 
 // String for meta.
@@ -79,7 +79,7 @@ func (v Value) String() string {
 	case redacted:
 		return strings.Repeat("*", len(v.value))
 	case ignored:
-		return ""
+		return strings.Empty
 	default:
 		return v.value
 	}

@@ -58,6 +58,6 @@ func (t *Token) Verify(token []byte, aud string) (string, error) {
 	case "ssh":
 		return t.ssh.Verify(bytes.String(token))
 	default:
-		return "", nil
+		return strings.Empty, nil
 	}
 }

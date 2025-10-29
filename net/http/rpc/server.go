@@ -8,5 +8,5 @@ import (
 
 // Route for rpc.
 func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
-	mux.HandleFunc(strings.Join(" ", http.MethodPost, pattern), content.NewRequestHandler(cont, handler))
+	mux.HandleFunc(strings.Join(strings.Space, http.MethodPost, pattern), content.NewRequestHandler(cont, handler))
 }

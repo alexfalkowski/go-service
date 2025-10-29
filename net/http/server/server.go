@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/errors"
 	"github.com/alexfalkowski/go-service/v2/server"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
@@ -65,7 +66,7 @@ func (s *Server) serve() error {
 	if s.tls != nil {
 		s.server.TLSConfig = s.tls
 
-		return s.server.ServeTLS(s.listener, "", "")
+		return s.server.ServeTLS(s.listener, strings.Empty, strings.Empty)
 	}
 
 	return s.server.Serve(s.listener)

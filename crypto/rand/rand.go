@@ -52,7 +52,7 @@ func (g *Generator) generate(size int, values string) (string, error) {
 	for i := range size {
 		num, err := rand.Int(g.reader, big.NewInt(length))
 		if err != nil {
-			return "", err
+			return strings.Empty, err
 		}
 
 		data[i] = values[num.Int64()]

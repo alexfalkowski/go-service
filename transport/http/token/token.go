@@ -117,7 +117,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	req.Header.Add(
 		"Authorization",
-		strings.Join(" ", header.BearerAuthorization, bytes.String(token)),
+		strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)),
 	)
 	return r.RoundTripper.RoundTrip(req)
 }

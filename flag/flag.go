@@ -1,6 +1,10 @@
 package flag
 
-import "flag"
+import (
+	"flag"
+
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 // NewFlagSet creates a new flag set with the given name.
 func NewFlagSet(name string) *FlagSet {
@@ -24,5 +28,5 @@ func (f *FlagSet) GetInput() string {
 	if f.input != nil {
 		return *f.input
 	}
-	return ""
+	return strings.Empty
 }

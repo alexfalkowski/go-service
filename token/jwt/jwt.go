@@ -3,6 +3,7 @@ package jwt
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/golang-jwt/jwt/v4"
@@ -50,15 +51,15 @@ func (t *Token) Verify(token, aud string) (string, error) {
 
 	_, err := jwt.ParseWithClaims(token, claims, t.validate)
 	if err != nil {
-		return "", err
+		return strings.Empty, err
 	}
 
 	if !claims.VerifyIssuer(t.cfg.Issuer, true) {
-		return "", errors.ErrInvalidIssuer
+		return strings.Empty, errors.ErrInvalidIssuer
 	}
 
 	if !claims.VerifyAudience(aud, true) {
-		return "", errors.ErrInvalidAudience
+		return strings.Empty, errors.ErrInvalidAudience
 	}
 
 	return claims.Subject, nil

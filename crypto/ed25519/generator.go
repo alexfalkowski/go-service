@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewGenerator for ed25519.
@@ -24,17 +25,17 @@ type Generator struct {
 func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.generator)
 	if err != nil {
-		return "", "", g.prefix(err)
+		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
 	mpu, err := x509.MarshalPKIXPublicKey(public)
 	if err != nil {
-		return "", "", g.prefix(err)
+		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
 	mpr, err := x509.MarshalPKCS8PrivateKey(private)
 	if err != nil {
-		return "", "", g.prefix(err)
+		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
 	pub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: mpu})

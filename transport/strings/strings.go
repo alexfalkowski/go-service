@@ -14,6 +14,14 @@ var observables = []string{
 	"metrics",
 }
 
+const (
+	// Empty is an alias for strings.Empty.
+	Empty = strings.Empty
+
+	// Space is an alias for strings.Space.
+	Space = strings.Space
+)
+
 // Bytes is an alias for strings.Bytes.
 func Bytes(s string) []byte {
 	return strings.Bytes(s)
