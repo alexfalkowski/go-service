@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -44,7 +45,7 @@ func TestInvalidFileConfig(t *testing.T) {
 		test.FilePath("configs/missing.yml"),
 		test.FilePath("configs/script.sh"),
 		test.FilePath("config.go"),
-		"",
+		strings.Empty,
 		"env:BOB",
 	}
 
@@ -123,7 +124,7 @@ func TestValidCommonConfig(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		set := flag.NewFlagSet("test")
-		set.AddInput("")
+		set.AddInput(strings.Empty)
 
 		decoder := test.NewDecoder(set)
 
@@ -144,7 +145,7 @@ func TestValidCommonConfig(t *testing.T) {
 func TestInvalidCommonConfig(t *testing.T) {
 	Convey("Given I do not have a configuration file", t, func() {
 		set := flag.NewFlagSet("test")
-		set.AddInput("")
+		set.AddInput(strings.Empty)
 
 		decoder := test.NewDecoder(set)
 

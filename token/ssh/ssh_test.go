@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -52,7 +53,7 @@ func TestInvalid(t *testing.T) {
 		})
 	})
 
-	for _, tkn := range []string{"", "none-", "test-", "test-bob"} {
+	for _, tkn := range []string{strings.Empty, "none-", "test-", "test-bob"} {
 		token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 
 		Convey("When I verify a token", t, func() {

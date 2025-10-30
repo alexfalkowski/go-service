@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -109,7 +110,7 @@ func TestInvalid(t *testing.T) {
 
 		Convey("When I verify a token", func() {
 			token := paseto.NewToken(cfg.Paseto, signer, &ed25519.Verifier{}, gen)
-			_, err := token.Verify("", "aud")
+			_, err := token.Verify(strings.Empty, "aud")
 
 			Convey("Then I should have an error", func() {
 				So(err, ShouldBeError)

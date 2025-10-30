@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -171,7 +172,7 @@ func TestMissingAuthUnary(t *testing.T) {
 
 func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")), test.WithWorldHTTP())
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -226,7 +227,10 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 func TestTokenErrorAuthUnary(t *testing.T) {
 	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")), test.WithWorldHTTP())
+		world := test.NewWorld(t,
+			test.WithWorldTelemetry("otlp"),
+			test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
 
@@ -254,7 +258,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
-			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 			test.WithWorldHTTP(),
 		)
 		world.Register()

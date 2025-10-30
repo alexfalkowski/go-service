@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -51,7 +52,7 @@ func (*ErrCache) Delete(_ string) error {
 }
 
 func (*ErrCache) Fetch(_ string) (string, error) {
-	return "", ErrFailed
+	return strings.Empty, ErrFailed
 }
 
 func (*ErrCache) FetchMulti(_ []string) map[string]string {

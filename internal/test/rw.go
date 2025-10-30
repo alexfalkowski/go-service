@@ -1,6 +1,9 @@
 package test
 
-import "github.com/alexfalkowski/go-service/v2/os"
+import (
+	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
+)
 
 // BadReaderWriter for test.
 type BadReaderWriter struct{}
@@ -22,5 +25,5 @@ func (rw *BadReaderWriter) Write(_ []byte, _ os.FileMode) error {
 
 // Kind for test.
 func (rw *BadReaderWriter) Kind() string {
-	return ""
+	return strings.Empty
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -58,11 +59,11 @@ func TestVerify(t *testing.T) {
 		tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
 		Convey("Given I generate a token", t, func() {
-			gen, err := tkn.Generate("", "")
+			gen, err := tkn.Generate(strings.Empty, strings.Empty)
 			So(err, ShouldBeNil)
 
 			Convey("When I try to verify", func() {
-				_, err := tkn.Verify(gen, "")
+				_, err := tkn.Verify(gen, strings.Empty)
 
 				Convey("Then I should have no error", func() {
 					So(err, ShouldBeNil)

@@ -260,7 +260,7 @@ func (w *World) ResponseWithBody(ctx context.Context, url, method string, header
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, "", err
+		return nil, strings.Empty, err
 	}
 
 	data, err := io.ReadAll(res.Body)

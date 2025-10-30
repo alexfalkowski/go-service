@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -46,7 +47,7 @@ func TestEmptyAuthUnary(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
-			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+			test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")),
 			test.WithWorldGRPC(),
 		)
 		world.Register()
@@ -290,7 +291,7 @@ func TestEmptyAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
-			test.WithWorldToken(test.NewGenerator("", nil), test.NewVerifier("test")),
+			test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")),
 			test.WithWorldGRPC(),
 		)
 		world.Register()
@@ -350,7 +351,7 @@ func TestTokenErrorAuthStream(t *testing.T) {
 	Convey("Given I have a gRPC server", t, func() {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"),
-			test.WithWorldToken(test.NewGenerator("", test.ErrGenerate), test.NewVerifier("test")),
+			test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 			test.WithWorldGRPC(),
 		)
 		world.Register()
