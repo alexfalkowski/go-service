@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // RegisterParams for health.
@@ -42,6 +41,6 @@ func resister(name env.Name, pattern string, server *health.Server) {
 			return nil, status.ServiceUnavailableError(err)
 		}
 
-		return &Response{Status: "SERVING", Meta: meta.CamelStrings(ctx, strings.Empty)}, nil
+		return &Response{Status: "SERVING", Meta: meta.CamelStrings(ctx, meta.NoPrefix)}, nil
 	})
 }

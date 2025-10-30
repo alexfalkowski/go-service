@@ -2,10 +2,16 @@ package meta
 
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/iancoleman/strcase"
 )
 
-const meta = context.Key("meta")
+const (
+	// NoPrefix for strings.
+	NoPrefix = strings.Empty
+
+	meta = context.Key("meta")
+)
 
 // WithAttribute to meta.
 func WithAttribute(ctx context.Context, key string, value Value) context.Context {

@@ -11,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // Request for test.
@@ -37,7 +36,7 @@ func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	name := cmp.Or(req.URL.Query().Get("name"), r.Name)
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, strings.Empty), Greeting: s}, nil
+	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
 // SuccessProtobufSayHello for test.
