@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // WithWorldRest for test.
@@ -65,7 +64,7 @@ func RestContent(ctx context.Context) (*Response, error) {
 	name := cmp.Or(req.URL.Query().Get("name"), "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, strings.Empty), Greeting: s}, nil
+	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
 // RestRequestContent for test.
@@ -73,7 +72,7 @@ func RestRequestContent(ctx context.Context, req *Request) (*Response, error) {
 	name := cmp.Or(req.Name, "Bob")
 	s := "Hello " + name
 
-	return &Response{Meta: meta.CamelStrings(ctx, strings.Empty), Greeting: s}, nil
+	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
 // RestRequestProtobuf for test.

@@ -13,6 +13,9 @@ const (
 	encoderKey  = context.Key("encoder")
 )
 
+// NoPrefix is just an alias for meta.NoPrefix.
+const NoPrefix = meta.NoPrefix
+
 // Map is just an alias for meta.Map.
 type Map = meta.Map
 

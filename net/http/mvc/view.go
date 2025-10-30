@@ -84,7 +84,7 @@ type View struct {
 func (v *View) Render(ctx context.Context, model any) {
 	res := hm.Response(ctx)
 	template := &Template{
-		Meta:  meta.Strings(ctx, strings.Empty),
+		Meta:  meta.Strings(ctx, meta.NoPrefix),
 		Model: model,
 	}
 
