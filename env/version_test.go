@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -46,7 +47,7 @@ func TestVersion(t *testing.T) {
 	})
 
 	Convey("Given I have an empty version", t, func() {
-		v := env.Version("")
+		v := env.Version(strings.Empty)
 
 		Convey("When I get the string representation", func() {
 			s := v.String()

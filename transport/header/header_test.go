@@ -3,6 +3,7 @@ package header_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -25,7 +26,7 @@ func TestValidParseAuthorization(t *testing.T) {
 
 func TestMissingParseAuthorization(t *testing.T) {
 	Convey("Given I have a missing header", t, func() {
-		h := ""
+		h := strings.Empty
 
 		Convey("When I parse authorization", func() {
 			_, _, err := header.ParseAuthorization(h)

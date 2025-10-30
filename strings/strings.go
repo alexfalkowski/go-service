@@ -66,7 +66,7 @@ func Join(sep string, ss ...string) string {
 
 // Concat will take all the strings and join them with an empty string.
 func Concat(ss ...string) string {
-	return Join("", ss...)
+	return Join(Empty, ss...)
 }
 
 // CutColon will split by : and give before and after.

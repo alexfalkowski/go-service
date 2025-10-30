@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -22,7 +23,7 @@ func TestApplicationRun(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("")
+					cmd.AddInput(strings.Empty)
 				},
 			)
 
@@ -48,7 +49,7 @@ func TestApplicationExitOnRun(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("")
+					cmd.AddInput(strings.Empty)
 				},
 				cli.WithApplicationExit(exit),
 			)
@@ -71,7 +72,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput("")
+				cmd.AddInput(strings.Empty)
 			},
 		)
 
@@ -88,7 +89,7 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", test.Options()...)
-				cmd.AddInput("")
+				cmd.AddInput(strings.Empty)
 			},
 		)
 
@@ -110,7 +111,7 @@ func TestApplicationRunWithInvalidParams(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("")
+					cmd.AddInput(strings.Empty)
 				},
 			)
 
@@ -137,7 +138,7 @@ func TestApplicationInvalid(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput("")
+					cmd.AddInput(strings.Empty)
 				},
 			)
 
@@ -160,7 +161,7 @@ func TestApplicationDisabled(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput("")
+				cmd.AddInput(strings.Empty)
 			},
 		)
 
@@ -180,7 +181,7 @@ func TestApplicationClient(t *testing.T) {
 		app := cli.NewApplication(
 			func(c cli.Commander) {
 				cmd := c.AddClient("client", "Start the client.", opts...)
-				cmd.AddInput("")
+				cmd.AddInput(strings.Empty)
 			},
 		)
 
@@ -205,7 +206,7 @@ func TestApplicationInvalidClient(t *testing.T) {
 			app := cli.NewApplication(
 				func(c cli.Commander) {
 					cmd := c.AddClient("client", "Start the client.", test.Options()...)
-					cmd.AddInput("")
+					cmd.AddInput(strings.Empty)
 				},
 			)
 

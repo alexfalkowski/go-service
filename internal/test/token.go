@@ -41,7 +41,7 @@ type Verifier struct {
 
 func (v *Verifier) Verify(token []byte, aud string) (string, error) {
 	if bytes.String(token) != v.token {
-		return "", ErrInvalid
+		return strings.Empty, ErrInvalid
 	}
 
 	return UserID.String(), nil

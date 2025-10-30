@@ -33,7 +33,7 @@ func (g *Generator) Generate() (string, string, error) {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
-	mpr, err := ssh.MarshalPrivateKey(private, "")
+	mpr, err := ssh.MarshalPrivateKey(private, strings.Empty)
 	if err != nil {
 		return strings.Empty, strings.Empty, g.prefix(err)
 	}

@@ -19,8 +19,8 @@ import (
 //nolint:funlen
 func TestValidCache(t *testing.T) {
 	configs := []*config.Config{
-		test.NewCacheConfig("redis", "snappy", "", "redis"),
-		test.NewCacheConfig("sync", "", "", "redis"),
+		test.NewCacheConfig("redis", "snappy", strings.Empty, "redis"),
+		test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
 	}
 
 	for _, config := range configs {
