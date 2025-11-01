@@ -6,12 +6,12 @@ jobs:
       - image: alexfalkowski/go:2.72
         environment:
           GOEXPERIMENT: jsonv2
-      - image: postgres:17-bullseye
+      - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
           POSTGRES_USER: test
           POSTGRES_PASSWORD: test
-      - image: redis:8
+      - image: valkey/valkey:9
       - image: alexfalkowski/status:latest
         command: server -i env:CONFIG
         environment:
