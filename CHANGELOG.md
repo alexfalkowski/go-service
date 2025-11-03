@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.182.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.182.0) - 2025-11-03
+
+- [`bdc91c8`](https://github.com/alexfalkowski/go-service/commit/bdc91c8ee74e75dd52f8f6098cad5c078e3d99f6) feat(deps): bump github.com/casbin/casbin/v2 from 2.129.0 to 2.131.0 (#1937)
+- [`2d05bf4`](https://github.com/alexfalkowski/go-service/commit/2d05bf4303c88798b2b79bcbf568f5d72f1756a3) build(ci): use latest published images (#1936)
+- [`6e14aad`](https://github.com/alexfalkowski/go-service/commit/6e14aad3ce45328cbd2e26c1b0228f4e21cd27d4) build(ci): add .source-key to ignore (#1935)
+- [`da2e26f`](https://github.com/alexfalkowski/go-service/commit/da2e26f94681601d2199d2997cf485defabc8271) build(ci): use postgres:18-trixie (#1934)
+
 ## [v2.181.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.181.0) - 2025-11-01
 
 - [`baae15c`](https://github.com/alexfalkowski/go-service/commit/baae15c68c321fed71351851ec113eb2e5d649b5) feat(deps): bump github.com/casbin/casbin/v2 from 2.128.0 to 2.129.0 (#1933)
