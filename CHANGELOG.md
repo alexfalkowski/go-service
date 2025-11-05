@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.184.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.184.0) - 2025-11-05
+
+- [`dbb9eae`](https://github.com/alexfalkowski/go-service/commit/dbb9eaed03b57baa63bee50f7b0bb426adb41a70) feat(deps): bump github.com/grpc-ecosystem/go-grpc-middleware/v2 from 2.3.2 to 2.3.3 (#1940)
+- [`9ff3246`](https://github.com/alexfalkowski/go-service/commit/9ff32464c2b0418925bdcb3629c532989a4a405c) build(ci): use greenteagc (#1941)
+
 ## [v2.183.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.183.0) - 2025-11-05
 
 - [`f7393ca`](https://github.com/alexfalkowski/go-service/commit/f7393ca961b6a9125570559ce5102e525b09b176) feat(deps): bump github.com/casbin/casbin/v2 from 2.131.0 to 2.132.0 (#1939)
