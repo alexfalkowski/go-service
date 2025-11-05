@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: alexfalkowski/go:2.75
         environment:
-          GOEXPERIMENT: jsonv2
+          GOEXPERIMENT: greenteagc
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
