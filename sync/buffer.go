@@ -1,22 +1,28 @@
 package sync
 
-import "github.com/alexfalkowski/go-service/v2/bytes"
+import (
+	"sync"
+
+	"github.com/alexfalkowski/go-service/v2/bytes"
+)
 
 // NewBufferPool for sync.
 func NewBufferPool() *BufferPool {
-	pool := NewPool[bytes.Buffer]()
-
-	return &BufferPool{pool: pool}
+	return &BufferPool{pool: &sync.Pool{
+		New: func() any {
+			return &bytes.Buffer{}
+		},
+	}}
 }
 
 // BufferPool for sync.
 type BufferPool struct {
-	pool *Pool[bytes.Buffer]
+	pool *sync.Pool
 }
 
 // Get a new buffer.
 func (p *BufferPool) Get() *bytes.Buffer {
-	return p.pool.Get()
+	return p.pool.Get().(*bytes.Buffer)
 }
 
 // Put the buffer back.
