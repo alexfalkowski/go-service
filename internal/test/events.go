@@ -13,13 +13,13 @@ import (
 )
 
 // NewEvents for test.
-func NewEvents(mux *http.ServeMux, rt http.RoundTripper, id *id.UUID) (*events.Receiver, client.Client) {
+func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client) {
 	h, err := hooks.NewHook(FS, NewHook())
 	runtime.Must(err)
 
-	receiver := events.NewReceiver(mux, hh.NewWebhook(h, id))
+	receiver := events.NewReceiver(mux, hh.NewWebhook(h, generator))
 
-	sender, err := events.NewSender(hh.NewWebhook(h, id), events.WithSenderRoundTripper(rt))
+	sender, err := events.NewSender(hh.NewWebhook(h, generator), events.WithSenderRoundTripper(rt))
 	runtime.Must(err)
 
 	return receiver, sender

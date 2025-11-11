@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
@@ -271,7 +272,7 @@ func options(opts ...ClientOption) *clientOpts {
 		os.timeout = 30 * time.Second
 	}
 	if os.generator == nil {
-		os.generator = &id.UUID{}
+		os.generator = uuid.NewGenerator()
 	}
 
 	return os

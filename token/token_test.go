@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -17,7 +17,7 @@ func TestGenerate(t *testing.T) {
 		ec := test.NewEd25519()
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		gen := &id.UUID{}
+		gen := uuid.NewGenerator()
 		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
 		Convey("When I try to generate", t, func() {
@@ -36,7 +36,7 @@ func TestVerify(t *testing.T) {
 		ec := test.NewEd25519()
 		signer, _ := ed25519.NewSigner(test.PEM, ec)
 		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		gen := &id.UUID{}
+		gen := uuid.NewGenerator()
 		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
 		Convey("Given I generate a token", t, func() {

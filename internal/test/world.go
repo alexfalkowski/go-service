@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
-	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -144,7 +144,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
 	tracer := NewOTLPTracerConfig()
-	id := &id.UUID{}
+	generator := uuid.NewGenerator()
 	os := options(opts...)
 
 	logger := createLogger(lc, os)
@@ -160,7 +160,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Meter: meter, Mux: mux,
 		GRPCLimiter: NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
 		HTTPLimiter: NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
-		Verifier:    os.verifier, ID: id,
+		Verifier:    os.verifier, Generator: generator,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
 	server.Register()
@@ -176,7 +176,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	registerMVC(mux, logger.Logger)
 	registerRest(mux)
 
-	receiver, sender := NewEvents(mux, os.rt, id)
+	receiver, sender := NewEvents(mux, os.rt, generator)
 	cache := redisCache(lc, logger, meter, tracer)
 
 	return &World{

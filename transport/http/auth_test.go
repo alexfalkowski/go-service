@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
-	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -23,7 +23,7 @@ func TestTokenAuthUnary(t *testing.T) {
 			ec := test.NewEd25519()
 			signer, _ := ed25519.NewSigner(test.PEM, ec)
 			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-			gen := &id.UUID{}
+			gen := uuid.NewGenerator()
 			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
