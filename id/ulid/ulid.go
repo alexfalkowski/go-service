@@ -1,4 +1,4 @@
-package id
+package ulid
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
@@ -7,18 +7,18 @@ import (
 	"github.com/oklog/ulid"
 )
 
-// NewULID creates a new ULID generator.
-func NewULID(reader rand.Reader) *ULID {
-	return &ULID{reader: reader}
+// NewGenerator creates a new ULID generator.
+func NewGenerator(reader rand.Reader) *Generator {
+	return &Generator{reader: reader}
 }
 
-// ULID generator.
-type ULID struct {
+// Generator for ULID.
+type Generator struct {
 	reader rand.Reader
 }
 
 // Generate a ULID.
-func (k *ULID) Generate() string {
+func (k *Generator) Generate() string {
 	id, err := ulid.New(ulid.Timestamp(time.Now()), k.reader)
 	runtime.Must(err)
 	return id.String()

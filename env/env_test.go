@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/env"
-	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -60,7 +60,7 @@ func TestUserAgent(t *testing.T) {
 }
 
 func TestID(t *testing.T) {
-	generator := &id.UUID{}
+	generator := uuid.NewGenerator()
 
 	Convey("When I get a id", t, func() {
 		id := env.NewID(generator)

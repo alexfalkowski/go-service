@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/mime"
@@ -74,7 +74,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Config:     cfg.HTTP,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
-			ID:         &id.UUID{},
+			ID:         uuid.NewGenerator(),
 		})
 		runtime.Must(err)
 
@@ -115,7 +115,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Logger:     logger,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
-			ID:         &id.UUID{},
+			ID:         uuid.NewGenerator(),
 		})
 		runtime.Must(err)
 
@@ -159,7 +159,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Tracer:     tracer,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
-			ID:         &id.UUID{},
+			ID:         uuid.NewGenerator(),
 		})
 		runtime.Must(err)
 

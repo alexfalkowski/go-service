@@ -36,7 +36,7 @@ type Server struct {
 	GRPCLimiter     *gl.Server
 	HTTPLimiter     *hl.Server
 	Logger          *logger.Logger
-	ID              id.Generator
+	Generator       id.Generator
 	RegisterHTTP    bool
 	RegisterGRPC    bool
 	RegisterDebug   bool
@@ -54,7 +54,7 @@ func (s *Server) Register() {
 			Config: s.TransportConfig.HTTP, Logger: s.Logger,
 			Tracer: tracer, Meter: s.Meter, Limiter: s.HTTPLimiter,
 			Handlers: []negroni.Handler{&EmptyHandler{}},
-			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
+			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			FS: FS,
 		}
@@ -70,7 +70,7 @@ func (s *Server) Register() {
 		params := grpc.ServerParams{
 			Shutdowner: sh, Config: s.TransportConfig.GRPC,
 			Logger: s.Logger, Tracer: tracer, Meter: s.Meter,
-			Verifier: s.Verifier, ID: s.ID, UserID: UserID,
+			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			FS: FS, Limiter: s.GRPCLimiter,
 		}
