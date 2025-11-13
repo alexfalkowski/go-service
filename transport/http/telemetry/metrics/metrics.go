@@ -15,7 +15,7 @@ import (
 
 const (
 	nameAttribute       = attributes.Key("name")
-	pathAttribute       = attributes.Key("path")
+	serviceAttribute    = attributes.Key("service")
 	methodAttribute     = attributes.Key("method")
 	statusCodeAttribute = attributes.Key("status_code")
 )
@@ -69,7 +69,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	service, method := http.ParseServiceMethod(req)
 	opts := metrics.WithAttributes(
 		nameAttribute.String(h.name.String()),
-		pathAttribute.String(service),
+		serviceAttribute.String(service),
 		methodAttribute.String(method),
 	)
 	start := time.Now()
@@ -129,7 +129,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	opts := metrics.WithAttributes(
 		nameAttribute.String(r.name.String()),
-		pathAttribute.String(service),
+		serviceAttribute.String(service),
 		methodAttribute.String(method),
 	)
 
