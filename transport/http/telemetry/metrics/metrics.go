@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	nameAttribute       = attributes.Key("name")
-	serviceAttribute    = attributes.Key("service")
-	methodAttribute     = attributes.Key("method")
-	statusCodeAttribute = attributes.Key("status_code")
+	nameAttribute   = attributes.Key("service_name")
+	pathAttribute   = attributes.Key("service_path")
+	methodAttribute = attributes.Key("service_method")
+	codeAttribute   = attributes.Key("service_code")
 )
 
 // Meter is an alias for metrics.Meter.
@@ -69,7 +69,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	service, method := http.ParseServiceMethod(req)
 	opts := metrics.WithAttributes(
 		nameAttribute.String(h.name.String()),
-		serviceAttribute.String(service),
+		pathAttribute.String(service),
 		methodAttribute.String(method),
 	)
 	start := time.Now()
@@ -83,7 +83,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		h.sent.Add(ctx, 1, opts)
 	}
 
-	h.handled.Add(ctx, 1, opts, metrics.WithAttributes(statusCodeAttribute.String(strconv.Itoa(captured.Code))))
+	h.handled.Add(ctx, 1, opts, metrics.WithAttributes(codeAttribute.String(strconv.Itoa(captured.Code))))
 	h.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 }
 
@@ -129,7 +129,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	opts := metrics.WithAttributes(
 		nameAttribute.String(r.name.String()),
-		serviceAttribute.String(service),
+		pathAttribute.String(service),
 		methodAttribute.String(method),
 	)
 
@@ -142,7 +142,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	r.received.Add(ctx, 1, opts)
-	r.handled.Add(ctx, 1, opts, metrics.WithAttributes(statusCodeAttribute.String(strconv.Itoa(resp.StatusCode))))
+	r.handled.Add(ctx, 1, opts, metrics.WithAttributes(codeAttribute.String(strconv.Itoa(resp.StatusCode))))
 	r.handledHist.Record(ctx, time.Since(start).Seconds(), opts)
 
 	return resp, nil
