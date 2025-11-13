@@ -41,7 +41,7 @@ func (i *Interceptor) ConnPing(ctx context.Context, conn driver.Pinger) error {
 func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, i.name),
+		logger.String(meta.SystemKey, i.name),
 	}
 	res, err := i.interceptor.ConnExecContext(ctx, conn, query, args)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
@@ -54,7 +54,7 @@ func (i *Interceptor) ConnExecContext(ctx context.Context, conn driver.ExecerCon
 func (i *Interceptor) ConnQueryContext(ctx context.Context, conn driver.QueryerContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, i.name),
+		logger.String(meta.SystemKey, i.name),
 	}
 	ctx, res, err := i.interceptor.ConnQueryContext(ctx, conn, query, args)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
@@ -92,7 +92,7 @@ func (i *Interceptor) RowsClose(ctx context.Context, rows driver.Rows) error {
 func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecContext, query string, args []driver.NamedValue) (driver.Result, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, i.name),
+		logger.String(meta.SystemKey, i.name),
 	}
 	res, err := i.interceptor.StmtExecContext(ctx, stmt, query, args)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
@@ -105,7 +105,7 @@ func (i *Interceptor) StmtExecContext(ctx context.Context, stmt driver.StmtExecC
 func (i *Interceptor) StmtQueryContext(ctx context.Context, stmt driver.StmtQueryContext, query string, args []driver.NamedValue) (context.Context, driver.Rows, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, i.name),
+		logger.String(meta.SystemKey, i.name),
 	}
 	ctx, res, err := i.interceptor.StmtQueryContext(ctx, stmt, query, args)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))

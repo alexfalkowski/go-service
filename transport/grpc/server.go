@@ -34,7 +34,6 @@ type ServerParams struct {
 	Version    env.Version
 	UserID     env.UserID
 	ID         id.Generator
-	FS         *os.FS
 	Limiter    *limiter.Server
 	Verifier   token.Verifier
 	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
@@ -47,14 +46,14 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	opt, err := credsServerOption(params.FS, params.Config)
+	opt, err := credsServerOption(fs, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
 	var meter *metrics.Server
 	if params.Meter != nil {
-		meter = metrics.NewServer(params.Meter)
+		meter = metrics.NewServer(name, params.Meter)
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)

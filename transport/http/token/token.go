@@ -62,8 +62,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	p := http.Path(req)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 		return
 	}
@@ -71,7 +70,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx := req.Context()
 	auth := meta.Authorization(ctx).Value()
 
-	sub, err := h.verifier.Verify(strings.Bytes(auth), p)
+	sub, err := h.verifier.Verify(strings.Bytes(auth), req.URL.Path)
 	if err != nil {
 		status.WriteError(ctx, res, status.UnauthorizedError(err))
 		return
@@ -105,9 +104,7 @@ type RoundTripper struct {
 }
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	p := http.Path(req)
-
-	token, err := r.generator.Generate(p, r.id.String())
+	token, err := r.generator.Generate(req.URL.Path, r.id.String())
 	if err != nil {
 		return nil, status.UnauthorizedError(err)
 	}

@@ -50,8 +50,7 @@ func WithAuthorization(ctx context.Context, auth meta.Value) context.Context {
 // UnaryServerInterceptor for meta.
 func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -78,8 +77,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 // StreamServerInterceptor for meta.
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

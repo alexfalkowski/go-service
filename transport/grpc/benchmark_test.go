@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	tg.Register(test.FS)
+	tg.Register(test.Name, test.FS)
 }
 
 //nolint:funlen

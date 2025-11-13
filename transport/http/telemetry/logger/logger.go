@@ -24,21 +24,21 @@ type Handler struct {
 
 // ServeHTTP or logger.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 		return
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	ctx := req.Context()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, "http"),
-		logger.String(meta.PathKey, p),
+		logger.String(meta.SystemKey, "http"),
+		logger.String(meta.ServiceKey, service),
 		logger.String(meta.MethodKey, method),
 	}
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
-	message := logger.NewText(message(strings.Join(strings.Space, method, p)))
+	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
 
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
@@ -56,24 +56,24 @@ type RoundTripper struct {
 
 // RoundTrip for logger.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
 	attrs := []logger.Attr{
 		logger.String(meta.DurationKey, time.Since(start).String()),
-		logger.String(meta.ServiceKey, "http"),
-		logger.String(meta.PathKey, p),
+		logger.String(meta.SystemKey, "http"),
+		logger.String(meta.ServiceKey, service),
 		logger.String(meta.MethodKey, method),
 	}
 	if resp != nil {
 		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
-	message := logger.NewText(message(strings.Join(strings.Space, method, p)))
+	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
 
 	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)
 	return resp, err

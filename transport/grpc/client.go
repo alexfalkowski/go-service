@@ -224,7 +224,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.meter != nil {
-		unary = append(unary, metrics.NewClient(os.meter).UnaryInterceptor())
+		unary = append(unary, metrics.NewClient(name, os.meter).UnaryInterceptor())
 	}
 
 	if os.tracer != nil {
@@ -248,7 +248,7 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	}
 
 	if opts.meter != nil {
-		stream = append(stream, metrics.NewClient(opts.meter).StreamInterceptor())
+		stream = append(stream, metrics.NewClient(name, opts.meter).StreamInterceptor())
 	}
 
 	if opts.tracer != nil {

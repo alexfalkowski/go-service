@@ -6,11 +6,11 @@ const (
 	// RequestIDKey for meta.
 	RequestIDKey = "requestId"
 
-	// ServiceKey for meta.
-	ServiceKey = "service"
+	// SystemKey for meta.
+	SystemKey = "system"
 
-	// PathKey for meta.
-	PathKey = "path"
+	// ServiceKey for meta.
+	ServiceKey = "path"
 
 	// MethodKey for meta.
 	MethodKey = "method"

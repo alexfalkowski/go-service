@@ -24,8 +24,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	p := http.Path(req)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 		return
 	}

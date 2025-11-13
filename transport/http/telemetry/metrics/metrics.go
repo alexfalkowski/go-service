@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	serviceAttribute    = attributes.Key("service")
+	nameAttribute       = attributes.Key("name")
+	pathAttribute       = attributes.Key("path")
 	methodAttribute     = attributes.Key("method")
 	statusCodeAttribute = attributes.Key("status_code")
 )
@@ -30,7 +31,7 @@ func Register(name env.Name, cfg *metrics.Config, mux *http.ServeMux) {
 }
 
 // NewHandler for metrics.
-func NewHandler(meter *Meter) *Handler {
+func NewHandler(name env.Name, meter *Meter) *Handler {
 	started := meter.MustInt64Counter("http_server_started_total", "Total number of RPCs started on the server.")
 	received := meter.MustInt64Counter("http_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := meter.MustInt64Counter("http_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -39,8 +40,11 @@ func NewHandler(meter *Meter) *Handler {
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the server.")
 
 	return &Handler{
-		started: started, received: received,
-		sent: sent, handled: handled,
+		name:        name,
+		started:     started,
+		received:    received,
+		sent:        sent,
+		handled:     handled,
 		handledHist: handledHist,
 	}
 }
@@ -52,18 +56,20 @@ type Handler struct {
 	sent        metrics.Int64Counter
 	handled     metrics.Int64Counter
 	handledHist metrics.Float64Histogram
+	name        env.Name
 }
 
 // ServeHTTP for metrics.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 		return
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	opts := metrics.WithAttributes(
-		serviceAttribute.String(p),
+		nameAttribute.String(h.name.String()),
+		pathAttribute.String(service),
 		methodAttribute.String(method),
 	)
 	start := time.Now()
@@ -82,7 +88,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 }
 
 // NewRoundTripper for metrics.
-func NewRoundTripper(meter *Meter, r http.RoundTripper) *RoundTripper {
+func NewRoundTripper(name env.Name, meter *Meter, r http.RoundTripper) *RoundTripper {
 	started := meter.MustInt64Counter("http_client_started_total", "Total number of RPCs started on the client.")
 	received := meter.MustInt64Counter("http_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := meter.MustInt64Counter("http_client_msg_sent_total", "Total number of RPC messages sent by the client.")
@@ -91,7 +97,12 @@ func NewRoundTripper(meter *Meter, r http.RoundTripper) *RoundTripper {
 		"Histogram of response latency (seconds) of HTTP that had been application-level handled by the client.")
 
 	return &RoundTripper{
-		started: started, received: received, sent: sent, handled: handled, handledHist: handledHist,
+		name:         name,
+		started:      started,
+		received:     received,
+		sent:         sent,
+		handled:      handled,
+		handledHist:  handledHist,
 		RoundTripper: r,
 	}
 }
@@ -104,20 +115,21 @@ type RoundTripper struct {
 	handled     metrics.Int64Counter
 	handledHist metrics.Float64Histogram
 	http.RoundTripper
+	name env.Name
 }
 
 // RoundTrip for metrics.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	start := time.Now()
 	ctx := req.Context()
-
 	opts := metrics.WithAttributes(
-		serviceAttribute.String(p),
+		nameAttribute.String(r.name.String()),
+		pathAttribute.String(service),
 		methodAttribute.String(method),
 	)
 
