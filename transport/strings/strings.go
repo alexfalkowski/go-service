@@ -22,6 +22,12 @@ const (
 	Space = strings.Space
 )
 
+// SplitServiceMethod will split /package.service/method to package.service and method.
+func SplitServiceMethod(name string) (string, string) {
+	service, method, _ := strings.Cut(name[1:], "/")
+	return service, method
+}
+
 // Bytes is an alias for strings.Bytes.
 func Bytes(s string) []byte {
 	return strings.Bytes(s)

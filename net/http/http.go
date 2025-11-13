@@ -131,14 +131,16 @@ func NewServer(timeout time.Duration, handler Handler) *Server {
 	}
 }
 
-// Path will strip / from the start.
-func Path(req *http.Request) string {
+// ParseServiceMethod will parse the service and method from the request.
+func ParseServiceMethod(req *http.Request) (string, string) {
+	method := strings.ToLower(req.Method)
+
 	path := req.URL.Path
 	if strings.IsEmpty(path) {
-		return path
+		return path, method
 	}
 
-	return path[1:]
+	return path[1:], method
 }
 
 // Pattern will create a pattern with the format /name/pattern.

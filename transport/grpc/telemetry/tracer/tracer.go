@@ -1,8 +1,6 @@
 package tracer
 
 import (
-	"path"
-
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -18,17 +16,16 @@ type Tracer = tracer.Tracer
 // UnaryServerInterceptor for tracer.
 func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
+		service, method := strings.SplitServiceMethod(info.FullMethod)
 		ctx = extract(ctx)
-		method := path.Base(info.FullMethod)
 
 		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
 			attributes.RPCSystemGRPC,
-			attributes.RPCService(p),
+			attributes.RPCService(service),
 			attributes.RPCMethod(method))
 		defer span.End()
 
@@ -46,17 +43,16 @@ func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 // StreamServerInterceptor for tracer.
 func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
+		service, method := strings.SplitServiceMethod(info.FullMethod)
 		ctx := extract(stream.Context())
-		method := path.Base(info.FullMethod)
 
 		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
 			attributes.RPCSystemGRPC,
-			attributes.RPCService(p),
+			attributes.RPCService(service),
 			attributes.RPCMethod(method))
 		defer span.End()
 
@@ -76,16 +72,15 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for tracer.
 func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		p := fullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(fullMethod) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		method := path.Base(fullMethod)
+		service, method := strings.SplitServiceMethod(fullMethod)
 
 		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
 			attributes.RPCSystemGRPC,
-			attributes.RPCService(p),
+			attributes.RPCService(service),
 			attributes.RPCMethod(method))
 		defer span.End()
 
@@ -104,16 +99,15 @@ func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for tracer.
 func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		p := fullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(fullMethod) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
-		method := path.Base(fullMethod)
+		service, method := strings.SplitServiceMethod(fullMethod)
 
 		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
 			attributes.RPCSystemGRPC,
-			attributes.RPCService(p),
+			attributes.RPCService(service),
 			attributes.RPCMethod(method))
 		defer span.End()
 

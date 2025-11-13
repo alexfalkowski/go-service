@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	grpc.Register(test.FS)
+	grpc.Register(test.Name, test.FS)
 }
 
 func TestServer(t *testing.T) {
@@ -50,7 +50,6 @@ func TestInvalidServer(t *testing.T) {
 		params := grpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg,
-			FS:         test.FS,
 		}
 
 		_, err := grpc.NewServer(params)

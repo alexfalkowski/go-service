@@ -56,7 +56,6 @@ func (s *Server) Register() {
 			Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
-			FS: FS,
 		}
 
 		httpServer, err := th.NewServer(params)
@@ -72,7 +71,7 @@ func (s *Server) Register() {
 			Logger: s.Logger, Tracer: tracer, Meter: s.Meter,
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
-			FS: FS, Limiter: s.GRPCLimiter,
+			Limiter: s.GRPCLimiter,
 		}
 
 		grpcServer, err := grpc.NewServer(params)

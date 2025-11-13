@@ -37,7 +37,6 @@ type ServerParams struct {
 	Version    env.Version
 	UserID     env.UserID
 	ID         id.Generator
-	FS         *os.FS
 	Limiter    *limiter.Server
 	Verifier   token.Verifier
 	Handlers   []negroni.Handler `optional:"true"`
@@ -61,7 +60,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	if params.Meter != nil {
-		neg.Use(metrics.NewHandler(params.Meter))
+		neg.Use(metrics.NewHandler(name, params.Meter))
 	}
 
 	for _, hd := range params.Handlers {
@@ -81,7 +80,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	timeout := time.MustParseDuration(params.Config.Timeout)
 	svr := http.NewServer(timeout, neg)
 
-	cfg, err := newConfig(params.FS, params.Config)
+	cfg, err := newConfig(fs, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}

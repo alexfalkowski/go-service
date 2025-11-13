@@ -32,8 +32,8 @@ func (c *Cache) Close(ctx context.Context) error {
 func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, c.kind),
-		logger.String(meta.PathKey, key),
+		logger.String(meta.SystemKey, c.kind),
+		logger.String(meta.ServiceKey, key),
 	}
 	ok, err := c.cache.Remove(ctx, key)
 	attrs = append(attrs,
@@ -49,8 +49,8 @@ func (c *Cache) Remove(ctx context.Context, key string) (bool, error) {
 func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, c.kind),
-		logger.String(meta.PathKey, key),
+		logger.String(meta.SystemKey, c.kind),
+		logger.String(meta.ServiceKey, key),
 	}
 	ok, err := c.cache.Get(ctx, key, value)
 	attrs = append(attrs,
@@ -66,8 +66,8 @@ func (c *Cache) Get(ctx context.Context, key string, value any) (bool, error) {
 func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Duration) error {
 	start := time.Now()
 	attrs := []logger.Attr{
-		logger.String(meta.ServiceKey, c.kind),
-		logger.String(meta.PathKey, key),
+		logger.String(meta.SystemKey, c.kind),
+		logger.String(meta.ServiceKey, key),
 	}
 	err := c.cache.Persist(ctx, key, value, ttl)
 	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))

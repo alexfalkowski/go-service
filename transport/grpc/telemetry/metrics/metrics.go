@@ -2,9 +2,9 @@ package metrics
 
 import (
 	"io"
-	"path"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
@@ -16,17 +16,18 @@ import (
 )
 
 const (
-	kindAttribute   = attributes.Key("kind")
-	pathAttribute   = attributes.Key("path")
-	methodAttribute = attributes.Key("method")
-	codeAttribute   = attributes.Key("code")
+	kindAttribute    = attributes.Key("kind")
+	nameAttribute    = attributes.Key("name")
+	serviceAttribute = attributes.Key("service")
+	methodAttribute  = attributes.Key("method")
+	codeAttribute    = attributes.Key("code")
 )
 
 // Meter is an alias for metrics.Meter.
 type Meter = metrics.Meter
 
 // NewServer for metrics.
-func NewServer(meter *Meter) *Server {
+func NewServer(name env.Name, meter *Meter) *Server {
 	started := meter.MustInt64Counter("grpc_server_started_total", "Total number of RPCs started on the server.")
 	received := meter.MustInt64Counter("grpc_server_msg_received_total", "Total number of RPC messages received on the server.")
 	sent := meter.MustInt64Counter("grpc_server_msg_sent_total", "Total number of RPC messages sent by the server.")
@@ -35,8 +36,12 @@ func NewServer(meter *Meter) *Server {
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the server.")
 
 	return &Server{
-		started: started, received: received, sent: sent,
-		handled: handled, handledHistogram: handledHist,
+		name:             name,
+		started:          started,
+		received:         received,
+		sent:             sent,
+		handled:          handled,
+		handledHistogram: handledHist,
 	}
 }
 
@@ -47,21 +52,22 @@ type Server struct {
 	sent             metrics.Int64Counter
 	handled          metrics.Int64Counter
 	handledHistogram metrics.Float64Histogram
+	name             env.Name
 }
 
 // UnaryInterceptor for metrics.
 func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
+		service, method := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
-		method := path.Base(info.FullMethod)
 		opts := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
-			pathAttribute.String(p),
+			nameAttribute.String(s.name.String()),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
@@ -82,16 +88,16 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 // StreamInterceptor for metrics.
 func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
+		service, method := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
-		method := path.Base(info.FullMethod)
 		opts := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
-			pathAttribute.String(p),
+			nameAttribute.String(s.name.String()),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 		err := handler(srv, s.Stream(stream, opts))
@@ -161,7 +167,7 @@ func (s *ServerStream) RecvMsg(m any) error {
 }
 
 // NewClient for metrics.
-func NewClient(meter *Meter) *Client {
+func NewClient(name env.Name, meter *Meter) *Client {
 	started := meter.MustInt64Counter("grpc_client_started_total", "Total number of RPCs started on the client.")
 	received := meter.MustInt64Counter("grpc_client_msg_received_total", "Total number of RPC messages received on the client.")
 	sent := meter.MustInt64Counter("grpc_client_msg_sent_total", "Total number of RPC messages sent by the client.")
@@ -170,8 +176,12 @@ func NewClient(meter *Meter) *Client {
 		"Histogram of response latency (seconds) of gRPC that had been application-level handled by the client.")
 
 	return &Client{
-		started: started, received: received, sent: sent,
-		handled: handled, handledHistogram: handledHist,
+		name:             name,
+		started:          started,
+		received:         received,
+		sent:             sent,
+		handled:          handled,
+		handledHistogram: handledHist,
 	}
 }
 
@@ -182,21 +192,22 @@ type Client struct {
 	sent             metrics.Int64Counter
 	handled          metrics.Int64Counter
 	handledHistogram metrics.Float64Histogram
+	name             env.Name
 }
 
 // UnaryInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Unary RPCs.
 func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		p := fullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(fullMethod) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
+		service, method := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
-		method := path.Base(fullMethod)
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
-			pathAttribute.String(p),
+			nameAttribute.String(c.name.String()),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
@@ -217,16 +228,16 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 // StreamInterceptor is a gRPC client-side interceptor that provides prometheus monitoring for Streaming RPCs.
 func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		p := fullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(fullMethod) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
+		service, method := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
-		method := path.Base(fullMethod)
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
-			pathAttribute.String(p),
+			nameAttribute.String(c.name.String()),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 

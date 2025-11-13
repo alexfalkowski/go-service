@@ -10,7 +10,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	http.Register(test.FS)
+	http.Register(test.Name, test.FS)
 
 	Convey("Given I have invalid credentials", t, func() {
 		c := &tls.Config{Cert: "bob", Key: "bob"}

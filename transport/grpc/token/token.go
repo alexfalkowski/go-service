@@ -56,14 +56,13 @@ type Verifier token.Verifier
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
 		auth := meta.Authorization(ctx).Value()
 
-		sub, err := verifier.Verify(strings.Bytes(auth), p)
+		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -76,15 +75,14 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 // StreamServerInterceptor for token.
 func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		p := info.FullMethod[1:]
-		if strings.IsObservable(p) {
+		if strings.IsObservable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
 		ctx := stream.Context()
 		auth := meta.Authorization(ctx).Value()
 
-		sub, err := verifier.Verify(strings.Bytes(auth), p)
+		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -111,9 +109,7 @@ type Generator token.Generator
 // UnaryClientInterceptor for token.
 func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		p := fullMethod[1:]
-
-		token, err := generator.Generate(p, id.String())
+		token, err := generator.Generate(fullMethod, id.String())
 		if err != nil {
 			return status.Error(codes.Unauthenticated, err.Error())
 		}
@@ -137,9 +133,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 // StreamClientInterceptor for token.
 func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		p := fullMethod[1:]
-
-		token, err := generator.Generate(p, id.String())
+		token, err := generator.Generate(fullMethod, id.String())
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, err.Error())
 		}

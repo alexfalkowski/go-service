@@ -29,14 +29,14 @@ func (s *Service) start() {
 	addr := logger.String("addr", s.server.String())
 
 	s.log(func(l *logger.Logger) {
-		l.Info("starting server", addr, logger.String(meta.ServiceKey, s.name))
+		l.Info("starting server", addr, logger.String(meta.SystemKey, s.name))
 	})
 
 	if err := s.server.Serve(); err != nil {
 		_ = s.sh.Shutdown()
 
 		s.log(func(l *logger.Logger) {
-			l.Error("could not start server", logger.String(meta.ServiceKey, s.name), addr, logger.Error(err))
+			l.Error("could not start server", logger.String(meta.SystemKey, s.name), addr, logger.Error(err))
 		})
 	}
 }
@@ -46,7 +46,7 @@ func (s *Service) Stop(ctx context.Context) {
 	_ = s.server.Shutdown(ctx)
 
 	s.log(func(l *logger.Logger) {
-		l.Info("stopping server", logger.String(meta.ServiceKey, s.name))
+		l.Info("stopping server", logger.String(meta.SystemKey, s.name))
 	})
 }
 

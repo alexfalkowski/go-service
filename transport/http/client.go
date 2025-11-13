@@ -172,7 +172,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.meter != nil {
-		hrt = metrics.NewRoundTripper(os.meter, hrt)
+		hrt = metrics.NewRoundTripper(name, os.meter, hrt)
 	}
 
 	if os.tracer != nil {

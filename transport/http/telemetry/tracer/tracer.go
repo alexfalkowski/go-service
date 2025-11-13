@@ -23,17 +23,17 @@ type Handler struct {
 
 // ServeHTTP for tracer.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		next(res, req)
 		return
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	ctx := extract(req.Context(), req)
-	op := operationName(strings.Join(strings.Space, method, p))
+	op := operationName(strings.Join(strings.Space, method, service))
 
 	ctx, span := h.tracer.StartServer(ctx, op,
-		attributes.HTTPRoute(p),
+		attributes.HTTPRoute(service),
 		attributes.HTTPRequestMethod(method))
 	defer span.End()
 
@@ -55,16 +55,16 @@ type RoundTripper struct {
 
 // RoundTrip for tracer.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	p, method := http.Path(req), strings.ToLower(req.Method)
-	if strings.IsObservable(p) {
+	if strings.IsObservable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
+	service, method := http.ParseServiceMethod(req)
 	ctx := req.Context()
 	op := operationName(strings.Join(strings.Space, method, req.URL.Redacted()))
 
 	ctx, span := r.tracer.StartClient(ctx, op,
-		attributes.HTTPRoute(p),
+		attributes.HTTPRoute(service),
 		attributes.HTTPRequestMethod(method))
 	defer span.End()
 
