@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.191.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.191.0) - 2025-11-14
+
+- [`fc438e6`](https://github.com/alexfalkowski/go-service/commit/fc438e664c5e1da503e8b31115afcf5fec1d06c2) feat(telemetry): rename metric attributes (#1954)
+- [`fdc7b24`](https://github.com/alexfalkowski/go-service/commit/fdc7b2400c8edc5094ff5a07fae0073e2dbc2ebe) build(ci): use latest published images (#1953)
+
 ## [v2.190.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.190.0) - 2025-11-14
 
 - [`dd35d63`](https://github.com/alexfalkowski/go-service/commit/dd35d634a2e57fbb50905e2e6e0829a46c3c2ff9) feat(telemetry): change name (#1952)
