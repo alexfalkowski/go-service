@@ -20,7 +20,7 @@ type Logger = logger.Logger
 // UnaryServerInterceptor for logger.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsObservable(info.FullMethod) {
+		if strings.IsIgnorable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -46,7 +46,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 // StreamServerInterceptor for logger.
 func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsObservable(info.FullMethod) {
+		if strings.IsIgnorable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -73,7 +73,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 // UnaryClientInterceptor for logger.
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		if strings.IsObservable(fullMethod) {
+		if strings.IsIgnorable(fullMethod) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
@@ -99,7 +99,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // StreamClientInterceptor for logger.
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		if strings.IsObservable(fullMethod) {
+		if strings.IsIgnorable(fullMethod) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 

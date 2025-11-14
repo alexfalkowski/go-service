@@ -36,7 +36,7 @@ type Server struct {
 // UnaryServerInterceptor for limiter.
 func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsObservable(info.FullMethod) {
+		if strings.IsIgnorable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
