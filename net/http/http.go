@@ -141,9 +141,15 @@ func ParseServiceMethod(req *http.Request) (string, string) {
 	method := strings.ToLower(req.Method)
 
 	if strings.IsEmpty(path) {
-		return path, method
+		return "root", method
 	}
-	return path[1:], method
+
+	path = path[1:]
+	if strings.IsEmpty(path) {
+		return "root", method
+	}
+
+	return path, method
 }
 
 // Pattern will create a pattern with the format /name/pattern.
