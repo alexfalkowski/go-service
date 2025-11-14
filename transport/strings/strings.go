@@ -6,12 +6,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-var observables = []string{
+var ignorable = []string{
 	"health",
 	"healthz",
 	"livez",
 	"readyz",
 	"metrics",
+	"favicon",
 }
 
 const (
@@ -52,9 +53,9 @@ func IsEmpty(s string) bool {
 	return strings.IsEmpty(s)
 }
 
-// IsObservable in the text.
-func IsObservable(text string) bool {
-	return slices.ContainsFunc(observables, func(o string) bool { return strings.Contains(text, o) })
+// IsIgnorable in the text.
+func IsIgnorable(text string) bool {
+	return slices.ContainsFunc(ignorable, func(o string) bool { return strings.Contains(text, o) })
 }
 
 // SplitServiceMethod will split /package.service/method to package.service and method.

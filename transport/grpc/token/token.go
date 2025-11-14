@@ -56,7 +56,7 @@ type Verifier token.Verifier
 // UnaryServerInterceptor for token.
 func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsObservable(info.FullMethod) {
+		if strings.IsIgnorable(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -75,7 +75,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 // StreamServerInterceptor for token.
 func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsObservable(info.FullMethod) {
+		if strings.IsIgnorable(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

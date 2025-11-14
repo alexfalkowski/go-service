@@ -62,7 +62,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsObservable(req.URL.Path) {
+	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
 		return
 	}

@@ -23,7 +23,7 @@ type Handler struct {
 
 // ServeHTTP for tracer.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsObservable(req.URL.Path) {
+	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
 		return
 	}
@@ -55,7 +55,7 @@ type RoundTripper struct {
 
 // RoundTrip for tracer.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if strings.IsObservable(req.URL.Path) {
+	if strings.IsIgnorable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
