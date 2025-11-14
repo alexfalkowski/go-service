@@ -22,15 +22,19 @@ const (
 	Space = strings.Space
 )
 
-// SplitServiceMethod will split /package.service/method to package.service and method.
-func SplitServiceMethod(name string) (string, string) {
-	service, method, _ := strings.Cut(name[1:], "/")
-	return service, method
-}
-
 // Bytes is an alias for strings.Bytes.
 func Bytes(s string) []byte {
 	return strings.Bytes(s)
+}
+
+// Contains is an alias for strings.Contains.
+func Contains(s, substr string) bool {
+	return strings.Contains(s, substr)
+}
+
+// Concat is an alias for strings.Concat.
+func Concat(ss ...string) string {
+	return strings.Concat(ss...)
 }
 
 // Cut is an alias for strings.Cut.
@@ -48,12 +52,18 @@ func IsEmpty(s string) bool {
 	return strings.IsEmpty(s)
 }
 
-// ToLower is an alias for strings.ToLower.
-func ToLower(s string) string {
-	return strings.ToLower(s)
-}
-
 // IsObservable in the text.
 func IsObservable(text string) bool {
 	return slices.ContainsFunc(observables, func(o string) bool { return strings.Contains(text, o) })
+}
+
+// SplitServiceMethod will split /package.service/method to package.service and method.
+func SplitServiceMethod(name string) (string, string) {
+	service, method, _ := strings.Cut(name[1:], "/")
+	return service, method
+}
+
+// ToLower is an alias for strings.ToLower.
+func ToLower(s string) string {
+	return strings.ToLower(s)
 }

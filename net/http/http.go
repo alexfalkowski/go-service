@@ -6,8 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
 const (
@@ -133,13 +133,16 @@ func NewServer(timeout time.Duration, handler Handler) *Server {
 
 // ParseServiceMethod will parse the service and method from the request.
 func ParseServiceMethod(req *http.Request) (string, string) {
+	path := req.URL.Path
+	if strings.Contains(path, ".") {
+		return strings.SplitServiceMethod(path)
+	}
+
 	method := strings.ToLower(req.Method)
 
-	path := req.URL.Path
 	if strings.IsEmpty(path) {
 		return path, method
 	}
-
 	return path[1:], method
 }
 

@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	nameAttribute   = attributes.Key("service_name")
-	pathAttribute   = attributes.Key("service_path")
-	methodAttribute = attributes.Key("service_method")
-	codeAttribute   = attributes.Key("service_code")
+	nameAttribute    = attributes.Key("service_name")
+	serviceAttribute = attributes.Key("http_service")
+	methodAttribute  = attributes.Key("http_method")
+	codeAttribute    = attributes.Key("http_code")
 )
 
 // Meter is an alias for metrics.Meter.
@@ -69,7 +69,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	service, method := http.ParseServiceMethod(req)
 	opts := metrics.WithAttributes(
 		nameAttribute.String(h.name.String()),
-		pathAttribute.String(service),
+		serviceAttribute.String(service),
 		methodAttribute.String(method),
 	)
 	start := time.Now()
@@ -129,7 +129,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	opts := metrics.WithAttributes(
 		nameAttribute.String(r.name.String()),
-		pathAttribute.String(service),
+		serviceAttribute.String(service),
 		methodAttribute.String(method),
 	)
 

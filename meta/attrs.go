@@ -10,7 +10,7 @@ const (
 	SystemKey = "system"
 
 	// ServiceKey for meta.
-	ServiceKey = "path"
+	ServiceKey = "service"
 
 	// MethodKey for meta.
 	MethodKey = "method"
