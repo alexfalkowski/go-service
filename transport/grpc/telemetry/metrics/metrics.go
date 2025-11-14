@@ -16,11 +16,11 @@ import (
 )
 
 const (
-	kindAttribute   = attributes.Key("service_kind")
-	nameAttribute   = attributes.Key("service_name")
-	pathAttribute   = attributes.Key("service_path")
-	methodAttribute = attributes.Key("service_method")
-	codeAttribute   = attributes.Key("service_code")
+	kindAttribute    = attributes.Key("service_kind")
+	nameAttribute    = attributes.Key("service_name")
+	serviceAttribute = attributes.Key("grpc_service")
+	methodAttribute  = attributes.Key("grpc_method")
+	codeAttribute    = attributes.Key("grpc_code")
 )
 
 // Meter is an alias for metrics.Meter.
@@ -67,7 +67,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 		opts := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
 			nameAttribute.String(s.name.String()),
-			pathAttribute.String(service),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
@@ -97,7 +97,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 		opts := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
 			nameAttribute.String(s.name.String()),
-			pathAttribute.String(service),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 		err := handler(srv, s.Stream(stream, opts))
@@ -207,7 +207,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
 			nameAttribute.String(c.name.String()),
-			pathAttribute.String(service),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
@@ -237,7 +237,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
 			nameAttribute.String(c.name.String()),
-			pathAttribute.String(service),
+			serviceAttribute.String(service),
 			methodAttribute.String(method),
 		)
 
