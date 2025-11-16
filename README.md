@@ -41,13 +41,21 @@ The configuration can be read from multiple sources by specifying a flag called 
   - The `config` folder in your home directory.
   - The `/etc` folder.
 
-The reason for this is that we want to be able to separate how configuration is retrieved. This way we can use and [application configuration system](https://github.com/alexfalkowski/konfig).
+The reason for this is that we want to be able to separate how configuration is retrieved.
 
 This is the [configuration](config/config.go). We will outline the config required in each section. The following configuration examples will use YAML.
 
 ## Environment
 
 You can specify the environment of the service.
+
+### Paths
+
+In any of the configurations where a path is specified we allow the following:
+
+- env:CONFIG - read from an environment variable.
+- file:path - read from a file path.
+- a string.
 
 ### Environment Configuration
 
@@ -147,7 +155,6 @@ id:
 
 We enhance the runtime with the following:
 
-- [Automaxprocs](https://github.com/uber-go/automaxprocs)
 - [Automemlimit](https://github.com/KimMachineGun/automemlimit)
 
 ## SQL
