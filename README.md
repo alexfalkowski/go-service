@@ -28,7 +28,7 @@ These are configured in the main function.
 
 The supported configuration kinds are as follows:
 
-- [JSON](https://github.com/goccy/go-json)
+- [JSON](https://pkg.go.dev/encoding/json)
 - [TOML](https://github.com/BurntSushi/toml)
 - [YAML](https://github.com/go-yaml/yaml)
 
@@ -53,9 +53,9 @@ You can specify the environment of the service.
 
 In any of the configurations where a path is specified we allow the following:
 
-- env:CONFIG - read from an environment variable.
-- file:path - read from a file path.
-- a string.
+- `env:CONFIG` - Read from an environment variable.
+- `file:path` - Read from a file path.
+- `string` - Any arbitrary string.
 
 ### Environment Configuration
 
@@ -78,9 +78,9 @@ We support the following:
 
 We support the following:
 
-- [JSON](https://github.com/goccy/go-json)
+- [JSON](https://pkg.go.dev/encoding/json)
 - [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://github.com/goccy/go-yaml)
+- [YAML](https://github.com/yaml/go-yaml)
 - [Proto](https://google.golang.org/protobuf/proto)
 - [GOB](https://pkg.go.dev/encoding/gob)
 
@@ -360,7 +360,7 @@ time:
 The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
 
 - [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
-- [REST](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/) and the awesome [resty](https://github.com/go-resty/resty).
+- [REST](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/contenttype).
 - [RPC](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rpc) - abstraction using [content negotiation](https://github.com/elnormous/contenttype).
 - [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) - We have a simple [framework](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/mvc).
 - [CloudEvents](https://github.com/cloudevents/sdk-go) - A specification for describing event data in a common way.
