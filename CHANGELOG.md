@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.194.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.194.0) - 2025-11-17
+
+- [`4687603`](https://github.com/alexfalkowski/go-service/commit/4687603630b8e565f60d489f4e7af07ca7252eea) feat(grpc): verfify full method (#1960)
+- [`ee7e252`](https://github.com/alexfalkowski/go-service/commit/ee7e2522ef61066d32b4286dc92e5978f701a29c) docs(readme): follow the style (#1959)
+- [`416ea58`](https://github.com/alexfalkowski/go-service/commit/416ea58f794fc95bdf5205c4678c86527c39bbec) docs(readme): add information about paths (#1958)
+- [`b74f070`](https://github.com/alexfalkowski/go-service/commit/b74f070b51bf35229119ae3556b58d8208b08033) build(ci): use latest published images (#1957)
+
 ## [v2.193.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.193.0) - 2025-11-14
 
 - [`aef8a04`](https://github.com/alexfalkowski/go-service/commit/aef8a04c4fdbd72b7ea4ec4fa11e28210cd44547) feat(http): handle empty service (#1956)
