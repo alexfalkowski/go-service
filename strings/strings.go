@@ -18,6 +18,11 @@ func Contains(s, substr string) bool {
 	return strings.Contains(s, substr)
 }
 
+// Count is an alias for strings.Count.
+func Count(s, substr string) int {
+	return strings.Count(s, substr)
+}
+
 // Cut is an alias for strings.Cut.
 func Cut(s, sep string) (string, string, bool) {
 	return strings.Cut(s, sep)

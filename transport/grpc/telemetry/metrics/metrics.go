@@ -62,7 +62,7 @@ func (s *Server) UnaryInterceptor() grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
 		opts := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
@@ -92,7 +92,7 @@ func (s *Server) StreamInterceptor() grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
 		opts := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),
@@ -202,7 +202,7 @@ func (c *Client) UnaryInterceptor() grpc.UnaryClientInterceptor {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(UnaryKind.String()),
@@ -232,7 +232,7 @@ func (c *Client) StreamInterceptor() grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		measurement := metrics.WithAttributes(
 			kindAttribute.String(StreamKind.String()),

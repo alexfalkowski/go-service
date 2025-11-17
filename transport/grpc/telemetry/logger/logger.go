@@ -24,7 +24,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
 		resp, err := handler(ctx, req)
 		attrs := []logger.Attr{
@@ -50,7 +50,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
 		ctx := stream.Context()
 		err := handler(srv, stream)
@@ -77,7 +77,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
 		attrs := []logger.Attr{
@@ -103,7 +103,7 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
 		attrs := []logger.Attr{
