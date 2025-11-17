@@ -134,8 +134,8 @@ func NewServer(timeout time.Duration, handler Handler) *Server {
 // ParseServiceMethod will parse the service and method from the request.
 func ParseServiceMethod(req *http.Request) (string, string) {
 	path := req.URL.Path
-	if strings.Contains(path, ".") {
-		return strings.SplitServiceMethod(path)
+	if service, method, ok := strings.SplitServiceMethod(path); ok {
+		return service, method
 	}
 
 	method := strings.ToLower(req.Method)

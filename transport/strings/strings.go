@@ -58,10 +58,19 @@ func IsIgnorable(text string) bool {
 	return slices.ContainsFunc(ignorable, func(o string) bool { return strings.Contains(text, o) })
 }
 
+// IsFullMethod return true if the name is of the form `/package.service/method`.
+func IsFullMethod(name string) bool {
+	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2
+}
+
 // SplitServiceMethod will split /package.service/method to package.service and method.
-func SplitServiceMethod(name string) (string, string) {
+func SplitServiceMethod(name string) (string, string, bool) {
+	if !IsFullMethod(name) {
+		return "", "", false
+	}
+
 	service, method, _ := strings.Cut(name[1:], "/")
-	return service, method
+	return service, method, true
 }
 
 // ToLower is an alias for strings.ToLower.

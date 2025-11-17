@@ -20,7 +20,7 @@ func UnaryServerInterceptor(trace *Tracer) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		ctx = extract(ctx)
 
 		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
@@ -47,7 +47,7 @@ func StreamServerInterceptor(trace *Tracer) grpc.StreamServerInterceptor {
 			return handler(srv, stream)
 		}
 
-		service, method := strings.SplitServiceMethod(info.FullMethod)
+		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		ctx := extract(stream.Context())
 
 		ctx, span := trace.StartServer(ctx, operationName(info.FullMethod),
@@ -76,7 +76,7 @@ func UnaryClientInterceptor(trace *Tracer) grpc.UnaryClientInterceptor {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 
 		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
 			attributes.RPCSystemGRPC,
@@ -103,7 +103,7 @@ func StreamClientInterceptor(trace *Tracer) grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 
-		service, method := strings.SplitServiceMethod(fullMethod)
+		service, method, _ := strings.SplitServiceMethod(fullMethod)
 
 		ctx, span := trace.StartClient(ctx, operationName(conn.Target()+fullMethod),
 			attributes.RPCSystemGRPC,
