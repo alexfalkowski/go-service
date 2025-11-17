@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.195.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.195.1) - 2025-11-17
+
+- [`d7aa4aa`](https://github.com/alexfalkowski/go-service/commit/d7aa4aa570a0f926aef014c41f40cfcc011fece6) fix(transport): return strings.Cut (#1962)
+
 ## [v2.195.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.195.0) - 2025-11-17
 
 - [`1417e03`](https://github.com/alexfalkowski/go-service/commit/1417e03e715412324e82320951c0a2cb564cf2ac) feat(transport): make sure full method has a dot (#1961)
