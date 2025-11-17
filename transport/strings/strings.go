@@ -68,9 +68,7 @@ func SplitServiceMethod(name string) (string, string, bool) {
 	if !IsFullMethod(name) {
 		return "", "", false
 	}
-
-	service, method, _ := strings.Cut(name[1:], "/")
-	return service, method, true
+	return strings.Cut(name[1:], "/")
 }
 
 // ToLower is an alias for strings.ToLower.

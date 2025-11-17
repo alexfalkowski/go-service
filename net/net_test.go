@@ -29,18 +29,20 @@ func TestHost(t *testing.T) {
 
 func TestNetworkAddress(t *testing.T) {
 	Convey("When I try to get a valid network address", t, func() {
-		network, address := net.NetworkAddress("tcp://localhost:9000")
+		network, address, ok := net.SplitNetworkAddress("tcp://localhost:9000")
 
 		Convey("Then I should have a valid address", func() {
+			So(ok, ShouldBeTrue)
 			So(network, ShouldEqual, "tcp")
 			So(address, ShouldEqual, "localhost:9000")
 		})
 	})
 
 	Convey("When I try to get a invalid network address", t, func() {
-		network, address := net.NetworkAddress("no:address")
+		network, address, ok := net.SplitNetworkAddress("no:address")
 
 		Convey("Then I should have an invalid address", func() {
+			So(ok, ShouldBeFalse)
 			So(network, ShouldEqual, "no:address")
 			So(address, ShouldBeBlank)
 		})

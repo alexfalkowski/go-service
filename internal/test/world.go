@@ -301,7 +301,7 @@ func (w *World) pathURL(host, path string) string {
 }
 
 func (w *World) url(protocol, address string) string {
-	_, host := net.NetworkAddress(address)
+	_, host, _ := net.SplitNetworkAddress(address)
 
 	return strings.Concat(protocol, "://", host)
 }
