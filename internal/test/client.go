@@ -79,7 +79,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		opts = append(opts, g.WithClientCompression())
 	}
 
-	_, target := net.NetworkAddress(c.Transport.GRPC.Address)
+	_, target, _ := net.SplitNetworkAddress(c.Transport.GRPC.Address)
 
 	conn, err := g.NewClient(target, opts...)
 	runtime.Must(err)

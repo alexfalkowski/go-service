@@ -82,7 +82,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
-		_, addr := net.NetworkAddress(cfg.HTTP.Address)
+		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
@@ -124,7 +124,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
-		_, addr := net.NetworkAddress(cfg.HTTP.Address)
+		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
@@ -168,7 +168,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		lc.RequireStart()
 
-		_, addr := net.NetworkAddress(cfg.HTTP.Address)
+		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
 		client := &http.Client{Transport: http.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 

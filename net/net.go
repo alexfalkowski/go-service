@@ -24,10 +24,9 @@ func Listen(ctx context.Context, network, address string) (Listener, error) {
 	return config.Listen(ctx, network, address)
 }
 
-// NetworkAddress takes an address like tcp://localhost:3000 and returns "tcp", "localhost:3000".
-func NetworkAddress(address string) (string, string) {
-	scheme, host, _ := strings.Cut(address, "://")
-	return scheme, host
+// SplitNetworkAddress takes an address like tcp://localhost:3000 and returns "tcp", "localhost:3000".
+func SplitNetworkAddress(address string) (string, string, bool) {
+	return strings.Cut(address, "://")
 }
 
 // Host from the address, if it can be split.
