@@ -60,7 +60,7 @@ func IsIgnorable(text string) bool {
 
 // IsFullMethod return true if the name is of the form `/package.service/method`.
 func IsFullMethod(name string) bool {
-	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2
+	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2 && strings.Count(name, ".") > 0
 }
 
 // SplitServiceMethod will split /package.service/method to package.service and method.
