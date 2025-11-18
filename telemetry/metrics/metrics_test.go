@@ -31,7 +31,8 @@ func TestOTLP(t *testing.T) {
 
 func TestInvalidReader(t *testing.T) {
 	Convey("When I try to create a reader with an invalid configuration", t, func() {
-		_, err := metrics.NewReader(test.Name, &metrics.Config{Kind: "invalid"})
+		lc := fxtest.NewLifecycle(t)
+		_, err := metrics.NewReader(lc, test.Name, &metrics.Config{Kind: "invalid"})
 
 		Convey("Then I should have an error", func() {
 			So(err, ShouldBeError)

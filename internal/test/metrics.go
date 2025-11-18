@@ -34,7 +34,7 @@ func NewPrometheusMeterProvider(lc di.Lifecycle) metric.MeterProvider {
 
 // NewMeterProvider for test.
 func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) metric.MeterProvider {
-	r, err := metrics.NewReader(Name, config)
+	r, err := metrics.NewReader(lc, Name, config)
 	runtime.Must(err)
 
 	params := metrics.MeterProviderParams{
