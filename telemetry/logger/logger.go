@@ -64,12 +64,13 @@ type LoggerParams struct {
 
 // NewLogger using slog.
 func NewLogger(params LoggerParams) (*Logger, error) {
-	logger, err := logger(params)
+	if !params.Config.IsEnabled() {
+		return nil, nil
+	}
+
+	logger, err := newLogger(params)
 	if err != nil {
 		return nil, err
-	}
-	if logger == nil {
-		return nil, nil
 	}
 
 	slog.SetDefault(logger)
@@ -103,11 +104,7 @@ func (l *Logger) GetLogger() *slog.Logger {
 	return l.Logger
 }
 
-func logger(params LoggerParams) (*slog.Logger, error) {
-	if !params.Config.IsEnabled() {
-		return nil, nil
-	}
-
+func newLogger(params LoggerParams) (*slog.Logger, error) {
 	switch params.Config.Kind {
 	case "otlp":
 		return newOtlpLogger(params), nil
@@ -122,6 +119,6 @@ func logger(params LoggerParams) (*slog.Logger, error) {
 	}
 }
 
-func newLogger(logger *Logger) *slog.Logger {
+func convertLogger(logger *Logger) *slog.Logger {
 	return logger.GetLogger()
 }
