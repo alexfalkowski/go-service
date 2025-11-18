@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
+	"go.opentelemetry.io/otel"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
@@ -39,6 +40,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		attributes.DeploymentEnvironmentName(params.Environment.String()),
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
+	otel.SetMeterProvider(provider)
 
 	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
@@ -47,10 +49,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 			return prefix(err)
 		},
 		OnStop: func(ctx context.Context) error {
-			_ = provider.Shutdown(ctx)
-			_ = reader.Shutdown(ctx)
-
-			return nil
+			return provider.Shutdown(ctx)
 		},
 	})
 
