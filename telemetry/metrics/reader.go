@@ -19,45 +19,41 @@ func NewReader(lc di.Lifecycle, name env.Name, cfg *Config) (metric.Reader, erro
 		return nil, nil
 	}
 
+	reader, err := newReader(name, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Append(di.Hook{
+		OnStop: func(ctx context.Context) error {
+			if err := reader.Shutdown(ctx); err != nil {
+				if errors.Is(err, metric.ErrReaderShutdown) {
+					return nil
+				}
+				return err
+			}
+
+			return nil
+		},
+	})
+	return reader, nil
+}
+
+func newReader(name env.Name, cfg *Config) (metric.Reader, error) {
 	switch cfg.Kind {
 	case "otlp":
 		exporter, err := otlp.New(context.Background(), otlp.WithEndpointURL(cfg.URL), otlp.WithHeaders(cfg.Headers))
 		if err != nil {
 			return nil, prefix(err)
 		}
-
-		reader := metric.NewPeriodicReader(exporter)
-		lc.Append(di.Hook{
-			OnStop: func(ctx context.Context) error {
-				return shutdown(reader, ctx)
-			},
-		})
-		return reader, nil
+		return metric.NewPeriodicReader(exporter), nil
 	case "prometheus":
 		exporter, err := prometheus.New(prometheus.WithNamespace(name.String()))
 		if err != nil {
 			return nil, prefix(err)
 		}
-
-		lc.Append(di.Hook{
-			OnStop: func(ctx context.Context) error {
-				return shutdown(exporter, ctx)
-			},
-		})
 		return exporter, nil
 	default:
 		return nil, ErrNotFound
 	}
-}
-
-func shutdown(reader metric.Reader, ctx context.Context) error {
-	err := reader.Shutdown(ctx)
-	if err != nil {
-		if errors.Is(err, metric.ErrReaderShutdown) {
-			return nil
-		}
-		return err
-	}
-
-	return nil
 }
