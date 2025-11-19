@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.200.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.200.0) - 2025-11-19
+
+- [`0a605a6`](https://github.com/alexfalkowski/go-service/commit/0a605a63efcaa087d5ab6a2aa4e118dd18e4b452) feat(deps): bump github.com/arl/statsviz from 0.7.2 to 0.7.3 (#1968)
+- [`337d014`](https://github.com/alexfalkowski/go-service/commit/337d01428aae6bb3d154a5c6bd2a253bbbaedcb7) refactor(logger): better names (#1967)
+
 ## [v2.199.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.199.0) - 2025-11-18
 
 - [`1d0ddaf`](https://github.com/alexfalkowski/go-service/commit/1d0ddafca9c697003e6e4352df34a57da9bd92df) feat(telemetry): set otel.SetMeterProvider (#1966)
