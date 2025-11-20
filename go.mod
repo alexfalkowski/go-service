@@ -6,6 +6,7 @@ require (
 	aidanwoods.dev/go-paseto v1.5.4
 	github.com/BurntSushi/toml v1.5.0
 	github.com/KimMachineGun/automemlimit v0.7.5
+	github.com/XSAM/otelsql v0.40.0
 	github.com/alexfalkowski/go-health/v2 v2.4.0
 	github.com/arl/statsviz v0.7.3
 	github.com/avfs/avfs v0.35.0
@@ -31,7 +32,6 @@ require (
 	github.com/linxGnu/mssqlx v1.1.8
 	github.com/lmittmann/tint v1.1.2
 	github.com/matoous/go-nanoid v1.5.1
-	github.com/ngrok/sqlmw v0.0.0-20220520173518-97c9c04efc79
 	github.com/oklog/ulid v1.3.1
 	github.com/open-feature/go-sdk v1.17.0
 	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.6

@@ -12,7 +12,7 @@ import (
 
 // Register for pg.
 func Register(trace *tracer.Tracer, log *logger.Logger) {
-	_ = driver.Register("pg", driver.NewDriver("pg", pgx.GetDefaultDriver(), trace, log))
+	_ = driver.Register("pg", pgx.GetDefaultDriver())
 }
 
 // Open for pg.
