@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.204.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.204.0) - 2025-11-21
+
+- [`40ec2f0`](https://github.com/alexfalkowski/go-service/commit/40ec2f0f5b6146b4c57925256395bc9e93d18af9) feat(telemetry): use github.com/redis/go-redis/extra/redisotel/v9 (#1973)
+
 ## [v2.203.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.203.0) - 2025-11-21
 
 - [`90d8658`](https://github.com/alexfalkowski/go-service/commit/90d865809b746cb32a37eb331e922b2fbd3d5ade) feat(telemetry): add github.com/XSAM/otelsql (#1972)
