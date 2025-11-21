@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.203.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.203.0) - 2025-11-21
+
+- [`90d8658`](https://github.com/alexfalkowski/go-service/commit/90d865809b746cb32a37eb331e922b2fbd3d5ade) feat(telemetry): add github.com/XSAM/otelsql (#1972)
+
 ## [v2.202.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.202.0) - 2025-11-20
 
 - [`69a42d5`](https://github.com/alexfalkowski/go-service/commit/69a42d5ee9616b9fcd2aad7f1899bb8663aaf9c6) feat(deps): bump golang.org/x/crypto from 0.44.0 to 0.45.0 (#1971)
