@@ -4,12 +4,8 @@ import (
 	"io"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/cache/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/cache/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/cache/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -30,32 +26,20 @@ type CacheParams struct {
 	Pool       *sync.BufferPool
 	Compressor *compress.Map
 	Driver     driver.Driver
-	Tracer     *tracer.Tracer
-	Logger     *logger.Logger
-	Meter      *metrics.Meter
 }
 
 // NewCache from config.
-func NewCache(params CacheParams) cacher.Cache {
+func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {
 		return nil
 	}
 
-	var cache cacher.Cache = &Cache{
+	cache := &Cache{
 		cm:     params.Compressor,
 		em:     params.Encoder,
 		cfg:    params.Config,
 		pool:   params.Pool,
 		driver: params.Driver,
-	}
-	if params.Tracer != nil {
-		cache = tracer.NewCache(params.Config.Kind, params.Tracer, cache)
-	}
-	if params.Logger != nil {
-		cache = logger.NewCache(params.Config.Kind, params.Logger, cache)
-	}
-	if params.Meter != nil {
-		cache = metrics.NewCache(params.Config.Kind, params.Meter, cache)
 	}
 
 	params.Lifecycle.Append(di.Hook{
