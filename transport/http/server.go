@@ -17,8 +17,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/urfave/negroni/v3"
@@ -31,8 +29,6 @@ type ServerParams struct {
 	Mux        *http.ServeMux
 	Config     *Config
 	Logger     *logger.Logger
-	Tracer     *tracer.Tracer
-	Meter      *metrics.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
 	UserID     env.UserID
@@ -51,16 +47,8 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg := negroni.New()
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
-	if params.Tracer != nil {
-		neg.Use(tracer.NewHandler(params.Tracer))
-	}
-
 	if params.Logger != nil {
 		neg.Use(logger.NewHandler(params.Logger))
-	}
-
-	if params.Meter != nil {
-		neg.Use(metrics.NewHandler(name, params.Meter))
 	}
 
 	for _, hd := range params.Handlers {

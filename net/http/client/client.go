@@ -54,10 +54,7 @@ func WithIgnoreRedirect() ClientOption {
 // NewClient for http.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	os := options(opts...)
-	client := &http.Client{
-		Transport: os.roundTripper,
-		Timeout:   os.timeout,
-	}
+	client := http.NewClient(os.roundTripper, os.timeout)
 
 	if os.ignoreRedirect {
 		client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {

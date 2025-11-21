@@ -61,7 +61,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		}
 	}
 
-	mux.HandleFunc(pattern, handler)
+	http.HandleFunc(mux, pattern, handler)
 	return true
 }
 
@@ -80,7 +80,7 @@ func StaticFile(pattern, name string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(strings.Space, http.MethodGet, pattern), handler)
+	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
 	return true
 }
 
@@ -100,7 +100,7 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		}
 	}
 
-	mux.HandleFunc(strings.Join(strings.Space, http.MethodGet, pattern), handler)
+	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
 	return true
 }
 

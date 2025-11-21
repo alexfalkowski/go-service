@@ -24,16 +24,6 @@ func HostID(val string) attribute.KeyValue {
 	return semconv.HostID(val)
 }
 
-// HTTPResponseStatusCode is an alias of semconv.HTTPResponseStatusCode.
-func HTTPResponseStatusCode(val int) attribute.KeyValue {
-	return semconv.HTTPResponseStatusCode(val)
-}
-
-// HTTPRoute is an alias of semconv.HTTPRoute.
-func HTTPRoute(val string) attribute.KeyValue {
-	return semconv.HTTPRoute(val)
-}
-
 // RPCService is an alias of semconv.RPCService.
 func RPCService(val string) attribute.KeyValue {
 	return semconv.RPCService(val)
@@ -82,11 +72,6 @@ func String(key, value string) attribute.KeyValue {
 // DBSystem for attributes.
 func DBSystem(name string) attribute.KeyValue {
 	return semconv.DBSystemNameKey.String(name)
-}
-
-// HTTPRequestMethod for attributes.
-func HTTPRequestMethod(name string) attribute.KeyValue {
-	return semconv.HTTPRequestMethodKey.String(name)
 }
 
 // GRPCStatusCode for attributes.

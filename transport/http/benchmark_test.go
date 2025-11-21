@@ -148,15 +148,14 @@ func BenchmarkHTTP(b *testing.B) {
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
-		tracer := test.NewTracer(lc, nil)
 		cfg := test.NewInsecureTransportConfig()
+		_ = test.NewTracer(lc, nil)
 
 		h, err := th.NewServer(th.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
 			Config:     cfg.HTTP,
 			Logger:     logger,
-			Tracer:     tracer,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
 			ID:         uuid.NewGenerator(),

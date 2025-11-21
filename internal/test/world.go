@@ -33,7 +33,7 @@ import (
 func init() {
 	telemetry.Register()
 	tg.Register(Name, FS)
-	th.Register(Name, FS)
+	th.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }

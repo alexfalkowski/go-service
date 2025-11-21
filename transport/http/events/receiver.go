@@ -30,5 +30,5 @@ func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverF
 	handler, _ = events.NewHTTPReceiveHandler(ctx, protocol, receiver)
 	handler = hooks.NewHandler(r.hook, handler)
 
-	r.mux.Handle(strings.Join(strings.Space, http.MethodPost, path), handler)
+	http.Handle(r.mux, strings.Join(strings.Space, http.MethodPost, path), handler)
 }

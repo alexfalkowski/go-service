@@ -56,7 +56,7 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tr
 	timeout := 5 * time.Second
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", timeout, nc)
-	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientTracer(tracer), http.WithClientUserAgent(ua))
+	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientUserAgent(ua))
 	hc := checker.NewHTTPChecker("https://google.com", timeout, checker.WithRoundTripper(rt))
 	hr := server.NewRegistration("http", timeout, hc)
 
