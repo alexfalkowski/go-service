@@ -1,16 +1,15 @@
 package cache
 
 import (
-	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 )
 
-var cache cacher.Cache
+var cache *Cache
 
 // Register the cache.
-func Register(c cacher.Cache) {
+func Register(c *Cache) {
 	cache = c
 }
 

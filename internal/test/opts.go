@@ -3,7 +3,7 @@ package test
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-health/v2/server"
-	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/bcrypt"
@@ -89,7 +89,7 @@ func decorateConfig(cfg *config.Config) *config.Config {
 
 func invokeServiceRegistrar(_ grpc.ServiceRegistrar) {}
 
-func invokeCache(_ cacher.Cache) {}
+func invokeCache(_ *cache.Cache) {}
 
 func invokeConfigs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 

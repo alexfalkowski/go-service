@@ -44,9 +44,6 @@ func TestValidCache(t *testing.T) {
 					Encoder:    test.Encoder,
 					Pool:       test.Pool,
 					Driver:     driver,
-					Tracer:     world.NewTracer(),
-					Logger:     world.Logger,
-					Meter:      world.Server.Meter,
 				}
 
 				cache := cache.NewCache(params)
@@ -105,9 +102,6 @@ func TestGenericValidCache(t *testing.T) {
 			Encoder:    test.Encoder,
 			Pool:       test.Pool,
 			Driver:     driver,
-			Tracer:     world.NewTracer(),
-			Logger:     world.Logger,
-			Meter:      world.Server.Meter,
 		}
 
 		kind := cache.NewCache(params)
@@ -152,9 +146,6 @@ func TestExpiredCache(t *testing.T) {
 			Encoder:    test.Encoder,
 			Pool:       test.Pool,
 			Driver:     driver,
-			Tracer:     world.NewTracer(),
-			Logger:     world.Logger,
-			Meter:      world.Server.Meter,
 		}
 
 		kind := cache.NewCache(params)
@@ -242,9 +233,6 @@ func TestDisabledCache(t *testing.T) {
 				Compressor: test.Compressor,
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
-				Tracer:     world.NewTracer(),
-				Logger:     world.Logger,
-				Meter:      world.Server.Meter,
 				Driver:     &test.Cache{},
 			}
 
@@ -282,9 +270,6 @@ func TestErroneousSave(t *testing.T) {
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
 				Driver:     driver,
-				Tracer:     world.NewTracer(),
-				Logger:     world.Logger,
-				Meter:      world.Server.Meter,
 			}
 
 			kind := cache.NewCache(params)
@@ -325,9 +310,6 @@ func TestErroneousGet(t *testing.T) {
 				Encoder:    test.Encoder,
 				Pool:       test.Pool,
 				Driver:     value.Value,
-				Tracer:     world.NewTracer(),
-				Logger:     world.Logger,
-				Meter:      world.Server.Meter,
 			}
 
 			kind := cache.NewCache(params)

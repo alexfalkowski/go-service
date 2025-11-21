@@ -5,9 +5,11 @@ import (
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/redis"
 	"github.com/faabiosr/cachego/sync"
+	otel "github.com/redis/go-redis/extra/redisotel/v9"
 	client "github.com/redis/go-redis/v9"
 	"github.com/redis/go-redis/v9/maintnotifications"
 )
@@ -37,7 +39,11 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 			Mode: maintnotifications.ModeDisabled,
 		}
 
-		return redis.New(client.NewClient(opts)), nil
+		client := client.NewClient(opts)
+		runtime.Must(otel.InstrumentTracing(client))
+		runtime.Must(otel.InstrumentMetrics(client))
+
+		return redis.New(client), nil
 	case "sync":
 		return sync.New(), nil
 	default:

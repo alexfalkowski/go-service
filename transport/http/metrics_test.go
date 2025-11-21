@@ -12,6 +12,42 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func TestPrometheusHTTP(t *testing.T) {
+	Convey("Given I register the metrics handler", t, func() {
+		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
+		world.Register()
+
+		_, err := world.OpenDatabase()
+		So(err, ShouldBeNil)
+
+		world.RequireStart()
+
+		Convey("When I query metrics", func() {
+			ctx, cancel := test.Timeout()
+			defer cancel()
+
+			header := http.Header{}
+			url := world.NamedServerURL("http", "metrics")
+
+			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
+			So(err, ShouldBeNil)
+
+			Convey("Then I should have valid metrics", func() {
+				So(res.StatusCode, ShouldEqual, http.StatusOK)
+
+				So(body, ShouldContainSubstring, "go_info")
+				So(body, ShouldContainSubstring, `db_system="redis"`)
+				So(body, ShouldContainSubstring, `db_system_name="pg"`)
+				So(body, ShouldContainSubstring, "system")
+				So(body, ShouldContainSubstring, "process")
+				So(body, ShouldContainSubstring, "runtime")
+			})
+		})
+
+		world.RequireStop()
+	})
+}
+
 func TestPrometheusAuthHTTP(t *testing.T) {
 	Convey("Given I register the metrics handler", t, func() {
 		cfg := test.NewToken("jwt")
@@ -51,43 +87,8 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 				So(res.StatusCode, ShouldEqual, http.StatusOK)
 
 				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "cache_misses_total")
-				So(body, ShouldContainSubstring, "sql_max_open_total")
-				So(body, ShouldContainSubstring, "system")
-				So(body, ShouldContainSubstring, "process")
-				So(body, ShouldContainSubstring, "runtime")
-			})
-		})
-
-		world.RequireStop()
-	})
-}
-
-func TestPrometheusHTTP(t *testing.T) {
-	Convey("Given I register the metrics handler", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-		world.Register()
-
-		_, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
-
-		world.RequireStart()
-
-		Convey("When I query metrics", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
-
-			header := http.Header{}
-			url := world.NamedServerURL("http", "metrics")
-
-			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid metrics", func() {
-				So(res.StatusCode, ShouldEqual, http.StatusOK)
-
-				So(body, ShouldContainSubstring, "go_info")
-				So(body, ShouldContainSubstring, "sql_max_open_total")
+				So(body, ShouldContainSubstring, `db_system="redis"`)
+				So(body, ShouldContainSubstring, `db_system_name="pg"`)
 				So(body, ShouldContainSubstring, "system")
 				So(body, ShouldContainSubstring, "process")
 				So(body, ShouldContainSubstring, "runtime")

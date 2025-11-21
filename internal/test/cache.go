@@ -2,14 +2,10 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/cache"
-	"github.com/alexfalkowski/go-service/v2/cache/cacher"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -67,7 +63,7 @@ func (*ErrCache) Save(_, _ string, _ time.Duration) error {
 	return ErrFailed
 }
 
-func redisCache(lc di.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tracer *tracer.Config) cacher.Cache {
+func redisCache(lc di.Lifecycle) *cache.Cache {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	driver, err := driver.NewDriver(FS, cfg)
@@ -80,9 +76,6 @@ func redisCache(lc di.Lifecycle, logger *logger.Logger, meter *metrics.Meter, tr
 		Encoder:    Encoder,
 		Pool:       Pool,
 		Driver:     driver,
-		Tracer:     NewTracer(lc, tracer),
-		Logger:     logger,
-		Meter:      meter,
 	}
 
 	return cache.NewCache(params)

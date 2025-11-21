@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
-	"github.com/alexfalkowski/go-service/v2/cache/cacher"
+	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -177,7 +177,6 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	registerRest(mux)
 
 	receiver, sender := NewEvents(mux, os.rt, generator)
-	cache := redisCache(lc, logger, meter, tracer)
 
 	return &World{
 		Logger: logger, Tracer: tracer,
@@ -185,7 +184,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Server: server, Client: client,
 		Rest:     restClient(client, os),
 		Receiver: receiver, Sender: sender,
-		Cache: cache, PG: pgConfig,
+		Cache: redisCache(lc), PG: pgConfig,
 	}
 }
 
@@ -200,7 +199,7 @@ type World struct {
 	*Client
 	*sdk.Event
 	*events.Receiver
-	cacher.Cache
+	*cache.Cache
 	Sender client.Client
 	Rest   *rest.Client
 }
@@ -264,7 +263,9 @@ func (w *World) ResponseWithBody(ctx context.Context, url, method string, header
 	}
 
 	data, err := io.ReadAll(res.Body)
-	runtime.Must(err)
+	if err != nil && !context.IsCanceledError(err) {
+		runtime.Must(err)
+	}
 
 	return res, bytes.String(bytes.TrimSpace(data)), res.Body.Close()
 }

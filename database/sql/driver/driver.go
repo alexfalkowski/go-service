@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
@@ -79,22 +80,23 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
-	err := errors.Join(errs...)
-	if err != nil {
+	if err := errors.Join(errs...); err != nil {
 		return nil, err
 	}
 
 	attrs := otelsql.WithAttributes(semconv.DBSystemNameKey.String(name))
 
 	masters, _ := db.GetAllMasters()
-	for _, db := range masters {
-		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, attrs))
-	}
+	register(masters, attrs)
 
 	slaves, _ := db.GetAllSlaves()
-	for _, db := range slaves {
-		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, attrs))
-	}
+	register(slaves, attrs)
 
 	return db, nil
+}
+
+func register(dbs []*sqlx.DB, opts ...otelsql.Option) {
+	for _, db := range dbs {
+		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, opts...))
+	}
 }
