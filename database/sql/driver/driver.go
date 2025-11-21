@@ -4,20 +4,17 @@ import (
 	"database/sql"
 	"database/sql/driver"
 
+	"github.com/XSAM/otelsql"
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
-	tl "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/logger"
-	tt "github.com/alexfalkowski/go-service/v2/database/sql/driver/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"
-	"github.com/ngrok/sqlmw"
+	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
 )
 
 // Driver is an alias for the driver.Driver type.
@@ -31,18 +28,9 @@ func Register(name string, driver Driver) (err error) {
 		}
 	}()
 
-	sql.Register(name, driver)
+	sql.Register(name, otelsql.WrapDriver(driver, otelsql.WithAttributes(semconv.DBSystemNameKey.String(name))))
 
 	return err
-}
-
-// NewDriver creates a new driver with telemetry.
-func NewDriver(name string, driver Driver, trace *tracer.Tracer, log *logger.Logger) Driver {
-	var interceptor sqlmw.Interceptor = &sqlmw.NullInterceptor{}
-	interceptor = tt.NewInterceptor(name, trace, interceptor)
-	interceptor = tl.NewInterceptor(name, log, interceptor)
-
-	return sqlmw.Driver(driver, interceptor)
 }
 
 // Open a DB pool.
@@ -91,6 +79,22 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
+	err := errors.Join(errs...)
+	if err != nil {
+		return nil, err
+	}
 
-	return db, errors.Join(errs...)
+	attrs := otelsql.WithAttributes(semconv.DBSystemNameKey.String(name))
+
+	masters, _ := db.GetAllMasters()
+	for _, db := range masters {
+		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, attrs))
+	}
+
+	slaves, _ := db.GetAllSlaves()
+	for _, db := range slaves {
+		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, attrs))
+	}
+
+	return db, nil
 }
