@@ -12,9 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // ClientOption for gRPC.
@@ -25,11 +24,9 @@ type ClientOption interface {
 type clientOpts struct {
 	generator   id.Generator
 	gen         token.Generator
-	meter       *metrics.Meter
 	security    *tls.Config
 	logger      *logger.Logger
 	retry       *retry.Config
-	tracer      *tracer.Tracer
 	limiter     *limiter.Client
 	userAgent   env.UserAgent
 	id          env.UserID
@@ -118,20 +115,6 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 	})
 }
 
-// WithClientTracer for gRPC.
-func WithClientTracer(tracer *tracer.Tracer) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.tracer = tracer
-	})
-}
-
-// WithClientMetrics for gRPC.
-func WithClientMetrics(meter *metrics.Meter) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.meter = meter
-	})
-}
-
 // WithClientUserAgent for gRPC.
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
@@ -196,6 +179,8 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 		return nil, err
 	}
 
+	os = append(os, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+
 	return grpc.NewClient(target, os...)
 }
 
@@ -223,14 +208,6 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, logger.UnaryClientInterceptor(os.logger))
 	}
 
-	if os.meter != nil {
-		unary = append(unary, metrics.NewClient(name, os.meter).UnaryInterceptor())
-	}
-
-	if os.tracer != nil {
-		unary = append(unary, tracer.UnaryClientInterceptor(os.tracer))
-	}
-
 	if os.gen != nil {
 		unary = append(unary, token.UnaryClientInterceptor(os.id, os.gen))
 	}
@@ -245,14 +222,6 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 
 	if opts.logger != nil {
 		stream = append(stream, logger.StreamClientInterceptor(opts.logger))
-	}
-
-	if opts.meter != nil {
-		stream = append(stream, metrics.NewClient(name, opts.meter).StreamInterceptor())
-	}
-
-	if opts.tracer != nil {
-		stream = append(stream, tracer.StreamClientInterceptor(opts.tracer))
 	}
 
 	if opts.gen != nil {

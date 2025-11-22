@@ -17,9 +17,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // ServerParams for gRPC.
@@ -28,8 +27,6 @@ type ServerParams struct {
 	Shutdowner di.Shutdowner
 	Config     *Config
 	Logger     *logger.Logger
-	Tracer     *tracer.Tracer
-	Meter      *metrics.Meter
 	UserAgent  env.UserAgent
 	Version    env.Version
 	UserID     env.UserID
@@ -51,25 +48,21 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, prefix(err)
 	}
 
-	var meter *metrics.Server
-	if params.Meter != nil {
-		meter = metrics.NewServer(name, params.Meter)
-	}
-
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	svr := grpc.NewServer(timeout,
-		unaryServerOption(params, meter, params.Unary...),
-		streamServerOption(params, meter, params.Stream...),
+	grpcServer := grpc.NewServer(timeout,
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		unaryServerOption(params, params.Unary...),
+		streamServerOption(params, params.Stream...),
 		opt,
 	)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
-	serv, err := server.NewService("grpc", svr, cfg, params.Logger, params.Shutdowner)
+	service, err := server.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	return &Server{server: svr, Service: serv}, nil
+	return &Server{server: grpcServer, Service: service}, nil
 }
 
 // Server for gRPC.
@@ -94,19 +87,11 @@ func (s *Server) GetService() *server.Service {
 	return s.Service
 }
 
-func unaryServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
+func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInterceptor) grpc.ServerOption {
 	uis := []grpc.UnaryServerInterceptor{meta.UnaryServerInterceptor(params.UserAgent, params.Version, params.ID)}
-
-	if params.Tracer != nil {
-		uis = append(uis, tracer.UnaryServerInterceptor(params.Tracer))
-	}
 
 	if params.Logger != nil {
 		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
-	}
-
-	if server != nil {
-		uis = append(uis, server.UnaryInterceptor())
 	}
 
 	if params.Verifier != nil {
@@ -122,19 +107,11 @@ func unaryServerOption(params ServerParams, server *metrics.Server, interceptors
 	return grpc.ChainUnaryInterceptor(uis...)
 }
 
-func streamServerOption(params ServerParams, server *metrics.Server, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
+func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerInterceptor) grpc.ServerOption {
 	sis := []grpc.StreamServerInterceptor{meta.StreamServerInterceptor(params.UserAgent, params.Version, params.ID)}
-
-	if params.Tracer != nil {
-		sis = append(sis, tracer.StreamServerInterceptor(params.Tracer))
-	}
 
 	if params.Logger != nil {
 		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
-	}
-
-	if server != nil {
-		sis = append(sis, server.StreamInterceptor())
 	}
 
 	if params.Verifier != nil {

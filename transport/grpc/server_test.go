@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	grpc.Register(test.Name, test.FS)
+	grpc.Register(test.FS)
 }
 
 func TestServer(t *testing.T) {

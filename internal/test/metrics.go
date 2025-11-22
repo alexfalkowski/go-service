@@ -8,17 +8,17 @@ import (
 )
 
 // NewOTLPMeter for test.
-func NewOTLPMeter(lc di.Lifecycle) *metrics.Meter {
+func NewOTLPMeter(lc di.Lifecycle) metrics.Meter {
 	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeter for test.
-func NewPrometheusMeter(lc di.Lifecycle) *metrics.Meter {
+func NewPrometheusMeter(lc di.Lifecycle) metrics.Meter {
 	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeter for test.
-func NewMeter(lc di.Lifecycle, c *metrics.Config) *metrics.Meter {
+func NewMeter(lc di.Lifecycle, c *metrics.Config) metrics.Meter {
 	return metrics.NewMeter(Name, Version, NewMeterProvider(lc, c))
 }
 

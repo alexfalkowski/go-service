@@ -10,7 +10,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	grpc.Register(test.Name, test.FS)
+	grpc.Register(test.FS)
 
 	Convey("Given I have invalid credentials", t, func() {
 		c := &tls.Config{Cert: "bob", Key: "bob"}

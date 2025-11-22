@@ -24,16 +24,6 @@ func HostID(val string) attribute.KeyValue {
 	return semconv.HostID(val)
 }
 
-// RPCService is an alias of semconv.RPCService.
-func RPCService(val string) attribute.KeyValue {
-	return semconv.RPCService(val)
-}
-
-// RPCMethod is an alias of semconv.RPCMethod.
-func RPCMethod(val string) attribute.KeyValue {
-	return semconv.RPCMethod(val)
-}
-
 // ServiceName is an alias of semconv.ServiceName.
 func ServiceName(val string) attribute.KeyValue {
 	return semconv.ServiceName(val)
@@ -47,34 +37,4 @@ func ServiceVersion(val string) attribute.KeyValue {
 // DeploymentEnvironmentName is an alias of semconv.DeploymentEnvironmentName.
 func DeploymentEnvironmentName(val string) attribute.KeyValue {
 	return semconv.DeploymentEnvironmentName(val)
-}
-
-// Bool for attributes.
-func Bool(key string, value bool) attribute.KeyValue {
-	return attribute.Key(key).Bool(value)
-}
-
-// Float64 for attributes.
-func Float64(key string, value float64) attribute.KeyValue {
-	return attribute.Key(key).Float64(value)
-}
-
-// Int64 for attributes.
-func Int64(key string, value int64) attribute.KeyValue {
-	return attribute.Key(key).Int64(value)
-}
-
-// String for attributes.
-func String(key, value string) attribute.KeyValue {
-	return attribute.Key(key).String(value)
-}
-
-// DBSystem for attributes.
-func DBSystem(name string) attribute.KeyValue {
-	return semconv.DBSystemNameKey.String(name)
-}
-
-// GRPCStatusCode for attributes.
-func GRPCStatusCode(code int64) attribute.KeyValue {
-	return semconv.RPCGRPCStatusCodeKey.Int64(code)
 }
