@@ -304,6 +304,15 @@ telemetry:
       Authorization: path to key
 ```
 
+### Telemetry Libraries
+
+- <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime>
+- <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/host>
+- <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp>
+- <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc>
+- <https://github.com/redis/go-redis/tree/master/extra/redisotel>
+- <https://github.com/XSAM/otelsql>
+
 ### Telemetry Dependencies
 
 ![Dependencies](./assets/telemetry.png)
