@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	tg.Register(test.Name, test.FS)
+	tg.Register(test.FS)
 }
 
 //nolint:funlen
@@ -138,12 +138,12 @@ func BenchmarkGRPC(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 		lc := fxtest.NewLifecycle(b)
-		tracer := test.NewTracer(lc, nil)
+		_ = test.NewTracer(lc, nil)
 		cfg := test.NewInsecureTransportConfig()
 
 		g, err := tg.NewServer(tg.ServerParams{
 			Shutdowner: test.NewShutdowner(),
-			Config:     cfg.GRPC, Logger: logger, Tracer: tracer,
+			Config:     cfg.GRPC, Logger: logger,
 			UserAgent: test.UserAgent, Version: test.Version,
 		})
 		runtime.Must(err)

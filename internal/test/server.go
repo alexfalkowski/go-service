@@ -24,7 +24,7 @@ import (
 // Server for test.
 type Server struct {
 	Lifecycle       di.Lifecycle
-	Meter           *metrics.Meter
+	Meter           metrics.Meter
 	Verifier        token.Verifier
 	Mux             *http.ServeMux
 	HTTPServer      *th.Server
@@ -45,13 +45,14 @@ type Server struct {
 // Register server.
 func (s *Server) Register() {
 	sh := NewShutdowner()
-	tracer := NewTracer(s.Lifecycle, s.Tracer)
+	_ = NewTracer(s.Lifecycle, s.Tracer)
 	servers := []*server.Service{}
 
 	if s.RegisterHTTP {
 		params := th.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
-			Config: s.TransportConfig.HTTP, Logger: s.Logger,
+			Config:   s.TransportConfig.HTTP,
+			Logger:   s.Logger,
 			Limiter:  s.HTTPLimiter,
 			Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
@@ -67,9 +68,10 @@ func (s *Server) Register() {
 
 	if s.RegisterGRPC {
 		params := grpc.ServerParams{
-			Shutdowner: sh, Config: s.TransportConfig.GRPC,
-			Logger: s.Logger, Tracer: tracer, Meter: s.Meter,
-			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
+			Shutdowner: sh,
+			Config:     s.TransportConfig.GRPC,
+			Logger:     s.Logger,
+			Verifier:   s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 			Limiter: s.GRPCLimiter,
 		}

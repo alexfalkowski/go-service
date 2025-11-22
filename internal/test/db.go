@@ -2,7 +2,6 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry/metrics"
 	"github.com/linxGnu/mssqlx"
 )
 
@@ -19,8 +18,6 @@ func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	metrics.Register(dbs, w.Server.Meter)
 
 	return dbs, err
 }

@@ -75,7 +75,7 @@ func (InvalidMeter) RegisterCallback(metric.Callback, ...metric.Observable) (met
 	return nil, errInvalid
 }
 
-func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) *metrics.Meter {
+func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) metrics.Meter {
 	if os.telemetry == "otlp" {
 		return NewOTLPMeter(lc)
 	}

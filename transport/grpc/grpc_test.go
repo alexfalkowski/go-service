@@ -22,7 +22,8 @@ func TestInsecureUnary(t *testing.T) {
 
 		Convey("When I query for a greet", func() {
 			ctx := meta.WithAttribute(t.Context(), "test", meta.Ignored("test"))
-			ctx = meta.WithAttribute(ctx, "ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
+			ctx = meta.WithAttribute(ctx, "real-ip", meta.ToString(net.ParseIP("192.168.8.0")))
+			ctx = meta.WithAttribute(ctx, "redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
 			conn := world.NewGRPC()
 			defer conn.Close()

@@ -66,19 +66,19 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	svr := http.NewServer(timeout, neg)
+	httpServer := http.NewServer(timeout, neg)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	serv, err := server.NewService("http", svr, cfg, params.Logger, params.Shutdowner)
+	service, err := server.NewService("http", httpServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	return &Server{serv}, nil
+	return &Server{service}, nil
 }
 
 // Server for HTTP.

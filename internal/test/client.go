@@ -28,7 +28,7 @@ type Client struct {
 	TLS          *tls.Config
 	ID           id.Generator
 	RoundTripper http.RoundTripper
-	Meter        *metrics.Meter
+	Meter        metrics.Meter
 	Generator    token.Generator
 	HTTPLimiter  *hl.Client
 	GRPCLimiter  *gl.Client
@@ -42,13 +42,17 @@ func (c *Client) NewTracer() *tracer.Tracer {
 
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
+	_ = c.NewTracer()
 	opts := []h.ClientOption{
 		h.WithClientLogger(c.Logger),
-		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
+		h.WithClientRoundTripper(c.RoundTripper),
+		h.WithClientBreaker(),
 		h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientUserAgent(UserAgent),
-		h.WithClientTokenGenerator(UserID, c.Generator), h.WithClientTimeout("1m"),
-		h.WithClientTLS(c.TLS), h.WithClientID(c.ID),
+		h.WithClientTokenGenerator(UserID, c.Generator),
+		h.WithClientTimeout("1m"),
+		h.WithClientTLS(c.TLS),
+		h.WithClientID(c.ID),
 		h.WithClientLimiter(c.HTTPLimiter),
 	}
 
@@ -63,14 +67,19 @@ func (c *Client) NewHTTP() *http.Client {
 }
 
 func (c *Client) NewGRPC() *grpc.ClientConn {
-	tracer := c.NewTracer()
+	_ = c.NewTracer()
 	opts := []g.ClientOption{
-		g.WithClientUnaryInterceptors(), g.WithClientStreamInterceptors(),
-		g.WithClientLogger(c.Logger), g.WithClientTracer(tracer),
-		g.WithClientBreaker(), g.WithClientRetry(c.Transport.GRPC.Retry),
-		g.WithClientMetrics(c.Meter), g.WithClientUserAgent(UserAgent),
-		g.WithClientTokenGenerator(UserID, c.Generator), g.WithClientTimeout("1m"),
-		g.WithClientDialOption(), g.WithClientTLS(c.TLS), g.WithClientID(c.ID),
+		g.WithClientUnaryInterceptors(),
+		g.WithClientStreamInterceptors(),
+		g.WithClientLogger(c.Logger),
+		g.WithClientBreaker(),
+		g.WithClientRetry(c.Transport.GRPC.Retry),
+		g.WithClientUserAgent(UserAgent),
+		g.WithClientTokenGenerator(UserID, c.Generator),
+		g.WithClientTimeout("1m"),
+		g.WithClientDialOption(),
+		g.WithClientTLS(c.TLS),
+		g.WithClientID(c.ID),
 		g.WithClientLimiter(c.GRPCLimiter),
 	}
 

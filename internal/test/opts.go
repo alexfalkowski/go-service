@@ -27,6 +27,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/linxGnu/mssqlx"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"google.golang.org/grpc"
@@ -44,7 +45,7 @@ func Options() []di.Option {
 		di.Register(shutdown), di.Register(invokeFeatureClient), di.Register(invokeWebhooks), di.Register(invokeConfigs),
 		di.Register(invokeMeter), di.Register(invokeNetwork), di.Register(invokeCache),
 		di.Register(invokeCrypt), di.Register(invokeEnvironment), di.Register(invokeTokens),
-		di.Register(invokeAccessController),
+		di.Register(invokeAccessController), di.Register(invokeDB),
 	}
 }
 
@@ -93,7 +94,7 @@ func invokeCache(_ *cache.Cache) {}
 
 func invokeConfigs(_ *pg.Config, _ *feature.Config, _ *id.Config) {}
 
-func invokeMeter(_ *metrics.Meter) {}
+func invokeMeter(_ metrics.Meter) {}
 
 func invokeFeatureClient(_ *openfeature.Client) {}
 
@@ -106,6 +107,8 @@ func invokeNetwork(_ time.Network) {}
 func invokeAccessController(_ ht.AccessController, _ gt.AccessController) {}
 
 func invokeTokens(_ ht.Generator, _ ht.Verifier, _ gt.Generator, _ gt.Verifier) {}
+
+func invokeDB(_ *mssqlx.DBs) {}
 
 func invokeCrypt(
 	signer *bcrypt.Signer,

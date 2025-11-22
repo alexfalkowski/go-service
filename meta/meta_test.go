@@ -58,6 +58,23 @@ func TestNoneCase(t *testing.T) {
 	})
 }
 
+func TestPrefix(t *testing.T) {
+	Convey("Given I have some meta values", t, func() {
+		ctx := t.Context()
+		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
+		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
+		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
+
+		Convey("When I get the strings", func() {
+			m := meta.Strings(ctx, "test.")
+
+			Convey("Then I should have valid map", func() {
+				So(m, ShouldEqual, meta.Map{"test.testId": "1", "test.redacted": "*"})
+			})
+		})
+	})
+}
+
 func TestUserID(t *testing.T) {
 	Convey("When I set user-id", t, func() {
 		ctx := meta.WithUserID(t.Context(), meta.String("user-id"))

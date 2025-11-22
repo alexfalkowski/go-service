@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/stats"
 )
 
 type (
@@ -77,6 +78,16 @@ type (
 	// UnaryServerInterceptor is an alias of grpc.UnaryServerInterceptor.
 	UnaryServerInterceptor = grpc.UnaryServerInterceptor
 )
+
+// StatsHandler is an alias of grpc.StatsHandler.
+func StatsHandler(h stats.Handler) ServerOption {
+	return grpc.StatsHandler(h)
+}
+
+// WithStatsHandler is an alias of grpc.WithStatsHandler.
+func WithStatsHandler(h stats.Handler) DialOption {
+	return grpc.WithStatsHandler(h)
+}
 
 // ChainUnaryInterceptor is an alias of grpc.ChainUnaryInterceptor.
 func ChainUnaryInterceptor(interceptors ...UnaryServerInterceptor) ServerOption {
