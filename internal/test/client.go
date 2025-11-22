@@ -42,12 +42,11 @@ func (c *Client) NewTracer() *tracer.Tracer {
 
 // NewHTTP client for test.
 func (c *Client) NewHTTP() *http.Client {
-	tracer := c.NewTracer()
 	opts := []h.ClientOption{
 		h.WithClientLogger(c.Logger),
 		h.WithClientRoundTripper(c.RoundTripper), h.WithClientBreaker(),
-		h.WithClientTracer(tracer), h.WithClientRetry(c.Transport.HTTP.Retry),
-		h.WithClientMetrics(c.Meter), h.WithClientUserAgent(UserAgent),
+		h.WithClientRetry(c.Transport.HTTP.Retry),
+		h.WithClientUserAgent(UserAgent),
 		h.WithClientTokenGenerator(UserID, c.Generator), h.WithClientTimeout("1m"),
 		h.WithClientTLS(c.TLS), h.WithClientID(c.ID),
 		h.WithClientLimiter(c.HTTPLimiter),

@@ -52,7 +52,7 @@ func (s *Server) Register() {
 		params := th.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
 			Config: s.TransportConfig.HTTP, Logger: s.Logger,
-			Tracer: tracer, Meter: s.Meter, Limiter: s.HTTPLimiter,
+			Limiter:  s.HTTPLimiter,
 			Handlers: []negroni.Handler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,

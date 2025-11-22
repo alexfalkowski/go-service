@@ -10,7 +10,7 @@ import (
 )
 
 func TestInvalidServer(t *testing.T) {
-	http.Register(test.Name, test.FS)
+	http.Register(test.FS)
 
 	Convey("When I try to create a server with invalid tls configuration", t, func() {
 		cfg := &http.Config{

@@ -12,8 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
 )
@@ -27,11 +25,9 @@ type clientOpts struct {
 	gen          token.Generator
 	generator    id.Generator
 	roundTripper http.RoundTripper
-	tracer       *tracer.Tracer
 	logger       *logger.Logger
 	retry        *retry.Config
 	tls          *tls.Config
-	meter        *metrics.Meter
 	limiter      *limiter.Client
 	userAgent    env.UserAgent
 	id           env.UserID
@@ -96,20 +92,6 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 	})
 }
 
-// WithClientTracer for HTTP.
-func WithClientTracer(tracer *tracer.Tracer) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.tracer = tracer
-	})
-}
-
-// WithClientMetrics for HTTP.
-func WithClientMetrics(meter *metrics.Meter) ClientOption {
-	return clientOptionFunc(func(o *clientOpts) {
-		o.meter = meter
-	})
-}
-
 // WithClientUserAgent for HTTP.
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
@@ -171,14 +153,6 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		hrt = logger.NewRoundTripper(os.logger, hrt)
 	}
 
-	if os.meter != nil {
-		hrt = metrics.NewRoundTripper(name, os.meter, hrt)
-	}
-
-	if os.tracer != nil {
-		hrt = tracer.NewRoundTripper(os.tracer, hrt)
-	}
-
 	hrt = meta.NewRoundTripper(os.userAgent, os.generator, hrt)
 
 	return hrt, nil
@@ -193,12 +167,7 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 		return nil, err
 	}
 
-	client := &http.Client{
-		Transport: transport,
-		Timeout:   os.timeout,
-	}
-
-	return client, nil
+	return http.NewClient(transport, os.timeout), nil
 }
 
 func roundTripper(os *clientOpts) (http.RoundTripper, error) {

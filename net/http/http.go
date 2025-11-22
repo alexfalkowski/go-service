@@ -2,12 +2,15 @@ package http
 
 import (
 	"net/http"
+	"net/http/httptrace"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const (
@@ -106,6 +109,19 @@ var (
 	NoBody = http.NoBody
 )
 
+// NewClient will return a new http.Client with the given round tripper and timeout.
+func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
+	return &http.Client{
+		Transport: otelhttp.NewTransport(
+			rt,
+			otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+				return otelhttptrace.NewClientTrace(ctx)
+			}),
+		),
+		Timeout: timeout,
+	}
+}
+
 // NewRequestWithContext is an alias for http.NewRequestWithContext.
 func NewRequestWithContext(ctx context.Context, method, url string, body io.Reader) (*Request, error) {
 	return http.NewRequestWithContext(ctx, method, url, body)
@@ -114,6 +130,16 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // NewServeMux is an alias for http.NewServeMux.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
+}
+
+// HandleFunc will register the handler for the given pattern.
+func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
+	Handle(mux, pattern, handler)
+}
+
+// Handle will register the handler for the given pattern.
+func Handle(mux *ServeMux, pattern string, handler http.Handler) {
+	mux.Handle(pattern, otelhttp.NewHandler(handler, pattern))
 }
 
 // StatusText is an alias for http.StatusText.
