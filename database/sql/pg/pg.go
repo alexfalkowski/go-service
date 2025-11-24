@@ -4,14 +4,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	pgx "github.com/jackc/pgx/v5/stdlib"
 	"github.com/linxGnu/mssqlx"
 )
 
 // Register for pg.
-func Register(trace *tracer.Tracer, log *logger.Logger) {
+func Register() {
 	_ = driver.Register("pg", pgx.GetDefaultDriver())
 }
 

@@ -23,7 +23,7 @@ func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
 }
 
 func (w *World) registerDatabase() {
-	pg.Register(w.NewTracer(), w.Logger)
+	pg.Register()
 }
 
 func pgConfig(os *worldOpts) *pg.Config {
