@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.207.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.207.0) - 2025-11-24
+
+- [`cc07940`](https://github.com/alexfalkowski/go-service/commit/cc0794025e636cd21f67bd0cb48ecc70af7fec14) feat(deps): bump github.com/arl/statsviz from 0.7.3 to 0.8.0 (#1977)
+- [`d6bb60a`](https://github.com/alexfalkowski/go-service/commit/d6bb60a147df4922e91aba12d73284bfd552dd9a) docs(telemetry): update readme (#1976)
+
 ## [v2.206.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.206.0) - 2025-11-22
 
 - [`b11b179`](https://github.com/alexfalkowski/go-service/commit/b11b179d427b055dd85645f76910ac3090631087) feat(telemetry): add go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc (#1975)
