@@ -31,6 +31,7 @@ func newOtlpLogger(params LoggerParams) *slog.Logger {
 
 	params.Lifecycle.Append(di.Hook{
 		OnStop: func(ctx context.Context) error {
+			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
 			_ = exporter.Shutdown(ctx)
 
