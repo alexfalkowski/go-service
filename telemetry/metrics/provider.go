@@ -49,7 +49,10 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 			return prefix(err)
 		},
 		OnStop: func(ctx context.Context) error {
-			return provider.Shutdown(ctx)
+			// Do not return error as this will stop all others.
+			_ = provider.Shutdown(ctx)
+
+			return nil
 		},
 	})
 

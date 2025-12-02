@@ -1,8 +1,6 @@
 package tracer
 
 import (
-	"errors"
-
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -50,7 +48,11 @@ func NewTracer(params TracerParams) *Tracer {
 			return prefix(exporter.Start(ctx))
 		},
 		OnStop: func(ctx context.Context) error {
-			return prefix(errors.Join(provider.Shutdown(ctx), exporter.Shutdown(ctx)))
+			// Do not return error as this will stop all others.
+			_ = provider.Shutdown(ctx)
+			_ = exporter.Shutdown(ctx)
+
+			return nil
 		},
 	})
 
