@@ -2,7 +2,7 @@ package attributes
 
 import (
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.38.0"
 )
 
 // SchemaURL is an alias of semconv.SchemaURL.
