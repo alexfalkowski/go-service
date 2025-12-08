@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.212.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.212.0) - 2025-12-08
+
+- [`f253291`](https://github.com/alexfalkowski/go-service/commit/f2532912d7ade3ac04d3a5dc15c09cc52a714942) feat(deps): make update-all-dep (#1996)
+- [`356b5c6`](https://github.com/alexfalkowski/go-service/commit/356b5c6adb569b067d870e1e8cccbab1e4ac3a1e) build(ci): use latest published images (#1995)
+- [`3898754`](https://github.com/alexfalkowski/go-service/commit/3898754e512aa2abeb3ee4434430ca435a0a9c45) build(ci): use latest published images (#1994)
+- [`2c8b0e9`](https://github.com/alexfalkowski/go-service/commit/2c8b0e97e22487e3696c81b3b843c33ab4d1225d) build(ci): use latest published images (#1993)
+- [`dc202f4`](https://github.com/alexfalkowski/go-service/commit/dc202f41611fefeba43c5a62cb0343d7ae73b11c) build(ci): use latest published images (#1992)
+- [`c8f1ed8`](https://github.com/alexfalkowski/go-service/commit/c8f1ed81fd5d5013914afd78f0c90c084b5afe50) build(deps): bump bin from `5ed27e1` to `6174b3d` (#1991)
+- [`65fa7c0`](https://github.com/alexfalkowski/go-service/commit/65fa7c0b733e1400ad85f14b31fe41fa846fa020) build(ci): use latest published images (#1990)
+- [`5a05d81`](https://github.com/alexfalkowski/go-service/commit/5a05d812dd393c83d92f3d5d87a4085eff7d394b) build(ci): use latest published images (#1989)
+- [`236c3d4`](https://github.com/alexfalkowski/go-service/commit/236c3d4184f352a3a85fb0c6e8497cbf695ce480) build(ci): use latest published images (#1988)
+- [`8ee68ff`](https://github.com/alexfalkowski/go-service/commit/8ee68ffeba000baa5c9017ccf18746687645baa2) build(ci): use latest published images (#1987)
+- [`25d1f3e`](https://github.com/alexfalkowski/go-service/commit/25d1f3e74ec1a36832e0e02c3c407afc19e36f7f) build(deps): upgraded github.com/alexfalkowski/bin (#1986)
+
 ## [v2.211.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.211.0) - 2025-12-02
 
 - [`c18929c`](https://github.com/alexfalkowski/go-service/commit/c18929c5da5df38c80773d07d9c4adb55c607e60) feat(deps): bump github.com/klauspost/compress from 1.18.1 to 1.18.2 (#1984)
