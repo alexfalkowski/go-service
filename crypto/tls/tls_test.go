@@ -5,21 +5,16 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfig(t *testing.T) {
 	configs := []*tls.Config{nil, {}}
 
 	for _, c := range configs {
-		Convey("When I try to create with missing config", t, func() {
-			c, err := tls.NewConfig(test.FS, c)
-
-			Convey("Then I should have a default TLS config", func() {
-				So(c, ShouldNotBeNil)
-				So(err, ShouldBeNil)
-			})
-		})
+		c, err := tls.NewConfig(test.FS, c)
+		require.NoError(t, err)
+		require.NotNil(t, c)
 	}
 
 	configs = []*tls.Config{
@@ -29,12 +24,7 @@ func TestConfig(t *testing.T) {
 	}
 
 	for _, c := range configs {
-		Convey("When I try to create with missing config", t, func() {
-			_, err := tls.NewConfig(test.FS, c)
-
-			Convey("Then I should have an errror", func() {
-				So(err, ShouldBeError)
-			})
-		})
+		_, err := tls.NewConfig(test.FS, c)
+		require.Error(t, err)
 	}
 }

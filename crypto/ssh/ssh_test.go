@@ -8,161 +8,90 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerator(t *testing.T) {
-	Convey("Given I have an erroneous generator", t, func() {
-		gen := ssh.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	gen := ssh.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	pub, pri, err := gen.Generate()
+	require.NoError(t, err)
+	require.NotEmpty(t, pub)
+	require.NotEmpty(t, pri)
 
-		Convey("When I generate keys", func() {
-			pub, pri, err := gen.Generate()
-
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-				So(pub, ShouldNotBeBlank)
-				So(pri, ShouldNotBeBlank)
-			})
-		})
-	})
-
-	Convey("Given I have an erroneous generator", t, func() {
-		gen := ssh.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
-
-		Convey("When I generate keys", func() {
-			pub, pri, err := gen.Generate()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-				So(pub, ShouldBeBlank)
-				So(pri, ShouldBeBlank)
-			})
-		})
-	})
+	gen = ssh.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
+	pub, pri, err = gen.Generate()
+	require.Error(t, err)
+	require.Empty(t, pub)
+	require.Empty(t, pri)
 }
 
 func TestValid(t *testing.T) {
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
+	cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
-		signer, err := ssh.NewSigner(test.FS, cfg)
-		So(err, ShouldBeNil)
+	signer, err := ssh.NewSigner(test.FS, cfg)
+	require.NoError(t, err)
 
-		verifier, err := ssh.NewVerifier(test.FS, cfg)
-		So(err, ShouldBeNil)
+	verifier, err := ssh.NewVerifier(test.FS, cfg)
+	require.NoError(t, err)
 
-		Convey("When I sign data", func() {
-			e, _ := signer.Sign(strings.Bytes("test"))
+	e, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.NoError(t, verifier.Verify(e, strings.Bytes("test")))
 
-			Convey("Then I should compared the data", func() {
-				So(verifier.Verify(e, strings.Bytes("test")), ShouldBeNil)
-			})
-		})
-	})
+	signer, err = ssh.NewSigner(nil, nil)
+	require.NoError(t, err)
+	require.Nil(t, signer)
 
-	Convey("When I try to create a signer with no configuration", t, func() {
-		signer, err := ssh.NewSigner(nil, nil)
-		So(err, ShouldBeNil)
-
-		Convey("Then I should have no signer", func() {
-			So(signer, ShouldBeNil)
-		})
-	})
-
-	Convey("When I try to create a verifier with no configuration", t, func() {
-		verifier, err := ssh.NewVerifier(nil, nil)
-		So(err, ShouldBeNil)
-
-		Convey("Then I should have no signer", func() {
-			So(verifier, ShouldBeNil)
-		})
-	})
+	verifier, err = ssh.NewVerifier(nil, nil)
+	require.NoError(t, err)
+	require.Nil(t, verifier)
 }
 
-//nolint:funlen
 func TestInvalid(t *testing.T) {
-	Convey("When I create a signer", t, func() {
-		_, err := ssh.NewSigner(test.FS, &ssh.Config{})
+	_, err := ssh.NewSigner(test.FS, &ssh.Config{})
+	require.Error(t, err)
 
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{})
+	require.Error(t, err)
 
-	Convey("When I create a verifier", t, func() {
-		_, err := ssh.NewVerifier(test.FS, &ssh.Config{})
+	cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
+	signer, err := ssh.NewSigner(test.FS, cfg)
+	require.NoError(t, err)
 
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
+	verifier, err := ssh.NewVerifier(test.FS, cfg)
+	require.NoError(t, err)
 
-		signer, err := ssh.NewSigner(test.FS, cfg)
-		So(err, ShouldBeNil)
+	sig, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
 
-		verifier, err := ssh.NewVerifier(test.FS, cfg)
-		So(err, ShouldBeNil)
+	sig = append(sig, byte('w'))
+	require.Error(t, verifier.Verify(sig, strings.Bytes("test")))
 
-		Convey("When I sign data", func() {
-			sig, err := signer.Sign(strings.Bytes("test"))
-			So(err, ShouldBeNil)
+	cfg = test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
 
-			sig = append(sig, byte('w'))
+	signer, err = ssh.NewSigner(test.FS, cfg)
+	require.NoError(t, err)
 
-			Convey("Then I should have an error", func() {
-				So(verifier.Verify(sig, strings.Bytes("test")), ShouldBeError)
-			})
-		})
-	})
+	verifier, err = ssh.NewVerifier(test.FS, cfg)
+	require.NoError(t, err)
 
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewSSH("secrets/ssh_public", "secrets/ssh_private")
+	e, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.ErrorIs(t, verifier.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
 
-		signer, err := ssh.NewSigner(test.FS, cfg)
-		So(err, ShouldBeNil)
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
+	require.Error(t, err)
 
-		verifier, err := ssh.NewVerifier(test.FS, cfg)
-		So(err, ShouldBeNil)
+	_, err = ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
+	require.Error(t, err)
 
-		Convey("When I sign one message", func() {
-			e, _ := signer.Sign(strings.Bytes("test"))
-
-			Convey("Then I comparing another message will gave an error", func() {
-				So(verifier.Verify(e, strings.Bytes("bob")), ShouldBeError, errors.ErrInvalidMatch)
-			})
-		})
-	})
-
-	Convey("When I have an invalid public key", t, func() {
-		_, err := ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
-
-	Convey("When I have an invalid private key", t, func() {
-		_, err := ssh.NewSigner(test.FS, &ssh.Config{Private: test.FilePath("secrets/redis")})
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
-
-	Convey("When I have an missing private key", t, func() {
-		_, err := ssh.NewSigner(
-			test.FS,
-			&ssh.Config{
-				Public:  test.FilePath("secrets/ssh_public"),
-				Private: test.FilePath("secrets/none"),
-			},
-		)
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
+	_, err = ssh.NewSigner(
+		test.FS,
+		&ssh.Config{
+			Public:  test.FilePath("secrets/ssh_public"),
+			Private: test.FilePath("secrets/none"),
+		},
+	)
+	require.Error(t, err)
 }

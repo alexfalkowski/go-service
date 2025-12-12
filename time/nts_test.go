@@ -4,37 +4,25 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/time"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
-func TestNTS(t *testing.T) {
-	Convey("Given I have NTS setup correctly", t, func() {
-		c := &time.Config{Kind: "nts", Address: "time.cloudflare.com"}
+func TestValidNTS(t *testing.T) {
+	c := &time.Config{Kind: "nts", Address: "time.cloudflare.com"}
 
-		n, err := time.NewNetwork(c)
-		So(err, ShouldBeNil)
+	n, err := time.NewNetwork(c)
+	require.NoError(t, err)
 
-		Convey("When I get the time", func() {
-			_, err := n.Now()
+	_, err = n.Now()
+	require.NoError(t, err)
+}
 
-			Convey("I should not have an error", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-	})
+func TestInvalidNTS(t *testing.T) {
+	c := &time.Config{Kind: "nts"}
 
-	Convey("Given I have NTS setup incorrectly", t, func() {
-		c := &time.Config{Kind: "nts"}
+	n, err := time.NewNetwork(c)
+	require.NoError(t, err)
 
-		n, err := time.NewNetwork(c)
-		So(err, ShouldBeNil)
-
-		Convey("When I get the time", func() {
-			_, err := n.Now()
-
-			Convey("I should not have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err = n.Now()
+	require.Error(t, err)
 }

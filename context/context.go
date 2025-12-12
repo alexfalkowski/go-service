@@ -2,7 +2,6 @@ package context
 
 import (
 	"context"
-	"errors"
 
 	"github.com/alexfalkowski/go-service/v2/time"
 )
@@ -17,11 +16,6 @@ type (
 	// Key is used to store items in context.
 	Key string
 )
-
-// IsCanceledError returns true if the error is a context canceled error.
-func IsCanceledError(err error) bool {
-	return errors.Is(err, context.Canceled)
-}
 
 // Background is an alias for context.WithValue.
 func Background() Context {

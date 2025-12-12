@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -40,21 +40,13 @@ func down(db *mssqlx.DBs) error {
 }
 
 func TestOpen(t *testing.T) {
-	Convey("Given I have a configuration", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("text"))
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("text"))
 
-		Convey("When I try open the database", func() {
-			_, err := world.OpenDatabase()
+	_, err := world.OpenDatabase()
+	world.RequireStart()
+	require.Error(t, err)
 
-			world.RequireStart()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestInvalidOpen(t *testing.T) {
@@ -80,430 +72,317 @@ func TestInvalidOpen(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		Convey("Given I have an invalid config", t, func() {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config), test.WithWorldLoggerConfig("json"))
-			world.Register()
+		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config), test.WithWorldLoggerConfig("json"))
+		world.Register()
 
-			Convey("When I try open the database", func() {
-				_, err := world.OpenDatabase()
+		_, err := world.OpenDatabase()
+		world.RequireStart()
+		require.Error(t, err)
 
-				world.RequireStart()
-
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-				})
-
-				world.RequireStop()
-			})
-		})
+		world.RequireStop()
 	}
 }
 
 func TestSQL(t *testing.T) {
-	Convey("Given I have a configuration", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("otlp"))
+	world.Register()
 
-		Convey("When I try to get a database", func() {
-			db, err := world.OpenDatabase()
-			So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-			world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, errors.Join(db.Ping()...))
 
-			Convey("Then I should have a valid database", func() {
-				So(errors.Join(db.Ping()...), ShouldBeNil)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestDBQuery(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I select data with a query", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+	require.NoError(t, err)
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
-			rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+	var count int
+	for rows.Next() {
+		count++
+	}
+	require.Positive(t, count)
+	require.NoError(t, rows.Err())
+	require.NoError(t, rows.Close())
 
-			Convey("Then I should have valid data", func() {
-				So(err, ShouldBeNil)
-
-				count := 0
-
-				for rows.Next() {
-					count++
-				}
-
-				So(count, ShouldBeGreaterThan, 0)
-				So(rows.Err(), ShouldBeNil)
-				So(rows.Close(), ShouldBeNil)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestDBExec(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I insert data into a table", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	result, err := db.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+	require.NoError(t, err)
 
-			result, err := db.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
-			So(err, ShouldBeNil)
+	num, err := result.RowsAffected()
+	require.NoError(t, err)
+	require.Positive(t, num)
 
-			Convey("Then I should have successfully inserted data", func() {
-				_, err := result.LastInsertId()
-				So(err, ShouldBeError)
-
-				num, err := result.RowsAffected()
-				So(err, ShouldBeNil)
-				So(num, ShouldBeGreaterThan, 0)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestDBCommitTransExec(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I insert data into a table", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	tx, err := db.BeginTx(ctx, nil)
+	require.NoError(t, err)
 
-			tx, err := db.BeginTx(ctx, nil)
-			So(err, ShouldBeNil)
+	//nolint:errcheck
+	defer tx.Rollback()
 
-			//nolint:errcheck
-			defer tx.Rollback()
+	result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+	require.NoError(t, err)
 
-			result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
-			So(err, ShouldBeNil)
+	err = tx.Commit()
+	require.NoError(t, err)
 
-			err = tx.Commit()
-			So(err, ShouldBeNil)
+	_, err = result.LastInsertId()
+	require.Error(t, err)
 
-			Convey("Then I should have successfully inserted data", func() {
-				_, err := result.LastInsertId()
-				So(err, ShouldBeError)
+	num, err := result.RowsAffected()
+	require.NoError(t, err)
+	require.Positive(t, num)
 
-				num, err := result.RowsAffected()
-				So(err, ShouldBeNil)
-				So(num, ShouldBeGreaterThan, 0)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestDBRollbackTransExec(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I insert data into a table", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	tx, err := db.BeginTx(ctx, nil)
+	require.NoError(t, err)
 
-			tx, err := db.BeginTx(ctx, nil)
-			So(err, ShouldBeNil)
+	result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+	require.NoError(t, err)
 
-			result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
-			So(err, ShouldBeNil)
+	err = tx.Rollback()
+	require.NoError(t, err)
 
-			err = tx.Rollback()
-			So(err, ShouldBeNil)
+	_, err = result.LastInsertId()
+	require.Error(t, err)
 
-			Convey("Then I should have successfully inserted data", func() {
-				_, err := result.LastInsertId()
-				So(err, ShouldBeError)
+	num, err := result.RowsAffected()
+	require.NoError(t, err)
+	require.Positive(t, num)
 
-				num, err := result.RowsAffected()
-				So(err, ShouldBeNil)
-				So(num, ShouldBeGreaterThan, 0)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestStatementQuery(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I select data with a query", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	require.NoError(t, err)
 
-			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
-			So(err, ShouldBeNil)
+	defer stmt.Close()
 
-			defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, "public")
+	require.NoError(t, err)
 
-			rows, err := stmt.QueryContext(ctx, "public")
+	var count int
+	for rows.Next() {
+		count++
+	}
+	require.Positive(t, count)
+	require.NoError(t, rows.Err())
+	require.NoError(t, rows.Close())
 
-			Convey("Then I should have valid data", func() {
-				So(err, ShouldBeNil)
-
-				count := 0
-
-				for rows.Next() {
-					count++
-				}
-
-				So(count, ShouldBeGreaterThan, 0)
-				So(rows.Err(), ShouldBeNil)
-				So(rows.Close(), ShouldBeNil)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestStatementExec(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I insert data into a table", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
+	require.NoError(t, err)
 
-			_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
-			So(err, ShouldBeNil)
+	defer stmt.Close()
 
-			defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, time.Now())
+	require.NoError(t, err)
 
-			result, err := stmt.ExecContext(ctx, time.Now())
-			So(err, ShouldBeNil)
+	_, err = result.LastInsertId()
+	require.Error(t, err)
 
-			Convey("Then I should have successfully inserted data", func() {
-				_, err := result.LastInsertId()
-				So(err, ShouldBeError)
+	num, err := result.RowsAffected()
+	require.NoError(t, err)
+	require.Positive(t, num)
 
-				num, err := result.RowsAffected()
-				So(err, ShouldBeNil)
-				So(num, ShouldBeGreaterThan, 0)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestTransStatementExec(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I insert data into a table", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	tx, err := db.Begin()
+	require.NoError(t, err)
 
-			tx, err := db.Begin()
-			So(err, ShouldBeNil)
+	//nolint:errcheck
+	defer tx.Rollback()
 
-			//nolint:errcheck
-			defer tx.Rollback()
+	stmt, err := tx.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
+	require.NoError(t, err)
 
-			stmt, err := tx.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
-			So(err, ShouldBeNil)
+	defer stmt.Close()
 
-			defer stmt.Close()
+	result, err := stmt.ExecContext(ctx, time.Now())
+	require.NoError(t, err)
 
-			result, err := stmt.ExecContext(ctx, time.Now())
-			So(err, ShouldBeNil)
+	err = tx.Commit()
+	require.NoError(t, err)
 
-			err = tx.Commit()
-			So(err, ShouldBeNil)
+	_, err = result.LastInsertId()
+	require.Error(t, err)
 
-			Convey("Then I should have successfully inserted data", func() {
-				_, err := result.LastInsertId()
-				So(err, ShouldBeError)
+	num, err := result.RowsAffected()
+	require.NoError(t, err)
+	require.Positive(t, num)
 
-				num, err := result.RowsAffected()
-				So(err, ShouldBeNil)
-				So(num, ShouldBeGreaterThan, 0)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestInvalidStatementQuery(t *testing.T) {
-	Convey("Given I have a ready database", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tint"))
-		world.Register()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tint"))
+	world.Register()
 
-		db, err := world.OpenDatabase()
-		So(err, ShouldBeNil)
+	db, err := world.OpenDatabase()
+	require.NoError(t, err)
 
-		world.RequireStart()
+	world.RequireStart()
+	require.NoError(t, up(db))
 
-		err = up(db)
-		So(err, ShouldBeNil)
+	ctx, cancel := test.Timeout()
+	defer cancel()
 
-		Convey("When I select data with an invalid query", func() {
-			ctx, cancel := test.Timeout()
-			defer cancel()
+	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-			ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	require.NoError(t, err)
 
-			_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
-			So(err, ShouldBeNil)
+	defer stmt.Close()
 
-			defer stmt.Close()
+	_, err = stmt.QueryContext(ctx, 1)
+	require.Error(t, err)
 
-			_, err = stmt.QueryContext(ctx, 1)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-
-		err = down(db)
-		So(err, ShouldBeNil)
-
-		world.RequireStop()
-	})
+	require.NoError(t, down(db))
+	world.RequireStop()
 }
 
 func TestInvalidSQLPort(t *testing.T) {
-	Convey("Given I have a configuration", t, func() {
-		cfg := &pg.Config{Config: &config.Config{
-			Masters:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
-			Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
-			MaxOpenConns:    5,
-			MaxIdleConns:    5,
-			ConnMaxLifetime: time.Hour.String(),
-		}}
+	cfg := &pg.Config{Config: &config.Config{
+		Masters:         []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
+		Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
+		MaxOpenConns:    5,
+		MaxIdleConns:    5,
+		ConnMaxLifetime: time.Hour.String(),
+	}}
 
-		Convey("When I try to get a database", func() {
-			lc := fxtest.NewLifecycle(t)
-			_ = test.NewLogger(lc, test.NewTextLoggerConfig())
-			tc := test.NewOTLPTracerConfig()
-			_ = test.NewTracer(lc, tc)
+	lc := fxtest.NewLifecycle(t)
+	_ = test.NewLogger(lc, test.NewTextLoggerConfig())
+	tc := test.NewOTLPTracerConfig()
+	_ = test.NewTracer(lc, tc)
 
-			pg.Register()
+	pg.Register()
 
-			db, err := pg.Open(lc, test.FS, cfg)
-			So(err, ShouldBeNil)
+	db, err := pg.Open(lc, test.FS, cfg)
+	require.NoError(t, err)
 
-			lc.RequireStart()
-
-			Convey("Then I should have an invalid database", func() {
-				So(errors.Join(db.Ping()...), ShouldBeError)
-			})
-
-			lc.RequireStop()
-		})
-	})
+	lc.RequireStart()
+	require.Error(t, errors.Join(db.Ping()...))
+	lc.RequireStop()
 }

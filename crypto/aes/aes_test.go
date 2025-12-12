@@ -8,145 +8,75 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerator(t *testing.T) {
-	Convey("Given I have a generator", t, func() {
-		gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	gen := aes.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	key, err := gen.Generate()
+	require.NoError(t, err)
+	require.NotEmpty(t, key)
 
-		Convey("When I generate key", func() {
-			key, err := gen.Generate()
-
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-				So(key, ShouldNotBeBlank)
-			})
-		})
-	})
-
-	Convey("Given I have a erroneous generator", t, func() {
-		gen := aes.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
-
-		Convey("When I generate key", func() {
-			key, err := gen.Generate()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-				So(key, ShouldBeBlank)
-			})
-		})
-	})
+	gen = aes.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
+	key, err = gen.Generate()
+	require.Error(t, err)
+	require.Empty(t, key)
 }
 
 func TestValidCipher(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
-	Convey("When I create an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
+	cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
+	require.NoError(t, err)
+	require.NotNil(t, cipher)
 
-		Convey("Then I should not have an error", func() {
-			So(err, ShouldBeNil)
-			So(cipher, ShouldNotBeNil)
-		})
-	})
+	enc, err := cipher.Encrypt(strings.Bytes("test"))
+	require.NoError(t, err)
 
-	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
-		So(err, ShouldBeNil)
+	d, err := cipher.Decrypt(enc)
+	require.NoError(t, err)
+	require.Equal(t, "test", bytes.String(d))
 
-		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt(strings.Bytes("test"))
-			So(err, ShouldBeNil)
-
-			Convey("Then I should decrypt the data", func() {
-				d, err := cipher.Decrypt(enc)
-				So(err, ShouldBeNil)
-
-				So(bytes.String(d), ShouldEqual, "test")
-			})
-		})
-	})
-
-	Convey("When I try to create a cipher with no config", t, func() {
-		cipher, err := aes.NewCipher(nil, nil, nil)
-		So(err, ShouldBeNil)
-
-		Convey("Then I should have no cipher", func() {
-			So(cipher, ShouldBeNil)
-		})
-	})
+	cipher, err = aes.NewCipher(nil, nil, nil)
+	require.NoError(t, err)
+	require.Nil(t, cipher)
 }
 
-//nolint:funlen
 func TestInvalidCipher(t *testing.T) {
-	Convey("Given I have an cipher with invalid key", t, func() {
-		rand := rand.NewGenerator(rand.NewReader())
+	gen := rand.NewGenerator(rand.NewReader())
 
-		cipher, err := aes.NewCipher(rand, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
-		So(err, ShouldBeNil)
+	cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
+	require.NoError(t, err)
 
-		Convey("When I encrypt data", func() {
-			_, err := cipher.Encrypt(strings.Bytes("test"))
+	_, err = cipher.Encrypt(strings.Bytes("test"))
+	require.Error(t, err)
 
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
+	_, err = cipher.Decrypt(strings.Bytes("test"))
+	require.Error(t, err)
 
-		Convey("When I decrypt data", func() {
-			_, err := cipher.Decrypt(strings.Bytes("test"))
+	gen = rand.NewGenerator(&test.ErrReaderCloser{})
 
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	cipher, err = aes.NewCipher(gen, test.FS, test.NewAES())
+	require.NoError(t, err)
 
-	Convey("Given I have an cipher with an erroneous rand", t, func() {
-		rand := rand.NewGenerator(&test.ErrReaderCloser{})
-
-		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
-		So(err, ShouldBeNil)
-
-		Convey("When I try to encrypt data", func() {
-			_, err := cipher.Encrypt(strings.Bytes("test"))
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err = cipher.Encrypt(strings.Bytes("test"))
+	require.Error(t, err)
 
 	rand := rand.NewGenerator(rand.NewReader())
 
-	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
-		So(err, ShouldBeNil)
+	cipher, err = aes.NewCipher(rand, test.FS, test.NewAES())
+	require.NoError(t, err)
 
-		Convey("When I encrypt data", func() {
-			enc, err := cipher.Encrypt(strings.Bytes("test"))
-			So(err, ShouldBeNil)
+	enc, err := cipher.Encrypt(strings.Bytes("test"))
+	require.NoError(t, err)
+	enc = append(enc, byte('w'))
 
-			enc = append(enc, byte('w'))
+	_, err = cipher.Decrypt(enc)
+	require.Error(t, err)
 
-			Convey("Then I should have an error", func() {
-				_, err := cipher.Decrypt(enc)
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	cipher, err = aes.NewCipher(rand, test.FS, test.NewAES())
+	require.NoError(t, err)
 
-	Convey("Given I have an cipher", t, func() {
-		cipher, err := aes.NewCipher(rand, test.FS, test.NewAES())
-		So(err, ShouldBeNil)
-
-		Convey("When I decrypt invalid data", func() {
-			_, err := cipher.Decrypt(strings.Bytes("test"))
-
-			Convey("Then I have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err = cipher.Decrypt(strings.Bytes("test"))
+	require.Error(t, err)
 }

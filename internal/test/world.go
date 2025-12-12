@@ -263,7 +263,7 @@ func (w *World) ResponseWithBody(ctx context.Context, url, method string, header
 	}
 
 	data, err := io.ReadAll(res.Body)
-	if err != nil && !context.IsCanceledError(err) {
+	if err != nil {
 		runtime.Must(err)
 	}
 
