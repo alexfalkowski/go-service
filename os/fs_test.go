@@ -5,40 +5,25 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadFile(t *testing.T) {
 	for _, path := range []string{"none"} {
-		Convey("When I check the path", t, func() {
-			_, err := test.FS.ReadFile(path)
+		_, err := test.FS.ReadFile(path)
+		require.Error(t, err)
 
-			Convey("Then it should not exist", func() {
-				So(test.FS.IsNotExist(err), ShouldBeTrue)
-				So(test.FS.PathExists(path), ShouldBeFalse)
-			})
-		})
+		require.True(t, test.FS.IsNotExist(err))
+		require.False(t, test.FS.PathExists(path))
 	}
 }
 
 func TestPathExtension(t *testing.T) {
 	for _, f := range []string{"file.yaml", "file.test.yaml", "test/.config/existing.client.yaml"} {
-		Convey("When I try to get the extension of the file", t, func() {
-			e := test.FS.PathExtension(f)
-
-			Convey("Then the extension should be yaml", func() {
-				So(e, ShouldEqual, "yaml")
-			})
-		})
+		require.Equal(t, "yaml", test.FS.PathExtension(f))
 	}
 
-	Convey("When I try to get the extension of the file", t, func() {
-		e := test.FS.PathExtension("file")
-
-		Convey("Then the extension should be yaml", func() {
-			So(e, ShouldBeEmpty)
-		})
-	})
+	require.Empty(t, test.FS.PathExtension("file"))
 }
 
 func TestReadSource(t *testing.T) {
@@ -51,13 +36,8 @@ func TestReadSource(t *testing.T) {
 	}
 
 	for _, value := range values {
-		Convey("When I check the source", t, func() {
-			data, err := test.FS.ReadSource(value.Key)
-
-			Convey("Then I should have data", func() {
-				So(err, ShouldBeNil)
-				So(bytes.String(data), ShouldEqual, value.Value)
-			})
-		})
+		data, err := test.FS.ReadSource(value.Key)
+		require.NoError(t, err)
+		require.Equal(t, value.Value, bytes.String(data))
 	}
 }

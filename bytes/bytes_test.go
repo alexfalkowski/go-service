@@ -5,16 +5,12 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCopy(t *testing.T) {
-	Convey("When I copy bytes", t, func() {
-		hello := strings.Bytes("hello")
-		helloCopy := bytes.Copy(hello)
+	hello := strings.Bytes("hello")
+	helloCopy := bytes.Copy(hello)
 
-		Convey("When I encode the YAML", func() {
-			So(helloCopy, ShouldEqual, hello)
-		})
-	})
+	require.Equal(t, hello, helloCopy)
 }

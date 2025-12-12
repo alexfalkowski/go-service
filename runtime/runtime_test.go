@@ -5,25 +5,11 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPanic(t *testing.T) {
-	Convey("When I have an error", t, func() {
-		f := func() { runtime.Must(test.ErrFailed) }
-
-		Convey("Then I should panic", func() {
-			So(f, ShouldPanic)
-		})
-	})
-
-	Convey("When I don't have an error", t, func() {
-		f := func() { runtime.Must(nil) }
-
-		Convey("Then I should panic", func() {
-			So(f, ShouldNotPanic)
-		})
-	})
+	require.Panics(t, func() { runtime.Must(test.ErrFailed) })
 }
 
 func TestRecover(t *testing.T) {
@@ -60,12 +46,6 @@ func TestRecover(t *testing.T) {
 	}
 
 	for _, f := range []fun{errPanic, strPanic, intPanic} {
-		Convey("When I panic in a function", t, func() {
-			err := f()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
+		require.Error(t, f())
 	}
 }

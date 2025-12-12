@@ -4,109 +4,51 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/meta"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSnakeCase(t *testing.T) {
-	Convey("Given I have some meta values", t, func() {
-		ctx := t.Context()
-		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
-		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
-		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
+	ctx := t.Context()
+	ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
+	ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
+	ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
 
-		Convey("When I get the strings", func() {
-			m := meta.SnakeStrings(ctx, meta.NoPrefix)
-
-			Convey("Then I should have valid map", func() {
-				So(m, ShouldEqual, meta.Map{"test_id": "1", "redacted": "*"})
-			})
-		})
-	})
+	require.Equal(t, meta.Map{"test_id": "1", "redacted": "*"}, meta.SnakeStrings(ctx, meta.NoPrefix))
 }
 
 func TestCamelCase(t *testing.T) {
-	Convey("Given I have some meta values", t, func() {
-		ctx := t.Context()
-		ctx = meta.WithAttribute(ctx, "test_id", meta.String("1"))
-		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
-		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
+	ctx := t.Context()
+	ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
+	ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
+	ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
 
-		Convey("When I get the strings", func() {
-			m := meta.CamelStrings(ctx, meta.NoPrefix)
-
-			Convey("Then I should have valid strings", func() {
-				So(m, ShouldEqual, meta.Map{"testId": "1", "redacted": "*"})
-			})
-		})
-	})
+	require.Equal(t, meta.Map{"testId": "1", "redacted": "*"}, meta.CamelStrings(ctx, meta.NoPrefix))
 }
 
 func TestNoneCase(t *testing.T) {
-	Convey("Given I have some meta values", t, func() {
-		ctx := t.Context()
-		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
-		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
-		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
+	ctx := t.Context()
+	ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
+	ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
+	ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
 
-		Convey("When I get the strings", func() {
-			m := meta.Strings(ctx, meta.NoPrefix)
-
-			Convey("Then I should have valid strings", func() {
-				So(m, ShouldEqual, meta.Map{"testId": "1", "redacted": "*"})
-			})
-		})
-	})
+	require.Equal(t, meta.Map{"testId": "1", "redacted": "*"}, meta.Strings(ctx, meta.NoPrefix))
 }
 
 func TestPrefix(t *testing.T) {
-	Convey("Given I have some meta values", t, func() {
-		ctx := t.Context()
-		ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
-		ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
-		ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
+	ctx := t.Context()
+	ctx = meta.WithAttribute(ctx, "testId", meta.String("1"))
+	ctx = meta.WithAttribute(ctx, "see", meta.Ignored("secret"))
+	ctx = meta.WithAttribute(ctx, "redacted", meta.Redacted("2"))
 
-		Convey("When I get the strings", func() {
-			m := meta.Strings(ctx, "test.")
-
-			Convey("Then I should have valid map", func() {
-				So(m, ShouldEqual, meta.Map{"test.testId": "1", "test.redacted": "*"})
-			})
-		})
-	})
+	require.Equal(t, meta.Map{"test.testId": "1", "test.redacted": "*"}, meta.Strings(ctx, "test."))
 }
 
 func TestUserID(t *testing.T) {
-	Convey("When I set user-id", t, func() {
-		ctx := meta.WithUserID(t.Context(), meta.String("user-id"))
-
-		Convey("Then I should have user-id", func() {
-			So(meta.UserID(ctx), ShouldEqual, meta.String("user-id"))
-		})
-	})
+	ctx := meta.WithUserID(t.Context(), meta.String("user-id"))
+	require.Equal(t, meta.String("user-id"), meta.UserID(ctx))
 }
 
 func TestGeolocation(t *testing.T) {
-	Convey("When I set user-agent", t, func() {
-		ctx := meta.WithGeolocation(t.Context(), meta.String("user-agent"))
-
-		Convey("Then I should have user-agent", func() {
-			So(meta.Geolocation(ctx), ShouldEqual, meta.String("user-agent"))
-		})
-	})
-
-	Convey("When I set ip address", t, func() {
-		ctx := meta.WithGeolocation(t.Context(), meta.String("127.0.0.1"))
-
-		Convey("Then I should have an ip address", func() {
-			So(meta.Geolocation(ctx), ShouldEqual, meta.String("127.0.0.1"))
-		})
-	})
-
-	Convey("When I set geolocation", t, func() {
-		ctx := meta.WithGeolocation(t.Context(), meta.String("geo:47,11"))
-
-		Convey("Then I should have geolocation", func() {
-			So(meta.Geolocation(ctx), ShouldEqual, meta.String("geo:47,11"))
-		})
-	})
+	ctx := meta.WithGeolocation(t.Context(), meta.String("geo:47,11"))
+	require.Equal(t, meta.String("geo:47,11"), meta.Geolocation(ctx))
 }

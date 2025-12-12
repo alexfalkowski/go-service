@@ -6,42 +6,30 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/server"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
-func TestServer(t *testing.T) {
-	Convey("Given I have an erroneous server", t, func() {
-		lc := fxtest.NewLifecycle(t)
-		l := test.NewLogger(lc, test.NewJSONLoggerConfig())
-		sh := test.NewShutdowner()
-		srv := &test.ErrServer{}
-		svc := server.NewService("test", srv, l, sh)
+func TestInvalidServer(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	l := test.NewLogger(lc, test.NewJSONLoggerConfig())
+	sh := test.NewShutdowner()
+	srv := &test.ErrServer{}
+	svc := server.NewService("test", srv, l, sh)
 
-		Convey("When I start", func() {
-			svc.Start()
-			time.Sleep(1 * time.Second)
+	svc.Start()
+	time.Sleep(1 * time.Second)
+	require.True(t, sh.Called())
+}
 
-			Convey("Then it should shutdown", func() {
-				So(sh.Called(), ShouldBeTrue)
-			})
-		})
-	})
+func TestValidServer(t *testing.T) {
+	sh := test.NewShutdowner()
+	srv := &test.NoopServer{}
+	svc := server.NewService("test", srv, nil, sh)
 
-	Convey("Given I have a server", t, func() {
-		sh := test.NewShutdowner()
-		srv := &test.NoopServer{}
-		svc := server.NewService("test", srv, nil, sh)
+	svc.Start()
+	time.Sleep(1 * time.Second)
+	require.False(t, sh.Called())
 
-		Convey("When I start", func() {
-			svc.Start()
-			time.Sleep(1 * time.Second)
-
-			Convey("Then it should not shutdown", func() {
-				So(sh.Called(), ShouldBeFalse)
-			})
-
-			svc.Stop(t.Context())
-		})
-	})
+	svc.Stop(t.Context())
 }
