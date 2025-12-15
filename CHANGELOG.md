@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.218.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.218.0) - 2025-12-15
+
+- [`4a7882e`](https://github.com/alexfalkowski/go-service/commit/4a7882ea9afb395d3e85d7699b6c4036fface0f0) feat(deps): bump google.golang.org/protobuf from 1.36.10 to 1.36.11 (#2009)
+- [`5115dde`](https://github.com/alexfalkowski/go-service/commit/5115ddea2d3e57ca68a07545b178d9d3f5c3acad) build(ci): use latest published images (#2007)
+
 ## [v2.217.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.217.0) - 2025-12-10
 
 - [`5a873e1`](https://github.com/alexfalkowski/go-service/commit/5a873e11f64f6981290aad8c8be5caaf4a828937) feat(deps): update github.com/alexfalkowski/go-health/v2 to v2.6.0 (#2006)
