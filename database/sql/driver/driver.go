@@ -97,6 +97,7 @@ func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 
 func register(dbs []*sqlx.DB, opts ...otelsql.Option) {
 	for _, db := range dbs {
-		runtime.Must(otelsql.RegisterDBStatsMetrics(db.DB, opts...))
+		_, err := otelsql.RegisterDBStatsMetrics(db.DB, opts...)
+		runtime.Must(err)
 	}
 }
