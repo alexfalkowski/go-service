@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.220.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.220.0) - 2025-12-17
+
+- [`4c88385`](https://github.com/alexfalkowski/go-service/commit/4c8838525636287092e8cfd9ddf69e4d8d8716ca) feat(deps): bump github.com/XSAM/otelsql from 0.40.0 to 0.41.0 (#2011)
+
 ## [v2.219.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.219.0) - 2025-12-15
 
 - [`9b641b2`](https://github.com/alexfalkowski/go-service/commit/9b641b279c0a78e3f5e308221cf53bb678c68f5d) feat(deps): bump github.com/go-playground/validator/v10 from 10.28.0 to 10.29.0 (#2010)
