@@ -5,44 +5,25 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/token/access"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewController(t *testing.T) {
-	Convey("When I try to create an access controller with an invalid config", t, func() {
-		_, err := access.NewController(&access.Config{
-			Policy: test.Path("configs/bob"),
-		})
+	_, err := access.NewController(&access.Config{Policy: test.Path("configs/bob")})
+	require.Error(t, err)
 
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
-
-	Convey("When I try to create an access controller with an missing config", t, func() {
-		controller, err := access.NewController(nil)
-
-		Convey("Then I should not have an error", func() {
-			So(controller, ShouldBeNil)
-			So(err, ShouldBeNil)
-		})
-	})
+	controller, err := access.NewController(nil)
+	require.NoError(t, err)
+	require.Nil(t, controller)
 }
 
 func TestHasAccess(t *testing.T) {
-	Convey("Given I have an access controller", t, func() {
-		config := test.NewAccessConfig()
+	config := test.NewAccessConfig()
 
-		controller, err := access.NewController(config)
-		So(err, ShouldBeNil)
+	controller, err := access.NewController(config)
+	require.NoError(t, err)
 
-		Convey("Which I check for access", func() {
-			ok, err := controller.HasAccess("alice", "service:read")
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have access", func() {
-				So(ok, ShouldBeTrue)
-			})
-		})
-	})
+	ok, err := controller.HasAccess("alice", "service:read")
+	require.NoError(t, err)
+	require.True(t, ok)
 }

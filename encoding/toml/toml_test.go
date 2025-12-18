@@ -7,41 +7,24 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
-func TestEncoder(t *testing.T) {
-	Convey("Given I have TOML encoder", t, func() {
-		encoder := toml.NewEncoder()
+func TestEncode(t *testing.T) {
+	bytes := test.Pool.Get()
+	defer test.Pool.Put(bytes)
 
-		bytes := test.Pool.Get()
-		defer test.Pool.Put(bytes)
+	encoder := toml.NewEncoder()
+	msg := map[string]string{"test": "test"}
 
-		msg := map[string]string{"test": "test"}
+	require.NoError(t, encoder.Encode(bytes, msg))
+	require.Equal(t, `test = "test"`, strings.TrimSpace(bytes.String()))
+}
 
-		Convey("When I encode the TOML", func() {
-			err := encoder.Encode(bytes, msg)
-			So(err, ShouldBeNil)
+func TestDecode(t *testing.T) {
+	encoder := toml.NewEncoder()
+	var msg map[string]string
 
-			s := strings.TrimSpace(bytes.String())
-
-			Convey("Then I should have valid TOML", func() {
-				So(s, ShouldEqual, `test = "test"`)
-			})
-		})
-	})
-
-	Convey("Given I have TOML encoder", t, func() {
-		encoder := toml.NewEncoder()
-		var msg map[string]string
-
-		Convey("When I decode the TOML", func() {
-			err := encoder.Decode(bytes.NewBufferString(`test = "test"`), &msg)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid map", func() {
-				So(msg, ShouldEqual, map[string]string{"test": "test"})
-			})
-		})
-	})
+	require.NoError(t, encoder.Decode(bytes.NewBufferString(`test = "test"`), &msg))
+	require.Equal(t, map[string]string{"test": "test"}, msg)
 }

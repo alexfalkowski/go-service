@@ -4,35 +4,17 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDecode(t *testing.T) {
-	Convey("When I decode invalid path", t, func() {
-		_, err := test.PEM.Decode(test.FilePath("none"), "n/a")
+	_, err := test.PEM.Decode(test.FilePath("none"), "n/a")
+	require.Error(t, err)
 
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
+	_, err = test.PEM.Decode(test.FilePath("secrets/redis"), "n/a")
+	require.ErrorIs(t, err, pem.ErrInvalidBlock)
 
-	Convey("When I decode invalid block", t, func() {
-		_, err := test.PEM.Decode(test.FilePath("secrets/redis"), "n/a")
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(errors.Is(err, pem.ErrInvalidBlock), ShouldBeTrue)
-		})
-	})
-
-	Convey("When I decode invalid kind", t, func() {
-		_, err := test.PEM.Decode(test.FilePath("secrets/rsa_public"), "what")
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-			So(errors.Is(err, pem.ErrInvalidKind), ShouldBeTrue)
-		})
-	})
+	_, err = test.PEM.Decode(test.FilePath("secrets/rsa_public"), "what")
+	require.ErrorIs(t, err, pem.ErrInvalidKind)
 }

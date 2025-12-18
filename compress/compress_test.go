@@ -5,43 +5,23 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMap(t *testing.T) {
 	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
-		Convey("When I get compressor", t, func() {
-			cmp := test.Compressor.Get(kind)
+		cmp := test.Compressor.Get(kind)
 
-			Convey("Then I should have a compressor", func() {
-				So(cmp, ShouldNotBeNil)
-			})
-		})
+		data := strings.Bytes("hello")
+		d := cmp.Compress(data)
 
-		Convey("Given I have create a compressor", t, func() {
-			cmp := test.Compressor.Get(kind)
-
-			Convey("When I compress the data", func() {
-				data := strings.Bytes("hello")
-				d := cmp.Compress(data)
-
-				Convey("Then I should have the same decompressed data", func() {
-					ns, err := cmp.Decompress(d)
-					So(err, ShouldBeNil)
-
-					So(ns, ShouldEqual, data)
-				})
-			})
-		})
+		ns, err := cmp.Decompress(d)
+		require.NoError(t, err)
+		require.Equal(t, data, ns)
 	}
 
 	for _, key := range []string{"test", "bob"} {
-		Convey("When I get a compressor", t, func() {
-			cmp := test.Compressor.Get(key)
-
-			Convey("Then I should have a compressor", func() {
-				So(cmp, ShouldBeNil)
-			})
-		})
+		cmp := test.Compressor.Get(key)
+		require.Nil(t, cmp)
 	}
 }

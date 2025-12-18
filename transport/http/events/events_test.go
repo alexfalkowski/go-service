@@ -8,100 +8,73 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
-	. "github.com/smartystreets/goconvey/convey"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSendReceiveWithRoundTripper(t *testing.T) {
-	Convey("Given I have a http event receiver", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		world.RegisterEvents(t.Context())
+	world.RegisterEvents(t.Context())
 
-		Convey("When I send an event", func() {
-			ctx := world.EventsContext(t.Context())
+	ctx := world.EventsContext(t.Context())
 
-			e := events.NewEvent()
-			e.SetSource("example/uri")
-			e.SetType("example.type")
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
-			err := e.SetData(events.TextPlain, "test")
-			So(err, ShouldBeNil)
+	result := world.Sender.Send(ctx, e)
+	require.True(t, protocol.IsACK(result))
+	require.NotNil(t, world.Event)
+	require.Equal(t, "test", bytes.String(e.Data()))
 
-			result := world.Sender.Send(ctx, e)
-
-			Convey("Then I should receive an event", func() {
-				So(protocol.IsACK(result), ShouldBeTrue)
-				So(world.Event, ShouldNotBeNil)
-				So(bytes.String(e.Data()), ShouldEqual, "test")
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestSendReceiveWithoutRoundTripper(t *testing.T) {
-	Convey("Given I have a http event receiver", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		world.RegisterEvents(t.Context())
+	world.RegisterEvents(t.Context())
 
-		Convey("When I send an event", func() {
-			ctx := world.EventsContext(t.Context())
+	ctx := world.EventsContext(t.Context())
 
-			e := events.NewEvent()
-			e.SetSource("example/uri")
-			e.SetType("example.type")
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
-			err := e.SetData(events.TextPlain, "test")
-			So(err, ShouldBeNil)
+	result := world.Sender.Send(ctx, e)
+	require.True(t, protocol.IsACK(result))
+	require.NotNil(t, world.Event)
+	require.Equal(t, "test", bytes.String(e.Data()))
 
-			result := world.Sender.Send(ctx, e)
-
-			Convey("Then I should receive an event", func() {
-				So(protocol.IsACK(result), ShouldBeTrue)
-				So(world.Event, ShouldNotBeNil)
-				So(bytes.String(e.Data()), ShouldEqual, "test")
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestSendNotReceive(t *testing.T) {
-	Convey("Given I have a http event receiver", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		world.RegisterEvents(t.Context())
+	world.RegisterEvents(t.Context())
 
-		Convey("When I send an event", func() {
-			ctx := world.EventsContext(t.Context())
+	ctx := world.EventsContext(t.Context())
 
-			e := events.NewEvent()
-			e.SetSource("example/uri")
-			e.SetType("example.type")
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
 
-			err := e.SetData(events.TextPlain, "test")
-			So(err, ShouldBeNil)
+	result := world.Sender.Send(ctx, e)
+	require.True(t, protocol.IsNACK(result))
+	require.Nil(t, world.Event)
 
-			result := world.Sender.Send(ctx, e)
-
-			Convey("Then I should not receive an event", func() {
-				So(protocol.IsNACK(result), ShouldBeTrue)
-				So(world.Event, ShouldBeNil)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 type delRoundTripper struct {

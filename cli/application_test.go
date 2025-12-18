@@ -8,118 +8,87 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApplicationRun(t *testing.T) {
-	Convey("Given I have valid configuration", t, func() {
-		config := test.FilePath("configs/config.yml")
+	config := test.FilePath("configs/config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "-i", config}
-		cli.Name = test.Name
-		cli.Version = test.Version
+	os.Args = []string{test.Name.String(), "server", "-i", config}
+	cli.Name = test.Name
+	cli.Version = test.Version
 
-		Convey("When I try to run an application that will shutdown in a second", func() {
-			app := cli.NewApplication(
-				func(c cli.Commander) {
-					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput(strings.Empty)
-				},
-			)
-
-			Convey("Then I should not see an error", func() {
-				So(app.Run(t.Context()), ShouldBeNil)
-			})
-		})
-	})
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.NoError(t, app.Run(t.Context()))
 }
 
 func TestApplicationExitOnRun(t *testing.T) {
-	Convey("Given I have invalid configuration", t, func() {
-		config := test.FilePath("configs/invalid_http.config.yml")
+	config := test.FilePath("configs/invalid_http.config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "-i", config}
+	os.Args = []string{test.Name.String(), "server", "-i", config}
 
-		Convey("When I try to run an application", func() {
-			var exitCode int
-			exit := func(code int) {
-				exitCode = code
-			}
+	var exitCode int
+	exit := func(code int) {
+		exitCode = code
+	}
 
-			app := cli.NewApplication(
-				func(c cli.Commander) {
-					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput(strings.Empty)
-				},
-				cli.WithApplicationExit(exit),
-			)
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+		cli.WithApplicationExit(exit),
+	)
 
-			app.ExitOnError(t.Context())
-
-			Convey("Then it should exit with a code of 1", func() {
-				So(exitCode, ShouldEqual, 1)
-			})
-		})
-	})
+	app.ExitOnError(t.Context())
+	require.Equal(t, 1, exitCode)
 }
 
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
-	Convey("When I try to run the server with an invalid flag", t, func() {
-		os.Args = []string{test.Name.String(), "server", "--invalid-flag"}
-		cli.Name = test.Name
-		cli.Version = test.Version
+	os.Args = []string{test.Name.String(), "server", "--invalid-flag"}
+	cli.Name = test.Name
+	cli.Version = test.Version
 
-		app := cli.NewApplication(
-			func(c cli.Commander) {
-				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput(strings.Empty)
-			},
-		)
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.Error(t, app.Run(t.Context()))
 
-		Convey("Then I should see an error", func() {
-			So(app.Run(t.Context()), ShouldBeError)
-		})
-	})
+	os.Args = []string{test.Name.String(), "client", "--invalid-flag"}
+	cli.Name = test.Name
+	cli.Version = test.Version
 
-	Convey("When I try to run the client with an invalid flag", t, func() {
-		os.Args = []string{test.Name.String(), "client", "--invalid-flag"}
-		cli.Name = test.Name
-		cli.Version = test.Version
-
-		app := cli.NewApplication(
-			func(c cli.Commander) {
-				cmd := c.AddClient("client", "Start the client.", test.Options()...)
-				cmd.AddInput(strings.Empty)
-			},
-		)
-
-		Convey("Then I should see an error", func() {
-			So(app.Run(t.Context()), ShouldBeError)
-		})
-	})
+	app = cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddClient("client", "Start the client.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.Error(t, app.Run(t.Context()))
 }
 
 func TestApplicationRunWithInvalidParams(t *testing.T) {
-	Convey("Given I have valid configuration", t, func() {
-		config := test.FilePath("configs/config.yml")
+	config := test.FilePath("configs/config.yml")
 
-		os.Args = []string{test.Name.String(), "server", "-i", config}
-		cli.Name = test.Name
-		cli.Version = test.Version
+	os.Args = []string{test.Name.String(), "server", "-i", config}
+	cli.Name = test.Name
+	cli.Version = test.Version
 
-		Convey("When I try to run an application that will shutdown in a second", func() {
-			app := cli.NewApplication(
-				func(c cli.Commander) {
-					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput(strings.Empty)
-				},
-			)
-
-			Convey("Then I should not see an error", func() {
-				So(app.Run(t.Context()), ShouldBeNil)
-			})
-		})
-	})
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.NoError(t, app.Run(t.Context()))
 }
 
 func TestApplicationInvalid(t *testing.T) {
@@ -130,31 +99,7 @@ func TestApplicationInvalid(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		Convey("When I try to run an application", t, func() {
-			os.Args = []string{test.Name.String(), "server", "-i", config}
-			cli.Name = test.Name
-			cli.Version = test.Version
-
-			app := cli.NewApplication(
-				func(c cli.Commander) {
-					cmd := c.AddServer("server", "Start the server.", test.Options()...)
-					cmd.AddInput(strings.Empty)
-				},
-			)
-
-			Convey("Then I should see an error", func() {
-				err := app.Run(t.Context())
-
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "unknown port")
-			})
-		})
-	}
-}
-
-func TestApplicationDisabled(t *testing.T) {
-	Convey("When I try to run an application", t, func() {
-		os.Args = []string{test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")}
+		os.Args = []string{test.Name.String(), "server", "-i", config}
 		cli.Name = test.Name
 		cli.Version = test.Version
 
@@ -165,30 +110,39 @@ func TestApplicationDisabled(t *testing.T) {
 			},
 		)
 
-		Convey("Then I should not see an error", func() {
-			So(app.Run(t.Context()), ShouldBeNil)
-		})
-	})
+		err := app.Run(t.Context())
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "unknown port")
+	}
+}
+
+func TestApplicationDisabled(t *testing.T) {
+	os.Args = []string{test.Name.String(), "server", "-i", test.FilePath("configs/disabled.config.yml")}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.NoError(t, app.Run(t.Context()))
 }
 
 func TestApplicationClient(t *testing.T) {
-	Convey("When I try to run a client", t, func() {
-		os.Args = []string{test.Name.String(), "client"}
-		cli.Name = test.Name
-		cli.Version = test.Version
+	os.Args = []string{test.Name.String(), "client"}
+	cli.Name = test.Name
+	cli.Version = test.Version
 
-		opts := []di.Option{di.NoLogger}
-		app := cli.NewApplication(
-			func(c cli.Commander) {
-				cmd := c.AddClient("client", "Start the client.", opts...)
-				cmd.AddInput(strings.Empty)
-			},
-		)
-
-		Convey("Then I should not see an error", func() {
-			So(app.Run(t.Context()), ShouldBeNil)
-		})
-	})
+	opts := []di.Option{di.NoLogger}
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddClient("client", "Start the client.", opts...)
+			cmd.AddInput(strings.Empty)
+		},
+	)
+	require.NoError(t, app.Run(t.Context()))
 }
 
 func TestApplicationInvalidClient(t *testing.T) {
@@ -198,24 +152,19 @@ func TestApplicationInvalidClient(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		Convey("When I try to run an application", t, func() {
-			os.Args = []string{test.Name.String(), "client", "-i", config}
-			cli.Name = test.Name
-			cli.Version = test.Version
+		os.Args = []string{test.Name.String(), "client", "-i", config}
+		cli.Name = test.Name
+		cli.Version = test.Version
 
-			app := cli.NewApplication(
-				func(c cli.Commander) {
-					cmd := c.AddClient("client", "Start the client.", test.Options()...)
-					cmd.AddInput(strings.Empty)
-				},
-			)
+		app := cli.NewApplication(
+			func(c cli.Commander) {
+				cmd := c.AddClient("client", "Start the client.", test.Options()...)
+				cmd.AddInput(strings.Empty)
+			},
+		)
 
-			Convey("Then I should see an error", func() {
-				err := app.Run(t.Context())
-
-				So(err, ShouldBeError)
-				So(err.Error(), ShouldContainSubstring, "unknown port")
-			})
-		})
+		err := app.Run(t.Context())
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "unknown port")
 	}
 }

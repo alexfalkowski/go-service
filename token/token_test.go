@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerate(t *testing.T) {
@@ -20,13 +20,8 @@ func TestGenerate(t *testing.T) {
 		gen := uuid.NewGenerator()
 		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-		Convey("When I try to generate", t, func() {
-			_, err := tkn.Generate("hello", test.UserID.String())
-
-			Convey("Then I should have no error", func() {
-				So(err, ShouldBeNil)
-			})
-		})
+		_, err := tkn.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
 	}
 }
 
@@ -39,36 +34,22 @@ func TestVerify(t *testing.T) {
 		gen := uuid.NewGenerator()
 		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-		Convey("Given I generate a token", t, func() {
-			gen, err := tkn.Generate("hello", test.UserID.String())
-			So(err, ShouldBeNil)
+		token, err := tkn.Generate("hello", test.UserID.String())
+		require.NoError(t, err)
 
-			Convey("When I try to verify", func() {
-				sub, err := tkn.Verify(gen, "hello")
-
-				Convey("Then I should have no error", func() {
-					So(err, ShouldBeNil)
-					So(sub, ShouldEqual, test.UserID.String())
-				})
-			})
-		})
+		sub, err := tkn.Verify(token, "hello")
+		require.NoError(t, err)
+		require.Equal(t, test.UserID.String(), sub)
 	}
 
 	for _, kind := range []string{"ssh", "none"} {
 		cfg := test.NewToken(kind)
 		tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
-		Convey("Given I generate a token", t, func() {
-			gen, err := tkn.Generate(strings.Empty, strings.Empty)
-			So(err, ShouldBeNil)
+		gen, err := tkn.Generate(strings.Empty, strings.Empty)
+		require.NoError(t, err)
 
-			Convey("When I try to verify", func() {
-				_, err := tkn.Verify(gen, strings.Empty)
-
-				Convey("Then I should have no error", func() {
-					So(err, ShouldBeNil)
-				})
-			})
-		})
+		_, err = tkn.Verify(gen, strings.Empty)
+		require.NoError(t, err)
 	}
 }

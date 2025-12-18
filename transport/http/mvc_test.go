@@ -12,265 +12,196 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )
 
 func TestRouteSuccess(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		full, _ := mvc.NewViewPair("views/hello.tmpl")
+	full, _ := mvc.NewViewPair("views/hello.tmpl")
 
-		controller := func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return full, &test.Model, nil
-		}
+	controller := func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return full, &test.Model, nil
+	}
 
-		mvc.Delete("/hello", controller)
-		mvc.Get("/hello", controller)
-		mvc.Post("/hello", controller)
-		mvc.Put("/hello", controller)
-		mvc.Patch("/hello", controller)
+	mvc.Delete("/hello", controller)
+	mvc.Get("/hello", controller)
+	mvc.Post("/hello", controller)
+	mvc.Put("/hello", controller)
+	mvc.Patch("/hello", controller)
 
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			header.Set(content.TypeKey, mime.HTMLMediaType)
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.HTMLMediaType)
 
-			url := world.PathServerURL("http", "hello")
+	url := world.PathServerURL("http", "hello")
 
-			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
 
-			Convey("Then I should have valid html", func() {
-				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.HTMLMediaType)
+	_, err = html.Parse(strings.NewReader(body))
+	require.NoError(t, err)
 
-				_, err := html.Parse(strings.NewReader(body))
-				So(err, ShouldBeNil)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestRoutePartialViewSuccess(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		_, partial := mvc.NewViewPair("views/hello.tmpl")
+	_, partial := mvc.NewViewPair("views/hello.tmpl")
 
-		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return partial, &test.Model, nil
-		})
-
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			header.Set(content.TypeKey, mime.HTMLMediaType)
-
-			url := world.PathServerURL("http", "hello")
-
-			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid html", func() {
-				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.HTMLMediaType)
-
-				_, err := html.Parse(strings.NewReader(body))
-				So(err, ShouldBeNil)
-			})
-
-			world.RequireStop()
-		})
+	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return partial, &test.Model, nil
 	})
+
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.HTMLMediaType)
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
+
+	_, err = html.Parse(strings.NewReader(body))
+	require.NoError(t, err)
+
+	world.RequireStop()
 }
 
 func TestRouteError(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-			return mvc.NewFullView("views/error.tmpl"), &test.Model, status.ServiceUnavailableError(test.ErrInternal)
-		})
-
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			header.Set(content.TypeKey, mime.HTMLMediaType)
-
-			url := world.PathServerURL("http", "hello")
-
-			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have an error", func() {
-				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, http.StatusInternalServerError)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.HTMLMediaType)
-
-				_, err := html.Parse(strings.NewReader(body))
-				So(err, ShouldBeNil)
-			})
-
-			world.RequireStop()
-		})
+	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewFullView("views/error.tmpl"), &test.Model, status.ServiceUnavailableError(test.ErrInternal)
 	})
+
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.HTMLMediaType)
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
+
+	_, err = html.Parse(strings.NewReader(body))
+	require.NoError(t, err)
+
+	world.RequireStop()
 }
 
 func TestStaticFileSuccess(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		mvc.StaticFile("/robots.txt", "static/robots.txt")
+	mvc.StaticFile("/robots.txt", "static/robots.txt")
 
-		Convey("When I query for robots", func() {
-			header := http.Header{}
-			header.Set(content.TypeKey, mime.TextMediaType)
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.TextMediaType)
 
-			url := world.PathServerURL("http", "robots.txt")
+	url := world.PathServerURL("http", "robots.txt")
 
-			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
 
-			Convey("Then I should have valid html", func() {
-				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.TextMediaType)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestStaticFileError(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		mvc.StaticFile("/robots.txt", "static/bob.txt")
+	mvc.StaticFile("/robots.txt", "static/bob.txt")
 
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			url := world.PathServerURL("http", "robots.txt")
+	header := http.Header{}
+	url := world.PathServerURL("http", "robots.txt")
 
-			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
+	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 
-			Convey("Then I should have an error", func() {
-				So(res.StatusCode, ShouldEqual, 500)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestStaticPathValueSuccess(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		mvc.StaticPathValue("/{file}", "file", "static")
+	mvc.StaticPathValue("/{file}", "file", "static")
 
-		Convey("When I query for robots", func() {
-			header := http.Header{}
-			header.Set(content.TypeKey, mime.TextMediaType)
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.TextMediaType)
 
-			url := world.PathServerURL("http", "robots.txt")
+	url := world.PathServerURL("http", "robots.txt")
 
-			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
 
-			Convey("Then I should have valid html", func() {
-				So(body, ShouldNotBeEmpty)
-				So(res.StatusCode, ShouldEqual, 200)
-				So(res.Header.Get(content.TypeKey), ShouldEqual, mime.TextMediaType)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestStaticPathValueError(t *testing.T) {
-	Convey("Given I have a all the servers", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
 
-		mvc.StaticPathValue("/{file}", "file", "static")
+	mvc.StaticPathValue("/{file}", "file", "static")
 
-		Convey("When I query for hello", func() {
-			header := http.Header{}
-			url := world.PathServerURL("http", "bob.txt")
+	header := http.Header{}
+	url := world.PathServerURL("http", "bob.txt")
 
-			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
-			So(err, ShouldBeNil)
+	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 
-			Convey("Then I should have an error", func() {
-				So(res.StatusCode, ShouldEqual, 500)
-			})
-
-			world.RequireStop()
-		})
-	})
+	world.RequireStop()
 }
 
 func TestMissingViews(t *testing.T) {
-	Convey("Given I have views with missing FS", t, func() {
-		mvc.Register(mvc.RegisterParams{
-			Mux:         http.NewServeMux(),
-			FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
-			Layout:      test.Layout,
-		})
-
-		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-				return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
-			})
-			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
-			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")
-
-			Convey("Then they should not be added", func() {
-				So(routeAdded, ShouldBeFalse)
-				So(fileAdded, ShouldBeFalse)
-				So(pathAdded, ShouldBeFalse)
-			})
-		})
+	mvc.Register(mvc.RegisterParams{
+		Mux:         http.NewServeMux(),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		Layout:      test.Layout,
 	})
 
-	Convey("Given I have views with missing layout", t, func() {
-		mvc.Register(mvc.RegisterParams{
-			Mux:         http.NewServeMux(),
-			FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
-			FileSystem:  test.FileSystem,
-		})
+	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
+	}))
+	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
+	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
 
-		Convey("When I add routes to an invalid view", func() {
-			routeAdded := mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-				return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
-			})
-			fileAdded := mvc.StaticFile("/robots.txt", "static/robots.txt")
-			pathAdded := mvc.StaticPathValue("/{file}", "file", "static")
-
-			Convey("Then they should not be added", func() {
-				So(routeAdded, ShouldBeFalse)
-				So(fileAdded, ShouldBeFalse)
-				So(pathAdded, ShouldBeFalse)
-			})
-		})
+	mvc.Register(mvc.RegisterParams{
+		Mux:         http.NewServeMux(),
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  test.FileSystem,
 	})
+
+	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
+	}))
+	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
+	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
 }

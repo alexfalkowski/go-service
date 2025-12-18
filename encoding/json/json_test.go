@@ -6,41 +6,24 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
-func TestEncoder(t *testing.T) {
-	Convey("Given I have JSON encoder", t, func() {
-		encoder := json.NewEncoder()
+func TestEncode(t *testing.T) {
+	buffer := test.Pool.Get()
+	defer test.Pool.Put(buffer)
 
-		buffer := test.Pool.Get()
-		defer test.Pool.Put(buffer)
+	encoder := json.NewEncoder()
+	msg := map[string]string{"test": "test"}
 
-		msg := map[string]string{"test": "test"}
+	require.NoError(t, encoder.Encode(buffer, msg))
+	require.JSONEq(t, "{\"test\":\"test\"}", bytes.String(bytes.TrimSpace(test.Pool.Copy(buffer))))
+}
 
-		Convey("When I encode the JSON", func() {
-			err := encoder.Encode(buffer, msg)
-			So(err, ShouldBeNil)
+func TestDecode(t *testing.T) {
+	encoder := json.NewEncoder()
+	var msg map[string]string
 
-			s := bytes.TrimSpace(test.Pool.Copy(buffer))
-
-			Convey("Then I should have valid JSON", func() {
-				So(bytes.String(s), ShouldEqual, "{\"test\":\"test\"}")
-			})
-		})
-	})
-
-	Convey("Given I have JSON encoder", t, func() {
-		encoder := json.NewEncoder()
-		var msg map[string]string
-
-		Convey("When I decode the JSON", func() {
-			err := encoder.Decode(bytes.NewBufferString("{\"test\":\"test\"}"), &msg)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have valid map", func() {
-				So(msg, ShouldEqual, map[string]string{"test": "test"})
-			})
-		})
-	})
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("{\"test\":\"test\"}"), &msg))
+	require.Equal(t, map[string]string{"test": "test"}, msg)
 }

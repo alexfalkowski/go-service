@@ -5,177 +5,133 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func TestServerLimiterUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
 
-		Convey("When I query repeatedly", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			_, _ = client.SayHello(t.Context(), req)
-			_, err := client.SayHello(t.Context(), req)
+	_, _ = client.SayHello(t.Context(), req)
+	_, err := client.SayHello(t.Context(), req)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 
-			Convey("Then I should have exhausted resources", func() {
-				So(err, ShouldBeError)
-				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }
 
 func TestClientLimiterUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
 
-		Convey("When I query repeatedly", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			_, _ = client.SayHello(t.Context(), req)
-			_, err := client.SayHello(t.Context(), req)
+	_, _ = client.SayHello(t.Context(), req)
+	_, err := client.SayHello(t.Context(), req)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 
-			Convey("Then I should have exhausted resources", func() {
-				So(err, ShouldBeError)
-				So(status.Code(err), ShouldEqual, codes.ResourceExhausted)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		cfg := test.NewLimiterConfig("user-agent", "1s", 10)
-		world := test.NewWorld(t,
-			test.WithWorldTelemetry("otlp"),
-			test.WithWorldClientLimiter(cfg),
-			test.WithWorldServerLimiter(cfg),
-			test.WithWorldGRPC(),
-		)
-		world.Register()
-		world.RequireStart()
+	cfg := test.NewLimiterConfig("user-agent", "1s", 10)
+	world := test.NewWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldClientLimiter(cfg),
+		test.WithWorldServerLimiter(cfg),
+		test.WithWorldGRPC(),
+	)
+	world.Register()
+	world.RequireStart()
 
-		Convey("When I query repeatedly", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(t.Context(), req)
+	_, err := client.SayHello(t.Context(), req)
+	require.NoError(t, err)
 
-			Convey("Then I should not have exhausted resources", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }
 
 func TestLimiterAuthUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t,
-			test.WithWorldTelemetry("otlp"),
-			test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
-			test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
-			test.WithWorldGRPC(),
-		)
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
+		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
+		test.WithWorldGRPC(),
+	)
+	world.Register()
+	world.RequireStart()
 
-		Convey("When I query for a authenticated greet multiple times", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			var err error
-			for range 10 {
-				_, err = client.SayHello(t.Context(), req)
-			}
+	var err error
+	for range 10 {
+		_, err = client.SayHello(t.Context(), req)
+	}
+	require.NoError(t, err)
 
-			Convey("Then I should not have exhausted resources", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }
 
 func TestServerClosedLimiterUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
 
-		err := world.Server.GRPCLimiter.Close(t.Context())
-		So(err, ShouldBeNil)
+	require.NoError(t, world.Server.GRPCLimiter.Close(t.Context()))
 
-		Convey("When  I query for a greet", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			_, err := client.SayHello(t.Context(), req)
+	_, err := client.SayHello(t.Context(), req)
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
 
-			Convey("Then I should have an internal error", func() {
-				So(err, ShouldBeError)
-				So(status.Code(err), ShouldEqual, codes.Internal)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }
 
 func TestClientClosedLimiterUnary(t *testing.T) {
-	Convey("Given I have a gRPC server", t, func() {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
-		world.Register()
-		world.RequireStart()
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
 
-		Convey("When  I query for a greet", func() {
-			conn := world.NewGRPC()
-			defer conn.Close()
+	conn := world.NewGRPC()
+	defer conn.Close()
 
-			client := v1.NewGreeterServiceClient(conn)
-			req := &v1.SayHelloRequest{Name: "test"}
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
 
-			err := world.Client.GRPCLimiter.Close(t.Context())
-			So(err, ShouldBeNil)
+	require.NoError(t, world.Client.GRPCLimiter.Close(t.Context()))
 
-			_, err = client.SayHello(t.Context(), req)
+	_, err := client.SayHello(t.Context(), req)
+	require.Error(t, err)
+	require.Equal(t, codes.Internal, status.Code(err))
 
-			Convey("Then I should have an internal error", func() {
-				So(err, ShouldBeError)
-				So(status.Code(err), ShouldEqual, codes.Internal)
-			})
-		})
-
-		world.RequireStop()
-	})
+	world.RequireStop()
 }

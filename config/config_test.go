@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidFileConfig(t *testing.T) {
@@ -20,21 +20,14 @@ func TestValidFileConfig(t *testing.T) {
 	}
 
 	for _, file := range files {
-		Convey("Given I have configuration file", t, func() {
-			set := flag.NewFlagSet("test")
-			set.AddInput(file)
+		set := flag.NewFlagSet("test")
+		set.AddInput(file)
 
-			decoder := test.NewDecoder(set)
+		decoder := test.NewDecoder(set)
 
-			Convey("When I try to parse the configuration file", func() {
-				config, err := config.NewConfig[config.Config](decoder, test.Validator)
-				So(err, ShouldBeNil)
-
-				Convey("Then I should have a valid configuration", func() {
-					verifyConfig(config)
-				})
-			})
-		})
+		config, err := config.NewConfig[config.Config](decoder, test.Validator)
+		require.NoError(t, err)
+		verifyConfig(t, config)
 	}
 }
 
@@ -50,201 +43,158 @@ func TestInvalidFileConfig(t *testing.T) {
 	}
 
 	for _, file := range files {
-		Convey("Given I have configuration file", t, func() {
-			set := flag.NewFlagSet("test")
-			set.AddInput(file)
+		set := flag.NewFlagSet("test")
+		set.AddInput(file)
 
-			decoder := test.NewDecoder(set)
+		decoder := test.NewDecoder(set)
 
-			Convey("When I try to parse the configuration file", func() {
-				_, err := config.NewConfig[config.Config](decoder, test.Validator)
-
-				Convey("Then I should have an error", func() {
-					So(err, ShouldBeError)
-				})
-			})
-		})
+		_, err := config.NewConfig[config.Config](decoder, test.Validator)
+		require.Error(t, err)
 	}
 }
 
 func TestValidEnvConfig(t *testing.T) {
-	Convey("Given I have configuration file", t, func() {
-		d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
-		So(err, ShouldBeNil)
+	d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	require.NoError(t, err)
 
-		t.Setenv("CONFIG", "yaml:"+base64.Encode(d))
+	t.Setenv("CONFIG", "yaml:"+base64.Encode(d))
 
-		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG")
+	set := flag.NewFlagSet("test")
+	set.AddInput("env:CONFIG")
 
-		decoder := test.NewDecoder(set)
+	decoder := test.NewDecoder(set)
 
-		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](decoder, test.Validator)
-			So(err, ShouldBeNil)
-
-			Convey("Then I should have a valid configuration", func() {
-				verifyConfig(config)
-			})
-		})
-	})
+	config, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.NoError(t, err)
+	verifyConfig(t, config)
 }
 
 func TestInvalidEnvConfig(t *testing.T) {
-	Convey("Given I have configuration file", t, func() {
-		t.Setenv("CONFIG", "yaml:not_good")
+	t.Setenv("CONFIG", "yaml:not_good")
 
-		set := flag.NewFlagSet("test")
-		set.AddInput("env:CONFIG")
+	set := flag.NewFlagSet("test")
+	set.AddInput("env:CONFIG")
 
-		decoder := test.NewDecoder(set)
+	decoder := test.NewDecoder(set)
 
-		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](decoder, test.Validator)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.Error(t, err)
 }
 
 func TestValidCommonConfig(t *testing.T) {
-	Convey("Given I have configuration file", t, func() {
-		home := os.UserHomeDir()
-		path := test.FS.Join(home, ".config", test.Name.String())
+	home := os.UserHomeDir()
+	path := test.FS.Join(home, ".config", test.Name.String())
 
-		err := test.FS.MkdirAll(path, 0o777)
-		So(err, ShouldBeNil)
+	require.NoError(t, test.FS.MkdirAll(path, 0o777))
 
-		data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
-		So(err, ShouldBeNil)
+	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	require.NoError(t, err)
 
-		err = test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600)
-		So(err, ShouldBeNil)
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600))
 
-		set := flag.NewFlagSet("test")
-		set.AddInput(strings.Empty)
+	set := flag.NewFlagSet("test")
+	set.AddInput(strings.Empty)
 
-		decoder := test.NewDecoder(set)
+	decoder := test.NewDecoder(set)
 
-		Convey("When I try to parse the configuration file", func() {
-			config, err := config.NewConfig[config.Config](decoder, test.Validator)
-			So(err, ShouldBeNil)
+	config, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.NoError(t, err)
+	verifyConfig(t, config)
 
-			Convey("Then I should have a valid configuration", func() {
-				verifyConfig(config)
-			})
-		})
-
-		err = test.FS.RemoveAll(path)
-		So(err, ShouldBeNil)
-	})
+	require.NoError(t, test.FS.RemoveAll(path))
 }
 
 func TestInvalidCommonConfig(t *testing.T) {
-	Convey("Given I do not have a configuration file", t, func() {
-		set := flag.NewFlagSet("test")
-		set.AddInput(strings.Empty)
+	set := flag.NewFlagSet("test")
+	set.AddInput(strings.Empty)
 
-		decoder := test.NewDecoder(set)
+	decoder := test.NewDecoder(set)
 
-		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](decoder, test.Validator)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.Error(t, err)
 }
 
 func TestInvalidKindConfig(t *testing.T) {
-	Convey("When I try to parse the configuration file", t, func() {
-		set := flag.NewFlagSet("test")
-		set.AddInput("test:test")
+	set := flag.NewFlagSet("test")
+	set.AddInput("test:test")
 
-		decoder := test.NewDecoder(set)
+	decoder := test.NewDecoder(set)
 
-		Convey("When I try to parse the configuration file", func() {
-			_, err := config.NewConfig[config.Config](decoder, test.Validator)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
-	})
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.Error(t, err)
 }
 
-//nolint:funlen
-func verifyConfig(config *config.Config) {
-	So(config.Debug.Address, ShouldEqual, "tcp://localhost:6060")
-	So(config.Debug.TLS.IsEnabled(), ShouldBeFalse)
-	So(config.Cache.IsEnabled(), ShouldBeTrue)
-	So(config.Cache.Kind, ShouldEqual, "redis")
-	So(config.Cache.Compressor, ShouldEqual, "snappy")
-	So(config.Cache.Encoder, ShouldEqual, "proto")
-	So(config.Cache.Options["url"], ShouldEqual, "file:../test/secrets/redis")
-	So(config.Crypto.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.AES.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.AES.Key, ShouldNotBeBlank)
-	So(config.Crypto.Ed25519.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.Ed25519.Public, ShouldNotBeBlank)
-	So(config.Crypto.Ed25519.Private, ShouldNotBeBlank)
-	So(config.Crypto.HMAC.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.HMAC.Key, ShouldNotBeBlank)
-	So(config.Crypto.RSA.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.RSA.Public, ShouldNotBeBlank)
-	So(config.Crypto.RSA.Private, ShouldNotBeBlank)
-	So(config.Crypto.SSH.IsEnabled(), ShouldBeTrue)
-	So(config.Crypto.SSH.Public, ShouldNotBeBlank)
-	So(config.Crypto.SSH.Private, ShouldNotBeBlank)
-	So(config.Debug.IsEnabled(), ShouldBeTrue)
-	So(config.Environment.String(), ShouldEqual, "development")
-	So(config.Feature.IsEnabled(), ShouldBeTrue)
-	So(config.Feature.Address, ShouldEqual, "localhost:9000")
-	So(config.ID.Kind, ShouldEqual, "uuid")
-	So(config.Hooks.Secret, ShouldEqual, "file:../test/secrets/hooks")
-	So(len(config.SQL.PG.Masters), ShouldEqual, 1)
-	So(config.SQL.PG.Masters[0].URL, ShouldEqual, "file:../test/secrets/pg")
-	So(len(config.SQL.PG.Slaves), ShouldEqual, 1)
-	So(config.SQL.PG.Slaves[0].URL, ShouldEqual, "file:../test/secrets/pg")
-	So(config.SQL.PG.MaxIdleConns, ShouldEqual, 5)
-	So(config.SQL.PG.MaxOpenConns, ShouldEqual, 5)
-	So(config.SQL.PG.ConnMaxLifetime, ShouldEqual, "1h")
-	So(config.Telemetry.Logger.Kind, ShouldEqual, "text")
-	So(config.Telemetry.Logger.Level, ShouldEqual, "info")
-	So(config.Telemetry.Metrics.Kind, ShouldEqual, "prometheus")
-	So(config.Time.Kind, ShouldEqual, "nts")
-	So(config.Time.Address, ShouldEqual, "time.cloudflare.com")
-	So(config.Telemetry.Tracer.URL, ShouldEqual, "http://localhost:4318/v1/traces")
-	So(config.Telemetry.Tracer.Kind, ShouldEqual, "otlp")
-	So(config.Transport.GRPC.Token.IsEnabled(), ShouldBeTrue)
-	So(config.Transport.GRPC.Token.Access.Policy, ShouldEqual, "../test/configs/rbac.csv")
-	So(config.Transport.GRPC.Token.Kind, ShouldEqual, "jwt")
-	So(config.Transport.GRPC.Token.JWT.Expiration, ShouldEqual, "1h")
-	So(config.Transport.GRPC.Token.JWT.Issuer, ShouldEqual, "iss")
-	So(config.Transport.GRPC.Token.JWT.KeyID, ShouldEqual, "1234567890")
-	So(config.Transport.GRPC.Config.IsEnabled(), ShouldBeTrue)
-	So(config.Transport.GRPC.Address, ShouldEqual, "tcp://localhost:12000")
-	So(config.Transport.GRPC.Limiter.Kind, ShouldEqual, "user-agent")
-	So(config.Transport.GRPC.Limiter.Tokens, ShouldEqual, 10)
-	So(config.Transport.GRPC.Limiter.Interval, ShouldEqual, "1s")
-	So(config.Transport.GRPC.Retry.Attempts, ShouldEqual, 3)
-	So(config.Transport.GRPC.Retry.Timeout, ShouldEqual, "1s")
-	So(config.Transport.GRPC.TLS.IsEnabled(), ShouldBeFalse)
-	So(config.Transport.HTTP.Token.IsEnabled(), ShouldBeTrue)
-	So(config.Transport.HTTP.Token.Access.Policy, ShouldEqual, "../test/configs/rbac.csv")
-	So(config.Transport.HTTP.Token.Kind, ShouldEqual, "jwt")
-	So(config.Transport.HTTP.Token.JWT.Expiration, ShouldEqual, "1h")
-	So(config.Transport.HTTP.Token.JWT.Issuer, ShouldEqual, "iss")
-	So(config.Transport.HTTP.Token.JWT.KeyID, ShouldEqual, "1234567890")
-	So(config.Transport.HTTP.Config.IsEnabled(), ShouldBeTrue)
-	So(config.Transport.HTTP.Address, ShouldEqual, "tcp://localhost:11000")
-	So(config.Transport.HTTP.Limiter.Kind, ShouldEqual, "user-agent")
-	So(config.Transport.HTTP.Limiter.Tokens, ShouldEqual, 10)
-	So(config.Transport.HTTP.Limiter.Interval, ShouldEqual, "1s")
-	So(config.Transport.HTTP.Retry.Attempts, ShouldEqual, 3)
-	So(config.Transport.HTTP.Retry.Timeout, ShouldEqual, "1s")
-	So(config.Transport.HTTP.TLS.IsEnabled(), ShouldBeFalse)
+//nolint:funlen,gosec
+func verifyConfig(t *testing.T, config *config.Config) {
+	t.Helper()
+
+	require.Equal(t, "tcp://localhost:6060", config.Debug.Address)
+	require.False(t, config.Debug.TLS.IsEnabled())
+	require.True(t, config.Crypto.RSA.IsEnabled())
+	require.Equal(t, "redis", config.Cache.Kind)
+	require.Equal(t, "snappy", config.Cache.Compressor)
+	require.Equal(t, "proto", config.Cache.Encoder)
+	require.Equal(t, "file:../test/secrets/redis", config.Cache.Options["url"])
+	require.True(t, config.Crypto.IsEnabled())
+	require.True(t, config.Crypto.AES.IsEnabled())
+	require.NotEmpty(t, config.Crypto.AES.Key)
+	require.True(t, config.Crypto.Ed25519.IsEnabled())
+	require.NotEmpty(t, config.Crypto.Ed25519.Public)
+	require.NotEmpty(t, config.Crypto.Ed25519.Private)
+	require.True(t, config.Crypto.HMAC.IsEnabled())
+	require.NotEmpty(t, config.Crypto.HMAC.Key)
+	require.True(t, config.Crypto.RSA.IsEnabled())
+	require.NotEmpty(t, config.Crypto.RSA.Public)
+	require.NotEmpty(t, config.Crypto.RSA.Private)
+	require.True(t, config.Crypto.SSH.IsEnabled())
+	require.NotEmpty(t, config.Crypto.SSH.Public)
+	require.NotEmpty(t, config.Crypto.SSH.Private)
+	require.True(t, config.Debug.IsEnabled())
+	require.Equal(t, "development", config.Environment.String())
+	require.True(t, config.Feature.IsEnabled())
+	require.Equal(t, "localhost:9000", config.Feature.Address)
+	require.Equal(t, "uuid", config.ID.Kind)
+	require.Equal(t, "file:../test/secrets/hooks", config.Hooks.Secret)
+	require.Len(t, config.SQL.PG.Masters, 1)
+	require.Equal(t, "file:../test/secrets/pg", config.SQL.PG.Masters[0].URL)
+	require.Len(t, config.SQL.PG.Slaves, 1)
+	require.Equal(t, "file:../test/secrets/pg", config.SQL.PG.Slaves[0].URL)
+	require.Equal(t, 5, config.SQL.PG.MaxIdleConns)
+	require.Equal(t, 5, config.SQL.PG.MaxOpenConns)
+	require.Equal(t, "1h", config.SQL.PG.ConnMaxLifetime)
+	require.Equal(t, "text", config.Telemetry.Logger.Kind)
+	require.Equal(t, "info", config.Telemetry.Logger.Level)
+	require.Equal(t, "prometheus", config.Telemetry.Metrics.Kind)
+	require.Equal(t, "nts", config.Time.Kind)
+	require.Equal(t, "time.cloudflare.com", config.Time.Address)
+	require.Equal(t, "http://localhost:4318/v1/traces", config.Telemetry.Tracer.URL)
+	require.Equal(t, "otlp", config.Telemetry.Tracer.Kind)
+	require.True(t, config.Transport.GRPC.Token.IsEnabled())
+	require.Equal(t, "../test/configs/rbac.csv", config.Transport.GRPC.Token.Access.Policy)
+	require.Equal(t, "jwt", config.Transport.GRPC.Token.Kind)
+	require.Equal(t, "1h", config.Transport.GRPC.Token.JWT.Expiration)
+	require.Equal(t, "iss", config.Transport.GRPC.Token.JWT.Issuer)
+	require.Equal(t, "1234567890", config.Transport.GRPC.Token.JWT.KeyID)
+	require.True(t, config.Transport.GRPC.Config.IsEnabled())
+	require.Equal(t, "tcp://localhost:12000", config.Transport.GRPC.Address)
+	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
+	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
+	require.Equal(t, "1s", config.Transport.GRPC.Limiter.Interval)
+	require.Equal(t, 3, int(config.Transport.GRPC.Retry.Attempts))
+	require.Equal(t, "1s", config.Transport.GRPC.Retry.Timeout)
+	require.False(t, config.Transport.GRPC.TLS.IsEnabled())
+	require.True(t, config.Transport.HTTP.Token.IsEnabled())
+	require.Equal(t, "../test/configs/rbac.csv", config.Transport.HTTP.Token.Access.Policy)
+	require.Equal(t, "jwt", config.Transport.HTTP.Token.Kind)
+	require.Equal(t, "1h", config.Transport.HTTP.Token.JWT.Expiration)
+	require.Equal(t, "iss", config.Transport.HTTP.Token.JWT.Issuer)
+	require.Equal(t, "1234567890", config.Transport.HTTP.Token.JWT.KeyID)
+	require.True(t, config.Transport.HTTP.Config.IsEnabled())
+	require.Equal(t, "tcp://localhost:11000", config.Transport.HTTP.Address)
+	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
+	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
+	require.Equal(t, "1s", config.Transport.HTTP.Limiter.Interval)
+	require.Equal(t, 3, int(config.Transport.HTTP.Retry.Attempts))
+	require.Equal(t, "1s", config.Transport.HTTP.Retry.Timeout)
+	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
 }

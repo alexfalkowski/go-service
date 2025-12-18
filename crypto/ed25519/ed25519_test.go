@@ -8,83 +8,47 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerator(t *testing.T) {
-	Convey("Given I have an erroneous generator", t, func() {
-		gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	gen := ed25519.NewGenerator(rand.NewGenerator(rand.NewReader()))
+	pub, pri, err := gen.Generate()
+	require.NoError(t, err)
+	require.NotEmpty(t, pub)
+	require.NotEmpty(t, pri)
 
-		Convey("When I generate keys", func() {
-			pub, pri, err := gen.Generate()
-
-			Convey("Then I should not have an error", func() {
-				So(err, ShouldBeNil)
-				So(pub, ShouldNotBeBlank)
-				So(pri, ShouldNotBeBlank)
-			})
-		})
-	})
-
-	Convey("Given I have an erroneous generator", t, func() {
-		gen := ed25519.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
-
-		Convey("When I generate keys", func() {
-			pub, pri, err := gen.Generate()
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-				So(pub, ShouldBeBlank)
-				So(pri, ShouldBeBlank)
-			})
-		})
-	})
+	gen = ed25519.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
+	pub, pri, err = gen.Generate()
+	require.Error(t, err)
+	require.Empty(t, pub)
+	require.Empty(t, pri)
 }
 
 func TestValid(t *testing.T) {
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewEd25519()
+	cfg := test.NewEd25519()
 
-		signer, err := ed25519.NewSigner(test.PEM, cfg)
-		So(err, ShouldBeNil)
+	signer, err := ed25519.NewSigner(test.PEM, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, signer.PrivateKey)
 
-		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
-		So(err, ShouldBeNil)
+	verifier, err := ed25519.NewVerifier(test.PEM, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, verifier.PublicKey)
 
-		Convey("When I sign data", func() {
-			e, _ := signer.Sign(strings.Bytes("test"))
+	e, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.NoError(t, verifier.Verify(e, strings.Bytes("test")))
 
-			Convey("Then I should have verified the data", func() {
-				So(verifier.Verify(e, strings.Bytes("test")), ShouldBeNil)
-			})
+	signer, err = ed25519.NewSigner(nil, nil)
+	require.NoError(t, err)
+	require.Nil(t, signer)
 
-			Convey("Then I should have keys", func() {
-				So(signer.PrivateKey, ShouldNotBeNil)
-				So(verifier.PublicKey, ShouldNotBeNil)
-			})
-		})
-	})
-
-	Convey("When I try to create a signer with no configuration", t, func() {
-		signer, err := ed25519.NewSigner(nil, nil)
-		So(err, ShouldBeNil)
-
-		Convey("Then I should have no signer", func() {
-			So(signer, ShouldBeNil)
-		})
-	})
-
-	Convey("When I try to create a verifier with no configuration", t, func() {
-		signer, err := ed25519.NewVerifier(nil, nil)
-		So(err, ShouldBeNil)
-
-		Convey("Then I should have no signer", func() {
-			So(signer, ShouldBeNil)
-		})
-	})
+	verifier, err = ed25519.NewVerifier(nil, nil)
+	require.NoError(t, err)
+	require.Nil(t, verifier)
 }
 
-//nolint:funlen
 func TestInvalid(t *testing.T) {
 	configs := []*ed25519.Config{
 		{},
@@ -92,13 +56,8 @@ func TestInvalid(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		Convey("When I create a signer", t, func() {
-			_, err := ed25519.NewSigner(test.PEM, config)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
+		_, err := ed25519.NewSigner(test.PEM, config)
+		require.Error(t, err)
 	}
 
 	configs = []*ed25519.Config{
@@ -107,80 +66,43 @@ func TestInvalid(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		Convey("When I create a signer", t, func() {
-			_, err := ed25519.NewVerifier(test.PEM, config)
-
-			Convey("Then I should have an error", func() {
-				So(err, ShouldBeError)
-			})
-		})
+		_, err := ed25519.NewVerifier(test.PEM, config)
+		require.Error(t, err)
 	}
 
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewEd25519()
+	cfg := test.NewEd25519()
 
-		signer, err := ed25519.NewSigner(test.PEM, cfg)
-		So(err, ShouldBeNil)
+	signer, err := ed25519.NewSigner(test.PEM, cfg)
+	require.NoError(t, err)
 
-		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
-		So(err, ShouldBeNil)
+	verifier, err := ed25519.NewVerifier(test.PEM, cfg)
+	require.NoError(t, err)
 
-		Convey("When I sign the data", func() {
-			sig, err := signer.Sign(strings.Bytes("test"))
-			So(err, ShouldBeNil)
+	sig, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
 
-			sig = append(sig, byte('w'))
+	sig = append(sig, byte('w'))
+	require.Error(t, verifier.Verify(sig, strings.Bytes("test")))
 
-			Convey("Then I should have an error", func() {
-				So(verifier.Verify(sig, strings.Bytes("test")), ShouldBeError)
-			})
-		})
-	})
+	e, err := signer.Sign(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.ErrorIs(t, verifier.Verify(e, strings.Bytes("bob")), errors.ErrInvalidMatch)
 
-	Convey("Given I have an signer", t, func() {
-		cfg := test.NewEd25519()
+	_, err = ed25519.NewVerifier(
+		test.PEM,
+		&ed25519.Config{
+			Public:  test.FilePath("secrets/rsa_public"),
+			Private: test.FilePath("secrets/ed25519_private"),
+		},
+	)
+	require.Error(t, err)
 
-		signer, err := ed25519.NewSigner(test.PEM, cfg)
-		So(err, ShouldBeNil)
-
-		verifier, err := ed25519.NewVerifier(test.PEM, cfg)
-		So(err, ShouldBeNil)
-
-		Convey("When I sign one message", func() {
-			e, err := signer.Sign(strings.Bytes("test"))
-			So(err, ShouldBeNil)
-
-			Convey("Then I comparing another message will gave an error", func() {
-				So(verifier.Verify(e, strings.Bytes("bob")), ShouldBeError, errors.ErrInvalidMatch)
-			})
-		})
-	})
-
-	Convey("When I create an verifier with an invalid public key", t, func() {
-		_, err := ed25519.NewVerifier(
-			test.PEM,
-			&ed25519.Config{
-				Public:  test.FilePath("secrets/rsa_public"),
-				Private: test.FilePath("secrets/ed25519_private"),
-			},
-		)
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
-
-	Convey("When I create an signer with an invalid private key", t, func() {
-		_, err := ed25519.NewSigner(
-			test.PEM,
-			&ed25519.Config{
-				Public:  test.FilePath("secrets/ed25519_public"),
-				Private: test.FilePath("secrets/rsa_private"),
-			},
-		)
-
-		Convey("Then I should have an error", func() {
-			So(err, ShouldBeError)
-		})
-	})
+	_, err = ed25519.NewSigner(
+		test.PEM,
+		&ed25519.Config{
+			Public:  test.FilePath("secrets/ed25519_public"),
+			Private: test.FilePath("secrets/rsa_private"),
+		},
+	)
+	require.Error(t, err)
 }
