@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.221.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.221.0) - 2025-12-18
+
+- [`5677b82`](https://github.com/alexfalkowski/go-service/commit/5677b829c777701f6b48f8807451cad5b921b957) feat(deps): upgraded github.com/BurntSushi/toml v1.5.0 => v1.6.0 (#2013)
+- [`0e24e3d`](https://github.com/alexfalkowski/go-service/commit/0e24e3d6b1b210e1766ee2005404cdc640f9e49a) build(ci): use latest published images (#2012)
+- [`e46898a`](https://github.com/alexfalkowski/go-service/commit/e46898a5f629502413c293248a7ece5a43553389) test(deps): move to github.com/stretchr/testify/require (#2008)
+
 ## [v2.220.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.220.0) - 2025-12-17
 
 - [`4c88385`](https://github.com/alexfalkowski/go-service/commit/4c8838525636287092e8cfd9ddf69e4d8d8716ca) feat(deps): bump github.com/XSAM/otelsql from 0.40.0 to 0.41.0 (#2011)
