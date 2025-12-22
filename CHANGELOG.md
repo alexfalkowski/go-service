@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.222.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.222.0) - 2025-12-22
+
+- [`00b41dd`](https://github.com/alexfalkowski/go-service/commit/00b41dda2b172ab122c82ff9d8b86dc1a6795e77) feat(deps): bump github.com/go-playground/validator/v10 from 10.29.0 to 10.30.0 (#2016)
+- [`30c2e3b`](https://github.com/alexfalkowski/go-service/commit/30c2e3bc0708a395c3bad0cc1496435704174982) build(ci): use latest published images (#2015)
+- [`56288c2`](https://github.com/alexfalkowski/go-service/commit/56288c2f3490b07968cdea6e2ae90bea0ba2f027) build(deps): upgraded github.com/alexfalkowski/bin (#2014)
+
 ## [v2.221.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.221.0) - 2025-12-18
 
 - [`5677b82`](https://github.com/alexfalkowski/go-service/commit/5677b829c777701f6b48f8807451cad5b921b957) feat(deps): upgraded github.com/BurntSushi/toml v1.5.0 => v1.6.0 (#2013)
