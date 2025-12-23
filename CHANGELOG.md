@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.223.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.223.0) - 2025-12-23
+
+- [`a07aa5f`](https://github.com/alexfalkowski/go-service/commit/a07aa5f919592fc77ddf52fdabcac37fa91946f9) feat(deps): github.com/beevik/nts v0.2.1 => v0.3.0 (#2019)
+- [`29b4757`](https://github.com/alexfalkowski/go-service/commit/29b47570f510bbc14be38b15b5de1ac461b454b2) build(deps): upgraded github.com/alexfalkowski/bin (#2018)
+- [`134e001`](https://github.com/alexfalkowski/go-service/commit/134e0014fc7c8a138af762fb2b77bf0fb9bd1f6b) build(deps): upgraded github.com/alexfalkowski/bin (#2017)
+
 ## [v2.222.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.222.0) - 2025-12-22
 
 - [`00b41dd`](https://github.com/alexfalkowski/go-service/commit/00b41dda2b172ab122c82ff9d8b86dc1a6795e77) feat(deps): bump github.com/go-playground/validator/v10 from 10.29.0 to 10.30.0 (#2016)
