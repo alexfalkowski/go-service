@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.225.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.225.0) - 2025-12-25
+
+- [`7a74a4b`](https://github.com/alexfalkowski/go-service/commit/7a74a4b679cfb68e8222650054df484f62f29924) feat(deps): bump github.com/go-playground/validator/v10 from 10.30.0 to 10.30.1 (#2021)
+
 ## [v2.224.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.224.0) - 2025-12-23
 
 - [`0860f76`](https://github.com/alexfalkowski/go-service/commit/0860f76ca3f2c38b3c069fc7015d915850f6e54e) feat(deps): upgraded google.golang.org/grpc v1.77.0 => v1.78.0 (#2020)
