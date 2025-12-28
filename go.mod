@@ -3,7 +3,7 @@ module github.com/alexfalkowski/go-service/v2
 go 1.25.0
 
 require (
-	aidanwoods.dev/go-paseto v1.5.4
+	aidanwoods.dev/go-paseto v1.6.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
