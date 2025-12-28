@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.226.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.226.0) - 2025-12-28
+
+- [`ba360f8`](https://github.com/alexfalkowski/go-service/commit/ba360f8482809fcc9460828f1342865463527ed0) feat(deps): bump github.com/jackc/pgx/v5 from 5.7.6 to 5.8.0 (#2023)
+- [`dbc5ecd`](https://github.com/alexfalkowski/go-service/commit/dbc5ecd0d9c552b08f535c99228a9a8ec719e2b0) build(ci): use latest published images (#2022)
+
 ## [v2.225.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.225.0) - 2025-12-25
 
 - [`7a74a4b`](https://github.com/alexfalkowski/go-service/commit/7a74a4b679cfb68e8222650054df484f62f29924) feat(deps): bump github.com/go-playground/validator/v10 from 10.30.0 to 10.30.1 (#2021)
