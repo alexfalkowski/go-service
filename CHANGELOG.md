@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.229.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.229.0) - 2025-12-29
+
+- [`ae0e2eb`](https://github.com/alexfalkowski/go-service/commit/ae0e2eb42de9c3cab9affbcec3e79543b1718d71) feat(deps): upgraded github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 => v2.27.4 (#2028)
+- [`46dfc1c`](https://github.com/alexfalkowski/go-service/commit/46dfc1c46d242e319bc60367fcd94bb7d9e74d49) build(deps): upgraded github.com/alexfalkowski/bin (#2027)
+- [`c616fee`](https://github.com/alexfalkowski/go-service/commit/c616feec7caa42b6558ef089d75618d5fc3463ed) build(ci): use latest published images (#2026)
+
 ## [v2.228.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.228.0) - 2025-12-28
 
 - [`f53c6c3`](https://github.com/alexfalkowski/go-service/commit/f53c6c371cd7b5d1f76ce02cfc35c5bda72caad3) feat(deps): bump github.com/go-sprout/sprout from 1.0.2 to 1.0.3 (#2025)
