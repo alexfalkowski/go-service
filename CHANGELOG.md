@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.231.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.231.0) - 2026-01-08
+
+- [`4c4e166`](https://github.com/alexfalkowski/go-service/commit/4c4e166451d5477646140c7ad48bf7fab230634e) feat(prealloc): use https://github.com/alexkohler/prealloc (#2036)
+- [`00b2a4f`](https://github.com/alexfalkowski/go-service/commit/00b2a4f9f176a457cfb69168566259d1046fcc50) build(deps): upgraded github.com/alexfalkowski/bin (#2039)
+- [`9113f11`](https://github.com/alexfalkowski/go-service/commit/9113f11465621c3136eaccc55d6b6ccdb9c00ed4) build(deps): upgraded github.com/alexfalkowski/bin (#2038)
+- [`dbd3fa0`](https://github.com/alexfalkowski/go-service/commit/dbd3fa0c38a3a44767b8165d5db48ddb767258b5) build(deps): upgraded github.com/alexfalkowski/bin (#2037)
+- [`059ae0c`](https://github.com/alexfalkowski/go-service/commit/059ae0c1eb4353c87a2971e398383ea321d3ea93) build(ci): use latest published images (#2035)
+- [`3a5333a`](https://github.com/alexfalkowski/go-service/commit/3a5333aa0d465a9133a8989c3e68f3b1e5389861) build(deps): bump bin from `664d367` to `302ba69` (#2034)
+- [`428afb5`](https://github.com/alexfalkowski/go-service/commit/428afb5a311341128835570dd14d723be73d6090) build(ci): use latest published images (#2033)
+- [`83097bb`](https://github.com/alexfalkowski/go-service/commit/83097bbb62bdb8f9c8c7ce0b69384a7ffce60857) build(ci): use latest published images (#2032)
+
 ## [v2.230.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.230.0) - 2026-01-02
 
 - [`75f6e19`](https://github.com/alexfalkowski/go-service/commit/75f6e19126fb2ada1f7b99eb76f8cbbc88a80733) feat(deps): bump github.com/shirou/gopsutil/v4 from 4.25.11 to 4.25.12 (#2031)
