@@ -31,11 +31,12 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	service, method := http.ParseServiceMethod(req)
 	ctx := req.Context()
-	attrs := []logger.Attr{
-		logger.String(meta.SystemKey, "http"),
-		logger.String(meta.ServiceKey, service),
-		logger.String(meta.MethodKey, method),
-	}
+
+	attrs := make([]logger.Attr, 0, 5)
+	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
+	attrs = append(attrs, logger.String(meta.ServiceKey, service))
+	attrs = append(attrs, logger.String(meta.MethodKey, method))
+
 	m := snoop.CaptureMetricsFn(res, func(res http.ResponseWriter) { next(res, req.WithContext(ctx)) })
 	attrs = append(attrs, logger.String(meta.DurationKey, m.Duration.String()), logger.Int(meta.CodeKey, m.Code))
 	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
@@ -64,15 +65,16 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	start := time.Now()
 	ctx := req.Context()
 	resp, err := r.RoundTripper.RoundTrip(req)
-	attrs := []logger.Attr{
-		logger.String(meta.DurationKey, time.Since(start).String()),
-		logger.String(meta.SystemKey, "http"),
-		logger.String(meta.ServiceKey, service),
-		logger.String(meta.MethodKey, method),
-	}
+
+	attrs := make([]logger.Attr, 0, 5)
+	attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
+	attrs = append(attrs, logger.String(meta.SystemKey, "http"))
+	attrs = append(attrs, logger.String(meta.ServiceKey, service))
+	attrs = append(attrs, logger.String(meta.MethodKey, method))
 	if resp != nil {
 		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
+
 	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
 
 	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)

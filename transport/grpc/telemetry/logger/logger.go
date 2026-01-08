@@ -27,12 +27,12 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 		service, method, _ := strings.SplitServiceMethod(info.FullMethod)
 		start := time.Now()
 		resp, err := handler(ctx, req)
-		attrs := []logger.Attr{
-			logger.String(meta.DurationKey, time.Since(start).String()),
-			logger.String(meta.SystemKey, "grpc"),
-			logger.String(meta.ServiceKey, service),
-			logger.String(meta.MethodKey, method),
-		}
+
+		attrs := make([]logger.Attr, 0, 5)
+		attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
+		attrs = append(attrs, logger.String(meta.SystemKey, "grpc"))
+		attrs = append(attrs, logger.String(meta.ServiceKey, service))
+		attrs = append(attrs, logger.String(meta.MethodKey, method))
 
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
@@ -54,12 +54,12 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 		start := time.Now()
 		ctx := stream.Context()
 		err := handler(srv, stream)
-		attrs := []logger.Attr{
-			logger.String(meta.DurationKey, time.Since(start).String()),
-			logger.String(meta.SystemKey, "grpc"),
-			logger.String(meta.ServiceKey, service),
-			logger.String(meta.MethodKey, method),
-		}
+
+		attrs := make([]logger.Attr, 0, 5)
+		attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
+		attrs = append(attrs, logger.String(meta.SystemKey, "grpc"))
+		attrs = append(attrs, logger.String(meta.ServiceKey, service))
+		attrs = append(attrs, logger.String(meta.MethodKey, method))
 
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
@@ -80,12 +80,12 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		err := invoker(ctx, fullMethod, req, resp, conn, opts...)
-		attrs := []logger.Attr{
-			logger.String(meta.DurationKey, time.Since(start).String()),
-			logger.String(meta.SystemKey, "grpc"),
-			logger.String(meta.ServiceKey, service),
-			logger.String(meta.MethodKey, method),
-		}
+
+		attrs := make([]logger.Attr, 0, 5)
+		attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
+		attrs = append(attrs, logger.String(meta.SystemKey, "grpc"))
+		attrs = append(attrs, logger.String(meta.ServiceKey, service))
+		attrs = append(attrs, logger.String(meta.MethodKey, method))
 
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))
@@ -106,13 +106,12 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 		service, method, _ := strings.SplitServiceMethod(fullMethod)
 		start := time.Now()
 		stream, err := streamer(ctx, desc, conn, fullMethod, opts...)
-		attrs := []logger.Attr{
-			logger.String(meta.DurationKey, time.Since(start).String()),
-			logger.String(meta.SystemKey, "grpc"),
-			logger.String(meta.ServiceKey, fullMethod),
-			logger.String(meta.ServiceKey, service),
-			logger.String(meta.MethodKey, method),
-		}
+
+		attrs := make([]logger.Attr, 0, 5)
+		attrs = append(attrs, logger.String(meta.DurationKey, time.Since(start).String()))
+		attrs = append(attrs, logger.String(meta.SystemKey, "grpc"))
+		attrs = append(attrs, logger.String(meta.ServiceKey, service))
+		attrs = append(attrs, logger.String(meta.MethodKey, method))
 
 		code := status.Code(err)
 		attrs = append(attrs, logger.String(meta.CodeKey, code.String()))

@@ -175,19 +175,18 @@ func WithKeepaliveParams(timeout time.Duration) DialOption {
 
 // NewServer for grpc.
 func NewServer(timeout time.Duration, opts ...ServerOption) *Server {
-	options := []ServerOption{
-		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-			MinTime:             timeout,
-			PermitWithoutStream: true,
-		}),
-		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     timeout,
-			MaxConnectionAge:      timeout,
-			MaxConnectionAgeGrace: timeout,
-			Time:                  timeout,
-			Timeout:               timeout,
-		}),
-	}
+	options := make([]ServerOption, 0, 2+len(opts))
+	options = append(options, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+		MinTime:             timeout,
+		PermitWithoutStream: true,
+	}))
+	options = append(options, grpc.KeepaliveParams(keepalive.ServerParameters{
+		MaxConnectionIdle:     timeout,
+		MaxConnectionAge:      timeout,
+		MaxConnectionAgeGrace: timeout,
+		Time:                  timeout,
+		Timeout:               timeout,
+	}))
 	options = append(options, opts...)
 
 	server := grpc.NewServer(options...)
