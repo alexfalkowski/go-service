@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.92
+      - image: alexfalkowski/go:2.93
         environment:
           GOEXPERIMENT: greenteagc
       - image: postgres:18-trixie
