@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.232.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.232.0) - 2026-01-13
+
+- [`afc111c`](https://github.com/alexfalkowski/go-service/commit/afc111cfbd2a3ac43fe113a59c4c57d1b06d2b64) feat(deps): bump golang.org/x/net from 0.48.0 to 0.49.0 (#2042)
+- [`46e2828`](https://github.com/alexfalkowski/go-service/commit/46e28287e83b8419dd6a8f533e2bbdf7955916e4) build(ci): use latest published images (#2041)
+- [`aabe5ec`](https://github.com/alexfalkowski/go-service/commit/aabe5ec9eb0bb00b7c9ec8df3b59d841c91671bf) build(ci): use latest published images (#2040)
+
 ## [v2.231.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.231.0) - 2026-01-08
 
 - [`4c4e166`](https://github.com/alexfalkowski/go-service/commit/4c4e166451d5477646140c7ad48bf7fab230634e) feat(prealloc): use https://github.com/alexkohler/prealloc (#2036)
