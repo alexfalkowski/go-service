@@ -31,30 +31,30 @@ jobs:
       - restore_cache:
           name: restore go cache
           keys:
-            - go-service-go-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
-            - go-service-go-cache-
+            - go-service-go-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+            - go-service-go-cache-v2-
       - run: make clean
       - run: make dep
       - save_cache:
           name: save go cache
-          key: go-service-go-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+          key: go-service-go-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
           paths:
             - ~/go/pkg/mod
       - restore_cache:
           name: restore go build cache
           keys:
-            - go-service-go-build-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
-            - go-service-go-build-cache-
+            - go-service-go-build-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+            - go-service-go-build-cache-v2-
       - restore_cache:
           name: restore go lint cache
           keys:
-            - go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
-            - go-service-go-lint-cache-
+            - go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
+            - go-service-go-lint-cache-v2-
       - run: make clean
       - run: make lint
       - save_cache:
           name: save go lint cache
-          key: go-service-go-lint-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
+          key: go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
           paths:
             - ~/.cache/golangci-lint
       - run: make sec
@@ -62,7 +62,7 @@ jobs:
       - run: make benchmarks
       - save_cache:
           name: save go build cache
-          key: go-service-go-build-cache-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+          key: go-service-go-build-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
           paths:
             - ~/.cache/go-build
       - run: make coverage
