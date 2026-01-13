@@ -22,24 +22,11 @@ jobs:
     steps:
       - checkout:
           method: blobless
-      - run: git submodule sync
-      - run: git submodule update --init
-      - run: make source-key
-      - run: mkcert -install
-      - run: make create-certs
-      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9009 -timeout 1m
       - restore_cache:
           name: restore go cache
           keys:
             - go-service-go-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
             - go-service-go-cache-v2-
-      - run: make clean
-      - run: make dep
-      - save_cache:
-          name: save go cache
-          key: go-service-go-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
-          paths:
-            - ~/go/pkg/mod
       - restore_cache:
           name: restore go build cache
           keys:
@@ -50,27 +37,41 @@ jobs:
           keys:
             - go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
             - go-service-go-lint-cache-v2-
+      - run: git submodule sync
+      - run: git submodule update --init
+      - run: make source-key
+      - run: mkcert -install
+      - run: make create-certs
+      - run: dockerize -wait tcp://localhost:5432 -wait tcp://localhost:6379 -wait tcp://localhost:6000 -wait tcp://localhost:9009 -timeout 1m
+      - run: make clean
+      - run: make dep
+
       - run: make clean
       - run: make lint
-      - save_cache:
-          name: save go lint cache
-          key: go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
-          paths:
-            - ~/.cache/golangci-lint
       - run: make sec
       - run: make specs
       - run: make benchmarks
-      - save_cache:
-          name: save go build cache
-          key: go-service-go-build-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
-          paths:
-            - ~/.cache/go-build
       - run: make coverage
       - store_test_results:
           path: test/reports
       - store_artifacts:
           path: test/reports
       - run: make codecov-upload
+      - save_cache:
+          name: save go cache
+          key: go-service-go-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+          paths:
+            - ~/go/pkg/mod
+      - save_cache:
+          name: save go lint cache
+          key: go-service-go-lint-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-lint-version" }}-{{ checksum ".source-key" }}
+          paths:
+            - ~/.cache/golangci-lint
+      - save_cache:
+          name: save go build cache
+          key: go-service-go-build-cache-v2-{{ checksum "go.sum" }}-{{ checksum "~/.go-version" }}-{{ checksum ".source-key" }}
+          paths:
+            - ~/.cache/go-build
     resource_class: large
   version:
     docker:
