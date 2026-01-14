@@ -44,7 +44,7 @@ require (
 	github.com/sethvargo/go-retry v0.3.0
 	github.com/shirou/gopsutil/v4 v4.25.12
 	github.com/sony/gobreaker v1.0.0
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20251210175704-b03a68fe8b19
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260113211855-b57537b4939a
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.14.0
