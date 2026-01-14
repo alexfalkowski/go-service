@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.234.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.234.0) - 2026-01-14
+
+- [`52976c0`](https://github.com/alexfalkowski/go-service/commit/52976c039999c9d385d7209476ae5e1fd2e9d4aa) feat(deps): bump github.com/open-feature/go-sdk from 1.17.0 to 1.17.1 (#2048)
+- [`6667fac`](https://github.com/alexfalkowski/go-service/commit/6667fac89b7c7d0f16740b79fc09c6af6f70fb69) build(ci): use latest published images (#2047)
+- [`00a883c`](https://github.com/alexfalkowski/go-service/commit/00a883c4eb423943407708c12294f9cead84a7c0) build(ci): move cache to v2 (#2045)
+
 ## [v2.233.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.233.0) - 2026-01-13
 
 - [`1bf347c`](https://github.com/alexfalkowski/go-service/commit/1bf347cebd867f1365da64efcc99c50895a4719f) feat(deps): upgraded github.com/bmatcuk/doublestar/v4 v4.9.1 => v4.9.2 (#2044)
