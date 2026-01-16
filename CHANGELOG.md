@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.236.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.236.0) - 2026-01-16
+
+- [`9fcd0ad`](https://github.com/alexfalkowski/go-service/commit/9fcd0ad9796654ffdc38633da61a419e9502df3e) feat(deps): upgraded github.com/klauspost/compress v1.18.2 => v1.18.3 (#2054)
+- [`5f8306d`](https://github.com/alexfalkowski/go-service/commit/5f8306da6519c9b1cebf8cd7e849fc22aee9588b) build(ci): use latest published images (#2053)
+- [`55e9178`](https://github.com/alexfalkowski/go-service/commit/55e9178e674df029c63b75d161a15d40eafeb712) build(ci): use latest published images (#2052)
+- [`0299f73`](https://github.com/alexfalkowski/go-service/commit/0299f73fb566a41b70cad8b0fcf5415937fdab44) build(ci): use latest published images (#2051)
+
 ## [v2.235.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.235.0) - 2026-01-14
 
 - [`ce918b6`](https://github.com/alexfalkowski/go-service/commit/ce918b6b950340940fe9ecba6eb763eceb28d481) feat(deps): upgraded github.com/standard-webhooks/standard-webhooks/libraries (#2050)
