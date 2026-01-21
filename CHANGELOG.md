@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.237.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.237.1) - 2026-01-21
+
+- [`5842e7f`](https://github.com/alexfalkowski/go-service/commit/5842e7f40883e6cc1eea65e1ac1e59eed5d7d666) fix(health): use timeout (#2062)
+- [`c41b206`](https://github.com/alexfalkowski/go-service/commit/c41b20606c65de2a3350359d25f74513e1427e80) build(ci): use latest published images (#2061)
+- [`3270e06`](https://github.com/alexfalkowski/go-service/commit/3270e06d92c765350756133fed87141d5918b500) build(ci): use latest published images (#2060)
+
 ## [v2.237.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.237.0) - 2026-01-20
 
 - [`54719bd`](https://github.com/alexfalkowski/go-service/commit/54719bd86b02fe228c4aa27cae91f5c046e4576b) feat(deps): update go-health to v2.9.0 (#2059)
