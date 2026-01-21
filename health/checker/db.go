@@ -3,7 +3,6 @@ package checker
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/linxGnu/mssqlx"
 )
@@ -23,8 +22,25 @@ type DBChecker struct {
 
 // Check db health.
 func (c *DBChecker) Check(ctx context.Context) error {
-	_, cancel := context.WithTimeout(ctx, c.timeout)
-	defer cancel()
+	dbs, _ := c.db.GetAllMasters()
+	for _, db := range dbs {
+		ctx, cancel := context.WithTimeout(ctx, c.timeout)
+		defer cancel()
 
-	return errors.Join(c.db.Ping()...)
+		if err := db.PingContext(ctx); err != nil {
+			return err
+		}
+	}
+
+	dbs, _ = c.db.GetAllSlaves()
+	for _, db := range dbs {
+		ctx, cancel := context.WithTimeout(ctx, c.timeout)
+		defer cancel()
+
+		if err := db.PingContext(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
