@@ -165,7 +165,7 @@ Example: `transport/Module` composes HTTP + gRPC and registers constructors (see
 - `env:<ENV_VAR>` → env decoder
 - otherwise → default lookup decoder
 
-README documents env config as `extension:base64(content)` (e.g. `yml:<base64>`).
+README documents env config as `extension:base64(content)` (e.g. `yml:<base64>`). If the env var is missing/empty, `config.ENV.Decode` returns `config: env is missing` (see `config/env.go`, `config/errors.go`).
 
 ### Logging
 Logging is built on `log/slog` with a project wrapper (`telemetry/logger/logger.go`). Some components accept `*logger.Logger` and no-op safely when it’s nil (example: `server/service.go`).
