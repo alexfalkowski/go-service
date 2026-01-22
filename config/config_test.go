@@ -69,7 +69,32 @@ func TestValidEnvConfig(t *testing.T) {
 	verifyConfig(t, config)
 }
 
-func TestInvalidEnvConfig(t *testing.T) {
+func TestInvalidEnvMissingConfig(t *testing.T) {
+	set := flag.NewFlagSet("test")
+	set.AddInput("env:CONFIG")
+
+	decoder := test.NewDecoder(set)
+
+	_, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.ErrorIs(t, err, config.ErrEnvMissing)
+}
+
+func TestInvalidEnvKindConfig(t *testing.T) {
+	d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	require.NoError(t, err)
+
+	t.Setenv("CONFIG", "what:"+base64.Encode(d))
+
+	set := flag.NewFlagSet("test")
+	set.AddInput("env:CONFIG")
+
+	decoder := test.NewDecoder(set)
+
+	_, err = config.NewConfig[config.Config](decoder, test.Validator)
+	require.ErrorIs(t, err, config.ErrNoEncoder)
+}
+
+func TestInvalidEnvDataConfig(t *testing.T) {
 	t.Setenv("CONFIG", "yaml:not_good")
 
 	set := flag.NewFlagSet("test")
