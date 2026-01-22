@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.239.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.239.1) - 2026-01-22
+
+- [`143f547`](https://github.com/alexfalkowski/go-service/commit/143f5476eeb7d66f00db34ad691dbbced5649aae) fix(mvc): close file handle leak in MVC static serving (#2073)
+- [`495c004`](https://github.com/alexfalkowski/go-service/commit/495c00446e26a0c6976ee8a2b91e6fe70bf490c3) fix(tracer): prefix bug in tracer errors (#2072)
+- [`02e7990`](https://github.com/alexfalkowski/go-service/commit/02e7990cf1072220a672f21d2ae3ce5de3d9d357) build(ci): update AGENTS (#2071)
+
 ## [v2.239.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.239.0) - 2026-01-22
 
 - [`0cc606e`](https://github.com/alexfalkowski/go-service/commit/0cc606e7c659ce60c18d26b5a2e0b72e769a1084) feat(runtime): make sure ConvertRecover is consitent (#2070)
