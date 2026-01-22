@@ -18,7 +18,7 @@ func up(db *mssqlx.DBs) error {
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
-	query := `CREATE TABLE accounts (
+	query := `CREATE TABLE IF NOT EXISTS accounts (
 		user_id serial PRIMARY KEY,
 		created_at TIMESTAMP NOT NULL
 	);`
@@ -32,7 +32,7 @@ func down(db *mssqlx.DBs) error {
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
-	query := "DROP TABLE accounts;"
+	query := "DROP TABLE IF EXISTS accounts;"
 
 	_, err := db.ExecContext(ctx, query)
 
