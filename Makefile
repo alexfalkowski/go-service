@@ -18,13 +18,16 @@ transport-diagram:
 	@make package=transport create-diagram
 
 # Run all the benchmarks.
-benchmarks: http-benchmarks grpc-benchmarks
+benchmarks: http-benchmarks grpc-benchmarks bytes-benchmarks
 
 http-benchmarks:
 	@make package=transport/http benchmark
 
 grpc-benchmarks:
 	@make package=transport/grpc benchmark
+
+bytes-benchmarks:
+	@make package=bytes benchmark
 
 # Generate for tests.
 generate:

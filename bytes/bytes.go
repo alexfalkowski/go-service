@@ -28,14 +28,12 @@ func TrimSpace(s []byte) []byte {
 	return bytes.TrimSpace(s)
 }
 
-// Copy bytes to a new slice.
-func Copy(b []byte) []byte {
-	bytes := make([]byte, len(b))
-	copy(bytes, b)
-	return bytes
+// Clone is an alias bytes.Clone.
+func Clone(b []byte) []byte {
+	return bytes.Clone(b)
 }
 
 // String from the bytes.
 func String(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }

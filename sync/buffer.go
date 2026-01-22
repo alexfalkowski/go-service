@@ -33,5 +33,5 @@ func (p *BufferPool) Put(buffer *bytes.Buffer) {
 
 // Copy the buffer to a []byte.
 func (p *BufferPool) Copy(buffer *bytes.Buffer) []byte {
-	return bytes.Copy(buffer.Bytes())
+	return bytes.Clone(buffer.Bytes())
 }

@@ -10,7 +10,5 @@ import (
 
 func TestCopy(t *testing.T) {
 	hello := strings.Bytes("hello")
-	helloCopy := bytes.Copy(hello)
-
-	require.Equal(t, hello, helloCopy)
+	require.Equal(t, hello, bytes.Clone(hello))
 }
