@@ -184,9 +184,7 @@ Logging is built on `log/slog` with a project wrapper (`telemetry/logger/logger.
 
 ## Gotchas for automated agents
 
+- **Make targets are the source of truth**: CI and local workflows are designed around `make` (e.g. `make dep`, `make lint`, `make specs`, `make sec`). Prefer `make` targets over ad-hoc commands for parity with CI.
 - **Always init submodules before using `make`**: most targets come from the `bin` submodule.
 - **Integration dependencies**: some tests depend on external services; CI starts Postgres and Valkey/Redis (see `.circleci/config.yml`). Use `make start`/`make stop` where appropriate.
-- **Prefer `make specs` over `go test ./...` for “full” runs**: `make specs` uses vendoring and consistent package lists. In this checkout, `go test ./...` failed in:
-  - `config` tests (`config: location is missing`)
-  - `database/sql/pg` tests (`relation "accounts" already exists`)
 - **Cert fixtures**: TLS-related tests/configs rely on cert/key files in `test/certs/`; README documents generating them with `mkcert` + `make create-certs`.
