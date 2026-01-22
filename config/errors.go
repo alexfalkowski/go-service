@@ -3,12 +3,15 @@ package config
 import "github.com/alexfalkowski/go-service/v2/errors"
 
 var (
-	// ErrNoEncoder for encoding.
+	// ErrNoEncoder is returned when no encoder is provided.
 	ErrNoEncoder = errors.New("config: no encoder")
 
-	// ErrLocationMissing for cmd.
+	// ErrEnvMissing is returned when env is missing.
+	ErrEnvMissing = errors.New("config: env is missing")
+
+	// ErrLocationMissing is returned when location is missing.
 	ErrLocationMissing = errors.New("config: location is missing")
 
-	// ErrInvalidConfig when decoding fails.
+	// ErrInvalidConfig is returned when decoding fails.
 	ErrInvalidConfig = errors.New("config: invalid format")
 )

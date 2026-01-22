@@ -23,6 +23,10 @@ type ENV struct {
 
 // Decode to v.
 func (e *ENV) Decode(v any) error {
+	if strings.IsEmpty(e.kind) || strings.IsEmpty(e.data) {
+		return ErrEnvMissing
+	}
+
 	data, err := base64.Decode(e.data)
 	if err != nil {
 		return err
