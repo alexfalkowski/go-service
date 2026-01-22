@@ -82,8 +82,8 @@ func TestInvalidEnvConfig(t *testing.T) {
 }
 
 func TestValidCommonConfig(t *testing.T) {
-	home := os.UserHomeDir()
-	path := test.FS.Join(home, ".config", test.Name.String())
+	configDir := os.UserConfigDir()
+	path := test.FS.Join(configDir, test.Name.String())
 
 	require.NoError(t, test.FS.MkdirAll(path, 0o777))
 
