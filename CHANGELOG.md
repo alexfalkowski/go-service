@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.239.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.239.0) - 2026-01-22
+
+- [`0cc606e`](https://github.com/alexfalkowski/go-service/commit/0cc606e7c659ce60c18d26b5a2e0b72e769a1084) feat(runtime): make sure ConvertRecover is consitent (#2070)
+- [`7e4cb06`](https://github.com/alexfalkowski/go-service/commit/7e4cb064431ca2c231d4bcb822c3507a7cc97dd6) docs(ai): update AGENTS (#2069)
+
 ## [v2.238.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.238.0) - 2026-01-22
 
 - [`d5853b6`](https://github.com/alexfalkowski/go-service/commit/d5853b6cfb75e48d50f2fc9ded9381a3031b3b80) feat(config): distinguish env var missing vs unknown encoder (#2068)
