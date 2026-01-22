@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.238.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.238.0) - 2026-01-22
+
+- [`d5853b6`](https://github.com/alexfalkowski/go-service/commit/d5853b6cfb75e48d50f2fc9ded9381a3031b3b80) feat(config): distinguish env var missing vs unknown encoder (#2068)
+- [`2cb5394`](https://github.com/alexfalkowski/go-service/commit/2cb5394e95564d7e793f6ef504c7e6b3c09aef22) docs(ai): update AGENTS (#2067)
+- [`e26250e`](https://github.com/alexfalkowski/go-service/commit/e26250eb7d0cd262cb40d882dff4f2ec59132bf7) test(sql): made DB tests idempotent (#2066)
+- [`27cdc25`](https://github.com/alexfalkowski/go-service/commit/27cdc2501db0be44b7d5813667304790e73ba0c9) test(config): use os.UserConfigDir (#2065)
+- [`3b3d0ec`](https://github.com/alexfalkowski/go-service/commit/3b3d0ecdfccb3a5c6be20678b8869cfff7b8b320) build(ci): add AGENTS.md (#2064)
+- [`03a3098`](https://github.com/alexfalkowski/go-service/commit/03a3098f37e33447404e821e879b1dbfc383e970) build(ci): use latest published images (#2063)
+
 ## [v2.237.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.237.1) - 2026-01-21
 
 - [`5842e7f`](https://github.com/alexfalkowski/go-service/commit/5842e7f40883e6cc1eea65e1ac1e59eed5d7d666) fix(health): use timeout (#2062)
