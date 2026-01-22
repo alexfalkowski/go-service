@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.240.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.240.0) - 2026-01-22
+
+- [`01b2977`](https://github.com/alexfalkowski/go-service/commit/01b297795e4353d4d3d102593c7c7a649c5614d3) feat(bytes): make it more ideomatic (#2074)
+
 ## [v2.239.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.239.1) - 2026-01-22
 
 - [`143f547`](https://github.com/alexfalkowski/go-service/commit/143f5476eeb7d66f00db34ad691dbbced5649aae) fix(mvc): close file handle leak in MVC static serving (#2073)
