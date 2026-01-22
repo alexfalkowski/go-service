@@ -19,10 +19,10 @@ func Must(err error) {
 func ConvertRecover(value any) error {
 	switch kind := value.(type) {
 	case error:
-		return kind
+		return fmt.Errorf("%w: %w", ErrRecovered, kind)
 	case string:
 		return fmt.Errorf("%w: %s", ErrRecovered, kind)
 	default:
-		return fmt.Errorf("%w: %s", ErrRecovered, kind)
+		return fmt.Errorf("%w: %v", ErrRecovered, kind)
 	}
 }

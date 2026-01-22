@@ -2,55 +2,72 @@
 
 This repo is a Go module (`github.com/alexfalkowski/go-service/v2`) that provides a framework for building services (DI, config, transport, telemetry, crypto, etc.).
 
-## Repository bootstrap
+## First-time setup
 
-### Submodule (required for `make`)
-The top-level `Makefile` includes make fragments from the `bin` git submodule (see `.gitmodules` and `Makefile`).
+### Git submodule (required for `make`)
+
+The top-level `Makefile` includes make fragments from the `bin` git submodule (see `.gitmodules`, `Makefile`).
 
 ```sh
 git submodule sync
 git submodule update --init
 ```
 
-If `make` fails with missing `bin/build/make/*.mak`, the submodule is not initialized.
+Gotcha: `.gitmodules` points at an SSH URL (`git@github.com:alexfalkowski/bin.git`). If your environment cannot fetch SSH submodules, `make` will fail until you adjust your Git access.
 
-### Local dev deps (documented)
-`README.md` documents installing `mkcert` and creating cert fixtures:
+### Local dev deps (observed)
 
-```sh
-mkcert -install
-make create-certs
-```
+Some `make` targets assume these tools exist:
+
+- `mkcert` (used by `make create-certs`; also used in CI).
+- `gotestsum` (used by `make specs`).
+- `govulncheck` (used by `make sec`).
+- `codecovcli` (used by `make codecov-upload`).
+- `buf` (used by `make -C internal/test generate`, and the internal test makefile includes `bin/build/make/buf.mak`).
+- Diagram tooling (used by `make diagrams`): `goda` + `dot` (Graphviz).
 
 ## Project type
 
 - Language: Go
 - Go version: `go 1.25.0` (see `go.mod`)
 - DI: Uber Fx/Dig via wrappers in `di/` (see `di/di.go`)
-- CLI: `github.com/cristalhq/acmd` (see `cli/application.go`)
+- CLI command framework: `github.com/cristalhq/acmd` (see `cli/application.go`)
+- Linting: `golangci-lint` invoked via `bin/build/go/lint` (see `bin/build/make/go.mak` and `.golangci.yml`)
 
 ## Essential commands
 
-Most workflows are driven by `make` (targets come from `bin/build/make/go.mak`, plus a few top-level targets in `Makefile`).
+Most workflows are driven by `make`. Targets come primarily from `bin/build/make/*.mak`, plus a few top-level targets in `Makefile`.
 
-### Help / discoverability
+### Discoverability
 
 ```sh
 make help
 ```
 
-(`bin/build/make/help.mak` renders target comments.)
-
-### Dependencies / cleanup
+### Dependencies
 
 ```sh
 make dep        # go mod download + tidy + vendor
-make clean      # runs bin/build/go/clean
-make clean-dep  # clears go caches
-make clean-lint # clears golangci-lint cache
 ```
 
-### Lint
+Gotcha: tests/specs are executed with `-mod vendor` (see `bin/build/make/go.mak`), so `make dep` is typically required after dependency changes.
+
+### Tests
+
+```sh
+make specs
+```
+
+`make specs` runs with:
+
+- `gotestsum --junitfile test/reports/specs.xml`
+- `-race`
+- `-mod vendor`
+- `-covermode=atomic`
+- `-coverpkg=<all repo packages>`
+- `-coverprofile=test/reports/profile.cov`
+
+### Lint / format
 
 ```sh
 make lint       # field-alignment + golangci-lint
@@ -59,27 +76,19 @@ make fix-lint   # attempts to auto-fix (field alignment + golangci --fix)
 
 Lint configuration is in `.golangci.yml`.
 
+There is also a `format` target in the submodule makefiles:
+
+```sh
+make format
+```
+
 ### Security checks
 
 ```sh
 make sec        # govulncheck -show verbose -test ./...
 ```
 
-### Tests (specs) and coverage
-
-```sh
-make specs
-```
-
-`make specs` uses `gotestsum` and runs tests with:
-- `-race`
-- `-mod vendor`
-- `-covermode=atomic`
-- `-coverpkg=<all repo packages>`
-- junit output: `test/reports/specs.xml`
-- coverage profile: `test/reports/profile.cov`
-
-Coverage post-processing and reporting:
+### Coverage
 
 ```sh
 make coverage       # generates HTML + func coverage (uses covfilter)
@@ -88,11 +97,14 @@ make func-coverage
 make codecov-upload # codecovcli upload-process from test/reports/final.cov
 ```
 
-Additional coverage-related config:
-- `.gocov` (patterns used by coverage tooling)
+Coverage-related config and artifacts:
+
+- `.gocov` (coverage tool patterns)
 - `.codecov.yml`
+- `test/reports/*` (junit xml, cov profiles, HTML)
 
 ### Benchmarks
+
 Top-level `Makefile` defines convenience targets:
 
 ```sh
@@ -101,15 +113,51 @@ make http-benchmarks
 make grpc-benchmarks
 ```
 
-Underlying per-package benchmark target is defined in `bin/build/make/go.mak`:
+Underlying per-package benchmark target (from `bin/build/make/go.mak`):
 
 ```sh
 make package=transport/http benchmark
 make package=transport/grpc benchmark
 ```
 
+### Local environment (integration deps)
+
+Targets exist (from `bin/build/make/go.mak`):
+
+```sh
+make start
+make stop
+```
+
+CI uses Docker services (see `.circleci/config.yml`):
+
+- Postgres (waits on `tcp://localhost:5432`)
+- Valkey/Redis (waits on `tcp://localhost:6379`)
+- `alexfalkowski/status` server (waits on `tcp://localhost:6000`)
+- Grafana Mimir (waits on `tcp://localhost:9009`)
+
+### Test fixtures / certs
+
+```sh
+mkcert -install
+make create-certs
+```
+
+TLS fixtures are written to `test/certs/`.
+
+### Code generation
+
+Top-level `Makefile` provides:
+
+```sh
+make generate
+```
+
+This delegates to `make -C internal/test generate` (see `Makefile:30-31`). The internal test makefile includes the Buf make fragment (`internal/test/Makefile:1`).
+
 ### Diagrams
-Top-level `Makefile` defines:
+
+Top-level `Makefile`:
 
 ```sh
 make diagrams
@@ -119,25 +167,7 @@ make telemetry-diagram
 make transport-diagram
 ```
 
-These call `make package=<pkg> create-diagram` (defined in `bin/build/make/go.mak`) which runs `goda graph ... | dot -Tpng` and writes into `assets/`.
-
-### Environment (integration deps)
-The make targets exist (defined in `bin/build/make/go.mak`):
-
-```sh
-make start
-make stop
-```
-
-CircleCI starts external services via Docker images (see `.circleci/config.yml`): Postgres, Valkey/Redis, Grafana Mimir, and an `alexfalkowski/status` server.
-
-### Misc helpers
-
-```sh
-make encode-config kind=configs/config  # reads test/<kind>.yml and base64 encodes it
-make create-certs                       # writes certs into test/certs/
-make source-key                         # writes .source-key (used by CI cache keys)
-```
+These call `make package=<pkg> create-diagram` and write PNGs into `assets/`.
 
 ## Code organization (high level)
 
@@ -147,44 +177,65 @@ make source-key                         # writes .source-key (used by CI cache k
   - `module.Client` (client-side wiring)
 - `di/` – thin aliases around `fx`/`dig` (see `di/di.go`).
 - `cli/` – application/command wiring (see `cli/application.go`).
-- `config/` – config decoding, default lookup, validation (see `config/decoder.go`, `config/config.go`).
+- `config/` – config decoding, default lookup, validation (see `config/decoder.go`, `config/env.go`, `config/validator.go`).
 - `transport/` – HTTP + gRPC transports and middleware (`transport/http`, `transport/grpc`).
 - `telemetry/` – logger/metrics/tracer wrappers and modules (`telemetry/logger`, `telemetry/metrics`, `telemetry/tracer`).
-- `internal/test/` – shared test helpers and generators (e.g. `internal/test/config.go`).
+- `crypto/`, `database/`, `cache/`, `health/`, `feature/`, `hooks/`, `id/`, etc. – pluggable modules.
+- `internal/test/` – shared test helpers and generators.
 - `test/` – fixtures (configs, certs, secrets, reports).
 
 ## Key patterns and conventions (observed)
 
 ### Fx module pattern
+
 Modules are defined as `di.Module(...)` values that compose sub-modules and constructors/invocations.
-Example: `transport/Module` composes HTTP + gRPC and registers constructors (see `transport/module.go`).
+
+Example: `transport.Module` composes HTTP + gRPC and registers constructors/invocations (see `transport/module.go`).
+
+### CLI pattern (server vs client)
+
+`cli.Application` registers “server” and “client” commands using `acmd`.
+
+- `AddServer(...)` starts an Fx app, waits on `app.Done()`, then stops on completion (see `cli/application.go:61-88`).
+- `AddClient(...)` starts and immediately stops (see `cli/application.go:90-114`).
+
+Errors are wrapped with the command name prefix and `dig.RootCause(...)` (see `cli/application.go:137-139`).
 
 ### Config input routing via `-i`
-`config.NewDecoder` dispatches based on the `-i` flag value (see `config/decoder.go`):
+
+`config.NewDecoder` dispatches based on the `-i` flag value (see `config/decoder.go:21-32`):
+
 - `file:<path>` → file decoder
 - `env:<ENV_VAR>` → env decoder
 - otherwise → default lookup decoder
 
-README documents env config as `extension:base64(content)` (e.g. `yml:<base64>`). If the env var is missing/empty, `config.ENV.Decode` returns `config: env is missing` (see `config/env.go`, `config/errors.go`).
+Env config format is `extension:base64(content)` where `extension` is the encoding kind (`yml`, `json`, `toml`, etc.) and `content` is base64 (see `config/env.go:12-40`, and README examples).
 
 ### Logging
-Logging is built on `log/slog` with a project wrapper (`telemetry/logger/logger.go`). Some components accept `*logger.Logger` and no-op safely when it’s nil (example: `server/service.go`).
+
+Logging is built on `log/slog` with a project wrapper.
+
+- `telemetry/logger.NewLogger` returns `(*Logger, nil)` when enabled, otherwise `(nil, nil)` (see `telemetry/logger/logger.go:65-78`).
+- Callers should treat `*logger.Logger` as optional; many components guard `nil` explicitly (example: `server/service.go:53-59`).
 
 ### Tests
-- Assertions commonly use `stretchr/testify/require` (example: `token/jwt/jwt_test.go`).
+
+- Assertions commonly use `stretchr/testify/require`.
 - Many tests use fixtures from `test/` via helpers in `internal/test/`.
 
 ## Style / formatting
 
-- `.editorconfig` indicates:
-  - Go files use tabs (`indent_style = tab`, `indent_size = 4`).
-  - YAML uses 2-space indentation.
-- The repo favors the Uber Go style guide (documented in `README.md`).
-- `.golangci.yml` enables many linters and formatters (gofmt/gofumpt/goimports/gci).
+From `.editorconfig`:
 
-## Gotchas for automated agents
+- Go files use tabs (`indent_style = tab`, `indent_size = 4`).
+- YAML uses 2-space indentation.
 
-- **Make targets are the source of truth**: CI and local workflows are designed around `make` (e.g. `make dep`, `make lint`, `make specs`, `make sec`). Prefer `make` targets over ad-hoc commands for parity with CI.
-- **Always init submodules before using `make`**: most targets come from the `bin` submodule.
-- **Integration dependencies**: some tests depend on external services; CI starts Postgres and Valkey/Redis (see `.circleci/config.yml`). Use `make start`/`make stop` where appropriate.
-- **Cert fixtures**: TLS-related tests/configs rely on cert/key files in `test/certs/`; README documents generating them with `mkcert` + `make create-certs`.
+`.golangci.yml` enables formatters such as `gci`, `gofmt`, `gofumpt`, and `goimports`.
+
+## Gotchas
+
+- **Make targets are the source of truth**: CI and local workflows are designed around `make` (see `.circleci/config.yml` and `bin/build/make/go.mak`). Prefer `make` targets over ad-hoc commands for parity.
+- **Vendor mode in tests**: `make specs` uses `-mod vendor`; keep `vendor/` up to date via `make dep`.
+- **Submodule required**: most targets come from the `bin` submodule; missing submodule manifests as missing `bin/build/make/*.mak` includes.
+- **Integration deps**: some tests may assume external services; CI provisions Postgres, Valkey/Redis, a status server, and Mimir (see `.circleci/config.yml`).
+- **Certificates for TLS fixtures**: TLS-related tests/configs rely on files in `test/certs/`; CI runs `mkcert -install` + `make create-certs`.

@@ -34,7 +34,7 @@ var (
 
 	// Model for test.
 	Model = Page{
-		Title: "My TODO list",
+		Title: "My task list",
 		Todos: []Todo{
 			{Title: "Task 1", Done: false},
 			{Title: "Task 2", Done: true},
