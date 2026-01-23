@@ -109,6 +109,17 @@ func TestGenericValidCache(t *testing.T) {
 	world.RequireStop()
 }
 
+func TestGenericDisabledCache(t *testing.T) {
+	cache.Register(nil)
+
+	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+
+	value, ok, err := cache.Get[string](t.Context(), "test")
+	require.NoError(t, err)
+	require.False(t, ok)
+	require.Equal(t, strings.Empty, *value)
+}
+
 func TestExpiredCache(t *testing.T) {
 	world := test.NewWorld(t)
 	world.Register()
