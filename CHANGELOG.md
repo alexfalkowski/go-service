@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.242.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.242.0) - 2026-01-23
+
+- [`f1fedd8`](https://github.com/alexfalkowski/go-service/commit/f1fedd8e6cf4e66550782c646497d6e36dddcee9) feat(cache): safely handle no cache in generic funcs (#2077)
+- [`db53006`](https://github.com/alexfalkowski/go-service/commit/db530063d241827a1367dd2589857f82771fc35a) docs(ai): update AGENTS (#2076)
+
 ## [v2.241.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.241.0) - 2026-01-22
 
 - [`bb454ef`](https://github.com/alexfalkowski/go-service/commit/bb454efc266e469c6cfdae903672afe026998946) feat(strings): make it more ideomatic (#2075)
