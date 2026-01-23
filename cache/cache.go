@@ -58,51 +58,34 @@ type Cache struct {
 	cfg    *config.Config
 	pool   *sync.BufferPool
 	driver driver.Driver
-	rw     sync.RWMutex
 }
 
 // Close the cache.
 func (c *Cache) Close(_ context.Context) error {
-	c.rw.Lock()
-	defer c.rw.Unlock()
-
 	return c.driver.Flush()
 }
 
 // Remove a cached key.
-func (c *Cache) Remove(_ context.Context, key string) (bool, error) {
-	c.rw.Lock()
-	defer c.rw.Unlock()
-
-	if !c.driver.Contains(key) {
-		return false, nil
-	}
-
-	return true, c.driver.Delete(key)
+func (c *Cache) Remove(_ context.Context, key string) error {
+	return c.driver.Delete(key)
 }
 
 // Get a cached value.
-func (c *Cache) Get(_ context.Context, key string, value any) (bool, error) {
-	c.rw.RLock()
-	defer c.rw.RUnlock()
-
-	if !c.driver.Contains(key) {
-		return false, nil
-	}
-
+func (c *Cache) Get(_ context.Context, key string, value any) error {
 	val, err := c.driver.Fetch(key)
 	if err != nil {
-		return false, err
+		if driver.IsExpiredError(err) {
+			return nil
+		}
+
+		return err
 	}
 
-	return true, c.decode(val, value)
+	return c.decode(val, value)
 }
 
 // Persist a value with key and TTL.
 func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
-	c.rw.Lock()
-	defer c.rw.Unlock()
-
 	enc, err := c.encode(value)
 	if err != nil {
 		return err

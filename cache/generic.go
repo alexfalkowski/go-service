@@ -14,15 +14,13 @@ func Register(c *Cache) {
 }
 
 // Get a value from key.
-func Get[T any](ctx context.Context, key string) (*T, bool, error) {
+func Get[T any](ctx context.Context, key string) (*T, error) {
 	value := ptr.Zero[T]()
 	if cache == nil {
-		return value, false, nil
+		return value, nil
 	}
 
-	ok, err := cache.Get(ctx, key, value)
-
-	return value, ok, err
+	return value, cache.Get(ctx, key, value)
 }
 
 // Persist a value to the key with a TTL.
