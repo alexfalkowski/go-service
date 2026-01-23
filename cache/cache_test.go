@@ -49,9 +49,7 @@ func TestValidCache(t *testing.T) {
 			persist, get := value[0], value[1]
 			require.NoError(t, cache.Persist(t.Context(), "test", persist, time.Minute))
 
-			ok, err := cache.Get(t.Context(), "test", get)
-			require.NoError(t, err)
-			require.True(t, ok)
+			require.NoError(t, cache.Get(t.Context(), "test", get))
 
 			switch kind := get.(type) {
 			case *string:
@@ -66,8 +64,7 @@ func TestValidCache(t *testing.T) {
 				require.Fail(t, "invalid kind")
 			}
 
-			_, err = cache.Remove(t.Context(), "test")
-			require.NoError(t, err)
+			require.NoError(t, cache.Remove(t.Context(), "test"))
 
 			world.RequireStop()
 		}
@@ -98,13 +95,11 @@ func TestGenericValidCache(t *testing.T) {
 	world.RequireStart()
 	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
 
-	value, ok, err := cache.Get[string](t.Context(), "test")
+	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
-	require.True(t, ok)
 	require.Equal(t, "hello?", *value)
 
-	_, err = kind.Remove(t.Context(), "test")
-	require.NoError(t, err)
+	require.NoError(t, kind.Remove(t.Context(), "test"))
 
 	world.RequireStop()
 }
@@ -114,9 +109,8 @@ func TestGenericDisabledCache(t *testing.T) {
 
 	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
 
-	value, ok, err := cache.Get[string](t.Context(), "test")
+	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
-	require.False(t, ok)
 	require.Equal(t, strings.Empty, *value)
 }
 
@@ -147,12 +141,10 @@ func TestExpiredCache(t *testing.T) {
 	// Simulate expiry.
 	time.Sleep(time.Second)
 
-	_, ok, err := cache.Get[string](t.Context(), "test")
+	_, err = cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
-	require.False(t, ok)
 
-	_, err = kind.Remove(t.Context(), "test")
-	require.NoError(t, err)
+	require.NoError(t, kind.Remove(t.Context(), "test"))
 
 	world.RequireStop()
 }
@@ -270,8 +262,7 @@ func TestErroneousGet(t *testing.T) {
 
 		world.RequireStart()
 
-		_, err := kind.Get(t.Context(), "test", ptr.Zero[string]())
-		require.Error(t, err)
+		require.Error(t, kind.Get(t.Context(), "test", ptr.Zero[string]()))
 
 		world.RequireStop()
 	}

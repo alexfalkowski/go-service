@@ -14,6 +14,9 @@ import (
 	"github.com/redis/go-redis/v9/maintnotifications"
 )
 
+// ErrExpired is an alias for cachego.ErrCacheExpired.
+const ErrExpired = cachego.ErrCacheExpired
+
 // ErrNotFound for driver.
 var ErrNotFound = errors.New("cache: driver not found")
 
@@ -49,6 +52,11 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 	default:
 		return nil, ErrNotFound
 	}
+}
+
+// IsExpiredError checks if the error is an expired error.
+func IsExpiredError(err error) bool {
+	return errors.Is(err, ErrExpired)
 }
 
 // Driver is a alias of cachego.
