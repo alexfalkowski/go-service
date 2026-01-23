@@ -2,7 +2,9 @@
 
 This repository is a Go module (`github.com/alexfalkowski/go-service/v2`) that provides a framework for building services (DI wiring, config decoding, transport, telemetry, crypto, etc.).
 
-The project is driven by `make` targets that are mostly defined in the `bin/` git submodule.
+It is primarily a **library of packages** (there is no `cmd/` binary in this repo).
+
+Most workflows are driven by `make` targets that are mostly defined in the `bin/` git submodule.
 
 ## First-time setup
 
@@ -23,28 +25,15 @@ make submodule
 
 Gotcha: `.gitmodules` points at an SSH URL (`git@github.com:alexfalkowski/bin.git`). If you can’t fetch via SSH, `make` will fail until Git access is configured.
 
-### Local dev dependencies observed in this repo
-
-These tools are used by `make` targets and/or CI:
-
-- `mkcert` (used by `make create-certs`; also used in CI).
-- `gotestsum` (used by `make specs`).
-- `govulncheck` (used by `make sec`).
-- `codecovcli` (used by `make codecov-upload`).
-- `buf` (used by `make generate` via `internal/test/Makefile`).
-- Diagram tooling: `goda` + `dot` (Graphviz) (used by `make diagrams`).
-
 ## Project type
 
 - Language: Go
 - Go version: `go 1.25.0` (see `go.mod:1-4`)
-- DI: Uber Fx/Dig, wrapped in `di/` (see `di/di.go`)
+- DI container: Uber Fx/Dig, wrapped in `di/` (see `di/di.go`)
 - CLI command framework: `github.com/cristalhq/acmd` (see `cli/application.go`)
-- Linting/formatting: `golangci-lint` + formatters (see `.golangci.yml`)
+- Linting/formatting: `golangci-lint` with multiple formatters enabled (see `.golangci.yml`)
 
 ## Essential commands
-
-Most workflows are driven by `make`.
 
 ### Discover targets
 
@@ -68,16 +57,21 @@ Gotcha: tests run with `-mod vendor`, so after changing dependencies you typical
 make specs
 ```
 
-`make specs` runs:
+`make specs` runs `gotestsum` and executes `go test` with (see `bin/build/make/go.mak:61-64`):
 
-- `gotestsum --junitfile test/reports/specs.xml -- ...`
+- `-vet=off`
 - `-race`
 - `-mod vendor`
 - `-covermode=atomic`
 - `-coverpkg=<all repo packages>`
 - `-coverprofile=test/reports/profile.cov`
 
-(see `bin/build/make/go.mak:61-64`).
+It computes the package list from tracked Go sources (see `bin/build/make/go.mak:5-7`).
+
+Artifacts:
+
+- JUnit XML: `test/reports/specs.xml`
+- Coverage profile: `test/reports/profile.cov`
 
 ### Lint / format
 
@@ -87,8 +81,11 @@ make fix-lint
 make format
 ```
 
-- `make lint` runs field-alignment + `golangci-lint` (see `bin/build/make/go.mak:39-56`).
-- Formatters enabled via golangci config: `gci`, `gofmt`, `gofumpt`, `goimports` (see `.golangci.yml:44-50`).
+- `make lint` runs field alignment + `golangci-lint` (see `bin/build/make/go.mak:39-56`).
+- `make fix-lint` runs the same tools with fixes enabled where supported.
+- `make format` runs `go fmt ./...` (see `bin/build/make/go.mak:58-60`).
+
+Golangci formatters enabled (see `.golangci.yml:44-49`): `gci`, `gofmt`, `gofumpt`, `goimports`.
 
 ### Security checks
 
@@ -135,7 +132,7 @@ make start
 make stop
 ```
 
-The `start/stop` targets shell out to `bin/build/docker/env` (see `bin/build/make/go.mak:130-136`).
+These shell out to `bin/build/docker/env` (see `bin/build/make/go.mak:130-136`).
 
 CI provisions and waits for these services (see `.circleci/config.yml:9-30`):
 
@@ -151,7 +148,7 @@ mkcert -install
 make create-certs
 ```
 
-Generates fixtures into `test/certs/` (see `bin/build/make/go.mak:113-117`).
+Generates fixtures into `test/certs/` (see `bin/build/make/go.mak:113-117`, `.circleci/config.yml:28-29`).
 
 ### Code generation (Buf)
 
@@ -161,7 +158,7 @@ Top-level target:
 make generate
 ```
 
-Delegates to `make -C internal/test generate` (see `Makefile:35-37`), which includes `../../bin/build/make/buf.mak` (see `internal/test/Makefile:1`).
+Delegates to `make -C internal/test generate` (see `Makefile:35-37`).
 
 Buf config:
 
@@ -182,36 +179,42 @@ These call `make package=<pkg> create-diagram` and write PNGs into `assets/` (se
 
 ## Code organization (high level)
 
-The code is structured as a library of packages (no single `cmd/` binary in this repo).
+This repo is organized as packages under the module root.
 
-Common patterns:
+Common conventions:
 
 - Most features are packages with `config.go`, `module.go`, and implementation files.
-- `module/` exports top-level Fx modules (see `module/module.go`).
+- `module/` exports top-level Fx modules (see `module/module.go`):
   - `module.Library`
   - `module.Server`
   - `module.Client`
-- `di/` provides thin aliases/wrappers around `fx` / `dig` (`di.In`, `di.Module`, `di.Constructor`, `di.Register`, etc.) (see `di/di.go`).
-- `cli/` wires commands via `acmd` (see `cli/application.go`).
-- `config/` handles decoding/validation and input routing (see `config/decoder.go`, `config/default.go`, `config/env.go`, `config/file.go`).
-- `transport/` provides HTTP + gRPC transport packages (`transport/http`, `transport/grpc`) plus common transport config.
-- `telemetry/` provides logger/metrics/tracer packages and modules.
-- `internal/test/` contains shared test helpers, fixtures, templates, and protobuf generation config.
+- `internal/test/` contains shared test helpers/fixtures and Buf generation config.
 - `test/` contains fixtures used by tests (configs, certs, secrets, reports).
 
-## Key patterns and conventions (observed)
+Major subsystems:
+
+- `config/`: decoding/validation and input routing (`config/decoder.go`, `config/default.go`, `config/env.go`, `config/file.go`).
+- `transport/`: HTTP + gRPC wiring (`transport/http`, `transport/grpc`) and shared transport config.
+- `telemetry/`: logger/metrics/tracer packages + modules.
+- `crypto/`, `token/`, `database/sql/`, `health/`, `cache/`, etc.
+
+## Dependency injection patterns
 
 ### Fx module composition
 
-Modules are typically defined as `di.Module(...)` values that compose submodules plus constructors/invocations.
+Modules are typically defined as `di.Module(...)` values composing submodules and constructors/invocations.
 
 Example: `transport.Module` composes HTTP + gRPC wiring (see `transport/module.go`).
 
-### Dependency injection parameter structs
+### Injected parameter structs
 
 Packages frequently use `di.In` structs to declare injected dependencies (example: `config.DecoderParams` in `config/decoder.go:12-19`).
 
-### CLI pattern (server vs client)
+### Lifecycle hooks
+
+Construction frequently registers cleanup via `Lifecycle.Append(di.Hook{...})` (example: `cache/NewCache` appends an `OnStop` hook in `cache/cache.go`).
+
+## CLI wiring pattern
 
 `cli.Application` registers “server” and “client” subcommands:
 
@@ -219,6 +222,8 @@ Packages frequently use `di.In` structs to declare injected dependencies (exampl
 - `AddClient(...)` starts and immediately stops (see `cli/application.go:90-114`).
 
 Errors are prefixed with the command name and use `dig.RootCause(...)` via `di.RootCause` (see `cli/application.go:137-139`).
+
+## Configuration
 
 ### Config input routing via `-i`
 
@@ -228,24 +233,39 @@ Errors are prefixed with the command name and use `dig.RootCause(...)` via `di.R
 - `env:<ENV_VAR>` → env decoder
 - otherwise → default lookup decoder
 
-Default lookup searches for `<serviceName>.{yaml,yml,toml,json}` in (see `config/default.go:35-58`):
+The default lookup searches for `<serviceName>.{yaml,yml,toml,json}` in (see `config/default.go:35-58`):
 
 - executable directory
 - `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)
 - `/etc/<serviceName>/`
 
-### Optional logger
+### Env config format
 
-Logging is based on `log/slog` and the project’s wrapper (`telemetry/logger`).
+The README documents that env configs expect `extension:content` where `content` is base64-encoded (see `README.md` “Configuration”).
 
-- `telemetry/logger.NewLogger` returns `(*Logger, nil)` when enabled, otherwise `(nil, nil)` (see `telemetry/logger/logger.go:65-78`).
-- Callers frequently treat `*logger.Logger` as optional and guard `nil` (example: `server/service.go:53-59`).
+CI demonstrates this with `-i env:CONFIG` and `CONFIG=yml:<base64...>` (see `.circleci/config.yml:16-20`).
+
+## Cache API gotcha
+
+The `cache/` package contains both an instance API and package-level helpers.
+
+- Instance methods are on `*cache.Cache` (see `cache/cache.go`).
+- Package-level generic helpers use a package-global set via `cache.Register(...)` (see `cache/generic.go`).
+
+Current helper signatures (see `cache/generic.go`):
+
+- `cache.Get[T](ctx, key) (*T, error)`
+- `cache.Persist[T](ctx, key, value, ttl) error`
+
+Gotcha: `cache.Register(nil)` is used when cache is disabled; helpers are designed to be nil-safe and return the zero `*T` and `nil` error.
 
 ## Testing
 
-- Tests use `stretchr/testify/require` in many places (search in `*_test.go`).
-- Shared helpers and fixtures live under `internal/test/` and `test/`.
-- Test reports and coverage artifacts are written to `test/reports/` by `make specs` and `make coverage`.
+- Tests commonly use `stretchr/testify/require` (see many `*_test.go`).
+- Shared helpers live under `internal/test/`.
+  - `internal/test/world.go` builds a test “world” using `fxtest.NewLifecycle` and registers multiple subsystems.
+  - `internal/test/world.go:init` performs package registrations for tests.
+- Fixtures are under `test/` (configs, certs, secrets).
 
 ## Style / formatting
 
@@ -261,4 +281,5 @@ Golangci-lint is configured in `.golangci.yml`.
 - Many `make` targets come from the `bin/` submodule; if it’s missing, `make` will fail due to missing includes.
 - CI sets `GOEXPERIMENT=greenteagc` (see `.circleci/config.yml:6-9`).
 - `make encode-config` uses `base64 -w 0` (see `bin/build/make/go.mak:109-112`), which may not work on BSD/macOS `base64`.
-- CI generates a `.source-key` file via `make source-key` for caching (see `.circleci/config.yml:27`, `bin/build/make/git.mak:175-177`). This file is ignored by Git (see `.gitignore:11`).
+- CI generates a `.source-key` file via `make source-key` for caching (see `.circleci/config.yml:27`, `bin/build/make/git.mak`). This file is ignored by Git (see `.gitignore:11`).
+- `vendor/` is ignored by git (see `.gitignore:2`) and is expected to be generated by `make dep`.
