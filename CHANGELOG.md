@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.243.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.243.1) - 2026-01-24
+
+- [`dd02645`](https://github.com/alexfalkowski/go-service/commit/dd02645eab3d1ba515139dc942706be979e3aaef) fix(compress): make sure we close for zstd (#2081)
+- [`bfe95dd`](https://github.com/alexfalkowski/go-service/commit/bfe95dd4f198d56080171b6526856a6256568af9) docs(ai): update AGENTS (#2079)
+
 ## [v2.243.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.243.0) - 2026-01-23
 
 - [`6165ce8`](https://github.com/alexfalkowski/go-service/commit/6165ce87f78e3ccd052c59d7efe0435e36455fbf) feat(cache): delegate to provider (#2078)
