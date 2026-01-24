@@ -7,6 +7,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -24,10 +25,14 @@ type Generator struct {
 func (g *Generator) Generate() (string, string, error) {
 	public, err := rsa.GenerateKey(g.generator, 4096)
 	if err != nil {
-		return strings.Empty, strings.Empty, err
+		return strings.Empty, strings.Empty, g.prefix(err)
 	}
 
 	pub := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: x509.MarshalPKCS1PublicKey(&public.PublicKey)})
 	pri := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(public)})
 	return bytes.String(pub), bytes.String(pri), nil
+}
+
+func (g *Generator) prefix(err error) error {
+	return errors.Prefix("rsa", err)
 }
