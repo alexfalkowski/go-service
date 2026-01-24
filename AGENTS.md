@@ -2,9 +2,9 @@
 
 This repository is a Go module (`github.com/alexfalkowski/go-service/v2`) that provides a framework for building services (DI wiring, config decoding, transport, telemetry, crypto, etc.).
 
-It is primarily a **library of packages** (there is no `cmd/` binary in this repo).
+It is primarily a **library of packages** (there is no top-level `cmd/` binary in this repo).
 
-Most workflows are driven by `make` targets that are mostly defined in the `bin/` git submodule.
+Most workflows are driven by `make` targets that are defined in the `bin/` git submodule.
 
 ## First-time setup
 
@@ -31,9 +31,11 @@ Gotcha: `.gitmodules` points at an SSH URL (`git@github.com:alexfalkowski/bin.gi
 - Go version: `go 1.25.0` (see `go.mod:1-4`)
 - DI container: Uber Fx/Dig, wrapped in `di/` (see `di/di.go`)
 - CLI command framework: `github.com/cristalhq/acmd` (see `cli/application.go`)
-- Linting/formatting: `golangci-lint` with multiple formatters enabled (see `.golangci.yml`)
+- Linting/formatting: `golangci-lint` with formatters enabled (see `.golangci.yml:44-49`)
 
 ## Essential commands
+
+Most targets are defined in `bin/build/make/*.mak` (included by the top-level `Makefile`).
 
 ### Discover targets
 
@@ -66,7 +68,7 @@ make specs
 - `-coverpkg=<all repo packages>`
 - `-coverprofile=test/reports/profile.cov`
 
-It computes the package list from tracked Go sources (see `bin/build/make/go.mak:5-7`).
+It computes the package list from tracked Go sources and excludes `bin/`, `test/`, and `vendor/` from the package list computation (see `bin/build/make/go.mak:5-7`).
 
 Artifacts:
 
@@ -83,9 +85,7 @@ make format
 
 - `make lint` runs field alignment + `golangci-lint` (see `bin/build/make/go.mak:39-56`).
 - `make fix-lint` runs the same tools with fixes enabled where supported.
-- `make format` runs `go fmt ./...` (see `bin/build/make/go.mak:58-60`).
-
-Golangci formatters enabled (see `.golangci.yml:44-49`): `gci`, `gofmt`, `gofumpt`, `goimports`.
+- `make format` runs `go fmt ./...` (see `bin/build/make/go.mak:57-60`).
 
 ### Security checks
 
@@ -94,16 +94,6 @@ make sec
 ```
 
 Runs `govulncheck -show verbose -test ./...` (see `bin/build/make/go.mak:95-98`).
-
-### Coverage
-
-```sh
-make coverage
-make html-coverage
-make func-coverage
-```
-
-Coverage artifacts live under `test/reports/` (see `bin/build/make/go.mak:73-86`).
 
 ### Benchmarks
 
@@ -125,6 +115,16 @@ make package=<pkg> benchmark
 
 (see `Makefile:20-34` and `bin/build/make/go.mak:65-71`).
 
+### Coverage
+
+```sh
+make coverage
+make html-coverage
+make func-coverage
+```
+
+Coverage artifacts live under `test/reports/` (see `bin/build/make/go.mak:73-86`).
+
 ### Local environment (integration deps)
 
 ```sh
@@ -134,7 +134,7 @@ make stop
 
 These shell out to `bin/build/docker/env` (see `bin/build/make/go.mak:130-136`).
 
-CI provisions and waits for these services (see `.circleci/config.yml:9-30`):
+CI provisions and waits for these services (see `.circleci/config.yml:5-31`):
 
 - Postgres (`tcp://localhost:5432`)
 - Valkey/Redis (`tcp://localhost:6379`)
@@ -214,15 +214,6 @@ Packages frequently use `di.In` structs to declare injected dependencies (exampl
 
 Construction frequently registers cleanup via `Lifecycle.Append(di.Hook{...})` (example: `cache/NewCache` appends an `OnStop` hook in `cache/cache.go`).
 
-## CLI wiring pattern
-
-`cli.Application` registers “server” and “client” subcommands:
-
-- `AddServer(...)` starts an Fx app and blocks until `app.Done()` then stops (see `cli/application.go:61-88`).
-- `AddClient(...)` starts and immediately stops (see `cli/application.go:90-114`).
-
-Errors are prefixed with the command name and use `dig.RootCause(...)` via `di.RootCause` (see `cli/application.go:137-139`).
-
 ## Configuration
 
 ### Config input routing via `-i`
@@ -241,9 +232,21 @@ The default lookup searches for `<serviceName>.{yaml,yml,toml,json}` in (see `co
 
 ### Env config format
 
-The README documents that env configs expect `extension:content` where `content` is base64-encoded (see `README.md` “Configuration”).
+Env configs expect `extension:content` where `content` is base64-encoded (see README “Configuration” and `config/env.go:11-41`).
 
 CI demonstrates this with `-i env:CONFIG` and `CONFIG=yml:<base64...>` (see `.circleci/config.yml:16-20`).
+
+### “Source strings” pattern (`file:` / `env:` / raw)
+
+Several configs accept a “source string” that can be:
+
+- `env:NAME` (read from environment)
+- `file:/path/to/secret` (read from filesystem)
+- otherwise treated as the literal value
+
+This is implemented by `os.FS.ReadSource` (see `os/fs.go:100-110`) and is used for secrets/keys in multiple subsystems (e.g., `crypto/*/config.go`, `telemetry/header/header.go`).
+
+Gotcha: some paths are expanded (leading `~`) and cleaned via `os.FS.CleanPath` (see `os/fs.go:75-88`).
 
 ## Cache API gotcha
 
@@ -276,10 +279,15 @@ From `.editorconfig`:
 
 Golangci-lint is configured in `.golangci.yml`.
 
-## CI notes / gotchas
+Note: the codebase uses Go 1.22+ features such as ranging over an integer (e.g., `for i := range size` in `crypto/rand/rand.go:52`).
 
-- Many `make` targets come from the `bin/` submodule; if it’s missing, `make` will fail due to missing includes.
-- CI sets `GOEXPERIMENT=greenteagc` (see `.circleci/config.yml:6-9`).
-- `make encode-config` uses `base64 -w 0` (see `bin/build/make/go.mak:109-112`), which may not work on BSD/macOS `base64`.
-- CI generates a `.source-key` file via `make source-key` for caching (see `.circleci/config.yml:27`, `bin/build/make/git.mak`). This file is ignored by Git (see `.gitignore:11`).
+## Observed gotchas
+
+- Telemetry header secrets can panic during config projection: `config/loggerConfig`, `metricsConfig`, `tracerConfig` call `Headers.MustSecrets(fs)` (`config/telemetry.go:10-31`), which panics on read errors (`telemetry/header/header.go:26-29`). Treat secret loading failures as startup-fatal.
 - `vendor/` is ignored by git (see `.gitignore:2`) and is expected to be generated by `make dep`.
+
+## CI notes
+
+- CI sets `GOEXPERIMENT=greenteagc` (see `.circleci/config.yml:6-9`).
+- CI generates a `.source-key` file via `make source-key` for caching (see `.circleci/config.yml:27`). This file is ignored by Git (see `.gitignore:11`).
+- `make encode-config` uses `base64 -w 0` (see `bin/build/make/go.mak:109-112`), which may not work on BSD/macOS `base64`.
