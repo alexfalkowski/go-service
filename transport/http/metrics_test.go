@@ -31,7 +31,7 @@ func TestPrometheusHTTP(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Contains(t, body, "go_info")
 	require.Contains(t, body, `db_system="redis"`)
-	require.Contains(t, body, `db_system_name="pg"`)
+	require.Contains(t, body, `db_system_name="postgresql"`)
 	require.Contains(t, body, "system")
 	require.Contains(t, body, "process")
 	require.Contains(t, body, "runtime")

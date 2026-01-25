@@ -10,7 +10,7 @@ import (
 
 // Register for pg.
 func Register() {
-	_ = driver.Register("pg", pgx.GetDefaultDriver())
+	_ = driver.Register("postgresql", pgx.GetDefaultDriver())
 }
 
 // Open for pg.
@@ -19,5 +19,5 @@ func Open(lc di.Lifecycle, fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 		return nil, nil
 	}
 
-	return driver.Open(lc, "pg", fs, cfg.Config)
+	return driver.Open(lc, "postgresql", fs, cfg.Config)
 }

@@ -4,6 +4,7 @@ import "github.com/alexfalkowski/go-service/v2/os"
 
 // Config for SQL.
 type Config struct {
+	Name            string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 	ConnMaxLifetime string `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty"`
 	Masters         []DSN  `yaml:"masters,omitempty" json:"masters,omitempty" toml:"masters,omitempty"`
 	Slaves          []DSN  `yaml:"slaves,omitempty" json:"slaves,omitempty" toml:"slaves,omitempty"`
