@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 )
 
@@ -24,23 +25,24 @@ type DBChecker struct {
 func (c *DBChecker) Check(ctx context.Context) error {
 	dbs, _ := c.db.GetAllMasters()
 	for _, db := range dbs {
-		ctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
-
-		if err := db.PingContext(ctx); err != nil {
+		if err := c.ping(ctx, db); err != nil {
 			return err
 		}
 	}
 
 	dbs, _ = c.db.GetAllSlaves()
 	for _, db := range dbs {
-		ctx, cancel := context.WithTimeout(ctx, c.timeout)
-		defer cancel()
-
-		if err := db.PingContext(ctx); err != nil {
+		if err := c.ping(ctx, db); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (o *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
+	ctx, cancel := context.WithTimeout(ctx, o.timeout)
+	defer cancel()
+
+	return db.PingContext(ctx)
 }
