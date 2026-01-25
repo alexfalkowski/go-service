@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.244.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.244.1) - 2026-01-25
+
+- [`b19deb6`](https://github.com/alexfalkowski/go-service/commit/b19deb6d82b22b140575dcd5935c491aa30927ce) fix(health): handle context correctly for db (#2084)
+- [`b5fd69d`](https://github.com/alexfalkowski/go-service/commit/b5fd69d94ab86132302a0070932d3b1cdda6ecfe) docs(ai): update AGENTS (#2083)
+
 ## [v2.244.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.244.0) - 2026-01-24
 
 - [`32738e2`](https://github.com/alexfalkowski/go-service/commit/32738e20ccfa507a04ad743a470d20be9621cda6) feat(crypto): prefix errors consistently (#2082)
