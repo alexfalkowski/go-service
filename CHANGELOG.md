@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.245.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.245.0) - 2026-01-26
+
+- [`091562e`](https://github.com/alexfalkowski/go-service/commit/091562e2dad04e78bf82b80975eb945f15d2426b) feat(deps): bump github.com/redis/go-redis/extra/redisotel/v9 from 9.17.2 to 9.17.3 (#2086)
+
 ## [v2.244.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.244.1) - 2026-01-25
 
 - [`b19deb6`](https://github.com/alexfalkowski/go-service/commit/b19deb6d82b22b140575dcd5935c491aa30927ce) fix(health): handle context correctly for db (#2084)
