@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.246.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.246.0) - 2026-01-31
+
+- [`b4e214e`](https://github.com/alexfalkowski/go-service/commit/b4e214e79bcc640a06e8aa8cdddf96900d63ea6d) feat(deps): upgraded github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.4 => v2.27.7 (#2089)
+- [`5cda59b`](https://github.com/alexfalkowski/go-service/commit/5cda59b4ae68923768a6e041c8f94f49b456a939) build(ci): use latest published images (#2088)
+
 ## [v2.245.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.245.0) - 2026-01-26
 
 - [`091562e`](https://github.com/alexfalkowski/go-service/commit/091562e2dad04e78bf82b80975eb945f15d2426b) feat(deps): bump github.com/redis/go-redis/extra/redisotel/v9 from 9.17.2 to 9.17.3 (#2086)
