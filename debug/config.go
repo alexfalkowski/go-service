@@ -9,5 +9,5 @@ type Config struct {
 
 // IsEnabled for debug.
 func (c *Config) IsEnabled() bool {
-	return c != nil
+	return c != nil && c.Config.IsEnabled()
 }
