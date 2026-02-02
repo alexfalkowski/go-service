@@ -15,7 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
-	semconv "go.opentelemetry.io/otel/semconv/v1.37.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.39.0"
 )
 
 // Driver is an alias for the driver.Driver type.

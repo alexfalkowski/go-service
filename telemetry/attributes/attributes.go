@@ -2,7 +2,7 @@ package attributes
 
 import (
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.38.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.39.0"
 )
 
 // SchemaURL is an alias of semconv.SchemaURL.
@@ -16,8 +16,8 @@ type (
 	KeyValue = attribute.KeyValue
 )
 
-// RPCSystemGRPC is an alias of semconv.RPCSystemGRPC.
-var RPCSystemGRPC = semconv.RPCSystemGRPC
+// RPCSystemNameGRPC is an alias of semconv.RPCSystemNameGRPC.
+var RPCSystemNameGRPC = semconv.RPCSystemNameGRPC
 
 // HostID is an alias of semconv.HostID.
 func HostID(val string) attribute.KeyValue {
