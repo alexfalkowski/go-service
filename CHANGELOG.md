@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.248.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.248.0) - 2026-02-02
+
+- [`798ae61`](https://github.com/alexfalkowski/go-service/commit/798ae6131e0dc0f66b6cef53c2e697eac714eb49) feat(deps): upgraded github.com/lmittmann/tint v1.1.2 => v1.1.3 (#2092)
+- [`4744a71`](https://github.com/alexfalkowski/go-service/commit/4744a7119a6af7b5e65bf824bb585b852e3a9b38) build(ci): use latest published images (#2091)
+
 ## [v2.247.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.247.0) - 2026-02-02
 
 - [`83ea44d`](https://github.com/alexfalkowski/go-service/commit/83ea44d1448c60b83ebbe83e6c6a6e2aa335b6d6) feat(deps): bump github.com/shirou/gopsutil/v4 from 4.25.12 to 4.26.1 (#2090)
