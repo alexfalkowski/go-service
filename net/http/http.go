@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/net/config"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
@@ -148,12 +149,14 @@ func StatusText(code int) string {
 }
 
 // NewServer for http.
-func NewServer(timeout time.Duration, handler Handler) *Server {
+func NewServer(options map[string]string, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{
-		Handler:     handler,
-		ReadTimeout: timeout, WriteTimeout: timeout,
-		IdleTimeout: timeout, ReadHeaderTimeout: timeout,
-		Protocols: Protocols(),
+		Handler:           handler,
+		ReadTimeout:       config.Duration(options, "read_timeout", timeout),
+		WriteTimeout:      config.Duration(options, "write_timeout", timeout),
+		IdleTimeout:       config.Duration(options, "idle_timeout", timeout),
+		ReadHeaderTimeout: config.Duration(options, "read_header_timeout", timeout),
+		Protocols:         Protocols(),
 	}
 }
 

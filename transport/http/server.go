@@ -66,7 +66,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	httpServer := http.NewServer(timeout, neg)
+	httpServer := http.NewServer(params.Config.Options, timeout, neg)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {

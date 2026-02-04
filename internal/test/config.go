@@ -37,6 +37,14 @@ const timeout = 2 * time.Second
 // Validator for testing.
 var Validator = config.NewValidator()
 
+// ConfigOptions for testing.
+var ConfigOptions = map[string]string{
+	"read_timeout":        "10m",
+	"write_timeout":       "10m",
+	"idle_timeout":        "10m",
+	"read_header_timeout": "10m",
+}
+
 // NewAccessConfig for test.
 func NewAccessConfig() *access.Config {
 	return &access.Config{

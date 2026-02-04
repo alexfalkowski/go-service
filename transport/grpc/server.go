@@ -49,7 +49,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	grpcServer := grpc.NewServer(timeout,
+	grpcServer := grpc.NewServer(params.Config.Options, timeout,
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		unaryServerOption(params, params.Unary...),
 		streamServerOption(params, params.Stream...),

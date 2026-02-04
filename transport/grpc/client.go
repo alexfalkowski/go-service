@@ -22,8 +22,9 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	generator   id.Generator
 	gen         token.Generator
+	generator   id.Generator
+	options     map[string]string
 	security    *tls.Config
 	logger      *logger.Logger
 	retry       *retry.Config
@@ -60,8 +61,9 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 }
 
 // WithClientTimeout for gRPC.
-func WithClientTimeout(timeout string) ClientOption {
+func WithClientTimeout(options map[string]string, timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
+		o.options = options
 		o.timeout = time.MustParseDuration(timeout)
 	})
 }
@@ -156,7 +158,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent.String()),
-		grpc.WithKeepaliveParams(os.timeout),
+		grpc.WithKeepaliveParams(os.options, os.timeout),
 		grpc.WithChainUnaryInterceptor(cis...), sto, security,
 	}
 

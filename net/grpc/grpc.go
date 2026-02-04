@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/config"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -165,31 +166,31 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 }
 
 // WithKeepaliveParams for grpc.
-func WithKeepaliveParams(timeout time.Duration) DialOption {
+func WithKeepaliveParams(options map[string]string, timeout time.Duration) DialOption {
 	return grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                timeout,
-		Timeout:             timeout,
+		Time:                config.Duration(options, "time", timeout),
+		Timeout:             config.Duration(options, "timeout", timeout),
 		PermitWithoutStream: true,
 	})
 }
 
 // NewServer for grpc.
-func NewServer(timeout time.Duration, opts ...ServerOption) *Server {
-	options := make([]ServerOption, 0, 2+len(opts))
-	options = append(options, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             timeout,
+func NewServer(options map[string]string, timeout time.Duration, opts ...ServerOption) *Server {
+	os := make([]ServerOption, 0, 2+len(opts))
+	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+		MinTime:             config.Duration(options, "min_time", timeout),
 		PermitWithoutStream: true,
 	}))
-	options = append(options, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     timeout,
-		MaxConnectionAge:      timeout,
-		MaxConnectionAgeGrace: timeout,
-		Time:                  timeout,
-		Timeout:               timeout,
+	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
+		MaxConnectionIdle:     config.Duration(options, "max_connection_idle", timeout),
+		MaxConnectionAge:      config.Duration(options, "max_connection_age", timeout),
+		MaxConnectionAgeGrace: config.Duration(options, "max_connection_age_grace", timeout),
+		Time:                  config.Duration(options, "time", timeout),
+		Timeout:               config.Duration(options, "timeout", timeout),
 	}))
-	options = append(options, opts...)
+	os = append(os, opts...)
 
-	server := grpc.NewServer(options...)
+	server := grpc.NewServer(os...)
 	reflection.Register(server)
 
 	return server
