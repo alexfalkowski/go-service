@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.252.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.252.0) - 2026-02-04
+
+- [`4cb8b62`](https://github.com/alexfalkowski/go-service/commit/4cb8b624e096ce17aa69113ac5fb1891c9ba0af1) feat(config): allow different options to be passed (#2102)
+- [`4863bb4`](https://github.com/alexfalkowski/go-service/commit/4863bb4a83dded2aa91bc5e3bfdb54719e69923c) build(ci): use latest published images (#2101)
+
 ## [v2.251.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.251.0) - 2026-02-03
 
 - [`46b853d`](https://github.com/alexfalkowski/go-service/commit/46b853dacc2310d501feb921f57b320100b17e4e) feat(deps): go: upgraded go.opentelemetry.io/contrib/instrumentation v0.64.0 => v0.65.0 (#2100)
