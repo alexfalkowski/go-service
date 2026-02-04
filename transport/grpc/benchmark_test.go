@@ -31,7 +31,7 @@ func BenchmarkGRPC(b *testing.B) {
 		l, err := net.Listen(b.Context(), n, a)
 		runtime.Must(err)
 
-		server := grpc.NewServer(test.DefaultTimeout)
+		server := grpc.NewServer(test.ConfigOptions, test.DefaultTimeout)
 		defer server.GracefulStop()
 
 		v1.RegisterGreeterServiceServer(server, test.NewService())

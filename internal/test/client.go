@@ -76,7 +76,7 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientRetry(c.Transport.GRPC.Retry),
 		g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(UserID, c.Generator),
-		g.WithClientTimeout("1m"),
+		g.WithClientTimeout(ConfigOptions, "1m"),
 		g.WithClientDialOption(),
 		g.WithClientTLS(c.TLS),
 		g.WithClientID(c.ID),

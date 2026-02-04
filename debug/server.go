@@ -33,19 +33,19 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
-	svr := http.NewServer(timeout, params.Mux)
+	httpServer := http.NewServer(params.Config.Options, timeout, params.Mux)
 
 	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	serv, err := server.NewService("debug", svr, cfg, params.Logger, params.Shutdowner)
+	service, err := server.NewService("debug", httpServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	return &Server{serv}, nil
+	return &Server{service}, nil
 }
 
 // Server for debug.

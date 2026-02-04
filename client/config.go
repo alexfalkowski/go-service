@@ -9,12 +9,13 @@ import (
 
 // Config for client.
 type Config struct {
-	Limiter *limiter.Config `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
-	TLS     *tls.Config     `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
-	Token   *token.Config   `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
-	Retry   *retry.Config   `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
-	Address string          `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
-	Timeout string          `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	Limiter *limiter.Config   `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
+	TLS     *tls.Config       `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
+	Token   *token.Config     `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
+	Retry   *retry.Config     `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
+	Options map[string]string `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
+	Address string            `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+	Timeout string            `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 }
 
 // IsEnabled for client.
