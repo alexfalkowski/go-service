@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.254.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.254.0) - 2026-02-05
+
+- [`e66a053`](https://github.com/alexfalkowski/go-service/commit/e66a0534246681abf90082c4864d396fc0515776) feat(config): add an options map (#2106)
+
 ## [v2.253.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.253.0) - 2026-02-05
 
 - [`92dc910`](https://github.com/alexfalkowski/go-service/commit/92dc9108cef865d8c8aadda93d206205363822d3) feat(config): give better names for extensibility (#2105)
