@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.255.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.255.0) - 2026-02-05
+
+- [`578fddc`](https://github.com/alexfalkowski/go-service/commit/578fddc6eb587331075bd3d3d19c4c02ab1ede6f) feat(telemetry): propagation should include baggage (#2108)
+- [`76ec59f`](https://github.com/alexfalkowski/go-service/commit/76ec59f3fa855625424867a9127ab809edeb6658) build(ci): use latest published images (#2107)
+
 ## [v2.254.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.254.0) - 2026-02-05
 
 - [`e66a053`](https://github.com/alexfalkowski/go-service/commit/e66a0534246681abf90082c4864d396fc0515776) feat(config): add an options map (#2106)
