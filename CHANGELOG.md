@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.253.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.253.0) - 2026-02-05
+
+- [`92dc910`](https://github.com/alexfalkowski/go-service/commit/92dc9108cef865d8c8aadda93d206205363822d3) feat(config): give better names for extensibility (#2105)
+- [`145d7d7`](https://github.com/alexfalkowski/go-service/commit/145d7d77e76b6412efe13746a5623f0c02d2bd2f) build(deps): bump bin from `50ee2c1` to `dc92464` (#2104)
+- [`51455e0`](https://github.com/alexfalkowski/go-service/commit/51455e0aaa91adc029eda20d3dc2991e212d03a0) build(ci): use latest published images (#2103)
+
 ## [v2.252.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.252.0) - 2026-02-04
 
 - [`4cb8b62`](https://github.com/alexfalkowski/go-service/commit/4cb8b624e096ce17aa69113ac5fb1891c9ba0af1) feat(config): allow different options to be passed (#2102)
