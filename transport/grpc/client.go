@@ -22,21 +22,23 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	gen         token.Generator
-	generator   id.Generator
-	options     map[string]string
-	security    *tls.Config
-	logger      *logger.Logger
-	retry       *retry.Config
-	limiter     *limiter.Client
-	userAgent   env.UserAgent
-	id          env.UserID
-	opts        []grpc.DialOption
-	unary       []grpc.UnaryClientInterceptor
-	stream      []grpc.StreamClientInterceptor
-	timeout     time.Duration
-	breaker     bool
-	compression bool
+	gen       token.Generator
+	generator id.Generator
+
+	security          *tls.Config
+	logger            *logger.Logger
+	retry             *retry.Config
+	limiter           *limiter.Client
+	userAgent         env.UserAgent
+	id                env.UserID
+	opts              []grpc.DialOption
+	unary             []grpc.UnaryClientInterceptor
+	stream            []grpc.StreamClientInterceptor
+	keepalive_ping    time.Duration
+	keepalive_timeout time.Duration
+	timeout           time.Duration
+	breaker           bool
+	compression       bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -61,10 +63,17 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 }
 
 // WithClientTimeout for gRPC.
-func WithClientTimeout(options map[string]string, timeout string) ClientOption {
+func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.options = options
 		o.timeout = time.MustParseDuration(timeout)
+	})
+}
+
+// WithClientKeepalive for gRPC.
+func WithClientKeepalive(ping, timeout string) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.keepalive_ping = time.MustParseDuration(ping)
+		o.keepalive_timeout = time.MustParseDuration(timeout)
 	})
 }
 
@@ -142,6 +151,14 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
 
+	if os.keepalive_ping == 0 {
+		os.keepalive_ping = os.timeout
+	}
+
+	if os.keepalive_timeout == 0 {
+		os.keepalive_timeout = os.timeout
+	}
+
 	var security grpc.DialOption
 	if os.security.IsEnabled() {
 		conf, err := tls.NewConfig(fs, os.security)
@@ -158,7 +175,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	sto := streamDialOption(os)
 	ops := []grpc.DialOption{
 		grpc.WithUserAgent(os.userAgent.String()),
-		grpc.WithKeepaliveParams(os.options, os.timeout),
+		grpc.WithKeepaliveParams(os.keepalive_ping, os.keepalive_timeout),
 		grpc.WithChainUnaryInterceptor(cis...), sto, security,
 	}
 

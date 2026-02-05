@@ -205,6 +205,16 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
 	require.Equal(t, "1s", config.Transport.GRPC.Limiter.Interval)
+	require.Equal(t,
+		map[string]string{
+			"keepalive_enforcement_policy_ping_min_time": "10s",
+			"keepalive_max_connection_idle":              "10s",
+			"keepalive_max_connection_age":               "10s",
+			"keepalive_max_connection_age_grace":         "10s",
+			"keepalive_ping_time":                        "10s",
+		},
+		config.Transport.GRPC.Options,
+	)
 	require.Equal(t, 3, int(config.Transport.GRPC.Retry.Attempts))
 	require.Equal(t, "1s", config.Transport.GRPC.Retry.Timeout)
 	require.False(t, config.Transport.GRPC.TLS.IsEnabled())
@@ -219,6 +229,15 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
 	require.Equal(t, "1s", config.Transport.HTTP.Limiter.Interval)
+	require.Equal(t,
+		map[string]string{
+			"read_timeout":        "10s",
+			"write_timeout":       "10s",
+			"idle_timeout":        "10s",
+			"read_header_timeout": "10s",
+		},
+		config.Transport.HTTP.Options,
+	)
 	require.Equal(t, 3, int(config.Transport.HTTP.Retry.Attempts))
 	require.Equal(t, "1s", config.Transport.HTTP.Retry.Timeout)
 	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
