@@ -86,6 +86,12 @@ kind = "user-agent"
 tokens = 10
 interval = "1s"
 
+[transport.http.options]
+read_timeout = "10s"
+write_timeout = "10s"
+idle_timeout = "10s"
+read_header_timeout = "10s"
+
 [transport.http.retry]
 backoff = "100ms"
 timeout = "1s"
@@ -111,6 +117,13 @@ timeout = "10s"
 kind = "user-agent"
 tokens = 10
 interval = "1s"
+
+[transport.grpc.options]
+keepalive_enforcement_policy_ping_min_time = "10s"
+keepalive_max_connection_idle = "10s"
+keepalive_max_connection_age = "10s"
+keepalive_max_connection_age_grace = "10s"
+keepalive_ping_time = "10s"
 
 [transport.grpc.retry]
 backoff = "100ms"

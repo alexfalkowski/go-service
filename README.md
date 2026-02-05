@@ -412,12 +412,11 @@ transport:
       attempts: 3
     timeout: 10s
     options:
-      min_time: 10s
-      max_connection_idle: 10s
-      max_connection_age: 10s
-      max_connection_age_grace: 10s
-      time: 10s
-      timeout: 10s
+      keepalive_enforcement_policy_ping_min_time: 10s
+      keepalive_max_connection_idle: 10s
+      keepalive_max_connection_age: 10s
+      keepalive_max_connection_age_grace: 10s
+      keepalive_ping_time: 10s
 ```
 
 If you would like to enable TLS, do the following:

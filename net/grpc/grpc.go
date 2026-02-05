@@ -166,10 +166,10 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 }
 
 // WithKeepaliveParams for grpc.
-func WithKeepaliveParams(options map[string]string, timeout time.Duration) DialOption {
+func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	return grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                config.Duration(options, "time", timeout),
-		Timeout:             config.Duration(options, "timeout", timeout),
+		Time:                ping,
+		Timeout:             timeout,
 		PermitWithoutStream: true,
 	})
 }
@@ -178,15 +178,15 @@ func WithKeepaliveParams(options map[string]string, timeout time.Duration) DialO
 func NewServer(options map[string]string, timeout time.Duration, opts ...ServerOption) *Server {
 	os := make([]ServerOption, 0, 2+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             config.Duration(options, "min_time", timeout),
+		MinTime:             config.Duration(options, "keepalive_enforcement_policy_ping_min_time", timeout),
 		PermitWithoutStream: true,
 	}))
 	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     config.Duration(options, "max_connection_idle", timeout),
-		MaxConnectionAge:      config.Duration(options, "max_connection_age", timeout),
-		MaxConnectionAgeGrace: config.Duration(options, "max_connection_age_grace", timeout),
-		Time:                  config.Duration(options, "time", timeout),
-		Timeout:               config.Duration(options, "timeout", timeout),
+		MaxConnectionIdle:     config.Duration(options, "keepalive_max_connection_idle", timeout),
+		MaxConnectionAge:      config.Duration(options, "keepalive_max_connection_age", timeout),
+		MaxConnectionAgeGrace: config.Duration(options, "keepalive_max_connection_age_grace", timeout),
+		Time:                  config.Duration(options, "keepalive_ping_time", timeout),
+		Timeout:               timeout,
 	}))
 	os = append(os, opts...)
 
