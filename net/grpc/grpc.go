@@ -3,9 +3,9 @@ package grpc
 import (
 	"crypto/tls"
 
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/config"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -175,17 +175,17 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 }
 
 // NewServer for grpc.
-func NewServer(options map[string]string, timeout time.Duration, opts ...ServerOption) *Server {
+func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
 	os := make([]ServerOption, 0, 2+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             config.Duration(options, "keepalive_enforcement_policy_ping_min_time", timeout),
+		MinTime:             options.Duration("keepalive_enforcement_policy_ping_min_time", timeout),
 		PermitWithoutStream: true,
 	}))
 	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     config.Duration(options, "keepalive_max_connection_idle", timeout),
-		MaxConnectionAge:      config.Duration(options, "keepalive_max_connection_age", timeout),
-		MaxConnectionAgeGrace: config.Duration(options, "keepalive_max_connection_age_grace", timeout),
-		Time:                  config.Duration(options, "keepalive_ping_time", timeout),
+		MaxConnectionIdle:     options.Duration("keepalive_max_connection_idle", timeout),
+		MaxConnectionAge:      options.Duration("keepalive_max_connection_age", timeout),
+		MaxConnectionAgeGrace: options.Duration("keepalive_max_connection_age_grace", timeout),
+		Time:                  options.Duration("keepalive_ping_time", timeout),
 		Timeout:               timeout,
 	}))
 	os = append(os, opts...)

@@ -5,6 +5,8 @@ import (
 
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/config"
+	"github.com/alexfalkowski/go-service/v2/config/options"
+	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
@@ -17,7 +19,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/retry"
-	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/header"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -38,7 +39,7 @@ const timeout = 2 * time.Second
 var Validator = config.NewValidator()
 
 // ConfigOptions for testing.
-var ConfigOptions = map[string]string{
+var ConfigOptions = options.Map{
 	"read_timeout":        "10m",
 	"write_timeout":       "10m",
 	"idle_timeout":        "10m",

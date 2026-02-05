@@ -1,6 +1,6 @@
 package grpc
 
-import "github.com/alexfalkowski/go-service/v2/server"
+import "github.com/alexfalkowski/go-service/v2/config/server"
 
 // Config for gRPC.
 type Config struct {
