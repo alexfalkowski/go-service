@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/config"
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/flag"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -206,7 +207,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
 	require.Equal(t, "1s", config.Transport.GRPC.Limiter.Interval)
 	require.Equal(t,
-		map[string]string{
+		options.Map{
 			"keepalive_enforcement_policy_ping_min_time": "10s",
 			"keepalive_max_connection_idle":              "10s",
 			"keepalive_max_connection_age":               "10s",
@@ -230,7 +231,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
 	require.Equal(t, "1s", config.Transport.HTTP.Limiter.Interval)
 	require.Equal(t,
-		map[string]string{
+		options.Map{
 			"read_timeout":        "10s",
 			"write_timeout":       "10s",
 			"idle_timeout":        "10s",

@@ -3,7 +3,7 @@ package transport
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/server"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 )
 
 // Register all the transports.

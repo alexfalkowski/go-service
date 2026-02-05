@@ -1,6 +1,6 @@
 package http
 
-import "github.com/alexfalkowski/go-service/v2/server"
+import "github.com/alexfalkowski/go-service/v2/config/server"
 
 // Config for HTTP.
 type Config struct {

@@ -1,6 +1,6 @@
 package feature
 
-import "github.com/alexfalkowski/go-service/v2/client"
+import "github.com/alexfalkowski/go-service/v2/config/client"
 
 // Config for feature.
 type Config struct {

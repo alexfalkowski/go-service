@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/server"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )

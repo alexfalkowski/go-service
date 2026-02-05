@@ -3,10 +3,10 @@ package debug_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/stretchr/testify/require"
 )
 

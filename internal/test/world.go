@@ -130,7 +130,7 @@ func WithWorldDebug() WorldOption {
 	})
 }
 
-func options(opts ...WorldOption) *worldOpts {
+func worldOptions(opts ...WorldOption) *worldOpts {
 	os := &worldOpts{}
 	for _, o := range opts {
 		o.apply(os)
@@ -145,7 +145,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	lc := fxtest.NewLifecycle(t)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
-	os := options(opts...)
+	os := worldOptions(opts...)
 
 	logger := createLogger(lc, os)
 	tranConfig := transportConfig(os)

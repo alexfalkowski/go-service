@@ -3,10 +3,10 @@ package grpc_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/server"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
