@@ -58,9 +58,9 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 }
 
 // WithClientTimeout for HTTP.
-func WithClientTimeout(timeout string) ClientOption {
+func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = time.MustParseDuration(timeout)
+		o.timeout = timeout
 	})
 }
 

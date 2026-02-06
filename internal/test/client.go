@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	g "github.com/alexfalkowski/go-service/v2/transport/grpc"
@@ -50,7 +51,7 @@ func (c *Client) NewHTTP() *http.Client {
 		h.WithClientRetry(c.Transport.HTTP.Retry),
 		h.WithClientUserAgent(UserAgent),
 		h.WithClientTokenGenerator(UserID, c.Generator),
-		h.WithClientTimeout("1m"),
+		h.WithClientTimeout(time.Minute),
 		h.WithClientTLS(c.TLS),
 		h.WithClientID(c.ID),
 		h.WithClientLimiter(c.HTTPLimiter),
@@ -76,8 +77,8 @@ func (c *Client) NewGRPC() *grpc.ClientConn {
 		g.WithClientRetry(c.Transport.GRPC.Retry),
 		g.WithClientUserAgent(UserAgent),
 		g.WithClientTokenGenerator(UserID, c.Generator),
-		g.WithClientTimeout("1m"),
-		g.WithClientKeepalive("1m", "1m"),
+		g.WithClientTimeout(time.Minute),
+		g.WithClientKeepalive(time.Minute, time.Minute),
 		g.WithClientDialOption(),
 		g.WithClientTLS(c.TLS),
 		g.WithClientID(c.ID),

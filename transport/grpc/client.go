@@ -63,17 +63,17 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 }
 
 // WithClientTimeout for gRPC.
-func WithClientTimeout(timeout string) ClientOption {
+func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.timeout = time.MustParseDuration(timeout)
+		o.timeout = timeout
 	})
 }
 
 // WithClientKeepalive for gRPC.
-func WithClientKeepalive(ping, timeout string) ClientOption {
+func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
-		o.keepalive_ping = time.MustParseDuration(ping)
-		o.keepalive_timeout = time.MustParseDuration(timeout)
+		o.keepalive_ping = ping
+		o.keepalive_timeout = timeout
 	})
 }
 
