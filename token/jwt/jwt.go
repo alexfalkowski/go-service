@@ -62,6 +62,10 @@ func (t *Token) Verify(token, aud string) (string, error) {
 		return strings.Empty, errors.ErrInvalidAudience
 	}
 
+	if err := claims.Valid(); err != nil {
+		return strings.Empty, err
+	}
+
 	return claims.Subject, nil
 }
 
