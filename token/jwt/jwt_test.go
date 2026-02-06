@@ -6,7 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
+	gjwt "github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,4 +66,51 @@ func TestInvalid(t *testing.T) {
 
 	token = jwt.NewToken(nil, signer, verifier, gen)
 	require.Nil(t, token)
+}
+
+func TestInvalidKeyID(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: "1h", KeyID: "test"}, signer, verifier, gen)
+
+	tkn, err := wrong.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+
+	_, err = token.Verify(tkn, "hello")
+	require.ErrorIs(t, err, tokenerrors.ErrInvalidKeyID)
+
+	jwtToken := gjwt.NewWithClaims(gjwt.SigningMethodEdDSA, &gjwt.RegisteredClaims{})
+	tkn, err = jwtToken.SignedString(signer.PrivateKey)
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	_, err = token.Verify(tkn, "hello")
+	require.ErrorIs(t, err, tokenerrors.ErrInvalidKeyID)
+}
+
+func TestInvalidAlgorithm(t *testing.T) {
+	cfg := test.NewToken("jwt")
+	ec := test.NewEd25519()
+	signer, _ := ed25519.NewSigner(test.PEM, ec)
+	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+	gen := uuid.NewGenerator()
+	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
+
+	tkn, err := token.Generate("hello", test.UserID.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	jwtToken := gjwt.NewWithClaims(gjwt.SigningMethodHS256, &gjwt.RegisteredClaims{})
+	tkn, err = jwtToken.SignedString([]byte("secret"))
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	_, err = token.Verify(tkn, "hello")
+	require.ErrorIs(t, err, tokenerrors.ErrInvalidAlgorithm)
 }
