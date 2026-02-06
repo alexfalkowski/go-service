@@ -69,6 +69,19 @@ func (t *Token) Verify(token, aud string) (string, error) {
 	return claims.Subject, nil
 }
 
-func (j *Token) validate(_ *jwt.Token) (any, error) {
+func (j *Token) validate(token *jwt.Token) (any, error) {
+	if token.Method.Alg() != jwt.SigningMethodEdDSA.Alg() {
+		return nil, errors.ErrInvalidAlgorithm
+	}
+
+	kid, ok := token.Header["kid"].(string)
+	if !ok || strings.IsEmpty(kid) {
+		return nil, errors.ErrInvalidKeyID
+	}
+
+	if kid != j.cfg.KeyID {
+		return nil, errors.ErrInvalidKeyID
+	}
+
 	return j.verifier.PublicKey, nil
 }
