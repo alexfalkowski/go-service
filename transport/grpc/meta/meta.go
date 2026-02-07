@@ -6,6 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
@@ -66,7 +68,12 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 		ctx = meta.WithIPAddrKind(ctx, kind)
 
 		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, md))
+
+		auth, err := extractAuthorization(md)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		ctx = meta.WithAuthorization(ctx, auth)
 
 		_ = grpc.SetHeader(ctx, metadata.Pairs("service-version", version.String(), "request-id", id.Value()))
 
@@ -97,7 +104,12 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 		ctx = meta.WithIPAddrKind(ctx, kind)
 
 		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
-		ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, md))
+
+		auth, err := extractAuthorization(md)
+		if err != nil {
+			return err
+		}
+		ctx = meta.WithAuthorization(ctx, auth)
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -181,20 +193,18 @@ func extractRequestID(ctx context.Context, generator id.Generator, md metadata.M
 	return meta.String(generator.Generate())
 }
 
-func extractAuthorization(ctx context.Context, md metadata.MD) meta.Value {
+func extractAuthorization(md metadata.MD) (meta.Value, error) {
 	a := authorization(md)
 	if strings.IsEmpty(a) {
-		return meta.Blank()
+		return meta.Blank(), nil
 	}
 
 	_, value, err := header.ParseAuthorization(a)
 	if err != nil {
-		meta.WithAttribute(ctx, "authError", meta.Error(err))
-
-		return meta.Blank()
+		return meta.Blank(), err
 	}
 
-	return meta.Ignored(value)
+	return meta.Ignored(value), nil
 }
 
 func authorization(md metadata.MD) string {
