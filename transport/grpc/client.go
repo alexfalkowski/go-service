@@ -22,9 +22,8 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	gen       token.Generator
-	generator id.Generator
-
+	gen               token.Generator
+	generator         id.Generator
 	security          *tls.Config
 	logger            *logger.Logger
 	retry             *retry.Config
@@ -34,6 +33,7 @@ type clientOpts struct {
 	opts              []grpc.DialOption
 	unary             []grpc.UnaryClientInterceptor
 	stream            []grpc.StreamClientInterceptor
+	breakerOptions    []breaker.Option
 	keepalive_ping    time.Duration
 	keepalive_timeout time.Duration
 	timeout           time.Duration
@@ -85,9 +85,10 @@ func WithClientRetry(cfg *retry.Config) ClientOption {
 }
 
 // WithClientBreaker for gRPC.
-func WithClientBreaker() ClientOption {
+func WithClientBreaker(opts ...breaker.Option) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
+		o.breakerOptions = opts
 	})
 }
 
@@ -220,7 +221,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	if os.breaker {
-		unary = append(unary, breaker.UnaryClientInterceptor())
+		unary = append(unary, breaker.UnaryClientInterceptor(os.breakerOptions...))
 	}
 
 	if os.logger != nil {

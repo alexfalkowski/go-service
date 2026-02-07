@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -156,7 +157,10 @@ func TestBreakerAuthUnary(t *testing.T) {
 	world.Register()
 	world.RequireStart()
 
-	conn := world.NewGRPC()
+	conn := world.NewGRPC(
+		breaker.WithSettings(breaker.Settings{}),
+		breaker.WithFailureCodes(codes.Unauthenticated),
+	)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)

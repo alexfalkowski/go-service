@@ -9,8 +9,8 @@ import (
 	breaker "github.com/sony/gobreaker"
 )
 
-// ErrInvalidResponse is returned when the response is invalid.
-var ErrInvalidResponse = errors.New("breaker: invalid response")
+// Settings is an alias for the breaker.Settings.
+type Settings = breaker.Settings
 
 // Option interface for configuring the circuit breaker.
 type Option interface {
@@ -18,7 +18,7 @@ type Option interface {
 }
 
 type opts struct {
-	settings      breaker.Settings
+	settings      Settings
 	failureStatus func(code int) bool
 }
 
@@ -27,7 +27,7 @@ type optionFunc func(*opts)
 func (f optionFunc) apply(o *opts) { f(o) }
 
 // WithSettings for configuring the circuit breaker.
-func WithSettings(s breaker.Settings) Option {
+func WithSettings(s Settings) Option {
 	return optionFunc(func(o *opts) { o.settings = s })
 }
 
@@ -68,7 +68,6 @@ type RoundTripper struct {
 
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	cb := r.get(req)
-
 	v, err := cb.Execute(func() (any, error) {
 		resp, err := r.RoundTripper.RoundTrip(req)
 		if err != nil {
@@ -81,20 +80,15 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		return resp, nil
 	})
-	if err == nil {
-		resp, ok := v.(*http.Response)
-		if !ok {
-			return nil, ErrInvalidResponse
+	if err != nil {
+		var re responseError
+		if errors.As(err, &re) {
+			return re.resp, nil
 		}
-		return resp, nil
-	}
 
-	var re responseError
-	if errors.As(err, &re) {
-		return re.resp, nil
+		return nil, err
 	}
-
-	return nil, err
+	return v.(*http.Response), nil
 }
 
 func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
@@ -140,7 +134,7 @@ func defaultOpts() *opts {
 		failureStatus: func(code int) bool {
 			return code >= http.StatusInternalServerError || code == http.StatusTooManyRequests
 		},
-		settings: breaker.Settings{
+		settings: Settings{
 			MaxRequests: 3,
 			Interval:    30 * time.Second,
 			Timeout:     10 * time.Second,
