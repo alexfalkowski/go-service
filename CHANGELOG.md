@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.259.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.259.0) - 2026-02-07
+
+- [`4debf1a`](https://github.com/alexfalkowski/go-service/commit/4debf1a11c968f7706b2a914f15bfc589664f1ca) feat(transport): error on bad auth header (#2112)
+
 ## [v2.258.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.258.0) - 2026-02-06
 
 - [`20e380b`](https://github.com/alexfalkowski/go-service/commit/20e380b14e9899aefbb949f351c0e9fea19c6d07) feat(token): validate jwt kid and alg (#2111)
