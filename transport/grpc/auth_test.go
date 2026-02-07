@@ -171,7 +171,7 @@ func TestBreakerAuthUnary(t *testing.T) {
 		_, err = client.SayHello(t.Context(), req)
 	}
 
-	require.Equal(t, codes.Unavailable, status.Code(err))
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 
 	world.RequireStop()
 }
