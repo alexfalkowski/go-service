@@ -17,6 +17,11 @@ type (
 	Key string
 )
 
+// Canceled is an alias for context.Canceled.
+//
+//nolint:errname
+var Canceled = context.Canceled
+
 // Background is an alias for context.WithValue.
 func Background() Context {
 	return context.Background()

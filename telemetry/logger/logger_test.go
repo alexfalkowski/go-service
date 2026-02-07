@@ -1,9 +1,9 @@
 package logger_test
 
 import (
-	"context"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/stretchr/testify/require"
