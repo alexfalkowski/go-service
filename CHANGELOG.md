@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.261.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.261.0) - 2026-02-07
+
+- [`35d5ddb`](https://github.com/alexfalkowski/go-service/commit/35d5ddb054a6696eef75acc9ad6b1ddc3642e1bf) feat(transport): pass options to clients for circuit breaker (#2115)
+- [`22d614f`](https://github.com/alexfalkowski/go-service/commit/22d614f59a3b3729946a87b48ff0f59bf1074679) docs(ai): add circuit breaker to AGENTS.md (#2114)
+
 ## [v2.260.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.260.0) - 2026-02-07
 
 - [`a13e2b0`](https://github.com/alexfalkowski/go-service/commit/a13e2b0295256fe5e7da29bd155a37a7b12d306d) feat(transport): a more robust breaker for clients (#2113)
