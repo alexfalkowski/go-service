@@ -114,7 +114,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	req := &v1.SayHelloRequest{Name: "test"}
 
 	_, err := client.SayHello(ctx, req)
-	require.Equal(t, codes.OK, status.Code(err))
+	require.Equal(t, codes.InvalidArgument, status.Code(err))
 
 	world.RequireStop()
 }

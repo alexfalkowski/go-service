@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
@@ -44,7 +45,13 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	ctx = meta.WithIPAddrKind(ctx, kind)
 
 	ctx = meta.WithGeolocation(ctx, extractGeolocation(req))
-	ctx = meta.WithAuthorization(ctx, extractAuthorization(ctx, req))
+
+	auth, err := extractAuthorization(req)
+	if err != nil {
+		status.WriteError(ctx, res, status.BadRequestError(err))
+		return
+	}
+	ctx = meta.WithAuthorization(ctx, auth)
 
 	next(res, req.WithContext(ctx))
 }
@@ -117,20 +124,18 @@ func extractIP(req *http.Request) (meta.Value, meta.Value) {
 	return remoteKind, meta.String(net.Host(addr))
 }
 
-func extractAuthorization(ctx context.Context, req *http.Request) meta.Value {
+func extractAuthorization(req *http.Request) (meta.Value, error) {
 	a := req.Header.Get("Authorization")
 	if strings.IsEmpty(a) {
-		return meta.Blank()
+		return meta.Blank(), nil
 	}
 
 	_, value, err := header.ParseAuthorization(a)
 	if err != nil {
-		meta.WithAttribute(ctx, "authError", meta.Error(err))
-
-		return meta.Blank()
+		return meta.Blank(), err
 	}
 
-	return meta.Ignored(value)
+	return meta.Ignored(value), nil
 }
 
 func extractGeolocation(req *http.Request) meta.Value {

@@ -107,7 +107,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, http.StatusBadRequest, res.StatusCode)
 	require.NotEmpty(t, body)
 
 	world.RequireStop()
