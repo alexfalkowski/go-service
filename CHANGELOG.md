@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.260.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.260.0) - 2026-02-07
+
+- [`a13e2b0`](https://github.com/alexfalkowski/go-service/commit/a13e2b0295256fe5e7da29bd155a37a7b12d306d) feat(transport): a more robust breaker for clients (#2113)
+
 ## [v2.259.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.259.0) - 2026-02-07
 
 - [`4debf1a`](https://github.com/alexfalkowski/go-service/commit/4debf1a11c968f7706b2a914f15bfc589664f1ca) feat(transport): error on bad auth header (#2112)
