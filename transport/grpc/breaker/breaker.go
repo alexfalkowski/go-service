@@ -12,13 +12,16 @@ import (
 	breaker "github.com/sony/gobreaker"
 )
 
+// Settings is an alias for the breaker.Settings.
+type Settings = breaker.Settings
+
 // Option interface for configuring the circuit breaker.
 type Option interface {
 	apply(opts *opts)
 }
 
 type opts struct {
-	settings     breaker.Settings
+	settings     Settings
 	failureCodes map[codes.Code]struct{}
 }
 
@@ -29,7 +32,7 @@ func (f optionFunc) apply(o *opts) {
 }
 
 // WithSettings sets the settings for the circuit breaker.
-func WithSettings(s breaker.Settings) Option {
+func WithSettings(s Settings) Option {
 	return optionFunc(func(o *opts) {
 		o.settings = s
 	})
@@ -61,19 +64,17 @@ func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, callOpts ...grpc.CallOption) error {
 		cb := r.get(fullMethod)
-
 		_, err := cb.Execute(func() (any, error) {
 			return nil, invoker(ctx, fullMethod, req, resp, conn, callOpts...)
 		})
-		if err == nil {
-			return nil
-		}
+		if err != nil {
+			if errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests) {
+				return status.Error(codes.Unavailable, err.Error())
+			}
 
-		if errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests) {
-			return status.Error(codes.Unavailable, err.Error())
+			return err
 		}
-
-		return err
+		return nil
 	}
 }
 
@@ -106,12 +107,11 @@ func defaultOpts() *opts {
 		codes.DeadlineExceeded:  {},
 		codes.ResourceExhausted: {},
 		codes.Internal:          {},
-		codes.Unauthenticated:   {},
 	}
 
 	return &opts{
 		failureCodes: failureCodes,
-		settings: breaker.Settings{
+		settings: Settings{
 			MaxRequests: 3,
 			Interval:    30 * time.Second,
 			Timeout:     10 * time.Second,

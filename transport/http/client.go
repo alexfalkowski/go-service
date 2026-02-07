@@ -22,18 +22,19 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	gen          token.Generator
-	generator    id.Generator
-	roundTripper http.RoundTripper
-	logger       *logger.Logger
-	retry        *retry.Config
-	tls          *tls.Config
-	limiter      *limiter.Client
-	userAgent    env.UserAgent
-	id           env.UserID
-	timeout      time.Duration
-	breaker      bool
-	compression  bool
+	gen            token.Generator
+	generator      id.Generator
+	roundTripper   http.RoundTripper
+	limiter        *limiter.Client
+	retry          *retry.Config
+	tls            *tls.Config
+	logger         *logger.Logger
+	userAgent      env.UserAgent
+	id             env.UserID
+	breakerOptions []breaker.Option
+	timeout        time.Duration
+	breaker        bool
+	compression    bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -79,9 +80,10 @@ func WithClientRetry(cfg *retry.Config) ClientOption {
 }
 
 // WithClientBreaker for HTTP.
-func WithClientBreaker() ClientOption {
+func WithClientBreaker(options ...breaker.Option) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
+		o.breakerOptions = options
 	})
 }
 
@@ -146,7 +148,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.breaker {
-		hrt = breaker.NewRoundTripper(hrt)
+		hrt = breaker.NewRoundTripper(hrt, os.breakerOptions...)
 	}
 
 	if os.logger != nil {
