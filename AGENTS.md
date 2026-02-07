@@ -234,6 +234,12 @@ The wrapper in `net/http` instruments handlers by wrapping them with `otelhttp.N
 
 `net/http.Pattern(name, pattern)` builds routes as `/<name><pattern>` (`net/http/http.go:181-184`).
 
+### Circuit breakers (client-side)
+
+- gRPC breaker uses per-`fullMethod` circuit breakers and counts only selected gRPC status codes as failures (`transport/grpc/breaker/breaker.go`).
+- HTTP breaker uses per-`method + host` circuit breakers and counts failures via status code classification (defaults to `>= 500` and `429`) (`transport/http/breaker/breaker.go`).
+- Both breakers expose option-based configuration (`WithSettings`, failure classification helpers) and treat cancellations as successful for breaker accounting.
+
 ## Cache API gotcha
 
 The `cache/` package contains both an instance API and package-level generic helpers.
