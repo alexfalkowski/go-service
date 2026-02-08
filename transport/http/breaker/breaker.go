@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/sync"
+	"github.com/alexfalkowski/go-service/v2/transport/strings"
 	breaker "github.com/sony/gobreaker"
 )
 
@@ -76,12 +77,11 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 
 func requestKey(req *http.Request) string {
 	host := req.URL.Host
-	if host == "" {
+	if strings.IsEmpty(host) {
 		host = req.Host
 	}
-	if host == "" {
+	if strings.IsEmpty(host) {
 		host = "unknown"
 	}
-
-	return req.Method + " " + host
+	return strings.Join(" ", req.Method, host)
 }
