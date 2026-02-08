@@ -1,6 +1,8 @@
 package breaker
 
 import (
+	"cmp"
+
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/sync"
@@ -76,12 +78,5 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 }
 
 func requestKey(req *http.Request) string {
-	host := req.URL.Host
-	if strings.IsEmpty(host) {
-		host = req.Host
-	}
-	if strings.IsEmpty(host) {
-		host = "unknown"
-	}
-	return strings.Join(" ", req.Method, host)
+	return strings.Join(" ", req.Method, cmp.Or(req.URL.Host, req.Host, "unknown"))
 }
