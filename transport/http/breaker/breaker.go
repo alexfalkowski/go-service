@@ -1,53 +1,14 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/sync"
-	"github.com/alexfalkowski/go-service/v2/time"
 	breaker "github.com/sony/gobreaker"
 )
 
 // Settings is an alias for the breaker.Settings.
 type Settings = breaker.Settings
-
-// Option interface for configuring the circuit breaker.
-type Option interface {
-	apply(opts *opts)
-}
-
-type opts struct {
-	settings      Settings
-	failureStatus func(code int) bool
-}
-
-type optionFunc func(*opts)
-
-func (f optionFunc) apply(o *opts) { f(o) }
-
-// WithSettings for configuring the circuit breaker.
-func WithSettings(s Settings) Option {
-	return optionFunc(func(o *opts) { o.settings = s })
-}
-
-// WithFailureStatusFunc for configuring the circuit breaker.
-func WithFailureStatusFunc(f func(code int) bool) Option {
-	return optionFunc(func(o *opts) { o.failureStatus = f })
-}
-
-// WithFailureStatuses for configuring the circuit breaker.
-func WithFailureStatuses(statuses ...int) Option {
-	set := make(map[int]struct{}, len(statuses))
-	for _, s := range statuses {
-		set[s] = struct{}{}
-	}
-
-	return WithFailureStatusFunc(func(code int) bool {
-		_, ok := set[code]
-		return ok
-	})
-}
 
 // NewRoundTripper for breaker.
 func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
@@ -75,7 +36,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 
 		if r.opts.failureStatus(resp.StatusCode) {
-			return resp, responseError{resp: resp}
+			return nil, responseError{resp: resp}
 		}
 
 		return resp, nil
@@ -100,16 +61,12 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 	s := r.opts.settings
 	s.Name = key
 	s.IsSuccessful = func(err error) bool {
-		if err == nil {
-			return true
+		if err != nil {
+			var re responseError
+			return !errors.As(err, &re)
 		}
 
-		if errors.Is(err, context.Canceled) {
-			return true
-		}
-
-		var re responseError
-		return !errors.As(err, &re)
+		return true
 	}
 
 	cb := breaker.NewCircuitBreaker(s)
@@ -127,29 +84,4 @@ func requestKey(req *http.Request) string {
 	}
 
 	return req.Method + " " + host
-}
-
-func defaultOpts() *opts {
-	return &opts{
-		failureStatus: func(code int) bool {
-			return code >= http.StatusInternalServerError || code == http.StatusTooManyRequests
-		},
-		settings: Settings{
-			MaxRequests: 3,
-			Interval:    30 * time.Second,
-			Timeout:     10 * time.Second,
-			ReadyToTrip: func(counts breaker.Counts) bool { return counts.ConsecutiveFailures >= 5 },
-		},
-	}
-}
-
-type responseError struct {
-	resp *http.Response
-}
-
-func (e responseError) Error() string {
-	if e.resp == nil {
-		return "breaker: failure response"
-	}
-	return "breaker: failure response (status " + e.resp.Status + ")"
 }

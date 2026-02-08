@@ -1,0 +1,35 @@
+package breaker
+
+import (
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/sync"
+	breaker "github.com/sony/gobreaker"
+)
+
+type registry struct {
+	opts     *opts
+	breakers sync.Map
+}
+
+func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
+	if cb, ok := r.breakers.Load(fullMethod); ok {
+		return cb.(*breaker.CircuitBreaker)
+	}
+
+	s := r.opts.settings
+	s.Name = fullMethod
+
+	failureCodes := r.opts.failureCodes
+	s.IsSuccessful = func(err error) bool {
+		if err != nil {
+			_, isFailure := failureCodes[status.Code(err)]
+			return !isFailure
+		}
+
+		return true
+	}
+
+	cb := breaker.NewCircuitBreaker(s)
+	actual, _ := r.breakers.LoadOrStore(fullMethod, cb)
+	return actual.(*breaker.CircuitBreaker)
+}
