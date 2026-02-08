@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.263.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.263.0) - 2026-02-08
+
+- [`31abd60`](https://github.com/alexfalkowski/go-service/commit/31abd6091c82909efbfbb6e632c4c4d3b62168d3) feat(http): use strings package for breaker (#2117)
+
 ## [v2.262.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.262.0) - 2026-02-08
 
 - [`91e6bcc`](https://github.com/alexfalkowski/go-service/commit/91e6bcc969868d3851d55eda0195bd0cf494ff52) feat(transport): break up breaker (#2116)
