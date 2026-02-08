@@ -7,12 +7,14 @@ import (
 )
 
 func NewShutdowner() *Shutdowner {
-	return &Shutdowner{}
+	return &Shutdowner{ch: make(chan struct{})}
 }
 
 type Shutdowner struct {
 	called bool
 	m      sync.RWMutex
+	once   sync.Once
+	ch     chan struct{}
 }
 
 func (s *Shutdowner) Called() bool {
@@ -22,11 +24,18 @@ func (s *Shutdowner) Called() bool {
 	return s.called
 }
 
+func (s *Shutdowner) Done() <-chan struct{} {
+	return s.ch
+}
+
 func (s *Shutdowner) Shutdown(...di.ShutdownOption) error {
 	s.m.Lock()
 	defer s.m.Unlock()
 
 	s.called = true
+	s.once.Do(func() {
+		close(s.ch)
+	})
 
 	return nil
 }
