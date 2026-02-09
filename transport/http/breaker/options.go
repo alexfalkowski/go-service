@@ -1,9 +1,8 @@
 package breaker
 
 import (
+	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/time"
-	breaker "github.com/sony/gobreaker"
 )
 
 // Option interface for configuring the circuit breaker.
@@ -48,11 +47,6 @@ func defaultOpts() *opts {
 		failureStatus: func(code int) bool {
 			return code >= http.StatusInternalServerError || code == http.StatusTooManyRequests
 		},
-		settings: Settings{
-			MaxRequests: 3,
-			Interval:    30 * time.Second,
-			Timeout:     10 * time.Second,
-			ReadyToTrip: func(counts breaker.Counts) bool { return counts.ConsecutiveFailures >= 5 },
-		},
+		settings: breaker.DefaultSettings,
 	}
 }

@@ -1,9 +1,9 @@
 package breaker
 
 import (
+	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/sync"
-	breaker "github.com/sony/gobreaker"
 )
 
 type registry struct {
