@@ -3,11 +3,11 @@ package breaker
 import (
 	"cmp"
 
+	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
-	breaker "github.com/sony/gobreaker"
 )
 
 // Settings is an alias for the breaker.Settings.
