@@ -11,10 +11,10 @@ func NewShutdowner() *Shutdowner {
 }
 
 type Shutdowner struct {
-	called bool
+	ch     chan struct{}
 	m      sync.RWMutex
 	once   sync.Once
-	ch     chan struct{}
+	called bool
 }
 
 func (s *Shutdowner) Called() bool {
