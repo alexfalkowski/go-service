@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.264.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.264.0) - 2026-02-09
+
+- [`b2b3e40`](https://github.com/alexfalkowski/go-service/commit/b2b3e4064e07050e87af685a959d6389cc73d45f) feat(deps): bump golang.org/x/crypto from 0.47.0 to 0.48.0 (#2122)
+- [`52f0725`](https://github.com/alexfalkowski/go-service/commit/52f0725a2831085eda3eb9ce5315c8f93a8b7beb) feat(breaker): move to new package (#2121)
+- [`39babf5`](https://github.com/alexfalkowski/go-service/commit/39babf577a20725e603e38dfa6074bdf1d0bce57) test(net): remove time.Sleep (#2120)
+- [`5c9deab`](https://github.com/alexfalkowski/go-service/commit/5c9deab2346c42885a753e645bc6adc579ca57ee) docs(ai): update AGENTS.md (#2119)
+
 ## [v2.263.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.263.1) - 2026-02-08
 
 - [`4ac91c2`](https://github.com/alexfalkowski/go-service/commit/4ac91c28a0cef50084af28ce85f972424dd8cd39) fix(http): use cmp.Or for breaker (#2118)
