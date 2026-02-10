@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.269.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.269.0) - 2026-02-10
+
+- [`14d6c7c`](https://github.com/alexfalkowski/go-service/commit/14d6c7c3df08ff160264b4c6728833456f28999e) feat(sync): use github.com/alexfalkowski/go-sync v1.3.0 (#2129)
+- [`1be7ce6`](https://github.com/alexfalkowski/go-service/commit/1be7ce6cab74059cdc368e3b75575af6023b2ac2) docs(readme): make diagrams (#2128)
+
 ## [v2.268.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.268.0) - 2026-02-10
 
 - [`64c3aed`](https://github.com/alexfalkowski/go-service/commit/64c3aed6f9d949fa1eaaa601e42d3cf0808f080d) feat(docs): make sure they are accurate (#2127)
