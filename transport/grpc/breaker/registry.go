@@ -8,12 +8,12 @@ import (
 
 type registry struct {
 	opts     *opts
-	breakers sync.Map
+	breakers sync.Map[string, *breaker.CircuitBreaker]
 }
 
 func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
 	if cb, ok := r.breakers.Load(fullMethod); ok {
-		return cb.(*breaker.CircuitBreaker)
+		return cb
 	}
 
 	s := r.opts.settings
@@ -31,5 +31,5 @@ func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
 
 	cb := breaker.NewCircuitBreaker(s)
 	actual, _ := r.breakers.LoadOrStore(fullMethod, cb)
-	return actual.(*breaker.CircuitBreaker)
+	return actual
 }
