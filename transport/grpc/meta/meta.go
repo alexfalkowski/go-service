@@ -49,7 +49,14 @@ func WithAuthorization(ctx context.Context, auth meta.Value) context.Context {
 	return meta.WithAuthorization(ctx, auth)
 }
 
-// UnaryServerInterceptor for meta.
+// UnaryServerInterceptor returns a gRPC unary server interceptor that extracts metadata into the context.
+//
+// Requests with ignorable methods bypass extraction.
+// It extracts metadata from incoming headers (when present) and stores it into the context, including:
+// "user-agent", "request-id", "authorization", and "geolocation", along with IP address and its source kind.
+// If the Authorization header is present but invalid, it returns InvalidArgument.
+//
+// It also sets response header metadata including "service-version" and "request-id".
 func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -81,7 +88,13 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 	}
 }
 
-// StreamServerInterceptor for meta.
+// StreamServerInterceptor returns a gRPC stream server interceptor that extracts metadata into the stream context.
+//
+// Requests with ignorable methods bypass extraction.
+// It extracts metadata from incoming headers (when present) and stores it into the stream context, including:
+// "user-agent", "request-id", "authorization", and "geolocation", along with IP address and its source kind.
+//
+// It sets response header metadata including "service-version" and "request-id".
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -118,7 +131,10 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 	}
 }
 
-// UnaryClientInterceptor for meta.
+// UnaryClientInterceptor returns a gRPC unary client interceptor that injects metadata into outgoing requests.
+//
+// It ensures "user-agent" and "request-id" are present in outgoing metadata, preferring values already
+// present in the context or outgoing metadata, and stores the chosen values back into the context.
 func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		md := ExtractOutgoing(ctx)
@@ -136,7 +152,10 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 	}
 }
 
-// StreamClientInterceptor for meta.
+// StreamClientInterceptor returns a gRPC stream client interceptor that injects metadata into outgoing requests.
+//
+// It ensures "user-agent" and "request-id" are present in outgoing metadata, preferring values already
+// present in the context or outgoing metadata, and stores the chosen values back into the context.
 func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		md := ExtractOutgoing(ctx)

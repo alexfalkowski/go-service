@@ -4,5 +4,5 @@
 // client-side interceptors) and centralizes retry-related defaults used by the
 // transport stack.
 //
-// Start with `Module`, `Config`, and `New*` constructors.
+// Start with `Config` and `UnaryClientInterceptor`.
 package retry

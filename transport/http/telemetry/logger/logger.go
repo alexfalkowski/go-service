@@ -9,20 +9,24 @@ import (
 	snoop "github.com/felixge/httpsnoop"
 )
 
-// Logger is an alias of logger.Logger.
+// Logger is an alias for logger.Logger.
 type Logger = logger.Logger
 
-// NewHandler for logger.
+// NewHandler constructs an HTTP server logging handler.
 func NewHandler(logger *Logger) *Handler {
 	return &Handler{logger: logger}
 }
 
-// Handler for logger.
+// Handler logs HTTP server requests and responses.
 type Handler struct {
 	logger *Logger
 }
 
-// ServeHTTP or logger.
+// ServeHTTP logs the request after next completes.
+//
+// It logs attributes including system ("http"), service/method (derived from the request),
+// duration, and response code. Log level is derived from the status code:
+// 4xx -> warn, 5xx -> error, otherwise -> info. Ignorable paths bypass logging.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -44,18 +48,23 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
 
-// NewRoundTripper for logger.
+// NewRoundTripper constructs an HTTP client logging RoundTripper.
 func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
 
-// RoundTripper for logger.
+// RoundTripper logs HTTP client requests and responses.
 type RoundTripper struct {
 	logger *Logger
 	http.RoundTripper
 }
 
-// RoundTrip for logger.
+// RoundTrip logs the request/response and delegates to the underlying RoundTripper.
+//
+// It logs attributes including system ("http"), service/method (derived from the request),
+// duration, and (when available) response code. Log level is derived from the status code:
+// 4xx -> warn, 5xx -> error, otherwise -> info. If resp is nil, it is treated as a 500 for level selection.
+// Ignorable paths bypass logging.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if strings.IsIgnorable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)

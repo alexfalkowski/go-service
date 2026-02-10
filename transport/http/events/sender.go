@@ -8,7 +8,7 @@ import (
 	transport "github.com/cloudevents/sdk-go/v2/protocol/http"
 )
 
-// SenderOption for HTTP.
+// SenderOption configures a CloudEvents HTTP sender.
 type SenderOption interface {
 	apply(opts *senderOptions)
 }
@@ -23,14 +23,16 @@ func (f senderOptionFunc) apply(o *senderOptions) {
 	f(o)
 }
 
-// WithSenderRoundTripper for HTTP.
+// WithSenderRoundTripper configures the underlying HTTP RoundTripper used to send CloudEvents.
 func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 	return senderOptionFunc(func(o *senderOptions) {
 		o.roundTripper = rt
 	})
 }
 
-// NewSender for HTTP.
+// NewSender constructs a CloudEvents HTTP client that wraps outbound requests with the webhook hook.
+//
+// If no round tripper is configured, it uses the default HTTP transport.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
 	os := options(opts...)
 	rt := hooks.NewRoundTripper(hook, os.roundTripper)

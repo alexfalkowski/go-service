@@ -5,12 +5,18 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// ExtractIncoming for meta.
+// ExtractIncoming extracts incoming gRPC metadata from ctx.
+//
+// If no incoming metadata is present, it returns an empty metadata map.
+// The returned metadata is a copy and is safe to mutate by the caller.
 func ExtractIncoming(ctx context.Context) metadata.MD {
 	return extract(metadata.FromIncomingContext(ctx))
 }
 
-// ExtractOutgoing for meta.
+// ExtractOutgoing extracts outgoing gRPC metadata from ctx.
+//
+// If no outgoing metadata is present, it returns an empty metadata map.
+// The returned metadata is a copy and is safe to mutate by the caller.
 func ExtractOutgoing(ctx context.Context) metadata.MD {
 	return extract(metadata.FromOutgoingContext(ctx))
 }

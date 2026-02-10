@@ -1,7 +1,7 @@
 package token
 
-// Generator allows the implementation of different types generators.
+// Generator generates tokens.
 type Generator interface {
-	// Generate a new token or error.
+	// Generate creates a new token for the given audience and subject.
 	Generate(aud, sub string) ([]byte, error)
 }

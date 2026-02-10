@@ -1,4 +1,6 @@
-// Package checker provides helpers for the health/checker subsystem in go-service.
+// Package checker provides health check primitives used by go-service.
 //
-// Start with  constructors.
+// This package contains health check helpers that can be composed into a larger health endpoint.
+//
+// Start with the package-level constructors.
 package checker

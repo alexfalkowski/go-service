@@ -1,2 +1,2 @@
-// Package errors provides cryptographic helpers and wiring used by go-service.
+// Package errors provides crypto-specific error values shared across go-service crypto helpers.
 package errors

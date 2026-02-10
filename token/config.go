@@ -7,7 +7,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
-// Config for token.
+// Config contains token configuration for go-service.
+//
+// Kind selects which token implementation is used by the top-level token helper
+// (for example: "jwt", "paseto", or "ssh").
+// The corresponding nested configuration for the chosen kind should also be provided.
 type Config struct {
 	Access *access.Config `yaml:"access,omitempty" json:"access,omitempty" toml:"access,omitempty"`
 	JWT    *jwt.Config    `yaml:"jwt,omitempty" json:"jwt,omitempty" toml:"jwt,omitempty"`
@@ -16,7 +20,7 @@ type Config struct {
 	Kind   string         `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 
-// IsEnabled for configuration.
+// IsEnabled reports whether token configuration is present (i.e., the config is non-nil).
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

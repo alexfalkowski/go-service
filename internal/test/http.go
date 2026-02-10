@@ -17,7 +17,7 @@ func (w *ErrResponseWriter) Write([]byte) (int, error) {
 	return 0, ErrFailed
 }
 
-// WriteHeader stored the code in the field Code.
+// WriteHeader stores code in the Code field.
 func (w *ErrResponseWriter) WriteHeader(code int) {
 	w.Code = code
 }

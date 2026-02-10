@@ -26,7 +26,11 @@ var (
 	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
 
-// ParseAuthorization header into type and credentials or error.
+// ParseAuthorization parses an Authorization header into scheme and credentials.
+//
+// Supported schemes are listed in AllAuthorizations.
+// It returns ErrInvalidAuthorization when the header does not contain a scheme and value separated by a space.
+// It returns ErrNotSupportedAuthorization when the scheme is not supported.
 func ParseAuthorization(header string) (string, string, error) {
 	key, value, ok := strings.Cut(header, strings.Space)
 	if !ok {

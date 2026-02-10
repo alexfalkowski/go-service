@@ -1,9 +1,7 @@
-// Package metrics provides HTTP transport metrics instrumentation wiring for go-service.
+// Package metrics provides HTTP metrics endpoint wiring for go-service.
 //
-// This package integrates metrics collection into the HTTP transport stack.
+// This package exposes a Prometheus HTTP handler under the service's HTTP mux when metrics are enabled
+// and the configured kind is Prometheus.
 //
-// Start with `Module` and `Register`.
-//
-// Registration: some transports use package-level registration to inject filesystem access or instrumentation.
-// If you enable features that require registration, call `Register` during application startup before constructing clients/servers.
+// Start with `Register`.
 package metrics

@@ -18,18 +18,22 @@ type (
 	Listener = net.Listener
 )
 
-// Listen is an alias for net.Listen.
+// Listen creates a listener using net.ListenConfig so it can respect ctx cancellation.
 func Listen(ctx context.Context, network, address string) (Listener, error) {
 	config := &net.ListenConfig{}
 	return config.Listen(ctx, network, address)
 }
 
-// SplitNetworkAddress takes an address like tcp://localhost:3000 and returns "tcp", "localhost:3000".
+// SplitNetworkAddress splits an address like tcp://localhost:3000 into "tcp" and "localhost:3000".
+//
+// It returns ok=false when the separator "://" is not present.
 func SplitNetworkAddress(address string) (string, string, bool) {
 	return strings.Cut(address, "://")
 }
 
-// Host from the address, if it can be split.
+// Host returns the host portion of addr if it is in host:port form.
+//
+// If addr cannot be parsed by net.SplitHostPort (for example it has no port), Host returns addr unchanged.
 func Host(addr string) string {
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -38,7 +42,7 @@ func Host(addr string) string {
 	return host
 }
 
-// DefaultAddress for servers in the form of tcp://:port
+// DefaultAddress returns a server address in the form tcp://:<port>.
 func DefaultAddress(port string) string {
 	return "tcp://:" + port
 }

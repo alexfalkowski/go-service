@@ -1,4 +1,6 @@
-// Package breaker contains HTTP transport utilities and wiring for services built with go-service.
+// Package breaker provides HTTP circuit breaker middleware for go-service.
 //
-// Start with  constructors.
+// This package integrates circuit breaking into HTTP clients by wrapping an http.RoundTripper.
+//
+// Start with `NewRoundTripper`.
 package breaker

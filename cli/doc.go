@@ -1,4 +1,6 @@
-// Package cli provides helpers for the cli subsystem in go-service.
+// Package cli provides helpers for building CLI applications with go-service.
 //
-// Start with  constructors.
+// This package contains wiring and helpers around the CLI application framework used by this module.
+//
+// Start with `Application`.
 package cli

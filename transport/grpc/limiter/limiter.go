@@ -11,10 +11,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// KeyMap is just an alias for limiter.KeyMap.
+// KeyMap is an alias for limiter.KeyMap.
 type KeyMap = limiter.KeyMap
 
-// NewServerLimiter for gRPC.
+// NewServerLimiter returns a server-side rate limiter when enabled.
+//
+// If cfg is disabled, it returns (nil, nil).
 func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -28,12 +30,16 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 	return &Server{limiter}, nil
 }
 
-// Server limiter.
+// Server wraps limiter.Limiter for gRPC server integration.
 type Server struct {
 	*limiter.Limiter
 }
 
-// UnaryServerInterceptor for limiter.
+// UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
+//
+// Requests with ignorable methods bypass limiting.
+// When a limit header is returned, it is attached to the response metadata as the "ratelimit" header.
+// If the limit is exceeded, it returns ResourceExhausted.
 func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -55,7 +61,9 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	}
 }
 
-// NewClientLimiter for gRPC.
+// NewClientLimiter returns a client-side rate limiter when enabled.
+//
+// If cfg is disabled, it returns (nil, nil).
 func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -69,12 +77,14 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 	return &Client{limiter}, nil
 }
 
-// Client limiter.
+// Client wraps limiter.Limiter for gRPC client integration.
 type Client struct {
 	*limiter.Limiter
 }
 
-// UnaryClientInterceptor for limiter.
+// UnaryClientInterceptor returns a gRPC unary client interceptor that enforces rate limiting.
+//
+// If the limit is exceeded, it returns ResourceExhausted.
 func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ok, header, err := limiter.Take(ctx)

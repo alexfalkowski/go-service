@@ -8,10 +8,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// KeyMap is just an alias for limiter.KeyMap.
+// KeyMap is an alias for limiter.KeyMap.
 type KeyMap = limiter.KeyMap
 
-// NewServerLimiter for http.
+// NewServerLimiter returns a server-side rate limiter when enabled.
+//
+// If cfg is disabled, it returns (nil, nil).
 func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -25,22 +27,25 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 	return &Server{limiter}, nil
 }
 
-// Server limiter.
+// Server wraps limiter.Limiter for HTTP server integration.
 type Server struct {
 	*limiter.Limiter
 }
 
-// NewHandler for limiter.
+// NewHandler constructs a server-side rate limiting handler.
 func NewHandler(limiter *Server) *Handler {
 	return &Handler{limiter: limiter}
 }
 
-// Handler for tracer.
+// Handler applies server-side rate limiting.
 type Handler struct {
 	limiter *Server
 }
 
-// ServeHTTP for limiter.
+// ServeHTTP enforces the limiter and writes HTTP 429 when the rate limit is exceeded.
+//
+// Requests with ignorable paths bypass limiting.
+// When a limit header is returned, it is added to the response as the "RateLimit" header.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -65,7 +70,9 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req)
 }
 
-// NewClientLimiter for http.
+// NewClientLimiter returns a client-side rate limiter when enabled.
+//
+// If cfg is disabled, it returns (nil, nil).
 func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -79,23 +86,23 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 	return &Client{limiter}, nil
 }
 
-// Client limiter.
+// Client wraps limiter.Limiter for HTTP client integration.
 type Client struct {
 	*limiter.Limiter
 }
 
-// NewRoundTripper for limiter.
+// NewRoundTripper constructs an HTTP RoundTripper that enforces rate limiting on outbound requests.
 func NewRoundTripper(limiter *Client, rt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{limiter: limiter, RoundTripper: rt}
 }
 
-// RoundTripper for limiter.
+// RoundTripper wraps an underlying http.RoundTripper and applies client-side rate limiting.
 type RoundTripper struct {
 	limiter *Client
 	http.RoundTripper
 }
 
-// RoundTrip for limiter.
+// RoundTrip enforces the limiter and returns HTTP 429 when the rate limit is exceeded.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 

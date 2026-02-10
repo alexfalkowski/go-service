@@ -12,19 +12,24 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// NewHandler for meta.
+// NewHandler constructs a metadata handler.
 func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator) *Handler {
 	return &Handler{userAgent: userAgent, version: version, generator: generator}
 }
 
-// Handler for meta.
+// Handler extracts request metadata and stores it in the request context.
 type Handler struct {
 	generator id.Generator
 	userAgent env.UserAgent
 	version   env.Version
 }
 
-// ServeHTTP extracts metadata from the request and stores it in the context.
+// ServeHTTP extracts metadata from req and stores it in the request context.
+//
+// Requests with ignorable paths bypass extraction.
+// It sets "Service-Version" and "Request-Id" response headers and populates the context with:
+// user agent, request id, IP address (and its source kind), geolocation, and authorization (when present).
+// If the Authorization header is present but invalid, it writes a bad request error response.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -57,12 +62,12 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req.WithContext(ctx))
 }
 
-// NewRoundTripper for meta.
+// NewRoundTripper constructs an HTTP RoundTripper that injects request metadata.
 func NewRoundTripper(userAgent env.UserAgent, generator id.Generator, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{RoundTripper: hrt, userAgent: userAgent, generator: generator}
 }
 
-// RoundTripper for meta.
+// RoundTripper wraps an underlying http.RoundTripper and injects request metadata.
 type RoundTripper struct {
 	http.RoundTripper
 	generator id.Generator
@@ -70,6 +75,9 @@ type RoundTripper struct {
 }
 
 // RoundTrip injects request metadata into the outbound request.
+//
+// It sets the "User-Agent" and "Request-Id" headers, preferring values already present in the context
+// or request headers, and stores the chosen values back into the request context.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 

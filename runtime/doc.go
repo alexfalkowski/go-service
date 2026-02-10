@@ -1,7 +1,11 @@
-// Package runtime provides helpers for interacting with and observing the Go runtime.
+// Package runtime provides runtime-related helpers used by go-service.
 //
-// This package groups small utilities used across go-service for runtime-related concerns
-// such as configuration, metrics, or environment-derived behavior.
+// This package contains small utilities such as:
+//   - Must, which panics on non-nil errors (used for strict startup/config paths),
+//   - ConvertRecover, which converts recovered panic values into errors, and
+//   - Version, which reports build info version (or "development").
 //
-// Start with exported `Config` types and `New*` constructors (when present).
+// It also integrates optional runtime configuration such as setting Go's memory limit (see RegisterMemLimit).
+//
+// Start with `Must`, `ConvertRecover`, `Version`, and `Module`.
 package runtime

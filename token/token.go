@@ -12,7 +12,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
-// NewToken based on config.
+// NewToken returns a Token that generates and verifies tokens according to cfg.
+//
+// Supported kinds are "jwt", "paseto", and "ssh". If an unsupported kind is configured,
+// Generate/Verify return nil/empty results.
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	return &Token{
 		name: name, cfg: cfg,
@@ -22,7 +25,7 @@ func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *e
 	}
 }
 
-// Token will generate and verify based on what is defined in the config.
+// Token generates and verifies tokens using the implementation selected by configuration.
 type Token struct {
 	cfg    *Config
 	jwt    *jwt.Token
@@ -31,7 +34,12 @@ type Token struct {
 	name   env.Name
 }
 
-// Generate a token based on kind.
+// Generate creates a token for the configured kind.
+//
+// For "jwt" and "paseto" the token is created for the provided audience and subject.
+// For "ssh" the audience and subject are ignored.
+//
+// If the configured kind is unknown, it returns (nil, nil).
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
@@ -48,7 +56,11 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	}
 }
 
-// Verify a token based on kind.
+// Verify validates token for the configured kind and returns the subject.
+//
+// For "ssh" the audience is ignored and the returned string is the key name.
+//
+// If the configured kind is unknown, it returns (strings.Empty, nil).
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":

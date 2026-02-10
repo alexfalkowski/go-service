@@ -1,4 +1,2 @@
-// Package driver provides cache abstractions, configuration, and drivers for go-service.
-//
-// Start with  constructors.
+// Package driver provides cache driver constructors for go-service.
 package driver

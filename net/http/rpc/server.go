@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// Route for rpc.
+// Route registers a POST handler under pattern.
 func Route[Req any, Res any](pattern string, handler content.RequestHandler[Req, Res]) {
 	http.HandleFunc(
 		mux,

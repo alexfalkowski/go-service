@@ -1,4 +1,6 @@
-// Package server provides helpers for the net/server subsystem in go-service.
+// Package server provides network server helpers used by go-service.
 //
-// Start with  constructors.
+// This package contains common primitives used by higher-level transports to run and manage servers.
+//
+// Start with the package-level constructors.
 package server

@@ -10,10 +10,16 @@ import (
 	"github.com/alexfalkowski/go-service/v2/sync"
 )
 
-// Settings is an alias for the breaker.Settings.
+// Settings is an alias for breaker.Settings.
 type Settings = breaker.Settings
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor that uses a circuit breaker to protect the client.
+// UnaryClientInterceptor returns a gRPC unary client interceptor guarded by a circuit breaker.
+//
+// A separate circuit breaker is maintained per fullMethod.
+// Whether an invocation is counted as successful is determined by gRPC status code classification
+// (configurable via options; see default failure codes in this package).
+//
+// If the circuit breaker is open or has too many requests, the interceptor returns ResourceExhausted.
 func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 	o := defaultOpts()
 	for _, option := range options {

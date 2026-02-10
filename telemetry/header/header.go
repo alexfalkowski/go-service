@@ -23,7 +23,7 @@ func (m Map) Secrets(fs *os.FS) error {
 	return nil
 }
 
-// MustSecrets will do exactly what Secrets does, but will panic if an error occurs.
+// MustSecrets loads secrets like Secrets, but panics if any secret cannot be read.
 func (m Map) MustSecrets(fs *os.FS) {
 	runtime.Must(m.Secrets(fs))
 }

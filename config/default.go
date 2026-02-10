@@ -8,19 +8,28 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// NewDefault for config.
+// NewDefault constructs a decoder that locates a configuration file by searching common locations.
 func NewDefault(name env.Name, enc *encoding.Map, fs *os.FS) *Default {
 	return &Default{name: name, enc: enc, fs: fs}
 }
 
-// Default for config.
+// Default is a decoder that locates a configuration file by searching common locations.
 type Default struct {
 	enc  *encoding.Map
 	fs   *os.FS
 	name env.Name
 }
 
-// Decode to v, by looking in default places.
+// Decode decodes configuration into v by searching for a file named "<serviceName>.<ext>".
+//
+// Supported extensions are: yaml, yml, toml, and json.
+//
+// The search order is:
+//   - the executable directory,
+//   - the user config directory under "<configDir>/<serviceName>/", and
+//   - /etc/<serviceName>/
+//
+// If no configuration file is found, Decode returns ErrLocationMissing.
 func (c *Default) Decode(v any) error {
 	kind, file, err := c.find()
 	if err != nil {

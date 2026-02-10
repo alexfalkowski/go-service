@@ -16,7 +16,7 @@ var (
 	ErrInvalidResponse = errors.New("rpc: invalid response")
 )
 
-// ClientOption for rpc.
+// ClientOption configures the RPC client helper.
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -33,28 +33,33 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithClientRoundTripper for rpc.
+// WithClientRoundTripper sets the underlying HTTP RoundTripper used by the RPC client.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithClientContentType for rpc.
+// WithClientContentType sets the Content-Type used for requests made by the RPC client.
 func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
 	})
 }
 
-// WithClientTimeout for rpc.
+// WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
+//
+// It uses time.MustParseDuration and will panic if the duration string cannot be parsed.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 
-// NewClient for rpc.
+// NewClient constructs an RPC client backed by net/http/client.
+//
+// NewClient depends on package-level registration (see rpc.Register) for the content codecs (cont)
+// and buffer pool (pool). Register must be called before NewClient; otherwise it will panic due to nil dependencies.
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := client.NewClient(cont, pool,
@@ -66,14 +71,16 @@ func NewClient(url string, opts ...ClientOption) *Client {
 	return &Client{client: client, url: url, contentType: os.contentType}
 }
 
-// Client for rpc.
+// Client is an RPC client that issues POST requests using the configured content codecs.
 type Client struct {
 	client      *client.Client
 	contentType string
 	url         string
 }
 
-// Post for rpc.
+// Post issues an RPC-style HTTP POST request to c.url+path.
+//
+// It returns ErrInvalidRequest when req is nil and ErrInvalidResponse when res is nil.
 func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 	if req == nil {
 		return ErrInvalidRequest

@@ -1,7 +1,8 @@
-// Package retry provides retry helpers and policies used across go-service.
+// Package retry provides retry configuration shared across go-service.
 //
-// This package contains small utilities to apply retry behavior in clients/transports
-// and to standardize retry defaults.
+// This package intentionally only defines the Config type used by transport integrations.
+// Concrete retry behavior is implemented by transport-specific packages (for example
+// `transport/http/retry` and `transport/grpc/retry`).
 //
-// Start with `Config` and `New*` constructors.
+// Start with `Config`.
 package retry

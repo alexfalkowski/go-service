@@ -1,4 +1,6 @@
-// Package ksuid provides ID generation helpers (and adapters) used by go-service.
+// Package ksuid provides KSUID-based ID generation helpers used by go-service.
 //
-// Start with  constructors.
+// This package integrates KSUID generation behind the go-service ID abstraction.
+//
+// Start with the package-level constructors.
 package ksuid

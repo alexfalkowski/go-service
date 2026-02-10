@@ -25,7 +25,9 @@ func Join(errs ...error) error {
 	return errors.Join(errs...)
 }
 
-// Prefix an error.
+// Prefix wraps err with prefix using fmt.Errorf("%v: %w", prefix, err).
+//
+// If err is nil, Prefix returns nil.
 func Prefix(prefix string, err error) error {
 	if err != nil {
 		return fmt.Errorf("%v: %w", prefix, err)

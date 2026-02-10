@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 )
 
-// Option interface for configuring the circuit breaker.
+// Option configures the gRPC circuit breaker interceptor.
 type Option interface {
 	apply(opts *opts)
 }
@@ -21,14 +21,14 @@ func (f optionFunc) apply(o *opts) {
 	f(o)
 }
 
-// WithSettings sets the settings for the circuit breaker.
+// WithSettings configures the circuit breaker settings used for each per-method breaker instance.
 func WithSettings(s Settings) Option {
 	return optionFunc(func(o *opts) {
 		o.settings = s
 	})
 }
 
-// WithFailureCodes sets the failure codes for the circuit breaker.
+// WithFailureCodes configures which gRPC status codes are treated as failures for breaker accounting.
 func WithFailureCodes(cs ...codes.Code) Option {
 	return optionFunc(func(o *opts) {
 		o.failureCodes = make(map[codes.Code]struct{}, len(cs))

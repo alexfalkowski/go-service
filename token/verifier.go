@@ -1,7 +1,7 @@
 package token
 
-// Verifier allows the implementation of different types of verifiers.
+// Verifier verifies tokens.
 type Verifier interface {
-	// Verify a token or error.
+	// Verify validates token for the given audience and returns the subject.
 	Verify(token []byte, aud string) (string, error)
 }

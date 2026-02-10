@@ -11,36 +11,39 @@ import (
 
 const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-// NewReader for rand.
+// NewReader returns a cryptographically secure random Reader.
 func NewReader() Reader {
 	return rand.Reader
 }
 
-// Reader is just rand.Reader.
+// Reader is a cryptographically secure random source.
 type Reader io.Reader
 
-// NewGenerator for rand.
+// NewGenerator constructs a Generator that draws randomness from reader.
 func NewGenerator(reader Reader) *Generator {
 	return &Generator{reader: reader}
 }
 
-// Generator for rand.
+// Generator produces cryptographically secure random values.
 type Generator struct {
 	reader Reader
 }
 
-// Read for rand.
+// Read fills b with random bytes read from the underlying Reader.
 func (g *Generator) Read(b []byte) (int, error) {
 	return io.ReadFull(g.reader, b)
 }
 
-// GenerateBytes returns a cryptographically random byte slice of size.
+// GenerateBytes returns a cryptographically random byte slice of length size.
+//
+// The bytes are drawn by generating random characters from the package's letter set and converting the
+// resulting string to bytes. The returned slice must be treated as read-only.
 func (g *Generator) GenerateBytes(size int) ([]byte, error) {
 	s, err := g.generate(size, letters)
 	return strings.Bytes(s), err
 }
 
-// GenerateText will generate using letters.
+// GenerateText returns a cryptographically random string of length size drawn from the package's letter set.
 func (g *Generator) GenerateText(size int) (string, error) {
 	return g.generate(size, letters)
 }

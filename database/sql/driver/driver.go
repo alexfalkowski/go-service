@@ -18,10 +18,14 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.39.0"
 )
 
-// Driver is an alias for the driver.Driver type.
+// Driver aliases `database/sql/driver`.Driver.
 type Driver = driver.Driver
 
-// Register registers a new driver.
+// Register registers a `database/sql` driver under name and wraps it with OpenTelemetry
+// instrumentation.
+//
+// If the underlying `sql.Register` panics (for example, due to a duplicate name),
+// Register converts the panic into an error and returns it.
 func Register(name string, driver Driver) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -34,7 +38,14 @@ func Register(name string, driver Driver) (err error) {
 	return err
 }
 
-// Open a DB pool.
+// Open opens master/slave `database/sql` connection pools for the given driver name.
+//
+// It reads master and slave DSNs from cfg using the provided filesystem (DSNs are
+// configured as "source strings"), connects using `mssqlx.ConnectMasterSlaves`,
+// registers OpenTelemetry DB stats metrics for each pool, and configures pool
+// limits/lifetime.
+//
+// The returned pools are closed on Fx lifecycle stop.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 

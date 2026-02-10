@@ -1,4 +1,6 @@
-// Package hooks contains HTTP transport utilities and wiring for services built with go-service.
+// Package hooks provides HTTP event hook middleware for go-service.
 //
-// Start with  constructors.
+// This package contains helpers used by the HTTP CloudEvents integration to apply webhook hook handling.
+//
+// Start with `NewHandler`.
 package hooks

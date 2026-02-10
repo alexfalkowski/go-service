@@ -16,7 +16,10 @@ type Config = config.Config
 // ErrInvalidStatusCode for http retry.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
-// NewRoundTripper for retry.
+// NewRoundTripper constructs a RoundTripper that applies per-attempt timeouts and retries.
+//
+// Timeout and Backoff are parsed as durations.
+// Attempts configures the maximum number of retries performed by the backoff policy.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 	timeout := time.MustParseDuration(cfg.Timeout)
 	backoff := retry.WithMaxRetries(cfg.Attempts, retry.NewConstant(time.MustParseDuration(cfg.Backoff)))
@@ -24,14 +27,21 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{RoundTripper: hrt, timeout: timeout, backoff: backoff}
 }
 
-// RoundTripper for retry.
+// RoundTripper wraps an underlying http.RoundTripper and retries requests according to its config.
+//
+// Each attempt runs the underlying RoundTrip with a derived context that has a timeout applied.
+// Whether an attempt is considered retryable is determined by retryablehttp.DefaultRetryPolicy.
 type RoundTripper struct {
 	http.RoundTripper
 	backoff retry.Backoff
 	timeout time.Duration
 }
 
-// RoundTrip executes the request with retries according to the config.
+// RoundTrip executes the request and retries according to the configured backoff policy.
+//
+// For each attempt, it applies a timeout by deriving a child context from the attempt context.
+// If retryablehttp.DefaultRetryPolicy deems the response/error retryable, the attempt returns a retryable error
+// so the backoff will schedule another attempt (up to the configured max retries).
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	operation := func(ctx context.Context) (*http.Response, error) {
 		ctx, cancel := context.WithTimeout(ctx, r.timeout)

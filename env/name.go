@@ -6,7 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// NewName for this service.
+// NewName returns the service name.
+//
+// It prefers the SERVICE_NAME environment variable when set; otherwise it falls back to the executable name.
 func NewName(fs *os.FS) Name {
 	return Name(cmp.Or(os.Getenv("SERVICE_NAME"), fs.ExecutableName()))
 }

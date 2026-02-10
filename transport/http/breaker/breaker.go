@@ -10,10 +10,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// Settings is an alias for the breaker.Settings.
+// Settings is an alias for breaker.Settings.
 type Settings = breaker.Settings
 
-// NewRoundTripper for breaker.
+// NewRoundTripper returns an HTTP RoundTripper guarded by circuit breakers.
+//
+// A separate circuit breaker is maintained per request key (method + host).
+// By default, HTTP responses with status codes >= 500 or 429 are treated as failures.
 func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 	o := defaultOpts()
 	for _, option := range options {
@@ -23,7 +26,9 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 	return &RoundTripper{opts: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 }
 
-// RoundTripper for breaker.
+// RoundTripper wraps an underlying http.RoundTripper and applies circuit breaking.
+//
+// Circuit breakers are cached per request key (method + host) so each upstream is isolated.
 type RoundTripper struct {
 	http.RoundTripper
 	opts     *opts
@@ -31,6 +36,10 @@ type RoundTripper struct {
 }
 
 // RoundTrip executes the request guarded by a circuit breaker.
+//
+// Transport errors are counted as failures.
+// Responses that match the configured failure-status predicate are treated as failures for breaker accounting,
+// but the response is returned to the caller (with a nil error).
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	cb := r.get(req)
 	v, err := cb.Execute(func() (any, error) {

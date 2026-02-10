@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
-// Option interface for configuring the circuit breaker.
+// Option configures the HTTP circuit breaker RoundTripper.
 type Option interface {
 	apply(opts *opts)
 }
@@ -19,17 +19,19 @@ type optionFunc func(*opts)
 
 func (f optionFunc) apply(o *opts) { f(o) }
 
-// WithSettings for configuring the circuit breaker.
+// WithSettings configures the circuit breaker settings used for each per-upstream breaker instance.
 func WithSettings(s Settings) Option {
 	return optionFunc(func(o *opts) { o.settings = s })
 }
 
-// WithFailureStatusFunc for configuring the circuit breaker.
+// WithFailureStatusFunc configures the predicate that classifies an HTTP response status code as a failure
+// for breaker accounting.
 func WithFailureStatusFunc(f func(code int) bool) Option {
 	return optionFunc(func(o *opts) { o.failureStatus = f })
 }
 
-// WithFailureStatuses for configuring the circuit breaker.
+// WithFailureStatuses configures a fixed set of HTTP status codes that are treated as failures
+// for breaker accounting.
 func WithFailureStatuses(statuses ...int) Option {
 	set := make(map[int]struct{}, len(statuses))
 	for _, s := range statuses {

@@ -8,12 +8,15 @@ import (
 	"github.com/linxGnu/mssqlx"
 )
 
-// Register for pg.
+// Register registers the pgx `database/sql` driver under the name "pg" and enables
+// OpenTelemetry driver instrumentation.
 func Register() {
 	_ = driver.Register("pg", pgx.GetDefaultDriver())
 }
 
-// Open for pg.
+// Open opens PostgreSQL master/slave connection pools.
+//
+// If cfg is disabled, it returns (nil, nil).
 func Open(lc di.Lifecycle, fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil

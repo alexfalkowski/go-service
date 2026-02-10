@@ -110,7 +110,7 @@ var (
 	NoBody = http.NoBody
 )
 
-// NewClient will return a new http.Client with the given round tripper and timeout.
+// NewClient returns a new http.Client that wraps rt with OpenTelemetry instrumentation and applies timeout.
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 	return &http.Client{
 		Transport: otelhttp.NewTransport(

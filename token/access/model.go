@@ -1,6 +1,9 @@
 package access
 
-// ModelConfig defines the RBAC used.
+// ModelConfig is the embedded Casbin RBAC model used by this package.
+//
+// It models requests as (sub, obj, act) and uses role inheritance via `g`.
+// Policies are evaluated with an "allow" effect and matched by exact object and action.
 const ModelConfig = `
 	[request_definition]
 	r = sub, obj, act

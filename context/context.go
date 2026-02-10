@@ -13,7 +13,9 @@ type (
 	// Context is an alias for context.Context.
 	Context = context.Context
 
-	// Key is used to store items in context.
+	// Key is used as a typed key for storing values in a context.
+	//
+	// This helps avoid key collisions when using context values.
 	Key string
 )
 
@@ -22,7 +24,7 @@ type (
 //nolint:errname
 var Canceled = context.Canceled
 
-// Background is an alias for context.WithValue.
+// Background is an alias for context.Background.
 func Background() Context {
 	return context.Background()
 }

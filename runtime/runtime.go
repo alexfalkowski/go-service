@@ -16,7 +16,7 @@ func Must(err error) {
 	}
 }
 
-// ConvertRecover to an error.
+// ConvertRecover converts a recovered panic value into an error wrapped with ErrRecovered.
 func ConvertRecover(value any) error {
 	switch kind := value.(type) {
 	case error:

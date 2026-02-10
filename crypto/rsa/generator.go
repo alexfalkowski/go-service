@@ -11,17 +11,24 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// NewGenerator for rsa.
+// NewGenerator constructs a Generator that produces RSA key pairs using generator as the randomness source.
 func NewGenerator(generator *rand.Generator) *Generator {
 	return &Generator{generator: generator}
 }
 
-// Generator for rsa.
+// Generator generates RSA key pairs.
 type Generator struct {
 	generator *rand.Generator
 }
 
-// Generate key pair with rsa.
+// Generate returns a public/private RSA key pair encoded as PEM strings.
+//
+// The generated key size is 4096 bits.
+//
+// The returned PEM blocks are:
+//
+//   - public:  "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (x509.MarshalPKCS1PublicKey)
+//   - private: "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (x509.MarshalPKCS1PrivateKey)
 func (g *Generator) Generate() (string, string, error) {
 	public, err := rsa.GenerateKey(g.generator, 4096)
 	if err != nil {

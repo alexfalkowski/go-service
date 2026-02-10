@@ -11,18 +11,20 @@ import (
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
-// NewWebhook for http.
+// NewWebhook constructs a Webhook signer/verifier.
 func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
 	return &Webhook{hook: hook, generator: generator}
 }
 
-// Webhook provides a simple facade that signs and verifies the payload.
+// Webhook signs and verifies webhook requests.
 type Webhook struct {
 	hook      *hooks.Webhook
 	generator id.Generator
 }
 
-// Sign the webhook.
+// Sign reads and buffers the request body, restores req.Body, and then adds signature headers.
+//
+// The signature is computed over the request payload and includes a generated webhook id and timestamp.
 func (h *Webhook) Sign(req *http.Request) error {
 	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
@@ -41,7 +43,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 	return nil
 }
 
-// Verify the webhook.
+// Verify reads and buffers the request body, restores req.Body, and verifies the signature headers.
 func (h *Webhook) Verify(req *http.Request) error {
 	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
@@ -57,17 +59,19 @@ func (h *Webhook) Verify(req *http.Request) error {
 	return nil
 }
 
-// Handler for hooks.
+// Handler verifies webhook signatures on inbound requests.
 type Handler struct {
 	hook *Webhook
 }
 
-// NewHandler for hooks.
+// NewHandler constructs a webhook verification handler.
 func NewHandler(hook *Webhook) *Handler {
 	return &Handler{hook: hook}
 }
 
-// ServeHTTP for hooks.
+// ServeHTTP verifies the webhook signature before calling next.
+//
+// If verification fails, it writes a bad request error response.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if err := h.hook.Verify(req); err != nil {
 		status.WriteError(req.Context(), res, status.BadRequestError(err))
@@ -78,18 +82,18 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req)
 }
 
-// NewRoundTripper for hooks.
+// NewRoundTripper constructs an HTTP RoundTripper that signs outbound webhook requests.
 func NewRoundTripper(hook *Webhook, rt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{hook: hook, RoundTripper: rt}
 }
 
-// RoundTripper for hooks.
+// RoundTripper signs outbound webhook requests before delegating to the underlying RoundTripper.
 type RoundTripper struct {
 	hook *Webhook
 	http.RoundTripper
 }
 
-// RoundTrip for hooks.
+// RoundTrip signs the request and delegates to the underlying RoundTripper.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err := r.hook.Sign(req); err != nil {
 		return nil, err

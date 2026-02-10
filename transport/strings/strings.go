@@ -53,17 +53,18 @@ func IsEmpty(s string) bool {
 	return strings.IsEmpty(s)
 }
 
-// IsIgnorable in the text.
+// IsIgnorable reports whether text contains one of the predefined ignorable substrings
+// (for example "health", "metrics", etc.).
 func IsIgnorable(text string) bool {
 	return slices.ContainsFunc(ignorable, func(o string) bool { return strings.Contains(text, o) })
 }
 
-// IsFullMethod return true if the name is of the form `/package.service/method`.
+// IsFullMethod reports whether name is of the form `/package.service/method`.
 func IsFullMethod(name string) bool {
 	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2 && strings.Count(name, ".") > 0
 }
 
-// SplitServiceMethod will split /package.service/method to package.service and method.
+// SplitServiceMethod splits /package.service/method into package.service and method.
 func SplitServiceMethod(name string) (string, string, bool) {
 	if !IsFullMethod(name) {
 		return "", "", false
