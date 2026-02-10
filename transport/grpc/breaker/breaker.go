@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/sync"
 )
 
 // Settings is an alias for the breaker.Settings.
@@ -19,7 +20,7 @@ func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 		option.apply(o)
 	}
 
-	r := &registry{opts: o}
+	r := &registry{opts: o, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, callOpts ...grpc.CallOption) error {
 		cb := r.get(fullMethod)

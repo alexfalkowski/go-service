@@ -20,14 +20,14 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 		option.apply(o)
 	}
 
-	return &RoundTripper{opts: o, RoundTripper: hrt}
+	return &RoundTripper{opts: o, RoundTripper: hrt, breakers: sync.NewMap[string, *breaker.CircuitBreaker]()}
 }
 
 // RoundTripper for breaker.
 type RoundTripper struct {
 	http.RoundTripper
 	opts     *opts
-	breakers sync.Map
+	breakers sync.Map[string, *breaker.CircuitBreaker]
 }
 
 // RoundTrip executes the request guarded by a circuit breaker.
@@ -59,7 +59,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 	key := requestKey(req)
 	if cb, ok := r.breakers.Load(key); ok {
-		return cb.(*breaker.CircuitBreaker)
+		return cb
 	}
 
 	s := r.opts.settings
@@ -75,7 +75,7 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 
 	cb := breaker.NewCircuitBreaker(s)
 	actual, _ := r.breakers.LoadOrStore(key, cb)
-	return actual.(*breaker.CircuitBreaker)
+	return actual
 }
 
 func requestKey(req *http.Request) string {
