@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.266.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.266.0) - 2026-02-10
+
+- [`9aa769e`](https://github.com/alexfalkowski/go-service/commit/9aa769e358c3e96d0f1927b6f325fd5447e24bf2) feat(deps): bump golang.org/x/net from 0.49.0 to 0.50.0 (#2125)
+- [`c3a9bdf`](https://github.com/alexfalkowski/go-service/commit/c3a9bdf32f3af88d7043be27c4fb76c1436fe170) test(shutdowner): make fix-field-alignment (#2124)
+
 ## [v2.265.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.265.0) - 2026-02-09
 
 - [`56cb0d0`](https://github.com/alexfalkowski/go-service/commit/56cb0d02c35bfceb9f7c535aa3051bc1acf983bd) feat(deps): bump github.com/klauspost/compress from 1.18.3 to 1.18.4 (#2123)
