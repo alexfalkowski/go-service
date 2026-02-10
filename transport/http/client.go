@@ -16,7 +16,7 @@ import (
 	"github.com/klauspost/compress/gzhttp"
 )
 
-// ClientOption for HTTP.
+// ClientOption configures HTTP client construction.
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -43,14 +43,14 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithClientCompression for HTTP.
+// WithClientCompression enables gzip compression for HTTP client requests.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.compression = true
 	})
 }
 
-// WithClientTokenGenerator for HTTP.
+// WithClientTokenGenerator enables token injection using gen and id.
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.id = id
@@ -58,28 +58,32 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	})
 }
 
-// WithClientTimeout for HTTP.
+// WithClientTimeout sets the http.Client timeout used by NewClient.
+//
+// If unset, a default timeout is applied (see options()).
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
 	})
 }
 
-// WithClientRoundTripper for HTTP.
+// WithClientRoundTripper sets the base HTTP RoundTripper to wrap.
+//
+// If set, this round tripper is used as-is (TLS config and default transport selection are skipped).
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithClientRetry for HTTP.
+// WithClientRetry enables retry behavior for outbound HTTP requests.
 func WithClientRetry(cfg *retry.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
 	})
 }
 
-// WithClientBreaker for HTTP.
+// WithClientBreaker enables circuit breaking for outbound HTTP requests.
 func WithClientBreaker(options ...breaker.Option) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
@@ -87,42 +91,63 @@ func WithClientBreaker(options ...breaker.Option) ClientOption {
 	})
 }
 
-// WithClientLogger for HTTP.
+// WithClientLogger enables HTTP client logging middleware.
 func WithClientLogger(logger *logger.Logger) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.logger = logger
 	})
 }
 
-// WithClientUserAgent for HTTP.
+// WithClientUserAgent sets the user agent value used for metadata injection.
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
 	})
 }
 
-// WithClientTLS for HTTP.
+// WithClientTLS enables TLS for the default HTTP transport selection.
+//
+// If TLS is enabled and no base round tripper is provided, TLS config is constructed using the registered
+// filesystem dependency (see Register in this package).
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.tls = sec
 	})
 }
 
-// WithClientID for HTTP.
+// WithClientID sets the request id generator used by metadata injection middleware.
 func WithClientID(generator id.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.generator = generator
 	})
 }
 
-// WithClientLimiter for HTTP.
+// WithClientLimiter enables client-side rate limiting middleware.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.limiter = limiter
 	})
 }
 
-// NewRoundTripper for HTTP.
+// NewRoundTripper constructs an HTTP RoundTripper by composing middleware derived from opts.
+//
+// Defaults (see options()):
+//   - timeout: 30s
+//   - request-id generator: uuid
+//
+// If no base round tripper is configured (via WithClientRoundTripper), a transport is selected based on TLS:
+//   - if TLS is disabled: the default HTTP transport is used
+//   - if TLS is enabled: TLS config is constructed using the registered filesystem (see Register)
+//
+// Middleware is applied in the following order (outermost first):
+//   - meta injection (User-Agent, Request-Id)
+//   - logger (optional)
+//   - breaker (optional)
+//   - retry (optional)
+//   - limiter (optional)
+//   - compression (optional)
+//   - token injection (optional)
+//   - base transport
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
 
@@ -160,7 +185,10 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	return hrt, nil
 }
 
-// NewClient for HTTP.
+// NewClient constructs a new instrumented http.Client.
+//
+// The returned client uses the RoundTripper built by NewRoundTripper and applies the configured timeout.
+// Note: http.NewClient wraps the transport with OpenTelemetry instrumentation.
 func NewClient(opts ...ClientOption) (*http.Client, error) {
 	os := options(opts...)
 

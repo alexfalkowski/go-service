@@ -22,7 +22,7 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
-// ServerParams for HTTP.
+// ServerParams defines dependencies for constructing an HTTP Server.
 type ServerParams struct {
 	di.In
 	Shutdowner di.Shutdowner
@@ -38,7 +38,21 @@ type ServerParams struct {
 	Handlers   []negroni.Handler `optional:"true"`
 }
 
-// NewServer for HTTP.
+// NewServer constructs an HTTP Server when the transport is enabled.
+//
+// If params.Config is disabled, it returns (nil, nil).
+//
+// The server composes middleware in the following order:
+//
+//   - metadata extraction and response headers (`transport/http/meta`)
+//   - optional logging (`transport/http/telemetry/logger`)
+//   - optional user-provided handlers (in the order supplied)
+//   - optional token verification (`transport/http/token`)
+//   - optional rate limiting (`transport/http/limiter`)
+//   - gzip compression wrapping the mux handler
+//
+// If TLS is enabled, TLS configuration is constructed using the registered filesystem dependency
+// (see Register in this package).
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -81,12 +95,14 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{service}, nil
 }
 
-// Server for HTTP.
+// Server wraps an HTTP server service.
 type Server struct {
 	*server.Service
 }
 
-// GetService returns the service, if defined.
+// GetService returns the runnable service, if defined.
+//
+// It returns nil if s is nil.
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil

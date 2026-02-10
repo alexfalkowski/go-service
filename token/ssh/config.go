@@ -5,27 +5,31 @@ import (
 	"github.com/alexfalkowski/go-service/v2/types/slices"
 )
 
-// Config for ssh.
+// Config configures SSH token key material.
+//
+// It supports a single signing key (Key) and a set of verification keys (Keys).
 type Config struct {
 	Key  *Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 	Keys Keys `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty"`
 }
 
-// IsEnabled for ssh.
+// IsEnabled reports whether SSH token configuration is present and contains at least one key.
 func (c *Config) IsEnabled() bool {
 	return c != nil && (c.Key != nil || c.Keys != nil)
 }
 
-// Key configuration with a name and ssh key.
+// Key describes an SSH key configuration along with its logical name.
+//
+// The embedded `ssh`.Config provides the key material source/loading configuration.
 type Key struct {
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
 	Name        string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 }
 
-// Keys configuration with a names and ssh keys.
+// Keys is a list of named SSH keys.
 type Keys []*Key
 
-// Get a key by name.
+// Get returns the key with the given name, or nil if no matching key exists.
 func (c Keys) Get(name string) *Key {
 	key, _ := slices.ElemFunc(c, func(k *Key) bool { return k.Name == name })
 

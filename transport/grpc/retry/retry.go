@@ -8,10 +8,13 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 )
 
-// Config is an alias retry.Config.
+// Config is an alias for retry.Config.
 type Config = config.Config
 
-// UnaryClientInterceptor for retry.
+// UnaryClientInterceptor returns a gRPC unary client interceptor that retries failed calls.
+//
+// It parses timeout and backoff durations from cfg and applies them as a per-retry timeout and a linear backoff.
+// Retries are attempted only for selected gRPC status codes (see the WithCodes option in the implementation).
 func UnaryClientInterceptor(cfg *Config) grpc.UnaryClientInterceptor {
 	timeout := time.MustParseDuration(cfg.Timeout)
 	backoff := time.MustParseDuration(cfg.Backoff)

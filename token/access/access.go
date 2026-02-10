@@ -8,13 +8,15 @@ import (
 	file "github.com/casbin/casbin/v2/persist/file-adapter"
 )
 
-// Controller allows to check different kinds of accesses.
+// Controller checks whether a subject has permission to perform an action.
 type Controller interface {
-	// HasAccess checks if the user can access the system with action.
+	// HasAccess reports whether user is allowed the given permission.
+	//
+	// permission is expected to be in the form "system:action".
 	HasAccess(user, permission string) (bool, error)
 }
 
-// NewController for access.
+// NewController constructs a Controller from cfg.
 func NewController(cfg *Config) (Controller, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -31,12 +33,12 @@ func NewController(cfg *Config) (Controller, error) {
 	return &CasbinController{e}, nil
 }
 
-// CasbinController for access.
+// CasbinController is a Controller backed by Casbin.
 type CasbinController struct {
 	*casbin.Enforcer
 }
 
-// HasAccess just calls Enforce.
+// HasAccess enforces permission for user using the embedded Casbin enforcer.
 func (c *CasbinController) HasAccess(user, permission string) (bool, error) {
 	system, action := strings.CutColon(permission)
 	return c.Enforce(user, system, action)

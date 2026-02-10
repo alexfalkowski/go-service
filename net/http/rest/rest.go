@@ -13,7 +13,7 @@ var (
 	pool *sync.BufferPool
 )
 
-// RegisterParams for rest.
+// RegisterParams defines dependencies used to register REST globals.
 type RegisterParams struct {
 	di.In
 	Mux     *http.ServeMux
@@ -21,7 +21,10 @@ type RegisterParams struct {
 	Pool    *sync.BufferPool
 }
 
-// Register for rest.
+// Register stores the dependencies used by server and client helpers.
+//
+// Register is expected to be called during application startup (typically via Fx). Server-side route helpers use the
+// registered mux, and client helpers use the registered content codecs and buffer pool.
 func Register(params RegisterParams) {
 	mux = params.Mux
 	cont = params.Content

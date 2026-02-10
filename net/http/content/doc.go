@@ -1,4 +1,6 @@
-// Package content contains HTTP transport utilities and wiring for services built with go-service.
+// Package content contains HTTP content helpers used by go-service.
 //
-// Start with  constructors.
+// This package provides helpers for negotiating and working with HTTP request/response content.
+//
+// Start with the package-level helpers.
 package content

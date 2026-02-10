@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module for fx.
+// Module provides the Fx module that wires SQL database support.
 var Module = di.Module(
 	pg.Module,
 )

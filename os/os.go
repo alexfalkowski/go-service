@@ -36,7 +36,9 @@ func Exit(code int) {
 	os.Exit(code)
 }
 
-// Executable of the running application.
+// Executable returns the absolute path of the running application executable.
+//
+// It panics if the executable path cannot be determined.
 func Executable() string {
 	path, err := os.Executable()
 	runtime.Must(err)
@@ -44,7 +46,9 @@ func Executable() string {
 	return path
 }
 
-// UserHomeDir of the current user.
+// UserHomeDir returns the home directory of the current user.
+//
+// It panics if the home directory cannot be determined.
 func UserHomeDir() string {
 	dir, err := os.UserHomeDir()
 	runtime.Must(err)
@@ -52,7 +56,9 @@ func UserHomeDir() string {
 	return dir
 }
 
-// UserConfigDir of the current user.
+// UserConfigDir returns the config directory of the current user.
+//
+// It panics if the config directory cannot be determined.
 func UserConfigDir() string {
 	dir, err := os.UserConfigDir()
 	runtime.Must(err)
@@ -60,7 +66,9 @@ func UserConfigDir() string {
 	return dir
 }
 
-// SanitizeArgs removes all flags that start with -test.
+// SanitizeArgs removes testing flags (those starting with "-test") from args.
+//
+// This is useful when reusing a binary's arguments while avoiding go test runner flags.
 func SanitizeArgs(args []string) []string {
 	return slices.DeleteFunc(args, func(s string) bool { return strings.HasPrefix(s, "-test") })
 }

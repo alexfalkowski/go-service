@@ -1,4 +1,4 @@
-// Package bytes provides encoding helpers and adapters used by go-service.
+// Package bytes provides byte-oriented encoding helpers and adapters used by go-service.
 //
-// Start with  constructors.
+// Start with the package-level constructors.
 package bytes

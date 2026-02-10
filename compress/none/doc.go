@@ -1,4 +1,4 @@
-// Package none provides helpers for the compress/none subsystem in go-service.
+// Package none provides a no-op compression codec for go-service.
 //
-// Start with  constructors.
+// Use this package when you want to disable compression while still satisfying the compression interface.
 package none

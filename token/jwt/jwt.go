@@ -9,7 +9,9 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// NewToken for jwt.
+// NewToken constructs a Token that issues and validates JWTs according to cfg.
+//
+// If cfg is disabled (nil), it returns nil.
 func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -17,7 +19,7 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 	return &Token{cfg: cfg, signer: sig, verifier: ver, generator: gen}
 }
 
-// Token for jwt.
+// Token generates and verifies JWTs signed using Ed25519 (EdDSA).
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -25,7 +27,9 @@ type Token struct {
 	generator id.Generator
 }
 
-// Generate JWT token.
+// Generate creates a signed JWT for the given audience and subject.
+//
+// The token uses registered claims and includes a `kid` header.
 func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
@@ -45,7 +49,14 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	return token.SignedString(key)
 }
 
-// Verify JWT token.
+// Verify validates token and returns the subject if it is valid for the given audience.
+//
+// Verification enforces:
+// - signature algorithm is EdDSA
+// - `kid` header exists and matches cfg.KeyID
+// - issuer matches cfg.Issuer
+// - audience contains aud
+// - registered claim time validity (exp/nbf/iat) via jwt.RegisteredClaims.Valid.
 func (t *Token) Verify(token, aud string) (string, error) {
 	claims := &jwt.RegisteredClaims{}
 

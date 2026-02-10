@@ -1,4 +1,7 @@
-// Package limiter contains gRPC transport utilities and wiring for services built with go-service.
+// Package limiter provides gRPC rate limiter interceptors and wiring for go-service.
 //
-// Start with  constructors.
+// This package integrates rate limiting into gRPC servers (server-side interceptors) and gRPC clients
+// (client-side interceptors).
+//
+// Start with `UnaryServerInterceptor` for server-side limiting and `UnaryClientInterceptor` for client-side limiting.
 package limiter

@@ -7,7 +7,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// NewID for this service.
+// NewID returns the service id.
+//
+// It prefers the SERVICE_ID environment variable when set; otherwise it falls back to generator.Generate().
 func NewID(generator id.Generator) ID {
 	return ID(cmp.Or(os.Getenv("SERVICE_ID"), generator.Generate()))
 }

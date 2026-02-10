@@ -1,4 +1,4 @@
-// Package zstd provides helpers for the compress/zstd subsystem in go-service.
+// Package zstd provides a Zstandard (zstd) compression codec for go-service.
 //
-// Start with  constructors.
+// This package integrates the zstd algorithm behind the go-service compression abstraction.
 package zstd

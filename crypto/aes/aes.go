@@ -12,7 +12,9 @@ import (
 // ErrInvalidLength for aes.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
-// NewCipher for aes.
+// NewCipher constructs an AES-GCM Cipher when configuration is enabled.
+//
+// If cfg is disabled, it returns (nil, nil). When enabled, the key material is loaded via cfg.GetKey.
 func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -22,13 +24,15 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	return &Cipher{gen: gen, key: k}, err
 }
 
-// Cipher for aes.
+// Cipher provides AES-GCM encryption and decryption using a configured key.
 type Cipher struct {
 	gen *rand.Generator
 	key []byte
 }
 
-// Encrypt for aes.
+// Encrypt encrypts msg using AES-GCM and returns nonce||ciphertext.
+//
+// A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
 func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 	aead, err := c.aead()
 	if err != nil {
@@ -43,7 +47,9 @@ func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 	return aead.Seal(bytes, bytes, msg, nil), nil
 }
 
-// Decrypt for aes.
+// Decrypt decrypts a value produced by Encrypt.
+//
+// msg is expected to be nonce||ciphertext. If msg is shorter than the nonce size, it returns ErrInvalidLength.
 func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
 	aead, err := c.aead()
 	if err != nil {

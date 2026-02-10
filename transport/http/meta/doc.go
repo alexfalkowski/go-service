@@ -1,4 +1,7 @@
-// Package meta contains HTTP transport utilities and wiring for services built with go-service.
+// Package meta provides HTTP metadata middleware and wiring for go-service.
 //
-// Start with  constructors.
+// This package extracts request metadata into the request context on the server side and injects
+// outbound request metadata on the client side.
+//
+// Start with `NewHandler` for server-side extraction and `NewRoundTripper` for client-side injection.
 package meta

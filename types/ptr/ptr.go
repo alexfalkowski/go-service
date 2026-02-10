@@ -1,12 +1,12 @@
 package ptr
 
-// Zero pointer of T.
+// Zero returns a pointer to the zero value of T.
 func Zero[T any]() *T {
 	var t T
 	return &t
 }
 
-// Value pointer from value of t.
+// Value returns a pointer to t.
 func Value[T any](t T) *T {
 	return &t
 }

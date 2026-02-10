@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	// Empty for strings.
+	// Empty is the empty string constant.
 	Empty = ""
 
-	// Space for strings.
+	// Space is the space string constant.
 	Space = " "
 )
 
@@ -53,28 +53,31 @@ func TrimSpace(s string) string {
 	return strings.TrimSpace(s)
 }
 
-// IsEmpty checks if a string is empty.
+// IsEmpty reports whether s is empty.
 func IsEmpty(s string) bool {
 	return len(s) == 0
 }
 
-// IsAnyEmpty checks if any strings are empty.
+// IsAnyEmpty reports whether any of ss are empty.
 func IsAnyEmpty(ss ...string) bool {
 	return slices.ContainsFunc(ss, IsEmpty)
 }
 
-// Join strings by a separator.
-// This allows to do strings.Join(strings.Space, "1", "2").
+// Join joins ss with sep.
+//
+// This helper allows joining variadic strings without allocating a slice at the callsite.
 func Join(sep string, ss ...string) string {
 	return strings.Join(ss, sep)
 }
 
-// Concat will take all the strings and join them with an empty string.
+// Concat concatenates ss without a separator.
 func Concat(ss ...string) string {
 	return Join(Empty, ss...)
 }
 
-// CutColon will split by : and give before and after.
+// CutColon splits s on the first ":" and returns the parts before and after.
+//
+// If ":" is not present, the returned after value is empty.
 func CutColon(s string) (string, string) {
 	before, after, _ := Cut(s, ":")
 	return before, after

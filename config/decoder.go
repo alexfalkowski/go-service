@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// DecoderParams for config.
+// DecoderParams defines dependencies used to construct a Decoder.
 type DecoderParams struct {
 	di.In
 	Flags   *flag.FlagSet
@@ -18,7 +18,12 @@ type DecoderParams struct {
 	Name    env.Name
 }
 
-// NewDecoder for config.
+// NewDecoder constructs a Decoder based on the configured input source.
+//
+// It routes based on the "-i" flag value (see flag.FlagSet.GetInput):
+//   - "file:<path>" -> uses the file decoder,
+//   - "env:<ENV_VAR>" -> uses the env decoder,
+//   - otherwise -> uses the default lookup decoder.
 func NewDecoder(params DecoderParams) Decoder {
 	kind, location := strings.CutColon(params.Flags.GetInput())
 	switch kind {
@@ -31,7 +36,7 @@ func NewDecoder(params DecoderParams) Decoder {
 	}
 }
 
-// Decoder for config.
+// Decoder loads and decodes configuration into v.
 type Decoder interface {
 	Decode(v any) error
 }

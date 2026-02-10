@@ -21,7 +21,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
-// ServerParams for gRPC.
+// ServerParams defines dependencies for constructing a gRPC Server.
 type ServerParams struct {
 	di.In
 	Shutdowner di.Shutdowner
@@ -37,7 +37,14 @@ type ServerParams struct {
 	Stream     []grpc.StreamServerInterceptor `optional:"true"`
 }
 
-// NewServer for gRPC.
+// NewServer constructs a gRPC Server when the transport is enabled.
+//
+// If params.Config is disabled, it returns (nil, nil).
+//
+// The server is instrumented with OpenTelemetry stats handling and composes server-side interceptors for:
+// metadata extraction, optional logging, optional token verification, optional rate limiting, plus any
+// user-provided interceptors. If TLS is enabled, credentials are built using the registered filesystem
+// (see Register in this package).
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -65,13 +72,15 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{server: grpcServer, Service: service}, nil
 }
 
-// Server for gRPC.
+// Server wraps a gRPC server and its runnable service.
 type Server struct {
 	server *grpc.Server
 	*server.Service
 }
 
-// ServiceRegistrar for service registration.
+// ServiceRegistrar returns the underlying gRPC service registrar.
+//
+// It returns nil if s is nil.
 func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	if s == nil {
 		return nil
@@ -79,7 +88,9 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	return s.server
 }
 
-// GetService returns the service, if defined.
+// GetService returns the runnable service, if defined.
+//
+// It returns nil if s is nil.
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil

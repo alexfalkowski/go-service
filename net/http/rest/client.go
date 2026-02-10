@@ -6,13 +6,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// NoOptions is just an alias for client.NoOptions.
+// NoOptions is an alias for client.NoOptions.
 var NoOptions = client.NoOptions
 
-// Options is just an alias for client.Options.
+// Options is an alias for client.Options.
 type Options = client.Options
 
-// ClientOption for rest.
+// ClientOption configures the REST client helper.
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -28,21 +28,26 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithClientRoundTripper for rest.
+// WithClientRoundTripper sets the underlying HTTP RoundTripper used by the REST client.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithClientTimeout for rest.
+// WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
+//
+// It uses time.MustParseDuration and will panic if the duration string cannot be parsed.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
 	})
 }
 
-// NewClient for rest.
+// NewClient constructs a REST client backed by net/http/client.
+//
+// NewClient depends on package-level registration (see rest.Register) for the content codecs (cont)
+// and buffer pool (pool). Register must be called before NewClient; otherwise it will panic due to nil dependencies.
 func NewClient(opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := client.NewClient(cont, pool,
@@ -54,7 +59,7 @@ func NewClient(opts ...ClientOption) *Client {
 	return &Client{client}
 }
 
-// Client for rest.
+// Client wraps client.Client for REST usage.
 type Client struct {
 	*client.Client
 }

@@ -8,21 +8,23 @@ import (
 	events "github.com/cloudevents/sdk-go/v2"
 )
 
-// ReceiverFunc for HTTP.
+// ReceiverFunc is invoked for each received CloudEvent.
 type ReceiverFunc func(ctx context.Context, e events.Event)
 
-// Receiver for HTTP.
+// Receiver registers HTTP handlers that receive CloudEvents.
 type Receiver struct {
 	mux  *http.ServeMux
 	hook *hooks.Webhook
 }
 
-// NewReceiver for HTTP.
+// NewReceiver constructs a Receiver that registers handlers on mux and wraps them with the webhook hook.
 func NewReceiver(mux *http.ServeMux, hook *hooks.Webhook) *Receiver {
 	return &Receiver{mux: mux, hook: hook}
 }
 
-// Register a fn under path.
+// Register registers a CloudEvents HTTP receive handler under path.
+//
+// The handler is registered for HTTP POST requests and is wrapped with the configured webhook hook handler.
 func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverFunc) {
 	protocol, _ := events.NewHTTP()
 

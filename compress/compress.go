@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// MapParams for compressor.
+// MapParams defines dependencies used to construct a Map.
 type MapParams struct {
 	di.In
 	Zstd   *zstd.Compressor
@@ -17,7 +17,7 @@ type MapParams struct {
 	None   *none.Compressor
 }
 
-// NewMap for compressor.
+// NewMap constructs a Map pre-populated with the default compressors keyed by kind.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		compressors: map[string]Compressor{
@@ -29,17 +29,17 @@ func NewMap(params MapParams) *Map {
 	}
 }
 
-// Map of compressor.
+// Map holds compressors keyed by kind (for example "zstd" or "snappy").
 type Map struct {
 	compressors map[string]Compressor
 }
 
-// Register kind and compressor.
+// Register adds or replaces a compressor for kind.
 func (f *Map) Register(kind string, c Compressor) {
 	f.compressors[kind] = c
 }
 
-// Get from kind.
+// Get returns the compressor registered for kind.
 func (f *Map) Get(kind string) Compressor {
 	return f.compressors[kind]
 }

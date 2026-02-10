@@ -1,6 +1,6 @@
 package env
 
-// NewUserAgent for this service.
+// NewUserAgent returns the service User-Agent value in the form "<name>/<version>".
 func NewUserAgent(name Name, ver Version) UserAgent {
 	return UserAgent(name.String() + "/" + ver.String())
 }
@@ -8,7 +8,7 @@ func NewUserAgent(name Name, ver Version) UserAgent {
 // UserAgent for this service.
 type UserAgent string
 
-// String representation of the user agent.
+// String returns the user agent as a string.
 func (ua UserAgent) String() string {
 	return string(ua)
 }

@@ -1,2 +1,2 @@
-// Package options provides configuration decoding and configuration-related wiring for go-service.
+// Package options provides helpers for working with configuration option key-value pairs.
 package options

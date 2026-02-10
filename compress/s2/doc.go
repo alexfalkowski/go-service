@@ -1,4 +1,4 @@
-// Package s2 provides helpers for the compress/s2 subsystem in go-service.
+// Package s2 provides an S2 compression codec for go-service.
 //
-// Start with  constructors.
+// This package integrates the S2 algorithm behind the go-service compression abstraction.
 package s2

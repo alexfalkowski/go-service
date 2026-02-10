@@ -57,7 +57,7 @@ func Sleep(d Duration) {
 	time.Sleep(d)
 }
 
-// MustParseDuration for time.
+// MustParseDuration parses s as a duration and panics if parsing fails.
 func MustParseDuration(s string) time.Duration {
 	t, err := ParseDuration(s)
 	runtime.Must(err)

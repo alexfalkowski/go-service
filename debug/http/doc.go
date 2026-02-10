@@ -1,4 +1,7 @@
-// Package http provides debug endpoints and profiling helpers for go-service.
+// Package http provides debug HTTP endpoints for go-service.
 //
-// Start with  constructors.
+// This package wires a debug HTTP server with optional handlers such as pprof and other diagnostics.
+// It is intended to be composed into a service during development and operations.
+//
+// Start with `Module`.
 package http

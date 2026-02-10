@@ -2,12 +2,14 @@ package http
 
 import "github.com/alexfalkowski/go-service/v2/config/server"
 
-// Config for HTTP.
+// Config configures the HTTP transport.
+//
+// It embeds the shared server-side transport configuration.
 type Config struct {
 	*server.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 
-// IsEnabled for HTTP.
+// IsEnabled reports whether the transport is enabled.
 func (c *Config) IsEnabled() bool {
 	return c != nil && c.Config.IsEnabled()
 }

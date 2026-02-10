@@ -15,7 +15,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// NewAccessController for HTTP.
+// NewAccessController returns an access controller when token auth is enabled.
+//
+// If cfg is disabled, it returns (nil, nil).
 func NewAccessController(cfg *token.Config) (AccessController, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -26,7 +28,9 @@ func NewAccessController(cfg *token.Config) (AccessController, error) {
 // AccessController is an alias for access.Controller.
 type AccessController access.Controller
 
-// NewToken for HTTP.
+// NewToken returns a token service when token auth is enabled.
+//
+// If cfg is disabled, it returns nil.
 func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -34,12 +38,14 @@ func NewToken(name env.Name, cfg *token.Config, fs *os.FS, sig *ed25519.Signer, 
 	return &Token{Token: token.NewToken(name, cfg, fs, sig, ver, gen)}
 }
 
-// Token for HTTP.
+// Token wraps token.Token for HTTP transport integration.
 type Token struct {
 	*token.Token
 }
 
-// NewVerifier for HTTP.
+// NewVerifier returns a Verifier backed by token.
+//
+// If token is nil, it returns nil.
 func NewVerifier(token *Token) Verifier {
 	if token != nil {
 		return token
@@ -47,10 +53,10 @@ func NewVerifier(token *Token) Verifier {
 	return nil
 }
 
-// Verifier is an alias token.Verifier.
+// Verifier is an alias for token.Verifier.
 type Verifier token.Verifier
 
-// NewHandler for token.
+// NewHandler constructs a token verification handler.
 func NewHandler(id env.UserID, verifier Verifier) *Handler {
 	return &Handler{id: id, verifier: verifier}
 }
@@ -61,7 +67,11 @@ type Handler struct {
 	id       env.UserID
 }
 
-// ServeHTTP verifies the request token and stores the subject in the context.
+// ServeHTTP verifies the request Authorization token and stores the subject in the context.
+//
+// Requests with ignorable paths bypass verification.
+// On verification failure, it writes an unauthorized error response.
+// On success, it stores the verified subject as the user id in the request context and calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -81,7 +91,9 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	next(res, req.WithContext(ctx))
 }
 
-// NewGenerator for token.
+// NewGenerator returns a Generator backed by token.
+//
+// If token is nil, it returns nil.
 func NewGenerator(token *Token) Generator {
 	if token != nil {
 		return token
@@ -89,15 +101,17 @@ func NewGenerator(token *Token) Generator {
 	return nil
 }
 
-// Generator is an alias token.Generator.
+// Generator is an alias for token.Generator.
 type Generator token.Generator
 
-// NewRoundTripper for token.
+// NewRoundTripper constructs an HTTP RoundTripper that adds an Authorization header.
+//
+// The token is generated per request using generator and the provided user id.
 func NewRoundTripper(id env.UserID, generator Generator, hrt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{RoundTripper: hrt, id: id, generator: generator}
 }
 
-// RoundTripper for token.
+// RoundTripper wraps an underlying http.RoundTripper and adds Authorization headers.
 type RoundTripper struct {
 	http.RoundTripper
 	generator Generator
@@ -105,6 +119,9 @@ type RoundTripper struct {
 }
 
 // RoundTrip adds an Authorization header using a generated token.
+//
+// It generates a token scoped to the request path and the configured user id and then adds it as a
+// Bearer token in the Authorization header.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	token, err := r.generator.Generate(req.URL.Path, r.id.String())
 	if err != nil {

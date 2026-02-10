@@ -1,2 +1,2 @@
-// Package header provides helpers for the transport/header subsystem in go-service.
+// Package header provides helpers for working with transport-related headers in go-service.
 package header

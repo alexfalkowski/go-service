@@ -1,4 +1,7 @@
-// Package breaker provides helpers for the breaker subsystem in go-service.
+// Package breaker provides circuit breaker helpers and defaults used by go-service.
 //
-// Start with  constructors.
+// This package primarily exposes shared breaker configuration (for example default settings)
+// that is used by transport integrations.
+//
+// Start with `DefaultSettings`.
 package breaker

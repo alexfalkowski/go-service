@@ -10,7 +10,7 @@ import (
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
-// ProviderParams for feature.
+// ProviderParams defines dependencies used to register an OpenFeature provider.
 type ProviderParams struct {
 	di.In
 	Lifecycle       di.Lifecycle
@@ -19,7 +19,11 @@ type ProviderParams struct {
 	Name            env.Name
 }
 
-// Register for feature.
+// Register registers the optional OpenFeature provider with the application lifecycle.
+//
+// If FeatureProvider is nil, Register is a no-op.
+// When MetricProvider is available, Register installs OpenTelemetry hooks for metrics and traces.
+// The provider is set during application start and shutdown is called during application stop.
 func Register(params ProviderParams) {
 	if params.FeatureProvider == nil {
 		return
@@ -44,7 +48,7 @@ func Register(params ProviderParams) {
 	})
 }
 
-// NewClient for feature.
+// NewClient returns an OpenFeature client named after the service.
 func NewClient(name env.Name) *openfeature.Client {
 	return openfeature.NewClient(name.String())
 }

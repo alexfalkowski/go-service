@@ -6,7 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// NewServer for health.
+// NewServer constructs a go-health server and wires it into the application lifecycle.
+//
+// The server is started on lifecycle start and stopped on lifecycle stop.
 func NewServer(lc di.Lifecycle) *health.Server {
 	server := health.NewServer()
 

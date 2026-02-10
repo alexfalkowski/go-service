@@ -1,4 +1,2 @@
-// Package bytes provides helpers for the bytes subsystem in go-service.
-//
-// Start with  constructors.
+// Package bytes provides byte slice helpers used across go-service.
 package bytes

@@ -1,10 +1,11 @@
-// Package grpc contains gRPC transport utilities and wiring for services built with go-service.
+// Package grpc contains gRPC transport wiring for services built with go-service.
 //
 // This package primarily exposes an Fx module (`Module`) that composes the building blocks needed to run and
-// instrument gRPC servers and clients.
+// instrument gRPC servers.
 //
-// Start with `Module` and `Register`.
+// Registration: this package uses package-level registration to inject filesystem access used when constructing
+// TLS configuration. If you enable TLS, ensure `Register` is invoked during application startup before constructing
+// clients/servers so the filesystem dependency is available.
 //
-// Registration: some transports use package-level registration to inject filesystem access or instrumentation.
-// If you enable features that require registration, call `Register` during application startup before constructing clients/servers.
+// Start with `Module` for server wiring and `NewClient` / `NewDialOptions` for client construction.
 package grpc

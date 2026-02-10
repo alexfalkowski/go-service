@@ -19,7 +19,9 @@ func NopCloser(r Reader) ReadCloser {
 	return io.NopCloser(r)
 }
 
-// ReadAll reads all the bytes from the io.Reader and returns the bytes with an io.ReadCloser.
+// ReadAll reads all bytes from r and returns the data along with a fresh ReadCloser over that data.
+//
+// The returned ReadCloser allows the caller to re-read the captured bytes without re-reading from r.
 func ReadAll(r io.Reader) ([]byte, io.ReadCloser, error) {
 	data, err := io.ReadAll(r)
 	return data, NopCloser(bytes.NewReader(data)), err

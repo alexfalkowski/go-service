@@ -1,3 +1,8 @@
+// Package module provides top-level Fx module composition for go-service.
+//
+// The exported modules in this package are intended to be embedded into an
+// application's Fx graph to enable groups of common features (library-only,
+// server-side, or client-side wiring).
 package module
 
 import (
@@ -22,7 +27,10 @@ import (
 )
 
 var (
-	// Library module.
+	// Library provides a baseline Fx module intended for reuse by both servers and clients.
+	//
+	// It wires common, non-transport-specific dependencies (environment, encoding,
+	// crypto primitives, time, sync, and ID helpers).
 	Library = di.Module(
 		env.Module,
 		compress.Module,
@@ -33,7 +41,11 @@ var (
 		id.Module,
 	)
 
-	// Server module.
+	// Server provides the standard Fx module composition for a go-service server.
+	//
+	// It builds on Library and adds server-oriented wiring such as config decoding,
+	// debugging endpoints, caches, SQL databases, telemetry, rate limiting,
+	// transports, and health checks.
 	Server = di.Module(
 		Library,
 		debug.Module,
@@ -47,7 +59,10 @@ var (
 		health.Module,
 	)
 
-	// Client module.
+	// Client provides the standard Fx module composition for a go-service client.
+	//
+	// It builds on Library and adds client-oriented wiring such as config decoding,
+	// feature flags, HTTP client hooks, SQL databases, telemetry, and rate limiting.
 	Client = di.Module(
 		Library,
 		cache.Module,

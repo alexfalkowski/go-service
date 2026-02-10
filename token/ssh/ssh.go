@@ -9,14 +9,16 @@ import (
 )
 
 type (
-	// Signer is an alias of ssh.Signer.
+	// Signer aliases `crypto/ssh`.Signer.
 	Signer = ssh.Signer
 
-	// Verifier is an alias of ssh.Verifier.
+	// Verifier aliases `crypto/ssh`.Verifier.
 	Verifier = ssh.Verifier
 )
 
-// NewToken for ssh.
+// NewToken constructs a Token using cfg and fs.
+//
+// If cfg is disabled, it returns nil.
 func NewToken(cfg *Config, fs *os.FS) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -24,13 +26,16 @@ func NewToken(cfg *Config, fs *os.FS) *Token {
 	return &Token{cfg: cfg, fs: fs}
 }
 
-// Token for ssh.
+// Token generates and verifies SSH-style tokens.
 type Token struct {
 	cfg *Config
 	fs  *os.FS
 }
 
-// Generate an SSH token.
+// Generate creates an SSH-style token.
+//
+// The token format is `<name>-<base64(signature)>`, where signature is computed
+// over the key name using the configured signing key.
 func (t *Token) Generate() (string, error) {
 	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
 	if err != nil {
@@ -42,7 +47,10 @@ func (t *Token) Generate() (string, error) {
 	return token, err
 }
 
-// Verify an SSH token.
+// Verify validates token and returns the key name if it is valid.
+//
+// It expects token in the format `<name>-<base64(signature)>` and verifies the
+// signature over `<name>` using the configured verification keys.
 func (t *Token) Verify(token string) (string, error) {
 	name, key, ok := strings.Cut(token, "-")
 	if !ok {
