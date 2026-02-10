@@ -10,10 +10,12 @@ func NewCompressor() *Compressor {
 // Compressor for s2.
 type Compressor struct{}
 
+// Compress compresses data with s2.
 func (c *Compressor) Compress(data []byte) []byte {
 	return s2.Encode(nil, data)
 }
 
+// Decompress decompresses s2-encoded data.
 func (c *Compressor) Decompress(data []byte) ([]byte, error) {
 	return s2.Decode(nil, data)
 }

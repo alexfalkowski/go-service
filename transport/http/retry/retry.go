@@ -31,6 +31,7 @@ type RoundTripper struct {
 	timeout time.Duration
 }
 
+// RoundTrip executes the request with retries according to the config.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	operation := func(ctx context.Context) (*http.Response, error) {
 		ctx, cancel := context.WithTimeout(ctx, r.timeout)

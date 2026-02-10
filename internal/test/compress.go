@@ -25,10 +25,12 @@ type compressor struct {
 	err error
 }
 
+// Compress implements compress.Compressor for tests.
 func (c *compressor) Compress(_ []byte) []byte {
 	return nil
 }
 
+// Decompress implements compress.Compressor for tests.
 func (c *compressor) Decompress(_ []byte) ([]byte, error) {
 	return nil, c.err
 }

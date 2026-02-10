@@ -37,10 +37,12 @@ type enc struct {
 	err error
 }
 
+// Encode implements encoding.Encoder and returns the configured error.
 func (e *enc) Encode(_ io.Writer, _ any) error {
 	return e.err
 }
 
+// Decode implements encoding.Encoder and returns the configured error.
 func (e *enc) Decode(_ io.Reader, _ any) error {
 	return e.err
 }

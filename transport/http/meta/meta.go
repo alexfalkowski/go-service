@@ -24,6 +24,7 @@ type Handler struct {
 	version   env.Version
 }
 
+// ServeHTTP extracts metadata from the request and stores it in the context.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -68,6 +69,7 @@ type RoundTripper struct {
 	userAgent env.UserAgent
 }
 
+// RoundTrip injects request metadata into the outbound request.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 

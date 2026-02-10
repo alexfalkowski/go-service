@@ -25,6 +25,7 @@ type Generator struct {
 	token string
 }
 
+// Generate implements token.Generator and returns the configured token and error.
 func (g *Generator) Generate(_, _ string) ([]byte, error) {
 	return strings.Bytes(g.token), g.err
 }
@@ -39,6 +40,7 @@ type Verifier struct {
 	token string
 }
 
+// Verify implements token.Verifier and validates the token matches the configured value.
 func (v *Verifier) Verify(token []byte, aud string) (string, error) {
 	if bytes.String(token) != v.token {
 		return strings.Empty, ErrInvalid

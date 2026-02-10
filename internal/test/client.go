@@ -69,6 +69,7 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
 	return client
 }
 
+// NewGRPC client for test.
 func (c *Client) NewGRPC(os ...grpcbreaker.Option) *grpc.ClientConn {
 	_ = c.NewTracer()
 	opts := []transportgrpc.ClientOption{

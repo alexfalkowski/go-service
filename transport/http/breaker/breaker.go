@@ -30,6 +30,7 @@ type RoundTripper struct {
 	breakers sync.Map
 }
 
+// RoundTrip executes the request guarded by a circuit breaker.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	cb := r.get(req)
 	v, err := cb.Execute(func() (any, error) {
