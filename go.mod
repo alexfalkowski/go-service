@@ -7,7 +7,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
-	github.com/alexfalkowski/go-health/v2 v2.9.0
+	github.com/alexfalkowski/go-health/v2 v2.11.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
@@ -44,7 +44,7 @@ require (
 	github.com/sethvargo/go-retry v0.3.0
 	github.com/shirou/gopsutil/v4 v4.26.1
 	github.com/sony/gobreaker v1.0.0
-	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260114220421-3f69fd681bb0
+	github.com/standard-webhooks/standard-webhooks/libraries v0.0.0-20260204153508-82e3cc7ca7f2
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/negroni/v3 v3.1.1
 	go.opentelemetry.io/contrib/bridges/otelslog v0.15.0
@@ -133,7 +133,7 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260202165425-ce8ad4cf556b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260202165425-ce8ad4cf556b // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260209200024-4cfbd4190f57 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
