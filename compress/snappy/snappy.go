@@ -10,10 +10,12 @@ func NewCompressor() *Compressor {
 // Compressor for snappy.
 type Compressor struct{}
 
+// Compress compresses data with snappy.
 func (c *Compressor) Compress(data []byte) []byte {
 	return snappy.Encode(nil, data)
 }
 
+// Decompress decompresses snappy-encoded data.
 func (c *Compressor) Decompress(data []byte) ([]byte, error) {
 	return snappy.Decode(nil, data)
 }

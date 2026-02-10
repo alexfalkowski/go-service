@@ -58,6 +58,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }
 
+// String returns the listener address.
 func (s *Server) String() string {
 	return s.listener.Addr().String()
 }

@@ -97,6 +97,7 @@ func (s *Server) Register() {
 // EmptyHandler for test.
 type EmptyHandler struct{}
 
+// ServeHTTP implements negroni.Handler and just calls the next handler.
 func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
 }
@@ -104,14 +105,17 @@ func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next htt
 // ErrServer for test.
 type ErrServer struct{}
 
+// Serve implements server.Server and returns ErrFailed.
 func (s *ErrServer) Serve() error {
 	return ErrFailed
 }
 
+// Shutdown implements server.Server and always succeeds.
 func (s *ErrServer) Shutdown(_ context.Context) error {
 	return nil
 }
 
+// String returns a stable identifier for logs and assertions.
 func (s *ErrServer) String() string {
 	return "test"
 }
@@ -119,14 +123,17 @@ func (s *ErrServer) String() string {
 // NoopServer for test.
 type NoopServer struct{}
 
+// Serve implements server.Server and always succeeds.
 func (s *NoopServer) Serve() error {
 	return nil
 }
 
+// Shutdown implements server.Server and always succeeds.
 func (s *NoopServer) Shutdown(_ context.Context) error {
 	return nil
 }
 
+// String returns a stable identifier for logs and assertions.
 func (s *NoopServer) String() string {
 	return "test"
 }

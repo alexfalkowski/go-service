@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 )
 
+// ErrRecovered is used to wrap panic values converted to an error.
 var ErrRecovered = errors.New("recovered")
 
 // Must panics if we have an error.

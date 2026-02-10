@@ -61,6 +61,7 @@ type Handler struct {
 	id       env.UserID
 }
 
+// ServeHTTP verifies the request token and stores the subject in the context.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -103,6 +104,7 @@ type RoundTripper struct {
 	id        env.UserID
 }
 
+// RoundTrip adds an Authorization header using a generated token.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	token, err := r.generator.Generate(req.URL.Path, r.id.String())
 	if err != nil {

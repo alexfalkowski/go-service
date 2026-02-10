@@ -7,7 +7,7 @@
 
 # Go Service
 
-A framework to build services in go. This came out of out building services over the years and what I have considered good practices in building services. Hence it is highly subjective and opinionated.
+A framework to build services in Go. This came out of us building services over the years and what we consider good practices in building services. Hence it is highly subjective and opinionated.
 
 This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/Standing_on_the_shoulders_of_giants) so we don't reinvent the wheel!
 
@@ -19,8 +19,8 @@ This framework heavily relies on [DI](https://en.wikipedia.org/wiki/Dependency_i
 
 A service has commands that are configured using [acmd](https://github.com/cristalhq/acmd). Each service has the following commands:
 
-- `Server` - These are long running apps, e.g daemons.
-- `Client` - This are short lived apps, e.g control.
+- `Server` - These are long running apps, e.g. daemons.
+- `Client` - These are short lived apps, e.g. control.
 
 These are configured in the main function.
 
@@ -30,7 +30,7 @@ The supported configuration kinds are as follows:
 
 - [JSON](https://pkg.go.dev/encoding/json)
 - [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://github.com/go-yaml/yaml)
+- [YAML](https://pkg.go.dev/go.yaml.in/yaml/v3)
 
 The configuration can be read from multiple sources by specifying a flag called `-i`. As per the following:
 
@@ -38,7 +38,7 @@ The configuration can be read from multiple sources by specifying a flag called 
 - `file:path` - Read from the path.
 - If all the above fails it will try common locations, such as:
   - The binary location.
-  - The `config` folder in your home directory.
+  - The user config directory (`os.UserConfigDir()`) under `<serviceName>/`.
   - The `/etc` folder.
 
 The reason for this is that we want to be able to separate how configuration is retrieved.
@@ -80,7 +80,7 @@ We support the following:
 
 - [JSON](https://pkg.go.dev/encoding/json)
 - [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://github.com/yaml/go-yaml)
+- [YAML](https://pkg.go.dev/go.yaml.in/yaml/v3)
 - [Proto](https://google.golang.org/protobuf/proto)
 - [GOB](https://pkg.go.dev/encoding/gob)
 
@@ -88,7 +88,7 @@ We support the following:
 
 The framework currently supports the following caching solutions from the awesome [Cachego](https://github.com/faabiosr/cachego).
 
-### Compression Configuration
+### Cache Configuration
 
 To configure, please specify the following:
 
@@ -299,7 +299,7 @@ To configure, please specify the following:
 telemetry:
   tracer:
     kind: otlp
-    url: localhost:4318
+    url: http://localhost:4318/v1/traces
     headers:
       Authorization: path to key
 ```
@@ -343,13 +343,13 @@ The framework allows you to define a [limiter](https://github.com/sethvargo/go-l
 
 The different kinds are:
 
-- [user-agent](transport/meta/key.go)
-- [ip](transport/meta/key.go)
-- [token](transport/meta/key.go)
+- [user-agent](limiter/limiter.go)
+- [ip](limiter/limiter.go)
+- [token](limiter/limiter.go)
 
 ## Time
 
-The framework allows you use network time services. We use:
+The framework allows you to use network time services. We use:
 
 - [ntp](https://github.com/beevik/ntp)
 - [nts](https://github.com/beevik/nts)
@@ -477,8 +477,6 @@ transport:
     token:
       kind: jwt
       jwt:
-        sub: subject
-        aud: audience
         iss: issuer
         exp: 1h
         kid: 1234567890
@@ -486,8 +484,6 @@ transport:
     token:
       kind: jwt
       jwt:
-        sub: subject
-        aud: audience
         iss: issuer
         exp: 1h
         kid: 1234567890
@@ -503,16 +499,12 @@ transport:
     token:
       kind: paseto
       paseto:
-        sub: subject
-        aud: audience
         iss: issuer
         exp: 1h
   grpc:
     token:
-      kind: jwt
+      kind: paseto
       paseto:
-        sub: subject
-        aud: audience
         iss: issuer
         exp: 1h
 ```
@@ -576,7 +568,7 @@ crypto:
 
 ## Debug
 
-This section outlines all utilities added for you troubleshooting abilities.
+This section outlines all utilities added for your troubleshooting abilities.
 
 ### statsviz
 

@@ -82,6 +82,7 @@ type statusError struct {
 	code int
 }
 
+// Error returns the status message.
 func (s *statusError) Error() string {
 	return s.msg
 }

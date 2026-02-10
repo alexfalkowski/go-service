@@ -276,6 +276,36 @@ From `.editorconfig`:
 - Go files use tabs (`indent_style = tab`).
 - YAML uses 2-space indentation.
 
+## Documentation standards
+
+- All exported identifiers should have GoDoc comments.
+- GoDoc comments should start with the identifier name (or `Deprecated:`).
+- This standard is applied across the entire repo, including exported helpers under `internal/test/**`.
+
+### Ad-hoc GoDoc audit (not committed)
+
+During documentation audits, an ad-hoc AST-based script may be used to verify GoDoc coverage and style.
+
+Run it from the repo root:
+
+```sh
+go run /tmp/doccheck.go .
+```
+
+What it checks (high level):
+
+- Exported identifiers without doc comments.
+- Exported identifiers whose doc comment does not start with the identifier name.
+
+Common skips: dot-directories, `vendor/`, `*_test.go`, generated `*.pb.go`, and directories literally named `test` or `assets`.
+
+## Recent documentation fixes
+
+- README examples were aligned with actual config structs and fixtures (notably token transport config fields and token kinds).
+- README links were corrected (e.g., limiter key kinds reference).
+- README OTLP trace URL example was corrected to use the HTTP traces endpoint format.
+- README cache section headings/wording were corrected for clarity.
+
 ## Observed gotchas
 
 - JWT verification enforces both algorithm + key id (see `token/jwt/jwt.go`). If you mint test tokens directly via `github.com/golang-jwt/jwt/v4`, remember to set `kid` or verification will fail.
