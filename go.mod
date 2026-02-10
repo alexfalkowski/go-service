@@ -8,7 +8,7 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
 	github.com/alexfalkowski/go-health/v2 v2.11.0
-	github.com/alexfalkowski/go-sync v1.3.0
+	github.com/alexfalkowski/go-sync v1.5.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
@@ -98,7 +98,7 @@ require (
 	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/google/pprof v0.0.0-20260202012954-cb029daf43ef // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.8 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -107,7 +107,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.11.1 // indirect
+	github.com/lib/pq v1.11.2 // indirect
 	github.com/lufia/plan9stats v0.0.0-20251013123823-9fd1530e3ec3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
