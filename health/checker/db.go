@@ -26,18 +26,22 @@ type DBChecker struct {
 
 // Check verifies database health by pinging all configured master and slave databases.
 func (c *DBChecker) Check(ctx context.Context) error {
+	dbs := c.dbs()
+	errs := make([]error, 0, len(dbs))
+	for _, db := range dbs {
+		errs = append(errs, c.ping(ctx, db))
+	}
+	return errors.Join(errs...)
+}
+
+func (c *DBChecker) dbs() []*sqlx.DB {
 	masters, _ := c.db.GetAllMasters()
 	slaves, _ := c.db.GetAllSlaves()
-	errs := make([]error, 0, len(masters)+len(slaves))
 
-	for _, db := range masters {
-		errs = append(errs, c.ping(ctx, db))
-	}
-	for _, db := range slaves {
-		errs = append(errs, c.ping(ctx, db))
-	}
-
-	return errors.Join(errs...)
+	dbs := make([]*sqlx.DB, 0, len(masters)+len(slaves))
+	dbs = append(dbs, masters...)
+	dbs = append(dbs, slaves...)
+	return dbs
 }
 
 func (o *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
