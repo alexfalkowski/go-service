@@ -19,7 +19,14 @@ import (
 // Note: Key parsing uses type assertions. If the provided key material is not an Ed25519 SSH key,
 // PublicKey/PrivateKey may panic due to type assertions.
 type Config struct {
-	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+	// Public is a "source string" for the SSH public key in authorized_keys format.
+	//
+	// It is read via os.FS.ReadSource and parsed via ssh.ParseAuthorizedKey.
+	Public string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+
+	// Private is a "source string" for the SSH private key.
+	//
+	// It is read via os.FS.ReadSource and parsed via ssh.ParseRawPrivateKey.
 	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
 }
 

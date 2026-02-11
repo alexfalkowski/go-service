@@ -12,11 +12,20 @@ import (
 //
 // Individual sub-configs may be nil/disabled depending on which crypto features are enabled by the caller.
 type Config struct {
-	AES     *aes.Config     `yaml:"aes,omitempty" json:"aes,omitempty" toml:"aes,omitempty"`
+	// AES configures AES key material used by AES-based primitives.
+	AES *aes.Config `yaml:"aes,omitempty" json:"aes,omitempty" toml:"aes,omitempty"`
+
+	// Ed25519 configures Ed25519 public/private key material used for signing and verification.
 	Ed25519 *ed25519.Config `yaml:"ed25519,omitempty" json:"ed25519,omitempty" toml:"ed25519,omitempty"`
-	HMAC    *hmac.Config    `yaml:"hmac,omitempty" json:"hmac,omitempty" toml:"hmac,omitempty"`
-	RSA     *rsa.Config     `yaml:"rsa,omitempty" json:"rsa,omitempty" toml:"rsa,omitempty"`
-	SSH     *ssh.Config     `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
+
+	// HMAC configures HMAC key material used for message authentication.
+	HMAC *hmac.Config `yaml:"hmac,omitempty" json:"hmac,omitempty" toml:"hmac,omitempty"`
+
+	// RSA configures RSA public/private key material used for signing/verification and related operations.
+	RSA *rsa.Config `yaml:"rsa,omitempty" json:"rsa,omitempty" toml:"rsa,omitempty"`
+
+	// SSH configures SSH public/private key material used for SSH-based crypto operations.
+	SSH *ssh.Config `yaml:"ssh,omitempty" json:"ssh,omitempty" toml:"ssh,omitempty"`
 }
 
 // IsEnabled reports whether crypto configuration is enabled.

@@ -9,8 +9,21 @@ import (
 //
 // Cert and Key are "source strings" that may be literal values, `file:` paths, or `env:` references.
 type Config struct {
+	// Cert is a "source string" for the TLS certificate (PEM-encoded).
+	//
+	// It supports the go-service "source string" pattern:
+	// - "env:NAME" to read from an environment variable
+	// - "file:/path" to read from a file
+	// - otherwise treated as the literal value
 	Cert string `yaml:"cert,omitempty" json:"cert,omitempty" toml:"cert,omitempty"`
-	Key  string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+
+	// Key is a "source string" for the TLS private key (PEM-encoded).
+	//
+	// It supports the go-service "source string" pattern:
+	// - "env:NAME" to read from an environment variable
+	// - "file:/path" to read from a file
+	// - otherwise treated as the literal value
+	Key string `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
 }
 
 // IsEnabled reports whether TLS is enabled (i.e., the config is non-nil).

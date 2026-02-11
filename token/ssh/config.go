@@ -9,7 +9,10 @@ import (
 //
 // It supports a single signing key (Key) and a set of verification keys (Keys).
 type Config struct {
-	Key  *Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+	// Key is the signing key configuration used to mint SSH tokens.
+	Key *Key `yaml:"key,omitempty" json:"key,omitempty" toml:"key,omitempty"`
+
+	// Keys is the set of verification keys that may be used to validate SSH tokens.
 	Keys Keys `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty"`
 }
 
@@ -22,8 +25,11 @@ func (c *Config) IsEnabled() bool {
 //
 // The embedded `ssh`.Config provides the key material source/loading configuration.
 type Key struct {
+	// Config contains the SSH key material configuration (public/private key sources).
 	*ssh.Config `yaml:",inline" json:",inline" toml:",inline"`
-	Name        string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
+
+	// Name is the logical key name used to select a key (for example via Keys.Get).
+	Name string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 }
 
 // Keys is a list of named SSH keys.

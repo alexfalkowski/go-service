@@ -12,7 +12,8 @@ func NewNet(ctx context.Context) *Net {
 	return &Net{Counters: counters}
 }
 
-// Net for debug.
+// Net contains network details collected for the debug endpoint.
 type Net struct {
+	// Counters contains per-interface network I/O counters.
 	Counters []net.IOCountersStat `yaml:"counters,omitempty" json:"counters,omitempty" toml:"counters,omitempty"`
 }

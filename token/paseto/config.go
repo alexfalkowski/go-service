@@ -1,13 +1,19 @@
 package paseto
 
 // Config configures PASETO issuance and verification.
-//
-// Secret is a "source string" (literal value, `file:`, or `env:`) used as the key material.
-// Issuer is written to and verified against the `iss` claim.
-// Expiration is a duration string used to set the token expiration.
 type Config struct {
-	Secret     string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
-	Issuer     string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
+	// Secret is a "source string" used as the PASETO key material.
+	//
+	// It supports the go-service "source string" pattern:
+	// - "env:NAME" to read from an environment variable
+	// - "file:/path" to read from a file
+	// - otherwise treated as the literal value
+	Secret string `yaml:"secret,omitempty" json:"secret,omitempty" toml:"secret,omitempty"`
+
+	// Issuer is written to and verified against the `iss` claim.
+	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
+
+	// Expiration is a duration string used to set/validate the token expiration (for example "15m", "24h").
 	Expiration string `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
 }
 

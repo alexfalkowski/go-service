@@ -16,7 +16,16 @@ import (
 //   - Public: PEM block "PUBLIC KEY" containing PKIX-encoded bytes (x509.ParsePKIXPublicKey).
 //   - Private: PEM block "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.ParsePKCS8PrivateKey).
 type Config struct {
-	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+	// Public is a "source string" for the Ed25519 public key PEM.
+	//
+	// It is decoded by crypto/pem.Decoder and must contain a PEM block of type "PUBLIC KEY"
+	// with PKIX-encoded bytes (parsed via x509.ParsePKIXPublicKey).
+	Public string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+
+	// Private is a "source string" for the Ed25519 private key PEM.
+	//
+	// It is decoded by crypto/pem.Decoder and must contain a PEM block of type "PRIVATE KEY"
+	// with PKCS#8-encoded bytes (parsed via x509.ParsePKCS8PrivateKey).
 	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
 }
 

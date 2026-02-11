@@ -35,19 +35,44 @@ func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) 
 	return config, nil
 }
 
-// Config for the service.
+// Config is the top-level configuration for a go-service based service.
+//
+// It composes feature configurations from other packages (debug, cache, crypto, etc.).
+// All pointer fields are optional; when a sub-config is nil it is generally treated as disabled
+// (see each sub-config's IsEnabled method, where applicable).
 type Config struct {
-	Debug       *debug.Config     `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
-	Cache       *cache.Config     `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
-	Crypto      *crypto.Config    `yaml:"crypto,omitempty" json:"crypto,omitempty" toml:"crypto,omitempty"`
-	Feature     *feature.Config   `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
-	Hooks       *hooks.Config     `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
-	ID          *id.Config        `yaml:"id,omitempty" json:"id,omitempty" toml:"id,omitempty"`
-	SQL         *sql.Config       `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
-	Telemetry   *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
-	Time        *time.Config      `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
-	Transport   *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
-	Environment env.Environment   `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
+	// Debug configures the debug server and related debugging endpoints.
+	Debug *debug.Config `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`
+
+	// Cache configures the cache subsystem (implementation kind and implementation-specific options).
+	Cache *cache.Config `yaml:"cache,omitempty" json:"cache,omitempty" toml:"cache,omitempty"`
+
+	// Crypto configures cryptographic primitives used by the service (for example HMAC, RSA, Ed25519, SSH, AES).
+	Crypto *crypto.Config `yaml:"crypto,omitempty" json:"crypto,omitempty" toml:"crypto,omitempty"`
+
+	// Feature configures feature client behavior used by some internal feature integrations.
+	Feature *feature.Config `yaml:"feature,omitempty" json:"feature,omitempty" toml:"feature,omitempty"`
+
+	// Hooks configures webhook behavior (for example the shared secret used to validate incoming hooks).
+	Hooks *hooks.Config `yaml:"hooks,omitempty" json:"hooks,omitempty" toml:"hooks,omitempty"`
+
+	// ID configures ID generation (for example which generator kind to use).
+	ID *id.Config `yaml:"id,omitempty" json:"id,omitempty" toml:"id,omitempty"`
+
+	// SQL configures SQL database access (for example PostgreSQL connection pools and DSNs).
+	SQL *sql.Config `yaml:"sql,omitempty" json:"sql,omitempty" toml:"sql,omitempty"`
+
+	// Telemetry configures logging, tracing, and metrics.
+	Telemetry *telemetry.Config `yaml:"telemetry,omitempty" json:"telemetry,omitempty" toml:"telemetry,omitempty"`
+
+	// Time configures a network time provider (for example NTP/NTS) used by the service.
+	Time *time.Config `yaml:"time,omitempty" json:"time,omitempty" toml:"time,omitempty"`
+
+	// Transport configures inbound/outbound transports (HTTP and gRPC).
+	Transport *transport.Config `yaml:"transport,omitempty" json:"transport,omitempty" toml:"transport,omitempty"`
+
+	// Environment is the service environment (for example local/dev/stage/prod) used to drive environment-specific behavior.
+	Environment env.Environment `yaml:"environment,omitempty" json:"environment,omitempty" toml:"environment,omitempty"`
 }
 
 func cacheConfig(cfg *Config) *cache.Config {
