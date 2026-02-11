@@ -3,6 +3,7 @@ package checker
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
@@ -25,21 +26,18 @@ type DBChecker struct {
 
 // Check verifies database health by pinging all configured master and slave databases.
 func (c *DBChecker) Check(ctx context.Context) error {
-	dbs, _ := c.db.GetAllMasters()
-	for _, db := range dbs {
-		if err := c.ping(ctx, db); err != nil {
-			return err
-		}
+	masters, _ := c.db.GetAllMasters()
+	slaves, _ := c.db.GetAllSlaves()
+	errs := make([]error, 0, len(masters)+len(slaves))
+
+	for _, db := range masters {
+		errs = append(errs, c.ping(ctx, db))
+	}
+	for _, db := range slaves {
+		errs = append(errs, c.ping(ctx, db))
 	}
 
-	dbs, _ = c.db.GetAllSlaves()
-	for _, db := range dbs {
-		if err := c.ping(ctx, db); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return errors.Join(errs...)
 }
 
 func (o *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
