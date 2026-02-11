@@ -14,7 +14,8 @@ func NewHost(ctx context.Context) *Host {
 	}
 }
 
-// Host for debug.
+// Host contains host/system details collected for the debug endpoint.
 type Host struct {
+	// Info contains host information (OS, platform, uptime, etc.).
 	Info *host.InfoStat `yaml:"info,omitempty" json:"info,omitempty" toml:"info,omitempty"`
 }

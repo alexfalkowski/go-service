@@ -25,10 +25,13 @@ func Register(params RegisterParams) {
 	resister(params.Name, "/readyz", params.Server)
 }
 
-// Response for health.
+// Response is the HTTP response body returned by the health endpoints.
 type Response struct {
-	Meta   meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
-	Status string   `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
+	// Meta contains request-scoped metadata derived from the context.
+	Meta meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`
+
+	// Status is the serving status string (for example "SERVING").
+	Status string `yaml:"status,omitempty" json:"status,omitempty" toml:"status,omitempty"`
 }
 
 func resister(name env.Name, pattern string, server *health.Server) {

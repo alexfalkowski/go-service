@@ -16,8 +16,11 @@ func NewCPU(ctx context.Context) *CPU {
 	}
 }
 
-// CPU for debug.
+// CPU contains CPU details collected for the debug endpoint.
 type CPU struct {
-	Info  []cpu.InfoStat  `yaml:"info,omitempty" json:"info,omitempty" toml:"info,omitempty"`
+	// Info contains static CPU information (model, cores, cache sizes, etc.).
+	Info []cpu.InfoStat `yaml:"info,omitempty" json:"info,omitempty" toml:"info,omitempty"`
+
+	// Times contains per-CPU time statistics (user/system/idle/etc.).
 	Times []cpu.TimesStat `yaml:"times,omitempty" json:"times,omitempty" toml:"times,omitempty"`
 }

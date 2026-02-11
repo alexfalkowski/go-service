@@ -5,9 +5,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 )
 
-// Config for transport.
+// Config configures service transports.
 type Config struct {
+	// GRPC configures gRPC transport behavior (servers/clients), if enabled.
 	GRPC *grpc.Config `yaml:"grpc,omitempty" json:"grpc,omitempty" toml:"grpc,omitempty"`
+
+	// HTTP configures HTTP transport behavior (servers/clients), if enabled.
 	HTTP *http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }
 

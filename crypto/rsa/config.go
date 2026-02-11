@@ -16,7 +16,16 @@ import (
 //   - Public: PEM block "RSA PUBLIC KEY" containing PKCS#1-encoded bytes (x509.ParsePKCS1PublicKey).
 //   - Private: PEM block "RSA PRIVATE KEY" containing PKCS#1-encoded bytes (x509.ParsePKCS1PrivateKey).
 type Config struct {
-	Public  string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+	// Public is a "source string" for the RSA public key PEM.
+	//
+	// It is decoded by crypto/pem.Decoder and must contain a PEM block of type "RSA PUBLIC KEY"
+	// with PKCS#1-encoded bytes (parsed via x509.ParsePKCS1PublicKey).
+	Public string `yaml:"public,omitempty" json:"public,omitempty" toml:"public,omitempty"`
+
+	// Private is a "source string" for the RSA private key PEM.
+	//
+	// It is decoded by crypto/pem.Decoder and must contain a PEM block of type "RSA PRIVATE KEY"
+	// with PKCS#1-encoded bytes (parsed via x509.ParsePKCS1PrivateKey).
 	Private string `yaml:"private,omitempty" json:"private,omitempty" toml:"private,omitempty"`
 }
 

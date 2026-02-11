@@ -18,9 +18,14 @@ func NewMem(ctx context.Context) *Mem {
 	}
 }
 
-// Mem for debug.
+// Mem contains memory details collected for the debug endpoint.
 type Mem struct {
-	Swap    *mem.SwapMemoryStat    `yaml:"swap,omitempty" json:"swap,omitempty" toml:"swap,omitempty"`
+	// Swap contains overall swap memory statistics.
+	Swap *mem.SwapMemoryStat `yaml:"swap,omitempty" json:"swap,omitempty" toml:"swap,omitempty"`
+
+	// Virtual contains virtual memory statistics.
 	Virtual *mem.VirtualMemoryStat `yaml:"virtual,omitempty" json:"virtual,omitempty" toml:"virtual,omitempty"`
-	Devices []*mem.SwapDevice      `yaml:"devices,omitempty" json:"devices,omitempty" toml:"devices,omitempty"`
+
+	// Devices contains per-device swap usage information.
+	Devices []*mem.SwapDevice `yaml:"devices,omitempty" json:"devices,omitempty" toml:"devices,omitempty"`
 }

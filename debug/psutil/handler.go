@@ -21,11 +21,20 @@ func NewHandler(cont *content.Content) http.HandlerFunc {
 	})
 }
 
-// Response for debug.
+// Response is the response body returned by the debug psutil endpoint.
 type Response struct {
-	CPU  *CPU  `yaml:"cpu,omitempty" json:"cpu,omitempty" toml:"cpu,omitempty"`
+	// CPU contains CPU information and times.
+	CPU *CPU `yaml:"cpu,omitempty" json:"cpu,omitempty" toml:"cpu,omitempty"`
+
+	// Host contains host/system information.
 	Host *Host `yaml:"host,omitempty" json:"host,omitempty" toml:"host,omitempty"`
+
+	// Load contains system load averages.
 	Load *Load `yaml:"load,omitempty" json:"load,omitempty" toml:"load,omitempty"`
-	Mem  *Mem  `yaml:"mem,omitempty" json:"mem,omitempty" toml:"mem,omitempty"`
-	Net  *Net  `yaml:"net,omitempty" json:"net,omitempty" toml:"net,omitempty"`
+
+	// Mem contains memory and swap statistics.
+	Mem *Mem `yaml:"mem,omitempty" json:"mem,omitempty" toml:"mem,omitempty"`
+
+	// Net contains network I/O counters.
+	Net *Net `yaml:"net,omitempty" json:"net,omitempty" toml:"net,omitempty"`
 }
