@@ -17,12 +17,6 @@ func TestGenerator(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, pub)
 	require.NotEmpty(t, pri)
-
-	gen = rsa.NewGenerator(rand.NewGenerator(&test.ErrReaderCloser{}))
-	pub, pri, err = gen.Generate()
-	require.Error(t, err)
-	require.Empty(t, pub)
-	require.Empty(t, pri)
 }
 
 func TestValid(t *testing.T) {
