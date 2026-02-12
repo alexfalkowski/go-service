@@ -71,7 +71,7 @@ jobs:
       - store_artifacts:
           path: test/reports
       - run: make codecov-upload
-    resource_class: large
+    resource_class: arm.large
   version:
     docker:
       - image: alexfalkowski/release:5.46
@@ -82,7 +82,7 @@ jobs:
       - run: git submodule sync
       - run: git submodule update --init
       - run: version
-    resource_class: large
+    resource_class: arm.large
 
 workflows:
   go-service:
