@@ -1,14 +1,14 @@
 module github.com/alexfalkowski/go-service/v2
 
-go 1.25.0
+go 1.26.0
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
-	github.com/alexfalkowski/go-health/v2 v2.12.0
-	github.com/alexfalkowski/go-sync v1.6.0
+	github.com/alexfalkowski/go-health/v2 v2.13.0
+	github.com/alexfalkowski/go-sync v1.7.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
