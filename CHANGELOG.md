@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.278.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.278.0) - 2026-02-12
+
+- [`2973b5f`](https://github.com/alexfalkowski/go-service/commit/2973b5facdf1837128efbbfc81a6ed9d427e7e9d) feat(go): use go v1.26 (#2143)
+- [`8ec1a1d`](https://github.com/alexfalkowski/go-service/commit/8ec1a1d5af657f9167a7288f5e9d2e601dda5302) build(ci): use arm.large (#2142)
+- [`0cd11d1`](https://github.com/alexfalkowski/go-service/commit/0cd11d1046359cce54cb6949b46714f2280866a6) build(ci): use latest published images (#2141)
+- [`7fcda69`](https://github.com/alexfalkowski/go-service/commit/7fcda695e4224c70c588b7bab86fdd3deb89f387) build(deps): bump bin from `dc92464` to `60f3a4b` (#2139)
+- [`2a59a8f`](https://github.com/alexfalkowski/go-service/commit/2a59a8ff2f9fe538555231045f26d02ddee97597) build(ci): use latest published images (#2138)
+
 ## [v2.277.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.277.0) - 2026-02-11
 
 - [`a23bdba`](https://github.com/alexfalkowski/go-service/commit/a23bdba609b7114dcbcd4ca2fb998e6842b470fb) feat(deps): update github.com/alexfalkowski/go-sync to v1.6.0 (#2137)
