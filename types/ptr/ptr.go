@@ -8,5 +8,5 @@ func Zero[T any]() *T {
 
 // Value returns a pointer to t.
 func Value[T any](t T) *T {
-	return &t
+	return new(t)
 }

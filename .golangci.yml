@@ -13,7 +13,6 @@ linters:
     - gochecknoinits
     - ireturn
     - mnd
-    - modernize # TODO: Remove when we know it works.
     - nakedret
     - nilnil
     - nlreturn
