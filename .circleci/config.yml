@@ -74,7 +74,7 @@ jobs:
     resource_class: arm.large
   version:
     docker:
-      - image: alexfalkowski/release:5.46
+      - image: alexfalkowski/release:5.47
     working_directory: ~/go-service
     steps:
       - checkout:
