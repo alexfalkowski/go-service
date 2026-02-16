@@ -1,6 +1,6 @@
 package sync
 
-import "sync"
+import "github.com/alexfalkowski/go-sync"
 
 // Mutex is an alias of sync.Mutex.
 type Mutex = sync.Mutex
