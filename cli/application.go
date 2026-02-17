@@ -12,12 +12,12 @@ import (
 )
 
 type (
-	// ApplicationOption for cli.
+	// ApplicationOption configures Application creation.
 	ApplicationOption interface {
 		apply(opts *applicationOpts)
 	}
 
-	// ExitFunc for cli.
+	// ExitFunc is invoked when the application decides to exit.
 	ExitFunc = func(code int)
 
 	applicationOpts struct {
@@ -31,17 +31,17 @@ func (f applicationOptionFunc) apply(o *applicationOpts) {
 	f(o)
 }
 
-// WithApplicationExit for cli.
+// WithApplicationExit sets the exit function used by Application.
 func WithApplicationExit(exiter ExitFunc) ApplicationOption {
 	return applicationOptionFunc(func(o *applicationOpts) {
 		o.exiter = exiter
 	})
 }
 
-// RegisterFunc for cli.
+// RegisterFunc registers commands on a Commander.
 type RegisterFunc = func(commander Commander)
 
-// NewApplication for cli.
+// NewApplication constructs an Application and invokes register to add commands.
 func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
 	options := options(opts...)
 	app := &Application{name: Name, version: Version, exiter: options.exiter}
@@ -50,7 +50,7 @@ func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Applicati
 	return app
 }
 
-// Application for cli.
+// Application is a CLI application composed of subcommands.
 type Application struct {
 	exiter  ExitFunc
 	name    env.Name
@@ -58,7 +58,7 @@ type Application struct {
 	cmds    []cmd.Command
 }
 
-// AddServer sub command.
+// AddServer adds a subcommand that runs a server with Fx lifecycle wiring.
 func (a *Application) AddServer(name, description string, opts ...Option) *Command {
 	server := NewCommand(name)
 	cmd := cmd.Command{
@@ -87,7 +87,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 	return server
 }
 
-// AddClient sub command.
+// AddClient adds a subcommand that runs a client with Fx lifecycle wiring.
 func (a *Application) AddClient(name, description string, opts ...Option) *Command {
 	client := NewCommand(name)
 	cmd := cmd.Command{
@@ -113,7 +113,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 	return client
 }
 
-// Run the application.
+// Run executes the application using the configured command set.
 func (a *Application) Run(ctx context.Context) error {
 	name := a.name.String()
 	runner := cmd.RunnerOf(a.cmds, cmd.Config{
@@ -126,7 +126,7 @@ func (a *Application) Run(ctx context.Context) error {
 	return runner.Run()
 }
 
-// ExitOnError will run the application and exit on error.
+// ExitOnError runs the application and exits with status 1 if Run returns an error.
 func (a *Application) ExitOnError(ctx context.Context) {
 	if err := a.Run(ctx); err != nil {
 		logger.LogError(ctx, "could not start", logger.Error(err))

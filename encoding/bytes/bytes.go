@@ -6,15 +6,15 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 )
 
-// NewEncoder for bytes.
+// NewEncoder constructs a bytes encoder for io.ReaderFrom/io.WriterTo types.
 func NewEncoder() *Encoder {
 	return &Encoder{}
 }
 
-// Encoder for bytes.
+// Encoder encodes and decodes using io.ReaderFrom/io.WriterTo.
 type Encoder struct{}
 
-// Encode for bytes.
+// Encode writes v to w when v implements io.WriterTo.
 func (e *Encoder) Encode(w io.Writer, v any) error {
 	to, ok := v.(io.WriterTo)
 	if !ok {
@@ -25,7 +25,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 	return err
 }
 
-// Decode for bytes.
+// Decode reads from r into v when v implements io.ReaderFrom.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	from, ok := v.(io.ReaderFrom)
 	if !ok {

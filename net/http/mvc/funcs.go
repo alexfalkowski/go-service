@@ -16,14 +16,14 @@ import (
 	"github.com/go-sprout/sprout/registry/time"
 )
 
-// FunctionMapParams for sprout.
+// FunctionMapParams defines dependencies used to build a sprout.FunctionMap.
 type FunctionMapParams struct {
 	di.In
 	Logger     *slog.Logger
 	Registries []sprout.Registry `optional:"true"`
 }
 
-// NewFunctionMap for sprout.
+// NewFunctionMap builds a FunctionMap with common sprout registries enabled.
 // List of registries can be found at https://docs.atom.codes/sprout/registries/list-of-all-registries
 func NewFunctionMap(params FunctionMapParams) sprout.FunctionMap {
 	handler := sprout.New(sprout.WithLogger(params.Logger), sprout.WithSafeFuncs(true))

@@ -17,7 +17,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// CacheParams for cache.
+// CacheParams defines dependencies for constructing a Cache.
 type CacheParams struct {
 	di.In
 	Lifecycle  di.Lifecycle
@@ -28,7 +28,9 @@ type CacheParams struct {
 	Driver     driver.Driver
 }
 
-// NewCache from config.
+// NewCache constructs a Cache from configuration and registers a shutdown hook.
+//
+// It returns nil when caching is disabled.
 func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {
 		return nil
@@ -51,7 +53,7 @@ func NewCache(params CacheParams) *Cache {
 	return cache
 }
 
-// Cache allows marshaling and compressing items to the cache.
+// Cache marshals values, compresses them, and stores them via the configured driver.
 type Cache struct {
 	cm     *compress.Map
 	em     *encoding.Map
@@ -60,17 +62,17 @@ type Cache struct {
 	driver driver.Driver
 }
 
-// Close the cache.
+// Close flushes the underlying driver.
 func (c *Cache) Close(_ context.Context) error {
 	return c.driver.Flush()
 }
 
-// Remove a cached key.
+// Remove deletes a cached key.
 func (c *Cache) Remove(_ context.Context, key string) error {
 	return c.driver.Delete(key)
 }
 
-// Get a cached value.
+// Get loads a cached value into value and returns nil on cache misses.
 func (c *Cache) Get(_ context.Context, key string, value any) error {
 	val, err := c.driver.Fetch(key)
 	if err != nil {
@@ -84,7 +86,7 @@ func (c *Cache) Get(_ context.Context, key string, value any) error {
 	return c.decode(val, value)
 }
 
-// Persist a value with key and TTL.
+// Persist stores value under key with the provided TTL.
 func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
 	enc, err := c.encode(value)
 	if err != nil {

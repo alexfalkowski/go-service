@@ -38,5 +38,6 @@ func NewDecoder(params DecoderParams) Decoder {
 
 // Decoder loads and decodes configuration into v.
 type Decoder interface {
+	// Decode reads configuration and decodes it into v.
 	Decode(v any) error
 }

@@ -7,7 +7,7 @@ type Config struct {
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 }
 
-// IsEnabled for id.
+// IsEnabled reports whether ID configuration is present.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

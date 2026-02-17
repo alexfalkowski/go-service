@@ -6,13 +6,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 )
 
-type (
-	// Reader is an alias for io.Reader.
-	Reader = io.Reader
+// Reader is an alias for io.Reader.
+type Reader = io.Reader
 
-	// ReadCloser is an alias for io.ReadCloser.
-	ReadCloser = io.ReadCloser
-)
+// ReadCloser is an alias for io.ReadCloser.
+type ReadCloser = io.ReadCloser
 
 // NopCloser is an alias for io.NopCloser.
 func NopCloser(r Reader) ReadCloser {

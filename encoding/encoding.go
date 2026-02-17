@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 )
 
-// MapParams for encoding.
+// MapParams defines dependencies used to construct an encoding Map.
 type MapParams struct {
 	di.In
 	JSON        *json.Encoder
@@ -26,7 +26,7 @@ type MapParams struct {
 	Bytes       *bytes.Encoder
 }
 
-// NewMap for encoding.
+// NewMap constructs a Map pre-populated with default encoders.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{
@@ -52,22 +52,22 @@ func NewMap(params MapParams) *Map {
 	}
 }
 
-// Map of encoding.
+// Map provides lookup and registration of encoders by kind.
 type Map struct {
 	encoders map[string]Encoder
 }
 
-// Register kind and encoder.
+// Register associates kind with enc, overwriting any existing encoder.
 func (f *Map) Register(kind string, enc Encoder) {
 	f.encoders[kind] = enc
 }
 
-// Get from kind.
+// Get returns the encoder registered for kind.
 func (f *Map) Get(kind string) Encoder {
 	return f.encoders[kind]
 }
 
-// Keys from the encoders map.
+// Keys returns the list of registered encoder kinds.
 func (f *Map) Keys() []string {
 	return slices.Collect(maps.Keys(f.encoders))
 }

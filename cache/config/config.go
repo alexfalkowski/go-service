@@ -18,7 +18,7 @@ type Config struct {
 	Encoder string `yaml:"encoder,omitempty" json:"encoder,omitempty" toml:"encoder,omitempty"`
 }
 
-// IsEnabled for cache.
+// IsEnabled reports whether caching is enabled.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

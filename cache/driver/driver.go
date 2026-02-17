@@ -17,10 +17,12 @@ import (
 // ErrExpired is an alias for cachego.ErrCacheExpired.
 const ErrExpired = cachego.ErrCacheExpired
 
-// ErrNotFound for driver.
+// ErrNotFound is returned when the configured cache driver is unknown.
 var ErrNotFound = errors.New("cache: driver not found")
 
-// NewDriver creates a new cache driver with different backends.
+// NewDriver constructs a cache driver for the configured backend.
+//
+// It returns nil when caching is disabled.
 func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -54,10 +56,10 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 	}
 }
 
-// IsExpiredError checks if the error is an expired error.
+// IsExpiredError reports whether err represents an expired cache entry.
 func IsExpiredError(err error) bool {
 	return errors.Is(err, ErrExpired)
 }
 
-// Driver is a alias of cachego.
+// Driver is an alias for cachego.Cache.
 type Driver = cachego.Cache

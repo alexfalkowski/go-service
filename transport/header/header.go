@@ -8,21 +8,21 @@ import (
 )
 
 const (
-	// BasicAuthorization scheme.
+	// BasicAuthorization is the HTTP Authorization scheme for Basic auth.
 	BasicAuthorization = "Basic"
 
-	// BearerAuthorization scheme.
+	// BearerAuthorization is the HTTP Authorization scheme for Bearer tokens.
 	BearerAuthorization = "Bearer"
 )
 
 var (
-	// AllAuthorizations supported by the header.
+	// AllAuthorizations lists supported Authorization schemes.
 	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
 
-	// ErrInvalidAuthorization header.
+	// ErrInvalidAuthorization is returned when an Authorization header is malformed.
 	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
 
-	// ErrNotSupportedAuthorization for http.
+	// ErrNotSupportedAuthorization is returned when an Authorization scheme is unsupported.
 	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
 

@@ -5,7 +5,7 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
-// NewMem for debug.
+// NewMem collects memory and swap statistics for the debug endpoint.
 func NewMem(ctx context.Context) *Mem {
 	swapMem, _ := mem.SwapMemoryWithContext(ctx)
 	swapDev, _ := mem.SwapDevicesWithContext(ctx)

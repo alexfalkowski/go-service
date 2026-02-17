@@ -6,7 +6,7 @@ import (
 	"github.com/arl/statsviz"
 )
 
-// Register for debug.
+// Register installs statsviz handlers under /debug/statsviz.
 func Register(name env.Name, mux *http.ServeMux) error {
 	return statsviz.Register(mux.ServeMux, statsviz.Root(http.Pattern(name, "/debug/statsviz")))
 }

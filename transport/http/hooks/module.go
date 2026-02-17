@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 )
 
-// Module for fx.
+// Module wires HTTP webhook handler helpers into Fx.
 var Module = di.Module(
 	hooks.Module,
 	di.Constructor(NewWebhook),

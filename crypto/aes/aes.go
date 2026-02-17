@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// ErrInvalidLength for aes.
+// ErrInvalidLength is returned when ciphertext is shorter than the nonce size.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
 // NewCipher constructs an AES-GCM Cipher when configuration is enabled.

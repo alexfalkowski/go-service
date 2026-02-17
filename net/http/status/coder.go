@@ -1,7 +1,7 @@
 package status
 
-// Coder allows errors to implement so we can return the code needed.
+// Coder lets errors expose the HTTP status code that should be returned.
 type Coder interface {
-	// Code reflects the status code to return, e.g: http.StatusNotFound.
+	// Code returns the HTTP status code to return, for example http.StatusNotFound.
 	Code() int
 }

@@ -2,12 +2,12 @@ package snappy
 
 import "github.com/klauspost/compress/snappy"
 
-// NewCompressor for snappy.
+// NewCompressor constructs a snappy compressor.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
-// Compressor for snappy.
+// Compressor implements snappy compression.
 type Compressor struct{}
 
 // Compress compresses data with snappy.

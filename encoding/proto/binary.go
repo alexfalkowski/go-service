@@ -7,15 +7,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// NewBinary for proto.
+// NewBinary constructs a protobuf binary encoder.
 func NewBinary() *Binary {
 	return &Binary{}
 }
 
-// Binary for proto.
+// Binary implements protobuf binary encoding and decoding.
 type Binary struct{}
 
-// Encode for proto.
+// Encode writes v as protobuf binary to w.
 func (e *Binary) Encode(w io.Writer, v any) error {
 	msg, ok := v.(proto.Message)
 	if !ok {
@@ -31,7 +31,7 @@ func (e *Binary) Encode(w io.Writer, v any) error {
 	return err
 }
 
-// Decode for proto.
+// Decode reads protobuf binary from r into v.
 func (e *Binary) Decode(r io.Reader, v any) error {
 	bytes, err := io.ReadAll(r)
 	if err != nil {

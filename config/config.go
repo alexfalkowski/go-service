@@ -19,7 +19,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/types/structs"
 )
 
-// NewConfig will decode and check its validity.
+// NewConfig decodes configuration into T and validates it.
+//
+// It returns ErrInvalidConfig when the decoded value is empty and returns validation errors
+// produced by the Validator.
 func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := decoder.Decode(config); err != nil {

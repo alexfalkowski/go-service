@@ -1,11 +1,11 @@
 package none
 
-// NewCompressor for none.
+// NewCompressor constructs a no-op compressor.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
-// Compressor for none.
+// Compressor implements a no-op compressor that returns input unchanged.
 type Compressor struct{}
 
 // Compress returns the input unchanged.

@@ -15,16 +15,14 @@ import (
 // ModeAppend is an alias to os.ModeAppend.
 const ModeAppend = fs.ModeAppend
 
-type (
-	// DirEntry is an alias to os.DirEntry.
-	DirEntry = fs.DirEntry
+// DirEntry is an alias for fs.DirEntry.
+type DirEntry = fs.DirEntry
 
-	// FileInfo is an alias to os.FileInfo.
-	FileInfo = fs.FileInfo
+// FileInfo is an alias for fs.FileInfo.
+type FileInfo = fs.FileInfo
 
-	// FileMode is an alias to os.FileMode.
-	FileMode = fs.FileMode
-)
+// FileMode is an alias for fs.FileMode.
+type FileMode = fs.FileMode
 
 // NewFS constructs a new filesystem wrapper backed by the OS filesystem.
 func NewFS() *FS {

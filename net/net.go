@@ -8,13 +8,13 @@ import (
 )
 
 type (
-	// Conn is an alias for net.Conn.
+	// Conn is an alias for net.Conn, re-exported for convenience.
 	Conn = net.Conn
 
-	// Dialer is an alias for net.Dialer.
+	// Dialer is an alias for net.Dialer, re-exported for convenience.
 	Dialer = net.Dialer
 
-	// Listener is an alias for net.Listener.
+	// Listener is an alias for net.Listener, re-exported for convenience.
 	Listener = net.Listener
 )
 

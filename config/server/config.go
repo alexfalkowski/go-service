@@ -32,7 +32,7 @@ type Config struct {
 	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
 }
 
-// IsEnabled for server.
+// IsEnabled reports whether server configuration is present.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

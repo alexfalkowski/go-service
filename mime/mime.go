@@ -1,37 +1,36 @@
-// Package mime defines common MIME media type constants used by go-service.
 package mime
 
 const (
-	// ErrorMediaType mime.
+	// ErrorMediaType is the media type for error bodies returned as plain text.
 	ErrorMediaType = "text/error; charset=utf-8"
 
-	// HTMLMediaType mime.
+	// HTMLMediaType is the media type for HTML documents encoded as UTF-8.
 	HTMLMediaType = "text/html; charset=utf-8"
 
-	// JPEGMediaType mime.
+	// JPEGMediaType is the media type for JPEG images.
 	JPEGMediaType = "image/jpeg"
 
-	// JSONMediaType mime.
+	// JSONMediaType is the media type for JSON documents.
 	JSONMediaType = "application/json"
 
-	// MarkdownMediaType mime.
+	// MarkdownMediaType is the media type for Markdown documents encoded as UTF-8.
 	MarkdownMediaType = "text/markdown; charset=utf-8"
 
-	// ProtobufMediaType mime.
+	// ProtobufMediaType is the media type for Protobuf binary payloads.
 	ProtobufMediaType = "application/protobuf"
 
-	// ProtobufJSONMediaType mime.
+	// ProtobufJSONMediaType is the media type for Protobuf JSON-encoded payloads.
 	ProtobufJSONMediaType = "application/pbjson"
 
-	// ProtobufTextMediaType mime.
+	// ProtobufTextMediaType is the media type for Protobuf text format payloads.
 	ProtobufTextMediaType = "application/pbtxt"
 
-	// TextMediaType mime.
+	// TextMediaType is the media type for plain text encoded as UTF-8.
 	TextMediaType = "text/plain; charset=utf-8"
 
-	// TOMLMediaType mime.
+	// TOMLMediaType is the media type for TOML documents.
 	TOMLMediaType = "application/toml"
 
-	// YAMLMediaType mime.
+	// YAMLMediaType is the media type for YAML documents.
 	YAMLMediaType = "application/yaml"
 )

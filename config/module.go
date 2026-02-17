@@ -2,7 +2,7 @@ package config
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module for fx.
+// Module wires config decoding, validation, and feature sub-configs into Fx.
 var Module = di.Module(
 	di.Constructor(NewValidator), di.Constructor(NewDecoder), di.Constructor(NewConfig[Config]),
 	di.Constructor(cryptoAESConfig), di.Constructor(cryptoED25519Config),

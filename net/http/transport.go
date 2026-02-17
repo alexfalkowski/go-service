@@ -8,7 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Transport for HTTP.
+// Transport returns a tuned *http.Transport with reasonable defaults and optional TLS config.
+//
+// It enables HTTP/2 where possible and sets timeouts and connection limits suitable for services.
 func Transport(cfg *tls.Config) *http.Transport {
 	dialer := &net.Dialer{Timeout: time.Minute, KeepAlive: 30 * time.Second}
 

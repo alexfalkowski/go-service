@@ -110,7 +110,7 @@ var (
 	NoBody = http.NoBody
 )
 
-// NewClient returns a new http.Client that wraps rt with OpenTelemetry instrumentation and applies timeout.
+// NewClient returns an http.Client that instruments requests with OpenTelemetry and applies timeout.
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 	return &http.Client{
 		Transport: otelhttp.NewTransport(
@@ -133,12 +133,12 @@ func NewServeMux() *ServeMux {
 	return http.NewServeMux()
 }
 
-// HandleFunc will register the handler for the given pattern.
+// HandleFunc registers handler for pattern and wraps it with OpenTelemetry instrumentation.
 func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
 	Handle(mux, pattern, handler)
 }
 
-// Handle will register the handler for the given pattern.
+// Handle registers handler for pattern and wraps it with OpenTelemetry instrumentation.
 func Handle(mux *ServeMux, pattern string, handler http.Handler) {
 	mux.Handle(pattern, otelhttp.NewHandler(handler, pattern))
 }
@@ -148,7 +148,7 @@ func StatusText(code int) string {
 	return http.StatusText(code)
 }
 
-// NewServer for http.
+// NewServer builds an http.Server configured with common timeouts and supported protocols.
 func NewServer(options options.Map, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{
 		Handler:           handler,
@@ -160,7 +160,10 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 	}
 }
 
-// ParseServiceMethod will parse the service and method from the request.
+// ParseServiceMethod derives a service name and method from the request path and method.
+//
+// It uses transport/strings to split /service/method paths and falls back to the HTTP method
+// and request path when no service/method pair is present.
 func ParseServiceMethod(req *http.Request) (string, string) {
 	path := req.URL.Path
 	if service, method, ok := strings.SplitServiceMethod(path); ok {
@@ -181,7 +184,7 @@ func ParseServiceMethod(req *http.Request) (string, string) {
 	return path, method
 }
 
-// Pattern will create a pattern with the format /name/pattern.
+// Pattern constructs a route pattern of the form /<name><pattern>.
 func Pattern(name env.Name, pattern string) string {
 	return strings.Concat("/", name.String(), pattern)
 }

@@ -10,7 +10,7 @@ import (
 	v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
-// ServerParams for health.
+// ServerParams defines dependencies for constructing the gRPC health server.
 type ServerParams struct {
 	di.In
 	Server *health.Server
@@ -27,7 +27,7 @@ type Server struct {
 	server *health.Server
 }
 
-// Check the health.
+// Check returns the health status for a single service.
 func (s *Server) Check(_ context.Context, req *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error) {
 	observer, err := s.server.Observer(req.GetService(), "grpc")
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *Server) Check(_ context.Context, req *v1.HealthCheckRequest) (*v1.Healt
 	return &v1.HealthCheckResponse{Status: s.status(observer)}, nil
 }
 
-// List for health.
+// List returns the health status for all registered services.
 func (s *Server) List(_ context.Context, req *v1.HealthListRequest) (*v1.HealthListResponse, error) {
 	res := &v1.HealthListResponse{Statuses: map[string]*v1.HealthCheckResponse{}}
 	for name, observer := range s.server.Observers("grpc") {

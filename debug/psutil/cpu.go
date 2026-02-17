@@ -5,7 +5,7 @@ import (
 	"github.com/shirou/gopsutil/v4/cpu"
 )
 
-// NewCPU for debug.
+// NewCPU collects CPU information and times for the debug endpoint.
 func NewCPU(ctx context.Context) *CPU {
 	info, _ := cpu.InfoWithContext(ctx)
 	times, _ := cpu.TimesWithContext(ctx, true)

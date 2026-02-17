@@ -2,7 +2,7 @@ package mvc
 
 import "github.com/alexfalkowski/go-service/v2/meta"
 
-// Template that is rendered by the view.
+// Template is the composite model rendered by View templates.
 type Template struct {
 	Meta  meta.Map
 	Model any

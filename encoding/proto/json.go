@@ -8,15 +8,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// NewJSON for proto.
+// NewJSON constructs a protobuf JSON encoder.
 func NewJSON() *JSON {
 	return &JSON{}
 }
 
-// JSON for proto.
+// JSON implements protobuf JSON encoding and decoding.
 type JSON struct{}
 
-// Encode for proto.
+// Encode writes v as protobuf JSON to w.
 func (e *JSON) Encode(w io.Writer, v any) error {
 	msg, ok := v.(proto.Message)
 	if !ok {
@@ -32,7 +32,7 @@ func (e *JSON) Encode(w io.Writer, v any) error {
 	return err
 }
 
-// Decode for proto.
+// Decode reads protobuf JSON from r into v.
 func (e *JSON) Decode(r io.Reader, v any) error {
 	bytes, err := io.ReadAll(r)
 	if err != nil {

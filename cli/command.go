@@ -11,7 +11,7 @@ func NewCommand(name string) *Command {
 	return &Command{FlagSet: set}
 }
 
-// Command for cli.
+// Command wraps a FlagSet and provides Fx wiring for CLI subcommands.
 type Command struct {
 	*flag.FlagSet
 }

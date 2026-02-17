@@ -32,7 +32,7 @@ type Config struct {
 	Timeout string `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 }
 
-// IsEnabled for client.
+// IsEnabled reports whether client configuration is present.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

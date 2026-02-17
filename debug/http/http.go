@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
-// Pattern is an alias of http.Pattern.
+// Pattern is an alias for http.Pattern.
 func Pattern(name env.Name, pattern string) string {
 	return http.Pattern(name, pattern)
 }
@@ -15,7 +15,7 @@ func NewServeMux() *ServeMux {
 	return &ServeMux{http.NewServeMux()}
 }
 
-// ServeMux is a composed of a http.ServeMux.
+// ServeMux wraps http.ServeMux for debug routing.
 type ServeMux struct {
 	*http.ServeMux
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// ClientOption for http.
+// ClientOption configures the HTTP client wrapper (transport, timeouts, redirects).
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -30,28 +30,32 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 	f(o)
 }
 
-// WithRoundTripper for http.
+// WithRoundTripper sets the underlying RoundTripper used to execute requests.
 func WithRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
 	})
 }
 
-// WithTimeout for http.
+// WithTimeout sets the overall request timeout on the underlying http.Client.
 func WithTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
 	})
 }
 
-// WithIgnoreRedirect for http.
+// WithIgnoreRedirect disables automatic redirect following.
+//
+// When set, the client returns the redirect response instead of following it.
 func WithIgnoreRedirect() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.ignoreRedirect = true
 	})
 }
 
-// NewClient for http.
+// NewClient constructs a Client that encodes requests and decodes responses using content.
+//
+// It reuses buffers from pool and applies the configured transport, timeout, and redirect policy.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := http.NewClient(os.roundTripper, os.timeout)
@@ -65,59 +69,62 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 	return &Client{client: client, content: content, pool: pool}
 }
 
-// Options for client.
+// Options describes the request/response payloads and content type for a single call.
 type Options struct {
 	Request     any
 	Response    any
 	ContentType string
 }
 
-// HasRequest for options.
+// HasRequest reports whether a request payload is set.
 func (o *Options) HasRequest() bool {
 	return o.Request != nil
 }
 
-// HasResponse for options.
+// HasResponse reports whether a response payload is set.
 func (o *Options) HasResponse() bool {
 	return o.Response != nil
 }
 
-// NoOptions for http.
+// NoOptions is a reusable empty Options value.
 var NoOptions = &Options{}
 
-// Client for http.
+// Client wraps http.Client with content-aware encoding and decoding helpers.
 type Client struct {
 	client  *http.Client
 	content *content.Content
 	pool    *sync.BufferPool
 }
 
-// Delete the url.
+// Delete issues an HTTP DELETE request to url using opts.
 func (c *Client) Delete(ctx context.Context, url string, opts *Options) error {
 	return c.Do(ctx, http.MethodDelete, url, opts)
 }
 
-// Get the url.
+// Get issues an HTTP GET request to url using opts.
 func (c *Client) Get(ctx context.Context, url string, opts *Options) error {
 	return c.Do(ctx, http.MethodGet, url, opts)
 }
 
-// Post the url.
+// Post issues an HTTP POST request to url using opts.
 func (c *Client) Post(ctx context.Context, url string, opts *Options) error {
 	return c.Do(ctx, http.MethodPost, url, opts)
 }
 
-// Put the url.
+// Put issues an HTTP PUT request to url using opts.
 func (c *Client) Put(ctx context.Context, url string, opts *Options) error {
 	return c.Do(ctx, http.MethodPut, url, opts)
 }
 
-// Patch the url.
+// Patch issues an HTTP PATCH request to url using opts.
 func (c *Client) Patch(ctx context.Context, url string, opts *Options) error {
 	return c.Do(ctx, http.MethodPatch, url, opts)
 }
 
-// Do with method and url.
+// Do issues a request with method and url, encoding and decoding bodies via content.
+//
+// If opts.Request is set it is encoded into the request body. If opts.Response is set it is
+// decoded from the response body when no error status is returned.
 //
 //nolint:cyclop
 func (c *Client) Do(ctx context.Context, method, url string, opts *Options) error {
