@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.286.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.286.0) - 2026-02-17
+
+- [`c7fd620`](https://github.com/alexfalkowski/go-service/commit/c7fd620e4f9e70e5bc680e8c22e0b4444a2e2465) feat(docs): update godocs with codex (#2154)
+- [`f03aeef`](https://github.com/alexfalkowski/go-service/commit/f03aeef4e4726da33d900528030676a9fe26f029) build(ci): use latest published images (#2153)
+
 ## [v2.285.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.285.0) - 2026-02-16
 
 - [`e6f5d9f`](https://github.com/alexfalkowski/go-service/commit/e6f5d9f88c08a0d60f9aa7c83349f87d21f9591d) feat(deps): upgraded github.com/alexfalkowski/go-health/v2 to v2.14.0 (#2152)
