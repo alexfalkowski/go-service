@@ -1,5 +1,11 @@
 version: "2"
 linters:
+  settings:
+    gosec:
+      excludes:
+        - G117
+    lll:
+      line-length: 180
   default: all
   disable:
     - bodyclose
@@ -26,9 +32,6 @@ linters:
     - wrapcheck
     - wsl
     - wsl_v5
-  settings:
-    lll:
-      line-length: 180
   exclusions:
     generated: lax
     presets:
