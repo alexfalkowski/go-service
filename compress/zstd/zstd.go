@@ -2,12 +2,12 @@ package zstd
 
 import "github.com/klauspost/compress/zstd"
 
-// NewCompressor for zstd.
+// NewCompressor constructs a zstd compressor.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
-// Compressor for zstd.
+// Compressor implements zstd compression.
 type Compressor struct{}
 
 // Compress using zstd.

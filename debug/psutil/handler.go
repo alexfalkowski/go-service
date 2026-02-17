@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 )
 
-// NewHandler for debug.
+// NewHandler builds the HTTP handler that returns a psutil snapshot.
 func NewHandler(cont *content.Content) http.HandlerFunc {
 	return content.NewHandler(cont, func(ctx context.Context) (*Response, error) {
 		res := &Response{
@@ -21,7 +21,7 @@ func NewHandler(cont *content.Content) http.HandlerFunc {
 	})
 }
 
-// Response is the response body returned by the debug psutil endpoint.
+// Response is the response body returned by the psutil debug endpoint.
 type Response struct {
 	// CPU contains CPU information and times.
 	CPU *CPU `yaml:"cpu,omitempty" json:"cpu,omitempty" toml:"cpu,omitempty"`

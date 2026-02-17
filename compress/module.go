@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module for fx.
+// Module wires all default compressors and the compressor map into Fx.
 var Module = di.Module(
 	di.Constructor(snappy.NewCompressor),
 	di.Constructor(s2.NewCompressor),

@@ -5,13 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-type (
-	// Converter takes a string and creates a new string.
-	Converter func(string) string
+// Converter transforms a key string before it is exported.
+type Converter func(string) string
 
-	// Storage stores all the values for meta.
-	Storage map[string]Value
-)
+// Storage stores meta values keyed by attribute name.
+type Storage map[string]Value
 
 // Add a value with key.
 func (s Storage) Add(key string, value Value) Storage {

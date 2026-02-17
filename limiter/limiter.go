@@ -13,13 +13,11 @@ import (
 	"github.com/sethvargo/go-limiter/memorystore"
 )
 
-type (
-	// KeyFunc returns the meta.Value used to key rate limits for ctx.
-	KeyFunc func(context.Context) meta.Value
+// KeyFunc returns the meta.Value used to key rate limits for ctx.
+type KeyFunc func(context.Context) meta.Value
 
-	// KeyMap maps a kind string to the KeyFunc used to derive the limiter key.
-	KeyMap map[string]KeyFunc
-)
+// KeyMap maps a kind string to the KeyFunc used to derive the limiter key.
+type KeyMap map[string]KeyFunc
 
 // NewKeyMap returns the default KeyMap used by the limiter.
 //

@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 )
 
-// Module for fx.
+// Module wires HTTP transport server, routing, and middleware into Fx.
 var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(http.NewServeMux),

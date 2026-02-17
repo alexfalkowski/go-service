@@ -2,12 +2,12 @@ package config
 
 import "github.com/go-playground/validator/v10"
 
-// NewValidator using go-playground validator.
+// NewValidator constructs a Validator backed by go-playground/validator.
 func NewValidator() *Validator {
 	return &Validator{validator.New(validator.WithRequiredStructEnabled())}
 }
 
-// Validator is a wrapper for go-playground validator.
+// Validator wraps a go-playground validator instance.
 type Validator struct {
 	*validator.Validate
 }

@@ -61,7 +61,7 @@ func NewHandler(id env.UserID, verifier Verifier) *Handler {
 	return &Handler{id: id, verifier: verifier}
 }
 
-// Handler for token.
+// Handler verifies Authorization headers and injects the subject into request metadata.
 type Handler struct {
 	verifier Verifier
 	id       env.UserID

@@ -5,7 +5,7 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 )
 
-// NewHost for debug.
+// NewHost collects host information for the debug endpoint.
 func NewHost(ctx context.Context) *Host {
 	info, _ := host.InfoWithContext(ctx)
 

@@ -8,15 +8,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// NewText for proto.
+// NewText constructs a protobuf text encoder.
 func NewText() *Text {
 	return &Text{}
 }
 
-// Text for proto.
+// Text implements protobuf text encoding and decoding.
 type Text struct{}
 
-// Encode for proto.
+// Encode writes v as protobuf text to w.
 func (e *Text) Encode(w io.Writer, v any) error {
 	msg, ok := v.(proto.Message)
 	if !ok {
@@ -32,7 +32,7 @@ func (e *Text) Encode(w io.Writer, v any) error {
 	return err
 }
 
-// Decode for proto.
+// Decode reads protobuf text from r into v.
 func (e *Text) Decode(r io.Reader, v any) error {
 	bytes, err := io.ReadAll(r)
 	if err != nil {

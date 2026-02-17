@@ -8,13 +8,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-type (
-	// Signer aliases `crypto/ssh`.Signer.
-	Signer = ssh.Signer
+// Signer is an alias for crypto/ssh.Signer.
+type Signer = ssh.Signer
 
-	// Verifier aliases `crypto/ssh`.Verifier.
-	Verifier = ssh.Verifier
-)
+// Verifier is an alias for crypto/ssh.Verifier.
+type Verifier = ssh.Verifier
 
 // NewToken constructs a Token using cfg and fs.
 //

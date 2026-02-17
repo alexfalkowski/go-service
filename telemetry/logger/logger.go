@@ -20,15 +20,13 @@ const (
 	LevelWarn = slog.LevelWarn
 )
 
-type (
-	// Attr is an alias of slog.Attr.
-	Attr = slog.Attr
+// Attr is an alias for slog.Attr.
+type Attr = slog.Attr
 
-	// Level is an alias of slog.Level.
-	Level = slog.Level
-)
+// Level is an alias for slog.Level.
+type Level = slog.Level
 
-// ErrNotFound for logger.
+// ErrNotFound is returned when the configured logger kind is unknown.
 var ErrNotFound = errors.New("logger: not found")
 
 // Bool is an alias of slog.Bool.
@@ -51,7 +49,7 @@ func String(key, value string) Attr {
 	return slog.String(key, value)
 }
 
-// LoggerParams for logger.
+// LoggerParams defines dependencies used to construct a Logger.
 type LoggerParams struct {
 	di.In
 	Lifecycle   di.Lifecycle
@@ -62,7 +60,7 @@ type LoggerParams struct {
 	Environment env.Environment
 }
 
-// NewLogger using slog.
+// NewLogger constructs the configured logger and installs it as the slog default.
 func NewLogger(params LoggerParams) (*Logger, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -77,17 +75,17 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 	return &Logger{logger}, nil
 }
 
-// Logger allows to pass a function to log.
+// Logger wraps slog.Logger and adds meta/error context helpers.
 type Logger struct {
 	*slog.Logger
 }
 
-// Log attrs for logger.
+// Log logs msg at its level with attrs and context metadata.
 func (l *Logger) Log(ctx context.Context, msg Message, attrs ...slog.Attr) {
 	l.LogAttrs(ctx, msg.Level(), msg, attrs...)
 }
 
-// LogAttrs for logger.
+// LogAttrs logs msg at level with attrs and context metadata.
 func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, attrs ...slog.Attr) {
 	attrs = append(attrs, Meta(ctx)...)
 	attrs = append(attrs, Error(msg.Error))
@@ -95,7 +93,7 @@ func (l *Logger) LogAttrs(ctx context.Context, level slog.Level, msg Message, at
 	l.Logger.LogAttrs(ctx, level, msg.Text, attrs...)
 }
 
-// GetLogger if defined.
+// GetLogger returns the underlying slog.Logger, or nil if Logger is nil.
 func (l *Logger) GetLogger() *slog.Logger {
 	if l == nil {
 		return nil

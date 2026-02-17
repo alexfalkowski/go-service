@@ -7,12 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
-// NewService that can start and stop an underlying server.
+// NewService builds a Service that manages the lifecycle of an underlying server.
 func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdowner) *Service {
 	return &Service{name: name, server: server, logger: logger, sh: sh}
 }
 
-// Service handles the starting and stopping of a server.
+// Service handles starting and stopping a server with optional logging and shutdown integration.
 type Service struct {
 	server Server
 	sh     di.Shutdowner
@@ -20,7 +20,7 @@ type Service struct {
 	name   string
 }
 
-// Start the server.
+// Start launches the server asynchronously.
 func (s *Service) Start() {
 	go s.start()
 }
@@ -41,7 +41,7 @@ func (s *Service) start() {
 	}
 }
 
-// Stop the server.
+// Stop shuts down the server and logs the shutdown.
 func (s *Service) Stop(ctx context.Context) {
 	_ = s.server.Shutdown(ctx)
 

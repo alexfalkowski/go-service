@@ -5,16 +5,13 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-type (
+// MeterProvider is an alias for metric.MeterProvider.
+type MeterProvider = metric.MeterProvider
 
-	// MeterProvider is an alias of metric.MeterProvider.
-	MeterProvider = metric.MeterProvider
+// Meter is an alias for metric.Meter.
+type Meter = metric.Meter
 
-	// Meter is an alias of metric.Meter.
-	Meter = metric.Meter
-)
-
-// NewMeter for metrics.
+// NewMeter returns a Meter from provider using the service name and version.
 func NewMeter(name env.Name, version env.Version, provider MeterProvider) Meter {
 	if provider == nil {
 		return nil

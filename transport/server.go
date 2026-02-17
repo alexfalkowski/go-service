@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/types/slices"
 )
 
-// ServersParams for transport.
+// ServersParams defines dependencies used to collect transport servers.
 type ServersParams struct {
 	di.In
 	HTTP  *http.Server
@@ -17,7 +17,7 @@ type ServersParams struct {
 	Debug *debug.Server
 }
 
-// NewServers for transport.
+// NewServers returns the non-nil transport services.
 func NewServers(params ServersParams) []*server.Service {
 	return slices.AppendNotNil([]*server.Service{}, params.HTTP.GetService(), params.GRPC.GetService(), params.Debug.GetService())
 }

@@ -165,7 +165,9 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 	return grpc.WithTransportCredentials(creds)
 }
 
-// WithKeepaliveParams for grpc.
+// WithKeepaliveParams configures client keepalive ping interval and timeout.
+//
+// It permits pings even when there are no active streams.
 func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	return grpc.WithKeepaliveParams(keepalive.ClientParameters{
 		Time:                ping,
@@ -174,7 +176,9 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	})
 }
 
-// NewServer for grpc.
+// NewServer builds a gRPC server configured with keepalive enforcement and server parameters.
+//
+// It registers reflection and applies any additional ServerOptions passed in.
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
 	os := make([]ServerOption, 0, 2+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{

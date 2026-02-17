@@ -8,13 +8,11 @@ import (
 // SchemaURL is an alias of semconv.SchemaURL.
 const SchemaURL = semconv.SchemaURL
 
-type (
-	// Key is an alias of attribute.Key.
-	Key = attribute.Key
+// Key is an alias for attribute.Key.
+type Key = attribute.Key
 
-	// KeyValue is an alias of attribute.KeyValue.
-	KeyValue = attribute.KeyValue
-)
+// KeyValue is an alias for attribute.KeyValue.
+type KeyValue = attribute.KeyValue
 
 // RPCSystemNameGRPC is an alias of semconv.RPCSystemNameGRPC.
 var RPCSystemNameGRPC = semconv.RPCSystemNameGRPC

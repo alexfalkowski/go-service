@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 )
 
-// Module for fx.
+// Module wires transport servers, registration, and HTTP/gRPC submodules into Fx.
 var Module = di.Module(
 	grpc.Module,
 	http.Module,

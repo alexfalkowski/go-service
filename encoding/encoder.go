@@ -2,11 +2,11 @@ package encoding
 
 import "io"
 
-// Encoder allows different types of encoding/decoding.
+// Encoder encodes values to a writer and decodes values from a reader.
 type Encoder interface {
-	// Encode any to a writer.
+	// Encode writes v to w.
 	Encode(w io.Writer, v any) error
 
-	// Decode any from a reader.
+	// Decode reads from r into v.
 	Decode(r io.Reader, v any) error
 }

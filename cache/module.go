@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// Module for fx.
+// Module wires cache driver, cache, and package-level registration into Fx.
 var Module = di.Module(
 	di.Constructor(driver.NewDriver),
 	di.Constructor(NewCache),

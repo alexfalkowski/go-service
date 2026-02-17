@@ -2,12 +2,12 @@ package s2
 
 import "github.com/klauspost/compress/s2"
 
-// NewCompressor for s2.
+// NewCompressor constructs an s2 compressor.
 func NewCompressor() *Compressor {
 	return &Compressor{}
 }
 
-// Compressor for s2.
+// Compressor implements s2 compression.
 type Compressor struct{}
 
 // Compress compresses data with s2.

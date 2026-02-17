@@ -6,13 +6,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 )
 
-// Server allows transports to create their own.
+// Server defines the minimal interface required by Service to manage a transport server.
 type Server interface {
 	fmt.Stringer
 
-	// Serve the underlying server.
+	// Serve starts serving requests.
 	Serve() error
 
-	// Shutdown the underlying server.
+	// Shutdown stops the server gracefully.
 	Shutdown(ctx context.Context) error
 }

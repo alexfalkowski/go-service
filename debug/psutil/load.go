@@ -5,7 +5,7 @@ import (
 	"github.com/shirou/gopsutil/v4/load"
 )
 
-// NewLoad for debug.
+// NewLoad collects system load averages for the debug endpoint.
 func NewLoad(ctx context.Context) *Load {
 	avg, _ := load.AvgWithContext(ctx)
 

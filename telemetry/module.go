@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
-// Module for fx.
+// Module wires logger, metrics, tracer, and error helpers into Fx.
 var Module = di.Module(
 	logger.Module,
 	metrics.Module,

@@ -3,101 +3,101 @@ package meta
 import "github.com/alexfalkowski/go-service/v2/context"
 
 const (
-	// RequestIDKey for meta.
+	// RequestIDKey is the attribute key used for request IDs.
 	RequestIDKey = "requestId"
 
-	// SystemKey for meta.
+	// SystemKey is the attribute key used for the system name.
 	SystemKey = "system"
 
-	// ServiceKey for meta.
+	// ServiceKey is the attribute key used for the service name.
 	ServiceKey = "service"
 
-	// MethodKey for meta.
+	// MethodKey is the attribute key used for method names.
 	MethodKey = "method"
 
-	// CodeKey for meta.
+	// CodeKey is the attribute key used for status codes.
 	CodeKey = "code"
 
-	// DurationKey for meta.
+	// DurationKey is the attribute key used for durations.
 	DurationKey = "duration"
 
-	// UserAgentKey for meta.
+	// UserAgentKey is the attribute key used for user agents.
 	UserAgentKey = "userAgent"
 
-	// UserIDKey for meta.
+	// UserIDKey is the attribute key used for user IDs.
 	UserIDKey = "userId"
 
-	// IPAddrKey for meta.
+	// IPAddrKey is the attribute key used for IP addresses.
 	IPAddrKey = "ipAddr"
 
-	// AuthorizationKey for meta.
+	// AuthorizationKey is the attribute key used for authorization values.
 	AuthorizationKey = "authorization"
 
-	// GeolocationKey for meta.
+	// GeolocationKey is the attribute key used for geolocation values.
 	GeolocationKey = "geoLocation"
 )
 
-// WithUserAgent for meta.
+// WithUserAgent stores a user agent attribute on ctx.
 func WithUserAgent(ctx context.Context, userAgent Value) context.Context {
 	return WithAttribute(ctx, UserAgentKey, userAgent)
 }
 
-// UserAgent for meta.
+// UserAgent returns the stored user agent attribute.
 func UserAgent(ctx context.Context) Value {
 	return Attribute(ctx, UserAgentKey)
 }
 
-// WithUserID for meta.
+// WithUserID stores a user ID attribute on ctx.
 func WithUserID(ctx context.Context, id Value) context.Context {
 	return WithAttribute(ctx, UserIDKey, id)
 }
 
-// UserID for meta.
+// UserID returns the stored user ID attribute.
 func UserID(ctx context.Context) Value {
 	return Attribute(ctx, UserIDKey)
 }
 
-// WithIPAddr for meta.
+// WithIPAddr stores an IP address attribute on ctx.
 func WithIPAddr(ctx context.Context, addr Value) context.Context {
 	return WithAttribute(ctx, IPAddrKey, addr)
 }
 
-// IPAddr for meta.
+// IPAddr returns the stored IP address attribute.
 func IPAddr(ctx context.Context) Value {
 	return Attribute(ctx, IPAddrKey)
 }
 
-// WithGeolocation for meta.
+// WithGeolocation stores a geolocation attribute on ctx.
 func WithGeolocation(ctx context.Context, location Value) context.Context {
 	return WithAttribute(ctx, GeolocationKey, location)
 }
 
-// Geolocation for meta.
+// Geolocation returns the stored geolocation attribute.
 func Geolocation(ctx context.Context) Value {
 	return Attribute(ctx, GeolocationKey)
 }
 
-// WithIPAddrKind for meta.
+// WithIPAddrKind stores the IP address kind attribute on ctx.
 func WithIPAddrKind(ctx context.Context, kind Value) context.Context {
 	return WithAttribute(ctx, "ipAddrKind", kind)
 }
 
-// WithAuthorization for meta.
+// WithAuthorization stores an authorization attribute on ctx.
 func WithAuthorization(ctx context.Context, auth Value) context.Context {
 	return WithAttribute(ctx, AuthorizationKey, auth)
 }
 
-// Authorization for meta.
+// Authorization returns the stored authorization attribute.
 func Authorization(ctx context.Context) Value {
 	return Attribute(ctx, AuthorizationKey)
 }
 
-// WithRequestID for meta.
+// WithRequestID stores a request ID attribute on ctx.
 func WithRequestID(ctx context.Context, id Value) context.Context {
 	return WithAttribute(ctx, RequestIDKey, id)
 }
 
-// RequestID for meta.
+// RequestID returns the stored request ID attribute.
 func RequestID(ctx context.Context) Value {
 	return Attribute(ctx, RequestIDKey)
 }

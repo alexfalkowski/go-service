@@ -8,32 +8,32 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Error representing code and msg.
+// Error returns an error that carries an HTTP status code and message.
 func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
 }
 
-// InternalServerError for status.
+// InternalServerError wraps err with StatusInternalServerError.
 func InternalServerError(err error) error {
 	return FromError(http.StatusInternalServerError, err)
 }
 
-// ServiceUnavailableError for status.
+// ServiceUnavailableError wraps err with StatusServiceUnavailable.
 func ServiceUnavailableError(err error) error {
 	return FromError(http.StatusServiceUnavailable, err)
 }
 
-// UnauthorizedError for status.
+// UnauthorizedError wraps err with StatusUnauthorized.
 func UnauthorizedError(err error) error {
 	return FromError(http.StatusUnauthorized, err)
 }
 
-// BadRequestError for status.
+// BadRequestError wraps err with StatusBadRequest.
 func BadRequestError(err error) error {
 	return FromError(http.StatusBadRequest, err)
 }
 
-// FromError creates an error from an error.
+// FromError returns err if it already carries a status code, otherwise it wraps err with code.
 func FromError(code int, err error) error {
 	if IsError(err) {
 		return err
@@ -42,12 +42,12 @@ func FromError(code int, err error) error {
 	return Error(code, err.Error())
 }
 
-// Errorf representing code and a formatted message.
+// Errorf formats a message and returns an error with the provided status code.
 func Errorf(code int, format string, a ...any) error {
 	return Error(code, fmt.Sprintf(format, a...))
 }
 
-// IsError verifies if the package created this error.
+// IsError reports whether err carries a status code created by this package.
 func IsError(err error) bool {
 	if _, ok := err.(Coder); ok {
 		return true
@@ -58,7 +58,10 @@ func IsError(err error) bool {
 	return errors.As(err, &e)
 }
 
-// Code from the error. If nil 200, otherwise 500.
+// Code extracts the HTTP status code from err.
+//
+// It checks Coder, the package status type, and gRPC status mappings. If no mapping
+// is found, StatusInternalServerError is returned.
 func Code(err error) int {
 	if coder, ok := err.(Coder); ok {
 		return coder.Code()

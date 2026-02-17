@@ -14,7 +14,7 @@ type Config struct {
 	HTTP *http.Config `yaml:"http,omitempty" json:"http,omitempty" toml:"http,omitempty"`
 }
 
-// IsEnabled for transport.
+// IsEnabled reports whether transport configuration is present.
 func (c *Config) IsEnabled() bool {
 	return c != nil
 }

@@ -5,25 +5,23 @@ import (
 	"go.uber.org/fx"
 )
 
-type (
-	// Hook is an alias for fx.Hook.
-	Hook = fx.Hook
+// Hook is an alias for fx.Hook.
+type Hook = fx.Hook
 
-	// Lifecycle is an alias for fx.Lifecycle.
-	Lifecycle = fx.Lifecycle
+// Lifecycle is an alias for fx.Lifecycle.
+type Lifecycle = fx.Lifecycle
 
-	// In is an alias for fx.In.
-	In = fx.In
+// In is an alias for fx.In.
+type In = fx.In
 
-	// Option is an alias for fx.Option.
-	Option = fx.Option
+// Option is an alias for fx.Option.
+type Option = fx.Option
 
-	// Shutdowner is an alias for fx.Shutdowner.
-	Shutdowner = fx.Shutdowner
+// Shutdowner is an alias for fx.Shutdowner.
+type Shutdowner = fx.Shutdowner
 
-	// ShutdownOption is an alias for fx.ShutdownOption.
-	ShutdownOption = fx.ShutdownOption
-)
+// ShutdownOption is an alias for fx.ShutdownOption.
+type ShutdownOption = fx.ShutdownOption
 
 // NoLogger is an alias for fx.NopLogger.
 var NoLogger = fx.NopLogger

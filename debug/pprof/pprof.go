@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 )
 
-// Register for debug.
+// Register installs pprof handlers under /debug/pprof.
 func Register(name env.Name, mux *http.ServeMux) {
 	mux.HandleFunc(http.Pattern(name, "/debug/pprof/"), pprof.Index)
 	mux.HandleFunc(http.Pattern(name, "/debug/pprof/cmdline"), pprof.Cmdline)

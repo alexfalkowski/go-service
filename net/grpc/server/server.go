@@ -13,7 +13,7 @@ import (
 // Service is an alias for server.Service.
 type Service = server.Service
 
-// NewService for gRPC.
+// NewService builds a service that starts and stops a gRPC server with logging and shutdown wiring.
 func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
 	serv, err := NewServer(grpc, cfg)
 	if err != nil {
@@ -23,7 +23,7 @@ func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logg
 	return server.NewService(name, serv, logger, sh), nil
 }
 
-// NewServer for gRPC.
+// NewServer builds a Server that listens on cfg.Address.
 func NewServer(server *grpc.Server, cfg *config.Config) (*Server, error) {
 	srv := &Server{server: server}
 	n, a, _ := net.SplitNetworkAddress(cfg.Address)
@@ -37,24 +37,24 @@ func NewServer(server *grpc.Server, cfg *config.Config) (*Server, error) {
 	return srv, nil
 }
 
-// Server for gRPC.
+// Server wraps a grpc.Server with its listener.
 type Server struct {
 	server   *grpc.Server
 	listener net.Listener
 }
 
-// Serve the underlying server.
+// Serve starts serving requests on the configured listener.
 func (s *Server) Serve() error {
 	return s.server.Serve(s.listener)
 }
 
-// Shutdown the underlying server.
+// Shutdown gracefully stops the server.
 func (s *Server) Shutdown(_ context.Context) error {
 	s.server.GracefulStop()
 	return nil
 }
 
-// String for server.
+// String returns the listener address.
 func (s *Server) String() string {
 	return s.listener.Addr().String()
 }

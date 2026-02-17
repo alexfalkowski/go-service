@@ -5,7 +5,7 @@ import (
 	"github.com/shirou/gopsutil/v4/net"
 )
 
-// NewNet for debug.
+// NewNet collects network I/O counters for the debug endpoint.
 func NewNet(ctx context.Context) *Net {
 	counters, _ := net.IOCountersWithContext(ctx, true)
 

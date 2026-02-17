@@ -29,13 +29,11 @@ const (
 	RFC3339 = time.RFC3339
 )
 
-type (
-	// Time is an alias of time.Time.
-	Time = time.Time
+// Time is an alias for time.Time.
+type Time = time.Time
 
-	// Duration is an alias of time.Duration.
-	Duration = time.Duration
-)
+// Duration is an alias for time.Duration.
+type Duration = time.Duration
 
 // Now is just an alias to time.Now.
 func Now() Time {

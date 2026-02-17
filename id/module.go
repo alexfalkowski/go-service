@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/xid"
 )
 
-// Module for fx.
+// Module wires ID generators and the generator map into Fx.
 var Module = di.Module(
 	di.Constructor(ksuid.NewGenerator),
 	di.Constructor(nanoid.NewGenerator),

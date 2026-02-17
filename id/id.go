@@ -10,10 +10,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/xid"
 )
 
-// ErrNotFound for id.
+// ErrNotFound is returned when the configured generator kind is unknown.
 var ErrNotFound = errors.New("id: generator not found")
 
-// MapParams for id.
+// MapParams defines dependencies used to construct a generator Map.
 type MapParams struct {
 	di.In
 	KSUID  *ksuid.Generator
@@ -23,7 +23,7 @@ type MapParams struct {
 	XID    *xid.Generator
 }
 
-// NewMap for id.
+// NewMap constructs a Map pre-populated with default generators.
 func NewMap(params MapParams) *Map {
 	return &Map{
 		generators: map[string]Generator{
@@ -36,17 +36,19 @@ func NewMap(params MapParams) *Map {
 	}
 }
 
-// Map of generators.
+// Map holds ID generators keyed by kind.
 type Map struct {
 	generators map[string]Generator
 }
 
-// Get from kind.
+// Get returns the generator registered for kind.
 func (f *Map) Get(kind string) Generator {
 	return f.generators[kind]
 }
 
-// NewGenerator from config.
+// NewGenerator selects a generator based on config.Kind.
+//
+// It returns (nil, nil) when config is disabled.
 func NewGenerator(config *Config, m *Map) (Generator, error) {
 	if !config.IsEnabled() {
 		return nil, nil

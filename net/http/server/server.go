@@ -17,7 +17,7 @@ import (
 // Service is an alias for server.Service.
 type Service = server.Service
 
-// NewService for http.
+// NewService builds a service that starts and stops an HTTP server with logging and shutdown wiring.
 func NewService(name string, http *http.Server, cfg *config.Config, logger *logger.Logger, sh di.Shutdowner) (*Service, error) {
 	serv, err := NewServer(http, cfg)
 	if err != nil {
@@ -27,7 +27,7 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 	return server.NewService(name, serv, logger, sh), nil
 }
 
-// NewServer for http.
+// NewServer builds a Server that listens on cfg.Address and applies optional TLS settings.
 func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	srv := &Server{server: server, tls: cfg.TLS}
 	n, a, _ := net.SplitNetworkAddress(cfg.Address)
@@ -41,19 +41,19 @@ func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
 	return srv, nil
 }
 
-// Server for HTTP.
+// Server wraps an http.Server with listener and TLS configuration.
 type Server struct {
 	server   *http.Server
 	tls      *tls.Config
 	listener net.Listener
 }
 
-// Serve the underlying server.
+// Serve starts serving requests on the configured listener.
 func (s *Server) Serve() error {
 	return errors.ServerError(s.serve())
 }
 
-// Shutdown the underlying server.
+// Shutdown gracefully stops the server.
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.server.Shutdown(ctx)
 }

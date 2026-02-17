@@ -6,13 +6,13 @@ import (
 )
 
 var (
-	// FS for cli.
+	// FS is the filesystem used for CLI configuration lookup.
 	FS = os.NewFS()
 
-	// Name for cli.
+	// Name is the CLI application name derived from the environment.
 	Name = env.NewName(FS)
 
-	// Version for cli.
+	// Version is the CLI application version derived from the environment.
 	Version = env.NewVersion()
 )
 

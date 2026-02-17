@@ -16,7 +16,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// ServerParams for debug.
+// ServerParams defines dependencies for constructing the debug server.
 type ServerParams struct {
 	di.In
 	Shutdowner di.Shutdowner
@@ -26,7 +26,7 @@ type ServerParams struct {
 	FS         *os.FS
 }
 
-// NewServer for debug.
+// NewServer constructs the debug server if enabled; otherwise it returns nil.
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -48,7 +48,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{service}, nil
 }
 
-// Server for debug.
+// Server wraps the debug HTTP service.
 type Server struct {
 	*server.Service
 }

@@ -8,10 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 )
 
-// RequestHandler is a handler with a generic request and response.
+// RequestHandler handles a decoded request and returns a response model.
 type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res, error)
 
-// NewRequestHandler for content.
+// NewRequestHandler builds a handler that decodes the request body and encodes the response.
+//
+// The encoder is selected from the request Content-Type, and decode errors are turned into
+// a 400 response via net/http/status.
 func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
@@ -27,10 +30,10 @@ func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[R
 	})
 }
 
-// Handler is a handler with a generic response.
+// Handler handles a request without a request body and returns a response model.
 type Handler[Res any] func(ctx context.Context) (*Res, error)
 
-// NewHandler for content.
+// NewHandler builds a handler that encodes the response and writes errors using status helpers.
 func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		return handler(ctx)

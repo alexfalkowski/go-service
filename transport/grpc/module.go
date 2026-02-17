@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
-// Module for fx.
+// Module wires gRPC transport server, auth, and middleware into Fx.
 var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(NewServerLimiter),

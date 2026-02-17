@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	// ErrInvalidRequest when we pass nil.
+	// ErrInvalidRequest is returned when the request payload is nil.
 	ErrInvalidRequest = errors.New("rpc: invalid request")
 
-	// ErrInvalidResponse when we pass nil.
+	// ErrInvalidResponse is returned when the response target is nil.
 	ErrInvalidResponse = errors.New("rpc: invalid response")
 )
 
