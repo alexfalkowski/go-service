@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:2.108
+      - image: alexfalkowski/go:2.109
         environment:
           GOEXPERIMENT: greenteagc
       - image: postgres:18-trixie
@@ -74,7 +74,7 @@ jobs:
     resource_class: arm.large
   version:
     docker:
-      - image: alexfalkowski/release:5.47
+      - image: alexfalkowski/release:5.48
     working_directory: ~/go-service
     steps:
       - checkout:
