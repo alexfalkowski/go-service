@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.287.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.287.0) - 2026-02-19
+
+- [`1fd877f`](https://github.com/alexfalkowski/go-service/commit/1fd877fbcf4b2be324f943eb1c81495fb83e0c4b) feat(deps): bump filippo.io/edwards25519 from 1.1.0 to 1.1.1 (#2157)
+- [`0a8195c`](https://github.com/alexfalkowski/go-service/commit/0a8195c3220c1c76e32aeb441b845b0a85bc49fa) build(ci): use latest published images (#2156)
+- [`e562672`](https://github.com/alexfalkowski/go-service/commit/e5626725627f1482cdf85cf749cb91cf54db61e6) build(ci): use latest published images (#2155)
+
 ## [v2.286.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.286.0) - 2026-02-17
 
 - [`c7fd620`](https://github.com/alexfalkowski/go-service/commit/c7fd620e4f9e70e5bc680e8c22e0b4444a2e2465) feat(docs): update godocs with codex (#2154)
