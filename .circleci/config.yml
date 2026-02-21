@@ -24,6 +24,7 @@ jobs:
           method: blobless
       - run: git submodule sync
       - run: git submodule update --init
+      - run: ./prune-modcache.rb --root . --mod readonly
       - run: make source-key
       - run: mkcert -install
       - run: make create-certs
