@@ -21,7 +21,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	gt "github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -49,7 +48,7 @@ func Options() []di.Option {
 	}
 }
 
-func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, tracer *tracer.Tracer, _ env.Version) health.Registrations {
+func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ env.Version) health.Registrations {
 	if cfg == nil {
 		return nil
 	}

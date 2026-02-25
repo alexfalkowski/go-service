@@ -44,8 +44,9 @@ type Server struct {
 
 // Register server.
 func (s *Server) Register() {
+	RegisterTracer(s.Lifecycle, s.Tracer)
+
 	sh := NewShutdowner()
-	_ = NewTracer(s.Lifecycle, s.Tracer)
 	servers := []*server.Service{}
 
 	if s.RegisterHTTP {

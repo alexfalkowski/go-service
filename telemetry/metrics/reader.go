@@ -10,10 +10,15 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
-// ErrNotFound for metrics.
+// ErrNotFound is returned when the configured metrics reader kind is unknown.
 var ErrNotFound = errors.New("metrics: reader not found")
 
-// NewReader for metrics. A nil reader means disabled.
+// NewReader constructs an OpenTelemetry SDK metric reader based on cfg.
+//
+// If metrics are disabled (`cfg == nil`), it returns (nil, nil).
+//
+// The constructed reader is registered with the provided lifecycle and is shut down on stop.
+// If the reader was already shut down, the shutdown error is ignored.
 func NewReader(lc di.Lifecycle, name env.Name, cfg *Config) (metric.Reader, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
