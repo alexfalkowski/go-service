@@ -38,14 +38,10 @@ type Client struct {
 	Compression  bool
 }
 
-// NewTracer for client.
-func (c *Client) NewTracer() *tracer.Tracer {
-	return NewTracer(c.Lifecycle, c.Tracer)
-}
-
 // NewHTTP client for test.
 func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
-	_ = c.NewTracer()
+	RegisterTracer(c.Lifecycle, c.Tracer)
+
 	opts := []transporthttp.ClientOption{
 		transporthttp.WithClientLogger(c.Logger),
 		transporthttp.WithClientRoundTripper(c.RoundTripper),
@@ -71,7 +67,8 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
 
 // NewGRPC client for test.
 func (c *Client) NewGRPC(os ...grpcbreaker.Option) *grpc.ClientConn {
-	_ = c.NewTracer()
+	RegisterTracer(c.Lifecycle, c.Tracer)
+
 	opts := []transportgrpc.ClientOption{
 		transportgrpc.WithClientUnaryInterceptors(),
 		transportgrpc.WithClientStreamInterceptors(),

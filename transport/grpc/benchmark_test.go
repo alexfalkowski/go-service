@@ -138,8 +138,9 @@ func BenchmarkGRPC(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 		lc := fxtest.NewLifecycle(b)
-		_ = test.NewTracer(lc, nil)
 		cfg := test.NewInsecureTransportConfig()
+
+		test.RegisterTracer(lc, nil)
 
 		g, err := tg.NewServer(tg.ServerParams{
 			Shutdowner: test.NewShutdowner(),

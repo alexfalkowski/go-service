@@ -12,6 +12,11 @@ type MeterProvider = metric.MeterProvider
 type Meter = metric.Meter
 
 // NewMeter returns a Meter from provider using the service name and version.
+//
+// The returned meter uses `name` as the instrumentation scope name and `version` as the
+// instrumentation scope version (via `metric.WithInstrumentationVersion`).
+//
+// If provider is nil, NewMeter returns nil.
 func NewMeter(name env.Name, version env.Version, provider MeterProvider) Meter {
 	if provider == nil {
 		return nil

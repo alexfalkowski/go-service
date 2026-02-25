@@ -5,8 +5,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
-// NewTracer for test.
-func NewTracer(lc di.Lifecycle, config *tracer.Config) *tracer.Tracer {
+// RegisterTracer for test.
+func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 	params := tracer.TracerParams{
 		Lifecycle:   lc,
 		Environment: Environment,
@@ -15,5 +15,5 @@ func NewTracer(lc di.Lifecycle, config *tracer.Config) *tracer.Tracer {
 		Config:      config,
 	}
 
-	return tracer.NewTracer(params)
+	tracer.Register(params)
 }

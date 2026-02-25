@@ -13,19 +13,53 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-// MeterProviderParams for metrics.
+// MeterProviderParams declares the dependencies required by NewMeterProvider.
+//
+// It is intended for Fx/Dig injection and includes service identity fields used to
+// populate OpenTelemetry resource attributes.
 type MeterProviderParams struct {
 	di.In
-	Lifecycle   di.Lifecycle
-	Config      *Config
-	Reader      sdk.Reader
-	ID          env.ID
-	Name        env.Name
-	Version     env.Version
+
+	// Lifecycle is used to start runtime/host instrumentation and to shut down the
+	// meter provider with the application.
+	Lifecycle di.Lifecycle
+
+	// Config enables metrics when non-nil and supplies exporter settings.
+	Config *Config
+
+	// Reader is the SDK reader/exporter that NewMeterProvider will attach to the provider.
+	// A nil reader disables metrics even when Config is set.
+	Reader sdk.Reader
+
+	// ID is the host identifier used for the resource's host.id attribute.
+	ID env.ID
+
+	// Name is the service name used for the resource's service.name attribute.
+	Name env.Name
+
+	// Version is the service version used for the resource's service.version attribute.
+	Version env.Version
+
+	// Environment is the deployment environment name used for the resource's
+	// deployment.environment.name attribute.
 	Environment env.Environment
 }
 
-// NewMeterProvider for metrics.
+// NewMeterProvider constructs and installs a global OpenTelemetry MeterProvider.
+//
+// When metrics are enabled (`params.Config != nil`) and a non-nil Reader is provided,
+// NewMeterProvider:
+//
+//  1. Creates an OpenTelemetry resource describing the running service.
+//  2. Constructs an SDK `*metric.MeterProvider` with the provided reader.
+//  3. Installs it globally via `otel.SetMeterProvider`.
+//  4. Registers lifecycle hooks:
+//     - OnStart: starts runtime and host instrumentation using this provider
+//     - OnStop: shuts down the provider
+//
+// Provider shutdown errors are intentionally ignored to avoid blocking other stop hooks.
+//
+// If metrics are disabled or Reader is nil, it returns nil.
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !params.Config.IsEnabled() || params.Reader == nil {
 		return nil
