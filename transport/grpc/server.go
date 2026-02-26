@@ -12,13 +12,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // ServerParams defines dependencies for constructing a gRPC Server.
@@ -57,7 +57,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	timeout := time.MustParseDuration(params.Config.Timeout)
 	grpcServer := grpc.NewServer(params.Config.Options, timeout,
-		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.StatsHandler(telemetry.NewServerHandler()),
 		unaryServerOption(params, params.Unary...),
 		streamServerOption(params, params.Stream...),
 		opt,

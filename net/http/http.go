@@ -8,10 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const (
@@ -113,10 +112,10 @@ var (
 // NewClient returns an http.Client that instruments requests with OpenTelemetry and applies timeout.
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 	return &http.Client{
-		Transport: otelhttp.NewTransport(
+		Transport: telemetry.NewTransport(
 			rt,
-			otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
-				return otelhttptrace.NewClientTrace(ctx)
+			telemetry.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+				return telemetry.NewClientTrace(ctx)
 			}),
 		),
 		Timeout: timeout,
@@ -140,7 +139,7 @@ func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
 
 // Handle registers handler for pattern and wraps it with OpenTelemetry instrumentation.
 func Handle(mux *ServeMux, pattern string, handler http.Handler) {
-	mux.Handle(pattern, otelhttp.NewHandler(handler, pattern))
+	mux.Handle(pattern, telemetry.NewHandler(handler, pattern))
 }
 
 // StatusText is an alias for http.StatusText.
