@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
@@ -13,7 +14,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
 
 // ClientOption configures gRPC client construction.
@@ -212,7 +212,7 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 		return nil, err
 	}
 
-	os = append(os, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))
+	os = append(os, grpc.WithStatsHandler(telemetry.NewClientHandler()))
 
 	return grpc.NewClient(target, os...)
 }
