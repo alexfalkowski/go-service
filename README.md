@@ -7,213 +7,295 @@
 
 # Go Service
 
-A framework to build services in Go. This came out of us building services over the years and what we consider good practices in building services. Hence it is highly subjective and opinionated.
+`github.com/alexfalkowski/go-service/v2` is an opinionated framework/library for building Go services with consistent wiring for configuration, DI, transports, telemetry, crypto, etc.
 
-This framework [stands on the shoulder of giants](https://en.wikipedia.org/wiki/Standing_on_the_shoulders_of_giants) so we don't reinvent the wheel!
+This repo is primarily a **library of packages** (no top-level `cmd/` binary). Services built on top typically define their own `main` package elsewhere and import this module.
 
-## Dependency Injection
+---
 
-This framework heavily relies on [DI](https://en.wikipedia.org/wiki/Dependency_injection). We have chosen to use [Uber FX](https://github.com/uber-go/fx). So there is great information online to get you up to speed.
+## Dependency Injection (Fx)
+
+The framework is designed around dependency injection and uses [Uber Fx](https://github.com/uber-go/fx) (and Dig under the hood). Most subsystems expose Fx modules that you compose into your service.
+
+If you are new to Fx, their docs/examples are worth reading first.
+
+---
 
 ## CLI
 
-A service has commands that are configured using [acmd](https://github.com/cristalhq/acmd). Each service has the following commands:
+Services commonly expose two command shapes:
 
-- `Server` - These are long running apps, e.g. daemons.
-- `Client` - These are short lived apps, e.g. control.
+- **Server**: long-running daemon process
+- **Client**: short-lived control/admin process
 
-These are configured in the main function.
+The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `main` typically wires Fx modules + commands.
+
+> This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks.
+
+---
 
 ## Configuration
 
-The supported configuration kinds are as follows:
+### Supported config formats
 
-- [JSON](https://pkg.go.dev/encoding/json)
-- [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://pkg.go.dev/go.yaml.in/yaml/v3)
+The config decoder supports:
 
-The configuration can be read from multiple sources by specifying a flag called `-i`. As per the following:
+- JSON (`encoding/json`)
+- TOML (`github.com/BurntSushi/toml`)
+- YAML (`go.yaml.in/yaml/v3`)
 
-- `env:CONFIG` - Read from an env variable called `CONFIG`. The env variable must be a configuration and we expect the format of `extension:content`, where `extension` is the supported kinds and `content` contains the contents of the config that is *base64 encoded*.
-- `file:path` - Read from the path.
-- If all the above fails it will try common locations, such as:
-  - The binary location.
-  - The user config directory (`os.UserConfigDir()`) under `<serviceName>/`.
-  - The `/etc` folder.
+### Selecting the config source (`-i` flag)
 
-The reason for this is that we want to be able to separate how configuration is retrieved.
+Config input is routed by a flag called `-i`:
 
-This is the [configuration](config/config.go). We will outline the config required in each section. The following configuration examples will use YAML.
+- `file:<path>`  
+  Read config from a file at `<path>`; parser is selected from the file extension (`.yaml`, `.yml`, `.toml`, `.json`).
+
+- `env:<ENV_VAR>`  
+  Read config from env var `<ENV_VAR>`. The env var value must be formatted as:
+
+  `"<extension>:<base64-content>"`
+
+  Example format: `yaml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==`
+
+- Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
+
+  `<serviceName>.{yaml,yml,toml,json}`
+
+  in:
+  - executable directory
+  - `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)
+  - `/etc/<serviceName>/`
+
+### Typed decoding and validation
+
+At runtime, services typically decode into a struct (often embedding `config.Config`) and validate it using `go-playground/validator`.
+
+The library provides a helper `config.NewConfig[T]` which:
+- decodes into `*T`
+- rejects an “empty” decoded value (guards against starting with a zero-value config)
+- validates the decoded config
+
+### The standard top-level config shape
+
+The canonical top-level config type is `config.Config` (in `config/config.go`). It contains:
+
+- `debug`, `cache`, `crypto`, `feature`, `hooks`, `id`, `sql`, `telemetry`, `time`, `transport`, `environment`
+
+Most sub-configs are optional pointers. Conventionally, `nil` means **disabled**.
+
+---
+
+## Source strings (secrets, DSNs, paths)
+
+Many fields accept a *source string* rather than only a literal:
+
+- `env:NAME` → read from environment variable `NAME`
+- `file:/path/to/thing` → read from filesystem
+- otherwise → treat as literal string
+
+This is used for secrets and key material (TLS keys, HMAC keys, webhook secrets, SQL DSNs, etc).
+
+Example:
+```yaml
+hooks:
+  secret: env:WEBHOOK_SECRET
+```
+
+---
 
 ## Environment
 
-You can specify the environment of the service.
-
-### Paths
-
-In any of the configurations where a path is specified we allow the following:
-
-- `env:CONFIG` - Read from an environment variable.
-- `file:path` - Read from a file path.
-- `string` - Any arbitrary string.
-
-### Environment Configuration
-
-To configure, please specify the following:
+Top-level environment is:
 
 ```yaml
 environment: development
 ```
 
+This is an `env.Environment` value used to drive environment-specific behavior in services.
+
+---
+
 ## Compression
 
-We support the following:
+Compression kinds used by subsystems that support compression:
 
-- None
-- [Zstd](https://github.com/klauspost/compress/tree/master/zstd)
-- [S2](https://github.com/klauspost/compress/tree/master/s2)
-- [Snappy](https://github.com/klauspost/compress/tree/master/snappy)
+- `none`
+- `zstd`
+- `s2`
+- `snappy`
+
+---
 
 ## Encoders
 
-We support the following:
+Encoding kinds used by subsystems that support encoding:
 
-- [JSON](https://pkg.go.dev/encoding/json)
-- [TOML](https://github.com/BurntSushi/toml)
-- [YAML](https://pkg.go.dev/go.yaml.in/yaml/v3)
-- [Proto](https://google.golang.org/protobuf/proto)
-- [GOB](https://pkg.go.dev/encoding/gob)
+- `json`
+- `toml`
+- `yaml`
+- `proto`
+- `gob`
 
-## Caching
+---
 
-The framework currently supports the following caching solutions from the awesome [Cachego](https://github.com/faabiosr/cachego).
+## Cache
 
-### Cache Configuration
-
-To configure, please specify the following:
+Cache configuration is defined in `cache/config.Config`:
 
 ```yaml
 cache:
-  kind: redis | sync
-  compressor: none | s2 | zstd | snappy
-  encoder: json | toml | yaml | proto | gob
+  kind: redis
+  compressor: zstd
+  encoder: json
   options:
-    url: path to url
+    url: env:CACHE_URL
 ```
 
-## Feature
+Notes:
+- `kind` is implementation-dependent (for example `redis`, `valkey`, `noop`) based on what your service wires/compiles in.
+- `options` is backend-specific and decoded as `map[string]any`.
 
-The framework supports [OpenFeature](https://openfeature.dev/).
+---
 
-### Feature Configuration
+## Feature flags (OpenFeature)
 
-To configure, please specify the following:
+The `feature.Config` embeds client-side config (`config/client.Config`), so it supports:
+
+- `address`
+- `timeout`
+- `retry`
+- `limiter`
+- `tls`
+- `token`
+- `options`
+
+Example:
 
 ```yaml
 feature:
   address: localhost:9000
+  timeout: 10s
   retry:
     backoff: 100ms
     timeout: 1s
     attempts: 3
-  timeout: 10s
+  tls:
+    cert: file:test/certs/client.pem
+    key: file:test/certs/client-key.pem
 ```
 
-## Hooks
+Notes:
+- Presence enables the feature subsystem configuration-wise, but you still need to register an OpenFeature provider in your service wiring.
 
-The framework supports [Standard Webhooks](https://www.standardwebhooks.com/).
+---
 
-### Hooks Configuration
+## Webhooks (Standard Webhooks)
 
-To configure, please specify the following:
+Configured via `hooks.Config`:
 
 ```yaml
 hooks:
-  secret: path to secret
+  secret: file:test/secrets/webhook_secret.txt
 ```
 
-## ID
+`secret` is a source string.
 
-The framework supports the generation of ids. The following are supported:
+---
 
-- [uuid](https://github.com/google/uuid)
-- [ksuid](https://github.com/segmentio/ksuid)
-- [nanoid](https://github.com/matoous/go-nanoid)
-- [ulid](https://github.com/oklog/ulid)
-- [xid](https://github.com/rs/xid)
+## ID generation
 
-### ID Configuration
+Supported ID kinds:
 
-To configure, please specify the following:
+- `uuid`
+- `ksuid`
+- `nanoid`
+- `ulid`
+- `xid`
+
+Config:
 
 ```yaml
 id:
-  kind: uuid | ksuid | nanoid | ulid | xid
+  kind: uuid
 ```
 
-## Runtime
+---
 
-We enhance the runtime with the following:
+## Runtime enhancements
 
-- [Automemlimit](https://github.com/KimMachineGun/automemlimit)
+The runtime is enhanced with:
 
-## SQL
+- [automemlimit](https://github.com/KimMachineGun/automemlimit)
 
-For SQL databases we support the following:
+---
 
-- [Postgres](https://github.com/jackc/pgx)
+## SQL (Postgres)
 
-We also support master, slave combinations with the awesome [mssqlx](https://github.com/linxGnu/mssqlx).
+SQL root config is `database/sql.Config`, with Postgres under `sql.pg`.
 
-### SQL Configuration
+Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including master/slave DSNs and pool sizes.
 
-To configure, please specify the following:
+Example (with source strings for DSNs):
 
 ```yaml
 sql:
   pg:
     masters:
-      -
-        url: path to url
+      - url: env:PG_MASTER_DSN
     slaves:
-      -
-        url: path to url
+      - url: env:PG_SLAVE_DSN
     max_open_conns: 5
     max_idle_conns: 5
     conn_max_lifetime: 1h
+```
+
+Example (literal DSN; not recommended for production secrets):
+
+```yaml
+sql:
+  pg:
+    masters:
+      - url: postgres://user:pass@localhost:5432/dbname?sslmode=disable
+    max_open_conns: 10
 ```
 
 ### Dependencies
 
 ![Dependencies](./assets/database.png)
 
+---
+
 ## Health
 
-The health package is based on [go-health](https://github.com/alexfalkowski/go-health). This package allows us to create all sorts of ways to check external and internal systems.
+Health checks are based on [go-health](https://github.com/alexfalkowski/go-health).
 
-We also provide ways to integrate into container integration systems. So we provide the following endpoints:
+The framework provides Kubernetes-style endpoints:
 
-- `/name/healthz` - This allows us to check any external dependency and provide a breakdown of what is not functioning. This should only be used for verification.
-- `/name/livez`: Can be used for k8s [liveness](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command).
-- `/name/readyz`: Can be used for k8s [readiness](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes).
+- `/<name>/healthz` — detailed dependency breakdown (verification/debugging)
+- `/<name>/livez` — liveness probe
+- `/<name>/readyz` — readiness probe
 
-This is modelled around [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
+These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
+
+---
 
 ## Telemetry
 
-Telemetry is broken down in the following sections:
+Telemetry config root is `telemetry.Config`:
+
+```yaml
+telemetry:
+  logger: ...
+  metrics: ...
+  tracer: ...
+```
 
 ### Logging
 
-For logging we use [slog](https://pkg.go.dev/log/slog).
+Logging uses `log/slog`.
 
-#### Logging Configuration
-
-We have multiple options for logging.
-
-##### JSON
-
-To configure, please specify the following:
+#### JSON logger
 
 ```yaml
 telemetry:
@@ -222,9 +304,7 @@ telemetry:
     level: info
 ```
 
-##### Text
-
-To configure, please specify the following:
+#### Text logger
 
 ```yaml
 telemetry:
@@ -233,9 +313,7 @@ telemetry:
     level: info
 ```
 
-##### Logger OTLP
-
-To configure, please specify the following:
+#### OTLP-ish logger (Loki push)
 
 ```yaml
 telemetry:
@@ -244,23 +322,20 @@ telemetry:
     level: info
     url: http://localhost:3100/loki/api/v1/push
     headers:
-      Authorization: path to key
+      Authorization: env:LOKI_AUTH
 ```
+
+Notes:
+- `headers` values are source strings. If a header value cannot be resolved, some header wiring can fail fast.
 
 ### Metrics
 
-For metrics we support the following:
+Supported metrics kinds:
 
-- [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
-- [Prometheus](https://github.com/prometheus/client_golang)
+- `prometheus`
+- `otlp`
 
-#### Metrics Configuration
-
-Below is the configuration for each system.
-
-##### Prometheus
-
-To configure, please specify the following:
+#### Prometheus
 
 ```yaml
 telemetry:
@@ -268,9 +343,7 @@ telemetry:
     kind: prometheus
 ```
 
-##### Metrics OTLP
-
-To configure, please specify the following:
+#### OTLP metrics
 
 ```yaml
 telemetry:
@@ -278,22 +351,12 @@ telemetry:
     kind: otlp
     url: http://localhost:9009/otlp/v1/metrics
     headers:
-      Authorization: path to key
+      Authorization: env:OTLP_METRICS_AUTH
 ```
 
-### Trace
+### Tracing
 
-For distributed tracing we support the following:
-
-- [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-go)
-
-#### Trace Configuration
-
-Below is the configuration for each system.
-
-##### Trace OTLP
-
-To configure, please specify the following:
+Tracing supports OTLP exporter config:
 
 ```yaml
 telemetry:
@@ -301,10 +364,10 @@ telemetry:
     kind: otlp
     url: http://localhost:4318/v1/traces
     headers:
-      Authorization: path to key
+      Authorization: env:OTLP_TRACES_AUTH
 ```
 
-### Telemetry Libraries
+### Telemetry libraries used
 
 - <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/runtime>
 - <https://pkg.go.dev/go.opentelemetry.io/contrib/instrumentation/host>
@@ -313,50 +376,152 @@ telemetry:
 - <https://github.com/redis/go-redis/tree/master/extra/redisotel>
 - <https://github.com/XSAM/otelsql>
 
-### Telemetry Dependencies
+### Dependencies
 
 ![Dependencies](./assets/telemetry.png)
 
-## Token
+---
 
-The framework allows you to define different token generators and verifiers.
+## Tokens
 
-### Access
+Token configuration is rooted at `token.Config`, usually nested under transport config as `transport.http.token` and/or `transport.grpc.token` (via the shared server-side transport config).
 
-We have support for different access controls using [casbin](https://github.com/casbin/casbin).
+Supported token `kind` values:
+
+- `jwt`
+- `paseto`
+- `ssh`
+
+### Access control (Casbin)
+
+Optional access control is configured under:
+
+```yaml
+token:
+  access:
+    policy: file:/path/to/policy.csv
+```
+
+In transport configs this becomes:
+
+```yaml
+transport:
+  http:
+    token:
+      access:
+        policy: file:test/policy.csv
+```
+
+The model is based on Casbin RBAC:
+<https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
 
 ### JWT
 
-We use the awesome [JWT](https://github.com/golang-jwt/jwt).
+JWT config:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: jwt
+      jwt:
+        iss: my-service
+        exp: 1h
+        kid: my-key-id
+```
+
+Important behavior:
+- JWT verification requires the `kid` header to exist and match `kid` in config exactly.
+- `exp` is parsed as a Go duration string; invalid values can fail fast.
 
 ### Paseto
 
-We use the awesome [Paseto](https://github.com/aidantwoods/go-paseto).
+Paseto config:
 
-### SSH
+```yaml
+transport:
+  http:
+    token:
+      kind: paseto
+      paseto:
+        iss: my-service
+        exp: 1h
+```
 
-We use the awesome [SSH](https://pkg.go.dev/golang.org/x/crypto/ssh).
+Note:
+- The current PASETO implementation issues **v4 public** tokens using Ed25519 key material provided via wiring (not directly from `paseto.secret`). If you want config-driven key material, load it via the crypto subsystem and wire signer/verifier appropriately.
+
+### SSH tokens
+
+SSH token verification keys are name-addressable and support rotation.
+
+Verification-only example:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: ssh
+      ssh:
+        keys:
+          - name: active
+            public: file:test/keys/active.pub
+```
+
+Signing + verification example:
+
+```yaml
+transport:
+  http:
+    token:
+      kind: ssh
+      ssh:
+        key:
+          name: active
+          private: file:test/keys/active
+        keys:
+          - name: active
+            public: file:test/keys/active.pub
+          - name: old
+            public: file:test/keys/old.pub
+```
+
+Notes:
+- `ssh.key` is used for minting tokens (requires private key).
+- `ssh.keys` is used for verification (public keys).
+- The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
+
+---
 
 ## Limiter
 
-The framework allows you to define a [limiter](https://github.com/sethvargo/go-limiter). This will be applied to the different transports.
+Limiter config is `limiter.Config` and is typically applied at transport level.
 
-The different kinds are:
+Supported key kinds (built-in):
 
-- [user-agent](limiter/limiter.go)
-- [ip](limiter/limiter.go)
-- [token](limiter/limiter.go)
+- `user-agent`
+- `ip`
+- `token`
 
-## Time
+Example:
 
-The framework allows you to use network time services. We use:
+```yaml
+transport:
+  http:
+    limiter:
+      kind: user-agent
+      tokens: 10
+      interval: 1s
+```
 
-- [ntp](https://github.com/beevik/ntp)
-- [nts](https://github.com/beevik/nts)
+Note:
+- `interval` is parsed as a Go duration string. Invalid values can fail fast.
 
-### Time Configuration
+---
 
-To configure, please specify the following:
+## Time (network time)
+
+Time config:
 
 ```yaml
 time:
@@ -364,41 +529,54 @@ time:
   address: time.cloudflare.com
 ```
 
+Supported kinds:
+- `ntp`
+- `nts`
+
+---
+
 ## Transport
 
-The transport layer provides ways to abstract communication for in/out of the service. So we have the following integrations:
+The transport layer provides common wiring and helpers for communication in/out of the service.
 
-- [gRPC](https://grpc.io/) - The author truly believes in [IDLs](https://en.wikipedia.org/wiki/Interface_description_language).
-- [REST](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rest) - An abstraction using [content negotiation](https://github.com/elnormous/contenttype).
-- [RPC](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/rpc) - abstraction using [content negotiation](https://github.com/elnormous/contenttype).
-- [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) - We have a simple [framework](https://github.com/alexfalkowski/go-service/v2/tree/master/net/http/mvc).
-- [CloudEvents](https://github.com/cloudevents/sdk-go) - A specification for describing event data in a common way.
+Supported stacks include:
 
-### gRPC
+- gRPC (<https://grpc.io/>)
+- HTTP REST abstraction (`net/http/rest`) using content negotiation
+- HTTP RPC abstraction (`net/http/rpc`) using content negotiation
+- HTTP MVC helpers (`net/http/mvc`)
+- CloudEvents (<https://github.com/cloudevents/sdk-go>)
 
-Below is list of the provided interceptors:
+### Transport configuration (servers)
 
-- [Limiter](https://github.com/sethvargo/go-limiter)
+Transport config root is `transport.Config`:
 
-### REST
+- `transport.http` embeds `config/server.Config`
+- `transport.grpc` embeds `config/server.Config`
 
-Below is list of the provided handlers:
-
-- [Limiter](https://github.com/sethvargo/go-limiter)
-
-### Transport Configuration
-
-To configure, please specify the following:
+Minimal example:
 
 ```yaml
 transport:
   http:
     address: tcp://localhost:8000
+    timeout: 10s
+  grpc:
+    address: tcp://localhost:9000
+    timeout: 10s
+```
+
+With retry + low-level options map:
+
+```yaml
+transport:
+  http:
+    address: tcp://localhost:8000
+    timeout: 10s
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
-    timeout: 10s
     options:
       read_timeout: 10s
       write_timeout: 10s
@@ -406,11 +584,11 @@ transport:
       read_header_timeout: 10s
   grpc:
     address: tcp://localhost:9000
+    timeout: 10s
     retry:
       backoff: 100ms
       timeout: 1s
       attempts: 3
-    timeout: 10s
     options:
       keepalive_enforcement_policy_ping_min_time: 10s
       keepalive_max_connection_idle: 10s
@@ -419,156 +597,83 @@ transport:
       keepalive_ping_time: 10s
 ```
 
-If you would like to enable TLS, do the following:
+### TLS for transports
+
+TLS config uses `crypto/tls.Config` and fields are source strings:
 
 ```yaml
 transport:
   http:
     tls:
-      cert: path of cert
-      key: path of key
+      cert: file:test/certs/server.pem
+      key: file:test/certs/server-key.pem
   grpc:
     tls:
-      cert: path of cert
-      key: path of key
+      cert: file:test/certs/server.pem
+      key: file:test/certs/server-key.pem
 ```
 
-If you would like to enable a limiter, do the following:
+Important gotcha:
+- Some transport packages require that you call a package `Register(...)` function to provide an `os.FS` used to read key material. If you enable TLS and have not registered the FS, TLS construction may not have access to the filesystem.
 
-```yaml
-transport:
-  http:
-    limiter:
-      kind: user-agent
-      tokens: 10
-      interval: 1s
-  grpc:
-    limiter:
-      kind: user-agent
-      tokens: 10
-      interval: 1s
-```
-
-#### Transport Token Access
-
-To configure, please specify the following:
-
-```yaml
-transport:
-  http:
-    token:
-      access:
-        policy: path to policy file
-  grpc:
-    token:
-      access:
-        policy: path to policy file
-```
-
-The model is based on the following [config](https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf).
-
-#### Transport Token JWT
-
-To configure, please specify the following:
-
-```yaml
-transport:
-  http:
-    token:
-      kind: jwt
-      jwt:
-        iss: issuer
-        exp: 1h
-        kid: 1234567890
-  grpc:
-    token:
-      kind: jwt
-      jwt:
-        iss: issuer
-        exp: 1h
-        kid: 1234567890
-```
-
-#### Transport Token Paseto
-
-To configure, please specify the following:
-
-```yaml
-transport:
-  http:
-    token:
-      kind: paseto
-      paseto:
-        iss: issuer
-        exp: 1h
-  grpc:
-    token:
-      kind: paseto
-      paseto:
-        iss: issuer
-        exp: 1h
-```
-
-#### Transport Token SSH
-
-To verify, please specify the following:
-
-```yaml
-transport:
-  http:
-    token:
-      kind: ssh
-      ssh:
-        keys:
-          - name: test
-            public: path to key
-  grpc:
-    token:
-      kind: ssh
-      ssh:
-        keys:
-          - name: test
-            public: path to key
-```
-
-### Transport Dependencies
+### Dependencies
 
 ![Dependencies](./assets/transport.png)
 
+---
+
 ## Cryptography
 
-The crypto package provides sensible defaults for symmetric, asymmetric, hashing and randomness.
+The crypto root config is `crypto.Config` and supports multiple key types. Most fields are source strings.
 
-We rely on the awesome [crypto](https://pkg.go.dev/golang.org/x/crypto).
-
-### Cryptography Configuration
-
-To configure, please specify the following:
+Example:
 
 ```yaml
 crypto:
   aes:
-    key: path to the key
+    key: env:AES_KEY
   ed25519:
-    public: path to the public
-    private: path to the private
+    public: file:test/keys/ed25519.pub.pem
+    private: file:test/keys/ed25519.priv.pem
   hmac:
-    key: path to the key
+    key: env:HMAC_KEY
   rsa:
-    public: path to the public
-    private: path to the private
+    public: file:test/keys/rsa.pub.pem
+    private: file:test/keys/rsa.priv.pem
   ssh:
-    public: path to the public
-    private: path to the private
+    public: file:test/keys/id_ed25519.pub
+    private: file:test/keys/id_ed25519
 ```
 
-### Cryptography Dependencies
+Notes:
+- AES keys must be 16/24/32 bytes after resolving the source string.
+- RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`).
+- Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
+
+### Dependencies
 
 ![Dependencies](./assets/crypto.png)
 
-## Debug
+---
 
-This section outlines all utilities added for your troubleshooting abilities.
+## Debug endpoints
+
+Debug server config:
+
+```yaml
+debug:
+  address: tcp://localhost:6060
+  timeout: 10s
+```
+
+Enable TLS:
+
+```yaml
+debug:
+  tls:
+    cert: file:test/certs/debug.pem
+    key: file:test/certs/debug-key.pem
+```
 
 ### statsviz
 
@@ -576,7 +681,7 @@ This section outlines all utilities added for your troubleshooting abilities.
 GET http://localhost:6060/debug/statsviz
 ```
 
-Check out [statsviz](https://github.com/arl/statsviz).
+<https://github.com/arl/statsviz>
 
 ### pprof
 
@@ -588,7 +693,7 @@ GET http://localhost:6060/debug/pprof/symbol
 GET http://localhost:6060/debug/pprof/trace
 ```
 
-Check out [pprof](https://pkg.go.dev/net/http/pprof).
+<https://pkg.go.dev/net/http/pprof>
 
 ### fgprof
 
@@ -596,7 +701,7 @@ Check out [pprof](https://pkg.go.dev/net/http/pprof).
 GET http://localhost:6060/debug/fgprof?seconds=10
 ```
 
-Check out [fgprof](https://pkg.go.dev/github.com/felixge/fgprof).
+<https://pkg.go.dev/github.com/felixge/fgprof>
 
 ### gopsutil
 
@@ -604,44 +709,25 @@ Check out [fgprof](https://pkg.go.dev/github.com/felixge/fgprof).
 GET http://localhost:6060/debug/psutil
 ```
 
-Check out [gopsutil](https://github.com/shirou/gopsutil).
+<https://github.com/shirou/gopsutil>
 
-### Debug Configuration
-
-To configure, please specify the following:
-
-```yaml
-debug:
-  address: tcp://localhost:6060
-  timeout: 10s
-```
-
-If you would like to enable TLS, do the following:
-
-```yaml
-debug:
-  tls:
-    cert: path of cert
-    key: path of key
-```
+---
 
 ## Development
 
-This section describes how to run and contribute to the project, if you are interested.
-
 ### Style
 
-We favour what is defined in the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
+This repo generally follows the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
 
-### Development Dependencies
+### Dependencies
 
-Please setup the following:
+For local TLS fixtures:
 
 - <https://github.com/FiloSottile/mkcert>
 
-### Setup
+### Setup (repo)
 
-To get yourself setup, please run:
+This repo uses a `bin/` git submodule for `make` targets.
 
 ```sh
 git submodule sync
@@ -653,29 +739,23 @@ make create-certs
 make dep
 ```
 
-### Development Environment
+### Local integration dependencies
 
-As we rely on external services these need to be configured:
-
-#### Starting
-
-Please run:
+Start required services:
 
 ```sh
 make start
 ```
 
-#### Stopping
-
-Please run:
+Stop them:
 
 ```sh
 make stop
 ```
 
-### Testing
+### Tests
 
-To be able to test locally, please run:
+Run unit tests + race + coverage:
 
 ```sh
 make specs

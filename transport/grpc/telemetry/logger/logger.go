@@ -11,17 +11,27 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// LevelError is an alias of logger.LevelError.
+// LevelError is an alias of `telemetry/logger.LevelError`.
 const LevelError = logger.LevelError
 
-// Logger is an alias of logger.Logger.
+// Logger is an alias of `telemetry/logger.Logger`.
+//
+// It is re-exported here so transport-layer code can depend on a single logger type when composing
+// interceptors.
 type Logger = logger.Logger
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
-// Ignorable methods bypass logging.
-// Logged attributes include system ("grpc"), service/method (derived from the full method name),
-// duration, and gRPC status code. Log level is derived from the status code (see CodeToLevel).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
+//
+// Logged attributes include:
+//   - system: "grpc"
+//   - service/method: derived from the gRPC full method name
+//   - duration: wall-clock elapsed time
+//   - code: gRPC status code as a string
+//
+// Log level is derived from the status code (see `CodeToLevel`). The log message includes the full
+// method name and, when present, error details.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -49,9 +59,16 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
-// Ignorable methods bypass logging.
-// Logged attributes include system ("grpc"), service/method (derived from the full method name),
-// duration, and gRPC status code. Log level is derived from the status code (see CodeToLevel).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
+//
+// Logged attributes include:
+//   - system: "grpc"
+//   - service/method: derived from the gRPC full method name
+//   - duration: wall-clock elapsed time
+//   - code: gRPC status code as a string
+//
+// Log level is derived from the status code (see `CodeToLevel`). The log message includes the full
+// method name and, when present, error details.
 func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -80,11 +97,17 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
 //
-// Ignorable methods bypass logging.
-// Logged attributes include system ("grpc"), service/method (derived from the full method name),
-// duration, and gRPC status code. Log level is derived from the status code (see CodeToLevel).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
 //
-// The log message prefixes the target address and full method.
+// Logged attributes include:
+//   - system: "grpc"
+//   - service/method: derived from the gRPC full method name
+//   - duration: wall-clock elapsed time
+//   - code: gRPC status code as a string
+//
+// Log level is derived from the status code (see `CodeToLevel`).
+//
+// The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if strings.IsIgnorable(fullMethod) {
@@ -112,11 +135,17 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor returns a gRPC stream client interceptor that logs the RPC outcome.
 //
-// Ignorable methods bypass logging.
-// Logged attributes include system ("grpc"), service/method (derived from the full method name),
-// duration, and gRPC status code. Log level is derived from the status code (see CodeToLevel).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
 //
-// The log message prefixes the target address and full method.
+// Logged attributes include:
+//   - system: "grpc"
+//   - service/method: derived from the gRPC full method name
+//   - duration: wall-clock elapsed time
+//   - code: gRPC status code as a string
+//
+// Log level is derived from the status code (see `CodeToLevel`).
+//
+// The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		if strings.IsIgnorable(fullMethod) {
@@ -142,7 +171,13 @@ func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	}
 }
 
-// CodeToLevel translates a gRPC status code to a logger.Level.
+// CodeToLevel translates a gRPC status code to a `telemetry/logger.Level`.
+//
+// The mapping is intentionally coarse-grained:
+//
+//   - `codes.OK` is logged at info.
+//   - Client/expected error codes (cancellation, invalid argument, not found, unauthenticated, etc.) are logged at warn.
+//   - All other codes (typically server/transient failures) are logged at error.
 func CodeToLevel(code codes.Code) logger.Level {
 	switch code {
 	case codes.OK:

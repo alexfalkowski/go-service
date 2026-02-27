@@ -8,29 +8,56 @@ import (
 )
 
 const (
-	// BasicAuthorization is the HTTP Authorization scheme for Basic auth.
+	// BasicAuthorization is the HTTP Authorization scheme name for Basic authentication.
+	//
+	// When used in an Authorization header, it is typically formatted as:
+	//
+	//	Authorization: Basic <credentials>
+	//
+	// where <credentials> is usually a base64-encoded `username:password` value.
 	BasicAuthorization = "Basic"
 
-	// BearerAuthorization is the HTTP Authorization scheme for Bearer tokens.
+	// BearerAuthorization is the HTTP Authorization scheme name for Bearer token authentication.
+	//
+	// When used in an Authorization header, it is typically formatted as:
+	//
+	//	Authorization: Bearer <token>
+	//
+	// where <token> is an opaque access token (for example, a JWT).
 	BearerAuthorization = "Bearer"
 )
 
 var (
-	// AllAuthorizations lists supported Authorization schemes.
+	// AllAuthorizations lists the supported Authorization schemes for ParseAuthorization.
+	//
+	// Values are compared against the parsed scheme token exactly as provided.
 	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
 
-	// ErrInvalidAuthorization is returned when an Authorization header is malformed.
+	// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
+	//
+	// This is returned when the header does not contain a scheme and value separated by a single ASCII space
+	// (i.e. it cannot be split as "<scheme> <value>").
 	ErrInvalidAuthorization = errors.New("header: authorization is invalid")
 
-	// ErrNotSupportedAuthorization is returned when an Authorization scheme is unsupported.
+	// ErrNotSupportedAuthorization is returned when the Authorization scheme is not supported.
+	//
+	// This is returned when the parsed scheme is not present in AllAuthorizations.
 	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
 
-// ParseAuthorization parses an Authorization header into scheme and credentials.
+// ParseAuthorization parses an HTTP Authorization header into scheme and value.
 //
-// Supported schemes are listed in AllAuthorizations.
-// It returns ErrInvalidAuthorization when the header does not contain a scheme and value separated by a space.
-// It returns ErrNotSupportedAuthorization when the scheme is not supported.
+// The expected format is:
+//
+//	<scheme><space><value>
+//
+// Supported schemes are listed in AllAuthorizations (for example Basic and Bearer).
+//
+// Error behavior:
+//   - If the header cannot be split into two parts on the first ASCII space, it returns ErrInvalidAuthorization.
+//   - If the parsed scheme is not supported, it returns ErrNotSupportedAuthorization.
+//
+// On error, the returned scheme and value are empty strings.
 func ParseAuthorization(header string) (string, string, error) {
 	key, value, ok := strings.Cut(header, strings.Space)
 	if !ok {

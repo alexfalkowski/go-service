@@ -5,15 +5,21 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-// NewGenerator creates a new KSUID generator.
+// NewGenerator constructs a KSUID generator.
+//
+// The returned generator produces KSUID identifiers (K-Sortable Unique Identifiers)
+// via ksuid.NewRandom.
 func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-// Generator for KSUID.
+// Generator generates KSUID identifiers.
 type Generator struct{}
 
-// Generate a KSUID.
+// Generate returns a newly generated KSUID string.
+//
+// It calls ksuid.NewRandom and returns the canonical string representation of the KSUID.
+// If KSUID generation fails, this method panics via runtime.Must.
 func (k *Generator) Generate() string {
 	id, err := ksuid.NewRandom()
 	runtime.Must(err)

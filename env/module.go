@@ -2,10 +2,18 @@ package env
 
 import "github.com/alexfalkowski/go-service/v2/di"
 
-// Module provides Fx wiring for env-based identity values.
+// Module wires env-based service identity values into Fx/Dig.
 //
-// The constructors in this module typically prefer environment-variable overrides
-// and otherwise fall back to derived defaults (see the constructor GoDocs).
+// It provides constructors for commonly used identity primitives derived from environment variables
+// with sensible fallbacks:
+//
+//   - ID via NewID (SERVICE_ID or generated id)
+//   - UserAgent via NewUserAgent ("<name>/<version>")
+//   - UserID via NewUserID (SERVICE_USER_ID or service name)
+//
+// Note: this module does not provide Name or Version directly; those are commonly constructed by
+// callers using NewName (requires *os.FS) and NewVersion (uses runtime metadata). Consumers that
+// depend on UserAgent typically wire Name and Version elsewhere in their module graph.
 var Module = di.Module(
 	di.Constructor(NewID),
 	di.Constructor(NewUserAgent),

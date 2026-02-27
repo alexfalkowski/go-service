@@ -11,7 +11,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// NewGenerator constructs a Generator that produces Ed25519 key pairs using generator as the randomness source.
+// NewGenerator constructs a Generator that produces Ed25519 key pairs.
+//
+// The provided generator is used as the cryptographically-secure randomness source for key generation.
 func NewGenerator(generator *rand.Generator) *Generator {
 	return &Generator{generator: generator}
 }
@@ -21,12 +23,14 @@ type Generator struct {
 	generator *rand.Generator
 }
 
-// Generate returns a public/private key pair encoded as PEM strings.
+// Generate returns an Ed25519 public/private key pair encoded as PEM strings.
 //
-// The returned PEM blocks are:
+// The returned PEM blocks are compatible with the expectations of `crypto/ed25519.Config`:
 //
-//   - public:  "PUBLIC KEY" containing PKIX-encoded bytes (x509.MarshalPKIXPublicKey)
-//   - private: "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.MarshalPKCS8PrivateKey)
+//   - public:  a PEM block with Type "PUBLIC KEY" containing PKIX-encoded bytes (x509.MarshalPKIXPublicKey)
+//   - private: a PEM block with Type "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.MarshalPKCS8PrivateKey)
+//
+// If key generation, marshaling, or encoding fails, the returned error is prefixed with "ed25519".
 func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.generator)
 	if err != nil {

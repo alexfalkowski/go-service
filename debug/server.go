@@ -17,6 +17,16 @@ import (
 )
 
 // ServerParams defines dependencies for constructing the debug server.
+//
+// It is intended for dependency injection (Fx/Dig). `NewServer` uses these dependencies to build an
+// HTTP debug service and register lifecycle/shutdown behavior.
+//
+// Fields:
+//   - Shutdowner: used by the underlying service wiring to coordinate process shutdown.
+//   - Mux: the debug HTTP mux where debug endpoints (pprof/fgprof/statsviz/psutil/etc.) are registered.
+//   - Config: enables and configures the debug server (address/timeout/TLS/options).
+//   - Logger: used by the underlying HTTP service wrapper.
+//   - FS: filesystem used to resolve TLS certificate/key source strings when TLS is enabled.
 type ServerParams struct {
 	di.In
 	Shutdowner di.Shutdowner
@@ -26,7 +36,22 @@ type ServerParams struct {
 	FS         *os.FS
 }
 
-// NewServer constructs the debug server if enabled; otherwise it returns nil.
+// NewServer constructs the debug Server when enabled.
+//
+// Disabled behavior: if params.Config is nil/disabled, NewServer returns (nil, nil).
+//
+// Enabled behavior:
+//   - parses the configured timeout,
+//   - constructs an HTTP server using the debug mux,
+//   - builds the net/http server config (address and optional TLS), and
+//   - wraps it in a managed service ("debug") that integrates with DI lifecycle/shutdown.
+//
+// Errors:
+//   - returns errors for invalid timeout configuration,
+//   - returns errors while building TLS config (when TLS is enabled), and
+//   - returns errors from underlying service construction.
+//
+// Errors are prefixed with "debug" for easier attribution.
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -48,12 +73,18 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{service}, nil
 }
 
-// Server wraps the debug HTTP service.
+// Server wraps the managed debug HTTP service.
+//
+// The embedded *server.Service provides lifecycle integration and start/stop behavior.
+// This wrapper adds a nil-safe accessor via GetService.
 type Server struct {
 	*server.Service
 }
 
-// GetService returns the service, if defined.
+// GetService returns the underlying service.
+//
+// It is nil-safe: if the receiver is nil (e.g. debug server disabled and not constructed), GetService
+// returns nil.
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil

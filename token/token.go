@@ -12,10 +12,25 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 )
 
-// NewToken returns a Token that generates and verifies tokens according to cfg.
+// NewToken constructs a Token facade that can generate and verify tokens for multiple kinds.
 //
-// Supported kinds are "jwt", "paseto", and "ssh". If an unsupported kind is configured,
-// Generate/Verify return nil/empty results.
+// The facade delegates to the implementation selected by cfg.Kind:
+//
+//   - "jwt": token/jwt
+//   - "paseto": token/paseto
+//   - "ssh": token/ssh
+//
+// The underlying implementations are constructed eagerly from the corresponding nested
+// configuration blocks (cfg.JWT, cfg.Paseto, cfg.SSH). Individual implementations may
+// be nil when their nested configuration is nil.
+//
+// Important: NewToken does not validate cfg or enforce that the selected kind has a
+// non-nil nested config. If cfg.Kind selects an implementation whose constructor returned
+// nil, calling Generate/Verify for that kind will typically panic due to a nil receiver.
+// Ensure your configuration is consistent with the selected kind.
+//
+// Unknown kinds are treated as "disabled" by the facade methods: Generate returns (nil, nil)
+// and Verify returns (strings.Empty, nil).
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	return &Token{
 		name: name, cfg: cfg,
@@ -25,7 +40,10 @@ func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *e
 	}
 }
 
-// Token generates and verifies tokens using the implementation selected by configuration.
+// Token is a facade that generates and verifies tokens using the implementation selected by configuration.
+//
+// It standardizes the call sites for token issuance and validation, while allowing the actual
+// token format and crypto scheme to be chosen by configuration.
 type Token struct {
 	cfg    *Config
 	jwt    *jwt.Token
@@ -36,10 +54,15 @@ type Token struct {
 
 // Generate creates a token for the configured kind.
 //
-// For "jwt" and "paseto" the token is created for the provided audience and subject.
-// For "ssh" the audience and subject are ignored.
+// Semantics by kind:
 //
-// If the configured kind is unknown, it returns (nil, nil).
+//   - "jwt" and "paseto": the token is minted for the provided audience (aud) and
+//     subject (sub).
+//
+//   - "ssh": audience and subject are ignored; the SSH token kind uses its own
+//     encoding/signature format and typically identifies a key rather than a subject.
+//
+// If the configured kind is unknown, Generate returns (nil, nil).
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
@@ -56,11 +79,17 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	}
 }
 
-// Verify validates token for the configured kind and returns the subject.
+// Verify validates token for the configured kind and returns the subject identifier.
 //
-// For "ssh" the audience is ignored and the returned string is the key name.
+// Semantics by kind:
 //
-// If the configured kind is unknown, it returns (strings.Empty, nil).
+//   - "jwt" and "paseto": verifies the token for the provided audience (aud) and
+//     returns the subject ("sub") claim.
+//
+//   - "ssh": audience is ignored and the returned string is the selected key name
+//     (not a JWT/PASETO "sub" claim).
+//
+// If the configured kind is unknown, Verify returns (strings.Empty, nil).
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":

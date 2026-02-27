@@ -11,7 +11,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// NewLayout constructs a Layout defining the full and partial layout template names.
+// NewLayout constructs a Layout that defines the base templates used for rendering views.
+//
+// The full parameter is the template file used as the base layout for "full page" renders.
+// The partial parameter is the template file used as the base layout for "partial" renders.
+//
+// These values are later used by NewFullView/NewPartialView to parse templates from the
+// registered filesystem (see mvc.Register and mvc.IsDefined).
 func NewLayout(full, partial string) *Layout {
 	return &Layout{full: full, partial: partial}
 }
@@ -22,27 +28,29 @@ type Layout struct {
 	partial string
 }
 
-// Full returns the configured full layout template name.
+// Full returns the configured full layout template name/path.
 func (l *Layout) Full() string {
 	return l.full
 }
 
-// Partial returns the configured partial layout template name.
+// Partial returns the configured partial layout template name/path.
 func (l *Layout) Partial() string {
 	return l.partial
 }
 
-// FullName returns the base name of the full layout template.
+// FullName returns the base file name of the full layout template.
 func (l *Layout) FullName() string {
 	return l.name(l.full)
 }
 
-// PartialName returns the base name of the partial layout template.
+// PartialName returns the base file name of the partial layout template.
 func (l *Layout) PartialName() string {
 	return l.name(l.partial)
 }
 
 // IsValid reports whether l is non-nil and both layout template names are set.
+//
+// MVC is considered "defined" only when a filesystem is registered and the layout is valid.
 func (l *Layout) IsValid() bool {
 	if l == nil {
 		return false
@@ -56,18 +64,28 @@ func (l *Layout) name(name string) string {
 }
 
 // NewViewPair returns a full and partial View pair for name.
+//
+// This is a convenience helper when a controller supports both full-page and partial rendering.
 func NewViewPair(name string) (*View, *View) {
 	return NewFullView(name), NewPartialView(name)
 }
 
-// NewFullView parses the full layout and name templates from the registered filesystem.
+// NewFullView parses the full layout template and the view template from the registered filesystem.
+//
+// It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
+// If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
+// panic because it uses template.Must.
 func NewFullView(name string) *View {
 	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Full(), name))
 
 	return &View{name: layout.FullName(), template: template}
 }
 
-// NewPartialView parses the partial layout and name templates from the registered filesystem.
+// NewPartialView parses the partial layout template and the view template from the registered filesystem.
+//
+// It uses the package-level filesystem, layout, and template function map registered via mvc.Register.
+// If MVC is not defined, or if template parsing fails (missing files, parse errors), this function will
+// panic because it uses template.Must.
 func NewPartialView(name string) *View {
 	template := template.Must(template.New(strings.Empty).Funcs(fmap).ParseFS(fileSystem, layout.Partial(), name))
 
@@ -82,8 +100,18 @@ type View struct {
 
 // Render executes the view template against a Template model and writes it to the HTTP response writer.
 //
+// Context requirements:
 // Render expects the HTTP response writer to be present in ctx via net/http/meta.WithResponse.
-// If template execution fails, it records "mvcViewError" in ctx and writes a status code derived from the error.
+// (Handlers created by this package's routing helpers populate that value before invoking controllers/views.)
+//
+// Render model:
+// Render wraps the provided model in a Template which includes exported meta attributes under Template.Meta.
+// This allows templates to access request-scoped metadata (for example requestId) without controllers having
+// to explicitly thread those values through the model.
+//
+// Error handling:
+// If template execution fails, Render records "mvcViewError" in ctx and writes a status code derived from
+// the error. It does not write an error body.
 func (v *View) Render(ctx context.Context, model any) {
 	res := hm.Response(ctx)
 	template := &Template{

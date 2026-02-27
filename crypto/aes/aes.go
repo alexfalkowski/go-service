@@ -9,12 +9,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// ErrInvalidLength is returned when ciphertext is shorter than the nonce size.
+// ErrInvalidLength is returned when a ciphertext is too short to contain the required nonce prefix.
 var ErrInvalidLength = errors.New("aes: invalid length")
 
 // NewCipher constructs an AES-GCM Cipher when configuration is enabled.
 //
-// If cfg is disabled, it returns (nil, nil). When enabled, the key material is loaded via cfg.GetKey.
+// Disabled behavior: if cfg is nil (disabled), NewCipher returns (nil, nil).
+//
+// Enabled behavior: the key material is loaded via cfg.GetKey(fs). Any error encountered while reading
+// key material is returned.
+//
+// Note: this constructor does not validate the key length eagerly; key length validation occurs when
+// Encrypt/Decrypt attempts to construct the underlying AES block cipher.
 func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -25,6 +31,12 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 }
 
 // Cipher provides AES-GCM encryption and decryption using a configured key.
+//
+// The ciphertext format produced by Encrypt is:
+//
+//	nonce || gcm(ciphertext+tag)
+//
+// Where nonce is generated fresh per encryption and is required to decrypt.
 type Cipher struct {
 	gen *rand.Generator
 	key []byte
@@ -33,6 +45,9 @@ type Cipher struct {
 // Encrypt encrypts msg using AES-GCM and returns nonce||ciphertext.
 //
 // A fresh nonce is generated for each call and is prefixed to the returned byte slice so Decrypt can recover it.
+// The returned slice includes the GCM authentication tag as produced by cipher.AEAD.Seal.
+//
+// Errors are returned if nonce generation fails or if the configured key is invalid for AES.
 func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 	aead, err := c.aead()
 	if err != nil {
@@ -49,7 +64,13 @@ func (c *Cipher) Encrypt(msg []byte) ([]byte, error) {
 
 // Decrypt decrypts a value produced by Encrypt.
 //
-// msg is expected to be nonce||ciphertext. If msg is shorter than the nonce size, it returns ErrInvalidLength.
+// The msg parameter must be in the format nonce||ciphertext, where nonce length is determined by the
+// underlying AEAD (GCM) nonce size.
+//
+// Errors:
+//   - ErrInvalidLength if msg is shorter than the required nonce size.
+//   - Any error returned by the underlying AEAD if authentication fails or if msg is malformed.
+//   - Any error returned if the configured key is invalid for AES.
 func (c *Cipher) Decrypt(msg []byte) ([]byte, error) {
 	aead, err := c.aead()
 	if err != nil {

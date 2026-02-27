@@ -10,7 +10,34 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
 )
 
-// Module for fx.
+// Module wires the default encoder implementations and the encoder registry into Fx/Dig.
+//
+// Provided constructors:
+//
+//   - Protobuf encoders:
+//
+//   - *proto.Binary (via proto.NewBinary)
+//
+//   - *proto.Text (via proto.NewText)
+//
+//   - *proto.JSON (via proto.NewJSON)
+//
+//   - Structured config encoders:
+//
+//   - *json.Encoder (via json.NewEncoder)
+//
+//   - *toml.Encoder (via toml.NewEncoder)
+//
+//   - *yaml.Encoder (via yaml.NewEncoder)
+//
+//   - Other encoders:
+//
+//   - *gob.Encoder (via gob.NewEncoder)
+//
+//   - *bytes.Encoder (via bytes.NewEncoder) for io.ReaderFrom/io.WriterTo passthrough
+//
+// Finally, it constructs an `*encoding.Map` via `NewMap`, pre-populated with common kind aliases
+// (e.g. "yaml"/"yml", protobuf kind synonyms, and "plain"/"octet-stream" passthrough kinds).
 var Module = di.Module(
 	di.Constructor(proto.NewBinary),
 	di.Constructor(proto.NewText),

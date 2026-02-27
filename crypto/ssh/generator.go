@@ -11,7 +11,9 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// NewGenerator constructs a Generator that produces Ed25519 SSH key pairs using generator as the randomness source.
+// NewGenerator constructs a Generator that produces Ed25519 SSH key pairs.
+//
+// The provided generator is used as the cryptographically-secure randomness source for key generation.
 func NewGenerator(generator *rand.Generator) *Generator {
 	return &Generator{generator: generator}
 }
@@ -21,11 +23,14 @@ type Generator struct {
 	generator *rand.Generator
 }
 
-// Generate returns a public/private Ed25519 key pair encoded in SSH formats.
+// Generate returns an Ed25519 public/private key pair encoded in SSH formats.
 //
-// The returned values are:
+// The returned values are compatible with the expectations of `crypto/ssh.Config`:
+//
 //   - public: SSH authorized_keys format (via ssh.MarshalAuthorizedKey)
 //   - private: PEM-encoded SSH private key (via ssh.MarshalPrivateKey and pem.EncodeToMemory)
+//
+// If key generation, marshaling, or encoding fails, the returned error is prefixed with "ssh".
 func (g *Generator) Generate() (string, string, error) {
 	public, private, err := ed25519.GenerateKey(g.generator)
 	if err != nil {

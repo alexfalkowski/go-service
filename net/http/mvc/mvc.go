@@ -15,19 +15,44 @@ var (
 	layout     *Layout
 )
 
-// RegisterParams defines dependencies used to register MVC globals.
+// RegisterParams defines dependencies used to register MVC package globals.
+//
+// This package uses package-level registration to avoid threading commonly shared dependencies
+// through every routing helper call. These dependencies are typically provided by DI wiring.
 type RegisterParams struct {
 	di.In
-	Mux         *http.ServeMux
+
+	// Mux is the HTTP mux where MVC routes (Route/Get/Post/etc.) will be registered.
+	Mux *http.ServeMux
+
+	// FunctionMap is the template function map used when parsing templates.
+	//
+	// It is typically constructed via go-sprout and used to provide common template helpers.
 	FunctionMap sprout.FunctionMap
-	FileSystem  fs.FS   `optional:"true"`
-	Layout      *Layout `optional:"true"`
+
+	// FileSystem is the filesystem used to load template files and static files.
+	//
+	// It is optional: when nil, MVC is considered not defined and routing helpers return false.
+	FileSystem fs.FS `optional:"true"`
+
+	// Layout defines the base templates used to render full and partial views.
+	//
+	// It is optional: when nil or invalid (see Layout.IsValid), MVC is considered not defined and
+	// routing helpers return false.
+	Layout *Layout `optional:"true"`
 }
 
-// Register stores the MVC dependencies used by the routing and view helpers.
+// Register stores MVC dependencies in package-level variables.
 //
-// MVC routes are considered defined only when both a FileSystem and a valid Layout have been registered.
-// It is expected that Register is called during application startup (typically via Fx).
+// Register is expected to be called during application startup (typically via dependency injection).
+//
+// Definition rules:
+// MVC routing/rendering is considered "defined" only when both:
+//   - FileSystem is non-nil, and
+//   - Layout is valid (see (*Layout).IsValid).
+//
+// If MVC is not defined, routing helpers (Route/Get/Post/etc. and static helpers) return false and do not
+// register handlers.
 func Register(params RegisterParams) {
 	mux = params.Mux
 	fmap = params.FunctionMap
@@ -37,7 +62,8 @@ func Register(params RegisterParams) {
 
 // IsDefined reports whether MVC routing and rendering has been configured.
 //
-// MVC is considered defined only when a FileSystem is available and Layout is valid.
+// MVC is considered defined only when a FileSystem is available and Layout is valid (non-nil with both
+// layout template names set).
 func IsDefined() bool {
 	return fileSystem != nil && layout.IsValid()
 }

@@ -13,8 +13,24 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 
 // NewRequestHandler builds a handler that decodes the request body and encodes the response.
 //
-// The encoder is selected from the request Content-Type, and decode errors are turned into
-// a 400 response via net/http/status.
+// Context population:
+// The handler attaches request-scoped values to the context via net/http/meta:
+//   - the original *http.Request,
+//   - the http.ResponseWriter, and
+//   - the selected encoder (derived from the request Content-Type).
+//
+// Content negotiation:
+// The encoder is selected based on the request Content-Type (via (*Content).NewFromRequest).
+// The response Content-Type header is set to the negotiated media type.
+//
+// Errors:
+// If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
+// net/http/status, allowing the response to be rendered consistently by status.WriteError.
+//
+// Constraints:
+// The negotiated media type must resolve to a non-nil encoder. If the request Content-Type resolves to
+// the error media subtype ("error"), Media.Encoder will be nil and decoding will panic. In practice,
+// clients should never send Content-Type "text/error"; that media type is reserved for error responses.
 func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
@@ -34,6 +50,8 @@ func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[R
 type Handler[Res any] func(ctx context.Context) (*Res, error)
 
 // NewHandler builds a handler that encodes the response and writes errors using status helpers.
+//
+// Context population and content negotiation are the same as NewRequestHandler (see its documentation).
 func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		return handler(ctx)

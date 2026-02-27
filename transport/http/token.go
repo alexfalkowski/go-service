@@ -8,7 +8,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 )
 
-// NewController for HTTP.
+// NewController constructs an access controller for HTTP token authorization.
+//
+// When token auth is enabled (via cfg.Token), the returned controller can be used to authorize
+// authenticated subjects against configured access rules.
+//
+// If cfg is disabled, it returns (nil, nil) so downstream wiring can treat access control as not configured.
 func NewController(cfg *Config) (token.AccessController, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -16,7 +21,12 @@ func NewController(cfg *Config) (token.AccessController, error) {
 	return token.NewAccessController(cfg.Token)
 }
 
-// NewToken for HTTP.
+// NewToken constructs a token service for HTTP transport integration.
+//
+// The returned service is responsible for generating and verifying tokens according to cfg.Token (for example,
+// JWT/PASETO/SSH token kinds as configured by the underlying token package).
+//
+// If cfg is disabled, it returns nil so downstream wiring can treat token auth as not configured.
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *token.Token {
 	if !cfg.IsEnabled() {
 		return nil

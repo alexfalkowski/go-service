@@ -11,12 +11,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/strings"
 )
 
-// KeyMap is an alias for limiter.KeyMap.
+// KeyMap is an alias for `limiter.KeyMap`.
+//
+// It maps limiter key kinds (for example, "user-agent" or "ip") to functions that derive a rate-limit key
+// from the request context.
 type KeyMap = limiter.KeyMap
 
-// NewServerLimiter returns a server-side rate limiter when enabled.
+// NewServerLimiter constructs a gRPC server-side rate limiter.
 //
-// If cfg is disabled, it returns (nil, nil).
+// If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
+//
+// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The `keys` map controls how request contexts are turned into limiter keys (for example, per user-agent).
 func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Server, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -30,16 +36,23 @@ func NewServerLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Serve
 	return &Server{limiter}, nil
 }
 
-// Server wraps limiter.Limiter for gRPC server integration.
+// Server wraps `*limiter.Limiter` for gRPC server integration.
 type Server struct {
 	*limiter.Limiter
 }
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Requests with ignorable methods bypass limiting.
-// When a limit header is returned, it is attached to the response metadata as the "ratelimit" header.
-// If the limit is exceeded, it returns ResourceExhausted.
+// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `transport/strings.IsIgnorable`).
+//
+// On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
+//
+//   - If `Take` returns an error, the interceptor returns `codes.Internal`.
+//   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
+//   - If the request is not allowed, the interceptor returns `codes.ResourceExhausted`.
+//   - Otherwise, it invokes the handler.
+//
+// Callers should only install this interceptor when limiter is non-nil.
 func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if strings.IsIgnorable(info.FullMethod) {
@@ -61,9 +74,12 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	}
 }
 
-// NewClientLimiter returns a client-side rate limiter when enabled.
+// NewClientLimiter constructs a gRPC client-side rate limiter.
 //
-// If cfg is disabled, it returns (nil, nil).
+// If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
+//
+// The returned limiter is backed by `limiter.NewLimiter` and is registered with the provided lifecycle.
+// The `keys` map controls how request contexts are turned into limiter keys.
 func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Client, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -77,14 +93,20 @@ func NewClientLimiter(lc di.Lifecycle, keys KeyMap, cfg *limiter.Config) (*Clien
 	return &Client{limiter}, nil
 }
 
-// Client wraps limiter.Limiter for gRPC client integration.
+// Client wraps `*limiter.Limiter` for gRPC client integration.
 type Client struct {
 	*limiter.Limiter
 }
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that enforces rate limiting.
 //
-// If the limit is exceeded, it returns ResourceExhausted.
+// The interceptor calls `limiter.Take(ctx)` before invoking the RPC:
+//
+//   - If `Take` returns an error, it returns `codes.Internal`.
+//   - If the request is not allowed, it returns `codes.ResourceExhausted`.
+//   - Otherwise, it invokes the underlying `invoker`.
+//
+// Callers should only install this interceptor when limiter is non-nil.
 func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ok, header, err := limiter.Take(ctx)

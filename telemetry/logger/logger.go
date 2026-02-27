@@ -10,49 +10,60 @@ import (
 )
 
 const (
-	// LevelError is an alias of slog.LevelError.
+	// LevelError is the error log level.
+	//
+	// It is an alias of slog.LevelError, provided so callers can depend on the
+	// go-service logger package while using standard slog levels.
 	LevelError = slog.LevelError
 
-	// LevelInfo is an alias of slog.LevelInfo.
+	// LevelInfo is the info log level.
+	//
+	// It is an alias of slog.LevelInfo, provided so callers can depend on the
+	// go-service logger package while using standard slog levels.
 	LevelInfo = slog.LevelInfo
 
-	// LevelWarn is an alias of slog.LevelWarn.
+	// LevelWarn is the warning log level.
+	//
+	// It is an alias of slog.LevelWarn, provided so callers can depend on the
+	// go-service logger package while using standard slog levels.
 	LevelWarn = slog.LevelWarn
 )
 
-// Attr is an alias for slog.Attr.
+// Attr is a structured logging attribute.
 type Attr = slog.Attr
 
-// Level is an alias for slog.Level.
+// Level is the slog logging level type.
 type Level = slog.Level
 
-// ErrNotFound is returned when the configured logger kind is unknown.
+// ErrNotFound is returned when Config.Kind is unknown.
 var ErrNotFound = errors.New("logger: not found")
 
 // Bool returns an Attr representing a boolean key/value pair.
 //
-// It is an alias of `slog.Bool`.
+// This is a thin wrapper around slog.Bool and does not change semantics.
 func Bool(key string, v bool) Attr {
 	return slog.Bool(key, v)
 }
 
 // Int returns an Attr representing an integer key/value pair.
 //
-// It is an alias of `slog.Int`.
+// This is a thin wrapper around slog.Int and does not change semantics.
 func Int(key string, value int) Attr {
 	return slog.Int(key, value)
 }
 
 // LogError logs an error message using the process-wide default slog logger.
 //
-// It is an alias of `slog.ErrorContext`.
+// This is a thin wrapper around slog.ErrorContext and does not change semantics.
+// It is useful in code that prefers importing go-service packages rather than
+// log/slog directly.
 func LogError(ctx context.Context, msg string, args ...any) {
 	slog.ErrorContext(ctx, msg, args...)
 }
 
 // String returns an Attr representing a string key/value pair.
 //
-// It is an alias of `slog.String`.
+// This is a thin wrapper around slog.String and does not change semantics.
 func String(key, value string) Attr {
 	return slog.String(key, value)
 }
@@ -71,23 +82,26 @@ type LoggerParams struct {
 	// Config enables logging when non-nil and selects the logger kind.
 	Config *Config
 
-	// ID is typically attached as a static attribute (for example "id") to log records.
+	// ID is the host identifier typically attached as a static attribute (for example "id").
 	ID env.ID
 
-	// Name is typically attached as a static attribute (for example "name") to log records.
+	// Name is the service name typically attached as a static attribute (for example "name").
 	Name env.Name
 
-	// Version is typically attached as a static attribute (for example "version") to log records.
+	// Version is the service version typically attached as a static attribute (for example "version").
 	Version env.Version
 
-	// Environment is typically attached as a static attribute (for example "environment") to log records.
+	// Environment is the deployment environment typically attached as a static attribute (for example "environment").
 	Environment env.Environment
 }
 
-// NewLogger constructs the configured slog logger and installs it as the slog default.
+// NewLogger constructs the configured slog logger and installs it as the process-wide default.
 //
-// If logging is disabled (`params.Config == nil`), it returns (nil, nil).
-// If `Config.Kind` is unknown, it returns ErrNotFound.
+// When logging is enabled (params.Config != nil), NewLogger builds the configured logger,
+// installs it as the global default via slog.SetDefault, and returns a *Logger wrapper.
+//
+// If logging is disabled (params.Config == nil), NewLogger returns (nil, nil).
+// If Config.Kind is unknown, NewLogger returns ErrNotFound.
 func NewLogger(params LoggerParams) (*Logger, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -104,10 +118,10 @@ func NewLogger(params LoggerParams) (*Logger, error) {
 
 // Logger wraps slog.Logger and adds helpers that standardize contextual metadata and errors.
 //
-// When logging via `Log`/`LogAttrs`, the logger appends:
+// When logging via Log / LogAttrs, the logger appends:
 //
-//   - metadata attributes extracted from the provided context (via Meta)
-//   - an "error" attribute when the Message contains a non-nil error (via Error)
+//   - metadata attributes extracted from the provided context (via Meta), and
+//   - an "error" attribute when the Message contains a non-nil error (via Error).
 //
 // This keeps log records consistent across handlers/exporters.
 type Logger struct {

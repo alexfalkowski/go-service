@@ -8,9 +8,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 )
 
-// NewEncryptor constructs an Encryptor when configuration is enabled.
+// NewEncryptor constructs an RSA Encryptor when configuration is enabled.
 //
-// If cfg is disabled, it returns (nil, nil). When enabled, it loads the public key using cfg.PublicKey.
+// Disabled behavior: if cfg is nil (disabled), NewEncryptor returns (nil, nil).
+//
+// Enabled behavior: NewEncryptor loads and parses the RSA public key via cfg.PublicKey(decoder) and returns
+// an Encryptor that performs RSA-OAEP encryption.
+//
+// Any error encountered while decoding/parsing the public key is returned.
 func NewEncryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) (*Encryptor, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -30,9 +35,13 @@ type Encryptor struct {
 	publicKey *rsa.PublicKey
 }
 
-// Encrypt encrypts msg using RSA-OAEP with SHA-512.
+// Encrypt encrypts msg using RSA-OAEP with SHA-512 and returns the ciphertext.
 //
-// The OAEP label is nil.
+// OAEP parameters:
+//   - hash: SHA-512
+//   - label: nil
+//
+// The randomness source is the injected crypto/rand generator.
 func (e *Encryptor) Encrypt(msg []byte) ([]byte, error) {
 	return rsa.EncryptOAEP(sha512.New(), e.generator, e.publicKey, msg, nil)
 }

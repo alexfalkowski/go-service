@@ -10,16 +10,36 @@ import (
 	"github.com/alexfalkowski/go-service/v2/sync"
 )
 
-// Settings is an alias for breaker.Settings.
+// Settings is an alias for `github.com/alexfalkowski/go-service/v2/breaker.Settings`.
+//
+// It is re-exported from this package so callers can configure breaker behavior (trip thresholds, timeouts,
+// half-open probing, etc.) without importing the lower-level breaker package directly.
 type Settings = breaker.Settings
 
-// UnaryClientInterceptor returns a gRPC unary client interceptor guarded by a circuit breaker.
+// UnaryClientInterceptor returns a gRPC unary client interceptor guarded by circuit breakers.
 //
-// A separate circuit breaker is maintained per fullMethod.
-// Whether an invocation is counted as successful is determined by gRPC status code classification
-// (configurable via options; see default failure codes in this package).
+// The interceptor wraps the outgoing unary invocation (`invoker`) in a circuit breaker execution.
+// When the breaker is closed, calls flow through normally. When the breaker transitions open, new calls
+// are rejected until the breaker allows half-open probing per its settings.
 //
-// If the circuit breaker is open or has too many requests, the interceptor returns ResourceExhausted.
+// # Breaker scope
+//
+// A separate circuit breaker is maintained per `fullMethod`, so each downstream RPC method is isolated.
+// Breaker instances are created lazily on first use and then reused for subsequent calls to the same method.
+//
+// # Failure classification
+//
+// The interceptor counts failures based on gRPC status codes. By default it treats a subset of transient/server
+// codes as failures (see `WithFailureCodes` and the defaults in `defaultOpts`). Calls that return other codes
+// do not contribute to opening the breaker.
+//
+// # Error mapping
+//
+// If the breaker rejects a call because it is open (`breaker.ErrOpenState`) or because the half-open
+// MaxRequests limit would be exceeded (`breaker.ErrTooManyRequests`), the interceptor maps that condition to
+// a gRPC `ResourceExhausted` status error.
+//
+// All other errors from the invoker are returned as-is.
 func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 	o := defaultOpts()
 	for _, option := range options {

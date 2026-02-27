@@ -21,30 +21,68 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
-// ServerParams defines dependencies for constructing a gRPC Server.
+// ServerParams defines dependencies for constructing a gRPC transport `Server`.
+//
+// It is an Fx parameter struct (`di.In`) that collects the configuration and optional
+// dependencies used to build and run the gRPC server.
+//
+// Optional fields:
+//   - `Logger`: enables server-side RPC outcome logging when non-nil.
+//   - `Limiter`: enables server-side unary rate limiting when non-nil.
+//   - `Verifier`: enables server-side token verification when non-nil.
+//   - `Unary`/`Stream`: allow callers to inject additional interceptors (and are optional in DI).
 type ServerParams struct {
 	di.In
+
+	// Shutdowner is used by the underlying `*server.Service` to coordinate shutdown.
 	Shutdowner di.Shutdowner
-	Config     *Config
-	Logger     *logger.Logger
-	UserAgent  env.UserAgent
-	Version    env.Version
-	UserID     env.UserID
-	ID         id.Generator
-	Limiter    *limiter.Server
-	Verifier   token.Verifier
-	Unary      []grpc.UnaryServerInterceptor  `optional:"true"`
-	Stream     []grpc.StreamServerInterceptor `optional:"true"`
+
+	// Config controls gRPC server enablement, address, timeouts, TLS, and low-level gRPC options.
+	Config *Config
+
+	// Logger enables gRPC server logging interceptors when non-nil.
+	Logger *logger.Logger
+
+	// UserAgent is the service user agent used by metadata interceptors.
+	UserAgent env.UserAgent
+
+	// Version is the service version reported via metadata interceptors.
+	Version env.Version
+
+	// UserID identifies the metadata key used for injecting authenticated subjects into context.
+	UserID env.UserID
+
+	// ID generates request IDs when one is not already present.
+	ID id.Generator
+
+	// Limiter enables server-side unary rate limiting when non-nil.
+	Limiter *limiter.Server
+
+	// Verifier enables server-side token verification when non-nil.
+	Verifier token.Verifier
+
+	// Unary are additional unary server interceptors to append after the standard chain.
+	Unary []grpc.UnaryServerInterceptor `optional:"true"`
+
+	// Stream are additional stream server interceptors to append after the standard chain.
+	Stream []grpc.StreamServerInterceptor `optional:"true"`
 }
 
-// NewServer constructs a gRPC Server when the transport is enabled.
+// NewServer constructs a gRPC transport `Server` when the transport is enabled.
 //
-// If params.Config is disabled, it returns (nil, nil).
+// If `params.Config` is disabled, it returns (nil, nil) so that downstream wiring can treat the server
+// as not configured.
 //
-// The server is instrumented with OpenTelemetry stats handling and composes server-side interceptors for:
-// metadata extraction, optional logging, optional token verification, optional rate limiting, plus any
-// user-provided interceptors. If TLS is enabled, credentials are built using the registered filesystem
-// (see Register in this package).
+// The constructed server includes:
+//   - OpenTelemetry stats handling (server-side RPC instrumentation).
+//   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
+//     token verification, and rate limiting, followed by any user-provided interceptors.
+//   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging
+//     and token verification, followed by any user-provided interceptors.
+//
+// TLS:
+// If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
+// sources may be resolved via the package-registered filesystem (see `Register` in this package).
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -72,7 +110,11 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{server: grpcServer, Service: service}, nil
 }
 
-// Server wraps a gRPC server and its runnable service.
+// Server wraps a configured gRPC server and its runnable service wrapper.
+//
+// The embedded `*server.Service` provides start/stop orchestration and integrates with the application's
+// lifecycle, while the underlying `*grpc.Server` is used as the `grpc.ServiceRegistrar` for registering
+// service implementations.
 type Server struct {
 	server *grpc.Server
 	*server.Service
@@ -80,7 +122,8 @@ type Server struct {
 
 // ServiceRegistrar returns the underlying gRPC service registrar.
 //
-// It returns nil if s is nil.
+// This is primarily used for registering generated gRPC services against the server.
+// It returns nil if s is nil (for example, when the transport is disabled).
 func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	if s == nil {
 		return nil
@@ -88,9 +131,11 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 	return s.server
 }
 
-// GetService returns the runnable service, if defined.
+// GetService returns the runnable service wrapper.
 //
-// It returns nil if s is nil.
+// It returns nil if s is nil (for example, when the transport is disabled).
+// This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
+// registration (see `transport.NewServers` and `transport.Register`).
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil
