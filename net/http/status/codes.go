@@ -5,7 +5,18 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
-// Taken from https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go
+// statusCodes maps gRPC status codes to HTTP status codes.
+//
+// This table is used by Code(err) when err is a gRPC status error (i.e. status.FromError(err) succeeds).
+// It provides a reasonable default mapping for exposing gRPC-style failures over HTTP.
+//
+// Provenance:
+// The mapping is based on the grpc-gateway runtime mapping:
+// https://github.com/grpc-ecosystem/grpc-gateway/blob/main/runtime/errors.go
+//
+// Notes:
+//   - gRPC Canceled is mapped to 499 (Client Closed Request), which is a non-standard but commonly used
+//     code to represent client cancellations in HTTP environments.
 var statusCodes = map[codes.Code]int{
 	codes.OK:                 http.StatusOK,
 	codes.Canceled:           499,

@@ -17,6 +17,12 @@ import (
 )
 
 // ClientOption configures gRPC client construction.
+//
+// Client options are applied when building dial options (see `NewDialOptions`) and when assembling
+// interceptor chains (see `UnaryClientInterceptors`).
+//
+// Most options are orthogonal and can be combined. Some options enable behavior by providing a non-nil
+// dependency (for example, retries are enabled when `WithClientRetry` provides a non-nil config).
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -48,13 +54,20 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 }
 
 // WithClientCompression enables gzip compression for gRPC client calls.
+//
+// This option appends a default call option that requests the "gzip" compressor. The server must also be
+// configured to accept gzip-compressed requests for this to have any effect.
 func WithClientCompression() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.compression = true
 	})
 }
 
-// WithClientTokenGenerator enables token injection interceptors using gen and id.
+// WithClientTokenGenerator enables client-side token injection interceptors.
+//
+// When configured, the client will generate an Authorization token per RPC and attach it to outgoing
+// metadata (unary and streaming). The token is generated via gen and is typically scoped to the RPC's
+// full method name and the provided user id.
 func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.id = id
@@ -64,7 +77,11 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 
 // WithClientTimeout sets the default per-RPC timeout applied by the timeout interceptor.
 //
-// If unset, a default timeout is applied (see options()).
+// If unset, a default timeout is applied (see `NewDialOptions` defaults).
+//
+// Note: this timeout is enforced via an interceptor and is independent from any deadlines already set
+// on the incoming context; the interceptor will typically only apply a timeout when a deadline is not
+// already present.
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
@@ -73,7 +90,9 @@ func WithClientTimeout(timeout time.Duration) ClientOption {
 
 // WithClientKeepalive sets gRPC client keepalive ping and timeout parameters.
 //
-// If either value is unset, it defaults to the client timeout (see NewDialOptions).
+// Keepalive affects connection liveness detection and can help discover broken connections.
+//
+// If either value is unset (0), it defaults to the resolved client timeout (see `NewDialOptions`).
 func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.keepalive_ping = ping
@@ -82,6 +101,11 @@ func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 }
 
 // WithClientRetry enables retry behavior for unary client calls.
+//
+// Retries are applied via a unary client interceptor. The retry policy is derived from cfg and
+// typically includes a maximum attempt count, per-retry timeout, and a backoff strategy.
+//
+// If cfg is nil, retries are not enabled.
 func WithClientRetry(cfg *retry.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
@@ -89,6 +113,9 @@ func WithClientRetry(cfg *retry.Config) ClientOption {
 }
 
 // WithClientBreaker enables circuit breaking for unary client calls.
+//
+// Circuit breakers are keyed per RPC full method name. Failure accounting is controlled by the
+// breaker options (for example, which gRPC status codes count as failures).
 func WithClientBreaker(opts ...breaker.Option) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.breaker = true
@@ -97,6 +124,9 @@ func WithClientBreaker(opts ...breaker.Option) ClientOption {
 }
 
 // WithClientTLS enables TLS for the client connection using sec.
+//
+// TLS configuration is materialized when building dial options. If TLS is enabled, certificate/key
+// sources may be resolved via the package-registered filesystem (see the package `Register` function).
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.security = sec
@@ -104,6 +134,9 @@ func WithClientTLS(sec *tls.Config) ClientOption {
 }
 
 // WithClientDialOption appends raw gRPC dial options.
+//
+// This is an escape hatch for passing options not modeled by this package. Options are appended after
+// the package's baseline options, so callers can override behavior when supported by gRPC.
 func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.opts = opts
@@ -111,6 +144,9 @@ func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
 }
 
 // WithClientUnaryInterceptors prepends custom unary client interceptors.
+//
+// Interceptors provided here are executed before the standard interceptors added by this package
+// (timeout, retry, breaker, logging, token injection, metadata propagation, etc.).
 func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.unary = unary
@@ -118,6 +154,9 @@ func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOpt
 }
 
 // WithClientStreamInterceptors prepends custom stream client interceptors.
+//
+// Interceptors provided here are executed before the standard interceptors added by this package
+// (logging, token injection, metadata propagation, etc.).
 func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.stream = stream
@@ -125,6 +164,8 @@ func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) Client
 }
 
 // WithClientLogger enables gRPC client logging interceptors.
+//
+// When configured, both unary and stream client interceptors may emit logs about RPC outcomes.
 func WithClientLogger(logger *logger.Logger) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.logger = logger
@@ -132,6 +173,10 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 }
 
 // WithClientUserAgent sets the user agent string used for the gRPC connection and metadata propagation.
+//
+// The value is used in two places:
+//   - as the gRPC dial user agent (`grpc.WithUserAgent`)
+//   - for metadata propagation via the `transport/grpc/meta` interceptors
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent
@@ -139,6 +184,9 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 }
 
 // WithClientID sets the request id generator used by metadata propagation interceptors.
+//
+// The generator is used to create a request id when one is not already present on the outgoing context
+// or outgoing metadata.
 func WithClientID(generator id.Generator) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.generator = generator
@@ -146,20 +194,28 @@ func WithClientID(generator id.Generator) ClientOption {
 }
 
 // WithClientLimiter enables client-side rate limiting interceptors.
+//
+// When configured, unary client calls are rate-limited before being sent. If limiter is nil, rate limiting
+// is not enabled.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.limiter = limiter
 	})
 }
 
-// NewDialOptions builds grpc.DialOption values from ClientOption.
+// NewDialOptions builds `grpc.DialOption` values from `ClientOption`.
 //
-// Defaults (see options()):
+// Defaults (see `options()`):
 //   - timeout: 30s
 //   - request-id generator: uuid
 //
-// If keepalive parameters are not set, they default to the resolved timeout.
-// If TLS is enabled, TLS config is constructed using the registered filesystem (see Register).
+// Keepalive defaults:
+//   - if keepalive ping or timeout are not set (0), they default to the resolved timeout.
+//
+// Transport security:
+//   - if TLS is enabled, TLS config is constructed using the package-registered filesystem (see `Register`)
+//     to resolve certificate and key sources.
+//   - otherwise, insecure transport credentials are used.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
 
@@ -201,11 +257,17 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 }
 
 // ClientConn is an alias for grpc.ClientConn.
+//
+// It is exposed so callers can refer to the concrete connection type without importing the underlying
+// gRPC wrapper package directly.
 type ClientConn = grpc.ClientConn
 
 // NewClient constructs and dials a gRPC client connection to target.
 //
-// It uses dial options derived from opts (see NewDialOptions) and always adds OpenTelemetry stats handling.
+// It uses dial options derived from opts (see `NewDialOptions`) and always adds OpenTelemetry stats handling
+// via `grpc.WithStatsHandler(telemetry.NewClientHandler())` so that client RPCs are instrumented.
+//
+// The returned connection should be closed by the caller when no longer needed.
 func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 	os, err := NewDialOptions(opts...)
 	if err != nil {
@@ -219,11 +281,15 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 
 // UnaryClientInterceptors builds the unary client interceptor chain derived from opts.
 //
-// The chain includes:
-//   - any custom interceptors provided via WithClientUnaryInterceptors
+// Order matters. Interceptors are appended in the following sequence:
+//   - any custom interceptors provided via `WithClientUnaryInterceptors`
 //   - a timeout interceptor
-//   - optional limiter/retry/breaker/logger/token interceptors (when configured)
-//   - metadata propagation (user-agent/request-id)
+//   - optional limiter interceptor (when configured)
+//   - optional retry interceptor (when configured)
+//   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
+//   - optional logging interceptor (when configured)
+//   - optional token injection interceptor (when configured)
+//   - metadata propagation interceptor (user-agent and request-id)
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	os := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}

@@ -16,7 +16,10 @@ var (
 	ErrInvalidResponse = errors.New("rpc: invalid response")
 )
 
-// ClientOption configures the RPC client helper.
+// ClientOption configures the RPC client helper constructed by NewClient.
+//
+// Options are applied in the order provided to NewClient. If multiple options configure the same
+// field, the last one wins.
 type ClientOption interface {
 	apply(opts *clientOpts)
 }
@@ -34,6 +37,9 @@ func (f clientOptionFunc) apply(o *clientOpts) {
 }
 
 // WithClientRoundTripper sets the underlying HTTP RoundTripper used by the RPC client.
+//
+// This is typically used to inject a transport that includes middleware such as retries, circuit
+// breakers, authentication, or custom TLS.
 func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.roundTripper = rt
@@ -41,6 +47,10 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 }
 
 // WithClientContentType sets the Content-Type used for requests made by the RPC client.
+//
+// This value is passed through to the underlying content-aware HTTP client and is used to select the
+// encoder/decoder for request/response bodies. Typical values include "application/json" or go-service
+// protobuf media types.
 func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
@@ -49,7 +59,8 @@ func WithClientContentType(ct string) ClientOption {
 
 // WithClientTimeout sets the client timeout using a duration string (for example "1s" or "500ms").
 //
-// It uses time.MustParseDuration and will panic if the duration string cannot be parsed.
+// The duration string is parsed using time.MustParseDuration and will panic if it cannot be parsed.
+// The resulting duration is applied to the underlying http.Client.Timeout.
 func WithClientTimeout(timeout string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = time.MustParseDuration(timeout)
@@ -59,7 +70,12 @@ func WithClientTimeout(timeout string) ClientOption {
 // NewClient constructs an RPC client backed by net/http/client.
 //
 // NewClient depends on package-level registration (see rpc.Register) for the content codecs (cont)
-// and buffer pool (pool). Register must be called before NewClient; otherwise it will panic due to nil dependencies.
+// and buffer pool (pool). Register must be called before NewClient; otherwise it will panic due to
+// nil dependencies.
+//
+// The returned client issues RPC-style POST requests to the provided base url using the configured
+// Content-Type and transport options. Redirect following is disabled by default (redirect responses
+// are returned instead of being followed).
 func NewClient(url string, opts ...ClientOption) *Client {
 	os := options(opts...)
 	client := client.NewClient(cont, pool,
@@ -80,7 +96,15 @@ type Client struct {
 
 // Post issues an RPC-style HTTP POST request to c.url+path.
 //
-// It returns ErrInvalidRequest when req is nil and ErrInvalidResponse when res is nil.
+// Request/response validation:
+//   - returns ErrInvalidRequest when req is nil
+//   - returns ErrInvalidResponse when res is nil
+//
+// Content-Type behavior:
+// The request Content-Type is set to c.contentType and is used to select encoders/decoders via
+// the underlying content-aware client.
+//
+// The res parameter is typically a pointer to the destination value (for example *MyResponse).
 func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 	if req == nil {
 		return ErrInvalidRequest

@@ -10,7 +10,11 @@ import (
 
 // NewToken constructs a Token that issues and validates PASETO v4 public (asymmetric) tokens.
 //
-// If cfg is disabled (nil), it returns nil.
+// The resulting Token uses Ed25519 keys for signing and verification and an id.Generator
+// for producing unique token IDs (jti). The keys are provided by the caller (typically
+// via DI wiring).
+//
+// Enablement is modeled by presence: if cfg is nil, NewToken returns nil.
 func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -19,6 +23,11 @@ func NewToken(cfg *Config, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Ge
 }
 
 // Token generates and verifies PASETO v4 public tokens.
+//
+// Issued tokens set common PASETO claims and identity fields (jti/iat/nbf/exp/iss/aud/sub).
+//
+// Note: This type assumes cfg, signer, verifier, and generator are non-nil. If you
+// construct a Token with missing dependencies, methods may panic.
 type Token struct {
 	cfg       *Config
 	signer    *ed25519.Signer
@@ -27,6 +36,20 @@ type Token struct {
 }
 
 // Generate creates a signed PASETO v4 public token for the given audience and subject.
+//
+// The token is signed using PASETO v4 public tokens (Ed25519 signatures). It sets
+// common claims:
+//
+//   - jti: generated via the provided id.Generator
+//   - iat: set to the current time
+//   - nbf: set to the current time
+//   - exp: set to now + parsed cfg.Expiration
+//   - iss: from cfg.Issuer
+//   - aud: set to the provided aud
+//   - sub: set to the provided sub
+//
+// Expiration parsing uses time.MustParseDuration and will panic if cfg.Expiration is invalid.
+// This is intended for fail-fast configuration behavior.
 func (t *Token) Generate(aud, sub string) (string, error) {
 	exp := time.MustParseDuration(t.cfg.Expiration)
 	now := time.Now()
@@ -47,12 +70,19 @@ func (t *Token) Generate(aud, sub string) (string, error) {
 	return token.V4Sign(s, nil), nil
 }
 
-// Verify validates token and returns the subject if it is valid for the given audience.
+// Verify validates token and returns the subject (sub) if it is valid for the given audience.
 //
-// Verification enforces:
-// - issuer matches cfg.Issuer
-// - token is not expired and is valid at the current time
-// - audience matches aud.
+// Verification is performed by constructing a parser with rules and then verifying the
+// token signature using the configured Ed25519 public key.
+//
+// The rules enforced include:
+//   - issuer matches cfg.Issuer (iss)
+//   - token is not expired
+//   - token is valid at the current time (iat/nbf semantics as defined by the upstream library)
+//   - audience matches aud (aud)
+//
+// On failure, this method returns errors from the upstream PASETO library or from key
+// construction. It does not currently map failures onto shared sentinel errors.
 func (t *Token) Verify(token, aud string) (string, error) {
 	parser := paseto.NewParser()
 	parser.AddRule(paseto.IssuedBy(t.cfg.Issuer))

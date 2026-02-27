@@ -15,19 +15,31 @@ const (
 	TypeKey = "Content-Type"
 )
 
-// NewContent returns a Content that resolves encoders from the provided map.
+// NewContent constructs a Content that resolves encoders from enc.
 func NewContent(enc *encoding.Map) *Content {
 	return &Content{enc: enc}
 }
 
-// Content resolves encoders from HTTP media types and provides Media helpers.
+// Content resolves encoders from HTTP media types and provides helpers for content-aware request/response handling.
+//
+// It uses an encoding.Map registry to resolve an encoder by media subtype (e.g. "json", "yaml", "toml").
+//
+// Fallback behavior:
+//   - If media type parsing fails, Content falls back to JSON.
+//   - If the parsed subtype is unknown (no encoder registered), Content falls back to JSON.
+//
+// Error subtype behavior:
+//   - If the parsed subtype is "error", NewMedia returns a Media without an encoder.
+//     Callers typically treat the body as a plain-text error message.
 type Content struct {
 	enc *encoding.Map
 }
 
-// NewFromRequest parses the request Content-Type and returns a matching Media.
+// NewFromRequest parses the request Content-Type header and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.
+//
+// Note: this parses the request Content-Type, not the Accept header.
 func (c *Content) NewFromRequest(req *http.Request) *Media {
 	t, err := content.GetMediaType(req)
 	if err != nil {
@@ -51,7 +63,10 @@ func (c *Content) NewFromMedia(mediaType string) *Media {
 
 // NewMedia builds a Media from a parsed media type and encoder map.
 //
-// If the subtype is "error" it returns a Media without an encoder. Unknown subtypes fall back to JSON.
+// Encoder selection:
+//   - If the subtype is "error", it returns a Media without an encoder.
+//   - If no encoder is registered for the subtype, it falls back to JSON.
+//   - Otherwise it returns the encoder registered for the subtype.
 func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
 	if media.Subtype == errorSubtype {
 		return &Media{Type: media.String(), Subtype: media.Subtype}
@@ -65,13 +80,18 @@ func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
 	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
 }
 
-// Media describes a content type and its associated encoder.
+// Media describes an HTTP media type and its associated encoder.
+//
+// Type is the full media type string (including parameters if present). Subtype is the parsed media subtype used
+// for encoder lookup. Encoder may be nil when Subtype is "error".
 type Media struct {
-	// The encoder for the media type.
+	// Encoder is the encoder/decoder associated with the media subtype.
 	Encoder encoding.Encoder
-	// The type, e.g. text.
+
+	// Type is the full media type string (for example "application/json" or "text/plain; charset=utf-8").
 	Type string
-	// The sub type, e.g. plain.
+
+	// Subtype is the parsed subtype (for example "json" or "plain").
 	Subtype string
 }
 

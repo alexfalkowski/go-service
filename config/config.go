@@ -19,10 +19,23 @@ import (
 	"github.com/alexfalkowski/go-service/v2/types/structs"
 )
 
-// NewConfig decodes configuration into T and validates it.
+// NewConfig decodes configuration into a newly allocated *T and validates it.
 //
-// It returns ErrInvalidConfig when the decoded value is empty and returns validation errors
-// produced by the Validator.
+// Decoding is performed using the provided Decoder, which typically resolves configuration from:
+//   - a file (via "file:<path>"),
+//   - an environment variable (via "env:<ENV_VAR>"), or
+//   - the default lookup (see the config package documentation).
+//
+// After decoding, NewConfig enforces two additional invariants:
+//
+//  1. Empty detection: if the decoded value is considered empty (see structs.IsEmpty), NewConfig returns
+//     ErrInvalidConfig. This guards against accidentally starting with a zero-value configuration when the
+//     input is missing or does not populate any fields.
+//
+//  2. Validation: the decoded value is validated using the provided Validator (go-playground/validator).
+//     Any validation errors are returned to the caller.
+//
+// On success, NewConfig returns the validated configuration value.
 func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) {
 	config := ptr.Zero[T]()
 	if err := decoder.Decode(config); err != nil {
@@ -38,11 +51,22 @@ func NewConfig[T comparable](decoder Decoder, validator *Validator) (*T, error) 
 	return config, nil
 }
 
-// Config is the top-level configuration for a go-service based service.
+// Config is the standard top-level configuration shape for a go-service based service.
 //
-// It composes feature configurations from other packages (debug, cache, crypto, etc.).
-// All pointer fields are optional; when a sub-config is nil it is generally treated as disabled
-// (see each sub-config's IsEnabled method, where applicable).
+// It composes feature configurations from other packages (debug, cache, crypto, telemetry, transports, etc.)
+// so services can embed a single `config.Config` and get consistent wiring.
+//
+// # Optional pointers and "enabled" semantics
+//
+// Most fields are pointers and are intentionally optional. A nil sub-config is generally treated as
+// "disabled" by the corresponding subsystem. Many sub-config types expose an `IsEnabled()` method
+// whose convention is `return c != nil`.
+//
+// # Transport-derived projections
+//
+// Some subsystems are nested (for example HTTP/GRPC under Transport, and PG under SQL). The config
+// module wiring provides small projection constructors (see config/module.go) that safely return nil
+// when the parent sub-config is disabled.
 type Config struct {
 	// Debug configures the debug server and related debugging endpoints.
 	Debug *debug.Config `yaml:"debug,omitempty" json:"debug,omitempty" toml:"debug,omitempty"`

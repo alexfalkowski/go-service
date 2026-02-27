@@ -11,20 +11,31 @@ import (
 
 var _ checker.Checker = (*DBChecker)(nil)
 
-// NewDBChecker constructs a DBChecker that pings all configured master and slave databases.
+// NewDBChecker constructs a DBChecker that verifies database connectivity by pinging
+// all configured master and slave pools in db.
 //
-// timeout is applied per PingContext invocation.
+// The timeout is applied per PingContext invocation (i.e. each individual pool ping
+// gets its own derived context with this timeout).
+//
+// Note: db is expected to be non-nil. If the database subsystem is disabled and no
+// pools are available, callers should avoid constructing/registering this checker.
 func NewDBChecker(db *mssqlx.DBs, timeout time.Duration) *DBChecker {
 	return &DBChecker{db: db, timeout: timeout}
 }
 
 // DBChecker is a health checker that verifies database connectivity.
+//
+// It pings each configured master and slave database pool using PingContext. Any
+// ping failures are aggregated and returned from Check.
 type DBChecker struct {
 	db      *mssqlx.DBs
 	timeout time.Duration
 }
 
 // Check verifies database health by pinging all configured master and slave databases.
+//
+// It returns a single aggregated error (via errors.Join) containing all ping errors.
+// If all pings succeed, Check returns nil.
 func (c *DBChecker) Check(ctx context.Context) error {
 	dbs := c.dbs()
 	errs := make([]error, 0, len(dbs))

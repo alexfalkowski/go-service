@@ -53,18 +53,31 @@ func IsEmpty(s string) bool {
 	return strings.IsEmpty(s)
 }
 
-// IsIgnorable reports whether text contains one of the predefined ignorable substrings
-// (for example "health", "metrics", etc.).
+// IsIgnorable reports whether text should be treated as ignorable by transport middleware.
+//
+// This helper is used across HTTP and gRPC transports to decide whether certain endpoints/methods should bypass
+// middleware such as authentication, rate limiting, or logging.
+//
+// Matching behavior:
+// IsIgnorable returns true when text contains any of the predefined ignorable substrings (for example "healthz"
+// or "metrics"). This is intentionally a substring match (not an exact match), so callers should avoid passing
+// overly broad inputs that could accidentally match unrelated paths/method names.
 func IsIgnorable(text string) bool {
 	return slices.ContainsFunc(ignorable, func(o string) bool { return strings.Contains(text, o) })
 }
 
 // IsFullMethod reports whether name is of the form `/package.service/method`.
+//
+// This is the canonical shape of gRPC full method names as they appear in interceptors (for example
+// "/helloworld.Greeter/SayHello").
 func IsFullMethod(name string) bool {
 	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2 && strings.Count(name, ".") > 0
 }
 
-// SplitServiceMethod splits /package.service/method into package.service and method.
+// SplitServiceMethod splits a gRPC full method name into service and method components.
+//
+// If name is not a valid gRPC full method (see IsFullMethod), it returns ("", "", false).
+// Otherwise it returns ("package.service", "method", true).
 func SplitServiceMethod(name string) (string, string, bool) {
 	if !IsFullMethod(name) {
 		return "", "", false

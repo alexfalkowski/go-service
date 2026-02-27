@@ -18,6 +18,8 @@ import (
 )
 
 // CacheParams defines dependencies for constructing a Cache.
+//
+// It is intended for dependency injection (Fx/Dig). The constructor will typically be wired via `Module`.
 type CacheParams struct {
 	di.In
 	Lifecycle  di.Lifecycle
@@ -30,7 +32,11 @@ type CacheParams struct {
 
 // NewCache constructs a Cache from configuration and registers a shutdown hook.
 //
-// It returns nil when caching is disabled.
+// If caching is disabled (i.e. params.Config is nil), NewCache returns nil. Callers are expected to
+// tolerate a nil cache instance.
+//
+// When enabled, NewCache registers an OnStop lifecycle hook that calls (*Cache).Close to flush the
+// underlying driver on shutdown.
 func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {
 		return nil
@@ -53,7 +59,17 @@ func NewCache(params CacheParams) *Cache {
 	return cache
 }
 
-// Cache marshals values, compresses them, and stores them via the configured driver.
+// Cache provides a typed-ish cache facade on top of a cache driver.
+//
+// It serializes values using an encoder, optionally compresses the serialized bytes, base64-encodes the
+// final bytes, and stores the resulting string via the configured driver.
+//
+// Encoding selection is value-dependent (see encoder):
+//   - io.ReaderFrom / io.WriterTo use "plain"
+//   - proto.Message uses "proto"
+//   - otherwise the configured encoder is used, falling back to "json"
+//
+// Compression is selected from configuration, falling back to "none" when unknown/unavailable.
 type Cache struct {
 	cm     *compress.Map
 	em     *encoding.Map
@@ -63,16 +79,25 @@ type Cache struct {
 }
 
 // Close flushes the underlying driver.
+//
+// This is typically invoked automatically via the lifecycle hook registered by NewCache.
 func (c *Cache) Close(_ context.Context) error {
 	return c.driver.Flush()
 }
 
 // Remove deletes a cached key.
+//
+// If the key does not exist, driver behavior is implementation-specific.
 func (c *Cache) Remove(_ context.Context, key string) error {
 	return c.driver.Delete(key)
 }
 
-// Get loads a cached value into value and returns nil on cache misses.
+// Get loads a cached value for key into value.
+//
+// Cache misses are not treated as errors: if the entry is missing or expired, Get returns nil and
+// leaves value unchanged.
+//
+// The value parameter should be a pointer to the destination value (for example *MyStruct).
 func (c *Cache) Get(_ context.Context, key string, value any) error {
 	val, err := c.driver.Fetch(key)
 	if err != nil {
@@ -87,6 +112,10 @@ func (c *Cache) Get(_ context.Context, key string, value any) error {
 }
 
 // Persist stores value under key with the provided TTL.
+//
+// The value is encoded, compressed, and base64-encoded before being saved via the driver.
+// A TTL <= 0 is passed through to the driver; semantics are driver-specific (for example, it may mean
+// "no expiration" or "immediate expiration").
 func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
 	enc, err := c.encode(value)
 	if err != nil {

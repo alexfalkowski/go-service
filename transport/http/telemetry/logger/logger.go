@@ -9,10 +9,16 @@ import (
 	snoop "github.com/felixge/httpsnoop"
 )
 
-// Logger is an alias for logger.Logger.
+// Logger is an alias for `telemetry/logger.Logger`.
+//
+// It is re-exported here so transport-layer code can depend on a single logger type when composing
+// middleware.
 type Logger = logger.Logger
 
-// NewHandler constructs an HTTP server logging handler.
+// NewHandler constructs HTTP server logging middleware.
+//
+// The returned handler logs the outcome of each request after next has completed, including duration
+// and response status code. Ignorable paths (health/metrics/etc.) are skipped.
 func NewHandler(logger *Logger) *Handler {
 	return &Handler{logger: logger}
 }
@@ -22,11 +28,20 @@ type Handler struct {
 	logger *Logger
 }
 
-// ServeHTTP logs the request after next completes.
+// ServeHTTP logs the request outcome after next completes.
 //
-// It logs attributes including system ("http"), service/method (derived from the request),
-// duration, and response code. Log level is derived from the status code:
-// 4xx -> warn, 5xx -> error, otherwise -> info. Ignorable paths bypass logging.
+// Ignorable paths (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
+//
+// Logged attributes include:
+//   - system: "http"
+//   - service/method: derived from the request (see `http.ParseServiceMethod`)
+//   - duration: wall-clock elapsed time
+//   - code: HTTP response status code
+//
+// Log level is derived from the status code:
+//   - 4xx → warn
+//   - 5xx → error
+//   - otherwise → info
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	if strings.IsIgnorable(req.URL.Path) {
 		next(res, req)
@@ -48,7 +63,10 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	h.logger.LogAttrs(ctx, codeToLevel(m.Code), message, attrs...)
 }
 
-// NewRoundTripper constructs an HTTP client logging RoundTripper.
+// NewRoundTripper constructs HTTP client logging middleware.
+//
+// The returned RoundTripper logs request outcomes (duration and status) and then delegates to the
+// underlying transport. Ignorable paths (health/metrics/etc.) are skipped.
 func NewRoundTripper(logger *Logger, r http.RoundTripper) *RoundTripper {
 	return &RoundTripper{logger: logger, RoundTripper: r}
 }
@@ -59,12 +77,23 @@ type RoundTripper struct {
 	http.RoundTripper
 }
 
-// RoundTrip logs the request/response and delegates to the underlying RoundTripper.
+// RoundTrip logs the request outcome and delegates to the underlying RoundTripper.
 //
-// It logs attributes including system ("http"), service/method (derived from the request),
-// duration, and (when available) response code. Log level is derived from the status code:
-// 4xx -> warn, 5xx -> error, otherwise -> info. If resp is nil, it is treated as a 500 for level selection.
-// Ignorable paths bypass logging.
+// Ignorable paths (health/metrics/etc.) bypass logging (see `transport/strings.IsIgnorable`).
+//
+// Logged attributes include:
+//   - system: "http"
+//   - service/method: derived from the request (see `http.ParseServiceMethod`)
+//   - duration: wall-clock elapsed time
+//   - code: HTTP response status code (when available)
+//
+// Log level is derived from the status code:
+//   - 4xx → warn
+//   - 5xx → error
+//   - otherwise → info
+//
+// If resp is nil (for example, due to a transport error), it is treated as HTTP 500 for level selection.
+// The log message includes the derived method and service.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	if strings.IsIgnorable(req.URL.Path) {
 		return r.RoundTripper.RoundTrip(req)

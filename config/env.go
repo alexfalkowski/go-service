@@ -8,18 +8,33 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// NewENV constructs an env-based Decoder.
+// NewENV constructs an environment-variable based Decoder.
 //
-// location is the name of the environment variable to read. The environment variable value is expected to be in the form:
-// "<extension>:<base64-content>" (for example "yaml:...").
+// location is the name of the environment variable to read.
 //
-// The extension is used to select an encoder/decoder from enc. The content must be base64-encoded.
+// # Expected format
+//
+// The environment variable value must be formatted as:
+//
+//	"<kind>:<base64-content>"
+//
+// Where:
+//   - kind selects the decoder from enc (for example "yaml", "yml", "toml", or "json").
+//   - base64-content is the configuration content encoded using base64.
+//
+// Example:
+//
+//	CONFIG="yaml:PHlhbWw+Li4u" // base64 payload truncated for brevity
+//
+// NewENV reads the environment variable once at construction time and stores the parsed kind and data.
 func NewENV(location string, enc *encoding.Map) *ENV {
 	kind, data := strings.CutColon(os.Getenv(location))
 	return &ENV{kind: kind, data: data, enc: enc}
 }
 
 // ENV decodes configuration from an environment variable.
+//
+// It expects the variable value to be formatted as "<kind>:<base64-content>" (see NewENV).
 type ENV struct {
 	enc  *encoding.Map
 	kind string
@@ -28,9 +43,13 @@ type ENV struct {
 
 // Decode decodes the configuration into v.
 //
-// It returns ErrEnvMissing if the environment variable is missing or does not contain both kind and data.
-// It returns ErrNoEncoder if there is no encoder registered for the decoded kind.
-// It returns an error if the base64 content cannot be decoded or if decoding into v fails.
+// The destination v should be a pointer to the target configuration type.
+//
+// Errors:
+//   - ErrEnvMissing if the environment variable is missing or malformed (missing kind or data).
+//   - ErrNoEncoder if there is no encoder registered for the decoded kind.
+//   - Any base64 decode error if the content cannot be decoded.
+//   - Any decode/unmarshal error returned by the selected encoder.
 func (e *ENV) Decode(v any) error {
 	if strings.IsEmpty(e.kind) || strings.IsEmpty(e.data) {
 		return ErrEnvMissing

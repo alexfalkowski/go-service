@@ -11,21 +11,48 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 )
 
-// RegisterParams for health.
+// RegisterParams defines dependencies for registering HTTP health endpoints.
+//
+// It is an Fx parameter struct (`di.In`) used to wire standard Kubernetes-style health endpoints:
+//
+//   - `/healthz` (general health)
+//   - `/livez` (liveness)
+//   - `/readyz` (readiness)
+//
+// `Register` is a no-op unless a non-nil `Server` is provided.
 type RegisterParams struct {
 	di.In
+
+	// Server is the underlying health server that stores and exposes health observers.
+	//
+	// It is expected to be non-nil when health endpoints are wired.
 	Server *health.Server
-	Name   env.Name
+
+	// Name is the service name used for route prefixing and observer lookup.
+	Name env.Name
 }
 
-// Register health for HTTP.
+// Register registers the standard HTTP health endpoints.
+//
+// It registers REST GET handlers for `/healthz`, `/livez`, and `/readyz` using the route prefix
+// `http.Pattern(params.Name, <path>)`.
+//
+// Each handler checks the corresponding observer on the underlying health server (using the check name
+// without the leading slash) and returns:
+//
+//   - HTTP 200 with `{status: "SERVING"}` when the observer reports no error.
+//   - HTTP 503 when the observer is missing or reports an error.
+//
+// The response also includes request-scoped metadata extracted into the context (see transport metadata middleware).
 func Register(params RegisterParams) {
 	resister(params.Name, "/healthz", params.Server)
 	resister(params.Name, "/livez", params.Server)
 	resister(params.Name, "/readyz", params.Server)
 }
 
-// Response is the HTTP response body returned by the health endpoints.
+// Response is the response body returned by the health endpoints.
+//
+// The shape is designed to be human-readable and machine-consumable.
 type Response struct {
 	// Meta contains request-scoped metadata derived from the context.
 	Meta meta.Map `yaml:"meta,omitempty" json:"meta,omitempty" toml:"meta,omitempty"`

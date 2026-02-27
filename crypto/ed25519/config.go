@@ -15,6 +15,9 @@ import (
 // Expected key formats:
 //   - Public: PEM block "PUBLIC KEY" containing PKIX-encoded bytes (x509.ParsePKIXPublicKey).
 //   - Private: PEM block "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.ParsePKCS8PrivateKey).
+//
+// Note: the key parsing helpers on this type use type assertions and will panic if the decoded key is not the
+// expected Ed25519 key type. See PublicKey and PrivateKey for details.
 type Config struct {
 	// Public is a "source string" for the Ed25519 public key PEM.
 	//
@@ -38,8 +41,12 @@ func (c *Config) IsEnabled() bool {
 
 // PublicKey loads and parses the configured Ed25519 public key.
 //
-// It decodes a PEM "PUBLIC KEY" block and parses it as a PKIX public key.
-// If the decoded key is not an ed25519.PublicKey, this function will panic due to a type assertion.
+// It decodes a PEM "PUBLIC KEY" block from c.Public and parses it as a PKIX public key
+// (x509.ParsePKIXPublicKey).
+//
+// Panics: if the decoded key is not an ed25519.PublicKey, this function will panic due to a type assertion.
+// This can happen if the PEM data is a valid "PUBLIC KEY" block but contains a different key type
+// (for example RSA or ECDSA).
 func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 	d, err := decoder.Decode(c.Public, "PUBLIC KEY")
 	if err != nil {
@@ -56,8 +63,11 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 
 // PrivateKey loads and parses the configured Ed25519 private key.
 //
-// It decodes a PEM "PRIVATE KEY" block and parses it as a PKCS#8 private key.
-// If the decoded key is not an ed25519.PrivateKey, this function will panic due to a type assertion.
+// It decodes a PEM "PRIVATE KEY" block from c.Private and parses it as a PKCS#8 private key
+// (x509.ParsePKCS8PrivateKey).
+//
+// Panics: if the decoded key is not an ed25519.PrivateKey, this function will panic due to a type assertion.
+// This can happen if the PEM data is a valid "PRIVATE KEY" block but contains a different key type.
 func (c *Config) PrivateKey(decoder *pem.Decoder) (ed25519.PrivateKey, error) {
 	d, err := decoder.Decode(c.Private, "PRIVATE KEY")
 	if err != nil {

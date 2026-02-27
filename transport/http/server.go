@@ -22,37 +22,77 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
-// ServerParams defines dependencies for constructing an HTTP Server.
+// ServerParams defines dependencies for constructing an HTTP transport `Server`.
+//
+// It is an Fx parameter struct (`di.In`) that collects the configuration and optional dependencies used
+// to build and run the HTTP server.
+//
+// Optional fields:
+//   - `Logger`: enables server-side request logging middleware when non-nil.
+//   - `Limiter`: enables server-side rate limiting middleware when non-nil.
+//   - `Verifier`: enables server-side token verification middleware when non-nil.
+//   - `Handlers`: allows callers to inject additional Negroni middleware (and is optional in DI).
 type ServerParams struct {
 	di.In
+
+	// Shutdowner is used by the underlying `*server.Service` to coordinate shutdown.
 	Shutdowner di.Shutdowner
-	Mux        *http.ServeMux
-	Config     *Config
-	Logger     *logger.Logger
-	UserAgent  env.UserAgent
-	Version    env.Version
-	UserID     env.UserID
-	ID         id.Generator
-	Limiter    *limiter.Server
-	Verifier   token.Verifier
-	Handlers   []negroni.Handler `optional:"true"`
+
+	// Mux is the HTTP request multiplexer that holds registered routes/handlers.
+	Mux *http.ServeMux
+
+	// Config controls HTTP server enablement, address, timeouts, TLS, and low-level HTTP options.
+	Config *Config
+
+	// Logger enables HTTP server logging middleware when non-nil.
+	Logger *logger.Logger
+
+	// UserAgent is the service user agent used by metadata middleware.
+	UserAgent env.UserAgent
+
+	// Version is the service version reported via response headers and/or request context metadata.
+	Version env.Version
+
+	// UserID identifies the metadata key used for injecting authenticated subjects into context.
+	UserID env.UserID
+
+	// ID generates request IDs when one is not already present.
+	ID id.Generator
+
+	// Limiter enables server-side rate limiting middleware when non-nil.
+	Limiter *limiter.Server
+
+	// Verifier enables server-side token verification middleware when non-nil.
+	Verifier token.Verifier
+
+	// Handlers are additional Negroni handlers to insert into the middleware chain.
+	//
+	// These handlers are applied in the order provided.
+	Handlers []negroni.Handler `optional:"true"`
 }
 
-// NewServer constructs an HTTP Server when the transport is enabled.
+// NewServer constructs an HTTP transport `Server` when the transport is enabled.
 //
-// If params.Config is disabled, it returns (nil, nil).
+// If `params.Config` is disabled, it returns (nil, nil) so that downstream wiring can treat the server
+// as not configured.
 //
-// The server composes middleware in the following order:
+// Middleware composition:
 //
-//   - metadata extraction and response headers (`transport/http/meta`)
-//   - optional logging (`transport/http/telemetry/logger`)
-//   - optional user-provided handlers (in the order supplied)
-//   - optional token verification (`transport/http/token`)
-//   - optional rate limiting (`transport/http/limiter`)
-//   - gzip compression wrapping the mux handler
+// The server is built using Negroni and composes middleware in this order (first listed runs first):
+//   - metadata extraction/injection and response headers (`transport/http/meta`)
+//   - optional logging (`transport/http/telemetry/logger`) when `params.Logger` is non-nil
+//   - optional user-provided handlers (`params.Handlers`, in the order supplied)
+//   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
+//   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
+//   - gzip compression wrapping the mux handler (`gzhttp.GzipHandler(params.Mux)`)
 //
-// If TLS is enabled, TLS configuration is constructed using the registered filesystem dependency
-// (see Register in this package).
+// Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
+// as bypassable, so those endpoints do not require auth and do not consume limiter capacity by default.
+//
+// TLS:
+//
+// If TLS is enabled, TLS configuration is constructed using the package-registered filesystem dependency
+// (see `Register` in this package) to resolve certificate/key "source strings" (for example `file:` or `env:`).
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
@@ -95,14 +135,19 @@ func NewServer(params ServerParams) (*Server, error) {
 	return &Server{service}, nil
 }
 
-// Server wraps an HTTP server service.
+// Server wraps an HTTP server service wrapper.
+//
+// The embedded `*server.Service` provides start/stop orchestration and integrates with the application's
+// lifecycle.
 type Server struct {
 	*server.Service
 }
 
-// GetService returns the runnable service, if defined.
+// GetService returns the runnable service wrapper.
 //
-// It returns nil if s is nil.
+// It returns nil if s is nil (for example, when the transport is disabled).
+// This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
+// registration (see `transport.NewServers` and `transport.Register`).
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil

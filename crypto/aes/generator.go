@@ -3,6 +3,8 @@ package aes
 import "github.com/alexfalkowski/go-service/v2/crypto/rand"
 
 // NewGenerator constructs a Generator that produces AES key material.
+//
+// The returned Generator uses the shared cryptographically-secure random generator.
 func NewGenerator(generator *rand.Generator) *Generator {
 	return &Generator{generator: generator}
 }
@@ -12,7 +14,10 @@ type Generator struct {
 	generator *rand.Generator
 }
 
-// Generate returns a base64 text key of length suitable for AES-256.
+// Generate returns a base64-encoded text key suitable for AES-256.
+//
+// The generated key represents 32 random bytes (256 bits) encoded as base64 text.
+// Callers that need the raw key bytes should decode the returned string.
 func (g *Generator) Generate() (string, error) {
 	return g.generator.GenerateText(32)
 }

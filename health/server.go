@@ -8,7 +8,13 @@ import (
 
 // NewServer constructs a go-health server and wires it into the application lifecycle.
 //
-// The server is started on lifecycle start and stopped on lifecycle stop.
+// Lifecycle behavior:
+//   - OnStart: starts the underlying go-health server.
+//   - OnStop: stops the underlying go-health server.
+//
+// This makes the health server's lifetime match the Fx application lifetime, without requiring
+// callers to manually start/stop it. The returned server can then be configured by other wiring
+// (for example by registering health check registrations/endpoints provided by go-health).
 func NewServer(lc di.Lifecycle) *health.Server {
 	server := health.NewServer()
 

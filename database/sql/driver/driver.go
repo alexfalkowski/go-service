@@ -19,13 +19,22 @@ import (
 )
 
 // Driver aliases `database/sql/driver`.Driver.
+//
+// It is the concrete driver type expected by Register.
 type Driver = driver.Driver
 
-// Register registers a `database/sql` driver under name and wraps it with OpenTelemetry
-// instrumentation.
+// Register registers a `database/sql` driver under name and wraps it with OpenTelemetry instrumentation.
 //
-// If the underlying `sql.Register` panics (for example, due to a duplicate name),
-// Register converts the panic into an error and returns it.
+// This function registers the wrapped driver with the global `database/sql` driver registry. It is therefore
+// intended to be called during process initialization (for example from an init hook or DI registration).
+//
+// Telemetry:
+//   - The driver is wrapped using otelsql.WrapDriver.
+//   - The DB system name attribute is set to the provided name (semconv.DBSystemNameKey).
+//
+// Errors:
+//   - If the underlying `sql.Register` panics (for example, due to registering the same name more than once),
+//     Register converts that panic into an error and returns it.
 func Register(name string, driver Driver) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -38,14 +47,17 @@ func Register(name string, driver Driver) (err error) {
 	return err
 }
 
-// Open opens master/slave `database/sql` connection pools for the given driver name.
+// Open opens master/slave `database/sql` connection pools for a previously registered driver name.
 //
-// It reads master and slave DSNs from cfg using the provided filesystem (DSNs are
-// configured as "source strings"), connects using `mssqlx.ConnectMasterSlaves`,
-// registers OpenTelemetry DB stats metrics for each pool, and configures pool
-// limits/lifetime.
+// It resolves DSNs from cfg using the provided filesystem (DSNs are configured as go-service "source strings"),
+// connects using `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for each pool, and then
+// applies pool settings (connection lifetime, max idle, and max open connections).
 //
-// The returned pools are closed on Fx lifecycle stop.
+// Lifecycle:
+//   - Open appends an OnStop hook to the provided lifecycle that closes all returned pools by calling Destroy.
+//
+// Errors:
+//   - Returns any error encountered while resolving DSNs, connecting, or parsing ConnMaxLifetime.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 

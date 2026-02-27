@@ -9,6 +9,9 @@ import (
 )
 
 // SenderOption configures a CloudEvents HTTP sender.
+//
+// Sender options control how the CloudEvents client is constructed, primarily by selecting the underlying
+// HTTP transport used to send events.
 type SenderOption interface {
 	apply(opts *senderOptions)
 }
@@ -24,15 +27,24 @@ func (f senderOptionFunc) apply(o *senderOptions) {
 }
 
 // WithSenderRoundTripper configures the underlying HTTP RoundTripper used to send CloudEvents.
+//
+// This is an escape hatch for providing a custom transport (for example, one that is instrumented,
+// uses a custom proxy, or is a test double).
 func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 	return senderOptionFunc(func(o *senderOptions) {
 		o.roundTripper = rt
 	})
 }
 
-// NewSender constructs a CloudEvents HTTP client that wraps outbound requests with the webhook hook.
+// NewSender constructs a CloudEvents HTTP client that signs outbound requests with the webhook hook.
 //
-// If no round tripper is configured, it uses the default HTTP transport.
+// The constructed client uses the CloudEvents SDK HTTP transport. Outbound requests are wrapped with the
+// webhook signing RoundTripper (see `transport/http/hooks`) so each request is signed before being sent.
+//
+// If no round tripper is configured via `WithSenderRoundTripper`, it uses the default HTTP transport.
+//
+// Note: the provided hook must be configured appropriately (for example with the expected secret) for
+// signing to succeed.
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
 	os := options(opts...)
 	rt := hooks.NewRoundTripper(hook, os.roundTripper)

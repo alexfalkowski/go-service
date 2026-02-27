@@ -9,22 +9,33 @@ import (
 )
 
 // ReceiverFunc is invoked for each received CloudEvent.
+//
+// The provided context is the request-scoped context associated with the inbound HTTP request.
 type ReceiverFunc func(ctx context.Context, e events.Event)
 
 // Receiver registers HTTP handlers that receive CloudEvents.
+//
+// It wires CloudEvents SDK receive handlers onto a mux and optionally wraps them with webhook verification
+// middleware (see `transport/http/events/hooks`).
 type Receiver struct {
 	mux  *http.ServeMux
 	hook *hooks.Webhook
 }
 
-// NewReceiver constructs a Receiver that registers handlers on mux and wraps them with the webhook hook.
+// NewReceiver constructs a Receiver that registers handlers on mux.
+//
+// Registered handlers are wrapped with webhook verification middleware created from hook (if configured).
 func NewReceiver(mux *http.ServeMux, hook *hooks.Webhook) *Receiver {
 	return &Receiver{mux: mux, hook: hook}
 }
 
 // Register registers a CloudEvents HTTP receive handler under path.
 //
-// The handler is registered for HTTP POST requests and is wrapped with the configured webhook hook handler.
+// The handler is registered for HTTP POST requests and dispatches each decoded event to receiver.
+//
+// Middleware:
+// The receive handler is wrapped with the configured webhook hook handler, which typically verifies request
+// signatures before allowing events through.
 func (r *Receiver) Register(ctx context.Context, path string, receiver ReceiverFunc) {
 	protocol, _ := events.NewHTTP()
 

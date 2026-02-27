@@ -7,17 +7,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 )
 
-// NewID returns the service id.
+// NewID returns a service instance identifier.
 //
-// It prefers the SERVICE_ID environment variable when set; otherwise it falls back to generator.Generate().
+// It prefers the SERVICE_ID environment variable when set (non-empty); otherwise it falls back to a
+// newly generated id produced by generator.Generate().
+//
+// This is commonly used to distinguish service instances in logs/metrics/traces when multiple replicas
+// are running.
 func NewID(generator id.Generator) ID {
 	return ID(cmp.Or(os.Getenv("SERVICE_ID"), generator.Generate()))
 }
 
-// ID of the service.
+// ID is the service instance identifier.
 type ID string
 
-// String representation of the ID.
+// String returns the id value as a string.
 func (id ID) String() string {
 	return string(id)
 }
