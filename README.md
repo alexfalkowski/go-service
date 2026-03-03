@@ -19,6 +19,38 @@ The framework is designed around dependency injection and uses [Uber Fx](https:/
 
 If you are new to Fx, their docs/examples are worth reading first.
 
+### Module bundles
+
+The module package exposes three top-level bundles:
+
+- `module.Library` for shared primitives (env, encoding, crypto, time, sync, id)
+- `module.Server` for server processes (Library + config, transports, telemetry, debug, health, etc.)
+- `module.Client` for short-lived/batch/client processes (Library + config, telemetry, sql, hooks, etc.)
+
+### Minimal CLI bootstrap example
+
+This repository is a library, so your binary is usually in another module. A typical `main` uses `cli.Application` and composes module bundles:
+
+```go
+package main
+
+import (
+	"context"
+
+	"github.com/alexfalkowski/go-service/v2/cli"
+	"github.com/alexfalkowski/go-service/v2/module"
+)
+
+func main() {
+	app := cli.NewApplication(func(commander cli.Commander) {
+		server := commander.AddServer("serve", "Run the service", module.Server)
+		server.AddInput("file:./config.yml") // enables the `-i` flag used by config.NewDecoder
+	})
+
+	app.ExitOnError(context.Background())
+}
+```
+
 ---
 
 ## CLI
@@ -58,6 +90,20 @@ Config input is routed by a flag called `-i`:
 
   Example format: `yaml:ZW52aXJvbm1lbnQ6IGRldmVsb3BtZW50Cg==`
 
+  Example commands:
+
+  ```sh
+  # Linux (GNU base64)
+  export SERVICE_CONFIG="yaml:$(base64 -w 0 < ./config.yml)"
+  ./your-service serve -i env:SERVICE_CONFIG
+  ```
+
+  ```sh
+  # macOS/BSD base64
+  export SERVICE_CONFIG="yaml:$(base64 < ./config.yml | tr -d '\n')"
+  ./your-service serve -i env:SERVICE_CONFIG
+  ```
+
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
   `<serviceName>.{yaml,yml,toml,json}`
@@ -75,6 +121,18 @@ The library provides a helper `config.NewConfig[T]` which:
 - decodes into `*T`
 - rejects an “empty” decoded value (guards against starting with a zero-value config)
 - validates the decoded config
+
+Example:
+
+```go
+type AppConfig struct {
+	config.Config `yaml:",inline" json:",inline" toml:",inline"`
+}
+
+func loadConfig(decoder config.Decoder, validator *config.Validator) (*AppConfig, error) {
+	return config.NewConfig[AppConfig](decoder, validator)
+}
+```
 
 ### The standard top-level config shape
 
@@ -134,8 +192,14 @@ Encoding kinds used by subsystems that support encoding:
 - `json`
 - `toml`
 - `yaml`
+- `yml`
 - `proto`
+- `protobuf`
+- `protojson`
+- `prototext`
 - `gob`
+- `plain`
+- `octet-stream`
 
 ---
 
@@ -153,7 +217,8 @@ cache:
 ```
 
 Notes:
-- `kind` is implementation-dependent (for example `redis`, `valkey`, `noop`) based on what your service wires/compiles in.
+- Built-in driver kinds in this repo are `redis` and `sync`.
+- `kind` is still wiring-dependent in practice: services can register additional drivers.
 - `options` is backend-specific and decoded as `map[string]any`.
 
 ---
@@ -181,7 +246,7 @@ feature:
     timeout: 1s
     attempts: 3
   tls:
-    cert: file:test/certs/client.pem
+    cert: file:test/certs/client-cert.pem
     key: file:test/certs/client-key.pem
 ```
 
@@ -196,7 +261,7 @@ Configured via `hooks.Config`:
 
 ```yaml
 hooks:
-  secret: file:test/secrets/webhook_secret.txt
+  secret: file:test/secrets/hooks
 ```
 
 `secret` is a source string.
@@ -272,7 +337,7 @@ Health checks are based on [go-health](https://github.com/alexfalkowski/go-healt
 
 The framework provides Kubernetes-style endpoints:
 
-- `/<name>/healthz` — detailed dependency breakdown (verification/debugging)
+- `/<name>/healthz` — general serving health status
 - `/<name>/livez` — liveness probe
 - `/<name>/readyz` — readiness probe
 
@@ -313,20 +378,21 @@ telemetry:
     level: info
 ```
 
-#### OTLP-ish logger (Loki push)
+#### OTLP logger
 
 ```yaml
 telemetry:
   logger:
     kind: otlp
     level: info
-    url: http://localhost:3100/loki/api/v1/push
+    url: http://localhost:4318/v1/logs
     headers:
-      Authorization: env:LOKI_AUTH
+      Authorization: env:OTLP_LOGS_AUTH
 ```
 
 Notes:
-- `headers` values are source strings. If a header value cannot be resolved, some header wiring can fail fast.
+- `headers` values are source strings.
+- Telemetry header maps are resolved during config projection; unresolved `env:`/`file:` values fail fast (panic during startup).
 
 ### Metrics
 
@@ -342,6 +408,8 @@ telemetry:
   metrics:
     kind: prometheus
 ```
+
+When Prometheus is enabled on HTTP transport, metrics are exposed at `/<name>/metrics`.
 
 #### OTLP metrics
 
@@ -366,6 +434,9 @@ telemetry:
     headers:
       Authorization: env:OTLP_TRACES_AUTH
 ```
+
+Note:
+- Current tracer wiring exports via OTLP/HTTP when tracer config is present.
 
 ### Telemetry libraries used
 
@@ -394,26 +465,21 @@ Supported token `kind` values:
 
 ### Access control (Casbin)
 
-Optional access control is configured under:
-
-```yaml
-token:
-  access:
-    policy: file:/path/to/policy.csv
-```
-
-In transport configs this becomes:
+Access control is configured inside transport token config:
 
 ```yaml
 transport:
   http:
     token:
       access:
-        policy: file:test/policy.csv
+        policy: ./config/rbac.csv
 ```
 
 The model is based on Casbin RBAC:
 <https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
+
+Note:
+- `access.policy` is passed directly to Casbin's file adapter. Use a real file path (or pre-resolve any source string before wiring).
 
 ### JWT
 
@@ -465,7 +531,7 @@ transport:
       ssh:
         keys:
           - name: active
-            public: file:test/keys/active.pub
+            public: file:/keys/active.pub
 ```
 
 Signing + verification example:
@@ -478,12 +544,12 @@ transport:
       ssh:
         key:
           name: active
-          private: file:test/keys/active
+          private: file:/keys/active
         keys:
           - name: active
-            public: file:test/keys/active.pub
+            public: file:/keys/active.pub
           - name: old
-            public: file:test/keys/old.pub
+            public: file:/keys/old.pub
 ```
 
 Notes:
@@ -566,6 +632,10 @@ transport:
     timeout: 10s
 ```
 
+Notes:
+- Address format should be `<network>://<address>` (for example `tcp://:8000`).
+- If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
+
 With retry + low-level options map:
 
 ```yaml
@@ -605,12 +675,12 @@ TLS config uses `crypto/tls.Config` and fields are source strings:
 transport:
   http:
     tls:
-      cert: file:test/certs/server.pem
-      key: file:test/certs/server-key.pem
+      cert: file:test/certs/cert.pem
+      key: file:test/certs/key.pem
   grpc:
     tls:
-      cert: file:test/certs/server.pem
-      key: file:test/certs/server-key.pem
+      cert: file:test/certs/cert.pem
+      key: file:test/certs/key.pem
 ```
 
 Important gotcha:
@@ -619,6 +689,21 @@ Important gotcha:
 ### Dependencies
 
 ![Dependencies](./assets/transport.png)
+
+### Circuit breakers (client-side)
+
+The transport client wrappers include optional circuit breakers:
+
+- HTTP breaker (`transport/http/breaker`):
+  - Scope is per `"<METHOD> <HOST>"`.
+  - Default failure statuses are `>=500` and `429`.
+  - Transport errors are counted as failures.
+  - Failure status responses are still returned to callers (while breaker accounting records a failure).
+
+- gRPC breaker (`transport/grpc/breaker`):
+  - Scope is per `fullMethod`.
+  - Default failure codes are `Unavailable`, `DeadlineExceeded`, `ResourceExhausted`, and `Internal`.
+  - Errors with other gRPC codes are treated as successful for breaker accounting.
 
 ---
 
@@ -631,18 +716,18 @@ Example:
 ```yaml
 crypto:
   aes:
-    key: env:AES_KEY
+    key: file:test/secrets/aes
   ed25519:
-    public: file:test/keys/ed25519.pub.pem
-    private: file:test/keys/ed25519.priv.pem
+    public: file:test/secrets/ed25519_public
+    private: file:test/secrets/ed25519_private
   hmac:
-    key: env:HMAC_KEY
+    key: file:test/secrets/hmac
   rsa:
-    public: file:test/keys/rsa.pub.pem
-    private: file:test/keys/rsa.priv.pem
+    public: file:test/secrets/rsa_public
+    private: file:test/secrets/rsa_private
   ssh:
-    public: file:test/keys/id_ed25519.pub
-    private: file:test/keys/id_ed25519
+    public: file:test/secrets/ssh_public
+    private: file:test/secrets/ssh_private
 ```
 
 Notes:
@@ -671,14 +756,16 @@ Enable TLS:
 ```yaml
 debug:
   tls:
-    cert: file:test/certs/debug.pem
-    key: file:test/certs/debug-key.pem
+    cert: file:test/certs/cert.pem
+    key: file:test/certs/key.pem
 ```
+
+All debug endpoints are namespaced by service name: `/<name>/debug/...`.
 
 ### statsviz
 
 ```http
-GET http://localhost:6060/debug/statsviz
+GET http://localhost:6060/<name>/debug/statsviz
 ```
 
 <https://github.com/arl/statsviz>
@@ -686,11 +773,11 @@ GET http://localhost:6060/debug/statsviz
 ### pprof
 
 ```http
-GET http://localhost:6060/debug/pprof/
-GET http://localhost:6060/debug/pprof/cmdline
-GET http://localhost:6060/debug/pprof/profile
-GET http://localhost:6060/debug/pprof/symbol
-GET http://localhost:6060/debug/pprof/trace
+GET http://localhost:6060/<name>/debug/pprof/
+GET http://localhost:6060/<name>/debug/pprof/cmdline
+GET http://localhost:6060/<name>/debug/pprof/profile
+GET http://localhost:6060/<name>/debug/pprof/symbol
+GET http://localhost:6060/<name>/debug/pprof/trace
 ```
 
 <https://pkg.go.dev/net/http/pprof>
@@ -698,7 +785,7 @@ GET http://localhost:6060/debug/pprof/trace
 ### fgprof
 
 ```http
-GET http://localhost:6060/debug/fgprof?seconds=10
+GET http://localhost:6060/<name>/debug/fgprof?seconds=10
 ```
 
 <https://pkg.go.dev/github.com/felixge/fgprof>
@@ -706,7 +793,7 @@ GET http://localhost:6060/debug/fgprof?seconds=10
 ### gopsutil
 
 ```http
-GET http://localhost:6060/debug/psutil
+GET http://localhost:6060/<name>/debug/psutil
 ```
 
 <https://github.com/shirou/gopsutil>
@@ -739,6 +826,28 @@ make create-certs
 make dep
 ```
 
+If submodule fetch fails, ensure GitHub SSH access is configured (`.gitmodules` uses `git@github.com:...` URLs).
+
+### Discover targets
+
+```sh
+make help
+```
+
+### Dependencies (`vendor/` workflow)
+
+```sh
+make dep
+```
+
+`make dep` runs:
+
+- `go mod download`
+- `go mod tidy`
+- `go mod vendor`
+
+Tests are run with `-mod vendor`, so after dependency changes run `make dep` before `make specs`.
+
 ### Local integration dependencies
 
 Start required services:
@@ -755,8 +864,68 @@ make stop
 
 ### Tests
 
-Run unit tests + race + coverage:
+Run unit tests with race + coverage:
 
 ```sh
 make specs
 ```
+
+Artifacts:
+
+- JUnit XML: `test/reports/specs.xml`
+- Coverage profile: `test/reports/profile.cov`
+
+### Lint and format
+
+```sh
+make lint
+make fix-lint
+make format
+```
+
+### Security checks
+
+```sh
+make sec
+```
+
+### Benchmarks
+
+```sh
+make benchmarks
+make http-benchmarks
+make grpc-benchmarks
+make bytes-benchmarks
+make strings-benchmarks
+```
+
+### Coverage reports
+
+```sh
+make coverage
+make html-coverage
+make func-coverage
+```
+
+### Code generation (Buf)
+
+```sh
+make generate
+```
+
+### Architecture diagrams
+
+```sh
+make diagrams
+make crypto-diagram
+make database-diagram
+make telemetry-diagram
+make transport-diagram
+```
+
+### Additional gotchas
+
+- `make kind=status encode-config` uses `base64 -w 0` (GNU style). On macOS/BSD use `base64 | tr -d '\n'`.
+- If you enable transport TLS and wire transports manually (without transport modules), call:
+  - `transport/http.Register(fs)`
+  - `transport/grpc.Register(fs)`
