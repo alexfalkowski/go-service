@@ -72,7 +72,6 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 The config decoder supports:
 
-- JSON (`encoding/json`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
@@ -80,10 +79,10 @@ The config decoder supports:
 
 Config input is routed by a flag called `-i`:
 
-- `file:<path>`  
-  Read config from a file at `<path>`; parser is selected from the file extension (`.yaml`, `.yml`, `.toml`, `.json`).
+- `file:<path>`
+  Read config from a file at `<path>`; parser is selected from the file extension (`.yaml`, `.yml`, `.toml`).
 
-- `env:<ENV_VAR>`  
+- `env:<ENV_VAR>`
   Read config from env var `<ENV_VAR>`. The env var value must be formatted as:
 
   `"<extension>:<base64-content>"`
@@ -106,7 +105,7 @@ Config input is routed by a flag called `-i`:
 
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
-  `<serviceName>.{yaml,yml,toml,json}`
+  `<serviceName>.{yaml,yml,toml}`
 
   in:
   - executable directory
