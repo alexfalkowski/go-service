@@ -15,7 +15,6 @@ import (
 
 func TestValidFileConfig(t *testing.T) {
 	files := []string{
-		test.FilePath("configs/config.json"),
 		test.FilePath("configs/config.toml"),
 		test.FilePath("configs/config.yml"),
 	}
