@@ -4,6 +4,7 @@ linters:
     gosec:
       excludes:
         - G117
+        - G118
     lll:
       line-length: 180
   default: all
