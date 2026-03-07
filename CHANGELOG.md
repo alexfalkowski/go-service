@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.296.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.296.0) - 2026-03-07
+
+- [`0d235cb`](https://github.com/alexfalkowski/go-service/commit/0d235cb3d37194571af065aa65e399df8ffb327b) feat(deps): upgraded google.golang.org/grpc v1.79.1 => v1.79.2 (#2187)
+- [`c014156`](https://github.com/alexfalkowski/go-service/commit/c014156bf35aefe154fbcdcb31fec246fcabaf2f) build(ci): use latest published images (#2186)
+- [`65b98a8`](https://github.com/alexfalkowski/go-service/commit/65b98a8c7365c59d657a746dafe216c414fb63a1) test(config): retire json (#2185)
+- [`2588d7b`](https://github.com/alexfalkowski/go-service/commit/2588d7bc9063ac6d8f2f8946e89eebc67625c256) build(deps): upgraded github.com/alexfalkowski/bin (#2184)
+- [`1b520d8`](https://github.com/alexfalkowski/go-service/commit/1b520d83f84d83ae853f1f8ac7b38d2613ac2c3f) build(ci): use latest published images (#2183)
+
 ## [v2.295.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.295.0) - 2026-03-04
 
 - [`3d8aefa`](https://github.com/alexfalkowski/go-service/commit/3d8aefaf82b97efb865b5f1a5ad6bfa40a9b1e7c) feat(deps): update github.com/alexfalkowski/go-sync to v1.16.0 (#2182)
