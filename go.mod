@@ -35,7 +35,7 @@ require (
 	github.com/matoous/go-nanoid v1.5.1
 	github.com/oklog/ulid v1.3.1
 	github.com/open-feature/go-sdk v1.17.1
-	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.6
+	github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.7
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redis/go-redis/extra/redisotel/v9 v9.18.0
 	github.com/redis/go-redis/v9 v9.18.0
