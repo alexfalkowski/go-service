@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.298.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.298.0) - 2026-03-08
+
+- [`5e26f4c`](https://github.com/alexfalkowski/go-service/commit/5e26f4c01aba0fa185e939e6c1fc77ea2e2314cc) feat(deps): upgraded github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.6 => v0.3.7 (#2191)
+- [`d304246`](https://github.com/alexfalkowski/go-service/commit/d304246eefd97f3829f5bcca4c60eb17ff77bc87) build(ci): use latest published images (#2190)
+- [`3035263`](https://github.com/alexfalkowski/go-service/commit/30352636fa390f4b86e0d47275d1f4cdf442591c) build(ci): exclude G118 (#2189)
+
 ## [v2.297.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.297.0) - 2026-03-07
 
 - [`ea676b4`](https://github.com/alexfalkowski/go-service/commit/ea676b493e1e12bfc2c53073267a760a4aa3bdea) feat(deps): upgraded go.opentelemetry.io/otel v1.41.0 => v1.42.0 (#2188)
