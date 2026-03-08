@@ -53,7 +53,7 @@ func Register(params ProviderParams) {
 		h, err := hooks.NewMetricsHookForProvider(params.MetricProvider)
 		runtime.Must(err)
 
-		openfeature.AddHooks(h, hooks.NewTracesHook(hooks.WithErrorStatusEnabled()))
+		openfeature.AddHooks(h, hooks.NewTracesHook())
 	}
 
 	params.Lifecycle.Append(di.Hook{
