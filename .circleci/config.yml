@@ -72,6 +72,17 @@ jobs:
           path: test/reports
       - run: make codecov-upload
     resource_class: arm.large
+  sync:
+    docker:
+      - image: alexfalkowski/release:5.54
+    working_directory: ~/infraops
+    steps:
+      - checkout:
+          method: blobless
+      - run: git submodule sync
+      - run: git submodule update --init
+      - run: make sync push
+    resource_class: arm.large
   version:
     docker:
       - image: alexfalkowski/release:5.54
@@ -89,10 +100,13 @@ workflows:
     max_auto_reruns: 3
     jobs:
       - build
-      - version:
-          context: gh
+      - sync:
           requires:
             - build
-          filters:
-            branches:
-              only: master
+          filters: 'pipeline.git.branch != "master"'
+      - version:
+          context: gh
+          serial-group: << pipeline.project.slug >>/version
+          requires:
+            - build
+          filters: 'pipeline.git.branch == "master"'
