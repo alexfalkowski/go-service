@@ -75,7 +75,7 @@ jobs:
   sync:
     docker:
       - image: alexfalkowski/release:5.58
-    working_directory: ~/infraops
+    working_directory: ~/go-service
     steps:
       - checkout:
           method: blobless
