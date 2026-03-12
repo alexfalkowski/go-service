@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.299.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.299.0) - 2026-03-12
+
+- [`6d8ed7b`](https://github.com/alexfalkowski/go-service/commit/6d8ed7b1588266362db3b38bea931e3c05942abb) feat(deps): bump github.com/alexfalkowski/go-sync from 1.16.0 to 1.16.1 (#2203)
+- [`d48bc3c`](https://github.com/alexfalkowski/go-service/commit/d48bc3c81827f09c928eda88084b44b15d71e7be) build(deps): bump bin from `59b1ab0` to `a7996aa` (#2202)
+- [`22a499e`](https://github.com/alexfalkowski/go-service/commit/22a499e7896823c08a9c61866f57c615193e5aee) build(ci): update working_directory (#2200)
+- [`d3272ad`](https://github.com/alexfalkowski/go-service/commit/d3272ad93764b910a6510544d8993d3a7dcea9ef) build(ci): use alexfalkowski/release:5.58 (#2199)
+- [`85f6a9a`](https://github.com/alexfalkowski/go-service/commit/85f6a9a48199d5d1ce62323eba13337d904f04b8) build(ci): use latest published images (#2198)
+- [`50cc35c`](https://github.com/alexfalkowski/go-service/commit/50cc35c7a05a12bb03b8f4f6909e01bc5a4fbdef) build(ci): use latest published images (#2197)
+- [`9a2b887`](https://github.com/alexfalkowski/go-service/commit/9a2b88722527494c12d25940aaff9a98d237d2d0) build(ci): use latest published images (#2196)
+- [`c59741f`](https://github.com/alexfalkowski/go-service/commit/c59741fec1ecdf2b5994dbc41ae9747291aed901) build(ci): use latest published images (#2195)
+- [`c217b55`](https://github.com/alexfalkowski/go-service/commit/c217b55a904e122728b8b054957ec6eece5f1001) build(ci): add wait-all (#2194)
+- [`31d9d58`](https://github.com/alexfalkowski/go-service/commit/31d9d58e5afd35fd817f70cd2b6fb96b999b372d) build(ci): add sync (#2193)
+- [`bac05cd`](https://github.com/alexfalkowski/go-service/commit/bac05cd122ccf35c39e7a86d613b3344978ef498) build(deps): bump bin from `000304e` to `59b1ab0` (#2192)
+
 ## [v2.298.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.298.0) - 2026-03-08
 
 - [`5e26f4c`](https://github.com/alexfalkowski/go-service/commit/5e26f4c01aba0fa185e939e6c1fc77ea2e2314cc) feat(deps): upgraded github.com/open-feature/go-sdk-contrib/hooks/open-telemetry v0.3.6 => v0.3.7 (#2191)
