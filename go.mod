@@ -8,7 +8,7 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
 	github.com/alexfalkowski/go-health/v2 v2.14.0
-	github.com/alexfalkowski/go-sync v1.16.0
+	github.com/alexfalkowski/go-sync v1.16.1
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
@@ -132,7 +132,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260226221140-a57be14db171 // indirect
