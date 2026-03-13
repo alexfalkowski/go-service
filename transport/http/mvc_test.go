@@ -137,7 +137,7 @@ func TestStaticFileError(t *testing.T) {
 
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 	require.NoError(t, err)
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
 
 	world.RequireStop()
 }
@@ -175,7 +175,7 @@ func TestStaticPathValueError(t *testing.T) {
 
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 	require.NoError(t, err)
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
 
 	world.RequireStop()
 }
