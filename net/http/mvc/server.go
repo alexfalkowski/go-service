@@ -1,7 +1,9 @@
 package mvc
 
 import (
+	"errors"
 	"io"
+	"io/fs"
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/mime"
@@ -86,7 +88,7 @@ func StaticFile(pattern, name string) bool {
 
 		if err := writeFile(name, res); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
-			res.WriteHeader(status.Code(err))
+			res.WriteHeader(staticStatusCode(err))
 		}
 	}
 
@@ -110,7 +112,7 @@ func StaticPathValue(pattern, value, prefix string) bool {
 
 		if err := writeFile(name, res); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
-			res.WriteHeader(status.Code(err))
+			res.WriteHeader(staticStatusCode(err))
 		}
 	}
 
@@ -127,4 +129,12 @@ func writeFile(name string, writer io.Writer) error {
 
 	_, err = io.Copy(writer, f)
 	return err
+}
+
+func staticStatusCode(err error) int {
+	if errors.Is(err, fs.ErrNotExist) {
+		return http.StatusNotFound
+	}
+
+	return status.Code(err)
 }

@@ -2,7 +2,6 @@ package os
 
 import (
 	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -99,7 +98,7 @@ func (fs *FS) PathExists(name string) bool {
 //
 // This helper uses errors.Is to match os.ErrNotExist.
 func (*FS) IsNotExist(err error) bool {
-	return errors.Is(err, os.ErrNotExist)
+	return errors.Is(err, fs.ErrNotExist)
 }
 
 // PathExtension returns the file extension of path without the leading ".".
