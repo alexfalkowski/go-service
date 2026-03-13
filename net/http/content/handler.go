@@ -63,7 +63,13 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		ctx := req.Context()
 		ctx = meta.WithRequest(ctx, req)
 		ctx = meta.WithResponse(ctx, res)
+
 		media := cont.NewFromRequest(req)
+		if media.Encoder == nil {
+			status.WriteError(ctx, res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", media.Type))
+
+			return
+		}
 
 		ctx = meta.WithEncoder(ctx, media.Encoder)
 		res.Header().Add(TypeKey, media.Type)

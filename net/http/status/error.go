@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 )
 
@@ -30,7 +31,7 @@ import (
 func WriteError(ctx context.Context, res http.ResponseWriter, err error) {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", "text/error; charset=utf-8")
+	header.Set("Content-Type", mime.ErrorMediaType)
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(Code(err))
