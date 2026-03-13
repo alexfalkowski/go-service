@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.302.2](https://github.com/alexfalkowski/go-service/releases/tag/v2.302.2) - 2026-03-13
+
+- [`34cc8b7`](https://github.com/alexfalkowski/go-service/commit/34cc8b77afbda5d1ca6aaaace7864959fb3d2bb3) fix(grpc): shutdown with context (#2209)
+
 ## [v2.302.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.302.1) - 2026-03-13
 
 - [`4db0cde`](https://github.com/alexfalkowski/go-service/commit/4db0cdec1d9b89139e402909826e521ee00c1218) fix(mvc): return http.StatusNotFound (#2208)
