@@ -83,14 +83,27 @@ func (s *Server) Serve() error {
 	return s.server.Serve(s.listener)
 }
 
-// Shutdown gracefully stops the gRPC server.
+// Shutdown gracefully stops the gRPC server while respecting ctx.
 //
-// This delegates to (*grpc.Server).GracefulStop, which stops accepting new
-// connections and blocks until in-flight RPCs complete (subject to gRPC's
-// internal semantics). The provided context is currently ignored.
-func (s *Server) Shutdown(_ context.Context) error {
-	s.server.GracefulStop()
-	return nil
+// Shutdown first attempts a graceful stop in a background goroutine, allowing
+// in-flight RPCs to complete normally. If ctx is canceled or reaches its
+// deadline before graceful shutdown completes, Shutdown force-stops the server
+// and returns ctx.Err().
+func (s *Server) Shutdown(ctx context.Context) error {
+	done := make(chan struct{})
+
+	go func() {
+		s.server.GracefulStop()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		s.server.Stop()
+		return ctx.Err()
+	}
 }
 
 // String returns the bound listener address.
