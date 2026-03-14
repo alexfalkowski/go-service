@@ -15,11 +15,15 @@ type Webhook = hooks.Webhook
 //
 // The returned handler wraps handler and applies the webhook verification middleware first. If signature
 // verification fails, the request is rejected and handler is not invoked.
+//
+// If hook is nil, the returned handler behaves as a pass-through wrapper.
 func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 	return &Handler{handler: hooks.NewHandler(hook), Handler: handler}
 }
 
 // Handler wraps an http.Handler and applies webhook verification middleware.
+//
+// When webhook support is disabled, Handler becomes a pass-through wrapper.
 type Handler struct {
 	handler *hooks.Handler
 	http.Handler
@@ -29,6 +33,14 @@ type Handler struct {
 //
 // If verification fails, the underlying middleware writes an HTTP error response and does not call the wrapped
 // handler.
+//
+// Disabled behavior:
+// If the inner webhook handler is nil, ServeHTTP delegates directly to the wrapped handler.
 func (h *Handler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	if h.handler == nil {
+		h.Handler.ServeHTTP(resp, req)
+		return
+	}
+
 	h.handler.ServeHTTP(resp, req, h.Handler.ServeHTTP)
 }
