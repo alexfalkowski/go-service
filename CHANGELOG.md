@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.302.4](https://github.com/alexfalkowski/go-service/releases/tag/v2.302.4) - 2026-03-14
+
+- [`b8a97e6`](https://github.com/alexfalkowski/go-service/commit/b8a97e61f86135da523327f3274025a0902db079) fix(http): transport retries for retryable 429 and 5xx responses (#2211)
+
 ## [v2.302.3](https://github.com/alexfalkowski/go-service/releases/tag/v2.302.3) - 2026-03-13
 
 - [`96fac2b`](https://github.com/alexfalkowski/go-service/commit/96fac2bc6f25c2bff3cfd9d65216b11213ef76a9) fix(http): reject text/error request content types in http content handlers (#2210)
