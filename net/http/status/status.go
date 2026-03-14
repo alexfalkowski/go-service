@@ -75,9 +75,8 @@ func IsError(err error) bool {
 		return true
 	}
 
-	e := &statusError{}
-
-	return errors.As(err, &e)
+	_, ok := errors.AsType[*statusError](err)
+	return ok
 }
 
 // Code extracts the HTTP status code from err.
@@ -92,8 +91,7 @@ func Code(err error) int {
 		return coder.Code()
 	}
 
-	e := &statusError{}
-	if errors.As(err, &e) {
+	if e, ok := errors.AsType[*statusError](err); ok {
 		return e.code
 	}
 

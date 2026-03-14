@@ -165,8 +165,7 @@ func (a *roundTripAttempt) finalize(res *http.Response, err error) (*http.Respon
 		return res, nil
 	}
 
-	var re responseError
-	if errors.As(err, &re) {
+	if re, ok := errors.AsType[responseError](err); ok {
 		return re.resp, nil
 	}
 

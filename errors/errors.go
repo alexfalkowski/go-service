@@ -15,6 +15,18 @@ func As(err error, target any) bool {
 	return errors.As(err, target)
 }
 
+// AsType reports whether any error in err's chain matches T, and if so returns the matched value.
+//
+// This is a thin wrapper around the standard library errors.AsType. It is useful when callers want the
+// matched typed value directly instead of allocating a temporary target variable first.
+//
+// If no matching error is found, AsType returns the zero value of T and false.
+//
+// See: https://pkg.go.dev/errors#AsType
+func AsType[T error](err error) (T, bool) {
+	return errors.AsType[T](err)
+}
+
 // New returns an error that formats as the given text.
 //
 // This is a thin wrapper around the standard library errors.New. It is typically used to define

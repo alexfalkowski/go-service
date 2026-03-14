@@ -85,8 +85,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return resp, nil
 	})
 	if err != nil {
-		var re responseError
-		if errors.As(err, &re) {
+		if re, ok := errors.AsType[responseError](err); ok {
 			return re.resp, nil
 		}
 
@@ -104,12 +103,12 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 	s := r.opts.settings
 	s.Name = key
 	s.IsSuccessful = func(err error) bool {
-		if err != nil {
-			var re responseError
-			return !errors.As(err, &re)
+		if err == nil {
+			return true
 		}
 
-		return true
+		_, ok := errors.AsType[responseError](err)
+		return !ok
 	}
 
 	cb := breaker.NewCircuitBreaker(s)
