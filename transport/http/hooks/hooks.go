@@ -12,7 +12,18 @@ import (
 )
 
 // NewWebhook constructs a Webhook signer/verifier.
+//
+// Disabled behavior:
+// If hook is nil, NewWebhook returns nil so callers can treat webhook signing/verification as disabled.
+//
+// Enabled behavior:
+// When hook is non-nil, the returned Webhook adds go-service request-body buffering and header conventions
+// on top of the underlying Standard Webhooks signer/verifier.
 func NewWebhook(hook *hooks.Webhook, generator id.Generator) *Webhook {
+	if hook == nil {
+		return nil
+	}
+
 	return &Webhook{hook: hook, generator: generator}
 }
 
@@ -41,7 +52,14 @@ type Webhook struct {
 //
 // The signature is computed over the request payload and includes a generated webhook id and timestamp.
 // Callers should ensure the request body is readable (and reasonably bounded) since it is buffered in memory.
+//
+// Disabled behavior:
+// If the receiver or underlying Standard Webhooks hook is nil, Sign is a no-op and returns nil.
 func (h *Webhook) Sign(req *http.Request) error {
+	if h == nil || h.hook == nil {
+		return nil
+	}
+
 	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return err
@@ -65,7 +83,14 @@ func (h *Webhook) Sign(req *http.Request) error {
 // using the underlying Standard Webhooks verifier.
 //
 // Callers should ensure the request body is readable (and reasonably bounded) since it is buffered in memory.
+//
+// Disabled behavior:
+// If the receiver or underlying Standard Webhooks hook is nil, Verify is a no-op and returns nil.
 func (h *Webhook) Verify(req *http.Request) error {
+	if h == nil || h.hook == nil {
+		return nil
+	}
+
 	payload, body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return err
@@ -81,13 +106,15 @@ func (h *Webhook) Verify(req *http.Request) error {
 }
 
 // Handler verifies webhook signatures on inbound requests.
+//
+// When webhook support is disabled (hook is nil), Handler becomes a pass-through middleware.
 type Handler struct {
 	hook *Webhook
 }
 
 // NewHandler constructs webhook verification middleware.
 //
-// Callers should only install this handler when hook is non-nil and properly configured.
+// If hook is nil, the returned handler behaves as pass-through middleware and simply calls next.
 func NewHandler(hook *Webhook) *Handler {
 	return &Handler{hook: hook}
 }
@@ -95,7 +122,15 @@ func NewHandler(hook *Webhook) *Handler {
 // ServeHTTP verifies the webhook signature before calling next.
 //
 // If verification fails, it writes an HTTP 400 error response and does not call next.
+//
+// Disabled behavior:
+// If the handler or its hook is nil, ServeHTTP behaves as a pass-through and immediately calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+	if h == nil || h.hook == nil {
+		next(res, req)
+		return
+	}
+
 	if err := h.hook.Verify(req); err != nil {
 		status.WriteError(req.Context(), res, status.BadRequestError(err))
 
@@ -109,11 +144,15 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 //
 // The returned RoundTripper signs each request by buffering the request body, restoring `req.Body`, and
 // attaching the Standard Webhooks signature headers before delegating to the underlying transport.
+//
+// If hook is nil, the returned RoundTripper behaves as a pass-through wrapper.
 func NewRoundTripper(hook *Webhook, rt http.RoundTripper) *RoundTripper {
 	return &RoundTripper{hook: hook, RoundTripper: rt}
 }
 
 // RoundTripper signs outbound webhook requests before delegating to the underlying RoundTripper.
+//
+// When webhook support is disabled (hook is nil), RoundTripper becomes a pass-through wrapper.
 type RoundTripper struct {
 	hook *Webhook
 	http.RoundTripper
@@ -122,7 +161,15 @@ type RoundTripper struct {
 // RoundTrip signs the request and delegates to the underlying RoundTripper.
 //
 // If signing fails (for example, due to an unreadable body), RoundTrip returns the signing error.
+//
+// Disabled behavior:
+// If the configured hook is nil, RoundTrip delegates directly to the underlying RoundTripper without
+// mutating the request.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if r.hook == nil {
+		return r.RoundTripper.RoundTrip(req)
+	}
+
 	if err := r.hook.Sign(req); err != nil {
 		return nil, err
 	}
