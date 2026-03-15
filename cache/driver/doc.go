@@ -13,10 +13,14 @@
 // package currently includes built-in constructors for common backends (for example Redis and an in-memory
 // sync driver).
 //
+// The built-in `sync` driver comes from the upstream cachego dependency and currently has whole-second TTL
+// resolution. Callers should not rely on sub-second expiration with that backend.
+//
 // If the configured kind is unknown, `NewDriver` returns `ErrNotFound`.
 //
 // # Errors
 //
-// This package re-exports `cachego.ErrCacheExpired` as `ErrExpired` and provides `IsExpiredError` to
-// classify expired-entry errors in a backend-agnostic way.
+// This package re-exports `cachego.ErrCacheExpired` as `ErrExpired` and provides
+// `IsExpiredError` / `IsMissingError` helpers to classify backend-specific miss conditions in a
+// backend-agnostic way.
 package driver

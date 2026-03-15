@@ -101,7 +101,7 @@ func (c *Cache) Remove(_ context.Context, key string) error {
 func (c *Cache) Get(_ context.Context, key string, value any) error {
 	val, err := c.driver.Fetch(key)
 	if err != nil {
-		if driver.IsExpiredError(err) {
+		if driver.IsMissingError(err) || driver.IsExpiredError(err) {
 			return nil
 		}
 
@@ -116,6 +116,10 @@ func (c *Cache) Get(_ context.Context, key string, value any) error {
 // The value is encoded, compressed, and base64-encoded before being saved via the driver.
 // A TTL <= 0 is passed through to the driver; semantics are driver-specific (for example, it may mean
 // "no expiration" or "immediate expiration").
+//
+// TTL resolution is also driver-specific. The built-in in-memory `sync` driver provided by the vendored
+// cachego dependency uses whole-second expiry tracking, so sub-second TTLs should not be relied on with
+// that backend.
 func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
 	enc, err := c.encode(value)
 	if err != nil {
