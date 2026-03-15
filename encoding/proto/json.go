@@ -44,18 +44,22 @@ func (e *JSON) Encode(w io.Writer, v any) error {
 
 // Decode reads protobuf JSON from r and unmarshals it into v.
 //
-// Decode reads all remaining bytes from r (via io.ReadAll) before unmarshaling.
-// If v does not implement proto.Message, Decode returns encoding/errors.ErrInvalidType.
+// If v does not implement proto.Message, Decode returns
+// encoding/errors.ErrInvalidType without reading from r.
+//
+// Decode otherwise reads all remaining bytes from r (via io.ReadAll) before
+// unmarshaling.
+//
 // Any read error from io.ReadAll and any unmarshal error from protojson.Unmarshal is returned.
 func (e *JSON) Decode(r io.Reader, v any) error {
-	bytes, err := io.ReadAll(r)
-	if err != nil {
-		return err
-	}
-
 	msg, ok := v.(proto.Message)
 	if !ok {
 		return errors.ErrInvalidType
+	}
+
+	bytes, err := io.ReadAll(r)
+	if err != nil {
+		return err
 	}
 
 	return protojson.Unmarshal(bytes, msg)

@@ -1,8 +1,10 @@
 package proto_test
 
 import (
+	"io"
 	"testing"
 
+	encodingerrors "github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/stretchr/testify/require"
@@ -44,6 +46,16 @@ func TestInvalidBinaryDecode(t *testing.T) {
 	require.Error(t, encoder.Decode(bytes, &msg))
 }
 
+func TestInvalidBinaryDecodeDoesNotRead(t *testing.T) {
+	encoder := proto.NewBinary()
+	reader := &trackingReader{err: io.EOF}
+
+	var msg string
+	err := encoder.Decode(reader, &msg)
+	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.Zero(t, reader.reads)
+}
+
 func TestValidTextEncoder(t *testing.T) {
 	encoder := proto.NewText()
 
@@ -77,6 +89,16 @@ func TestInvalidTextDecode(t *testing.T) {
 
 	var msg string
 	require.Error(t, encoder.Decode(bytes, &msg))
+}
+
+func TestInvalidTextDecodeDoesNotRead(t *testing.T) {
+	encoder := proto.NewText()
+	reader := &trackingReader{err: io.EOF}
+
+	var msg string
+	err := encoder.Decode(reader, &msg)
+	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.Zero(t, reader.reads)
 }
 
 func TestValidJSONEncoder(t *testing.T) {
@@ -114,6 +136,16 @@ func TestInvalidJSONDecode(t *testing.T) {
 	require.Error(t, encoder.Decode(bytes, &msg))
 }
 
+func TestInvalidJSONDecodeDoesNotRead(t *testing.T) {
+	encoder := proto.NewJSON()
+	reader := &trackingReader{err: io.EOF}
+
+	var msg string
+	err := encoder.Decode(reader, &msg)
+	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.Zero(t, reader.reads)
+}
+
 func TestErrBinaryDecode(t *testing.T) {
 	encoder := proto.NewBinary()
 	var msg grpc_health_v1.HealthCheckResponse
@@ -130,4 +162,14 @@ func TestErrJSONDecode(t *testing.T) {
 	encoder := proto.NewJSON()
 	var msg grpc_health_v1.HealthCheckResponse
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
+}
+
+type trackingReader struct {
+	err   error
+	reads int
+}
+
+func (r *trackingReader) Read(_ []byte) (int, error) {
+	r.reads++
+	return 0, r.err
 }
