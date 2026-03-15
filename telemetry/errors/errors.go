@@ -13,7 +13,14 @@ import (
 // Register is typically invoked once during service startup (for example via an
 // Fx module) so that OpenTelemetry SDK/internal errors (exporter failures,
 // dropped data warnings, etc.) are routed into application logging.
+//
+// If handler is nil, Register leaves the current global OpenTelemetry error
+// handler unchanged.
 func Register(handler *Handler) {
+	if handler == nil {
+		return
+	}
+
 	otel.SetErrorHandler(handler)
 }
 
@@ -21,7 +28,14 @@ func Register(handler *Handler) {
 //
 // The returned Handler implements the OpenTelemetry error handler interface and
 // writes errors using the provided go-service *logger.Logger.
+//
+// If logger is nil, NewHandler returns nil so callers can preserve the
+// OpenTelemetry default global error handler when logging is disabled.
 func NewHandler(logger *logger.Logger) *Handler {
+	if logger == nil {
+		return nil
+	}
+
 	return &Handler{logger: logger}
 }
 
@@ -39,6 +53,12 @@ type Handler struct {
 // This method is called by the OpenTelemetry SDK when it encounters an internal
 // error. It logs at error level using the go-service logger, attaching the error
 // under the "error" key.
+//
+// Handle is nil-safe. If the receiver or its logger is nil, the error is ignored.
 func (e *Handler) Handle(err error) {
+	if e == nil || e.logger == nil {
+		return
+	}
+
 	e.logger.Error("telemetry: global error", logger.Error(err))
 }
