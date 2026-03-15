@@ -80,3 +80,14 @@ func TestInvalidCipher(t *testing.T) {
 	_, err = cipher.Decrypt(strings.Bytes("test"))
 	require.Error(t, err)
 }
+
+func TestEncryptUsesRawNonceBytes(t *testing.T) {
+	gen := rand.NewGenerator(bytes.NewReader(make([]byte, 12)))
+
+	cipher, err := aes.NewCipher(gen, test.FS, test.NewAES())
+	require.NoError(t, err)
+
+	enc, err := cipher.Encrypt(strings.Bytes("test"))
+	require.NoError(t, err)
+	require.Equal(t, make([]byte, 12), enc[:12])
+}
