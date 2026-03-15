@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.6](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.6) - 2026-03-15
+
+- [`8dde09d`](https://github.com/alexfalkowski/go-service/commit/8dde09de3b050cbe75e82ae608c9e6134a9cfa68) fix(cache): treat backend-specific cache misses as normal cache misses (#2219)
+
 ## [v2.303.5](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.5) - 2026-03-15
 
 - [`dbdbde7`](https://github.com/alexfalkowski/go-service/commit/dbdbde75a57a386ac31e1c360d0fe131c9309e2f) fix(encoding): add shared io resetter and tighten encoding decode behavior/docs (#2218)
