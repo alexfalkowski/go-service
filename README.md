@@ -72,6 +72,7 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 The config decoder supports:
 
+- JSON (`github.com/go-json-experiment/json`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
@@ -80,7 +81,7 @@ The config decoder supports:
 Config input is routed by a flag called `-i`:
 
 - `file:<path>`
-  Read config from a file at `<path>`; parser is selected from the file extension (`.yaml`, `.yml`, `.toml`).
+  Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.yaml`, `.yml`, `.toml`).
 
 - `env:<ENV_VAR>`
   Read config from env var `<ENV_VAR>`. The env var value must be formatted as:
@@ -105,7 +106,7 @@ Config input is routed by a flag called `-i`:
 
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
-  `<serviceName>.{yaml,yml,toml}`
+  `<serviceName>.{yaml,yml,toml,json}`
 
   in:
   - executable directory
@@ -193,12 +194,23 @@ Encoding kinds used by subsystems that support encoding:
 - `yaml`
 - `yml`
 - `proto`
+- `pb`
 - `protobuf`
+- `protobin`
+- `pbbin`
 - `protojson`
+- `pbjson`
 - `prototext`
+- `prototxt`
+- `pbtxt`
 - `gob`
 - `plain`
 - `octet-stream`
+- `markdown`
+
+Notes:
+- `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
+- Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
 
 ---
 
@@ -359,6 +371,13 @@ telemetry:
 
 Logging uses `log/slog`.
 
+Supported built-in logger kinds:
+
+- `json`
+- `text`
+- `tint`
+- `otlp`
+
 #### JSON logger
 
 ```yaml
@@ -478,7 +497,7 @@ The model is based on Casbin RBAC:
 <https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
 
 Note:
-- `access.policy` is passed directly to Casbin's file adapter. Use a real file path (or pre-resolve any source string before wiring).
+- `access.policy` is passed directly to Casbin's file adapter. Use a real file path, or pre-resolve any source string/literal policy handling in your own wiring before constructing the controller.
 
 ### JWT
 
