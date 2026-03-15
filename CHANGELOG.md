@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.3](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.3) - 2026-03-15
+
+- [`3c7df31`](https://github.com/alexfalkowski/go-service/commit/3c7df3180fdc771bdd12e1da776030fd471f812e) fix(crypto): return invalid key type errors instead of panicking for ed25519 and ssh keys (#2216)
+
 ## [v2.303.2](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.2) - 2026-03-15
 
 - [`11487cc`](https://github.com/alexfalkowski/go-service/commit/11487ccf80a5dfa3c0a5f728e6dd396dda4ced4d) fix(crypto): use raw random bytes for cryptographic byte generation and aes nonces (#2215)
