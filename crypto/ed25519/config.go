@@ -3,7 +3,9 @@ package ed25519
 import (
 	"crypto/ed25519"
 	"crypto/x509"
+	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 )
 
@@ -16,8 +18,8 @@ import (
 //   - Public: PEM block "PUBLIC KEY" containing PKIX-encoded bytes (x509.ParsePKIXPublicKey).
 //   - Private: PEM block "PRIVATE KEY" containing PKCS#8-encoded bytes (x509.ParsePKCS8PrivateKey).
 //
-// Note: the key parsing helpers on this type use type assertions and will panic if the decoded key is not the
-// expected Ed25519 key type. See PublicKey and PrivateKey for details.
+// If the decoded key material is well-formed but not an Ed25519 key, the key
+// parsing helpers return crypto/errors.ErrInvalidKeyType.
 type Config struct {
 	// Public is a "source string" for the Ed25519 public key PEM.
 	//
@@ -44,9 +46,13 @@ func (c *Config) IsEnabled() bool {
 // It decodes a PEM "PUBLIC KEY" block from c.Public and parses it as a PKIX public key
 // (x509.ParsePKIXPublicKey).
 //
-// Panics: if the decoded key is not an ed25519.PublicKey, this function will panic due to a type assertion.
-// This can happen if the PEM data is a valid "PUBLIC KEY" block but contains a different key type
-// (for example RSA or ECDSA).
+// If the decoded key is not an ed25519.PublicKey, PublicKey returns
+// crypto/errors.ErrInvalidKeyType. This can happen if the PEM data is a valid
+// "PUBLIC KEY" block but contains a different key type (for example RSA or
+// ECDSA).
+//
+// The returned error wraps crypto/errors.ErrInvalidKeyType, so callers can use
+// errors.Is to distinguish this case from PEM decoding or X.509 parsing errors.
 func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 	d, err := decoder.Decode(c.Public, "PUBLIC KEY")
 	if err != nil {
@@ -58,7 +64,12 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 		return nil, err
 	}
 
-	return k.(ed25519.PublicKey), nil
+	key, ok := k.(ed25519.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("ed25519: invalid public key type %T: %w", k, errors.ErrInvalidKeyType)
+	}
+
+	return key, nil
 }
 
 // PrivateKey loads and parses the configured Ed25519 private key.
@@ -66,8 +77,12 @@ func (c *Config) PublicKey(decoder *pem.Decoder) (ed25519.PublicKey, error) {
 // It decodes a PEM "PRIVATE KEY" block from c.Private and parses it as a PKCS#8 private key
 // (x509.ParsePKCS8PrivateKey).
 //
-// Panics: if the decoded key is not an ed25519.PrivateKey, this function will panic due to a type assertion.
-// This can happen if the PEM data is a valid "PRIVATE KEY" block but contains a different key type.
+// If the decoded key is not an ed25519.PrivateKey, PrivateKey returns
+// crypto/errors.ErrInvalidKeyType. This can happen if the PEM data is a valid
+// "PRIVATE KEY" block but contains a different key type.
+//
+// The returned error wraps crypto/errors.ErrInvalidKeyType, so callers can use
+// errors.Is to distinguish this case from PEM decoding or PKCS#8 parsing errors.
 func (c *Config) PrivateKey(decoder *pem.Decoder) (ed25519.PrivateKey, error) {
 	d, err := decoder.Decode(c.Private, "PRIVATE KEY")
 	if err != nil {
@@ -79,5 +94,10 @@ func (c *Config) PrivateKey(decoder *pem.Decoder) (ed25519.PrivateKey, error) {
 		return nil, err
 	}
 
-	return k.(ed25519.PrivateKey), nil
+	key, ok := k.(ed25519.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("ed25519: invalid private key type %T: %w", k, errors.ErrInvalidKeyType)
+	}
+
+	return key, nil
 }
