@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.5](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.5) - 2026-03-15
+
+- [`dbdbde7`](https://github.com/alexfalkowski/go-service/commit/dbdbde75a57a386ac31e1c360d0fe131c9309e2f) fix(encoding): add shared io resetter and tighten encoding decode behavior/docs (#2218)
+
 ## [v2.303.4](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.4) - 2026-03-15
 
 - [`357612d`](https://github.com/alexfalkowski/go-service/commit/357612d0a02b6b5fba4caf837fc456e8d3c50dd0) fix(encoding): avoid reading protobuf payloads before validating the decode target type (#2217)
