@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	encodingerrors "github.com/alexfalkowski/go-service/v2/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/stretchr/testify/require"
@@ -52,7 +52,7 @@ func TestInvalidBinaryDecodeDoesNotRead(t *testing.T) {
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
-	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.ErrorIs(t, err, errors.ErrInvalidType)
 	require.Zero(t, reader.reads)
 }
 
@@ -97,7 +97,7 @@ func TestInvalidTextDecodeDoesNotRead(t *testing.T) {
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
-	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.ErrorIs(t, err, errors.ErrInvalidType)
 	require.Zero(t, reader.reads)
 }
 
@@ -142,7 +142,7 @@ func TestInvalidJSONDecodeDoesNotRead(t *testing.T) {
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
-	require.ErrorIs(t, err, encodingerrors.ErrInvalidType)
+	require.ErrorIs(t, err, errors.ErrInvalidType)
 	require.Zero(t, reader.reads)
 }
 

@@ -28,3 +28,13 @@ func TestEncoder(t *testing.T) {
 
 	require.Error(t, encoder.Decode(bytes.NewBufferString("test"), &str))
 }
+
+func TestDecodeResetsDestination(t *testing.T) {
+	encoder := eb.NewEncoder()
+
+	var buf bytes.Buffer
+	buf.WriteString("stale:")
+
+	require.NoError(t, encoder.Decode(bytes.NewBufferString("fresh"), &buf))
+	require.Equal(t, "fresh", buf.String())
+}

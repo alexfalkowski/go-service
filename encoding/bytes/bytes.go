@@ -1,15 +1,15 @@
 package bytes
 
 import (
-	"io"
-
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 )
 
 // NewEncoder constructs a passthrough encoder for stream-capable types.
 //
-// This encoder is intended for values that can write themselves to an io.Writer and/or read themselves
-// from an io.Reader via the standard library interfaces:
+// This encoder is intended for values that can write themselves to an io.Writer
+// and/or read themselves from an io.Reader via the shared go-service io package
+// aliases:
 //
 //   - io.WriterTo for Encode
 //   - io.ReaderFrom for Decode
@@ -43,11 +43,17 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 // Decode reads from r into v when v implements io.ReaderFrom.
 //
 // If v does not implement io.ReaderFrom, Decode returns encoding/errors.ErrInvalidType.
+// If v also implements io.Resetter, Decode resets it before reading so the
+// destination is repopulated rather than appended to.
 // Any error returned by ReadFrom is returned.
 func (e *Encoder) Decode(r io.Reader, v any) error {
 	from, ok := v.(io.ReaderFrom)
 	if !ok {
 		return errors.ErrInvalidType
+	}
+
+	if reset, ok := v.(io.Resetter); ok {
+		reset.Reset()
 	}
 
 	_, err := from.ReadFrom(r)
