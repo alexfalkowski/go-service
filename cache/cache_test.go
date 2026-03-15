@@ -13,6 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/fx/fxtest"
 )
 
 func TestValidCache(t *testing.T) {
@@ -266,4 +267,27 @@ func TestErroneousGet(t *testing.T) {
 
 		world.RequireStop()
 	}
+}
+
+func TestMissingCache(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &config.Config{Kind: "sync"}
+
+	d, err := driver.NewDriver(nil, cfg)
+	require.NoError(t, err)
+
+	params := cache.CacheParams{
+		Lifecycle:  lc,
+		Config:     cfg,
+		Compressor: test.Compressor,
+		Encoder:    test.Encoder,
+		Pool:       test.Pool,
+		Driver:     d,
+	}
+
+	kind := cache.NewCache(params)
+	value := "existing"
+
+	require.NoError(t, kind.Get(t.Context(), "missing", &value))
+	require.Equal(t, "existing", value)
 }

@@ -16,4 +16,10 @@
 //
 // `Cache` persists arbitrary values by encoding (and optionally compressing) them before passing them to
 // the configured driver. The encoder/compressor used is selected by configuration with sensible defaults.
+//
+// # TTL resolution
+//
+// TTL handling depends on the selected driver. In particular, the built-in in-memory `sync` driver comes
+// from an upstream dependency and currently tracks expiry at whole-second resolution. Sub-second TTLs may
+// therefore be rounded in driver-specific ways and should not be relied on with that backend.
 package cache

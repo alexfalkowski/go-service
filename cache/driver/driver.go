@@ -21,9 +21,10 @@ import (
 const ErrExpired = cachego.ErrCacheExpired
 
 // ErrNotFound is returned when the configured cache driver kind is unknown.
+var ErrNotFound = errors.New("cache: driver not found")
+
 //
 // It is returned by NewDriver when Config.Kind does not match any backend compiled into this module.
-var ErrNotFound = errors.New("cache: driver not found")
 
 // NewDriver constructs a cache Driver for the configured backend.
 //
@@ -46,6 +47,9 @@ var ErrNotFound = errors.New("cache: driver not found")
 // Supported kinds include:
 //   - "redis": Redis backend using github.com/redis/go-redis
 //   - "sync": in-memory backend using github.com/faabiosr/cachego/sync
+//
+// The built-in `sync` backend currently inherits whole-second TTL resolution from the upstream cachego
+// dependency, so callers should not rely on sub-second expiration with that backend.
 //
 // If cfg.Kind is unknown, NewDriver returns ErrNotFound.
 func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
@@ -87,6 +91,18 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 // underlying backend implementation.
 func IsExpiredError(err error) bool {
 	return errors.Is(err, ErrExpired)
+}
+
+// IsMissingError reports whether err represents a missing cache entry.
+//
+// This helper normalizes the miss semantics of the backends currently supported by this package,
+// including Redis nil replies and the in-memory sync driver's plain "key not found" error.
+func IsMissingError(err error) bool {
+	if errors.Is(err, client.Nil) {
+		return true
+	}
+
+	return err != nil && err.Error() == "key not found"
 }
 
 // Driver is an alias for cachego.Cache.
