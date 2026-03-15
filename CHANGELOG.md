@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.1) - 2026-03-15
+
+- [`4b7619b`](https://github.com/alexfalkowski/go-service/commit/4b7619b785256dc574155e624583103a45ec9247) fix(telemetry): make error handler nil-safe when logging is disabled (#2214)
+
 ## [v2.303.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.0) - 2026-03-14
 
 - [`90c19b3`](https://github.com/alexfalkowski/go-service/commit/90c19b3d2ce6c15b501e0c93065ee4adb9147c11) feat(errors): add errors.AsType helper to errors and update callers (#2213)
