@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.2](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.2) - 2026-03-15
+
+- [`11487cc`](https://github.com/alexfalkowski/go-service/commit/11487ccf80a5dfa3c0a5f728e6dd396dda4ced4d) fix(crypto): use raw random bytes for cryptographic byte generation and aes nonces (#2215)
+
 ## [v2.303.1](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.1) - 2026-03-15
 
 - [`4b7619b`](https://github.com/alexfalkowski/go-service/commit/4b7619b785256dc574155e624583103a45ec9247) fix(telemetry): make error handler nil-safe when logging is disabled (#2214)
