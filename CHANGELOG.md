@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.4](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.4) - 2026-03-15
+
+- [`357612d`](https://github.com/alexfalkowski/go-service/commit/357612d0a02b6b5fba4caf837fc456e8d3c50dd0) fix(encoding): avoid reading protobuf payloads before validating the decode target type (#2217)
+
 ## [v2.303.3](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.3) - 2026-03-15
 
 - [`3c7df31`](https://github.com/alexfalkowski/go-service/commit/3c7df3180fdc771bdd12e1da776030fd471f812e) fix(crypto): return invalid key type errors instead of panicking for ed25519 and ssh keys (#2216)
