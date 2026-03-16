@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.304.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.304.0) - 2026-03-16
+
+- [`13f49c0`](https://github.com/alexfalkowski/go-service/commit/13f49c0c39af0711ff1be8f35c6d2ee8d418c1dd) feat(config): add hjson config decoding support with fixtures docs and coverage for file env and default lookup (#2225)
+
 ## [v2.303.9](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.9) - 2026-03-16
 
 - [`a4ff8c9`](https://github.com/alexfalkowski/go-service/commit/a4ff8c998d0809077804b6d75c0e6290db756430) fix(http): retry to avoid replaying non-replayable request bodies (#2224)
