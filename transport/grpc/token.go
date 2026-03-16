@@ -15,7 +15,7 @@ import (
 //
 // If cfg is disabled, it returns (nil, nil) so downstream wiring can treat access control as not configured.
 func NewController(cfg *Config) (token.AccessController, error) {
-	if !cfg.IsEnabled() {
+	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
 		return nil, nil
 	}
 	return token.NewAccessController(cfg.Token)
@@ -26,9 +26,10 @@ func NewController(cfg *Config) (token.AccessController, error) {
 // The returned service is responsible for generating and verifying tokens according to cfg.Token (for example,
 // JWT/PASETO/SSH token kinds as configured by the underlying token package).
 //
-// If cfg is disabled, it returns nil so downstream wiring can treat token auth as not configured.
+// If cfg is disabled or cfg.Token is omitted, it returns nil so downstream wiring can treat token auth
+// as not configured.
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *token.Token {
-	if !cfg.IsEnabled() {
+	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
 		return nil
 	}
 	return token.NewToken(name, cfg.Token, fs, sig, ver, gen)

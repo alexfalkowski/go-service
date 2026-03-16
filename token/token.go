@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -24,14 +25,16 @@ import (
 // configuration blocks (cfg.JWT, cfg.Paseto, cfg.SSH). Individual implementations may
 // be nil when their nested configuration is nil.
 //
-// Important: NewToken does not validate cfg or enforce that the selected kind has a
-// non-nil nested config. If cfg.Kind selects an implementation whose constructor returned
-// nil, calling Generate/Verify for that kind will typically panic due to a nil receiver.
-// Ensure your configuration is consistent with the selected kind.
+// A nil cfg is treated as disabled and returns nil. If Kind selects an implementation whose
+// nested config is missing, Generate/Verify return token/errors.ErrInvalidConfig instead of panicking.
 //
 // Unknown kinds are treated as "disabled" by the facade methods: Generate returns (nil, nil)
 // and Verify returns (strings.Empty, nil).
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
+	if !cfg.IsEnabled() {
+		return nil
+	}
+
 	return &Token{
 		name: name, cfg: cfg,
 		jwt:    jwt.NewToken(cfg.JWT, sig, ver, gen),
@@ -66,12 +69,21 @@ type Token struct {
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
+		if t.jwt == nil {
+			return nil, errors.ErrInvalidConfig
+		}
 		token, err := t.jwt.Generate(aud, sub)
 		return strings.Bytes(token), err
 	case "paseto":
+		if t.paseto == nil {
+			return nil, errors.ErrInvalidConfig
+		}
 		token, err := t.paseto.Generate(aud, sub)
 		return strings.Bytes(token), err
 	case "ssh":
+		if t.ssh == nil {
+			return nil, errors.ErrInvalidConfig
+		}
 		token, err := t.ssh.Generate()
 		return strings.Bytes(token), err
 	default:
@@ -93,10 +105,19 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":
+		if t.jwt == nil {
+			return strings.Empty, errors.ErrInvalidConfig
+		}
 		return t.jwt.Verify(bytes.String(token), aud)
 	case "paseto":
+		if t.paseto == nil {
+			return strings.Empty, errors.ErrInvalidConfig
+		}
 		return t.paseto.Verify(bytes.String(token), aud)
 	case "ssh":
+		if t.ssh == nil {
+			return strings.Empty, errors.ErrInvalidConfig
+		}
 		return t.ssh.Verify(bytes.String(token))
 	default:
 		return strings.Empty, nil

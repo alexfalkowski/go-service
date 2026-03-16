@@ -3,6 +3,11 @@ package errors
 import "github.com/alexfalkowski/go-service/v2/errors"
 
 var (
+	// ErrInvalidConfig is a sentinel error indicating token configuration is incomplete or inconsistent.
+	//
+	// This is used when a token kind is selected but the corresponding nested configuration is missing.
+	ErrInvalidConfig = errors.New("token: invalid config")
+
 	// ErrInvalidMatch is a sentinel error indicating a token comparison failed to match.
 	//
 	// Implementations typically use this for cryptographic or structural mismatches

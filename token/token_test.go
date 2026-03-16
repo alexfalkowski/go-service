@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,5 +52,25 @@ func TestVerify(t *testing.T) {
 
 		_, err = tkn.Verify(gen, strings.Empty)
 		require.NoError(t, err)
+	}
+}
+
+func TestNewTokenWithNilConfig(t *testing.T) {
+	tkn := token.NewToken(test.Name, nil, test.FS, nil, nil, nil)
+	require.Nil(t, tkn)
+}
+
+func TestInvalidKindConfig(t *testing.T) {
+	for _, kind := range []string{"jwt", "paseto", "ssh"} {
+		cfg := &token.Config{Kind: kind}
+		tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+		gen, err := tkn.Generate("hello", test.UserID.String())
+		require.Nil(t, gen)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+
+		sub, err := tkn.Verify([]byte("test"), "hello")
+		require.Equal(t, strings.Empty, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	}
 }
