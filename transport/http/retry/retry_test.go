@@ -96,6 +96,24 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
 }
 
+func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
+	rt := &requestRoundTripper{}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  "1s",
+		Backoff:  "1ms",
+	}, rt)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &nonReplayableReader{value: "hello"})
+	require.NoError(t, err)
+	require.Nil(t, req.GetBody)
+
+	res, roundTripErr := retrying.RoundTrip(req)
+	require.NoError(t, roundTripErr)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, []string{"hello"}, rt.bodies)
+}
+
 func TestRoundTripperPreservesRetryableTransportError(t *testing.T) {
 	rt := &errorRoundTripper{err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -175,4 +193,19 @@ type errorRoundTripper struct {
 func (r *errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
 	r.calls++
 	return nil, r.err
+}
+
+type nonReplayableReader struct {
+	value string
+	read  bool
+}
+
+func (r *nonReplayableReader) Read(p []byte) (int, error) {
+	if r.read {
+		return 0, io.EOF
+	}
+
+	r.read = true
+	copy(p, r.value)
+	return len(r.value), io.EOF
 }

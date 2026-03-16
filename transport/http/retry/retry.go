@@ -80,8 +80,8 @@ type RoundTripper struct {
 //   - the original transport error is returned for transport-level failures.
 //
 // Callers should ensure that request bodies are replayable when retries are enabled. For subsequent attempts
-// this implementation relies on `req.GetBody`; when it is nil, only the first attempt can safely reuse the
-// original body stream.
+// this implementation relies on `req.GetBody`; when it is nil for a request with a body, the first attempt
+// is still executed but any retryable result is treated as non-retryable to avoid reusing a consumed body.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	attempt := &roundTripAttempt{}
 
@@ -103,7 +103,7 @@ func (r *RoundTripper) attempt(req *http.Request, ctx context.Context, attempt *
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, res, err); retryErr != nil {
+	if retryErr := attempt.retry(ctx, req, res, err); retryErr != nil {
 		return nil, retryErr
 	}
 
@@ -143,9 +143,12 @@ func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*htt
 	return attemptReq, nil
 }
 
-func (a *roundTripAttempt) retry(ctx context.Context, res *http.Response, err error) error {
+func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error) error {
 	ok, retryErr := retryable.DefaultRetryPolicy(ctx, res, err)
 	if !ok {
+		return nil
+	}
+	if !canRetry(req) {
 		return nil
 	}
 
@@ -157,6 +160,10 @@ func (a *roundTripAttempt) retry(ctx context.Context, res *http.Response, err er
 
 	a.keepFirst(res)
 	return retry.RetryableError(responseError{resp: a.first, err: retryErr})
+}
+
+func canRetry(req *http.Request) bool {
+	return req.Body == nil || req.Body == http.NoBody || req.GetBody != nil
 }
 
 func (a *roundTripAttempt) finalize(res *http.Response, err error) (*http.Response, error) {
