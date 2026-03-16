@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
+	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
@@ -21,6 +22,9 @@ type MapParams struct {
 
 	// JSON is the JSON encoder implementation registered under kind "json".
 	JSON *json.Encoder
+
+	// HJSON is the HJSON encoder implementation registered under kind "hjson".
+	HJSON *hjson.Encoder
 
 	// YAML is the YAML encoder implementation registered under kinds "yaml" and "yml".
 	YAML *yaml.Encoder
@@ -52,7 +56,7 @@ type MapParams struct {
 //
 // The returned registry includes common kinds used throughout go-service, including:
 //
-//   - Structured config formats: "json", "yaml", "yml", "toml"
+//   - Structured config formats: "json", "hjson", "yaml", "yml", "toml"
 //
 //   - Protobuf formats:
 //
@@ -71,6 +75,7 @@ func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{
 			"json":         params.JSON,
+			"hjson":        params.HJSON,
 			"yaml":         params.YAML,
 			"yml":          params.YAML,
 			"toml":         params.TOML,

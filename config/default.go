@@ -31,6 +31,7 @@ type Default struct {
 // It searches for the first existing file named "<serviceName>.<ext>", where <ext> is one of:
 //   - .yaml
 //   - .yml
+//   - .hjson
 //   - .toml
 //   - .json
 //
@@ -56,7 +57,7 @@ func (c *Default) Decode(v any) error {
 }
 
 func (c *Default) find() (string, io.ReadCloser, error) {
-	extensions := []string{".yaml", ".yml", ".toml", ".json"}
+	extensions := []string{".yaml", ".yml", ".hjson", ".toml", ".json"}
 	for _, extension := range extensions {
 		n := c.name.String()
 		file := n + extension

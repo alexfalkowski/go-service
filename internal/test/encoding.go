@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
+	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
@@ -16,6 +17,7 @@ import (
 // Encoder for tests.
 var Encoder = encoding.NewMap(encoding.MapParams{
 	JSON:        json.NewEncoder(),
+	HJSON:       hjson.NewEncoder(),
 	YAML:        yaml.NewEncoder(),
 	TOML:        toml.NewEncoder(),
 	ProtoBinary: proto.NewBinary(),
