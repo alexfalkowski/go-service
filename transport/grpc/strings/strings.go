@@ -1,19 +1,6 @@
 package strings
 
-import (
-	"slices"
-
-	"github.com/alexfalkowski/go-service/v2/strings"
-)
-
-var ignorable = []string{
-	"health",
-	"healthz",
-	"livez",
-	"readyz",
-	"metrics",
-	"favicon",
-}
+import "github.com/alexfalkowski/go-service/v2/strings"
 
 const (
 	// Empty is an alias for strings.Empty.
@@ -43,27 +30,30 @@ func Cut(s, sep string) (string, string, bool) {
 	return strings.Cut(s, sep)
 }
 
-// Join is an alias for strings.Join.
-func Join(sep string, ss ...string) string {
-	return strings.Join(sep, ss...)
-}
-
 // IsEmpty is an alias for strings.IsEmpty.
 func IsEmpty(s string) bool {
 	return strings.IsEmpty(s)
 }
 
-// IsIgnorable reports whether text should be treated as ignorable by transport middleware.
+// Join is an alias for strings.Join.
+func Join(sep string, ss ...string) string {
+	return strings.Join(sep, ss...)
+}
+
+// IsIgnorable reports whether name should be treated as ignorable by gRPC transport middleware.
 //
-// This helper is used across HTTP and gRPC transports to decide whether certain endpoints/methods should bypass
-// middleware such as authentication, rate limiting, or logging.
-//
-// Matching behavior:
-// IsIgnorable returns true when text contains any of the predefined ignorable substrings (for example "healthz"
-// or "metrics"). This is intentionally a substring match (not an exact match), so callers should avoid passing
-// overly broad inputs that could accidentally match unrelated paths/method names.
-func IsIgnorable(text string) bool {
-	return slices.ContainsFunc(ignorable, func(o string) bool { return strings.Contains(text, o) })
+// Matching is exact for the standard gRPC health service methods.
+func IsIgnorable(name string) bool {
+	service, method, ok := SplitServiceMethod(name)
+	if !ok {
+		return false
+	}
+
+	if service != "grpc.health.v1.Health" {
+		return false
+	}
+
+	return method == "Check" || method == "Watch" || method == "List"
 }
 
 // IsFullMethod reports whether name is of the form `/package.service/method`.

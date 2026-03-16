@@ -2,7 +2,7 @@ package breaker
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 type responseError struct {

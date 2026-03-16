@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/transport/header"
-	"github.com/alexfalkowski/go-service/v2/transport/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/http/strings"
 )
 
 // NewHandler constructs server-side metadata middleware for HTTP requests.
@@ -33,7 +33,7 @@ type Handler struct {
 
 // ServeHTTP extracts metadata from req and stores it in the request context.
 //
-// Ignorable paths (health/metrics/etc.) bypass extraction (see `transport/strings.IsIgnorable`).
+// Ignorable paths (health/metrics/etc.) bypass extraction (see `transport/http/strings.IsIgnorable`).
 //
 // Response headers:
 //
