@@ -184,6 +184,16 @@ func NewInsecureTransportConfig() *transport.Config {
 	}
 }
 
+// NewHTTPTransportConfig for test.
+func NewHTTPTransportConfig() *http.Config {
+	return &http.Config{Config: &server.Config{}}
+}
+
+// NewGRPCTransportConfig for test.
+func NewGRPCTransportConfig() *grpc.Config {
+	return &grpc.Config{Config: &server.Config{}}
+}
+
 // NewSecureTransportConfig for test.
 func NewSecureTransportConfig() *transport.Config {
 	config := NewTLSServerConfig()

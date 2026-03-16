@@ -6,9 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
-	gjwt "github.com/golang-jwt/jwt/v4"
+	v4 "github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,15 +83,15 @@ func TestInvalidKeyID(t *testing.T) {
 	token := jwt.NewToken(cfg.JWT, signer, verifier, gen)
 
 	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, tokenerrors.ErrInvalidKeyID)
+	require.ErrorIs(t, err, errors.ErrInvalidKeyID)
 
-	jwtToken := gjwt.NewWithClaims(gjwt.SigningMethodEdDSA, &gjwt.RegisteredClaims{})
+	jwtToken := v4.NewWithClaims(v4.SigningMethodEdDSA, &v4.RegisteredClaims{})
 	tkn, err = jwtToken.SignedString(signer.PrivateKey)
 	require.NoError(t, err)
 	require.NotEmpty(t, tkn)
 
 	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, tokenerrors.ErrInvalidKeyID)
+	require.ErrorIs(t, err, errors.ErrInvalidKeyID)
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
@@ -106,11 +106,11 @@ func TestInvalidAlgorithm(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, tkn)
 
-	jwtToken := gjwt.NewWithClaims(gjwt.SigningMethodHS256, &gjwt.RegisteredClaims{})
+	jwtToken := v4.NewWithClaims(v4.SigningMethodHS256, &v4.RegisteredClaims{})
 	tkn, err = jwtToken.SignedString([]byte("secret"))
 	require.NoError(t, err)
 	require.NotEmpty(t, tkn)
 
 	_, err = token.Verify(tkn, "hello")
-	require.ErrorIs(t, err, tokenerrors.ErrInvalidAlgorithm)
+	require.ErrorIs(t, err, errors.ErrInvalidAlgorithm)
 }
