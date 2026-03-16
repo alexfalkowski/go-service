@@ -35,19 +35,19 @@ This repository is a library, so your binary is usually in another module. A typ
 package main
 
 import (
-	"context"
+    "context"
 
-	"github.com/alexfalkowski/go-service/v2/cli"
-	"github.com/alexfalkowski/go-service/v2/module"
+    "github.com/alexfalkowski/go-service/v2/cli"
+    "github.com/alexfalkowski/go-service/v2/module"
 )
 
 func main() {
-	app := cli.NewApplication(func(commander cli.Commander) {
-		server := commander.AddServer("serve", "Run the service", module.Server)
-		server.AddInput("file:./config.yml") // enables the `-i` flag used by config.NewDecoder
-	})
+    app := cli.NewApplication(func(commander cli.Commander) {
+       server := commander.AddServer("serve", "Run the service", module.Server)
+       server.AddInput("file:./config.yml") // enables the `-i` flag used by config.NewDecoder
+    })
 
-	app.ExitOnError(context.Background())
+    app.ExitOnError(context.Background())
 }
 ```
 
@@ -72,7 +72,7 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 The config decoder supports:
 
-- JSON (`github.com/go-json-experiment/json`)
+- JSON (`pkg.go.dev/encoding/json/v2`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
@@ -118,6 +118,7 @@ Config input is routed by a flag called `-i`:
 At runtime, services typically decode into a struct (often embedding `config.Config`) and validate it using `go-playground/validator`.
 
 The library provides a helper `config.NewConfig[T]` which:
+
 - decodes into `*T`
 - rejects an “empty” decoded value (guards against starting with a zero-value config)
 - validates the decoded config
@@ -126,11 +127,11 @@ Example:
 
 ```go
 type AppConfig struct {
-	config.Config `yaml:",inline" json:",inline" toml:",inline"`
+    config.Config `yaml:",inline" json:",inline" toml:",inline"`
 }
 
 func loadConfig(decoder config.Decoder, validator *config.Validator) (*AppConfig, error) {
-	return config.NewConfig[AppConfig](decoder, validator)
+    return config.NewConfig[AppConfig](decoder, validator)
 }
 ```
 
@@ -155,6 +156,7 @@ Many fields accept a *source string* rather than only a literal:
 This is used for secrets and key material (TLS keys, HMAC keys, webhook secrets, SQL DSNs, etc).
 
 Example:
+
 ```yaml
 hooks:
   secret: env:WEBHOOK_SECRET
@@ -209,6 +211,7 @@ Encoding kinds used by subsystems that support encoding:
 - `markdown`
 
 Notes:
+
 - `plain`, `octet-stream`, and `markdown` all map to the bytes passthrough encoder.
 - Protobuf binary/text/JSON kinds have multiple aliases; the list above reflects the built-in registry.
 
@@ -228,6 +231,7 @@ cache:
 ```
 
 Notes:
+
 - Built-in driver kinds in this repo are `redis` and `sync`.
 - `kind` is still wiring-dependent in practice: services can register additional drivers.
 - `options` is backend-specific and decoded as `map[string]any`.
@@ -262,6 +266,7 @@ feature:
 ```
 
 Notes:
+
 - Presence enables the feature subsystem configuration-wise, but you still need to register an OpenFeature provider in your service wiring.
 
 ---
@@ -409,6 +414,7 @@ telemetry:
 ```
 
 Notes:
+
 - `headers` values are source strings.
 - Telemetry header maps are resolved during config projection; unresolved `env:`/`file:` values fail fast (panic during startup).
 
@@ -454,6 +460,7 @@ telemetry:
 ```
 
 Note:
+
 - Current tracer wiring exports via OTLP/HTTP when tracer config is present.
 
 ### Telemetry libraries used
@@ -465,7 +472,7 @@ Note:
 - <https://github.com/redis/go-redis/tree/master/extra/redisotel>
 - <https://github.com/XSAM/otelsql>
 
-### Dependencies
+### Telemetry Dependencies
 
 ![Dependencies](./assets/telemetry.png)
 
@@ -497,6 +504,7 @@ The model is based on Casbin RBAC:
 <https://github.com/casbin/casbin/blob/master/examples/rbac_model.conf>
 
 Note:
+
 - `access.policy` is passed directly to Casbin's file adapter. Use a real file path, or pre-resolve any source string/literal policy handling in your own wiring before constructing the controller.
 
 ### JWT
@@ -515,6 +523,7 @@ transport:
 ```
 
 Important behavior:
+
 - JWT verification requires the `kid` header to exist and match `kid` in config exactly.
 - `exp` is parsed as a Go duration string; invalid values can fail fast.
 
@@ -533,6 +542,7 @@ transport:
 ```
 
 Note:
+
 - The current PASETO implementation issues **v4 public** tokens using Ed25519 key material provided via wiring (not directly from `paseto.secret`). If you want config-driven key material, load it via the crypto subsystem and wire signer/verifier appropriately.
 
 ### SSH tokens
@@ -571,6 +581,7 @@ transport:
 ```
 
 Notes:
+
 - `ssh.key` is used for minting tokens (requires private key).
 - `ssh.keys` is used for verification (public keys).
 - The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
@@ -599,6 +610,7 @@ transport:
 ```
 
 Note:
+
 - `interval` is parsed as a Go duration string. Invalid values can fail fast.
 
 ---
@@ -614,6 +626,7 @@ time:
 ```
 
 Supported kinds:
+
 - `ntp`
 - `nts`
 
@@ -651,6 +664,7 @@ transport:
 ```
 
 Notes:
+
 - Address format should be `<network>://<address>` (for example `tcp://:8000`).
 - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
 
@@ -702,9 +716,10 @@ transport:
 ```
 
 Important gotcha:
+
 - Some transport packages require that you call a package `Register(...)` function to provide an `os.FS` used to read key material. If you enable TLS and have not registered the FS, TLS construction may not have access to the filesystem.
 
-### Dependencies
+### Transport Dependencies
 
 ![Dependencies](./assets/transport.png)
 
@@ -749,11 +764,12 @@ crypto:
 ```
 
 Notes:
+
 - AES keys must be 16/24/32 bytes after resolving the source string.
 - RSA keys expect PKCS#1 PEM blocks (`RSA PUBLIC KEY` / `RSA PRIVATE KEY`).
 - Ed25519 expects PKIX `PUBLIC KEY` and PKCS#8 `PRIVATE KEY` PEM blocks.
 
-### Dependencies
+### Crypto Dependencies
 
 ![Dependencies](./assets/crypto.png)
 
@@ -824,7 +840,7 @@ GET http://localhost:6060/<name>/debug/psutil
 
 This repo generally follows the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
 
-### Dependencies
+### Development Dependencies
 
 For local TLS fixtures:
 
