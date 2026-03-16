@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.7](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.7) - 2026-03-16
+
+- [`74efbf4`](https://github.com/alexfalkowski/go-service/commit/74efbf488a1a9245e38702c123966fa7bda2c889) fix(transport): fix ignorable transport route matching and add missing string helpers (#2222)
+- [`71c34e4`](https://github.com/alexfalkowski/go-service/commit/71c34e4f8ae5385fc2bf87455e80f6aa81156ed9) docs(readme): update JSON (#2221)
+- [`ec7d675`](https://github.com/alexfalkowski/go-service/commit/ec7d675357a52bb2ddb69351840aced0d3818532) docs(readme): make sure it is accurate (#2220)
+
 ## [v2.303.6](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.6) - 2026-03-15
 
 - [`8dde09d`](https://github.com/alexfalkowski/go-service/commit/8dde09de3b050cbe75e82ae608c9e6134a9cfa68) fix(cache): treat backend-specific cache misses as normal cache misses (#2219)
