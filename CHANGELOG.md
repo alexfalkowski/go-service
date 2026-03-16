@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.9](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.9) - 2026-03-16
+
+- [`a4ff8c9`](https://github.com/alexfalkowski/go-service/commit/a4ff8c998d0809077804b6d75c0e6290db756430) fix(http): retry to avoid replaying non-replayable request bodies (#2224)
+
 ## [v2.303.8](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.8) - 2026-03-16
 
 - [`c16416a`](https://github.com/alexfalkowski/go-service/commit/c16416a4b61d718fe2b7ccd90b399cd8301d2467) fix(transport): token config nil handling and add focused transport token tests (#2223)
