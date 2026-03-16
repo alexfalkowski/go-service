@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.303.8](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.8) - 2026-03-16
+
+- [`c16416a`](https://github.com/alexfalkowski/go-service/commit/c16416a4b61d718fe2b7ccd90b399cd8301d2467) fix(transport): token config nil handling and add focused transport token tests (#2223)
+
 ## [v2.303.7](https://github.com/alexfalkowski/go-service/releases/tag/v2.303.7) - 2026-03-16
 
 - [`74efbf4`](https://github.com/alexfalkowski/go-service/commit/74efbf488a1a9245e38702c123966fa7bda2c889) fix(transport): fix ignorable transport route matching and add missing string helpers (#2222)
