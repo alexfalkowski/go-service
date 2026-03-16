@@ -73,6 +73,7 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 The config decoder supports:
 
 - JSON (`pkg.go.dev/encoding/json/v2`)
+- HJSON (`github.com/hjson/hjson-go`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
@@ -81,7 +82,7 @@ The config decoder supports:
 Config input is routed by a flag called `-i`:
 
 - `file:<path>`
-  Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.yaml`, `.yml`, `.toml`).
+  Read config from a file at `<path>`; parser is selected from the file extension (`.json`, `.hjson`, `.yaml`, `.yml`, `.toml`).
 
 - `env:<ENV_VAR>`
   Read config from env var `<ENV_VAR>`. The env var value must be formatted as:
@@ -104,9 +105,11 @@ Config input is routed by a flag called `-i`:
   ./your-service serve -i env:SERVICE_CONFIG
   ```
 
+  HJSON works the same way, for example `hjson:<base64-content>`.
+
 - Otherwise (no `file:`/`env:` prefix), the decoder falls back to **default lookup**, searching for:
 
-  `<serviceName>.{yaml,yml,toml,json}`
+  `<serviceName>.{yaml,yml,hjson,toml,json}`
 
   in:
   - executable directory
@@ -192,6 +195,7 @@ Compression kinds used by subsystems that support compression:
 Encoding kinds used by subsystems that support encoding:
 
 - `json`
+- `hjson`
 - `toml`
 - `yaml`
 - `yml`

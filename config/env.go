@@ -19,7 +19,7 @@ import (
 //	"<kind>:<base64-content>"
 //
 // Where:
-//   - kind selects the decoder from enc (for example "yaml", "yml", "toml", or "json").
+//   - kind selects the decoder from enc (for example "yaml", "yml", "hjson", "toml", or "json").
 //   - base64-content is the configuration content encoded using base64.
 //
 // Example:

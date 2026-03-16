@@ -15,6 +15,7 @@ import (
 
 func TestValidFileConfig(t *testing.T) {
 	files := []string{
+		test.FilePath("configs/config.hjson"),
 		test.FilePath("configs/config.toml"),
 		test.FilePath("configs/config.yml"),
 	}
@@ -54,19 +55,33 @@ func TestInvalidFileConfig(t *testing.T) {
 }
 
 func TestValidEnvConfig(t *testing.T) {
-	d, err := test.FS.ReadFile(test.Path("configs/config.yml"))
-	require.NoError(t, err)
+	tests := []struct {
+		name string
+		kind string
+		path string
+	}{
+		{name: "yaml", kind: "yaml", path: "configs/config.yml"},
+		{name: "hjson", kind: "hjson", path: "configs/config.hjson"},
+		{name: "toml", kind: "toml", path: "configs/config.toml"},
+	}
 
-	t.Setenv("CONFIG", "yaml:"+base64.Encode(d))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := test.FS.ReadFile(test.Path(tt.path))
+			require.NoError(t, err)
 
-	set := flag.NewFlagSet("test")
-	set.AddInput("env:CONFIG")
+			t.Setenv("CONFIG", tt.kind+":"+base64.Encode(d))
 
-	decoder := test.NewDecoder(set)
+			set := flag.NewFlagSet("test")
+			set.AddInput("env:CONFIG")
 
-	config, err := config.NewConfig[config.Config](decoder, test.Validator)
-	require.NoError(t, err)
-	verifyConfig(t, config)
+			decoder := test.NewDecoder(set)
+
+			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			require.NoError(t, err)
+			verifyConfig(t, config)
+		})
+	}
 }
 
 func TestInvalidEnvMissingConfig(t *testing.T) {
@@ -107,26 +122,44 @@ func TestInvalidEnvDataConfig(t *testing.T) {
 }
 
 func TestValidCommonConfig(t *testing.T) {
-	configDir := os.UserConfigDir()
-	path := test.FS.Join(configDir, test.Name.String())
+	tests := []struct {
+		name string
+		path string
+		ext  string
+	}{
+		{name: "yaml", path: "configs/config.yml", ext: ".yml"},
+		{name: "hjson", path: "configs/config.hjson", ext: ".hjson"},
+		{name: "toml", path: "configs/config.toml", ext: ".toml"},
+	}
 
-	require.NoError(t, test.FS.MkdirAll(path, 0o777))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			home := t.TempDir()
+			t.Setenv("HOME", home)
+			t.Setenv("XDG_CONFIG_HOME", test.FS.Join(home, ".config"))
 
-	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
-	require.NoError(t, err)
+			configDir := os.UserConfigDir()
+			path := test.FS.Join(configDir, test.Name.String())
 
-	require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+".yml"), data, 0o600))
+			require.NoError(t, test.FS.MkdirAll(path, 0o777))
 
-	set := flag.NewFlagSet("test")
-	set.AddInput(strings.Empty)
+			data, err := test.FS.ReadFile(test.Path(tt.path))
+			require.NoError(t, err)
 
-	decoder := test.NewDecoder(set)
+			require.NoError(t, test.FS.WriteFile(test.FS.Join(path, test.Name.String()+tt.ext), data, 0o600))
 
-	config, err := config.NewConfig[config.Config](decoder, test.Validator)
-	require.NoError(t, err)
-	verifyConfig(t, config)
+			set := flag.NewFlagSet("test")
+			set.AddInput(strings.Empty)
 
-	require.NoError(t, test.FS.RemoveAll(path))
+			decoder := test.NewDecoder(set)
+
+			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			require.NoError(t, err)
+			verifyConfig(t, config)
+
+			require.NoError(t, test.FS.RemoveAll(path))
+		})
+	}
 }
 
 func TestInvalidCommonConfig(t *testing.T) {

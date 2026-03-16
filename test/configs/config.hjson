@@ -1,0 +1,153 @@
+{
+  // HJSON config fixture for config decoder coverage.
+  environment: development
+  debug: {
+    address: "tcp://localhost:6060"
+    timeout: "10s"
+  }
+  cache: {
+    kind: redis
+    encoder: proto
+    compressor: snappy
+    options: {
+      url: "file:../test/secrets/redis"
+    }
+  }
+  crypto: {
+    aes: {
+      key: "file:../test/secrets/aes"
+    }
+    ed25519: {
+      public: "file:../test/secrets/ed25519_public"
+      private: "file:../test/secrets/ed25519_private"
+    }
+    hmac: {
+      key: "file:../test/secrets/hmac"
+    }
+    rsa: {
+      public: "file:../test/secrets/rsa_public"
+      private: "file:../test/secrets/rsa_private"
+    }
+    ssh: {
+      public: "file:../test/secrets/ssh_public"
+      private: "file:../test/secrets/ssh_private"
+    }
+  }
+  feature: {
+    address: "localhost:9000"
+    retry: {
+      backoff: "100ms"
+      timeout: "1s"
+      attempts: 3
+    }
+    timeout: "10s"
+  }
+  hooks: {
+    secret: "file:../test/secrets/hooks"
+  }
+  id: {
+    kind: uuid
+  }
+  sql: {
+    pg: {
+      masters: [
+        {
+          url: "file:../test/secrets/pg"
+        }
+      ]
+      slaves: [
+        {
+          url: "file:../test/secrets/pg"
+        }
+      ]
+      max_open_conns: 5
+      max_idle_conns: 5
+      conn_max_lifetime: "1h"
+    }
+  }
+  telemetry: {
+    logger: {
+      kind: text
+      level: info
+    }
+    metrics: {
+      kind: prometheus
+    }
+    tracer: {
+      kind: otlp
+      url: "http://localhost:4318/v1/traces"
+      headers: {
+        Authorization: "file:../test/secrets/telemetry"
+      }
+    }
+  }
+  time: {
+    kind: nts
+    address: "time.cloudflare.com"
+  }
+  transport: {
+    http: {
+      address: "tcp://localhost:11000"
+      limiter: {
+        kind: "user-agent"
+        tokens: 10
+        interval: "1s"
+      }
+      options: {
+        read_timeout: "10s"
+        write_timeout: "10s"
+        idle_timeout: "10s"
+        read_header_timeout: "10s"
+      }
+      retry: {
+        backoff: "100ms"
+        timeout: "1s"
+        attempts: 3
+      }
+      timeout: "10s"
+      token: {
+        access: {
+          policy: "../test/configs/rbac.csv"
+        }
+        kind: jwt
+        jwt: {
+          iss: iss
+          exp: "1h"
+          kid: "1234567890"
+        }
+      }
+    }
+    grpc: {
+      address: "tcp://localhost:12000"
+      limiter: {
+        kind: "user-agent"
+        tokens: 10
+        interval: "1s"
+      }
+      options: {
+        keepalive_enforcement_policy_ping_min_time: "10s"
+        keepalive_max_connection_idle: "10s"
+        keepalive_max_connection_age: "10s"
+        keepalive_max_connection_age_grace: "10s"
+        keepalive_ping_time: "10s"
+      }
+      retry: {
+        backoff: "100ms"
+        timeout: "1s"
+        attempts: 3
+      }
+      timeout: "10s"
+      token: {
+        access: {
+          policy: "../test/configs/rbac.csv"
+        }
+        kind: jwt
+        jwt: {
+          iss: iss
+          exp: "1h"
+          kid: "1234567890"
+        }
+      }
+    }
+  }
+}

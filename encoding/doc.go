@@ -17,7 +17,7 @@
 //
 // `Module` wires the default encoder implementations and provides a `*Map` pre-populated with common
 // kinds used throughout go-service, including:
-//   - JSON, YAML, TOML
+//   - JSON, HJSON, YAML, TOML
 //   - protobuf binary/text/JSON variants
 //   - gob
 //   - "plain"/bytes passthrough for io.ReaderFrom/io.WriterTo payloads

@@ -7,7 +7,8 @@ import (
 
 // NewFile constructs a file-based Decoder that loads configuration from a specific file path.
 //
-// The decoder selects an encoder based on the file extension of location (for example ".yaml" → "yaml").
+// The decoder selects an encoder based on the file extension of location (for example ".yaml" → "yaml"
+// or ".hjson" → "hjson").
 // If no encoder is registered for the extension, Decode will return ErrNoEncoder.
 //
 // Note: location is used as-is when opening the file; any path expansion/cleaning is the responsibility

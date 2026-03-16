@@ -19,7 +19,7 @@ type DecoderParams struct {
 	// NewDecoder reads the "-i" flag via Flags.GetInput.
 	Flags *flag.FlagSet
 
-	// Encoder is the registry of decoders keyed by kind/extension (e.g. "yaml", "json", "toml").
+	// Encoder is the registry of decoders keyed by kind/extension (e.g. "yaml", "json", "hjson", "toml").
 	Encoder *encoding.Map
 
 	// FS is the filesystem used for configuration file lookup and reading.
@@ -36,11 +36,11 @@ type DecoderParams struct {
 // "kind:location" format:
 //
 //   - "file:<path>": uses the file decoder to read from <path>. The file extension determines which
-//     encoder is used (e.g. ".yaml" -> "yaml").
+//     encoder is used (e.g. ".yaml" -> "yaml", ".hjson" -> "hjson").
 //   - "env:<ENV_VAR>": uses the env decoder to read from the environment variable <ENV_VAR>.
-//     The variable value must be formatted as "<extension>:<base64-content>" (e.g. "yaml:...").
+//     The variable value must be formatted as "<extension>:<base64-content>" (e.g. "yaml:..." or "hjson:...").
 //   - anything else (including empty): uses the default lookup decoder, which searches common
-//     locations for "<serviceName>.{yaml,yml,toml,json}".
+//     locations for "<serviceName>.{yaml,yml,hjson,toml,json}".
 //
 // The returned Decoder is safe for repeated calls to Decode; underlying behavior depends on the
 // selected implementation.

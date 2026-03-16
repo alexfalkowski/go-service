@@ -20,7 +20,7 @@ var (
 	// ErrLocationMissing is returned when default lookup cannot find a configuration file in any of
 	// the search locations.
 	//
-	// The default lookup searches for "<serviceName>.{yaml,yml,toml,json}" under common directories
+	// The default lookup searches for "<serviceName>.{yaml,yml,hjson,toml,json}" under common directories
 	// (e.g. executable dir, user config dir, and /etc).
 	ErrLocationMissing = errors.New("config: location is missing")
 

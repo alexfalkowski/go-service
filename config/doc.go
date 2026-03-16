@@ -12,7 +12,7 @@
 //     on the file extension.
 //   - "env:<ENV_VAR>": loads configuration from the environment variable named <ENV_VAR>. The variable
 //     value must be formatted as "<extension>:<base64-content>" (for example "yaml:...").
-//   - otherwise: uses the default lookup, searching for "<serviceName>.{yaml,yml,toml,json}" in common
+//   - otherwise: uses the default lookup, searching for "<serviceName>.{yaml,yml,hjson,toml,json}" in common
 //     locations (executable directory, user config dir, and /etc).
 //
 // # Decoding and validation
