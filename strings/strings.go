@@ -31,6 +31,13 @@ func Count(s, substr string) int {
 	return strings.Count(s, substr)
 }
 
+// LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
+//
+// This is a thin wrapper around strings.LastIndex and does not change semantics.
+func LastIndex(s, substr string) int {
+	return strings.LastIndex(s, substr)
+}
+
 // Cut slices s around the first instance of sep, returning the text before and after sep.
 //
 // The returned boolean reports whether sep was found.
@@ -66,6 +73,13 @@ func ReplaceAll(s, o, n string) string {
 // This is a thin wrapper around strings.ToLower and does not change semantics.
 func ToLower(s string) string {
 	return strings.ToLower(s)
+}
+
+// Trim returns a slice of s with all leading and trailing Unicode code points contained in cutset removed.
+//
+// This is a thin wrapper around strings.Trim and does not change semantics.
+func Trim(s, cutset string) string {
+	return strings.Trim(s, cutset)
 }
 
 // TrimSpace returns s with all leading and trailing white space removed.
