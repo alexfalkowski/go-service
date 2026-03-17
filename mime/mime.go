@@ -21,6 +21,11 @@ const (
 	// This is commonly used as the Content-Type for JSON request/response bodies.
 	JSONMediaType = "application/json"
 
+	// HJSONMediaType is the media type for HJSON documents.
+	//
+	// This is commonly used as the Content-Type for HJSON request/response bodies.
+	HJSONMediaType = "application/hjson"
+
 	// MarkdownMediaType is the media type for Markdown documents encoded as UTF-8.
 	MarkdownMediaType = "text/markdown; charset=utf-8"
 

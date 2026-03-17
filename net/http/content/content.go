@@ -22,7 +22,7 @@ func NewContent(enc *encoding.Map) *Content {
 
 // Content resolves encoders from HTTP media types and provides helpers for content-aware request/response handling.
 //
-// It uses an encoding.Map registry to resolve an encoder by media subtype (e.g. "json", "yaml", "toml").
+// It uses an encoding.Map registry to resolve an encoder by media subtype (e.g. "json", "hjson", "yaml", "toml").
 //
 // Fallback behavior:
 //   - If media type parsing fails, Content falls back to JSON.
@@ -88,10 +88,10 @@ type Media struct {
 	// Encoder is the encoder/decoder associated with the media subtype.
 	Encoder encoding.Encoder
 
-	// Type is the full media type string (for example "application/json" or "text/plain; charset=utf-8").
+	// Type is the full media type string (for example "application/json", "application/hjson", or "text/plain; charset=utf-8").
 	Type string
 
-	// Subtype is the parsed subtype (for example "json" or "plain").
+	// Subtype is the parsed subtype (for example "json", "hjson", or "plain").
 	Subtype string
 }
 

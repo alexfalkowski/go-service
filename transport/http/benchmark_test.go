@@ -240,7 +240,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		b.ResetTimer()
 
-		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 			cl := world.NewHTTP()
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
@@ -315,7 +315,7 @@ func BenchmarkRest(b *testing.B) {
 
 		b.ResetTimer()
 
-		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 			cl := world.NewHTTP()
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))

@@ -648,6 +648,32 @@ Supported stacks include:
 - HTTP MVC helpers (`net/http/mvc`)
 - CloudEvents (<https://github.com/cloudevents/sdk-go>)
 
+### HTTP content types
+
+The HTTP REST and RPC helpers resolve encoders from the request `Content-Type`.
+
+Built-in text/object payload media types include:
+
+- `application/json`
+- `application/hjson`
+- `application/yaml`
+- `application/yml`
+- `application/toml`
+- `application/gob`
+
+Built-in protobuf-oriented media type aliases include:
+
+- `application/proto`
+- `application/protobuf`
+- `application/protojson`
+- `application/prototext`
+
+Notes:
+
+- `application/hjson` maps to the built-in `hjson` encoder kind.
+- Unknown or invalid request media types fall back to JSON selection.
+- `text/error; charset=utf-8` is reserved for error responses and should not be sent by clients as a request content type.
+
 ### Transport configuration (servers)
 
 Transport config root is `transport.Config`:

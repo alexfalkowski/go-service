@@ -15,7 +15,7 @@ import (
 )
 
 func TestRPCNoContent(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
@@ -39,7 +39,7 @@ func TestRPCNoContent(t *testing.T) {
 }
 
 func TestRPCWithContent(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
@@ -112,7 +112,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 }
 
 func TestErroneousUnmarshalRPC(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
@@ -140,7 +140,7 @@ func TestErrorRPC(t *testing.T) {
 	}
 
 	for _, handler := range handlers {
-		for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 			world.Register()
 			world.RequireStart()
@@ -171,7 +171,7 @@ func TestErrorRPC(t *testing.T) {
 }
 
 func TestAllowedRPC(t *testing.T) {
-	for _, mt := range []string{"json", "yaml", "yml", "toml", "gob"} {
+	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 		world.Register()
 		world.RequireStart()
@@ -193,7 +193,7 @@ func TestAllowedRPC(t *testing.T) {
 }
 
 func TestDisallowedRPC(t *testing.T) {
-	for _, mt := range []string{mime.JSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
+	for _, mt := range []string{mime.JSONMediaType, mime.HJSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
 		world := test.NewWorld(t,
 			test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 			test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP(),

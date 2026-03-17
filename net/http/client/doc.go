@@ -5,7 +5,7 @@
 //   - consistent error handling via `net/http/status`.
 //
 // The wrapper is intended for service-to-service HTTP calls where the payload format is negotiated
-// explicitly via Content-Type.
+// explicitly via Content-Type (for example application/json or application/hjson).
 //
 // # Options and behavior
 //
