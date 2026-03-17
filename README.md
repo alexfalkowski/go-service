@@ -638,7 +638,12 @@ Supported kinds:
 
 ## Transport
 
-The transport layer provides common wiring and helpers for communication in/out of the service.
+The transport layer provides higher-level wiring and middleware policy for communication in/out of the service.
+
+At a high level:
+
+- `transport/...` contains the opinionated service transport layer: Fx wiring, composed HTTP/gRPC server and client stacks, retries, breakers, token middleware, health wiring, and related policy.
+- `net/...` contains lower-level protocol helpers and reusable primitives such as `net/http`, `net/grpc`, `net/http/meta`, `net/grpc/meta`, `net/http/strings`, `net/grpc/strings`, `net/grpc/health`, `net/header`, and `net/server`.
 
 Supported stacks include:
 
@@ -748,6 +753,7 @@ transport:
 Important gotcha:
 
 - Some transport packages require that you call a package `Register(...)` function to provide an `os.FS` used to read key material. If you enable TLS and have not registered the FS, TLS construction may not have access to the filesystem.
+- If you are wiring server lifecycle manually, use `net/server.Register(...)`.
 
 ### Transport Dependencies
 
@@ -993,3 +999,8 @@ make transport-diagram
 - If you enable transport TLS and wire transports manually (without transport modules), call:
   - `transport/http.Register(fs)`
   - `transport/grpc.Register(fs)`
+- Shared metadata and header helpers live under `net/...`, for example:
+  - `net/http/meta`
+  - `net/grpc/meta`
+  - `net/header`
+  - `net/server.Register`

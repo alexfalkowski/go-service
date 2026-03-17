@@ -5,7 +5,11 @@
 //   - gRPC clients (`NewClient`) with standardized dial options and client interceptors (timeouts, retries, breakers, auth, etc.).
 //
 // The primary entrypoint for DI wiring is `Module`, which composes this package with supporting subpackages:
-// breaker, retry, limiter, metadata extraction/injection, token auth, and health.
+// breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
+// `net/grpc/health`.
+//
+// Lower-level gRPC primitives and shared helpers live under sibling `net/grpc/...` packages. This package
+// focuses on higher-level server/client composition, middleware policy, and Fx wiring.
 //
 // # Server wiring
 //

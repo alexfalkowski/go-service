@@ -6,9 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/strings"
 )
 
 // LevelError is an alias of `telemetry/logger.LevelError`.
@@ -22,7 +22,7 @@ type Logger = logger.Logger
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -59,7 +59,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -97,7 +97,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -135,7 +135,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor returns a gRPC stream client interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "grpc"

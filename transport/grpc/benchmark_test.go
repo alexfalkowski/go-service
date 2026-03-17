@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/transport"
 	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"go.uber.org/fx/fxtest"
 )
@@ -69,7 +68,7 @@ func BenchmarkGRPC(b *testing.B) {
 		runtime.Must(err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		transport.Register(lc, []*server.Service{g.GetService()})
+		server.Register(lc, []*server.Service{g.GetService()})
 
 		lc.RequireStart()
 
@@ -108,7 +107,7 @@ func BenchmarkGRPC(b *testing.B) {
 		runtime.Must(err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		transport.Register(lc, []*server.Service{g.GetService()})
+		server.Register(lc, []*server.Service{g.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
@@ -150,7 +149,7 @@ func BenchmarkGRPC(b *testing.B) {
 		runtime.Must(err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
-		transport.Register(lc, []*server.Service{g.GetService()})
+		server.Register(lc, []*server.Service{g.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()

@@ -1,7 +1,10 @@
-// Package transport provides transport-layer wiring and shared helpers for services built with go-service.
+// Package transport provides higher-level transport wiring for services built with go-service.
 //
 // It composes the HTTP and gRPC transport stacks into a single Fx module (`Module`) and provides lifecycle
-// wiring (`Register`) that starts and stops all configured server services.
+// wiring via `net/server.Register` that starts and stops all configured server services.
+//
+// Lower-level protocol helpers and shared metadata utilities live under sibling `net/...` packages
+// (for example `net/http/meta`, `net/grpc/meta`, `net/header`, and `net/server`).
 //
 // Typical usage is to include `transport.Module` in your application module graph and let DI construct the
 // underlying transports:
@@ -9,11 +12,6 @@
 // - `transport/http` for HTTP servers and clients.
 // - `transport/grpc` for gRPC servers and clients.
 // - `debug` (wired via `transport.NewServers`) for the optional debug server.
-//
-// # Lifecycle wiring
-//
-// `Register` attaches `OnStart`/`OnStop` hooks to the provided `di.Lifecycle` and is responsible for starting
-// each `*server.Service` and stopping it on shutdown.
 //
 // # Registration gotchas
 //

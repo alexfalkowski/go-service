@@ -2,6 +2,7 @@ package transport
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
@@ -19,11 +20,11 @@ import (
 //
 // Server lifecycle wiring:
 // This module also provides `NewServers` (to collect enabled `*server.Service` instances) and registers
-// `Register`, which attaches lifecycle hooks to start and stop those services.
+// `net/server.Register`, which attaches lifecycle hooks to start and stop those services.
 var Module = di.Module(
 	grpc.Module,
 	http.Module,
 	events.Module,
 	di.Constructor(NewServers),
-	di.Register(Register),
+	di.Register(server.Register),
 )

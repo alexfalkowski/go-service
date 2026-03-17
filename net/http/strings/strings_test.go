@@ -3,7 +3,7 @@ package strings_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/transport/http/strings"
+	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/stretchr/testify/require"
 )
 

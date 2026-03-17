@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/transport/http/strings"
+	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 )
 
 // KeyMap is an alias for `limiter.KeyMap`.
@@ -52,7 +52,7 @@ type Handler struct {
 
 // ServeHTTP enforces the configured limiter.
 //
-// Ignorable paths (health/metrics/etc.) bypass limiting (see `transport/http/strings.IsIgnorable`).
+// Ignorable paths (health/metrics/etc.) bypass limiting (see `net/http/strings.IsIgnorable`).
 //
 // Behavior:
 //   - If `Take` returns an error, it writes an internal server error response.

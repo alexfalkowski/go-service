@@ -6,9 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/strings"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 )
 
 // KeyMap is an alias for `limiter.KeyMap`.
@@ -43,7 +43,7 @@ type Server struct {
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsIgnorable`).
 //
 // On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
 //

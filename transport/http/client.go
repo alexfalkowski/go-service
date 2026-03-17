@@ -6,10 +6,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
@@ -134,7 +134,7 @@ func WithClientLogger(logger *logger.Logger) ClientOption {
 
 // WithClientUserAgent sets the user agent value used for metadata injection.
 //
-// The value is injected into outbound requests by the metadata RoundTripper (`transport/http/meta`).
+// The value is injected into outbound requests by the metadata RoundTripper (`net/http/meta`).
 func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.userAgent = userAgent

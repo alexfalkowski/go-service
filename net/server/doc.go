@@ -18,5 +18,5 @@
 // or grpc.Server), then wrap it in a Service and call Service.Start during application startup.
 // On shutdown, the application stops the underlying server by calling Service.Stop with a context.
 //
-// Start with `Server` and `Service`.
+// Start with `Server`, `Service`, and `Register`.
 package server

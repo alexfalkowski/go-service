@@ -6,13 +6,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/header"
-	"github.com/alexfalkowski/go-service/v2/transport/http/strings"
 )
 
 // NewAccessController constructs an access controller when token auth is enabled.
@@ -86,10 +86,10 @@ type Handler struct {
 
 // ServeHTTP verifies the request Authorization token and stores the verified subject in the context.
 //
-// Ignorable paths (health/metrics/etc.) bypass verification (see `transport/http/strings.IsIgnorable`).
+// Ignorable paths (health/metrics/etc.) bypass verification (see `net/http/strings.IsIgnorable`).
 //
 // The handler expects an Authorization value to be available in the request context (typically injected by
-// `transport/http/meta.Handler`). It verifies the token using verifier, scoping verification to the request path.
+// `net/http/meta.Handler`). It verifies the token using verifier, scoping verification to the request path.
 //
 // Behavior:
 //   - If verification fails, it writes an HTTP 401 error response and does not call next.
