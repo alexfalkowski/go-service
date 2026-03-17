@@ -11,11 +11,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/http/meta"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/klauspost/compress/gzhttp"
@@ -79,7 +79,7 @@ type ServerParams struct {
 // Middleware composition:
 //
 // The server is built using Negroni and composes middleware in this order (first listed runs first):
-//   - metadata extraction/injection and response headers (`transport/http/meta`)
+//   - metadata extraction/injection and response headers (`net/http/meta`)
 //   - optional logging (`transport/http/telemetry/logger`) when `params.Logger` is non-nil
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
@@ -147,7 +147,7 @@ type Server struct {
 //
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
-// registration (see `transport.NewServers` and `transport.Register`).
+// registration (see `transport.NewServers` and `net/server.Register`).
 func (s *Server) GetService() *server.Service {
 	if s == nil {
 		return nil

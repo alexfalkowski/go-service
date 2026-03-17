@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
 )
 
@@ -16,7 +16,7 @@ import (
 //   - token access control and token service wiring (`NewController`, `NewToken`)
 //   - token generator/verifier adapters for interceptor wiring (`transport/grpc/token.NewGenerator`, `transport/grpc/token.NewVerifier`)
 //   - server construction (`NewServer`) and service registration (`registrar`)
-//   - health service wiring (`transport/grpc/health.Module`)
+//   - health service wiring (`net/grpc/health.Module`)
 //
 // This module also registers `Register`, which injects the filesystem dependency used by this package
 // (required when constructing TLS configuration from certificate/key source strings).

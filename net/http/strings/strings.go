@@ -53,7 +53,7 @@ func Join(sep string, ss ...string) string {
 	return strings.Join(sep, ss...)
 }
 
-// IsIgnorable reports whether path should be treated as ignorable by HTTP transport middleware.
+// IsIgnorable reports whether path should be treated as ignorable by HTTP middleware.
 //
 // Matching is exact by path segment so only well-known operational endpoints such as
 // `/<service>/healthz` or `/<service>/metrics` are ignored.

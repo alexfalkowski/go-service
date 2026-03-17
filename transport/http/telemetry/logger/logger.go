@@ -3,9 +3,9 @@ package logger
 import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/http/strings"
 	snoop "github.com/felixge/httpsnoop"
 )
 
@@ -30,7 +30,7 @@ type Handler struct {
 
 // ServeHTTP logs the request outcome after next completes.
 //
-// Ignorable paths (health/metrics/etc.) bypass logging (see `transport/http/strings.IsIgnorable`).
+// Ignorable paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "http"
@@ -79,7 +79,7 @@ type RoundTripper struct {
 
 // RoundTrip logs the request outcome and delegates to the underlying RoundTripper.
 //
-// Ignorable paths (health/metrics/etc.) bypass logging (see `transport/http/strings.IsIgnorable`).
+// Ignorable paths (health/metrics/etc.) bypass logging (see `net/http/strings.IsIgnorable`).
 //
 // Logged attributes include:
 //   - system: "http"

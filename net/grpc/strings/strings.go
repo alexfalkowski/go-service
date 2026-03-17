@@ -40,7 +40,7 @@ func Join(sep string, ss ...string) string {
 	return strings.Join(sep, ss...)
 }
 
-// IsIgnorable reports whether name should be treated as ignorable by gRPC transport middleware.
+// IsIgnorable reports whether name should be treated as ignorable by gRPC middleware.
 //
 // Matching is exact for the standard gRPC health service methods.
 func IsIgnorable(name string) bool {

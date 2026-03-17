@@ -6,12 +6,15 @@
 //   - content negotiation and request/response encoding (`net/http/content`)
 //   - MVC view rendering support (`net/http/mvc`)
 //   - RPC and REST routing helpers (`net/http/rpc`, `net/http/rest`)
-//   - request metadata extraction and propagation (`transport/http/meta`)
+//   - request metadata extraction and propagation (`net/http/meta`)
 //   - token authentication (server-side verification and client-side injection) (`transport/http/token`)
 //   - client retries and circuit breakers (`transport/http/retry`, `transport/http/breaker`)
 //   - server-side and client-side rate limiting (`transport/http/limiter`)
 //   - health endpoints wiring (`transport/http/health`)
 //   - Prometheus metrics endpoint wiring (`transport/http/telemetry/metrics`)
+//
+// Lower-level HTTP primitives and shared helpers live under sibling `net/http/...` packages. This package
+// focuses on higher-level server/client composition, middleware policy, and Fx wiring.
 //
 // The primary entrypoint for DI consumers is `Module`, which composes the HTTP transport stack and
 // registers handlers/constructors needed to run an HTTP server.

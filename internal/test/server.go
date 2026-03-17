@@ -92,7 +92,7 @@ func (s *Server) Register() {
 		servers = append(servers, debugServer.GetService())
 	}
 
-	transport.Register(s.Lifecycle, servers)
+	server.Register(s.Lifecycle, servers)
 }
 
 // EmptyHandler for test.

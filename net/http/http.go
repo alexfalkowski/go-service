@@ -8,9 +8,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/strings"
 )
 
 const (
@@ -226,7 +226,7 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 //
 //	/<service>/<method>
 //
-// If the request path matches that shape (as determined by transport/grpc/strings.SplitServiceMethod),
+// If the request path matches that shape (as determined by net/grpc/strings.SplitServiceMethod),
 // ParseServiceMethod returns the extracted service/method pair.
 //
 // Otherwise it falls back to:

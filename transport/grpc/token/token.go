@@ -8,13 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
+	"github.com/alexfalkowski/go-service/v2/net/header"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc/strings"
-	"github.com/alexfalkowski/go-service/v2/transport/header"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 )
 
@@ -75,10 +75,10 @@ type Verifier token.Verifier
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsIgnorable`).
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
-// interceptor (`transport/grpc/meta.UnaryServerInterceptor`). It verifies the token using verifier, scoping
+// interceptor (`net/grpc/meta.UnaryServerInterceptor`). It verifies the token using verifier, scoping
 // verification to the RPC `FullMethod`.
 //
 // Behavior:
@@ -107,10 +107,10 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `transport/grpc/strings.IsIgnorable`).
+// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsIgnorable`).
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
-// metadata interceptor (`transport/grpc/meta.StreamServerInterceptor`). It verifies the token using verifier,
+// metadata interceptor (`net/grpc/meta.StreamServerInterceptor`). It verifies the token using verifier,
 // scoping verification to the RPC `FullMethod`.
 //
 // Behavior:

@@ -1,4 +1,4 @@
-// Package meta provides HTTP-specific context metadata helpers for go-service.
+// Package meta provides HTTP-specific context metadata helpers and middleware for go-service.
 //
 // This package serves two related purposes for HTTP request handling:
 //
@@ -7,7 +7,7 @@
 //     (for example CamelStrings).
 //
 //   - It provides a small context-backed store for request-scoped HTTP objects used by go-service
-//     handlers and middleware:
+//     handlers and middleware, including:
 //
 //   - the incoming `*http.Request`
 //
@@ -24,4 +24,6 @@
 // These helpers are typically used in tightly controlled handler pipelines (for example those created by
 // `net/http/content.NewHandler` / `NewRequestHandler`), which populate the context before invoking
 // downstream logic.
+//
+// This package also provides HTTP metadata middleware via `NewHandler` and `NewRoundTripper`.
 package meta

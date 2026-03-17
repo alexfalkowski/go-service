@@ -20,7 +20,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"go.uber.org/fx/fxtest"
 )
@@ -78,7 +77,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetService()})
+		server.Register(lc, []*server.Service{h.GetService()})
 
 		lc.RequireStart()
 
@@ -119,7 +118,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetService()})
+		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
@@ -163,7 +162,7 @@ func BenchmarkHTTP(b *testing.B) {
 		})
 		runtime.Must(err)
 
-		transport.Register(lc, []*server.Service{h.GetService()})
+		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
 
 		lc.RequireStart()
