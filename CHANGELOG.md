@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.306.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.306.0) - 2026-03-17
+
+- [`a32e4eb`](https://github.com/alexfalkowski/go-service/commit/a32e4eb19830743d91b4e824860ee6f7e38db008) feat(net): promote shared transport helpers into net with compatibility shims (#2227)
+
 ## [v2.305.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.305.0) - 2026-03-17
 
 - [`bda3dca`](https://github.com/alexfalkowski/go-service/commit/bda3dca0796cbc65ecbdc7c39efce50675ba2dfa) feat(http): add hjson http content type support and table-driven content tests (#2226)
