@@ -49,8 +49,8 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 // WithClientContentType sets the Content-Type used for requests made by the RPC client.
 //
 // This value is passed through to the underlying content-aware HTTP client and is used to select the
-// encoder/decoder for request/response bodies. Typical values include "application/json" or go-service
-// protobuf media types.
+// encoder/decoder for request/response bodies. Typical values include "application/json",
+// "application/hjson", or go-service protobuf media types.
 func WithClientContentType(ct string) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.contentType = ct
