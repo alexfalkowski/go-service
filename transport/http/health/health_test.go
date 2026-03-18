@@ -1,10 +1,10 @@
 package health_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
@@ -15,47 +15,40 @@ func TestHealth(t *testing.T) {
 	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
+		t.Run(check, func(t *testing.T) {
+			world := test.NewStartedHTTPWorld(t, func(world *test.World) {
+				server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+				err := server.Observe(test.Name.String(), check, "http")
+				require.NoError(t, err)
+				test.RegisterHealth(server)
+			}, test.WithWorldTelemetry("otlp"))
 
-		server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
 
-		err := server.Observe(test.Name.String(), check, "http")
-		require.NoError(t, err)
+			url := world.NamedServerURL("http", check)
 
-		test.RegisterHealth(server)
-		world.RequireStart()
+			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+			require.NoError(t, err)
 
-		ctx := t.Context()
-		ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-		ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			require.Equal(t, http.StatusOK, res.StatusCode)
+			require.Equal(t, mime.JSONMediaType, res.Header.Get(content.TypeKey))
 
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
-
-		url := world.NamedServerURL("http", check)
-
-		res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
-		require.NoError(t, err)
-
-		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.Contains(t, body, "SERVING")
-
-		world.RequireStop()
+			var resp healthResponse
+			require.NoError(t, json.Unmarshal([]byte(body), &resp))
+			require.Equal(t, "SERVING", resp.Status)
+			require.Empty(t, resp.Meta)
+		})
 	}
 }
 
 func TestReadinessNoop(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-
-	server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := server.Observe(test.Name.String(), "readyz", "noop")
-	require.NoError(t, err)
-
-	test.RegisterHealth(server)
-	world.RequireStart()
+	world := test.NewStartedHTTPWorld(t, func(world *test.World) {
+		server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
+		err := server.Observe(test.Name.String(), "readyz", "noop")
+		require.NoError(t, err)
+		test.RegisterHealth(server)
+	}, test.WithWorldTelemetry("otlp"))
 
 	header := http.Header{}
 	header.Add("Request-Id", "test-id")
@@ -68,23 +61,21 @@ func TestReadinessNoop(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Contains(t, body, "SERVING")
 	require.Equal(t, mime.JSONMediaType, res.Header.Get(content.TypeKey))
 
-	world.RequireStop()
+	var resp healthResponse
+	require.NoError(t, json.Unmarshal([]byte(body), &resp))
+	require.Equal(t, "SERVING", resp.Status)
+	require.Empty(t, resp.Meta)
 }
 
 func TestInvalidHealth(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-
-	server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := server.Observe(test.Name.String(), "healthz", "http")
-	require.NoError(t, err)
-
-	test.RegisterHealth(server)
-	world.RequireStart()
+	world := test.NewStartedHTTPWorld(t, func(world *test.World) {
+		server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
+		err := server.Observe(test.Name.String(), "healthz", "http")
+		require.NoError(t, err)
+		test.RegisterHealth(server)
+	}, test.WithWorldTelemetry("otlp"))
 
 	header := http.Header{}
 	url := world.NamedServerURL("http", "healthz")
@@ -95,36 +86,32 @@ func TestInvalidHealth(t *testing.T) {
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, "http: http checker: invalid status code", body)
 	require.Equal(t, mime.ErrorMediaType, res.Header.Get(content.TypeKey))
-
-	world.RequireStop()
 }
 
 func TestMissingHealth(t *testing.T) {
 	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
+		t.Run(check, func(t *testing.T) {
+			world := test.NewStartedHTTPWorld(t, func(world *test.World) {
+				server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+				test.RegisterHealth(server)
+			}, test.WithWorldTelemetry("otlp"))
 
-		server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
 
-		test.RegisterHealth(server)
-		world.RequireStart()
+			url := world.NamedServerURL("http", check)
 
-		ctx := t.Context()
-		ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-		ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
+			require.NoError(t, err)
 
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
-
-		url := world.NamedServerURL("http", check)
-
-		res, err := world.ResponseWithNoBody(ctx, url, http.MethodGet, header)
-		require.NoError(t, err)
-
-		require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-
-		world.RequireStop()
+			require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
+		})
 	}
+}
+
+type healthResponse struct {
+	Meta   map[string]string `json:"meta"`
+	Status string            `json:"status"`
 }

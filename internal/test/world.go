@@ -3,6 +3,7 @@ package test
 import (
 	"io"
 	"net/url"
+	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
@@ -22,8 +23,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	sdk "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
@@ -32,8 +34,8 @@ import (
 
 func init() {
 	telemetry.Register()
-	tg.Register(FS)
-	th.Register(FS)
+	transportgrpc.Register(FS)
+	transporthttp.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }
@@ -186,6 +188,53 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 		Receiver: receiver, Sender: sender,
 		Cache: redisCache(lc), PG: pgConfig,
 	}
+}
+
+// NewStartedWorld creates, registers, and starts a world for a test.
+func NewStartedWorld(tb testing.TB, configure func(*World), opts ...WorldOption) *World {
+	tb.Helper()
+
+	world := NewWorld(tb, opts...)
+	world.Register()
+
+	if configure != nil {
+		configure(world)
+	}
+
+	world.RequireStart()
+	tb.Cleanup(world.RequireStop)
+
+	return world
+}
+
+// NewStartedHTTPWorld creates, registers, and starts an HTTP-enabled world for a test.
+func NewStartedHTTPWorld(tb testing.TB, configure func(*World), opts ...WorldOption) *World {
+	tb.Helper()
+
+	opts = append(opts, WithWorldHTTP())
+
+	return NewStartedWorld(tb, configure, opts...)
+}
+
+// NewStartedGRPCWorld creates, registers, and starts a gRPC-enabled world for a test.
+func NewStartedGRPCWorld(tb testing.TB, configure func(*World), opts ...WorldOption) *World {
+	tb.Helper()
+
+	opts = append(opts, WithWorldGRPC())
+
+	return NewStartedWorld(tb, configure, opts...)
+}
+
+// OpenGRPCConn opens a gRPC connection for a test and closes it during cleanup.
+func OpenGRPCConn(tb testing.TB, world *World, opts ...grpcbreaker.Option) *transportgrpc.ClientConn {
+	tb.Helper()
+
+	conn := world.NewGRPC(opts...)
+	tb.Cleanup(func() {
+		_ = conn.Close()
+	})
+
+	return conn
 }
 
 // World for test.
