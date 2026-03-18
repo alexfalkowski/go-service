@@ -99,20 +99,22 @@ func TestApplicationInvalid(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		os.Args = []string{test.Name.String(), "server", "-i", config}
-		cli.Name = test.Name
-		cli.Version = test.Version
+		t.Run(config, func(t *testing.T) {
+			os.Args = []string{test.Name.String(), "server", "-i", config}
+			cli.Name = test.Name
+			cli.Version = test.Version
 
-		app := cli.NewApplication(
-			func(c cli.Commander) {
-				cmd := c.AddServer("server", "Start the server.", test.Options()...)
-				cmd.AddInput(strings.Empty)
-			},
-		)
+			app := cli.NewApplication(
+				func(c cli.Commander) {
+					cmd := c.AddServer("server", "Start the server.", test.Options()...)
+					cmd.AddInput(strings.Empty)
+				},
+			)
 
-		err := app.Run(t.Context())
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "unknown port")
+			err := app.Run(t.Context())
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "unknown port")
+		})
 	}
 }
 
@@ -152,19 +154,21 @@ func TestApplicationInvalidClient(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		os.Args = []string{test.Name.String(), "client", "-i", config}
-		cli.Name = test.Name
-		cli.Version = test.Version
+		t.Run(config, func(t *testing.T) {
+			os.Args = []string{test.Name.String(), "client", "-i", config}
+			cli.Name = test.Name
+			cli.Version = test.Version
 
-		app := cli.NewApplication(
-			func(c cli.Commander) {
-				cmd := c.AddClient("client", "Start the client.", test.Options()...)
-				cmd.AddInput(strings.Empty)
-			},
-		)
+			app := cli.NewApplication(
+				func(c cli.Commander) {
+					cmd := c.AddClient("client", "Start the client.", test.Options()...)
+					cmd.AddInput(strings.Empty)
+				},
+			)
 
-		err := app.Run(t.Context())
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "unknown port")
+			err := app.Run(t.Context())
+			require.Error(t, err)
+			require.Contains(t, err.Error(), "unknown port")
+		})
 	}
 }

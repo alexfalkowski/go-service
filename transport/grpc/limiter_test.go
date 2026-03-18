@@ -1,6 +1,7 @@
 package grpc_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -88,8 +89,10 @@ func TestLimiterAuthUnary(t *testing.T) {
 	req := &v1.SayHelloRequest{Name: "test"}
 
 	var err error
-	for range 10 {
-		_, err = client.SayHello(t.Context(), req)
+	for i := range 10 {
+		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
+			_, err = client.SayHello(t.Context(), req)
+		})
 	}
 	require.NoError(t, err)
 

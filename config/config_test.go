@@ -21,14 +21,16 @@ func TestValidFileConfig(t *testing.T) {
 	}
 
 	for _, file := range files {
-		set := flag.NewFlagSet("test")
-		set.AddInput(file)
+		t.Run(file, func(t *testing.T) {
+			set := flag.NewFlagSet("test")
+			set.AddInput(file)
 
-		decoder := test.NewDecoder(set)
+			decoder := test.NewDecoder(set)
 
-		config, err := config.NewConfig[config.Config](decoder, test.Validator)
-		require.NoError(t, err)
-		verifyConfig(t, config)
+			config, err := config.NewConfig[config.Config](decoder, test.Validator)
+			require.NoError(t, err)
+			verifyConfig(t, config)
+		})
 	}
 }
 
@@ -44,13 +46,15 @@ func TestInvalidFileConfig(t *testing.T) {
 	}
 
 	for _, file := range files {
-		set := flag.NewFlagSet("test")
-		set.AddInput(file)
+		t.Run(file, func(t *testing.T) {
+			set := flag.NewFlagSet("test")
+			set.AddInput(file)
 
-		decoder := test.NewDecoder(set)
+			decoder := test.NewDecoder(set)
 
-		_, err := config.NewConfig[config.Config](decoder, test.Validator)
-		require.Error(t, err)
+			_, err := config.NewConfig[config.Config](decoder, test.Validator)
+			require.Error(t, err)
+		})
 	}
 }
 

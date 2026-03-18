@@ -43,8 +43,10 @@ func TestInvalid(t *testing.T) {
 	}
 
 	for _, tkn := range tokens {
-		_, err := token.Verify(tkn, "hello")
-		require.Error(t, err)
+		t.Run(tkn, func(t *testing.T) {
+			_, err := token.Verify(tkn, "hello")
+			require.Error(t, err)
+		})
 	}
 
 	tkn, err := token.Generate("hello", test.UserID.String())

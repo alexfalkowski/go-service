@@ -21,35 +21,39 @@ var paths = []string{
 
 func TestInsecureDebug(t *testing.T) {
 	for _, path := range paths {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
-		world.Register()
-		world.RequireStart()
+		t.Run(path, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
+			world.Register()
+			world.RequireStart()
 
-		header := http.Header{}
-		url := world.NamedDebugURL("http", path)
+			header := http.Header{}
+			url := world.NamedDebugURL("http", path)
 
-		res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, res.StatusCode)
+			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, res.StatusCode)
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 
 func TestSecureDebug(t *testing.T) {
 	for _, path := range paths {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
-		world.Register()
-		world.RequireStart()
+		t.Run(path, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
+			world.Register()
+			world.RequireStart()
 
-		header := http.Header{}
-		url := world.NamedDebugURL("https", path)
+			header := http.Header{}
+			url := world.NamedDebugURL("https", path)
 
-		res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, res.StatusCode)
+			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, res.StatusCode)
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 

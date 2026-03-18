@@ -10,17 +10,23 @@ import (
 
 func TestEmptyAppendZero(t *testing.T) {
 	for _, elem := range []*int{nil} {
-		require.Empty(t, slices.AppendNotZero([]*int{}, elem))
+		t.Run("nil pointer", func(t *testing.T) {
+			require.Empty(t, slices.AppendNotZero([]*int{}, elem))
+		})
 	}
 
 	for _, elem := range []int{0} {
-		require.Empty(t, slices.AppendNotZero([]int{}, elem))
+		t.Run("zero value", func(t *testing.T) {
+			require.Empty(t, slices.AppendNotZero([]int{}, elem))
+		})
 	}
 }
 
 func TestEmptyAppendNil(t *testing.T) {
 	for _, elem := range []*int{nil} {
-		require.Empty(t, slices.AppendNotNil([]*int{}, elem))
+		t.Run("nil pointer", func(t *testing.T) {
+			require.Empty(t, slices.AppendNotNil([]*int{}, elem))
+		})
 	}
 }
 
@@ -28,7 +34,9 @@ func TestAppendZero(t *testing.T) {
 	integer := 2
 
 	for _, elem := range []*int{&integer} {
-		require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+		t.Run("non-zero pointer", func(t *testing.T) {
+			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+		})
 	}
 }
 
@@ -36,7 +44,9 @@ func TestAppendNil(t *testing.T) {
 	integer := 2
 
 	for _, elem := range []*int{&integer} {
-		require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+		t.Run("non-nil pointer", func(t *testing.T) {
+			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+		})
 	}
 }
 

@@ -53,11 +53,13 @@ func TestInvalid(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tkn := range []string{"invalid"} {
-		cfg := test.NewToken("paseto")
-		token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
+		t.Run(tkn, func(t *testing.T) {
+			cfg := test.NewToken("paseto")
+			token := paseto.NewToken(cfg.Paseto, signer, verifier, gen)
 
-		_, err := token.Verify(tkn, "aud")
-		require.Error(t, err)
+			_, err := token.Verify(tkn, "aud")
+			require.Error(t, err)
+		})
 	}
 
 	cfg = test.NewToken("paseto")

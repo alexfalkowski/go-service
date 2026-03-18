@@ -35,9 +35,11 @@ func TestInvalid(t *testing.T) {
 	require.Error(t, err)
 
 	for _, tkn := range []string{strings.Empty, "none-", "test-", "test-bob"} {
-		token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
-		_, err := token.Verify(tkn)
-		require.Error(t, err)
+		t.Run(tkn, func(t *testing.T) {
+			token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
+			_, err := token.Verify(tkn)
+			require.Error(t, err)
+		})
 	}
 
 	token = ssh.NewToken(&ssh.Config{

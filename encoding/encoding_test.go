@@ -9,10 +9,14 @@ import (
 
 func TestEncoder(t *testing.T) {
 	for _, k := range test.Encoder.Keys() {
-		require.NotNil(t, test.Encoder.Get(k))
+		t.Run(k, func(t *testing.T) {
+			require.NotNil(t, test.Encoder.Get(k))
+		})
 	}
 
 	for _, k := range []string{"test", "bob"} {
-		require.Nil(t, test.Encoder.Get(k))
+		t.Run(k, func(t *testing.T) {
+			require.Nil(t, test.Encoder.Get(k))
+		})
 	}
 }
