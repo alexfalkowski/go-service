@@ -36,42 +36,46 @@ func TestUnlimited(t *testing.T) {
 
 func TestServerLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
-		world.Register()
-		world.HandleHello()
-		world.RequireStart()
+		t.Run(f, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
+			world.Register()
+			world.HandleHello()
+			world.RequireStart()
 
-		url := world.PathServerURL("http", "hello")
+			url := world.PathServerURL("http", "hello")
 
-		_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-		require.NoError(t, err)
+			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			require.NoError(t, err)
 
-		res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-		require.NotEmpty(t, res.Header.Get("Ratelimit"))
+			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+			require.NotEmpty(t, res.Header.Get("Ratelimit"))
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 
 func TestClientLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
-		world.Register()
-		world.HandleHello()
-		world.RequireStart()
+		t.Run(f, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
+			world.Register()
+			world.HandleHello()
+			world.RequireStart()
 
-		url := world.PathServerURL("http", "hello")
+			url := world.PathServerURL("http", "hello")
 
-		_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-		require.NoError(t, err)
+			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			require.NoError(t, err)
 
-		_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-		require.Error(t, err)
-		require.Equal(t, http.StatusTooManyRequests, status.Code(err))
+			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			require.Error(t, err)
+			require.Equal(t, http.StatusTooManyRequests, status.Code(err))
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 

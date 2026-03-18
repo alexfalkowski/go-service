@@ -50,36 +50,47 @@ func TestOpen(t *testing.T) {
 }
 
 func TestInvalidOpen(t *testing.T) {
-	configs := []*pg.Config{
+	tests := []struct {
+		config *pg.Config
+		name   string
+	}{
 		{
-			Config: &config.Config{
-				Masters:         []config.DSN{{URL: test.FilePath("secrets/none")}},
-				Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg")}},
-				MaxOpenConns:    5,
-				MaxIdleConns:    5,
-				ConnMaxLifetime: time.Hour.String(),
+			name: "invalid masters",
+			config: &pg.Config{
+				Config: &config.Config{
+					Masters:         []config.DSN{{URL: test.FilePath("secrets/none")}},
+					Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg")}},
+					MaxOpenConns:    5,
+					MaxIdleConns:    5,
+					ConnMaxLifetime: time.Hour.String(),
+				},
 			},
 		},
 		{
-			Config: &config.Config{
-				Masters:         []config.DSN{{URL: test.FilePath("secrets/pg")}},
-				Slaves:          []config.DSN{{URL: test.FilePath("secrets/none")}},
-				MaxOpenConns:    5,
-				MaxIdleConns:    5,
-				ConnMaxLifetime: time.Hour.String(),
+			name: "invalid slaves",
+			config: &pg.Config{
+				Config: &config.Config{
+					Masters:         []config.DSN{{URL: test.FilePath("secrets/pg")}},
+					Slaves:          []config.DSN{{URL: test.FilePath("secrets/none")}},
+					MaxOpenConns:    5,
+					MaxIdleConns:    5,
+					ConnMaxLifetime: time.Hour.String(),
+				},
 			},
 		},
 	}
 
-	for _, config := range configs {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(config), test.WithWorldLoggerConfig("json"))
-		world.Register()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(tt.config), test.WithWorldLoggerConfig("json"))
+			world.Register()
 
-		_, err := world.OpenDatabase()
-		world.RequireStart()
-		require.Error(t, err)
+			_, err := world.OpenDatabase()
+			world.RequireStart()
+			require.Error(t, err)
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 

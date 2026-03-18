@@ -17,58 +17,78 @@ import (
 )
 
 func TestValidCache(t *testing.T) {
-	configs := []*config.Config{
-		test.NewCacheConfig("redis", "snappy", strings.Empty, "redis"),
-		test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+	configs := []struct {
+		config *config.Config
+		name   string
+	}{
+		{name: "redis", config: test.NewCacheConfig("redis", "snappy", strings.Empty, "redis")},
+		{name: "sync", config: test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis")},
+	}
+	values := []struct {
+		persist func() any
+		get     func() any
+		name    string
+	}{
+		{name: "string", persist: func() any { return ptr.Value("hello?") }, get: func() any { return ptr.Zero[string]() }},
+		{name: "buffer", persist: func() any { return bytes.NewBufferString("hello?") }, get: func() any { return &bytes.Buffer{} }},
+		{name: "protobuf", persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} }, get: func() any { return &v1.SayHelloRequest{} }},
+		{name: "request", persist: func() any { return &test.Request{Name: "hello?"} }, get: func() any { return &test.Request{} }},
 	}
 
-	for _, config := range configs {
-		for _, value := range []test.AnyTuple{
-			{ptr.Value("hello?"), ptr.Zero[string]()},
-			{bytes.NewBufferString("hello?"), &bytes.Buffer{}},
-			{&v1.SayHelloRequest{Name: "hello?"}, &v1.SayHelloRequest{}},
-			{&test.Request{Name: "hello?"}, &test.Request{}},
-		} {
-			world := test.NewWorld(t)
-			world.Register()
-
-			driver, err := driver.NewDriver(test.FS, config)
-			require.NoError(t, err)
-
-			params := cache.CacheParams{
-				Lifecycle:  world.Lifecycle,
-				Config:     config,
-				Compressor: test.Compressor,
-				Encoder:    test.Encoder,
-				Pool:       test.Pool,
-				Driver:     driver,
+	for _, cfg := range configs {
+		t.Run(cfg.name, func(t *testing.T) {
+			for _, value := range values {
+				t.Run(value.name, func(t *testing.T) {
+					testValidCacheCase(t, cfg.config, value.persist(), value.get())
+				})
 			}
+		})
+	}
+}
 
-			cache := cache.NewCache(params)
-			world.RequireStart()
+func testValidCacheCase(t *testing.T, cfg *config.Config, persist, get any) {
+	t.Helper()
 
-			persist, get := value[0], value[1]
-			require.NoError(t, cache.Persist(t.Context(), "test", persist, time.Minute))
+	world := test.NewWorld(t)
+	world.Register()
 
-			require.NoError(t, cache.Get(t.Context(), "test", get))
+	driver, err := driver.NewDriver(test.FS, cfg)
+	require.NoError(t, err)
 
-			switch kind := get.(type) {
-			case *string:
-				require.Equal(t, "hello?", *kind)
-			case *bytes.Buffer:
-				require.Equal(t, strings.Bytes("hello?"), kind.Bytes())
-			case *v1.SayHelloRequest:
-				require.Equal(t, "hello?", kind.GetName())
-			case *test.Request:
-				require.Equal(t, "hello?", kind.Name)
-			default:
-				require.Fail(t, "invalid kind")
-			}
+	params := cache.CacheParams{
+		Lifecycle:  world.Lifecycle,
+		Config:     cfg,
+		Compressor: test.Compressor,
+		Encoder:    test.Encoder,
+		Pool:       test.Pool,
+		Driver:     driver,
+	}
 
-			require.NoError(t, cache.Remove(t.Context(), "test"))
+	cache := cache.NewCache(params)
+	world.RequireStart()
 
-			world.RequireStop()
-		}
+	require.NoError(t, cache.Persist(t.Context(), "test", persist, time.Minute))
+	require.NoError(t, cache.Get(t.Context(), "test", get))
+	assertValidCacheValue(t, get)
+	require.NoError(t, cache.Remove(t.Context(), "test"))
+
+	world.RequireStop()
+}
+
+func assertValidCacheValue(t *testing.T, get any) {
+	t.Helper()
+
+	switch kind := get.(type) {
+	case *string:
+		require.Equal(t, "hello?", *kind)
+	case *bytes.Buffer:
+		require.Equal(t, strings.Bytes("hello?"), kind.Bytes())
+	case *v1.SayHelloRequest:
+		require.Equal(t, "hello?", kind.GetName())
+	case *test.Request:
+		require.Equal(t, "hello?", kind.Name)
+	default:
+		require.Fail(t, "invalid kind")
 	}
 }
 
@@ -151,47 +171,48 @@ func TestExpiredCache(t *testing.T) {
 }
 
 func TestErroneousCache(t *testing.T) {
-	configs := []*config.Config{
-		test.NewCacheConfig("redis", "snappy", "json", "none"),
-		test.NewCacheConfig("redis", "snappy", "json", "hooks"),
-		test.NewCacheConfig("test", "snappy", "json", "hooks"),
+	tests := []struct {
+		config *config.Config
+		name   string
+	}{
+		{name: "missing driver secret", config: test.NewCacheConfig("redis", "snappy", "json", "none")},
+		{name: "invalid driver secret", config: test.NewCacheConfig("redis", "snappy", "json", "hooks")},
+		{name: "unsupported cache kind", config: test.NewCacheConfig("test", "snappy", "json", "hooks")},
 	}
 
-	for _, config := range configs {
-		world := test.NewWorld(t)
-		world.Register()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			world := test.NewWorld(t)
+			world.Register()
 
-		_, err := driver.NewDriver(test.FS, config)
+			_, err := driver.NewDriver(test.FS, tt.config)
 
-		world.RequireStart()
-		require.Error(t, err)
-		world.RequireStop()
+			world.RequireStart()
+			require.Error(t, err)
+			world.RequireStop()
+		})
 	}
 }
 
 func TestDisabledCache(t *testing.T) {
-	configs := []*config.Config{
-		nil,
-	}
-
-	for _, config := range configs {
+	t.Run("driver", func(t *testing.T) {
 		world := test.NewWorld(t)
 		world.Register()
 
-		_, err := driver.NewDriver(test.FS, config)
+		_, err := driver.NewDriver(test.FS, nil)
 
 		world.RequireStart()
 		require.NoError(t, err)
 		world.RequireStop()
-	}
+	})
 
-	for _, config := range configs {
+	t.Run("cache", func(t *testing.T) {
 		world := test.NewWorld(t)
 		world.Register()
 
 		params := cache.CacheParams{
 			Lifecycle:  world.Lifecycle,
-			Config:     config,
+			Config:     nil,
 			Compressor: test.Compressor,
 			Encoder:    test.Encoder,
 			Pool:       test.Pool,
@@ -204,15 +225,13 @@ func TestDisabledCache(t *testing.T) {
 		world.RequireStart()
 		require.Nil(t, kind)
 		world.RequireStop()
-	}
+	})
 }
 
 func TestErroneousSave(t *testing.T) {
-	configs := []*config.Config{
-		test.NewCacheConfig("sync", "snappy", "error", "redis"),
-	}
+	t.Run("invalid encoder", func(t *testing.T) {
+		config := test.NewCacheConfig("sync", "snappy", "error", "redis")
 
-	for _, config := range configs {
 		world := test.NewWorld(t)
 		world.Register()
 
@@ -234,38 +253,44 @@ func TestErroneousSave(t *testing.T) {
 		world.RequireStart()
 		require.Error(t, cache.Persist(t.Context(), "test", ptr.Value("test"), time.Minute))
 		world.RequireStop()
-	}
+	})
 }
 
 func TestErroneousGet(t *testing.T) {
-	values := []*test.KeyValue[*config.Config, driver.Driver]{
-		{Key: test.NewCacheConfig("sync", "snappy", "error", "redis"), Value: &test.Cache{Value: "d2hhdD8="}},
-		{Key: test.NewCacheConfig("sync", "error", "json", "redis"), Value: &test.Cache{Value: "d2hhdD8="}},
-		{Key: test.NewCacheConfig("sync", "snappy", "json", "redis"), Value: &test.Cache{Value: "what?"}},
-		{Key: test.NewCacheConfig("sync", "snappy", "json", "redis"), Value: &test.ErrCache{}},
+	values := []struct {
+		driver driver.Driver
+		config *config.Config
+		name   string
+	}{
+		{name: "decode error", config: test.NewCacheConfig("sync", "snappy", "error", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
+		{name: "decompress error", config: test.NewCacheConfig("sync", "error", "json", "redis"), driver: &test.Cache{Value: "d2hhdD8="}},
+		{name: "unmarshal error", config: test.NewCacheConfig("sync", "snappy", "json", "redis"), driver: &test.Cache{Value: "what?"}},
+		{name: "driver error", config: test.NewCacheConfig("sync", "snappy", "json", "redis"), driver: &test.ErrCache{}},
 	}
 
 	for _, value := range values {
-		world := test.NewWorld(t)
-		world.Register()
+		t.Run(value.name, func(t *testing.T) {
+			world := test.NewWorld(t)
+			world.Register()
 
-		params := cache.CacheParams{
-			Lifecycle:  world.Lifecycle,
-			Config:     value.Key,
-			Compressor: test.Compressor,
-			Encoder:    test.Encoder,
-			Pool:       test.Pool,
-			Driver:     value.Value,
-		}
+			params := cache.CacheParams{
+				Lifecycle:  world.Lifecycle,
+				Config:     value.config,
+				Compressor: test.Compressor,
+				Encoder:    test.Encoder,
+				Pool:       test.Pool,
+				Driver:     value.driver,
+			}
 
-		kind := cache.NewCache(params)
-		cache.Register(kind)
+			kind := cache.NewCache(params)
+			cache.Register(kind)
 
-		world.RequireStart()
+			world.RequireStart()
 
-		require.Error(t, kind.Get(t.Context(), "test", ptr.Zero[string]()))
+			require.Error(t, kind.Get(t.Context(), "test", ptr.Zero[string]()))
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 

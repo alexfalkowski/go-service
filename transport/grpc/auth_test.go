@@ -1,6 +1,7 @@
 package grpc_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
@@ -122,28 +123,30 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 
 func TestValidAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
-		cfg := test.NewToken(kind)
-		ec := test.NewEd25519()
-		signer, _ := ed25519.NewSigner(test.PEM, ec)
-		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		gen := uuid.NewGenerator()
-		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+		t.Run(kind, func(t *testing.T) {
+			cfg := test.NewToken(kind)
+			ec := test.NewEd25519()
+			signer, _ := ed25519.NewSigner(test.PEM, ec)
+			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+			gen := uuid.NewGenerator()
+			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
-		world.Register()
-		world.RequireStart()
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
+			world.Register()
+			world.RequireStart()
 
-		conn := world.NewGRPC()
-		defer conn.Close()
+			conn := world.NewGRPC()
+			defer conn.Close()
 
-		client := v1.NewGreeterServiceClient(conn)
-		req := &v1.SayHelloRequest{Name: "test"}
+			client := v1.NewGreeterServiceClient(conn)
+			req := &v1.SayHelloRequest{Name: "test"}
 
-		resp, err := client.SayHello(t.Context(), req)
-		require.NoError(t, err)
-		require.Equal(t, "Hello test", resp.GetMessage())
+			resp, err := client.SayHello(t.Context(), req)
+			require.NoError(t, err)
+			require.Equal(t, "Hello test", resp.GetMessage())
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 
@@ -167,8 +170,10 @@ func TestBreakerAuthUnary(t *testing.T) {
 	req := &v1.SayHelloRequest{Name: "test"}
 
 	var err error
-	for range 10 {
-		_, err = client.SayHello(t.Context(), req)
+	for i := range 10 {
+		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
+			_, err = client.SayHello(t.Context(), req)
+		})
 	}
 
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))

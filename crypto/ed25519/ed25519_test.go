@@ -53,24 +53,34 @@ func TestValid(t *testing.T) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	configs := []*ed25519.Config{
-		{},
-		{Public: test.FilePath("secrets/ed25519_public"), Private: test.FilePath("secrets/ed25519_private_invalid")},
+	signerTests := []struct {
+		config *ed25519.Config
+		name   string
+	}{
+		{name: "empty signer config", config: &ed25519.Config{}},
+		{name: "invalid signer private key", config: &ed25519.Config{Public: test.FilePath("secrets/ed25519_public"), Private: test.FilePath("secrets/ed25519_private_invalid")}},
 	}
 
-	for _, config := range configs {
-		_, err := ed25519.NewSigner(test.PEM, config)
-		require.Error(t, err)
+	for _, tt := range signerTests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ed25519.NewSigner(test.PEM, tt.config)
+			require.Error(t, err)
+		})
 	}
 
-	configs = []*ed25519.Config{
-		{},
-		{Public: test.FilePath("secrets/ed25519_public_invalid"), Private: test.FilePath("secrets/ed25519_private")},
+	verifierTests := []struct {
+		config *ed25519.Config
+		name   string
+	}{
+		{name: "empty verifier config", config: &ed25519.Config{}},
+		{name: "invalid verifier public key", config: &ed25519.Config{Public: test.FilePath("secrets/ed25519_public_invalid"), Private: test.FilePath("secrets/ed25519_private")}},
 	}
 
-	for _, config := range configs {
-		_, err := ed25519.NewVerifier(test.PEM, config)
-		require.Error(t, err)
+	for _, tt := range verifierTests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ed25519.NewVerifier(test.PEM, tt.config)
+			require.Error(t, err)
+		})
 	}
 }
 

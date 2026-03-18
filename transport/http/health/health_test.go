@@ -15,33 +15,35 @@ func TestHealth(t *testing.T) {
 	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
+		t.Run(check, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+			world.Register()
 
-		server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+			server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
 
-		err := server.Observe(test.Name.String(), check, "http")
-		require.NoError(t, err)
+			err := server.Observe(test.Name.String(), check, "http")
+			require.NoError(t, err)
 
-		test.RegisterHealth(server)
-		world.RequireStart()
+			test.RegisterHealth(server)
+			world.RequireStart()
 
-		ctx := t.Context()
-		ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-		ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			ctx := t.Context()
+			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
+			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
 
-		url := world.NamedServerURL("http", check)
+			url := world.NamedServerURL("http", check)
 
-		res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
-		require.NoError(t, err)
+			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
+			require.NoError(t, err)
 
-		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.Contains(t, body, "SERVING")
+			require.Equal(t, http.StatusOK, res.StatusCode)
+			require.Contains(t, body, "SERVING")
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 
@@ -103,28 +105,30 @@ func TestMissingHealth(t *testing.T) {
 	checks := []string{"healthz", "livez", "readyz"}
 
 	for _, check := range checks {
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-		world.Register()
+		t.Run(check, func(t *testing.T) {
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+			world.Register()
 
-		server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
+			server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
 
-		test.RegisterHealth(server)
-		world.RequireStart()
+			test.RegisterHealth(server)
+			world.RequireStart()
 
-		ctx := t.Context()
-		ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-		ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			ctx := t.Context()
+			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
+			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
 
-		url := world.NamedServerURL("http", check)
+			url := world.NamedServerURL("http", check)
 
-		res, err := world.ResponseWithNoBody(ctx, url, http.MethodGet, header)
-		require.NoError(t, err)
+			res, err := world.ResponseWithNoBody(ctx, url, http.MethodGet, header)
+			require.NoError(t, err)
 
-		require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
+			require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }

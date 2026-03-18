@@ -18,10 +18,12 @@ func TestValidID(t *testing.T) {
 	}
 
 	for _, config := range configs {
-		gen, err := id.NewGenerator(config, test.Generators)
-		require.NoError(t, err)
+		t.Run(config.Kind, func(t *testing.T) {
+			gen, err := id.NewGenerator(config, test.Generators)
+			require.NoError(t, err)
 
-		require.NotEmpty(t, gen.Generate())
+			require.NotEmpty(t, gen.Generate())
+		})
 	}
 }
 

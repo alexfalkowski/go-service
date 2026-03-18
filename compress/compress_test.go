@@ -10,18 +10,22 @@ import (
 
 func TestMap(t *testing.T) {
 	for _, kind := range []string{"zstd", "s2", "snappy", "none"} {
-		cmp := test.Compressor.Get(kind)
+		t.Run(kind, func(t *testing.T) {
+			cmp := test.Compressor.Get(kind)
 
-		data := strings.Bytes("hello")
-		d := cmp.Compress(data)
+			data := strings.Bytes("hello")
+			d := cmp.Compress(data)
 
-		ns, err := cmp.Decompress(d)
-		require.NoError(t, err)
-		require.Equal(t, data, ns)
+			ns, err := cmp.Decompress(d)
+			require.NoError(t, err)
+			require.Equal(t, data, ns)
+		})
 	}
 
 	for _, key := range []string{"test", "bob"} {
-		cmp := test.Compressor.Get(key)
-		require.Nil(t, cmp)
+		t.Run(key, func(t *testing.T) {
+			cmp := test.Compressor.Get(key)
+			require.Nil(t, cmp)
+		})
 	}
 }

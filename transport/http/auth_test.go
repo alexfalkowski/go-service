@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -18,33 +19,35 @@ import (
 
 func TestTokenAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
-		cfg := test.NewToken(kind)
-		ec := test.NewEd25519()
-		signer, _ := ed25519.NewSigner(test.PEM, ec)
-		verifier, _ := ed25519.NewVerifier(test.PEM, ec)
-		gen := uuid.NewGenerator()
-		tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
+		t.Run(kind, func(t *testing.T) {
+			cfg := test.NewToken(kind)
+			ec := test.NewEd25519()
+			signer, _ := ed25519.NewSigner(test.PEM, ec)
+			verifier, _ := ed25519.NewVerifier(test.PEM, ec)
+			gen := uuid.NewGenerator()
+			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-		world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
-		world.Register()
-		world.RequireStart()
+			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
+			world.Register()
+			world.RequireStart()
 
-		rpc.Route("/hello", test.SuccessSayHello)
+			rpc.Route("/hello", test.SuccessSayHello)
 
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
-		header.Set("Request-Id", "test")
-		header.Set("X-Forwarded-For", "127.0.0.1")
-		header.Set("Geolocation", "geo:47,11")
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
+			header.Set("Request-Id", "test")
+			header.Set("X-Forwarded-For", "127.0.0.1")
+			header.Set("Geolocation", "geo:47,11")
 
-		url := world.PathServerURL("http", "hello")
+			url := world.PathServerURL("http", "hello")
 
-		res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, res.StatusCode)
-		require.NotEmpty(t, body)
+			res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+			require.NoError(t, err)
+			require.Equal(t, http.StatusOK, res.StatusCode)
+			require.NotEmpty(t, body)
 
-		world.RequireStop()
+			world.RequireStop()
+		})
 	}
 }
 
@@ -210,12 +213,14 @@ func TestBreakerAuthUnary(t *testing.T) {
 	var err error
 	url := world.PathServerURL("http", "hello")
 
-	for range 10 {
-		header := http.Header{}
-		header.Set(content.TypeKey, mime.JSONMediaType)
-		header.Set("Request-Id", "test")
+	for i := range 10 {
+		t.Run("attempt-"+strconv.Itoa(i+1), func(t *testing.T) {
+			header := http.Header{}
+			header.Set(content.TypeKey, mime.JSONMediaType)
+			header.Set("Request-Id", "test")
 
-		_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+		})
 	}
 	require.Error(t, err)
 

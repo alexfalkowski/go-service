@@ -13,42 +13,60 @@ func TestPanic(t *testing.T) {
 }
 
 func TestRecover(t *testing.T) {
-	type fun func() (err error)
+	functions := []struct {
+		fun  func(t *testing.T) (err error)
+		name string
+	}{
+		{
+			name: "error",
+			fun: func(t *testing.T) (err error) {
+				t.Helper()
 
-	functions := []fun{
-		func() (err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					err = runtime.ConvertRecover(r)
-					require.Equal(t, "recovered: failed", err.Error())
-				}
-			}()
+				defer func() {
+					if r := recover(); r != nil {
+						err = runtime.ConvertRecover(r)
+						require.Equal(t, "recovered: failed", err.Error())
+					}
+				}()
 
-			panic(test.ErrFailed)
+				panic(test.ErrFailed)
+			},
 		},
-		func() (err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					err = runtime.ConvertRecover(r)
-					require.Equal(t, "recovered: test", err.Error())
-				}
-			}()
+		{
+			name: "string",
+			fun: func(t *testing.T) (err error) {
+				t.Helper()
 
-			panic("test")
+				defer func() {
+					if r := recover(); r != nil {
+						err = runtime.ConvertRecover(r)
+						require.Equal(t, "recovered: test", err.Error())
+					}
+				}()
+
+				panic("test")
+			},
 		},
-		func() (err error) {
-			defer func() {
-				if r := recover(); r != nil {
-					err = runtime.ConvertRecover(r)
-					require.Equal(t, "recovered: 1", err.Error())
-				}
-			}()
+		{
+			name: "int",
+			fun: func(t *testing.T) (err error) {
+				t.Helper()
 
-			panic(1)
+				defer func() {
+					if r := recover(); r != nil {
+						err = runtime.ConvertRecover(r)
+						require.Equal(t, "recovered: 1", err.Error())
+					}
+				}()
+
+				panic(1)
+			},
 		},
 	}
 
-	for _, f := range functions {
-		require.Error(t, f())
+	for _, tt := range functions {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Error(t, tt.fun(t))
+		})
 	}
 }
