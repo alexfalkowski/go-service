@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.307.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.307.0) - 2026-03-18
+
+- [`c7ee19b`](https://github.com/alexfalkowski/go-service/commit/c7ee19baf474e28bea1868481dc7d113971a9f56) feat(deps): bump google.golang.org/grpc from 1.79.2 to 1.79.3 (#2230)
+- [`320699c`](https://github.com/alexfalkowski/go-service/commit/320699cbb9761a80ba6857bb18f19188c3f93e55) build(ci): use latest published images (#2229)
+- [`76561b3`](https://github.com/alexfalkowski/go-service/commit/76561b3a357e1ae34b342c09310373698fb87d9f) docs(readme): make diagrams (#2228)
+
 ## [v2.306.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.306.0) - 2026-03-17
 
 - [`a32e4eb`](https://github.com/alexfalkowski/go-service/commit/a32e4eb19830743d91b4e824860ee6f7e38db008) feat(net): promote shared transport helpers into net with compatibility shims (#2227)
