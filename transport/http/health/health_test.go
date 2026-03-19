@@ -24,7 +24,7 @@ func TestHealth(t *testing.T) {
 			err := server.Observe(test.Name.String(), check, "http")
 			require.NoError(t, err)
 
-			test.RegisterHealth(server)
+			test.RegisterHealth(world.Mux, server)
 			world.RequireStart()
 
 			ctx := t.Context()
@@ -32,15 +32,13 @@ func TestHealth(t *testing.T) {
 			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
 			header := http.Header{}
-			header.Set(content.TypeKey, mime.JSONMediaType)
-
 			url := world.NamedServerURL("http", check)
 
 			res, body, err := world.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
 			require.NoError(t, err)
 
 			require.Equal(t, http.StatusOK, res.StatusCode)
-			require.Contains(t, body, "SERVING")
+			require.Equal(t, "SERVING", body)
 
 			world.RequireStop()
 		})
@@ -56,13 +54,12 @@ func TestReadinessNoop(t *testing.T) {
 	err := server.Observe(test.Name.String(), "readyz", "noop")
 	require.NoError(t, err)
 
-	test.RegisterHealth(server)
+	test.RegisterHealth(world.Mux, server)
 	world.RequireStart()
 
 	header := http.Header{}
 	header.Add("Request-Id", "test-id")
 	header.Add("User-Agent", "test-user-agent")
-	header.Set(content.TypeKey, mime.JSONMediaType)
 
 	url := world.NamedServerURL("http", "readyz")
 
@@ -70,8 +67,8 @@ func TestReadinessNoop(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Contains(t, body, "SERVING")
-	require.Equal(t, mime.JSONMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, "SERVING", body)
+	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
 
 	world.RequireStop()
 }
@@ -85,7 +82,7 @@ func TestInvalidHealth(t *testing.T) {
 	err := server.Observe(test.Name.String(), "healthz", "http")
 	require.NoError(t, err)
 
-	test.RegisterHealth(server)
+	test.RegisterHealth(world.Mux, server)
 	world.RequireStart()
 
 	header := http.Header{}
@@ -111,7 +108,7 @@ func TestMissingHealth(t *testing.T) {
 
 			server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
 
-			test.RegisterHealth(server)
+			test.RegisterHealth(world.Mux, server)
 			world.RequireStart()
 
 			ctx := t.Context()

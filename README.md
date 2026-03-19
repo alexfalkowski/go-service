@@ -361,6 +361,9 @@ The framework provides Kubernetes-style endpoints:
 - `/<name>/livez` — liveness probe
 - `/<name>/readyz` — readiness probe
 
+Successful health responses return HTTP 200 with the plain-text body `SERVING`.
+Missing or failing observers return HTTP 503 with the standard go-service error response.
+
 These are modeled after [Kubernetes API health endpoints](https://kubernetes.io/docs/reference/using-api/health-checks/).
 
 ---
