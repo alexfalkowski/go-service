@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 )
 
-// WithWorldToken for test.
+// WithWorldToken overrides the token generator and verifier used by world clients and servers.
 func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.generator = generator
@@ -14,12 +14,12 @@ func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOpt
 	})
 }
 
-// NewGenerator for test.
+// NewGenerator returns a token generator test double that always yields the configured token and error.
 func NewGenerator(token string, err error) *Generator {
 	return &Generator{token: token, err: err}
 }
 
-// Generator for test.
+// Generator is a token.Generator test double with fixed output.
 type Generator struct {
 	err   error
 	token string
@@ -30,12 +30,12 @@ func (g *Generator) Generate(_, _ string) ([]byte, error) {
 	return strings.Bytes(g.token), g.err
 }
 
-// NewVerifier for test.
+// NewVerifier returns a token verifier test double that accepts exactly one token value.
 func NewVerifier(token string) *Verifier {
 	return &Verifier{token: token}
 }
 
-// Verifier for test.
+// Verifier is a token.Verifier test double that validates a single expected token.
 type Verifier struct {
 	token string
 }

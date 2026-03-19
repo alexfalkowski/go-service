@@ -5,14 +5,14 @@ import (
 	"github.com/linxGnu/mssqlx"
 )
 
-// WithWorldPGConfig for test.
+// WithWorldPGConfig overrides the Postgres config used when the world opens databases.
 func WithWorldPGConfig(config *pg.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.pg = config
 	})
 }
 
-// OpenDatabase for world.
+// OpenDatabase opens the world's configured Postgres connection set through the shared test filesystem.
 func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
 	dbs, err := pg.Open(w.Lifecycle, FS, w.PG)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
-// NewDebugServer for test.
+// NewDebugServer returns a debug server with the standard pprof, fgprof, psutil, and statsviz handlers registered.
 func NewDebugServer(config *debug.Config, logger *logger.Logger) *debug.Server {
 	mux := http.NewServeMux()
 	server, err := debug.NewServer(debug.ServerParams{

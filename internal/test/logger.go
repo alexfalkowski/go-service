@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
-// NewLogger for test.
+// NewLogger constructs a test logger bound to the supplied lifecycle and logger config.
 func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
 	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: config, Version: Version})
 	runtime.Must(err)
@@ -15,14 +15,14 @@ func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
 	return logger
 }
 
-// WithWorldLogger for test.
+// WithWorldLogger injects a prebuilt logger into the world instead of constructing one from config.
 func WithWorldLogger(logger *logger.Logger) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.logger = logger
 	})
 }
 
-// WithWorldLoggerConfig for test.
+// WithWorldLoggerConfig selects the named logger config variant used when the world builds its own logger.
 func WithWorldLoggerConfig(config string) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.loggerConfig = config

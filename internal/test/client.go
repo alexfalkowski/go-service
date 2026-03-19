@@ -22,7 +22,7 @@ import (
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 )
 
-// Client for test.
+// Client bundles the dependencies needed to construct instrumented HTTP and gRPC clients for tests.
 type Client struct {
 	Lifecycle    di.Lifecycle
 	Logger       *logger.Logger
@@ -38,7 +38,8 @@ type Client struct {
 	Compression  bool
 }
 
-// NewHTTP client for test.
+// NewHTTP returns an HTTP client configured with the world's logger, retry policy,
+// token generator, limiter, tracing, and optional compression.
 func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
 	RegisterTracer(c.Lifecycle, c.Tracer)
 
@@ -65,7 +66,8 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
 	return client
 }
 
-// NewGRPC client for test.
+// NewGRPC returns a gRPC client connection configured with the world's interceptors,
+// retry policy, token generator, limiter, tracing, and optional compression.
 func (c *Client) NewGRPC(os ...grpcbreaker.Option) *grpc.ClientConn {
 	RegisterTracer(c.Lifecycle, c.Tracer)
 

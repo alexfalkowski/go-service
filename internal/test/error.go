@@ -6,16 +6,16 @@ import (
 )
 
 var (
-	// ErrGenerate for test.
+	// ErrGenerate is returned by token helpers that simulate generation failures.
 	ErrGenerate = errors.New("token: generation issue")
 
-	// ErrInvalid for test.
+	// ErrInvalid is returned by helpers that simulate invalid credentials or payloads.
 	ErrInvalid = errors.New("token: invalid match")
 
-	// ErrFailed for test.
+	// ErrFailed is the generic failure sentinel used by test doubles in this package.
 	ErrFailed = errors.New("failed")
 
-	// ErrInternal for test.
+	// ErrInternal is a test error that also exposes an HTTP status code.
 	ErrInternal = &internalError{}
 
 	_ status.Coder = ErrInternal

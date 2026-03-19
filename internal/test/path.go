@@ -2,7 +2,7 @@ package test
 
 import "runtime"
 
-// Path for test.
+// Path resolves a fixture path relative to the repository's `test/` directory.
 //
 //nolint:dogsled
 func Path(path string) string {
@@ -12,7 +12,7 @@ func Path(path string) string {
 	return FS.Join(dir, "../../test", path)
 }
 
-// FilePath for test.
+// FilePath prefixes Path with `file:` so it can be consumed by source-string config fields.
 func FilePath(path string) string {
 	return "file:" + Path(path)
 }

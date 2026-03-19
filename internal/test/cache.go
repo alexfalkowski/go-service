@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Cache is a cache implementation for tests.
+// Cache is a cache.Cache test double that reports hits and returns a fixed value from Fetch.
 type Cache struct {
 	Value string
 }
@@ -44,7 +44,7 @@ func (c *Cache) Save(_, _ string, _ time.Duration) error {
 	return nil
 }
 
-// ErrCache is a cache implementation for tests that returns ErrFailed for most operations.
+// ErrCache is a cache.Cache test double that fails lookup and mutation operations with ErrFailed.
 type ErrCache struct{}
 
 // Contains reports whether the cache contains the given key.

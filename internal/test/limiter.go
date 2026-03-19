@@ -8,10 +8,10 @@ import (
 	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 )
 
-// LimiterKeyMap for test.
+// LimiterKeyMap is the shared limiter key registry used by client and server limiter helpers.
 var LimiterKeyMap = limiter.NewKeyMap()
 
-// NewHTTPClientLimiter for test.
+// NewHTTPClientLimiter returns an HTTP client limiter and panics on construction errors.
 func NewHTTPClientLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) *hl.Client {
 	c, err := hl.NewClientLimiter(lc, keys, cfg)
 	runtime.Must(err)
@@ -19,7 +19,7 @@ func NewHTTPClientLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Con
 	return c
 }
 
-// NewHTTPServerLimiter for test.
+// NewHTTPServerLimiter returns an HTTP server limiter and panics on construction errors.
 func NewHTTPServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) *hl.Server {
 	s, err := hl.NewServerLimiter(lc, keys, cfg)
 	runtime.Must(err)
@@ -27,7 +27,7 @@ func NewHTTPServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Con
 	return s
 }
 
-// NewGRPCClientLimiter for test.
+// NewGRPCClientLimiter returns a gRPC client limiter and panics on construction errors.
 func NewGRPCClientLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) *gl.Client {
 	c, err := gl.NewClientLimiter(lc, keys, cfg)
 	runtime.Must(err)
@@ -35,7 +35,7 @@ func NewGRPCClientLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Con
 	return c
 }
 
-// NewGRPCServerLimiter for test.
+// NewGRPCServerLimiter returns a gRPC server limiter and panics on construction errors.
 func NewGRPCServerLimiter(lc di.Lifecycle, keys limiter.KeyMap, cfg *limiter.Config) *gl.Server {
 	s, err := gl.NewServerLimiter(lc, keys, cfg)
 	runtime.Must(err)

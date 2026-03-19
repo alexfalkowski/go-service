@@ -7,32 +7,32 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-// NewOTLPMeter for test.
+// NewOTLPMeter returns a meter backed by the shared OTLP metrics config.
 func NewOTLPMeter(lc di.Lifecycle) metrics.Meter {
 	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
-// NewPrometheusMeter for test.
+// NewPrometheusMeter returns a meter backed by the shared Prometheus metrics config.
 func NewPrometheusMeter(lc di.Lifecycle) metrics.Meter {
 	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
-// NewMeter for test.
+// NewMeter returns a repository meter scoped to the shared test name and version.
 func NewMeter(lc di.Lifecycle, c *metrics.Config) metrics.Meter {
 	return metrics.NewMeter(Name, Version, NewMeterProvider(lc, c))
 }
 
-// NewOTLPMeterProvider for test.
+// NewOTLPMeterProvider returns a meter provider backed by the shared OTLP metrics config.
 func NewOTLPMeterProvider(lc di.Lifecycle) metric.MeterProvider {
 	return NewMeterProvider(lc, NewOTLPMetricsConfig())
 }
 
-// NewPrometheusMeterProvider for test.
+// NewPrometheusMeterProvider returns a meter provider backed by the shared Prometheus metrics config.
 func NewPrometheusMeterProvider(lc di.Lifecycle) metric.MeterProvider {
 	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
 }
 
-// NewMeterProvider for test.
+// NewMeterProvider creates a meter provider with a reader registered on the supplied lifecycle.
 func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) metric.MeterProvider {
 	r, err := metrics.NewReader(lc, Name, config)
 	runtime.Must(err)

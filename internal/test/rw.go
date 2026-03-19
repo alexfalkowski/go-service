@@ -5,25 +5,25 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// BadReaderWriter for test.
+// BadReaderWriter is an os.ReaderWriter test double whose read and write operations fail.
 type BadReaderWriter struct{}
 
-// Exists for test.
+// Exists reports true so callers continue into failing read and write paths.
 func (rw *BadReaderWriter) Exists() bool {
 	return true
 }
 
-// Read for test.
+// Read returns ErrFailed.
 func (rw *BadReaderWriter) Read() ([]byte, error) {
 	return nil, ErrFailed
 }
 
-// Write for test.
+// Write returns ErrFailed.
 func (rw *BadReaderWriter) Write(_ []byte, _ os.FileMode) error {
 	return ErrFailed
 }
 
-// Kind for test.
+// Kind returns an empty kind string.
 func (rw *BadReaderWriter) Kind() string {
 	return strings.Empty
 }

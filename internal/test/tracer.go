@@ -5,7 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
-// RegisterTracer for test.
+// RegisterTracer installs the shared test tracer provider on the supplied lifecycle.
 func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 	params := tracer.TracerParams{
 		Lifecycle:   lc,

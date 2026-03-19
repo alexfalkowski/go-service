@@ -15,10 +15,10 @@ func init() {
 }
 
 var (
-	// FS used for tests.
+	// FS is the shared filesystem used by test helpers.
 	FS = os.NewFS()
 
-	// ErrFS for tests.
+	// ErrFS is a filesystem test double whose operations fail with ErrFailed.
 	ErrFS *os.FS
 )
 

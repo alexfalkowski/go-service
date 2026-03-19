@@ -12,7 +12,7 @@ import (
 	"github.com/cloudevents/sdk-go/v2/client"
 )
 
-// NewEvents for test.
+// NewEvents builds a webhook-backed CloudEvents receiver and sender using the shared hook fixture.
 func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client) {
 	h, err := hooks.NewHook(FS, NewHook())
 	runtime.Must(err)
@@ -25,12 +25,12 @@ func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator)
 	return receiver, sender
 }
 
-// RegisterEvents for world.
+// RegisterEvents registers an `/events` receiver that stores the last delivered event on the world.
 func (w *World) RegisterEvents(ctx context.Context) {
 	w.Receiver.Register(ctx, "/events", func(_ context.Context, e cloudevents.Event) { w.Event = &e })
 }
 
-// EventsContext for world.
+// EventsContext returns a CloudEvents context targeting the world's HTTP `/events` endpoint.
 func (w *World) EventsContext(ctx context.Context) context.Context {
 	return cloudevents.ContextWithTarget(ctx, w.PathServerURL("http", "events"))
 }

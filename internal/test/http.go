@@ -2,7 +2,7 @@ package test
 
 import "github.com/alexfalkowski/go-service/v2/net/http"
 
-// ErrResponseWriter for test.
+// ErrResponseWriter is an http.ResponseWriter test double whose writes fail with ErrFailed.
 type ErrResponseWriter struct {
 	Code int
 }

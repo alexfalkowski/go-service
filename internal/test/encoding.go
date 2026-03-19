@@ -14,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 )
 
-// Encoder for tests.
+// Encoder contains the real encoders exercised by config, cache, and transport tests.
 var Encoder = encoding.NewMap(encoding.MapParams{
 	JSON:        json.NewEncoder(),
 	HJSON:       hjson.NewEncoder(),
@@ -27,10 +27,10 @@ var Encoder = encoding.NewMap(encoding.MapParams{
 	Bytes:       bytes.NewEncoder(),
 })
 
-// Content for tests.
+// Content is the shared HTTP content registry backed by Encoder.
 var Content = content.NewContent(Encoder)
 
-// NewEncoder for test.
+// NewEncoder returns an encoder test double whose Encode and Decode methods fail with the supplied error.
 func NewEncoder(err error) encoding.Encoder {
 	return &enc{err: err}
 }

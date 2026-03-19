@@ -21,7 +21,7 @@ import (
 	"github.com/urfave/negroni/v3"
 )
 
-// Server for test.
+// Server bundles the dependencies required to build HTTP, gRPC, and debug servers for tests.
 type Server struct {
 	Lifecycle       di.Lifecycle
 	Meter           metrics.Meter
@@ -42,7 +42,11 @@ type Server struct {
 	RegisterDebug   bool
 }
 
-// Register server.
+// Register constructs and registers the enabled servers with the lifecycle.
+//
+// HTTP, gRPC, and debug servers are created only when their corresponding
+// Register* flag is set. The method also wires the shared tracer registration
+// and attaches common middleware, token handling, and test service handlers.
 func (s *Server) Register() {
 	RegisterTracer(s.Lifecycle, s.Tracer)
 
@@ -95,7 +99,7 @@ func (s *Server) Register() {
 	server.Register(s.Lifecycle, servers)
 }
 
-// EmptyHandler for test.
+// EmptyHandler is a no-op Negroni middleware used in server tests.
 type EmptyHandler struct{}
 
 // ServeHTTP implements negroni.Handler and just calls the next handler.
@@ -103,7 +107,7 @@ func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next htt
 	next(rw, r)
 }
 
-// ErrServer for test.
+// ErrServer is a server.Server test double whose Serve method fails with ErrFailed.
 type ErrServer struct{}
 
 // Serve implements server.Server and returns ErrFailed.
@@ -121,7 +125,7 @@ func (s *ErrServer) String() string {
 	return "test"
 }
 
-// NoopServer for test.
+// NoopServer is a server.Server test double whose lifecycle methods always succeed.
 type NoopServer struct{}
 
 // Serve implements server.Server and always succeeds.

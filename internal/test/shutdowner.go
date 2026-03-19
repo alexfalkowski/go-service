@@ -6,12 +6,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 )
 
-// NewShutdowner creates a Shutdowner for tests.
+// NewShutdowner returns a Shutdowner that records whether shutdown was requested.
 func NewShutdowner() *Shutdowner {
 	return &Shutdowner{ch: make(chan struct{})}
 }
 
-// Shutdowner for tests.
+// Shutdowner is a di.Shutdowner test double that exposes shutdown state to callers.
 type Shutdowner struct {
 	ch     chan struct{}
 	m      sync.RWMutex

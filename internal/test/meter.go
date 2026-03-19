@@ -12,7 +12,7 @@ import (
 
 var errInvalid = errors.New("invalid")
 
-// InvalidMeter for test.
+// InvalidMeter is an OpenTelemetry meter test double whose constructors always fail.
 type InvalidMeter struct{ embedded.Meter }
 
 // Int64Counter implements metric.Meter and always returns an error.
