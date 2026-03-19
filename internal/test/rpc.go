@@ -13,23 +13,23 @@ import (
 	h "github.com/alexfalkowski/go-service/v2/net/http/status"
 )
 
-// Request for test.
+// Request is the simple RPC request payload used by HTTP RPC and REST helper handlers.
 type Request struct {
 	Name string
 }
 
-// Response for test.
+// Response is the simple RPC response payload used by HTTP RPC and REST helper handlers.
 type Response struct {
 	Meta     meta.Map
 	Greeting string
 }
 
-// NoContent for test.
+// NoContent returns an empty response value and no error.
 func NoContent(_ context.Context, _ *Request) (*Response, error) {
 	return &Response{}, nil
 }
 
-// SuccessSayHello for test.
+// SuccessSayHello resolves the greeting name from the query string first, then the request body, and returns request metadata.
 func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	req := meta.Request(ctx)
 	_ = meta.Response(ctx)
@@ -39,32 +39,32 @@ func SuccessSayHello(ctx context.Context, r *Request) (*Response, error) {
 	return &Response{Meta: meta.CamelStrings(ctx, meta.NoPrefix), Greeting: s}, nil
 }
 
-// SuccessProtobufSayHello for test.
+// SuccessProtobufSayHello returns a protobuf greeting response for the supplied request name.
 func SuccessProtobufSayHello(_ context.Context, r *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return &v1.SayHelloResponse{Message: "Hello " + r.GetName()}, nil
 }
 
-// ErrorSayHello for test.
+// ErrorSayHello returns a mapped HTTP status error with an internal server status code.
 func ErrorSayHello(_ context.Context, _ *Request) (*Response, error) {
 	return nil, h.Error(http.StatusInternalServerError, ErrFailed.Error())
 }
 
-// ErrorNotMappedSayHello for test.
+// ErrorNotMappedSayHello returns ErrFailed directly so callers can exercise fallback error mapping.
 func ErrorNotMappedSayHello(_ context.Context, _ *Request) (*Response, error) {
 	return nil, ErrFailed
 }
 
-// ErrorsProtobufSayHello for test.
+// ErrorsProtobufSayHello returns a mapped gRPC internal status error.
 func ErrorsProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, g.Error(codes.Internal, ErrFailed.Error())
 }
 
-// ErrorsNotMappedProtobufSayHello for test.
+// ErrorsNotMappedProtobufSayHello returns ErrFailed directly so callers can exercise fallback gRPC error mapping.
 func ErrorsNotMappedProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, ErrFailed
 }
 
-// ErrorsInternalProtobufSayHello for test.
+// ErrorsInternalProtobufSayHello returns ErrInternal, which already implements the HTTP status coder contract.
 func ErrorsInternalProtobufSayHello(_ context.Context, _ *v1.SayHelloRequest) (*v1.SayHelloResponse, error) {
 	return nil, ErrInternal
 }

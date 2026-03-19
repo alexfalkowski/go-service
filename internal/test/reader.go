@@ -1,6 +1,6 @@
 package test
 
-// ErrReaderCloser for test.
+// ErrReaderCloser is an io.ReadCloser test double whose methods fail with ErrFailed.
 type ErrReaderCloser struct{}
 
 // Read returns ErrFailed.

@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/xid"
 )
 
-// Generators for test.
+// Generators contains the standard ID generators exercised by tests.
 var Generators = id.NewMap(id.MapParams{
 	KSUID:  ksuid.NewGenerator(),
 	NanoID: nanoid.NewGenerator(),

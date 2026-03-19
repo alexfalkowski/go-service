@@ -8,21 +8,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// RandomAddress address for tests.
+// RandomAddress returns a transport address in `<network>://<host:port>` form backed by a free local port.
 func RandomAddress() string {
 	network, address := RandomNetworkHost()
 
 	return strings.Concat(network, "://", address)
 }
 
-// RandomHost for tests.
+// RandomHost returns a free local `host:port` pair.
 func RandomHost() string {
 	_, address := RandomNetworkHost()
 
 	return address
 }
 
-// RandomNetworkHost for tests.
+// RandomNetworkHost returns a network name and free local address discovered by binding to `localhost:0`.
 func RandomNetworkHost() (string, string) {
 	l, err := net.Listen(context.Background(), "tcp", "localhost:0")
 	runtime.Must(err)

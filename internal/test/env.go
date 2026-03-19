@@ -5,21 +5,21 @@ import (
 )
 
 const (
-	// ID for test.
+	// ID is the shared deterministic ID fixture used in tests.
 	ID = env.ID("1234567890")
 
-	// Name for test.
+	// Name is the shared service name used by test helpers and route registration.
 	Name = env.Name("test")
 
-	// UserID for test.
+	// UserID is the shared user identifier derived from Name.
 	UserID = env.UserID(Name)
 
-	// Version for test.
+	// Version is the shared service version used by test helpers.
 	Version = env.Version("1.0.0")
 
-	// Environment for test.
+	// Environment is the shared deployment environment label used by test telemetry.
 	Environment = env.Environment("dev")
 )
 
-// UserAgent for test.
+// UserAgent is the shared user agent string derived from Name and Version.
 var UserAgent = env.UserAgent(Name.String() + "/" + Version.String())

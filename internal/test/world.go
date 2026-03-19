@@ -38,7 +38,7 @@ func init() {
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }
 
-// WorldOption for test.
+// WorldOption configures optional features on a World before it is created.
 type WorldOption interface {
 	apply(opts *worldOpts)
 }
@@ -67,63 +67,66 @@ func (f worldOptionFunc) apply(o *worldOpts) {
 	f(o)
 }
 
-// WithWorldSecure for test.
+// WithWorldSecure enables TLS for the transport and debug servers in the test world.
 func WithWorldSecure() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.secure = true
 	})
 }
 
-// WithWorldTelemetry for test.
+// WithWorldTelemetry selects the telemetry exporter kind used by the world meter.
+//
+// The current helpers recognize "otlp" for OTLP metrics and fall back to the
+// Prometheus test setup for any other value.
 func WithWorldTelemetry(kind string) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.telemetry = kind
 	})
 }
 
-// WithWorldClientLimiter for test.
+// WithWorldClientLimiter installs the provided client-side rate limiter config.
 func WithWorldClientLimiter(config *limiter.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.clientLimiter = config
 	})
 }
 
-// WithWorldServerLimiter for test.
+// WithWorldServerLimiter installs the provided server-side rate limiter config.
 func WithWorldServerLimiter(config *limiter.Config) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.serverLimiter = config
 	})
 }
 
-// WithWorldCompression for test.
+// WithWorldCompression enables transport compression for clients created by the world.
 func WithWorldCompression() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.compression = true
 	})
 }
 
-// WithWorldRoundTripper for test.
+// WithWorldRoundTripper overrides the HTTP round tripper used by world clients and event senders.
 func WithWorldRoundTripper(rt http.RoundTripper) WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.rt = rt
 	})
 }
 
-// WithWorldHTTP for test.
+// WithWorldHTTP enables registration of the HTTP transport server.
 func WithWorldHTTP() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.http = true
 	})
 }
 
-// WithWorldGRPC for test.
+// WithWorldGRPC enables registration of the gRPC transport server.
 func WithWorldGRPC() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.grpc = true
 	})
 }
 
-// WithWorldDebug for test.
+// WithWorldDebug enables registration of the debug server.
 func WithWorldDebug() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.debug = true
@@ -139,7 +142,14 @@ func worldOptions(opts ...WorldOption) *worldOpts {
 	return os
 }
 
-// NewWorld for test.
+// NewWorld builds a shared integration test harness around the repository's transport,
+// telemetry, cache, database, and event helpers.
+//
+// The returned World owns a fresh Fx test lifecycle, HTTP mux, server/client
+// builders, telemetry config, cache handle, database config, and optional REST
+// client. Callers typically enable transports with WithWorldHTTP and/or
+// WithWorldGRPC, then use the returned helpers to register routes and start the
+// lifecycle under test control.
 func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
@@ -188,7 +198,11 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	}
 }
 
-// World for test.
+// World groups the shared components used by integration-style tests.
+//
+// It exposes the lifecycle, mux, logger, transport builders, cache, event
+// sender/receiver, and generated configs so tests can compose realistic service
+// scenarios with minimal boilerplate.
 type World struct {
 	*fxtest.Lifecycle
 	*http.ServeMux
@@ -204,51 +218,54 @@ type World struct {
 	Rest   *rest.Client
 }
 
-// Register all packages.
+// Register installs the package-level registrations required by the test world.
+//
+// It enables RPC routing, database drivers, and telemetry error handling so the
+// world behaves like the normal production wiring used elsewhere in the module.
 func (w *World) Register() {
 	w.registerRPC()
 	w.registerDatabase()
 	w.registerTelemetry()
 }
 
-// HandleHello for world.
+// HandleHello registers a simple HTTP hello endpoint on the world's mux.
 func (w *World) HandleHello() {
 	w.HandleFunc("GET /hello", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(strings.Bytes("hello!"))
 	})
 }
 
-// NamedServerURL for world.
+// NamedServerURL returns a server URL rooted at `/<service-name>/<path>`.
 func (w *World) NamedServerURL(protocol, path string) string {
 	return w.namedURL(w.ServerURL(protocol), path)
 }
 
-// PathServerURL for world.
+// PathServerURL returns a server URL rooted directly at `/<path>`.
 func (w *World) PathServerURL(protocol, path string) string {
 	return w.pathURL(w.ServerURL(protocol), path)
 }
 
-// ServerURL for world.
+// ServerURL returns the base URL for the world's HTTP transport using the requested scheme.
 func (w *World) ServerURL(protocol string) string {
 	return w.url(protocol, w.TransportConfig.HTTP.Address)
 }
 
-// NamedDebugURL for world.
+// NamedDebugURL returns a debug URL rooted at `/<service-name>/<path>`.
 func (w *World) NamedDebugURL(protocol, path string) string {
 	return w.namedURL(w.DebugURL(protocol), path)
 }
 
-// PathDebugURL for world.
+// PathDebugURL returns a debug URL rooted directly at `/<path>`.
 func (w *World) PathDebugURL(protocol, path string) string {
 	return w.pathURL(w.DebugURL(protocol), path)
 }
 
-// DebugURL for world.
+// DebugURL returns the base URL for the world's debug server using the requested scheme.
 func (w *World) DebugURL(protocol string) string {
 	return w.url(protocol, w.DebugConfig.Address)
 }
 
-// ResponseWithBody for the world.
+// ResponseWithBody issues an HTTP request through the world's client and returns the response plus a trimmed body string.
 func (w *World) ResponseWithBody(ctx context.Context, url, method string, header http.Header, body io.Reader) (*http.Response, string, error) {
 	client := w.NewHTTP()
 
@@ -270,7 +287,7 @@ func (w *World) ResponseWithBody(ctx context.Context, url, method string, header
 	return res, bytes.String(bytes.TrimSpace(data)), res.Body.Close()
 }
 
-// ResponseWithNoBody for the world.
+// ResponseWithNoBody issues an HTTP request through the world's client and closes the response body before returning.
 func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, header http.Header) (*http.Response, error) {
 	client := w.NewHTTP()
 

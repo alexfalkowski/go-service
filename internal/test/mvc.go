@@ -9,14 +9,14 @@ import (
 )
 
 type (
-	// Todo for test.
+	// Todo is the view model for a single todo item in the embedded MVC fixtures.
 	//nolint:godox
 	Todo struct {
 		Title string
 		Done  bool
 	}
 
-	// Page for test.
+	// Page is the top-level view model rendered by the embedded MVC fixtures.
 	Page struct {
 		Title string
 		Todos []Todo
@@ -24,15 +24,15 @@ type (
 )
 
 var (
-	// FileSystem for test.
+	// FileSystem embeds the MVC templates and static assets used by tests.
 	//go:embed views/*.tmpl
 	//go:embed static/*.txt
 	FileSystem embed.FS
 
-	// Layout for test.
+	// Layout is the shared MVC layout used when rendering the embedded templates.
 	Layout = mvc.NewLayout("views/full.tmpl", "views/partial.tmpl")
 
-	// Model for test.
+	// Model is the sample page rendered by MVC tests.
 	Model = Page{
 		Title: "My task list",
 		Todos: []Todo{

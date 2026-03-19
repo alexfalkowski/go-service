@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/compress/zstd"
 )
 
-// Compressor for tests.
+// Compressor contains the real compressor implementations exercised by tests.
 var Compressor = compress.NewMap(compress.MapParams{
 	Zstd:   zstd.NewCompressor(),
 	S2:     s2.NewCompressor(),
@@ -16,7 +16,7 @@ var Compressor = compress.NewMap(compress.MapParams{
 	None:   none.NewCompressor(),
 })
 
-// NewCompressor for test.
+// NewCompressor returns a compressor test double whose Decompress method fails with the supplied error.
 func NewCompressor(err error) compress.Compressor {
 	return &compressor{err: err}
 }

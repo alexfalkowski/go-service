@@ -32,7 +32,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Options for test.
+// Options returns the DI options used by tests that exercise the full server module wiring.
+//
+// The option set decorates config, registers health checks and observers, and
+// forces construction of the major infrastructure components so Fx-based tests
+// can verify end-to-end module composition.
 func Options() []di.Option {
 	return []di.Option{
 		module.Server,

@@ -35,10 +35,11 @@ import (
 
 const timeout = 2 * time.Second
 
-// Validator for testing.
+// Validator is the shared config validator used by test helpers.
 var Validator = config.NewValidator()
 
-// ConfigOptions for testing.
+// ConfigOptions contains long-lived server timeout defaults used in tests that
+// decode server configs from option maps.
 var ConfigOptions = options.Map{
 	"read_timeout":        "10m",
 	"write_timeout":       "10m",
@@ -46,14 +47,14 @@ var ConfigOptions = options.Map{
 	"read_header_timeout": "10m",
 }
 
-// NewAccessConfig for test.
+// NewAccessConfig returns an access policy config backed by the RBAC fixture in `test/configs`.
 func NewAccessConfig() *access.Config {
 	return &access.Config{
 		Policy: Path("configs/rbac.csv"),
 	}
 }
 
-// NewDecoder for test.
+// NewDecoder constructs a config decoder wired to the shared test name, encoder map, and filesystem fixtures.
 func NewDecoder(set *flag.FlagSet) config.Decoder {
 	decoder := config.NewDecoder(config.DecoderParams{
 		Name:    Name,
@@ -65,7 +66,7 @@ func NewDecoder(set *flag.FlagSet) config.Decoder {
 	return decoder
 }
 
-// NewToken for test.
+// NewToken returns a token config populated with the standard JWT, Paseto, and SSH test fixtures.
 func NewToken(kind string) *token.Config {
 	return &token.Config{
 		Kind: kind,
@@ -93,7 +94,7 @@ func NewToken(kind string) *token.Config {
 	}
 }
 
-// NewEd25519 for test.
+// NewEd25519 returns Ed25519 key sources that point at the shared test secret fixtures.
 func NewEd25519() *ed25519.Config {
 	return &ed25519.Config{
 		Public:  FilePath("secrets/ed25519_public"),
@@ -101,7 +102,7 @@ func NewEd25519() *ed25519.Config {
 	}
 }
 
-// NewRSA for test.
+// NewRSA returns RSA key sources that point at the shared test secret fixtures.
 func NewRSA() *rsa.Config {
 	return &rsa.Config{
 		Public:  FilePath("secrets/rsa_public"),
@@ -109,28 +110,28 @@ func NewRSA() *rsa.Config {
 	}
 }
 
-// NewAES for test.
+// NewAES returns an AES config backed by the shared symmetric key fixture.
 func NewAES() *aes.Config {
 	return &aes.Config{
 		Key: FilePath("secrets/aes"),
 	}
 }
 
-// NewHMAC for test.
+// NewHMAC returns an HMAC config backed by the shared MAC key fixture.
 func NewHMAC() *hmac.Config {
 	return &hmac.Config{
 		Key: FilePath("secrets/hmac"),
 	}
 }
 
-// NewHook for test.
+// NewHook returns webhook verification config backed by the shared hook secret fixture.
 func NewHook() *hooks.Config {
 	return &hooks.Config{
 		Secret: FilePath("secrets/hooks"),
 	}
 }
 
-// NewRetry for test.
+// NewRetry returns a short retry policy suitable for deterministic tests.
 func NewRetry() *retry.Config {
 	return &retry.Config{
 		Timeout:  timeout.String(),
@@ -139,22 +140,22 @@ func NewRetry() *retry.Config {
 	}
 }
 
-// NewTLSClientConfig for test.
+// NewTLSClientConfig returns the client certificate fixture used by secure transport tests.
 func NewTLSClientConfig() *tls.Config {
 	return NewTLSConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
-// NewInsecureConfig for test.
+// NewInsecureConfig returns an empty TLS config, which the transport treats as insecure mode.
 func NewInsecureConfig() *tls.Config {
 	return &tls.Config{}
 }
 
-// NewTLSServerConfig for test.
+// NewTLSServerConfig returns the server certificate fixture used by secure transport tests.
 func NewTLSServerConfig() *tls.Config {
 	return NewTLSConfig("certs/cert.pem", "certs/key.pem")
 }
 
-// NewTLSConfig for test.
+// NewTLSConfig returns a TLS config that resolves the given certificate and key relative to `test/`.
 func NewTLSConfig(c, k string) *tls.Config {
 	tc := &tls.Config{
 		Cert: FilePath(c),
@@ -164,7 +165,7 @@ func NewTLSConfig(c, k string) *tls.Config {
 	return tc
 }
 
-// NewInsecureTransportConfig for test.
+// NewInsecureTransportConfig returns HTTP and gRPC transport configs that listen on random local addresses without TLS.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
@@ -184,17 +185,17 @@ func NewInsecureTransportConfig() *transport.Config {
 	}
 }
 
-// NewHTTPTransportConfig for test.
+// NewHTTPTransportConfig returns a minimal HTTP transport config for tests that fill fields manually.
 func NewHTTPTransportConfig() *http.Config {
 	return &http.Config{Config: &server.Config{}}
 }
 
-// NewGRPCTransportConfig for test.
+// NewGRPCTransportConfig returns a minimal gRPC transport config for tests that fill fields manually.
 func NewGRPCTransportConfig() *grpc.Config {
 	return &grpc.Config{Config: &server.Config{}}
 }
 
-// NewSecureTransportConfig for test.
+// NewSecureTransportConfig returns HTTP and gRPC transport configs wired with the shared TLS server fixtures.
 func NewSecureTransportConfig() *transport.Config {
 	config := NewTLSServerConfig()
 	retry := NewRetry()
@@ -219,7 +220,7 @@ func NewSecureTransportConfig() *transport.Config {
 	}
 }
 
-// NewOTLPLoggerConfig for test.
+// NewOTLPLoggerConfig returns the OTLP logger config used by telemetry-heavy integration tests.
 func NewOTLPLoggerConfig() *logger.Config {
 	return &logger.Config{
 		Kind:  "otlp",
@@ -231,7 +232,7 @@ func NewOTLPLoggerConfig() *logger.Config {
 	}
 }
 
-// NewTextLoggerConfig for test.
+// NewTextLoggerConfig returns a human-readable debug logger config.
 func NewTextLoggerConfig() *logger.Config {
 	return &logger.Config{
 		Kind:  "text",
@@ -239,7 +240,7 @@ func NewTextLoggerConfig() *logger.Config {
 	}
 }
 
-// NewJSONLoggerConfig for test.
+// NewJSONLoggerConfig returns a structured JSON debug logger config.
 func NewJSONLoggerConfig() *logger.Config {
 	return &logger.Config{
 		Kind:  "json",
@@ -247,7 +248,7 @@ func NewJSONLoggerConfig() *logger.Config {
 	}
 }
 
-// NewTintLoggerConfig for test.
+// NewTintLoggerConfig returns a tint logger config for local debugging-oriented tests.
 func NewTintLoggerConfig() *logger.Config {
 	return &logger.Config{
 		Kind:  "tint",
@@ -255,14 +256,14 @@ func NewTintLoggerConfig() *logger.Config {
 	}
 }
 
-// NewPrometheusMetricsConfig for test.
+// NewPrometheusMetricsConfig returns the Prometheus metrics config used by the default world setup.
 func NewPrometheusMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "prometheus",
 	}
 }
 
-// NewOTLPMetricsConfig for test.
+// NewOTLPMetricsConfig returns the OTLP metrics exporter config backed by the shared telemetry secret fixture.
 func NewOTLPMetricsConfig() *metrics.Config {
 	return &metrics.Config{
 		Kind: "otlp",
@@ -273,7 +274,7 @@ func NewOTLPMetricsConfig() *metrics.Config {
 	}
 }
 
-// NewOTLPTracerConfig for test.
+// NewOTLPTracerConfig returns the OTLP trace exporter config backed by the shared telemetry secret fixture.
 func NewOTLPTracerConfig() *tracer.Config {
 	return &tracer.Config{
 		Kind: "otlp",
@@ -284,7 +285,7 @@ func NewOTLPTracerConfig() *tracer.Config {
 	}
 }
 
-// NewPGConfig for test.
+// NewPGConfig returns the Postgres config used by database-backed integration tests.
 func NewPGConfig() *pg.Config {
 	return &pg.Config{
 		Config: &sql.Config{
@@ -297,7 +298,7 @@ func NewPGConfig() *pg.Config {
 	}
 }
 
-// NewInsecureDebugConfig for test.
+// NewInsecureDebugConfig returns a debug server config bound to a random local address without TLS.
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
@@ -308,7 +309,7 @@ func NewInsecureDebugConfig() *debug.Config {
 	}
 }
 
-// NewSecureDebugConfig for test.
+// NewSecureDebugConfig returns a debug server config bound to a random local address with the shared TLS fixture.
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
@@ -320,7 +321,7 @@ func NewSecureDebugConfig() *debug.Config {
 	}
 }
 
-// NewCacheConfig for test.
+// NewCacheConfig returns a cache driver config that resolves its backend URL from a fixture secret under `test/secrets`.
 func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 	return &cache.Config{
 		Kind:       kind,
@@ -331,7 +332,7 @@ func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 	}
 }
 
-// NewLimiterConfig for test.
+// NewLimiterConfig returns a limiter config with the supplied backend kind, refill interval, and token count.
 func NewLimiterConfig(kind, interval string, tokens uint64) *limiter.Config {
 	return &limiter.Config{
 		Kind:     kind,
