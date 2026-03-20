@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v2.309.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.309.0) - 2026-03-20
+
+- [`55a7abf`](https://github.com/alexfalkowski/go-service/commit/55a7abf0b65ca6c78aca68ec9d9b5c438c2ec28b) feat(deps): bump github.com/klauspost/compress from 1.18.4 to 1.18.5 (#2237)
+- [`e0378e1`](https://github.com/alexfalkowski/go-service/commit/e0378e1448a007191b44792d9035e354ca07954d) build(deps): bump bin from `93f6fb2` to `3475fc4` (#2236)
+- [`f9a6a37`](https://github.com/alexfalkowski/go-service/commit/f9a6a3709d8b7bdcd9781f4a244d49dd1d75f948) test(internal): update godocs (#2235)
+
 ## [v2.308.0](https://github.com/alexfalkowski/go-service/releases/tag/v2.308.0) - 2026-03-19
 
 - [`4990933`](https://github.com/alexfalkowski/go-service/commit/499093345c22df3a6c4dfe293a9e2dd54baef84a) feat(health): switch health responses to plain-text (#2234)
