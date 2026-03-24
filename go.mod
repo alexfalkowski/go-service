@@ -8,7 +8,7 @@ require (
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.41.0
 	github.com/alexfalkowski/go-health/v2 v2.15.0
-	github.com/alexfalkowski/go-sync v1.17.0
+	github.com/alexfalkowski/go-sync v1.18.0
 	github.com/arl/statsviz v0.8.0
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
@@ -107,8 +107,8 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.11.2 // indirect
-	github.com/lufia/plan9stats v0.0.0-20260216142805-b3301c5f2a88 // indirect
+	github.com/lib/pq v1.12.0 // indirect
+	github.com/lufia/plan9stats v0.0.0-20260324052639-156f7da3f749 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -136,7 +136,7 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260311181403-84a4fc48630c // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260311181403-84a4fc48630c // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260319201613-d00831a3d3e7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319201613-d00831a3d3e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
