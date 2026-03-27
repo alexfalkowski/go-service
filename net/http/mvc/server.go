@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
-	"path/filepath"
+	"path"
 
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -98,7 +98,8 @@ func StaticFile(pattern, name string) bool {
 
 // StaticPathValue registers an HTTP GET route that serves a file chosen by a path value.
 //
-// The file name is built as filepath.Join(prefix, req.PathValue(value)).
+// The file name is built under prefix from a validated request path value. Invalid paths and
+// traversal attempts are rejected with HTTP 400.
 //
 // It returns false when MVC is not defined (see IsDefined).
 func StaticPathValue(pattern, value, prefix string) bool {
@@ -108,8 +109,15 @@ func StaticPathValue(pattern, value, prefix string) bool {
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		name := filepath.Join(prefix, req.PathValue(value))
+		cleaned := path.Clean(req.PathValue(value))
+		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
+			err := status.BadRequestError(fs.ErrInvalid)
+			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
+			res.WriteHeader(staticStatusCode(err))
+			return
+		}
 
+		name := path.Join(prefix, cleaned)
 		if err := writeFile(name, res); err != nil {
 			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
 			res.WriteHeader(staticStatusCode(err))
@@ -135,6 +143,5 @@ func staticStatusCode(err error) int {
 	if errors.Is(err, fs.ErrNotExist) {
 		return http.StatusNotFound
 	}
-
 	return status.Code(err)
 }
