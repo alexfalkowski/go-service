@@ -1,6 +1,8 @@
 package meta
 
 import (
+	"maps"
+
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -13,16 +15,18 @@ type Converter func(string) string
 // Storage stores meta values keyed by attribute name.
 //
 // Storage is the internal backing map used by this package to hold context-scoped attributes.
-// It is typically treated as immutable by callers (mutation happens through WithAttribute which
-// returns a derived context containing an updated storage).
+// It is typically treated as immutable by callers. Helpers such as WithAttribute use copy-on-write
+// updates so derived contexts do not mutate parent storage.
 type Storage map[string]Value
 
-// Add stores value under key and returns the Storage.
+// Add stores value under key in a copied Storage and returns the updated copy.
 //
-// Note: Storage is a map, so Add mutates the receiver.
+// The receiver is not mutated. This preserves context isolation when a derived context adds or
+// overrides attributes.
 func (s Storage) Add(key string, value Value) Storage {
-	s[key] = value
-	return s
+	cloned := s.Clone()
+	cloned[key] = value
+	return cloned
 }
 
 // Get returns the value stored under key.
@@ -49,6 +53,16 @@ func (s Storage) Strings(prefix string, converter Converter) Map {
 		}
 	}
 	return attributes
+}
+
+// Clone returns a shallow copy of the storage.
+//
+// Values are copied by assignment, which is sufficient because Value is immutable.
+func (s Storage) Clone() Storage {
+	cloned := make(Storage, len(s))
+	maps.Copy(cloned, s)
+
+	return cloned
 }
 
 func (s Storage) key(prefix, key string) string {

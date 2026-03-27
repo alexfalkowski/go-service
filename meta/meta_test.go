@@ -43,6 +43,16 @@ func TestPrefix(t *testing.T) {
 	require.Equal(t, meta.Map{"test.testId": "1", "test.redacted": "*"}, meta.Strings(ctx, "test."))
 }
 
+func TestWithAttributeKeepsParentContextIsolated(t *testing.T) {
+	parent := meta.WithAttribute(t.Context(), "requestId", meta.String("parent"))
+	child := meta.WithAttribute(parent, "userId", meta.String("child"))
+
+	require.Equal(t, meta.String("parent"), meta.Attribute(parent, "requestId"))
+	require.True(t, meta.Attribute(parent, "userId").IsEmpty())
+	require.Equal(t, meta.String("parent"), meta.Attribute(child, "requestId"))
+	require.Equal(t, meta.String("child"), meta.Attribute(child, "userId"))
+}
+
 func TestUserID(t *testing.T) {
 	ctx := meta.WithUserID(t.Context(), meta.String("user-id"))
 	require.Equal(t, meta.String("user-id"), meta.UserID(ctx))
