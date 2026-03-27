@@ -18,8 +18,8 @@
 //     private key.
 //   - base64(signature) is the standard base64 encoding of the raw signature bytes.
 //
-// The separator is the first "-" in the token string. Anything after the first "-"
-// is treated as the base64-encoded signature.
+// The separator is the last "-" in the token string. Anything before the last "-"
+// is treated as the key name, which allows names themselves to contain "-".
 //
 // # Signing keys and verification keys
 //
@@ -48,7 +48,7 @@
 // # Error handling expectations
 //
 // Verify returns the key name on success (the <name> prefix from the token).
-// On failure, it returns an error. Common failure modes include:
+// On failure, it returns an empty name plus an error. Common failure modes include:
 //
 //   - token does not contain the "-" separator,
 //   - no verification key exists for the extracted name,

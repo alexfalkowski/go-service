@@ -51,7 +51,8 @@ type Token struct {
 //	<name>-<base64(signature)>
 //
 // Where <name> is t.cfg.Key.Name and signature is produced by signing the bytes of
-// <name> using the configured signing key material.
+// <name> using the configured signing key material. Because the signature uses
+// standard base64 encoding, key names may themselves contain "-" characters.
 //
 // High-level algorithm:
 //  1. Load an SSH signer from the configured signing key (t.cfg.Key) using fs.
@@ -66,8 +67,11 @@ func (t *Token) Generate() (string, error) {
 	}
 
 	signature, err := sig.Sign(strings.Bytes(t.cfg.Key.Name))
-	token := strings.Join("-", t.cfg.Key.Name, base64.Encode(signature))
-	return token, err
+	if err != nil {
+		return strings.Empty, err
+	}
+
+	return strings.Join("-", t.cfg.Key.Name, base64.Encode(signature)), nil
 }
 
 // Verify validates token and returns the embedded key name if it is valid.
@@ -81,7 +85,7 @@ func (t *Token) Generate() (string, error) {
 // the signature over the bytes of <name> with that key.
 //
 // High-level algorithm:
-//  1. Split token into (name, encodedSignature) on the first "-".
+//  1. Split token into (name, encodedSignature) on the last "-".
 //  2. Look up a verification key config for name in t.cfg.Keys.
 //  3. Load an SSH verifier from the selected key material using fs.
 //  4. Decode the signature from base64.
@@ -93,12 +97,14 @@ func (t *Token) Generate() (string, error) {
 //     cases into a single class to avoid leaking whether a given key name exists.
 //   - Base64 decode errors and verifier loading errors are returned as-is.
 //
-// On success, Verify returns the extracted name.
+// On success, Verify returns the extracted name. On failure, it always returns an
+// empty name alongside the error.
 func (t *Token) Verify(token string) (string, error) {
-	name, key, ok := strings.Cut(token, "-")
-	if !ok {
+	index := strings.LastIndex(token, "-")
+	if index <= 0 || index == len(token)-1 {
 		return strings.Empty, errors.ErrInvalidMatch
 	}
+	name, key := token[:index], token[index+1:]
 
 	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
@@ -115,5 +121,9 @@ func (t *Token) Verify(token string) (string, error) {
 		return strings.Empty, err
 	}
 
-	return name, verifier.Verify(sig, strings.Bytes(name))
+	if err := verifier.Verify(sig, strings.Bytes(name)); err != nil {
+		return strings.Empty, err
+	}
+
+	return name, nil
 }
