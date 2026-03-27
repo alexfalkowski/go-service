@@ -16,8 +16,8 @@
 //   - "file:/path/to/secret" to read the secret from a file, or
 //   - any other value treated as the literal secret.
 //
-// The resolved secret bytes are passed to the Standard Webhooks library as a string. Keep this value private and avoid
-// logging it.
+// The resolved secret bytes are passed to the Standard Webhooks library as a string. Empty resolved secrets are rejected.
+// Keep this value private and avoid logging it.
 //
 // # Downstream integrations
 //
