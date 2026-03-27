@@ -134,8 +134,8 @@ type Generator token.Generator
 
 // NewRoundTripper constructs client-side token injection middleware for HTTP requests.
 //
-// For each outbound request, the RoundTripper generates a token and adds it to the request's Authorization
-// header using the `Bearer` scheme.
+// For each outbound request, the RoundTripper generates a token and sets the request's Authorization
+// header to a single `Bearer` value.
 //
 // Callers should only install this RoundTripper when generator is non-nil.
 func NewRoundTripper(id env.UserID, generator Generator, hrt http.RoundTripper) *RoundTripper {
@@ -149,10 +149,10 @@ type RoundTripper struct {
 	id        env.UserID
 }
 
-// RoundTrip adds an Authorization header using a generated token.
+// RoundTrip sets the Authorization header using a generated token.
 //
 // For each request, it generates a token scoped to the request path and the configured user id and then
-// adds it as a `Bearer` token in the Authorization header.
+// writes it as a single `Bearer` token in the Authorization header.
 //
 // Failure behavior:
 //   - If token generation fails, it returns an unauthorized status error.
@@ -166,7 +166,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, status.UnauthorizedError(header.ErrInvalidAuthorization)
 	}
 
-	req.Header.Add(
+	req.Header.Set(
 		"Authorization",
 		strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)),
 	)

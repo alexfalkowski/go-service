@@ -7,9 +7,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
+	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/stretchr/testify/require"
 )
 
@@ -131,6 +133,24 @@ func TestRoundTripperPreservesRetryableTransportError(t *testing.T) {
 	require.Equal(t, 2, rt.calls)
 }
 
+func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testing.T) {
+	rt := &authRoundTripper{codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	generator := &tokenGenerator{}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  "1s",
+		Backoff:  "1ms",
+	}, token.NewRoundTripper(env.UserID("user-id"), generator, rt))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, rt.authValues)
+	require.Equal(t, []int{1, 1}, rt.authCounts)
+}
+
 type roundTripper struct {
 	codes []int
 	calls int
@@ -193,6 +213,36 @@ type errorRoundTripper struct {
 func (r *errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
 	r.calls++
 	return nil, r.err
+}
+
+type authRoundTripper struct {
+	authValues []string
+	authCounts []int
+	codes      []int
+	calls      int
+}
+
+func (r *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	r.authValues = append(r.authValues, req.Header.Get("Authorization"))
+	r.authCounts = append(r.authCounts, len(req.Header.Values("Authorization")))
+	code := r.codes[r.calls]
+	r.calls++
+
+	return &http.Response{
+		StatusCode: code,
+		Status:     fmt.Sprintf("%d %s", code, http.StatusText(code)),
+		Body:       http.NoBody,
+		Header:     make(http.Header),
+	}, nil
+}
+
+type tokenGenerator struct {
+	calls int
+}
+
+func (g *tokenGenerator) Generate(_, _ string) ([]byte, error) {
+	g.calls++
+	return fmt.Appendf(nil, "token-%d", g.calls), nil
 }
 
 type nonReplayableReader struct {
