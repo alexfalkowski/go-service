@@ -3,6 +3,7 @@ package ssh_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
@@ -24,6 +25,22 @@ func TestValid(t *testing.T) {
 	require.Nil(t, ssh)
 }
 
+func TestValidNameWithDash(t *testing.T) {
+	cfg := test.NewToken("ssh").SSH
+	cfg.Key.Name = "test-user"
+	cfg.Keys[0].Name = "test-user"
+
+	token := ssh.NewToken(cfg, test.FS)
+
+	tkn, err := token.Generate()
+	require.NoError(t, err)
+	require.NotEmpty(t, tkn)
+
+	sub, err := token.Verify(tkn)
+	require.NoError(t, err)
+	require.Equal(t, "test-user", sub)
+}
+
 func TestInvalid(t *testing.T) {
 	token := ssh.NewToken(&ssh.Config{
 		Key: &ssh.Key{
@@ -37,8 +54,9 @@ func TestInvalid(t *testing.T) {
 	for _, tkn := range []string{strings.Empty, "none-", "test-", "test-bob"} {
 		t.Run(tkn, func(t *testing.T) {
 			token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
-			_, err := token.Verify(tkn)
+			sub, err := token.Verify(tkn)
 			require.Error(t, err)
+			require.Empty(t, sub)
 		})
 	}
 
@@ -50,8 +68,20 @@ func TestInvalid(t *testing.T) {
 			},
 		},
 	}, test.FS)
-	_, err = token.Verify("test-bob")
+	sub, err := token.Verify("test-bob")
 	require.Error(t, err)
+	require.Empty(t, sub)
+
+	valid := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
+	tkn, err := valid.Generate()
+	require.NoError(t, err)
+
+	index := strings.LastIndex(tkn, "-")
+	require.NotEqual(t, -1, index)
+
+	sub, err = valid.Verify(tkn[:index+1] + base64.Encode([]byte("bad")))
+	require.Error(t, err)
+	require.Empty(t, sub)
 
 	token = ssh.NewToken(nil, test.FS)
 	require.Nil(t, token)
