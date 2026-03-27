@@ -6,7 +6,8 @@
 // # Storage model
 //
 // Attributes are stored on the context under a single internal key as a map-like Storage. Helpers such as
-// WithAttribute return a derived context containing the updated storage.
+// WithAttribute update that storage using copy-on-write semantics so derived contexts do not mutate parent
+// or sibling context metadata.
 //
 // # Value rendering semantics
 //

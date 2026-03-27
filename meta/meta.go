@@ -16,7 +16,8 @@ const (
 // WithAttribute returns a copy of ctx with the given attribute stored under key.
 //
 // Attributes are stored on the context under a single internal key as a Storage map. Each call to
-// WithAttribute returns a derived context containing an updated Storage.
+// WithAttribute returns a derived context containing an updated Storage. The storage update is
+// copy-on-write so parent and sibling contexts remain isolated.
 //
 // Rendering and export behavior is controlled by the provided Value. For example:
 //   - Blank and Ignored values render as empty strings and are skipped by export helpers.
