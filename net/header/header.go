@@ -1,8 +1,6 @@
 package header
 
 import (
-	"slices"
-
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -30,7 +28,7 @@ const (
 var (
 	// AllAuthorizations lists the supported Authorization schemes for ParseAuthorization.
 	//
-	// Values are compared against the parsed scheme token exactly as provided.
+	// Values are matched case-insensitively against the parsed scheme token.
 	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
 
 	// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
@@ -51,7 +49,8 @@ var (
 //
 //	<scheme><space><value>
 //
-// Supported schemes are listed in AllAuthorizations (for example Basic and Bearer).
+// Supported schemes are listed in AllAuthorizations (for example Basic and Bearer) and are
+// matched case-insensitively.
 //
 // Error behavior:
 //   - If the header cannot be split into two parts on the first ASCII space, it returns ErrInvalidAuthorization.
@@ -63,13 +62,21 @@ func ParseAuthorization(header string) (string, string, error) {
 	if !ok {
 		return strings.Empty, strings.Empty, ErrInvalidAuthorization
 	}
-	if !containsAuthorization(key) {
+	key, ok = canonicalAuthorization(key)
+	if !ok {
 		return strings.Empty, strings.Empty, ErrNotSupportedAuthorization
 	}
 
 	return key, value, nil
 }
 
-func containsAuthorization(scheme string) bool {
-	return slices.Contains(AllAuthorizations, scheme)
+func canonicalAuthorization(scheme string) (string, bool) {
+	switch strings.ToLower(scheme) {
+	case strings.ToLower(BasicAuthorization):
+		return BasicAuthorization, true
+	case strings.ToLower(BearerAuthorization):
+		return BearerAuthorization, true
+	default:
+		return strings.Empty, false
+	}
 }

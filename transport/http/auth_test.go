@@ -140,6 +140,28 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	world.RequireStop()
 }
 
+func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
+
+	rpc.Route("/hello", test.SuccessSayHello)
+
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.JSONMediaType)
+	header.Set("Request-Id", "test")
+	header.Set("Authorization", "bearer test")
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.NotEmpty(t, body)
+
+	world.RequireStop()
+}
+
 func TestMissingAuthUnary(t *testing.T) {
 	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 	world.Register()

@@ -15,6 +15,24 @@ func TestValidParseAuthorization(t *testing.T) {
 	require.Equal(t, "token", value)
 }
 
+func TestValidParseAuthorizationWithLowercaseScheme(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		value  string
+		scheme string
+	}{
+		{name: "bearer", value: "bearer token", scheme: header.BearerAuthorization},
+		{name: "basic", value: "basic token", scheme: header.BasicAuthorization},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			key, value, err := header.ParseAuthorization(tc.value)
+			require.NoError(t, err)
+			require.Equal(t, tc.scheme, key)
+			require.Equal(t, "token", value)
+		})
+	}
+}
+
 func TestMissingParseAuthorization(t *testing.T) {
 	_, _, err := header.ParseAuthorization(strings.Empty)
 	require.ErrorIs(t, header.ErrInvalidAuthorization, err)
