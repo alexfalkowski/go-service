@@ -121,6 +121,27 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	world.RequireStop()
 }
 
+func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
+
+	ctx := t.Context()
+	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "bearer test")
+
+	conn := world.NewGRPC()
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
+
+	resp, err := client.SayHello(ctx, req)
+	require.NoError(t, err)
+	require.Equal(t, "Hello test", resp.GetMessage())
+
+	world.RequireStop()
+}
+
 func TestValidAuthUnary(t *testing.T) {
 	for _, kind := range []string{"jwt", "paseto", "ssh"} {
 		t.Run(kind, func(t *testing.T) {
