@@ -28,8 +28,8 @@ import (
 // A nil cfg is treated as disabled and returns nil. If Kind selects an implementation whose
 // nested config is missing, Generate/Verify return token/errors.ErrInvalidConfig instead of panicking.
 //
-// Unknown kinds are treated as "disabled" by the facade methods: Generate returns (nil, nil)
-// and Verify returns (strings.Empty, nil).
+// Unknown kinds are treated as invalid configuration by the facade methods: Generate and Verify
+// return token/errors.ErrInvalidConfig.
 func NewToken(name env.Name, cfg *Config, fs *os.FS, sig *ed25519.Signer, ver *ed25519.Verifier, gen id.Generator) *Token {
 	if !cfg.IsEnabled() {
 		return nil
@@ -65,7 +65,7 @@ type Token struct {
 //   - "ssh": audience and subject are ignored; the SSH token kind uses its own
 //     encoding/signature format and typically identifies a key rather than a subject.
 //
-// If the configured kind is unknown, Generate returns (nil, nil).
+// If the configured kind is unknown, Generate returns token/errors.ErrInvalidConfig.
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
 	switch t.cfg.Kind {
 	case "jwt":
@@ -87,7 +87,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 		token, err := t.ssh.Generate()
 		return strings.Bytes(token), err
 	default:
-		return nil, nil
+		return nil, errors.ErrInvalidConfig
 	}
 }
 
@@ -101,7 +101,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //   - "ssh": audience is ignored and the returned string is the selected key name
 //     (not a JWT/PASETO "sub" claim).
 //
-// If the configured kind is unknown, Verify returns (strings.Empty, nil).
+// If the configured kind is unknown, Verify returns token/errors.ErrInvalidConfig.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
 	switch t.cfg.Kind {
 	case "jwt":
@@ -120,6 +120,6 @@ func (t *Token) Verify(token []byte, aud string) (string, error) {
 		}
 		return t.ssh.Verify(bytes.String(token))
 	default:
-		return strings.Empty, nil
+		return strings.Empty, errors.ErrInvalidConfig
 	}
 }
