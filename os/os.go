@@ -101,5 +101,5 @@ func UserConfigDir() string {
 // SanitizeArgs returns a copy of args with any element that has the "-test"
 // prefix removed. Relative ordering of the remaining arguments is preserved.
 func SanitizeArgs(args []string) []string {
-	return slices.DeleteFunc(args, func(s string) bool { return strings.HasPrefix(s, "-test") })
+	return slices.DeleteFunc(slices.Clone(args), func(s string) bool { return strings.HasPrefix(s, "-test") })
 }

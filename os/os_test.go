@@ -15,3 +15,11 @@ func TestEnv(t *testing.T) {
 	require.Equal(t, "test", os.Getenv(key))
 	require.NoError(t, os.Unsetenv(key))
 }
+
+func TestSanitizeArgs(t *testing.T) {
+	args := []string{"service", "-test.v", "server", "-i", "config.yml", "-test.run=TestName"}
+	sanitized := os.SanitizeArgs(args)
+
+	require.Equal(t, []string{"service", "server", "-i", "config.yml"}, sanitized)
+	require.Equal(t, []string{"service", "-test.v", "server", "-i", "config.yml", "-test.run=TestName"}, args)
+}
