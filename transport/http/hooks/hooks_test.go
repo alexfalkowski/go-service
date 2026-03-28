@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,6 +23,21 @@ func TestSign(t *testing.T) {
 	req := &http.Request{Body: &test.ErrReaderCloser{}}
 
 	require.NoError(t, hook.Sign(req))
+}
+
+func TestSignOverwritesHeaders(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1", "id-2"}})
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
+
+	require.NoError(t, hook.Sign(req))
+	require.NoError(t, hook.Sign(req))
+	require.Equal(t, []string{"id-2"}, req.Header.Values(webhooks.HeaderWebhookID))
+	require.Len(t, req.Header.Values(webhooks.HeaderWebhookSignature), 1)
+	require.Len(t, req.Header.Values(webhooks.HeaderWebhookTimestamp), 1)
+	require.NoError(t, hook.Verify(req))
 }
 
 func TestRoundTripper(t *testing.T) {
@@ -54,4 +70,15 @@ type roundTripperFunc func(req *http.Request) (*http.Response, error)
 
 func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)
+}
+
+type generator struct {
+	ids []string
+}
+
+func (g *generator) Generate() string {
+	id := g.ids[0]
+	g.ids = g.ids[1:]
+
+	return id
 }

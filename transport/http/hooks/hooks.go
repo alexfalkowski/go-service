@@ -43,9 +43,9 @@ type Webhook struct {
 
 // Sign signs an outbound webhook request.
 //
-// It reads and buffers the request body, restores `req.Body`, and then adds signature headers.
+// It reads and buffers the request body, restores `req.Body`, and then sets signature headers.
 //
-// Headers added:
+// Headers set:
 //   - `Webhook-Id`
 //   - `Webhook-Signature`
 //   - `Webhook-Timestamp`
@@ -70,9 +70,9 @@ func (h *Webhook) Sign(req *http.Request) error {
 	id := h.generator.Generate()
 	signature, _ := h.hook.Sign(id, now, payload)
 
-	req.Header.Add(hooks.HeaderWebhookID, id)
-	req.Header.Add(hooks.HeaderWebhookSignature, signature)
-	req.Header.Add(hooks.HeaderWebhookTimestamp, strconv.FormatInt(now.Unix(), 10))
+	req.Header.Set(hooks.HeaderWebhookID, id)
+	req.Header.Set(hooks.HeaderWebhookSignature, signature)
+	req.Header.Set(hooks.HeaderWebhookTimestamp, strconv.FormatInt(now.Unix(), 10))
 
 	return nil
 }
