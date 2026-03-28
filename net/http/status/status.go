@@ -71,11 +71,7 @@ func Errorf(code int, format string, a ...any) error {
 // /  - errors produced by this package, and
 //   - any error implementing the Coder interface.
 func IsError(err error) bool {
-	if _, ok := err.(Coder); ok {
-		return true
-	}
-
-	_, ok := errors.AsType[*statusError](err)
+	_, ok := coderFromError(err)
 	return ok
 }
 
@@ -83,16 +79,11 @@ func IsError(err error) bool {
 //
 // Resolution order:
 //  1. If err implements Coder, return coder.Code().
-//  2. If err (or anything in its error chain) is a statusError, return its code.
-//  3. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
-//  4. Otherwise return StatusInternalServerError (500).
+//  2. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
+//  3. Otherwise return StatusInternalServerError (500).
 func Code(err error) int {
-	if coder, ok := err.(Coder); ok {
+	if coder, ok := coderFromError(err); ok {
 		return coder.Code()
-	}
-
-	if e, ok := errors.AsType[*statusError](err); ok {
-		return e.code
 	}
 
 	s, ok := status.FromError(err)
@@ -103,9 +94,22 @@ func Code(err error) int {
 	return http.StatusInternalServerError
 }
 
+func coderFromError(err error) (Coder, bool) {
+	var coder Coder
+	if errors.As(err, &coder) {
+		return coder, true
+	}
+
+	return nil, false
+}
+
 type statusError struct {
 	msg  string
 	code int
+}
+
+func (s *statusError) Code() int {
+	return s.code
 }
 
 // Error returns the status message.
