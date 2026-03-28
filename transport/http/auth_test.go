@@ -51,6 +51,30 @@ func TestTokenAuthUnary(t *testing.T) {
 	}
 }
 
+func TestUnknownTokenKindAuthUnary(t *testing.T) {
+	cfg := test.NewToken("none")
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldHTTP())
+	world.Register()
+	world.RequireStart()
+
+	rpc.Route("/hello", test.SuccessSayHello)
+
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.JSONMediaType)
+	header.Set("Request-Id", "test")
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	require.Contains(t, body, "token: invalid config")
+
+	world.RequireStop()
+}
+
 func TestValidAuthUnary(t *testing.T) {
 	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 	world.Register()

@@ -150,6 +150,27 @@ func TestValidAuthUnary(t *testing.T) {
 	}
 }
 
+func TestUnknownTokenKindAuthUnary(t *testing.T) {
+	cfg := test.NewToken("none")
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
+
+	conn := world.NewGRPC()
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
+
+	_, err := client.SayHello(t.Context(), req)
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+	require.Contains(t, err.Error(), "token: invalid config")
+
+	world.RequireStop()
+}
+
 func TestBreakerAuthUnary(t *testing.T) {
 	world := test.NewWorld(t,
 		test.WithWorldTelemetry("otlp"),

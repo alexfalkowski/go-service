@@ -13,7 +13,7 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-	for _, kind := range []string{"jwt", "paseto", "none"} {
+	for _, kind := range []string{"jwt", "paseto"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			ec := test.NewEd25519()
@@ -47,7 +47,7 @@ func TestVerify(t *testing.T) {
 		})
 	}
 
-	for _, kind := range []string{"ssh", "none"} {
+	for _, kind := range []string{"ssh"} {
 		t.Run(kind, func(t *testing.T) {
 			cfg := test.NewToken(kind)
 			tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
@@ -59,6 +59,19 @@ func TestVerify(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestUnknownKindConfig(t *testing.T) {
+	cfg := test.NewToken("none")
+	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
+
+	gen, err := tkn.Generate("hello", test.UserID.String())
+	require.Nil(t, gen)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
+
+	sub, err := tkn.Verify([]byte("test"), "hello")
+	require.Equal(t, strings.Empty, sub)
+	require.ErrorIs(t, err, errors.ErrInvalidConfig)
 }
 
 func TestNewTokenWithNilConfig(t *testing.T) {

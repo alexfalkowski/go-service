@@ -31,9 +31,8 @@ import (
 // The selected implementation’s nested configuration should typically be provided
 // in the corresponding field (JWT/Paseto/SSH).
 //
-// If Kind is unknown, the token facade intentionally behaves like "disabled":
-// Generate returns (nil, nil) and Verify returns (strings.Empty, nil). Callers
-// should treat a nil/empty successful result as a signal to check configuration.
+// If Kind is unknown, the token facade treats the configuration as invalid and
+// Generate/Verify return token/errors.ErrInvalidConfig.
 //
 // # Access control (Access)
 //
