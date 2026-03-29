@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
@@ -33,16 +34,19 @@ func TestApplicationExitOnRun(t *testing.T) {
 	os.Args = []string{test.Name.String(), "server", "-i", config}
 
 	var exitCode int
-	exit := func(code int) {
+	previous := cli.Exit
+	cli.Exit = func(code int) {
 		exitCode = code
 	}
+	t.Cleanup(func() {
+		cli.Exit = previous
+	})
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
 			cmd := c.AddServer("server", "Start the server.", test.Options()...)
 			cmd.AddInput(strings.Empty)
 		},
-		cli.WithApplicationExit(exit),
 	)
 
 	app.ExitOnError(t.Context())
@@ -73,6 +77,26 @@ func TestApplicationRunWithInvalidFlag(t *testing.T) {
 		},
 	)
 	require.Error(t, app.Run(t.Context()))
+}
+
+func TestApplicationDuplicateCommand(t *testing.T) {
+	var err error
+
+	func() {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				err = runtime.ConvertRecover(recovered)
+			}
+		}()
+
+		cli.NewApplication(func(c cli.Commander) {
+			c.AddServer("server", "Start the server.", test.Options()...)
+			c.AddClient("server", "Start the client.", test.Options()...)
+		})
+	}()
+
+	require.ErrorIs(t, err, cli.ErrCommandRegistered)
+	require.ErrorContains(t, err, "server")
 }
 
 func TestApplicationRunWithInvalidParams(t *testing.T) {

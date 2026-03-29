@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -11,39 +14,13 @@ import (
 	cmd "github.com/cristalhq/acmd"
 )
 
-type (
-	// ApplicationOption configures how an Application is constructed.
-	//
-	// Options are applied in the order provided to NewApplication. If multiple options configure the
-	// same setting, the last one wins.
-	ApplicationOption interface {
-		apply(opts *applicationOpts)
-	}
+// ErrCommandRegistered indicates a subcommand name has already been registered on an Application.
+var ErrCommandRegistered = errors.New("command already registered")
 
-	// ExitFunc is invoked when the application decides to terminate the process.
-	//
-	// It is used by (*Application).ExitOnError. The default is os.Exit.
-	ExitFunc = func(code int)
-
-	applicationOpts struct {
-		exiter ExitFunc
-	}
-)
-
-type applicationOptionFunc func(*applicationOpts)
-
-func (f applicationOptionFunc) apply(o *applicationOpts) {
-	f(o)
-}
-
-// WithApplicationExit sets the exit function used by an Application.
+// Exit is invoked by (*Application).ExitOnError after logging a startup failure.
 //
-// This is primarily useful in tests to avoid terminating the test process.
-func WithApplicationExit(exiter ExitFunc) ApplicationOption {
-	return applicationOptionFunc(func(o *applicationOpts) {
-		o.exiter = exiter
-	})
-}
+// Tests may replace this variable to avoid terminating the test process.
+var Exit = os.Exit
 
 // RegisterFunc registers subcommands on a Commander.
 //
@@ -55,11 +32,10 @@ type RegisterFunc = func(commander Commander)
 //
 // The returned Application is pre-populated with module-level Name and Version derived from the environment
 // (see cli.Name and cli.Version).
-func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
-	options := options(opts...)
-	app := &Application{name: Name, version: Version, exiter: options.exiter}
-
+func NewApplication(register RegisterFunc) *Application {
+	app := &Application{name: Name, version: Version}
 	register(app)
+
 	return app
 }
 
@@ -68,16 +44,16 @@ func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Applicati
 // An Application maintains a set of commands and delegates parsing/execution to the underlying command
 // framework (github.com/cristalhq/acmd).
 type Application struct {
-	exiter  ExitFunc
+	cmds    map[string]cmd.Command
 	name    env.Name
 	version env.Version
-	cmds    []cmd.Command
 }
 
 // AddServer adds a long-running server subcommand with DI lifecycle wiring.
 //
 // The returned *Command embeds a *flag.FlagSet. The flag set is parsed before DI startup and is then
-// provided into the DI container so constructors can consume parsed flag values.
+// provided into the DI container so constructors can consume parsed flag values. Command names must be
+// unique across the application.
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
@@ -110,7 +86,7 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 			return a.prefix(name, app.Stop(ctx))
 		},
 	}
-	a.cmds = append(a.cmds, cmd)
+	runtime.Must(a.register(cmd))
 
 	return server
 }
@@ -118,7 +94,8 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 // AddClient adds a short-lived client subcommand with DI lifecycle wiring.
 //
 // The returned *Command embeds a *flag.FlagSet. The flag set is parsed before DI startup and is then
-// provided into the DI container so constructors can consume parsed flag values.
+// provided into the DI container so constructors can consume parsed flag values. Command names must be
+// unique across the application.
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
@@ -147,7 +124,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 			return a.prefix(name, app.Stop(ctx))
 		},
 	}
-	a.cmds = append(a.cmds, cmd)
+	runtime.Must(a.register(cmd))
 
 	return client
 }
@@ -163,7 +140,7 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 // It returns any execution error from the underlying runner or command ExecFunc.
 func (a *Application) Run(ctx context.Context) error {
 	name := a.name.String()
-	runner := cmd.RunnerOf(a.cmds, cmd.Config{
+	runner := cmd.RunnerOf(slices.Collect(maps.Values(a.cmds)), cmd.Config{
 		AppName:        name,
 		AppDescription: name,
 		Version:        a.version.String(),
@@ -175,26 +152,28 @@ func (a *Application) Run(ctx context.Context) error {
 
 // ExitOnError runs the application and terminates the process with exit status 1 if Run returns an error.
 //
-// The error is logged using the telemetry logger. The exit function is configurable via WithApplicationExit.
+// The error is logged using the telemetry logger before Exit is invoked.
 func (a *Application) ExitOnError(ctx context.Context) {
 	if err := a.Run(ctx); err != nil {
 		logger.LogError(ctx, "could not start", logger.Error(err))
-		a.exiter(1)
+		Exit(1)
 	}
+}
+
+func (a *Application) register(command cmd.Command) error {
+	if a.cmds == nil {
+		a.cmds = make(map[string]cmd.Command)
+	}
+
+	if _, ok := a.cmds[command.Name]; ok {
+		return errors.Prefix(command.Name, ErrCommandRegistered)
+	}
+
+	a.cmds[command.Name] = command
+
+	return nil
 }
 
 func (a *Application) prefix(prefix string, err error) error {
 	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
-}
-
-func options(opts ...ApplicationOption) *applicationOpts {
-	options := &applicationOpts{}
-	for _, o := range opts {
-		o.apply(options)
-	}
-	if options.exiter == nil {
-		options.exiter = os.Exit
-	}
-
-	return options
 }

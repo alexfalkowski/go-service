@@ -14,6 +14,8 @@ type (
 	Commander interface {
 		// AddServer registers a long-running server-style subcommand.
 		//
+		// Command names must be unique across the entire application.
+		//
 		// The subcommand:
 		//   - parses command args into the returned `*Command`'s FlagSet,
 		//   - starts a DI application built from opts plus server-specific wiring,
@@ -22,6 +24,8 @@ type (
 		AddServer(name, description string, opts ...Option) *Command
 
 		// AddClient registers a short-lived client-style subcommand.
+		//
+		// Command names must be unique across the entire application.
 		//
 		// The subcommand:
 		//   - parses command args into the returned `*Command`'s FlagSet,
