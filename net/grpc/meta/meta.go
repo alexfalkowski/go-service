@@ -120,7 +120,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 
 		auth, err := extractAuthorization(md)
 		if err != nil {
-			return err
+			return status.Error(codes.InvalidArgument, err.Error())
 		}
 		ctx = meta.WithAuthorization(ctx, auth)
 
