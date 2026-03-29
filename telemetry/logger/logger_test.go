@@ -33,3 +33,19 @@ func TestInvalidLogger(t *testing.T) {
 	_, err := logger.NewLogger(params)
 	require.Error(t, err)
 }
+
+func TestInvalidLevel(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	cfg := &logger.Config{Kind: "text", Level: "erorr"}
+	params := logger.LoggerParams{
+		Lifecycle:   lc,
+		Config:      cfg,
+		ID:          test.ID,
+		Name:        test.Name,
+		Version:     test.Version,
+		Environment: test.Environment,
+	}
+
+	_, err := logger.NewLogger(params)
+	require.ErrorIs(t, err, logger.ErrInvalidLevel)
+}

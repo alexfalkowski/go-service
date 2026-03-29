@@ -38,6 +38,9 @@ type Level = slog.Level
 // ErrNotFound is returned when Config.Kind is unknown.
 var ErrNotFound = errors.New("logger: not found")
 
+// ErrInvalidLevel is returned when Config.Level is unknown.
+var ErrInvalidLevel = errors.New("logger: invalid level")
+
 // Bool returns an Attr representing a boolean key/value pair.
 //
 // This is a thin wrapper around slog.Bool and does not change semantics.
@@ -102,9 +105,13 @@ type LoggerParams struct {
 //
 // If logging is disabled (params.Config == nil), NewLogger returns (nil, nil).
 // If Config.Kind is unknown, NewLogger returns ErrNotFound.
+// If Config.Level is set to an unsupported value, NewLogger returns ErrInvalidLevel.
 func NewLogger(params LoggerParams) (*Logger, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
+	}
+	if err := validateLevel(params.Config); err != nil {
+		return nil, err
 	}
 
 	logger, err := newLogger(params)
