@@ -64,8 +64,9 @@ func NewCache(params CacheParams) *Cache {
 // It serializes values using an encoder, optionally compresses the serialized bytes, base64-encodes the
 // final bytes, and stores the resulting string via the configured driver.
 //
-// Encoding selection is value-dependent (see encoder):
-//   - io.ReaderFrom / io.WriterTo use "plain"
+// Encoding selection is operation-dependent:
+//   - Persist uses "plain" only for io.WriterTo values
+//   - Get uses "plain" only for io.ReaderFrom destinations
 //   - proto.Message uses "proto"
 //   - otherwise the configured encoder is used, falling back to "json"
 //
@@ -133,7 +134,7 @@ func (c *Cache) encode(value any) (string, error) {
 	buf := c.pool.Get()
 	defer c.pool.Put(buf)
 
-	if err := c.encoder(value).Encode(buf, value); err != nil {
+	if err := c.writeEncoder(value).Encode(buf, value); err != nil {
 		return strings.Empty, err
 	}
 
@@ -155,7 +156,7 @@ func (c *Cache) decode(value string, field any) error {
 		return err
 	}
 
-	return c.encoder(field).Decode(bytes.NewReader(decompressed), field)
+	return c.readEncoder(field).Decode(bytes.NewReader(decompressed), field)
 }
 
 func (c *Cache) compressor() compress.Compressor {
@@ -166,9 +167,24 @@ func (c *Cache) compressor() compress.Compressor {
 	return c.cm.Get("none")
 }
 
-func (c *Cache) encoder(value any) encoding.Encoder {
+func (c *Cache) readEncoder(value any) encoding.Encoder {
 	switch value.(type) {
-	case io.ReaderFrom, io.WriterTo:
+	case io.ReaderFrom:
+		return c.em.Get("plain")
+	case proto.Message:
+		return c.em.Get("proto")
+	default:
+		if enc := c.em.Get(c.cfg.Encoder); enc != nil {
+			return enc
+		}
+
+		return c.em.Get("json")
+	}
+}
+
+func (c *Cache) writeEncoder(value any) encoding.Encoder {
+	switch value.(type) {
+	case io.WriterTo:
 		return c.em.Get("plain")
 	case proto.Message:
 		return c.em.Get("proto")

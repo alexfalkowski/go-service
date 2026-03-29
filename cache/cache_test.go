@@ -1,6 +1,7 @@
 package cache_test
 
 import (
+	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -254,6 +255,36 @@ func TestErroneousSave(t *testing.T) {
 		require.Error(t, cache.Persist(t.Context(), "test", ptr.Value("test"), time.Minute))
 		world.RequireStop()
 	})
+
+	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
+		config := test.NewCacheConfig("sync", "none", "json", "redis")
+
+		world := test.NewWorld(t)
+		world.Register()
+
+		driver, err := driver.NewDriver(test.FS, config)
+		require.NoError(t, err)
+
+		params := cache.CacheParams{
+			Lifecycle:  world.Lifecycle,
+			Config:     config,
+			Compressor: test.Compressor,
+			Encoder:    test.Encoder,
+			Pool:       test.Pool,
+			Driver:     driver,
+		}
+
+		kind := cache.NewCache(params)
+
+		world.RequireStart()
+		require.NoError(t, kind.Persist(t.Context(), "test", &readFromOnly{Name: "hello?"}, time.Minute))
+
+		var get test.Request
+		require.NoError(t, kind.Get(t.Context(), "test", &get))
+		require.Equal(t, "hello?", get.Name)
+
+		world.RequireStop()
+	})
 }
 
 func TestErroneousGet(t *testing.T) {
@@ -294,6 +325,36 @@ func TestErroneousGet(t *testing.T) {
 	}
 }
 
+func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
+	config := test.NewCacheConfig("sync", "none", "json", "redis")
+
+	world := test.NewWorld(t)
+	world.Register()
+
+	driver, err := driver.NewDriver(test.FS, config)
+	require.NoError(t, err)
+
+	params := cache.CacheParams{
+		Lifecycle:  world.Lifecycle,
+		Config:     config,
+		Compressor: test.Compressor,
+		Encoder:    test.Encoder,
+		Pool:       test.Pool,
+		Driver:     driver,
+	}
+
+	kind := cache.NewCache(params)
+
+	world.RequireStart()
+	require.NoError(t, kind.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
+
+	get := &writeToOnly{}
+	require.NoError(t, kind.Get(t.Context(), "test", get))
+	require.Equal(t, "hello?", get.Name)
+
+	world.RequireStop()
+}
+
 func TestMissingCache(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &config.Config{Kind: "sync"}
@@ -315,4 +376,20 @@ func TestMissingCache(t *testing.T) {
 
 	require.NoError(t, kind.Get(t.Context(), "missing", &value))
 	require.Equal(t, "existing", value)
+}
+
+type readFromOnly struct {
+	Name string `json:"name"`
+}
+
+func (*readFromOnly) ReadFrom(io.Reader) (int64, error) {
+	return 0, nil
+}
+
+type writeToOnly struct {
+	Name string `json:"name"`
+}
+
+func (*writeToOnly) WriteTo(io.Writer) (int64, error) {
+	return 0, nil
 }
