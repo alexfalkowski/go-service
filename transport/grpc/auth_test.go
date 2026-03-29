@@ -121,6 +121,31 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	world.RequireStop()
 }
 
+func TestAuthStreamWithAppend(t *testing.T) {
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
+	world.Register()
+	world.RequireStart()
+
+	ctx := t.Context()
+	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+
+	conn := world.NewGRPC()
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	stream, err := client.SayStreamHello(ctx)
+	require.NoError(t, err)
+
+	err = stream.Send(&v1.SayStreamHelloRequest{Name: "test"})
+	require.NoError(t, err)
+
+	_, err = stream.Recv()
+	require.Equal(t, codes.InvalidArgument, status.Code(err))
+
+	world.RequireStop()
+}
+
 func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 	world.Register()
