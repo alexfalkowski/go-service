@@ -44,7 +44,9 @@ type Config struct {
 	// Level is the minimum log level to emit.
 	//
 	// Values are interpreted as slog levels (for example "debug", "info", "warn", "error").
-	// When unset, the selected handler/exporter kind determines the effective default.
+	// When unset, the effective default is info.
+	//
+	// Unknown values are rejected by NewLogger with ErrInvalidLevel.
 	Level string `yaml:"level,omitempty" json:"level,omitempty" toml:"level,omitempty"`
 }
 

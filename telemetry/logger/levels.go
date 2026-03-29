@@ -9,6 +9,21 @@ var levels = map[string]slog.Level{
 	"error": slog.LevelError,
 }
 
+func validateLevel(cfg *Config) error {
+	if cfg.Level == "" {
+		return nil
+	}
+	if _, ok := levels[cfg.Level]; ok {
+		return nil
+	}
+
+	return ErrInvalidLevel
+}
+
 func level(cfg *Config) slog.Level {
-	return levels[cfg.Level]
+	if level, ok := levels[cfg.Level]; ok {
+		return level
+	}
+
+	return slog.LevelInfo
 }
