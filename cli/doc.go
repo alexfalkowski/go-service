@@ -9,7 +9,7 @@
 // Most applications then call either:
 //
 //   - `(*Application).Run` to execute the CLI and return any error, or
-//   - `(*Application).ExitOnError` to log failures and exit with a non-zero status code.
+//   - `(*Application).ExitOnError` to log failures and invoke `cli.Exit` with a non-zero status code.
 //
 // # Subcommands and DI wiring
 //
@@ -22,6 +22,7 @@
 //
 // Each added subcommand returns a `*Command`, which embeds a `*flag.FlagSet`. You can define and parse flags on
 // that `FlagSet`; the command implementation wires the flag set into DI so constructors can read parsed values.
+// Command names must be unique across the application.
 //
 // # Environment-derived metadata
 //
