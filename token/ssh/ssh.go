@@ -1,11 +1,12 @@
 package ssh
 
 import (
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	cryptoerrors "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
 )
 
 // Signer is an alias for crypto/ssh.Signer.
@@ -36,9 +37,8 @@ func NewToken(cfg *Config, fs *os.FS) *Token {
 // This token kind is intentionally simple and does not carry claims (audience, issuer,
 // expiration, etc.). Instead, it binds a logical key name to a signature.
 //
-// Note: Token assumes cfg and fs are non-nil and that cfg contains the appropriate
-// key material for the operation (signing key for Generate, verification keys for
-// Verify). If those dependencies are missing, methods may panic.
+// Missing per-operation key material is treated as invalid configuration and
+// reported via token/errors.ErrInvalidConfig.
 type Token struct {
 	cfg *Config
 	fs  *os.FS
@@ -59,8 +59,13 @@ type Token struct {
 //  2. Compute signature = Sign(<name>).
 //  3. Return "<name>-<base64(signature)>".
 //
-// Errors are returned when key material cannot be loaded or signature generation fails.
+// Errors are returned when the signing key configuration is missing/partial,
+// key material cannot be loaded, or signature generation fails.
 func (t *Token) Generate() (string, error) {
+	if t.cfg.Key == nil || t.cfg.Key.Config == nil {
+		return strings.Empty, tokenerrors.ErrInvalidConfig
+	}
+
 	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
 	if err != nil {
 		return strings.Empty, err
@@ -93,8 +98,10 @@ func (t *Token) Generate() (string, error) {
 //
 // Security-oriented error behavior:
 //   - If the token cannot be split or no key exists for the name, Verify returns
-//     errors.ErrInvalidMatch. This intentionally collapses multiple invalid-token
+//     crypto/errors.ErrInvalidMatch. This intentionally collapses multiple invalid-token
 //     cases into a single class to avoid leaking whether a given key name exists.
+//   - If a matching key name exists but its verification config is missing/partial,
+//     Verify returns token/errors.ErrInvalidConfig.
 //   - Base64 decode errors and verifier loading errors are returned as-is.
 //
 // On success, Verify returns the extracted name. On failure, it always returns an
@@ -102,13 +109,17 @@ func (t *Token) Generate() (string, error) {
 func (t *Token) Verify(token string) (string, error) {
 	index := strings.LastIndex(token, "-")
 	if index <= 0 || index == len(token)-1 {
-		return strings.Empty, errors.ErrInvalidMatch
+		return strings.Empty, cryptoerrors.ErrInvalidMatch
 	}
 	name, key := token[:index], token[index+1:]
 
 	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
-		return strings.Empty, errors.ErrInvalidMatch
+		return strings.Empty, cryptoerrors.ErrInvalidMatch
+	}
+
+	if cfg.Config == nil {
+		return strings.Empty, tokenerrors.ErrInvalidConfig
 	}
 
 	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)

@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/ssh"
 	"github.com/stretchr/testify/require"
 )
@@ -85,4 +86,33 @@ func TestInvalid(t *testing.T) {
 
 	token = ssh.NewToken(nil, test.FS)
 	require.Nil(t, token)
+}
+
+func TestInvalidConfigDoesNotPanic(t *testing.T) {
+	t.Run("generate with verification only config", func(t *testing.T) {
+		token := ssh.NewToken(&ssh.Config{
+			Keys: ssh.Keys{
+				&ssh.Key{
+					Name:   "test",
+					Config: test.NewSSH("secrets/ssh_public", "secrets/ssh_private"),
+				},
+			},
+		}, test.FS)
+
+		tkn, err := token.Generate()
+		require.Empty(t, tkn)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
+	t.Run("verify with matching key missing config", func(t *testing.T) {
+		token := ssh.NewToken(&ssh.Config{
+			Keys: ssh.Keys{
+				&ssh.Key{Name: "test"},
+			},
+		}, test.FS)
+
+		sub, err := token.Verify("test-bob")
+		require.Empty(t, sub)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
 }
