@@ -161,10 +161,11 @@ type Generator token.Generator
 // UnaryClientInterceptor returns a gRPC unary client interceptor that injects an Authorization token.
 //
 // For each outbound unary RPC, it generates a token scoped to `fullMethod` and the provided user id and
-// appends it to outgoing metadata under the "authorization" key using the `Bearer` scheme.
+// stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
 //
 // The interceptor also stores the Authorization value in the context via `meta.WithAuthorization`, which can
-// be useful for downstream instrumentation.
+// be useful for downstream instrumentation. Any existing outgoing "authorization" metadata is replaced so
+// stale values do not take precedence over the newly generated token.
 //
 // Failure behavior:
 //   - If token generation fails, it returns `codes.Unauthenticated`.
@@ -186,7 +187,7 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))
 
 		md := meta.ExtractOutgoing(ctx)
-		md.Append("authorization", auth.Value())
+		md.Set("authorization", auth.Value())
 
 		ctx = meta.WithAuthorization(ctx, auth)
 		ctx = meta.NewOutgoingContext(ctx, md)
@@ -198,9 +199,11 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 // StreamClientInterceptor returns a gRPC stream client interceptor that injects an Authorization token.
 //
 // For each outbound streaming RPC, it generates a token scoped to `fullMethod` and the provided user id and
-// appends it to outgoing metadata under the "authorization" key using the `Bearer` scheme.
+// stores it in outgoing metadata under the "authorization" key using the `Bearer` scheme.
 //
-// The interceptor also stores the Authorization value in the context via `meta.WithAuthorization`.
+// The interceptor also stores the Authorization value in the context via `meta.WithAuthorization`. Any
+// existing outgoing "authorization" metadata is replaced so stale values do not take precedence over the
+// newly generated token.
 //
 // Failure behavior:
 //   - If token generation fails, it returns `codes.Unauthenticated`.
@@ -222,7 +225,7 @@ func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClie
 		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))
 
 		md := meta.ExtractOutgoing(ctx)
-		md.Append("authorization", auth.Value())
+		md.Set("authorization", auth.Value())
 
 		ctx = meta.WithAuthorization(ctx, auth)
 		ctx = meta.NewOutgoingContext(ctx, md)
