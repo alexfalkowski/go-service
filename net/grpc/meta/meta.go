@@ -135,17 +135,20 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata, preferring values already
 // present in the context or outgoing metadata, and stores the chosen values back into the context.
+//
+// Existing outgoing metadata values for these keys are replaced so repeated interceptor invocation does not
+// accumulate duplicates or preserve stale values ahead of the resolved value.
 func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
 		ctx = meta.WithUserAgent(ctx, ua)
-		md.Append("user-agent", ua.Value())
+		md.Set("user-agent", ua.Value())
 
 		id := extractRequestID(ctx, generator, md)
 		ctx = meta.WithRequestID(ctx, id)
-		md.Append("request-id", id.Value())
+		md.Set("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
@@ -156,17 +159,20 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 //
 // It ensures "user-agent" and "request-id" are present in outgoing metadata, preferring values already
 // present in the context or outgoing metadata, and stores the chosen values back into the context.
+//
+// Existing outgoing metadata values for these keys are replaced so repeated interceptor invocation does not
+// accumulate duplicates or preserve stale values ahead of the resolved value.
 func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
 		ctx = meta.WithUserAgent(ctx, ua)
-		md.Append("user-agent", ua.Value())
+		md.Set("user-agent", ua.Value())
 
 		id := extractRequestID(ctx, generator, md)
 		ctx = meta.WithRequestID(ctx, id)
-		md.Append("request-id", id.Value())
+		md.Set("request-id", id.Value())
 
 		ctx = metadata.NewOutgoingContext(ctx, md)
 		return streamer(ctx, desc, conn, fullMethod, opts...)
