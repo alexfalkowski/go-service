@@ -1,6 +1,8 @@
 package header
 
 import (
+	"maps"
+
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -17,7 +19,7 @@ type Map map[string]string
 
 // Secrets resolves configured header values using the go-service “source string” convention.
 //
-// It traverses m and replaces each value in place by reading it through fs.ReadSource.
+// It traverses m and resolves each value by reading it through fs.ReadSource.
 // fs.ReadSource supports these forms:
 //
 //   - "env:NAME"    reads the value of environment variable NAME.
@@ -29,17 +31,20 @@ type Map map[string]string
 //
 // Secrets returns the first error encountered while resolving any value.
 //
-// Note: Secrets mutates the map in place. If you need to preserve the original
-// configured source strings, copy the map before calling Secrets.
+// Note: Secrets mutates the map only after all values have been resolved successfully.
+// If any resolution fails, m is left unchanged.
 func (m Map) Secrets(fs *os.FS) error {
+	resolved := make(Map, len(m))
 	for key, name := range m {
 		data, err := fs.ReadSource(name)
 		if err != nil {
 			return err
 		}
 
-		m[key] = bytes.String(data)
+		resolved[key] = bytes.String(data)
 	}
+
+	maps.Copy(m, resolved)
 
 	return nil
 }
