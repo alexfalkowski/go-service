@@ -85,8 +85,9 @@ type Keys []*Key
 // Get returns the key with the given name, or nil if no matching key exists.
 //
 // If multiple keys share the same Name, Get returns the first match.
+// Nil entries in the slice are ignored.
 func (c Keys) Get(name string) *Key {
-	key, _ := slices.ElemFunc(c, func(k *Key) bool { return k.Name == name })
+	key, _ := slices.ElemFunc(c, func(k *Key) bool { return k != nil && k.Name == name })
 
 	return key
 }
