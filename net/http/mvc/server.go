@@ -62,7 +62,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 
 		view, model, err := controller(ctx)
 		if err != nil {
-			meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
+			ctx = meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
 			res.WriteHeader(status.Code(err))
 
 			view.Render(ctx, err)
