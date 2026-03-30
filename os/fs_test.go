@@ -47,3 +47,13 @@ func TestReadSource(t *testing.T) {
 		})
 	}
 }
+
+func TestPathExistsUsesCleanPath(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	path := test.FS.Join(home, "path-exists.txt")
+	require.NoError(t, test.FS.WriteFile(path, []byte("ok"), 0o600))
+
+	require.True(t, test.FS.PathExists("~/path-exists.txt"))
+}
