@@ -116,3 +116,17 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	})
 }
+
+func TestKeysGetIgnoresNilEntries(t *testing.T) {
+	keys := ssh.Keys{
+		nil,
+		&ssh.Key{Name: "other"},
+		nil,
+		&ssh.Key{Name: "test"},
+	}
+
+	key := keys.Get("test")
+	require.NotNil(t, key)
+	require.Equal(t, "test", key.Name)
+	require.Nil(t, ssh.Keys{nil, nil}.Get("missing"))
+}
