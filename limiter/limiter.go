@@ -60,6 +60,10 @@ var ErrMissingKey = errors.New("limiter: missing key")
 //   - cfg.Interval is parsed using time.MustParseDuration and will panic if invalid.
 //   - The underlying store constructor currently does not return an error (it is ignored).
 func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
 	k, ok := keys[cfg.Kind]
 	if !ok {
 		return nil, ErrMissingKey
