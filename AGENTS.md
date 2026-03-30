@@ -241,7 +241,7 @@ Env configs expect `extension:content` where `content` is base64-encoded (see `c
 
 Several configs accept a “source string” that can be:
 
-- `env:NAME` (read from environment)
+- `env:NAME` (read from environment; unset variables fail resolution, explicitly empty values are allowed)
 - `file:/path/to/secret` (read from filesystem)
 - otherwise treated as the literal value
 

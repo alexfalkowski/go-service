@@ -38,7 +38,10 @@
 // allows configuration to reference values that may come from different sources.
 // Supported forms are:
 //
-//   - "env:NAME"    reads the value of environment variable NAME.
+//   - "env:NAME"    reads the value of environment variable NAME. If NAME is
+//     unset (or omitted entirely as "env:"), FS.ReadSource returns
+//     ErrEnvSourceMissing. If NAME is explicitly set to the empty string, it
+//     resolves to empty bytes.
 //   - "file:/path"  reads bytes from the file at /path (via FS.ReadFile,
 //     including path cleaning and trimming).
 //   - otherwise     treats the string as the literal value.
@@ -63,7 +66,7 @@
 // # Relationship to the standard library
 //
 // Several identifiers are thin wrappers or aliases of the standard library
-// package os (for example Getenv/Setenv/Unsetenv, Exit, Args, Stdout). They exist
+// package os (for example Getenv/LookupEnv/Setenv/Unsetenv, Exit, Args, Stdout). They exist
 // to keep go-service code depending on go-service packages consistently, while
 // still delegating to the underlying OS implementation.
 package os

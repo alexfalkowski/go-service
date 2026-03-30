@@ -152,7 +152,7 @@ Most sub-configs are optional pointers. Conventionally, `nil` means **disabled**
 
 Many fields accept a *source string* rather than only a literal:
 
-- `env:NAME` → read from environment variable `NAME`
+- `env:NAME` → read from environment variable `NAME` (fails if `NAME` is unset; resolves to an empty value if `NAME` is explicitly set to `""`)
 - `file:/path/to/thing` → read from filesystem
 - otherwise → treat as literal string
 
@@ -423,7 +423,7 @@ telemetry:
 Notes:
 
 - `headers` values are source strings.
-- Telemetry header maps are resolved during config projection; unresolved `env:`/`file:` values fail fast (panic during startup).
+- Telemetry header maps are resolved during config projection; unset `env:` values and unreadable `file:` values fail fast (panic during startup).
 
 ### Metrics
 

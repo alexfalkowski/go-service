@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,9 +33,11 @@ func TestPathExtension(t *testing.T) {
 
 func TestReadSource(t *testing.T) {
 	t.Setenv("DUMMY", "yes")
+	t.Setenv("EMPTY", "")
 
 	values := []*test.KeyValue[string, string]{
 		{Key: "env:DUMMY", Value: "yes"},
+		{Key: "env:EMPTY", Value: ""},
 		{Key: test.FilePath("configs/invalid.yml"), Value: "not:\n  our:\n    config: test"},
 		{Key: "none", Value: "none"},
 	}
@@ -46,6 +49,21 @@ func TestReadSource(t *testing.T) {
 			require.Equal(t, value.Value, bytes.String(data))
 		})
 	}
+}
+
+func TestReadSourceMissingEnv(t *testing.T) {
+	const key = "MISSING_SOURCE"
+
+	require.NoError(t, os.Unsetenv(key))
+
+	_, err := test.FS.ReadSource("env:" + key)
+	require.ErrorIs(t, err, os.ErrEnvSourceMissing)
+	require.ErrorContains(t, err, "env:"+key)
+}
+
+func TestReadSourceMissingEnvName(t *testing.T) {
+	_, err := test.FS.ReadSource("env:")
+	require.ErrorIs(t, err, os.ErrEnvSourceMissing)
 }
 
 func TestPathExistsUsesCleanPath(t *testing.T) {
