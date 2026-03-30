@@ -31,6 +31,22 @@ func TestPathExtension(t *testing.T) {
 	require.Empty(t, test.FS.PathExtension("file"))
 }
 
+func TestExpandPath(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	require.Empty(t, test.FS.ExpandPath(""))
+	require.Equal(t, "path/file.txt", test.FS.ExpandPath("path/file.txt"))
+	require.Equal(t, test.FS.Join(home, "path/file.txt"), test.FS.ExpandPath("~/path/file.txt"))
+}
+
+func TestCleanPathExpandsBeforeCleaning(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	require.Equal(t, test.FS.Join(home, "..", "path.txt"), test.FS.CleanPath("~/../path.txt"))
+}
+
 func TestReadSource(t *testing.T) {
 	t.Setenv("DUMMY", "yes")
 	t.Setenv("EMPTY", "")
