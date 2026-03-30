@@ -34,6 +34,24 @@ func TestValidFileConfig(t *testing.T) {
 	}
 }
 
+func TestValidHomeFileConfig(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+
+	data, err := test.FS.ReadFile(test.Path("configs/config.yml"))
+	require.NoError(t, err)
+	require.NoError(t, test.FS.WriteFile(test.FS.Join(home, "config.yml"), data, 0o600))
+
+	set := flag.NewFlagSet("test")
+	set.AddInput("file:~/config.yml")
+
+	decoder := test.NewDecoder(set)
+
+	config, err := config.NewConfig[config.Config](decoder, test.Validator)
+	require.NoError(t, err)
+	verifyConfig(t, config)
+}
+
 func TestInvalidFileConfig(t *testing.T) {
 	files := []string{
 		test.FilePath("configs/invalid.yml"),
