@@ -30,6 +30,15 @@ func TestMissingLimiter(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestDisabledLimiter(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": meta.UserAgent}
+
+	limiter, err := limiter.NewLimiter(lc, m, nil)
+	require.NoError(t, err)
+	require.Nil(t, limiter)
+}
+
 func TestClosedLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
