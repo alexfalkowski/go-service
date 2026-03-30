@@ -67,23 +67,43 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ 
 	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
 }
 
-func healthRegister(name env.Name, server *server.Server, regs health.Registrations) {
+func healthRegister(cfg *http.Config, name env.Name, server *server.Server, regs health.Registrations) {
+	if cfg == nil {
+		return
+	}
+
 	server.Register(name.String(), regs...)
 }
 
-func healthObserver(name env.Name, server *server.Server) error {
+func healthObserver(cfg *http.Config, name env.Name, server *server.Server) error {
+	if cfg == nil {
+		return nil
+	}
+
 	return server.Observe(name.String(), "healthz", "noop")
 }
 
-func livenessObserver(name env.Name, server *server.Server) error {
+func livenessObserver(cfg *http.Config, name env.Name, server *server.Server) error {
+	if cfg == nil {
+		return nil
+	}
+
 	return server.Observe(name.String(), "livez", "noop")
 }
 
-func readinessObserver(name env.Name, server *server.Server) error {
+func readinessObserver(cfg *http.Config, name env.Name, server *server.Server) error {
+	if cfg == nil {
+		return nil
+	}
+
 	return server.Observe(name.String(), "readyz", "http", "online")
 }
 
-func grpcObserver(name env.Name, server *server.Server) error {
+func grpcObserver(cfg *http.Config, name env.Name, server *server.Server) error {
+	if cfg == nil {
+		return nil
+	}
+
 	return server.Observe(name.String(), "grpc", "http")
 }
 
