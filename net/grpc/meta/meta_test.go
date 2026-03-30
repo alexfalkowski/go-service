@@ -10,6 +10,7 @@ import (
 	grpcmeta "github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
@@ -56,6 +57,35 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Nil(t, stream)
+}
+
+func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
+	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{})
+
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
+		require.Equal(t, meta.String("peer"), meta.Attribute(ctx, meta.IPAddrKindKey))
+		require.True(t, meta.IPAddr(ctx).IsEmpty())
+
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "ok", resp)
+}
+
+func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
+	interceptor := grpcmeta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{})
+	ctx = peer.NewContext(ctx, &peer.Peer{})
+
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
+		require.Equal(t, meta.String("peer"), meta.Attribute(ctx, meta.IPAddrKindKey))
+		require.True(t, meta.IPAddr(ctx).IsEmpty())
+
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "ok", resp)
 }
 
 type staticGenerator string
