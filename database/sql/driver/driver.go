@@ -56,8 +56,9 @@ func Register(name string, driver Driver) (err error) {
 // Lifecycle:
 //   - Open appends an OnStop hook to the provided lifecycle that closes all returned pools by calling Destroy.
 //
-// Errors:
-//   - Returns any error encountered while resolving DSNs, connecting, or parsing ConnMaxLifetime.
+// Failure behavior:
+//   - returns errors encountered while resolving DSNs or connecting, and
+//   - panics if ConnMaxLifetime cannot be parsed, because it uses time.MustParseDuration.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 

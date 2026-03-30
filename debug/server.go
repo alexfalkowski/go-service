@@ -46,10 +46,10 @@ type ServerParams struct {
 //   - builds the net/http server config (address and optional TLS), and
 //   - wraps it in a managed service ("debug") that integrates with DI lifecycle/shutdown.
 //
-// Errors:
-//   - returns errors for invalid timeout configuration,
-//   - returns errors while building TLS config (when TLS is enabled), and
-//   - returns errors from underlying service construction.
+// Failure behavior:
+//   - invalid timeout configuration panics via time.MustParseDuration,
+//   - TLS configuration errors (when TLS is enabled) are returned, and
+//   - underlying service construction errors are returned.
 //
 // Errors are prefixed with "debug" for easier attribution.
 func NewServer(params ServerParams) (*Server, error) {
