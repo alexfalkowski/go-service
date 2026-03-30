@@ -40,6 +40,11 @@ func TestToIgnoredWithTypedNil(t *testing.T) {
 	require.Equal(t, meta.Blank(), meta.ToIgnored(stringer))
 }
 
+func TestRedactedWithMultiByteValue(t *testing.T) {
+	require.Equal(t, "*", meta.Redacted("é").String())
+	require.Equal(t, "**", meta.Redacted("éa").String())
+}
+
 type panicError struct {
 	message string
 }

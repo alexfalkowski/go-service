@@ -2,6 +2,7 @@ package meta
 
 import (
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/alexfalkowski/go-service/v2/reflect"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -139,7 +140,7 @@ func (v Value) IsEmpty() bool {
 func (v Value) String() string {
 	switch v.kind {
 	case redacted:
-		return strings.Repeat("*", len(v.value))
+		return strings.Repeat("*", utf8.RuneCountInString(v.value))
 	case ignored:
 		return strings.Empty
 	default:
