@@ -98,8 +98,9 @@ func UserConfigDir() string {
 // example passing it through to another command parser), those flags can be
 // surprising and may break flag parsing.
 //
-// SanitizeArgs returns a copy of args with any element that has the "-test"
-// prefix removed. Relative ordering of the remaining arguments is preserved.
+// SanitizeArgs returns a copy of args with any injected go test runner flag of
+// the form "-test.*" removed. Relative ordering of the remaining arguments is
+// preserved.
 func SanitizeArgs(args []string) []string {
-	return slices.DeleteFunc(slices.Clone(args), func(s string) bool { return strings.HasPrefix(s, "-test") })
+	return slices.DeleteFunc(slices.Clone(args), func(s string) bool { return strings.HasPrefix(s, "-test.") })
 }
