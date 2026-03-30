@@ -130,17 +130,17 @@ func (*FS) PathExtension(path string) string {
 
 // ExpandPath expands a leading "~" to the current user's home directory.
 //
-// If path is empty or does not start with "~", it is returned unchanged.
+// If path is empty or does not start with "~", it is returned unchanged
+// without consulting UserHomeDir.
 //
 // The "~" expansion uses UserHomeDir, which panics if the home directory cannot
 // be determined.
 func (fs *FS) ExpandPath(path string) string {
-	dir := UserHomeDir()
-	if strings.IsAnyEmpty(dir, path) || path[0] != '~' {
+	if strings.IsEmpty(path) || path[0] != '~' {
 		return path
 	}
 
-	return fs.Join(dir, path[1:])
+	return fs.Join(UserHomeDir(), path[1:])
 }
 
 // CleanPath expands "~" (when present) and then cleans the path.
@@ -148,7 +148,7 @@ func (fs *FS) ExpandPath(path string) string {
 // This is the normalization used by ReadFile and WriteFile to ensure consistent,
 // user-friendly path handling across go-service.
 func (fs *FS) CleanPath(path string) string {
-	return fs.ExpandPath(fs.Clean(path))
+	return fs.Clean(fs.ExpandPath(path))
 }
 
 // ExecutableName returns the base name of the running application executable.
