@@ -190,10 +190,12 @@ func extractIPAddr(ctx context.Context, md metadata.MD) (meta.Value, meta.Value)
 	}
 
 	peerKind := meta.String("peer")
-	peer, _ := peer.FromContext(ctx)
-	addr := peer.Addr.String()
+	peer, ok := peer.FromContext(ctx)
+	if !ok || peer == nil || peer.Addr == nil {
+		return peerKind, meta.Blank()
+	}
 
-	return peerKind, meta.String(net.Host(addr))
+	return peerKind, meta.String(net.Host(peer.Addr.String()))
 }
 
 func extractUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
