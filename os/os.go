@@ -28,6 +28,11 @@ func Getenv(key string) string {
 	return os.Getenv(key)
 }
 
+// LookupEnv returns the value of the environment variable named by key and whether it is present.
+func LookupEnv(key string) (string, bool) {
+	return os.LookupEnv(key)
+}
+
 // Setenv sets the value of the environment variable named by key to value.
 func Setenv(key, value string) error {
 	return os.Setenv(key, value)

@@ -13,7 +13,13 @@ func TestEnv(t *testing.T) {
 
 	require.NoError(t, os.Setenv(key, "test"))
 	require.Equal(t, "test", os.Getenv(key))
+	value, ok := os.LookupEnv(key)
+	require.True(t, ok)
+	require.Equal(t, "test", value)
 	require.NoError(t, os.Unsetenv(key))
+	value, ok = os.LookupEnv(key)
+	require.False(t, ok)
+	require.Empty(t, value)
 }
 
 func TestSanitizeArgs(t *testing.T) {

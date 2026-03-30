@@ -11,6 +11,13 @@ import (
 	"github.com/avfs/avfs/vfs/osfs"
 )
 
+// ErrEnvSourceMissing is returned when ReadSource cannot resolve an env source.
+//
+// This happens when the source string is "env:" with no variable name, or when
+// the referenced environment variable is unset. An explicitly empty environment
+// variable is allowed and resolves to empty bytes.
+var ErrEnvSourceMissing = errors.New("os: env source missing")
+
 // ModeAppend is an alias of fs.ModeAppend.
 //
 // It is provided so callers can depend on go-service types while using standard
@@ -169,6 +176,8 @@ func (fs *FS) ExecutableDir() string {
 // The supported forms are:
 //
 //   - "env:NAME" reads the value of environment variable NAME and returns it as bytes.
+//     If NAME is omitted or unset, ReadSource returns ErrEnvSourceMissing. If NAME
+//     is explicitly set to the empty string, ReadSource returns empty bytes.
 //   - "file:/path" reads the file at /path via ReadFile (including path cleaning and trimming).
 //   - otherwise treats source as the literal value and returns it as bytes.
 //
@@ -178,7 +187,16 @@ func (fs *FS) ReadSource(source string) ([]byte, error) {
 	kind, path := strings.CutColon(source)
 	switch kind {
 	case "env":
-		return strings.Bytes(Getenv(path)), nil
+		if strings.IsEmpty(path) {
+			return nil, ErrEnvSourceMissing
+		}
+
+		value, ok := LookupEnv(path)
+		if !ok {
+			return nil, errors.Prefix("env:"+path, ErrEnvSourceMissing)
+		}
+
+		return strings.Bytes(value), nil
 	case "file":
 		return fs.ReadFile(path)
 	default:
