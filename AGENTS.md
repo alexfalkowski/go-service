@@ -227,7 +227,7 @@ For server lifecycle wiring, the generic hook lives in `net/server.Register(...)
 - `env:<ENV_VAR>` → env decoder
 - otherwise → default lookup decoder
 
-The default lookup searches for `<serviceName>.{yaml,yml,toml,json}` in:
+The default lookup searches for `<serviceName>.{yaml,yml,hjson,toml,json}` in:
 
 - executable directory
 - `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)

@@ -72,7 +72,7 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 The config decoder supports:
 
-- JSON (`pkg.go.dev/encoding/json/v2`)
+- JSON (`encoding/json`)
 - HJSON (`github.com/hjson/hjson-go`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
