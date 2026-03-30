@@ -80,14 +80,17 @@ func (fs *FS) WriteFile(name string, data []byte, perm FileMode) error {
 	return fs.VFS.WriteFile(fs.CleanPath(name), bytes.TrimSpace(data), perm)
 }
 
-// PathExists reports whether name exists in the filesystem.
+// PathExists reports whether name exists in the filesystem after normalizing the path.
 //
-// It returns false only when the underlying Stat returns an "not exist" error.
+// The path is normalized using CleanPath, which expands a leading "~" (when
+// present) and then cleans the path.
+//
+// It returns false only when the underlying Stat returns a "not exist" error.
 // Other errors (for example permission errors) are treated as "exists" by this
 // function, because it cannot safely distinguish "missing" from "inaccessible"
 // without inspecting the error further.
 func (fs *FS) PathExists(name string) bool {
-	if _, err := fs.Stat(name); fs.IsNotExist(err) {
+	if _, err := fs.Stat(fs.CleanPath(name)); fs.IsNotExist(err) {
 		return false
 	}
 
