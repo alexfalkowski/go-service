@@ -3,6 +3,7 @@ package meta
 import (
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/reflect"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -54,31 +55,47 @@ func String(value string) Value {
 
 // Error converts err to a normal Value using err.Error().
 //
-// Callers should ensure err is non-nil before calling Error; passing nil will panic.
+// If err is nil, Error returns Blank.
 func Error(err error) Value {
+	if reflect.IsNil(err) {
+		return Blank()
+	}
+
 	return String(err.Error())
 }
 
 // ToString converts st to a normal Value using st.String().
 //
-// Callers should ensure st is non-nil before calling ToString; passing nil will panic.
+// If st is nil, ToString returns Blank.
 func ToString(st fmt.Stringer) Value {
+	if reflect.IsNil(st) {
+		return Blank()
+	}
+
 	return String(st.String())
 }
 
 // ToRedacted converts st to a redacted Value using st.String().
 //
-// Callers should ensure st is non-nil before calling ToRedacted; passing nil will panic.
+// If st is nil, ToRedacted returns Blank.
 // The underlying (unredacted) string is still stored in-context and can be retrieved via Value.Value().
 func ToRedacted(st fmt.Stringer) Value {
+	if reflect.IsNil(st) {
+		return Blank()
+	}
+
 	return Redacted(st.String())
 }
 
 // ToIgnored converts st to an ignored Value using st.String().
 //
-// Callers should ensure st is non-nil before calling ToIgnored; passing nil will panic.
+// If st is nil, ToIgnored returns Blank.
 // The underlying string is still stored in-context and can be retrieved via Value.Value().
 func ToIgnored(st fmt.Stringer) Value {
+	if reflect.IsNil(st) {
+		return Blank()
+	}
+
 	return Ignored(st.String())
 }
 
