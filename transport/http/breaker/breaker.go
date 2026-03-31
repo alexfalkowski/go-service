@@ -58,7 +58,7 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 type RoundTripper struct {
 	http.RoundTripper
 	opts     *opts
-	breakers sync.Map[string, *breaker.CircuitBreaker]
+	breakers *sync.Map[string, *breaker.CircuitBreaker]
 }
 
 // RoundTrip executes the request guarded by a circuit breaker.
