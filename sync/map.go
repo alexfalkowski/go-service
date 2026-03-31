@@ -10,7 +10,7 @@ import "github.com/alexfalkowski/go-sync"
 // // Use Map when you need a concurrency-safe key/value store without manually
 // // managing locks. The exact method set and concurrency guarantees are defined
 // // by the upstream go-sync package.
-func NewMap[K comparable, V any]() Map[K, V] {
+func NewMap[K comparable, V any]() *Map[K, V] {
 	return sync.NewMap[K, V]()
 }
 

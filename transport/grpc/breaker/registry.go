@@ -8,7 +8,7 @@ import (
 
 type registry struct {
 	opts     *opts
-	breakers sync.Map[string, *breaker.CircuitBreaker]
+	breakers *sync.Map[string, *breaker.CircuitBreaker]
 }
 
 func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
