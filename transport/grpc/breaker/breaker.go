@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
-	"github.com/alexfalkowski/go-service/v2/sync"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // Settings is an alias for `github.com/alexfalkowski/go-service/v2/breaker.Settings`.
