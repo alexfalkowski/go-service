@@ -9,8 +9,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/sync"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-sync"
 )
 
 // ClientOption configures the HTTP client wrapper constructed by NewClient.

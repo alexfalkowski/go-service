@@ -30,7 +30,7 @@ var (
 	//   - encoding.Module (encoding registry and default encoders)
 	//   - crypto.Module (crypto primitives and helpers)
 	//   - time.Module (time providers/utilities)
-	//   - sync.Module (sync/pool helpers)
+	//   - sync.Module (shared buffer pool wiring)
 	//   - id.Module (ID generator implementations and selection)
 	//
 	// Library does not wire transports, servers, or request handling; it is intended to be a common

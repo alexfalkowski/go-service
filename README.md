@@ -23,7 +23,7 @@ If you are new to Fx, their docs/examples are worth reading first.
 
 The module package exposes three top-level bundles:
 
-- `module.Library` for shared primitives (env, encoding, crypto, time, sync, id)
+- `module.Library` for shared foundations (env, compress, encoding, crypto, time, sync buffer-pool wiring, id)
 - `module.Server` for server processes (Library + config, transports, telemetry, debug, health, etc.)
 - `module.Client` for short-lived/batch/client processes (Library + config, telemetry, sql, hooks, etc.)
 

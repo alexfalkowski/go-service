@@ -1,55 +1,23 @@
-// Package sync provides synchronization primitives and pooling helpers used by go-service.
+// Package sync wires the shared buffer pool used by go-service.
 //
-// This package intentionally offers a small, stable API surface that wraps:
-//
-//   - The standard library sync primitives (for example Mutex and RWMutex).
-//   - A small set of additional concurrency-safe utilities from the external
-//     module github.com/alexfalkowski/go-sync (for example a generic Map and a
-//     byte buffer pool).
-//
-// The goal is to let go-service code depend on go-service packages consistently,
-// while still using well-known synchronization patterns and implementations.
-//
-// # Standard library wrappers
-//
-// This package re-exports common mutex types as aliases:
-//
-//   - Mutex (alias of sync.Mutex)
-//   - RWMutex (alias of sync.RWMutex)
-//
-// Because these are type aliases, they have the same semantics and methods as
-// the standard library types.
-//
-// # Generic concurrent map
-//
-// Map and NewMap are aliases/wrappers around github.com/alexfalkowski/go-sync's
-// generic concurrent map implementation:
-//
-//   - Map[K, V] is a concurrent map keyed by K with values V.
-//   - NewMap[K, V] constructs a new instance.
-//
-// Consult the upstream go-sync documentation for details of the map’s method set
-// and concurrency guarantees.
-//
-// # Buffer pool
-//
-// BufferPool and NewBufferPool are aliases/wrappers around github.com/alexfalkowski/go-sync's
-// buffer pool implementation:
-//
-//   - BufferPool provides pooled buffers to reduce allocations in hot paths.
-//   - NewBufferPool constructs a new pool.
-//
-// Buffer pools are typically used by transports/encoders to reuse temporary
-// buffers when assembling payloads.
+// This package now has a narrow scope: it does not re-export mutexes, maps, or
+// buffer pool types. Code that needs synchronization primitives or
+// concurrency-safe containers should import the standard library sync package or
+// github.com/alexfalkowski/go-sync directly.
 //
 // # Dependency injection (Fx)
 //
-// This package also exports Module, which wires the buffer pool into Fx.
-// Including Module in an Fx application provides a shared *BufferPool instance
-// constructed via the upstream go-sync constructor.
+// Module registers github.com/alexfalkowski/go-sync.NewBufferPool with the Fx
+// graph so packages can share a single upstream buffer pool instance.
 //
-// # Notes
+// This shared pool is consumed by allocation-sensitive helpers such as cache
+// encoding and HTTP request/response helpers.
 //
-// This package does not attempt to replace the standard library sync package.
-// If you need primitives not exposed here, prefer importing sync directly.
+// # When to import this package
+//
+// Import this package when composing go-service Fx modules and you want the
+// standard buffer pool wiring.
+//
+// If you need the concrete pool type or other synchronization helpers, import
+// github.com/alexfalkowski/go-sync directly.
 package sync
