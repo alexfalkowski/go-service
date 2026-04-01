@@ -74,7 +74,7 @@ jobs:
     resource_class: arm.large
   sync:
     docker:
-      - image: alexfalkowski/release:7.2
+      - image: alexfalkowski/release:7.3
     working_directory: ~/go-service
     steps:
       - checkout:
@@ -85,7 +85,7 @@ jobs:
     resource_class: arm.large
   version:
     docker:
-      - image: alexfalkowski/release:7.2
+      - image: alexfalkowski/release:7.3
     working_directory: ~/go-service
     steps:
       - checkout:
