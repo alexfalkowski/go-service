@@ -4,7 +4,7 @@
 // This package is intentionally thin. It primarily re-exports selected identifiers
 // from the OpenTelemetry semantic conventions package:
 //
-//	go.opentelemetry.io/otel/semconv/v1.39.0
+//	go.opentelemetry.io/otel/semconv/v1.40.0
 //
 // The goal is to centralize common resource/telemetry attributes that are used
 // across go-service telemetry wiring (logging, metrics, tracing) without requiring
