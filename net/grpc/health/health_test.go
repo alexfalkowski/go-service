@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
@@ -32,7 +33,7 @@ func TestCheck(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	ctx := t.Context()
 	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
@@ -65,7 +66,8 @@ func TestInvalidCheck(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
+	requireObservedHealth(t, so, test.Name.String(), false)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -97,7 +99,7 @@ func TestNotFoundCheck(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -128,7 +130,7 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -157,7 +159,7 @@ func TestList(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	ctx := t.Context()
 	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
@@ -193,7 +195,7 @@ func TestWatch(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -229,7 +231,8 @@ func TestInvalidWatch(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
+	requireObservedHealth(t, so, test.Name.String(), false)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -265,7 +268,7 @@ func TestNotFoundWatch(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -300,7 +303,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
 
 	world.RequireStart()
-	time.Sleep(1 * time.Second)
+	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -403,6 +406,29 @@ func requireWatchStaysOpen(t *testing.T, cancel context.CancelFunc, wc v1.Health
 	case <-time.After(time.Second):
 		require.FailNow(t, "watch stream did not stop after cancellation")
 	}
+}
+
+func requireGRPCReady(t *testing.T, world *test.World) {
+	t.Helper()
+
+	conn, err := test.Connect(t.Context(), world.TransportConfig.GRPC.Address)
+	require.NoError(t, err)
+	require.NoError(t, conn.Close())
+}
+
+func requireObservedHealth(t *testing.T, server *server.Server, service string, healthy bool) {
+	t.Helper()
+
+	observer, err := server.Observer(service, "grpc")
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		if healthy {
+			return observer.Error() == nil
+		}
+
+		return observer.Error() != nil
+	}, time.Second, 10*time.Millisecond)
 }
 
 func requireWatchResponse(t *testing.T, responses <-chan *v1.HealthCheckResponse) *v1.HealthCheckResponse {
