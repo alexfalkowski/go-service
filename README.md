@@ -66,6 +66,21 @@ The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `
 
 ---
 
+## Repository layout
+
+The repo is intentionally split between high-level service composition and lower-level reusable helpers:
+
+- `module/` exposes the opinionated Fx bundles (`Library`, `Server`, `Client`)
+- `config/` defines the standard top-level config shape plus projections used by module wiring
+- feature packages such as `cache/`, `crypto/`, `database/sql/`, `feature/`, `telemetry/`, `time/`, and `id/` provide config, constructors, and Fx modules for a subsystem
+- `net/...` contains lower-level protocol helpers and reusable primitives (`net/http`, `net/grpc`, metadata/header helpers, gRPC health, and `net/server`)
+- `transport/...` contains the higher-level service transport layer: composed HTTP/gRPC stacks, policy middleware, operational endpoints, and transport-specific modules
+- `internal/test/` contains the shared test world and fixtures used across packages
+
+As a rule of thumb: if you want protocol primitives or shared helpers, start in `net/...`; if you want service wiring and middleware policy, start in `transport/...`.
+
+---
+
 ## Configuration
 
 ### Supported config formats
@@ -320,6 +335,10 @@ The runtime is enhanced with:
 SQL root config is `database/sql.Config`, with Postgres under `sql.pg`.
 
 Postgres config embeds common pool + DSN config (`database/sql/config.Config`), including master/slave DSNs and pool sizes.
+
+`module.Server` and `module.Client` both include `sql.Module`, which currently wires PostgreSQL support via `database/sql/pg.Module`.
+
+Enablement is presence-based: a nil `sql` block or a nil `sql.pg` block disables SQL wiring. When enabled, the pgx stdlib driver is registered under the name `pg`, master/slave DSNs are resolved using the source-string rules described above, OpenTelemetry `database/sql` stats metrics are registered, and the resulting pools are closed on lifecycle stop.
 
 Example (with source strings for DSNs):
 
@@ -995,6 +1014,10 @@ make database-diagram
 make telemetry-diagram
 make transport-diagram
 ```
+
+### Documentation
+
+All exported identifiers should have GoDoc comments, and each comment should start with the identifier name (or `Deprecated:`).
 
 ### Additional gotchas
 
