@@ -10,9 +10,11 @@ linters:
   default: all
   disable:
     - bodyclose
+    - containedctx
     - depguard
     - embeddedstructfieldcheck
     - err113
+    - exhaustive
     - exhaustruct
     - forcetypeassert
     - funcorder

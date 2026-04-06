@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/time"
 	v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -72,17 +73,34 @@ func (s *Server) List(_ context.Context, req *v1.HealthListRequest) (*v1.HealthL
 	return res, nil
 }
 
-// Watch streams the current health status for a single service.
+// Watch streams health status updates for a single service until the client cancels.
 //
-// Note: this implementation sends a single response with the current status and then returns.
-// It does not continuously stream updates over time.
+// The initial status is sent immediately. When the requested service is unknown, Watch sends
+// `SERVICE_UNKNOWN` and keeps the stream open so clients can observe the service becoming available later.
+//
+// This package's underlying health server exposes observer state but not a push-based watch API, so Watch
+// polls that in-memory state and only emits a response when the effective serving status changes.
 func (s *Server) Watch(req *v1.HealthCheckRequest, w v1.Health_WatchServer) error {
-	observer, err := s.server.Observer(req.GetService(), "grpc")
-	if err != nil {
-		return status.Error(codes.NotFound, err.Error())
-	}
+	service := req.GetService()
+	current := v1.HealthCheckResponse_UNKNOWN
+	ticker := time.NewTicker(50 * time.Millisecond)
+	defer ticker.Stop()
 
-	return w.Send(&v1.HealthCheckResponse{Status: s.status(observer)})
+	for {
+		next := s.watchStatus(service)
+		if next != current {
+			current = next
+			if err := w.Send(&v1.HealthCheckResponse{Status: current}); err != nil {
+				return status.Error(codes.Canceled, "stream has ended")
+			}
+		}
+
+		select {
+		case <-w.Context().Done():
+			return status.Error(codes.Canceled, w.Context().Err().Error())
+		case <-ticker.C:
+		}
+	}
 }
 
 func (s *Server) status(observer *subscriber.Observer) v1.HealthCheckResponse_ServingStatus {
@@ -91,4 +109,13 @@ func (s *Server) status(observer *subscriber.Observer) v1.HealthCheckResponse_Se
 	}
 
 	return v1.HealthCheckResponse_SERVING
+}
+
+func (s *Server) watchStatus(service string) v1.HealthCheckResponse_ServingStatus {
+	observer, err := s.server.Observer(service, "grpc")
+	if err != nil {
+		return v1.HealthCheckResponse_SERVICE_UNKNOWN
+	}
+
+	return s.status(observer)
 }

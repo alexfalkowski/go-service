@@ -6,43 +6,47 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
-const (
-	// Hour is a duration constant equal to 60 minutes.
-	//
-	// It is an alias of time.Hour, provided so callers can depend on go-service
-	// packages while using standard library time values.
-	Hour = time.Hour
+// Hour is a duration constant equal to 60 minutes.
+//
+// It is an alias of time.Hour, provided so callers can depend on go-service
+// packages while using standard library time values.
+const Hour = time.Hour
 
-	// Microsecond is a duration constant equal to 1e3 nanoseconds.
-	//
-	// It is an alias of time.Microsecond.
-	Microsecond = time.Microsecond
+// Microsecond is a duration constant equal to 1e3 nanoseconds.
+//
+// It is an alias of time.Microsecond.
+const Microsecond = time.Microsecond
 
-	// Millisecond is a duration constant equal to 1e6 nanoseconds.
-	//
-	// It is an alias of time.Millisecond.
-	Millisecond = time.Millisecond
+// Millisecond is a duration constant equal to 1e6 nanoseconds.
+//
+// It is an alias of time.Millisecond.
+const Millisecond = time.Millisecond
 
-	// Minute is a duration constant equal to 60 seconds.
-	//
-	// It is an alias of time.Minute.
-	Minute = time.Minute
+// Minute is a duration constant equal to 60 seconds.
+//
+// It is an alias of time.Minute.
+const Minute = time.Minute
 
-	// Nanosecond is a duration constant equal to 1.
-	//
-	// It is an alias of time.Nanosecond.
-	Nanosecond = time.Nanosecond
+// Nanosecond is a duration constant equal to 1.
+//
+// It is an alias of time.Nanosecond.
+const Nanosecond = time.Nanosecond
 
-	// Second is a duration constant equal to 1e9 nanoseconds.
-	//
-	// It is an alias of time.Second.
-	Second = time.Second
+// Second is a duration constant equal to 1e9 nanoseconds.
+//
+// It is an alias of time.Second.
+const Second = time.Second
 
-	// RFC3339 is the RFC3339 time format layout.
-	//
-	// It is an alias of time.RFC3339.
-	RFC3339 = time.RFC3339
-)
+// RFC3339 is the RFC3339 time format layout.
+//
+// It is an alias of time.RFC3339.
+const RFC3339 = time.RFC3339
+
+// Ticker is the go-service ticker type used across the repository.
+//
+// It is a type alias of time.Ticker, meaning it has identical semantics and method
+// set to the standard library type.
+type Ticker = time.Ticker
 
 // Time is the go-service time type used across the repository.
 //
@@ -55,6 +59,21 @@ type Time = time.Time
 // It is a type alias of time.Duration, meaning it has identical semantics and
 // method set to the standard library type.
 type Duration = time.Duration
+
+// After waits for the duration to elapse and then sends the current time
+// on the returned channel.
+//
+// This is a thin wrapper around time.After and does not change semantics.
+func After(d Duration) <-chan Time {
+	return time.After(d)
+}
+
+// NewTicker returns a new [Ticker] containing a channel that will send the current time on the channel after each tick.
+//
+// This is a thin wrapper around time.NewTicker and does not change semantics.
+func NewTicker(d Duration) *Ticker {
+	return time.NewTicker(d)
+}
 
 // Now returns the current local time.
 //
