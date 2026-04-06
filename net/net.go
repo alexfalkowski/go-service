@@ -7,25 +7,23 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-type (
-	// Conn is an alias for net.Conn.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Conn = net.Conn
+// Conn is an alias for net.Conn.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Conn = net.Conn
 
-	// Dialer is an alias for net.Dialer.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Dialer = net.Dialer
+// Dialer is an alias for net.Dialer.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Dialer = net.Dialer
 
-	// Listener is an alias for net.Listener.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Listener = net.Listener
-)
+// Listener is an alias for net.Listener.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Listener = net.Listener
 
 // Listen creates a listener bound to address on the given network.
 //
@@ -45,6 +43,19 @@ func Listen(ctx context.Context, network, address string) (Listener, error) {
 // It returns ok=false when the separator "://" is not present.
 func SplitNetworkAddress(address string) (string, string, bool) {
 	return strings.Cut(address, "://")
+}
+
+// ListenNetworkAddress resolves address into the network/address pair used by Listen.
+//
+// If address uses the go-service "<network>://<address>" convention, the parsed network and address are returned.
+// Otherwise, the input is treated as a raw listen address and the "tcp" network is used.
+func ListenNetworkAddress(address string) (string, string) {
+	network, addr, ok := SplitNetworkAddress(address)
+	if ok {
+		return network, addr
+	}
+
+	return "tcp", address
 }
 
 // Host returns the host portion of addr if it is in host:port form.
