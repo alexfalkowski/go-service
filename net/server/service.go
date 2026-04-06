@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
@@ -55,16 +56,24 @@ func (s *Service) start() {
 	}
 }
 
-// Stop requests a graceful shutdown of the underlying server and logs the stop event.
+// Stop requests a graceful shutdown of the underlying server.
 //
-// Stop calls Server.Shutdown with ctx and ignores the returned error. The provided context controls
-// shutdown deadlines/cancellation.
-func (s *Service) Stop(ctx context.Context) {
-	_ = s.server.Shutdown(ctx)
-
+// The provided context controls shutdown deadlines/cancellation. If shutdown fails, Stop logs the error and
+// returns it prefixed with the service name for attribution.
+func (s *Service) Stop(ctx context.Context) error {
 	s.log(func(l *logger.Logger) {
 		l.Info("stopping server", logger.String(meta.SystemKey, s.name))
 	})
+
+	if err := s.server.Shutdown(ctx); err != nil {
+		s.log(func(l *logger.Logger) {
+			l.Error("could not stop server", logger.String(meta.SystemKey, s.name), logger.Error(err))
+		})
+
+		return errors.Prefix(s.name, err)
+	}
+
+	return nil
 }
 
 func (s *Service) log(fn func(l *logger.Logger)) {
