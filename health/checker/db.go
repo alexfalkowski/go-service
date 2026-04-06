@@ -11,6 +11,9 @@ import (
 
 var _ checker.Checker = (*DBChecker)(nil)
 
+// ErrNoConnections is returned when a DBChecker has no master or slave pools to verify.
+var ErrNoConnections = errors.New("db: no connections")
+
 // NewDBChecker constructs a DBChecker that verifies database connectivity by pinging
 // all configured master and slave pools in db.
 //
@@ -35,9 +38,14 @@ type DBChecker struct {
 // Check verifies database health by pinging all configured master and slave databases.
 //
 // It returns a single aggregated error (via errors.Join) containing all ping errors.
+// If no database pools are configured, Check returns ErrNoConnections.
 // If all pings succeed, Check returns nil.
 func (c *DBChecker) Check(ctx context.Context) error {
 	dbs := c.dbs()
+	if len(dbs) == 0 {
+		return ErrNoConnections
+	}
+
 	errs := make([]error, 0, len(dbs))
 	for _, db := range dbs {
 		errs = append(errs, c.ping(ctx, db))
