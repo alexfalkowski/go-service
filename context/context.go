@@ -68,6 +68,14 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
 	return context.WithTimeout(parent, timeout)
 }
 
+// WithoutCancel returns a copy of parent that is not canceled when parent is canceled.
+//
+// This is a thin wrapper around context.WithoutCancel. The returned context still exposes values from
+// parent, but it has no deadline, no Done channel, and Err always reports nil.
+func WithoutCancel(parent Context) Context {
+	return context.WithoutCancel(parent)
+}
+
 // WithValue returns a copy of parent in which the value associated with key is val.
 //
 // This is a thin wrapper around context.WithValue.

@@ -57,13 +57,14 @@ type Application struct {
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
-//   - build a DI application with the provided options, plus the command's module and runtime.Module
+//   - build a DI application with a fresh copy of the provided options, plus the command's module and runtime.Module
 //   - start the DI application
-//   - block until the DI application's Done channel is closed
+//   - block until the DI application's Done channel is closed or ctx is canceled
 //   - stop the DI application
 //
 // Any start/stop error is wrapped with the subcommand name for easier attribution.
 func (a *Application) AddServer(name, description string, opts ...Option) *Command {
+	opts = slices.Clone(opts)
 	server := NewCommand(name)
 	cmd := cmd.Command{
 		Name:        name,
@@ -73,17 +74,19 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 				return err
 			}
 
-			opts = append(opts, server.module(), runtime.Module)
+			opts := append(slices.Clone(opts), server.module(), runtime.Module)
 			app := di.New(opts...)
-			done := app.Done()
 
 			if err := app.Start(ctx); err != nil {
 				return a.prefix(name, err)
 			}
 
-			<-done
+			select {
+			case <-app.Done():
+			case <-ctx.Done():
+			}
 
-			return a.prefix(name, app.Stop(ctx))
+			return a.prefix(name, app.Stop(a.stopContext(ctx)))
 		},
 	}
 	runtime.Must(a.register(cmd))
@@ -99,12 +102,13 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
-//   - build a DI application with the provided options, plus the command's module
+//   - build a DI application with a fresh copy of the provided options, plus the command's module
 //   - start the DI application
 //   - stop the DI application immediately after startup completes
 //
 // Any start/stop error is wrapped with the subcommand name for easier attribution.
 func (a *Application) AddClient(name, description string, opts ...Option) *Command {
+	opts = slices.Clone(opts)
 	client := NewCommand(name)
 	cmd := cmd.Command{
 		Name:        name,
@@ -114,14 +118,14 @@ func (a *Application) AddClient(name, description string, opts ...Option) *Comma
 				return err
 			}
 
-			opts = append(opts, client.module())
+			opts := append(slices.Clone(opts), client.module())
 			app := di.New(opts...)
 
 			if err := app.Start(ctx); err != nil {
 				return a.prefix(name, err)
 			}
 
-			return a.prefix(name, app.Stop(ctx))
+			return a.prefix(name, app.Stop(a.stopContext(ctx)))
 		},
 	}
 	runtime.Must(a.register(cmd))
@@ -176,4 +180,12 @@ func (a *Application) register(command cmd.Command) error {
 
 func (a *Application) prefix(prefix string, err error) error {
 	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
+}
+
+func (a *Application) stopContext(ctx context.Context) context.Context {
+	if ctx.Err() != nil {
+		return context.WithoutCancel(ctx)
+	}
+
+	return ctx
 }
