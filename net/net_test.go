@@ -26,3 +26,13 @@ func TestNetworkAddress(t *testing.T) {
 	require.Equal(t, "no:address", network)
 	require.Empty(t, address)
 }
+
+func TestListenNetworkAddress(t *testing.T) {
+	network, address := net.ListenNetworkAddress("tcp://localhost:9000")
+	require.Equal(t, "tcp", network)
+	require.Equal(t, "localhost:9000", address)
+
+	network, address = net.ListenNetworkAddress(":9000")
+	require.Equal(t, "tcp", network)
+	require.Equal(t, ":9000", address)
+}
