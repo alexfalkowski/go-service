@@ -96,7 +96,6 @@ git submodule update --init
 ## CI
 
 - CircleCI runs: submodule init, `make source-key`, `mkcert -install`, `make create-certs`, waits for services, then `make clean`, `make dep`, `make lint`, `make sec`, `make specs`, `make benchmarks`, `make coverage`.
-- CI sets `GOEXPERIMENT=greenteagc`.
 - CI services:
   - Postgres: `localhost:5432`
   - Valkey: `localhost:6379`
