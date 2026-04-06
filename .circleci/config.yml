@@ -4,8 +4,6 @@ jobs:
   build:
     docker:
       - image: alexfalkowski/go:3.6
-        environment:
-          GOEXPERIMENT: greenteagc
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
