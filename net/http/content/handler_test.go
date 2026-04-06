@@ -1,11 +1,13 @@
 package content_test
 
 import (
+	"io"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -56,4 +58,36 @@ func TestNewHandlerRejectsErrorContentType(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Equal(t, mime.ErrorMediaType, res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error;charset=utf-8"`)
+}
+
+func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
+	enc := encoding.NewMap(encoding.MapParams{})
+	enc.Register("json", partialEncoder{})
+	cont := content.NewContent(enc, test.Pool)
+
+	handler := content.NewHandler(cont, func(_ context.Context) (*test.Response, error) {
+		return &test.Response{Greeting: "Hello Bob"}, nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(content.TypeKey, mime.JSONMediaType)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
+	require.Equal(t, mime.ErrorMediaType, res.Header().Get(content.TypeKey))
+	require.Equal(t, test.ErrFailed.Error()+"\n", res.Body.String())
+	require.NotContains(t, res.Body.String(), "partial")
+}
+
+type partialEncoder struct{}
+
+func (partialEncoder) Encode(w io.Writer, _ any) error {
+	_, _ = io.WriteString(w, "partial")
+	return test.ErrFailed
+}
+
+func (partialEncoder) Decode(io.Reader, any) error {
+	return nil
 }
