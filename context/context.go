@@ -6,30 +6,28 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-type (
-	// CancelFunc is an alias for context.CancelFunc.
-	//
-	// It cancels a Context created by WithDeadline or WithTimeout, releasing resources associated with it.
-	// As with the standard library, you should call the returned CancelFunc as soon as the operations
-	// running in the derived context complete.
-	CancelFunc = context.CancelFunc
+// CancelFunc is an alias for context.CancelFunc.
+//
+// It cancels a Context created by WithCancel, WithDeadline, or WithTimeout, releasing resources
+// associated with it. As with the standard library, you should call the returned CancelFunc as soon
+// as the operations running in the derived context complete.
+type CancelFunc = context.CancelFunc
 
-	// Context is an alias for context.Context.
-	//
-	// It carries deadlines, cancellation signals, and request-scoped values across API boundaries.
-	// The semantics are identical to the standard library context package.
-	Context = context.Context
+// Context is an alias for context.Context.
+//
+// It carries deadlines, cancellation signals, and request-scoped values across API boundaries.
+// The semantics are identical to the standard library context package.
+type Context = context.Context
 
-	// Key is a typed helper for storing values in a context.
-	//
-	// Using a distinct key type reduces accidental collisions when multiple packages store values in the
-	// same context. Prefer defining keys as unexported package variables, e.g.:
-	//
-	//	var userIDKey context.Key = "user_id"
-	//
-	// and retrieving values with type assertions at the call site.
-	Key string
-)
+// Key is a typed helper for storing values in a context.
+//
+// Using a distinct key type reduces accidental collisions when multiple packages store values in the
+// same context. Prefer defining keys as unexported package variables, e.g.:
+//
+//	var userIDKey context.Key = "user_id"
+//
+// and retrieving values with type assertions at the call site.
+type Key string
 
 // Canceled is an alias for context.Canceled.
 //
@@ -44,6 +42,14 @@ var Canceled = context.Canceled
 // initialization, and tests. Request handlers should typically use the request-provided context instead.
 func Background() Context {
 	return context.Background()
+}
+
+// WithCancel returns a derived context that points to the parent context but has a new Done channel.
+//
+// This is a thin wrapper around context.WithCancel. The returned CancelFunc should be called to release
+// resources associated with the derived context.
+func WithCancel(parent Context) (Context, CancelFunc) {
+	return context.WithCancel(parent)
 }
 
 // WithDeadline returns a copy of parent with the deadline adjusted to be no later than d.
