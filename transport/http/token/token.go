@@ -107,7 +107,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	sub, err := h.verifier.Verify(strings.Bytes(auth), req.URL.Path)
 	if err != nil {
-		status.WriteError(ctx, res, status.UnauthorizedError(err))
+		_ = status.WriteError(res, status.UnauthorizedError(err))
 		return
 	}
 

@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
@@ -63,11 +64,14 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		view, model, err := controller(ctx)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
-			res.WriteHeader(status.Code(err))
+			writeHeader(ctx, res, status.Code(err))
 
-			view.Render(ctx, err)
-		} else {
-			view.Render(ctx, model)
+			_ = view.Render(ctx, err)
+			return
+		}
+
+		if err := view.Render(ctx, model); err != nil {
+			writeHeader(ctx, res, status.Code(err))
 		}
 	}
 
@@ -87,8 +91,7 @@ func StaticFile(pattern, name string) bool {
 		ctx := req.Context()
 
 		if err := writeFile(name, res); err != nil {
-			meta.WithAttribute(ctx, "mvcStaticFileError", meta.Error(err))
-			res.WriteHeader(staticStatusCode(err))
+			writeHeader(ctx, res, staticStatusCode(err))
 		}
 	}
 
@@ -111,16 +114,13 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		ctx := req.Context()
 		cleaned := path.Clean(req.PathValue(value))
 		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
-			err := status.BadRequestError(fs.ErrInvalid)
-			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
-			res.WriteHeader(staticStatusCode(err))
+			writeHeader(ctx, res, staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
 			return
 		}
 
 		name := path.Join(prefix, cleaned)
 		if err := writeFile(name, res); err != nil {
-			meta.WithAttribute(ctx, "mvcStaticPathValueError", meta.Error(err))
-			res.WriteHeader(staticStatusCode(err))
+			writeHeader(ctx, res, staticStatusCode(err))
 		}
 	}
 
@@ -144,4 +144,12 @@ func staticStatusCode(err error) int {
 		return http.StatusNotFound
 	}
 	return status.Code(err)
+}
+
+func writeHeader(ctx context.Context, res http.ResponseWriter, code int) {
+	if ctx.Err() != nil {
+		return
+	}
+
+	res.WriteHeader(code)
 }

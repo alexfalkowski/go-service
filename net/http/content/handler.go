@@ -66,7 +66,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 
 		media := cont.NewFromRequest(req)
 		if media.Encoder == nil {
-			status.WriteError(ctx, res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", media.Type))
+			_ = status.WriteError(res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", media.Type))
 
 			return
 		}
@@ -76,13 +76,13 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 
 		data, err := handler(ctx)
 		if err != nil {
-			status.WriteError(ctx, res, err)
+			_ = status.WriteError(res, err)
 
 			return
 		}
 
 		if err := media.Encoder.Encode(res, data); err != nil {
-			status.WriteError(ctx, res, err)
+			_ = status.WriteError(res, err)
 
 			return
 		}

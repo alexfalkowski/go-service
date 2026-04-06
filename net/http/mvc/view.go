@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -110,17 +109,18 @@ type View struct {
 // to explicitly thread those values through the model.
 //
 // Error handling:
-// If template execution fails, Render records "mvcViewError" in ctx and writes a status code derived from
-// the error. It does not write an error body.
-func (v *View) Render(ctx context.Context, model any) {
+// If ctx is already canceled, Render returns the context error without executing the template.
+// Otherwise, Render returns any template execution error and leaves terminal response handling to the caller.
+func (v *View) Render(ctx context.Context, model any) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	res := hm.Response(ctx)
 	template := &Template{
 		Meta:  meta.Strings(ctx, meta.NoPrefix),
 		Model: model,
 	}
 
-	if err := v.template.ExecuteTemplate(res, v.name, template); err != nil {
-		meta.WithAttribute(ctx, "mvcViewError", meta.Error(err))
-		res.WriteHeader(status.Code(err))
-	}
+	return v.template.ExecuteTemplate(res, v.name, template)
 }
