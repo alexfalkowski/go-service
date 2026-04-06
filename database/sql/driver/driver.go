@@ -53,6 +53,9 @@ func Register(name string, driver Driver) (err error) {
 // connects using `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for each pool, and then
 // applies pool settings (connection lifetime, max idle, and max open connections).
 //
+// Preconditions:
+//   - cfg must be non-nil and already treated as enabled/validated by the caller.
+//
 // Lifecycle:
 //   - Open appends an OnStop hook to the provided lifecycle that closes all returned pools by calling Destroy.
 //

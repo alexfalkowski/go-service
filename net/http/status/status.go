@@ -68,7 +68,7 @@ func Errorf(code int, format string, a ...any) error {
 // IsError reports whether err carries a status code.
 //
 // It returns true for:
-// /  - errors produced by this package, and
+//   - errors produced by this package, and
 //   - any error implementing the Coder interface.
 func IsError(err error) bool {
 	_, ok := coderFromError(err)
@@ -108,6 +108,7 @@ type statusError struct {
 	code int
 }
 
+// Code returns the HTTP status code carried by the error.
 func (s *statusError) Code() int {
 	return s.code
 }

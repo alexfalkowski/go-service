@@ -1,366 +1,104 @@
 # AGENTS.md
 
-This repository is a Go module (`github.com/alexfalkowski/go-service/v2`) that provides a reusable framework for building services (DI wiring, config decoding, transports, telemetry, crypto, etc.).
+## Repo snapshot
 
-It is primarily a **library of packages** (no top-level `cmd/` binary in this repo).
+- Module: `github.com/alexfalkowski/go-service/v2`
+- Repo type: library of packages; there is no top-level `cmd/`
+- Go version: `go 1.26.0`
+- DI: Uber Fx/Dig via `di/`
+- CLI helpers: `github.com/cristalhq/acmd` via `cli/`
+- Most `make` targets come from the `bin/` git submodule
 
-Most workflows are driven by `make` targets that are defined in the `bin/` git submodule (the top-level `Makefile` includes `bin/build/make/{help,go,git}.mak`).
+## Setup
 
-## First-time setup
-
-### Git submodule (required for `make`)
-
-The top-level `Makefile` includes make fragments from the `bin` submodule (`bin/build/make/*.mak`).
+- Initialize the submodule before using `make`:
 
 ```sh
 git submodule sync
 git submodule update --init
 ```
 
-Alternative (same effect):
-
-```sh
-make submodule
-```
-
-Gotcha: `.gitmodules` uses an SSH URL (`git@github.com:alexfalkowski/bin.git`). If you can’t fetch via SSH, `make` targets will fail until Git access is configured.
-
-## Project type
-
-- Language: Go
-- Go version: `go 1.26.0` (`go.mod`)
-- DI container: Uber Fx/Dig, wrapped by `di/` (`di/di.go`)
-- CLI command framework: `github.com/cristalhq/acmd` (`cli/application.go`)
-- Linting: `golangci-lint` plus helper tooling in the `bin` submodule (`bin/build/go/*`, `.golangci.yml`)
-
-## Essential commands
-
-Most targets are defined in `bin/build/make/*.mak` (included by the top-level `Makefile`).
-
-### Discover targets
-
-```sh
-make help
-```
-
-### Dependencies (keeps `vendor/` in sync)
-
-```sh
-make dep
-```
-
-`make dep` runs:
-
-- `go mod download`
-- `go mod tidy`
-- `go mod vendor`
-
-Gotcha: tests run with `-mod vendor`, so after changing dependencies you typically must run `make dep` first.
-
-### Tests
-
-```sh
-make specs
-```
-
-`make specs` runs `gotestsum` and executes `go test` with race + coverage, using the vendor directory.
-
-Artifacts written under `test/reports/`:
-
-- JUnit XML: `test/reports/specs.xml`
-- Coverage profile: `test/reports/profile.cov`
-
-### Lint / format
-
-```sh
-make lint
-make fix-lint
-make format
-```
-
-- `make lint` runs field alignment and `golangci-lint`.
-- `make fix-lint` runs the same tools with fix mode where supported.
-- `make format` runs `go fmt ./...`.
-
-Formatter configuration lives in `.golangci.yml`.
-
-### Security checks
-
-```sh
-make sec
-```
-
-Runs `govulncheck -show verbose -test ./...`.
-
-### Benchmarks
-
-Convenience targets in the top-level `Makefile`:
-
-```sh
-make benchmarks
-make http-benchmarks
-make grpc-benchmarks
-make bytes-benchmarks
-make strings-benchmarks
-```
-
-These delegate to `make package=<pkg> benchmark`.
-
-### Coverage
-
-```sh
-make coverage
-make html-coverage
-make func-coverage
-```
-
-Coverage commands expect that `make specs` has already produced `test/reports/profile.cov`.
-
-`make html-coverage` / `make func-coverage` operate on `test/reports/final.cov`, which is generated from `test/reports/profile.cov` by filtering (see `bin/quality/go/covfilter`).
-
-### Code generation (Buf)
-
-```sh
-make generate
-```
-
-Delegates to `make -C internal/test generate`.
-
-### Diagrams
-
-Top-level targets:
-
-```sh
-make diagrams
-make crypto-diagram
-make database-diagram
-make telemetry-diagram
-make transport-diagram
-```
-
-Under the hood this uses `goda graph ... | dot -Tpng` and writes PNGs into `assets/`.
-
-### Local environment (integration deps)
-
-```sh
-make start
-make stop
-```
-
-Uses `bin/build/docker/env`.
-
-### TLS fixtures / certs
-
-```sh
-mkcert -install
-make create-certs
-```
-
-Creates fixtures under `test/certs/`.
-
-### Encoding configs for env-based loading
-
-```sh
-make kind=status encode-config
-```
-
-Gotcha: `encode-config` uses `base64 -w 0` (GNU coreutils); on macOS/BSD `base64`, `-w` may not exist.
-
-## Code organization
-
-This repo is organized as packages under the module root.
-
-Common conventions:
-
-- Many subsystems are “feature packages” with `config.go`, `module.go`, and implementation files.
-- `module/` exports top-level Fx modules (`module/module.go`):
-  - `module.Library`
-  - `module.Server`
-  - `module.Client`
-- `net/` contains lower-level protocol helpers and reusable primitives:
-  - HTTP/gRPC wrappers (`net/http`, `net/grpc`)
-  - gRPC health protocol wiring (`net/grpc/health`)
-  - shared metadata helpers (`net/http/meta`, `net/grpc/meta`)
-  - protocol-specific helper packages (`net/http/strings`, `net/grpc/strings`, `net/header`)
-  - transport-agnostic server lifecycle wiring (`net/server`)
-- `transport/` contains the higher-level service transport layer:
-  - composed HTTP/gRPC server and client wiring
-  - policy-oriented middleware such as breaker/retry/limiter/token
-  - transport modules and health/events integrations
-- `internal/test/` contains shared test helpers.
-- `test/` contains fixtures used by tests (configs, certs, secrets, reports).
-
-## Dependency injection patterns (Fx)
-
-### Module composition
-
-Modules are typically defined as `di.Module(...)` values composing submodules, constructors, and invocations.
-
-Example: `module.Server` composes most server-side subsystems (`module/module.go`).
-
-### Injected parameter structs
-
-Packages frequently use `di.In` structs to declare injected dependencies.
-
-Example: `config.DecoderParams` (`config/decoder.go`).
-
-### Registrations / init-time wiring
-
-Some packages use package-level registration for wiring globals in tests and/or when a feature is used.
-
-Examples:
-
-- Telemetry setup via `telemetry.Register()`.
-- Transport packages set a package-level `fs` via `transport/http.Register(...)` and `transport/grpc.Register(...)` (used to load TLS key material via `os.FS.ReadSource`).
-
-Gotcha: if you construct the HTTP/gRPC servers or clients with TLS enabled without having called those `Register(...)` functions, TLS config construction may not have an `*os.FS` available.
-
-For server lifecycle wiring, the generic hook lives in `net/server.Register(...)`. `transport.Module` already wires that up for normal Fx usage; manual wiring should use `net/server.Register(...)` directly.
-
-## Configuration
-
-### Config input routing via `-i`
-
-`config.NewDecoder` dispatches based on the `-i` flag value:
-
-- `file:<path>` → file decoder
-- `env:<ENV_VAR>` → env decoder
-- otherwise → default lookup decoder
-
-The default lookup searches for `<serviceName>.{yaml,yml,hjson,toml,json}` in:
-
-- executable directory
-- `$XDG_CONFIG_HOME/<serviceName>/` (via `os.UserConfigDir()`)
-- `/etc/<serviceName>/`
-
-### Env config format
-
-Env configs expect `extension:content` where `content` is base64-encoded (see `config/env.go`, README).
-
-### “Source strings” pattern (`file:` / `env:` / raw)
-
-Several configs accept a “source string” that can be:
-
-- `env:NAME` (read from environment; unset variables fail resolution, explicitly empty values are allowed)
-- `file:/path/to/secret` (read from filesystem)
-- otherwise treated as the literal value
-
-This is implemented by `os.FS.ReadSource` (`os/fs.go`).
-
-Gotcha: some paths are expanded (leading `~`) and cleaned via `os.FS.CleanPath`.
-
-## HTTP / gRPC patterns
-
-### HTTP handler instrumentation
-
-The wrapper in `net/http` instruments handlers by wrapping them with `otelhttp.NewHandler` when registered via `net/http.Handle(...)` (`net/http/http.go`).
-
-### Path patterns
-
-`net/http.Pattern(name, pattern)` builds routes as `/<name><pattern>` (`net/http/http.go`).
-
-### Metadata helpers
-
-- HTTP request metadata extraction/injection lives in `net/http/meta`.
-- gRPC metadata extraction/injection lives in `net/grpc/meta`.
-- Authorization header parsing shared by HTTP/gRPC token middleware lives in `net/header`.
-- Operational-path / full-method matching helpers used by middleware live in `net/http/strings` and `net/grpc/strings`.
-
-### Circuit breakers (client-side)
-
-- gRPC breaker uses per-`fullMethod` circuit breakers and counts only selected gRPC status codes as failures (`transport/grpc/breaker`).
-- HTTP breaker uses per-`method + host` circuit breakers and counts failures via status code classification (defaults to `>= 500` and `429`) (`transport/http/breaker`).
-- HTTP breaker counts transport errors as failures.
-- gRPC breaker treats non-selected status codes as successful for breaker accounting by default.
-
-## Cache API gotcha
-
-The `cache/` package contains both an instance API and package-level generic helpers.
-
-- Instance methods are on `*cache.Cache` (see `cache/cache.go`).
-- Package-level generic helpers use a package-global set via `cache.Register(...)` (see `cache/generic.go`, wired by `cache/module.go`).
-
-Gotcha: callers are expected to tolerate cache being nil/disabled; helpers are designed to be nil-safe.
-
-## Testing
+- Equivalent: `make submodule`
+- `.gitmodules` uses `git@github.com:alexfalkowski/bin.git`; SSH access is required for submodule fetches.
+
+## Common commands
+
+- `make help`: list targets.
+- `make dep`: runs `go mod download`, `go mod tidy`, and `go mod vendor`.
+  Tests use `-mod vendor`, so run this after dependency changes.
+- `make specs`: race + coverage via `gotestsum`.
+  Outputs `test/reports/specs.xml` and `test/reports/profile.cov`.
+- `make lint`, `make fix-lint`, `make format`
+- `make sec`
+- `make benchmarks`, `make http-benchmarks`, `make grpc-benchmarks`, `make bytes-benchmarks`, `make strings-benchmarks`
+- `make coverage`, `make html-coverage`, `make func-coverage`
+- `make generate`
+- `make diagrams`, `make crypto-diagram`, `make database-diagram`, `make telemetry-diagram`, `make transport-diagram`
+- `make start`, `make stop`
+- `mkcert -install && make create-certs`
+- `make kind=status encode-config`
+  `encode-config` uses GNU `base64 -w 0`; on macOS/BSD use `base64 | tr -d '\n'`.
+
+## Repo layout
+
+- Feature packages usually follow `config.go`, `module.go`, and implementation files.
+- `module/` exports the top-level Fx bundles: `module.Library`, `module.Server`, `module.Client`.
+- `config/` defines the standard top-level config plus projections into nested transport/SQL/telemetry config.
+- `net/` contains lower-level protocol helpers: `net/http`, `net/grpc`, metadata helpers, `net/header`, `net/server`, and gRPC health.
+- `transport/` contains the higher-level service transport layer: composed HTTP/gRPC stacks, middleware policy, operational endpoints, and transport modules.
+- `internal/test/` provides shared test helpers, especially `internal/test/world.go`.
+- `test/` stores fixtures (configs, certs, secrets, reports).
+
+## Wiring patterns
+
+- Modules are composed with `di.Module(...)`.
+- Many constructors consume `di.In` parameter structs.
+- `module.Server` already includes config, telemetry, transports, health, debug, cache, feature, limiter, and SQL.
+- `module.Client` includes config, telemetry, feature, hooks, cache, limiter, and SQL, but not debug/transport/health by default.
+
+## Configuration rules
+
+- `config.NewDecoder` dispatches `-i` values as:
+  - `file:<path>`
+  - `env:<ENV_VAR>`
+  - otherwise default lookup for `<serviceName>.{yaml,yml,hjson,toml,json}`
+- Default lookup checks:
+  - executable directory
+  - `$XDG_CONFIG_HOME/<serviceName>/`
+  - `/etc/<serviceName>/`
+- Many fields use go-service “source strings” resolved by `os.FS.ReadSource`:
+  - `env:NAME`
+  - `file:/path`
+  - otherwise literal value
+- Nil pointer sub-configs usually mean “disabled”.
+
+## Gotchas
+
+- Transport TLS requires `transport/http.Register(fs)` and `transport/grpc.Register(fs)` if you wire transports manually; `transport.Module` handles normal Fx wiring.
+- Manual server lifecycle wiring should use `net/server.Register(...)`.
+- `telemetry.Register()` installs the global OpenTelemetry propagator.
+- `cache.Register(...)` sets the package-level cache used by generic helpers in `cache/generic.go`.
+- `token/access` passes `access.policy` directly to Casbin’s file adapter; it needs a real path.
+- JWT verification requires both the expected algorithm and a `kid` header.
+- `telemetry/header` uses `header.Map.MustSecrets`; secret-resolution failures can panic during config projection.
+- `transport/http/health.RegisterParams` requires an `*net/http.ServeMux`; `internal/test.RegisterHealth` does too.
+- Shared metadata/header/string helpers live under `net/...`, not `transport/...`.
+- `vendor/` is ignored by git and regenerated via `make dep`.
+
+## Testing, style, and docs
 
 - Tests commonly use `stretchr/testify/require`.
-- Shared helpers live under `internal/test/`.
-  - `internal/test/world.go` builds a test “world” with `fxtest.NewLifecycle` and configures telemetry, transports, and helpers.
-- Fixtures are under `test/` (configs, certs, secrets).
-
-## Style / formatting
-
-From `.editorconfig`:
-
-- Go files use tabs (`indent_style = tab`).
-- YAML uses 2-space indentation.
-
-## Documentation standards
-
+- Go files use tabs; YAML uses 2 spaces (`.editorconfig`).
 - All exported identifiers should have GoDoc comments.
 - GoDoc comments should start with the identifier name (or `Deprecated:`).
-- This standard is applied across the entire repo, including exported helpers under `internal/test/**`.
+- This standard applies to `internal/test/**` too.
 
-### Ad-hoc GoDoc audit (not committed)
+## CI
 
-During documentation audits, an ad-hoc AST-based script may be used to verify GoDoc coverage and style.
-
-Run it from the repo root:
-
-```sh
-go run /tmp/doccheck.go .
-```
-
-What it checks (high level):
-
-- Exported identifiers without doc comments.
-- Exported identifiers whose doc comment does not start with the identifier name.
-
-Common skips: dot-directories, `vendor/`, `*_test.go`, generated `*.pb.go`, and directories literally named `test` or `assets`.
-
-## Recent documentation fixes
-
-- README examples were aligned with actual config structs and fixtures (notably token transport config fields and token kinds).
-- README links were corrected (e.g., limiter key kinds reference).
-- README OTLP trace URL example was corrected to use the HTTP traces endpoint format.
-- README cache section headings/wording were corrected for clarity.
-- README now documents service-prefixed debug endpoints (`/<name>/debug/...`) and Prometheus route (`/<name>/metrics`).
-- README health docs now match the current transport behavior: health endpoints return plain-text `SERVING` on success and use the standard error response for HTTP 503 failures.
-- README telemetry logging example now uses an OTLP logs endpoint (`/v1/logs`).
-- README development section now mirrors actual make workflows (`help`, `dep`, `lint`, `sec`, `benchmarks`, `coverage`, `generate`, `diagrams`).
-- README and package docs now describe the current `net/` vs `transport/` boundary, including the move of shared metadata/header/string helpers into `net/...`.
-
-## Observed gotchas
-
-- JWT verification enforces both algorithm + key id (see `token/jwt/jwt.go`). If you mint test tokens directly via `github.com/golang-jwt/jwt/v4`, remember to set `kid` or verification will fail.
-- Telemetry header secrets may panic during config projection: `telemetry/header/header.go` uses `header.Map.MustSecrets`, which panics on secret read errors.
-- Token access policy is passed directly to Casbin's file adapter (`token/access/access.go`); use a real file path or pre-resolve source strings before wiring.
-- HTTP health route registration now requires an `*net/http.ServeMux` in `transport/http/health.RegisterParams`; test helpers such as `internal/test.RegisterHealth` take the mux explicitly as well.
-- If you are updating transport middleware docs or imports, remember that shared helpers no longer live under `transport/**` wrappers; use the `net/...` packages directly.
-- `vendor/` is ignored by git and is expected to be generated by the dependency workflow (see `.gitignore`).
-
-## CI notes
-
-CircleCI (`.circleci/config.yml`) runs, in order:
-
-- submodule init
-- `make source-key`
-- `mkcert -install` / `make create-certs`
-- wait for dependent services
-- `make clean`
-- `make dep`
-- `make lint`
-- `make sec`
-- `make specs`
-- `make benchmarks`
-- `make coverage`
-
-CI sets `GOEXPERIMENT=greenteagc`.
-
-CI provisions and waits for these services:
-
-- Postgres (`tcp://localhost:5432`)
-- Valkey (Redis-compatible) (`tcp://localhost:6379`)
-- `alexfalkowski/status` server (`tcp://localhost:6000`)
-- Grafana Mimir (`tcp://localhost:9009`)
+- CircleCI runs: submodule init, `make source-key`, `mkcert -install`, `make create-certs`, waits for services, then `make clean`, `make dep`, `make lint`, `make sec`, `make specs`, `make benchmarks`, `make coverage`.
+- CI sets `GOEXPERIMENT=greenteagc`.
+- CI services:
+  - Postgres: `localhost:5432`
+  - Valkey: `localhost:6379`
+  - `alexfalkowski/status`: `localhost:6000`
+  - Grafana Mimir: `localhost:9009`
