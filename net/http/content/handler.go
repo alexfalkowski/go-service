@@ -27,6 +27,9 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // If request decoding fails, NewRequestHandler converts the decode error into a 400 Bad Request using
 // net/http/status, allowing the response to be rendered consistently by status.WriteError.
 //
+// Successful responses are encoded into a pooled in-memory buffer before being written to the live
+// response writer, so encode failures do not leak partial success bodies.
+//
 // Constraints:
 // The negotiated media type must resolve to a non-nil encoder. If the request Content-Type resolves to
 // the error media subtype ("error"), Media.Encoder will be nil and decoding will panic. In practice,
@@ -52,6 +55,9 @@ type Handler[Res any] func(ctx context.Context) (*Res, error)
 // NewHandler builds a handler that encodes the response and writes errors using status helpers.
 //
 // Context population and content negotiation are the same as NewRequestHandler (see its documentation).
+//
+// Successful responses are encoded into a pooled in-memory buffer before being written to the live
+// response writer, so encode failures do not leak partial success bodies.
 func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		return handler(ctx)
@@ -81,10 +87,15 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 			return
 		}
 
-		if err := media.Encoder.Encode(res, data); err != nil {
+		buffer := cont.pool.Get()
+		defer cont.pool.Put(buffer)
+
+		if err := media.Encoder.Encode(buffer, data); err != nil {
 			_ = status.WriteError(res, err)
 
 			return
 		}
+
+		_, _ = buffer.WriteTo(res)
 	}
 }

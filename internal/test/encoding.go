@@ -28,7 +28,7 @@ var Encoder = encoding.NewMap(encoding.MapParams{
 })
 
 // Content is the shared HTTP content registry backed by Encoder.
-var Content = content.NewContent(Encoder)
+var Content = content.NewContent(Encoder, Pool)
 
 // NewEncoder returns an encoder test double whose Encode and Decode methods fail with the supplied error.
 func NewEncoder(err error) encoding.Encoder {

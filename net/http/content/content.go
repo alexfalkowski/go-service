@@ -4,6 +4,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-sync"
 	content "github.com/elnormous/contenttype"
 )
 
@@ -15,9 +16,9 @@ const (
 	TypeKey = "Content-Type"
 )
 
-// NewContent constructs a Content that resolves encoders from enc.
-func NewContent(enc *encoding.Map) *Content {
-	return &Content{enc: enc}
+// NewContent constructs a Content that resolves encoders from enc and buffers responses using pool.
+func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
+	return &Content{enc: enc, pool: pool}
 }
 
 // Content resolves encoders from HTTP media types and provides helpers for content-aware request/response handling.
@@ -31,8 +32,13 @@ func NewContent(enc *encoding.Map) *Content {
 // Error subtype behavior:
 //   - If the parsed subtype is "error", NewMedia returns a Media without an encoder.
 //     Callers typically treat the body as a plain-text error message.
+//
+// Response buffering:
+//   - HTTP content handlers built on this type encode successful responses into the shared buffer pool before
+//     writing to the live response writer, so late encode failures do not commit partial success bodies.
 type Content struct {
-	enc *encoding.Map
+	enc  *encoding.Map
+	pool *sync.BufferPool
 }
 
 // NewFromRequest parses the request Content-Type header and returns a matching Media.
