@@ -23,7 +23,7 @@ type Config = config.Config
 //
 // Behavior:
 //   - It parses per-attempt timeout and backoff durations from cfg (`cfg.Timeout` and `cfg.Backoff`).
-//   - It retries up to `cfg.Attempts` total attempts (including the initial attempt).
+//   - It retries up to `cfg.MaxAttempts()` total attempts (including the initial attempt).
 //   - It applies a per-attempt timeout (`retry.WithPerRetryTimeout`) so each attempt is bounded.
 //   - It uses a linear backoff strategy with a step duration derived from `cfg.Backoff`.
 //
@@ -40,7 +40,7 @@ func UnaryClientInterceptor(cfg *Config) grpc.UnaryClientInterceptor {
 
 	return retry.UnaryClientInterceptor(
 		retry.WithCodes(codes.Unavailable, codes.DataLoss),
-		retry.WithMax(uint(cfg.Attempts)),
+		retry.WithMax(uint(cfg.MaxAttempts())),
 		retry.WithBackoff(retry.BackoffLinear(backoff)),
 		retry.WithPerRetryTimeout(timeout),
 	)

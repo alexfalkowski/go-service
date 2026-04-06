@@ -30,11 +30,35 @@ type Config struct {
 
 	// Attempts is the maximum number of attempts, including the initial attempt.
 	//
-	// A common convention is:
+	// The go-service transport convention is:
+	//   - Attempts == 0 leaves retries disabled using the transport's zero-value behavior.
 	//   - Attempts == 1 disables retries (single attempt only).
 	//   - Attempts > 1 allows up to Attempts-1 retries after the initial attempt.
-	//
-	// Some transports may treat Attempts == 0 as "unspecified" and apply a
-	// transport default.
 	Attempts uint64 `yaml:"attempts,omitempty" json:"attempts,omitempty" toml:"attempts,omitempty"`
+}
+
+// MaxAttempts returns the configured total attempt count, including the initial attempt.
+//
+// It preserves the zero value so transports that treat zero specially can retain their
+// upstream behavior.
+func (c *Config) MaxAttempts() uint64 {
+	if c == nil {
+		return 0
+	}
+
+	return c.Attempts
+}
+
+// MaxRetries returns the maximum number of retries after the initial attempt.
+//
+// For example:
+//   - Attempts == 0 or 1 returns 0 retries.
+//   - Attempts == 2 returns 1 retry.
+//   - Attempts == 3 returns 2 retries.
+func (c *Config) MaxRetries() uint64 {
+	if c == nil || c.Attempts <= 1 {
+		return 0
+	}
+
+	return c.Attempts - 1
 }

@@ -13,7 +13,7 @@ import (
 // Config is an alias for `github.com/alexfalkowski/go-service/v2/retry.Config`.
 //
 // It describes the retry policy used by NewRoundTripper:
-//   - `Attempts`: maximum number of retries after the initial attempt.
+//   - `Attempts`: maximum number of attempts including the initial attempt.
 //   - `Timeout`: per-attempt timeout duration string.
 //   - `Backoff`: constant delay between retries.
 type Config = config.Config
@@ -34,16 +34,16 @@ var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 //   - waits a constant backoff derived from `cfg.Backoff` between attempts.
 //
 // Attempts/backoff:
-// `cfg.Attempts` configures the maximum number of retries performed by the backoff policy (not counting
-// the initial attempt). Backoff is implemented using `sethvargo/go-retry` with a constant backoff wrapped
-// in `WithMaxRetries`.
+// `cfg.Attempts` is interpreted as the total attempt count (initial attempt + retries). Since
+// `sethvargo/go-retry` expects a retry count, NewRoundTripper converts it via `cfg.MaxRetries()`
+// before wrapping the constant backoff in `WithMaxRetries`.
 //
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the first retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 	timeout := time.MustParseDuration(cfg.Timeout)
-	backoff := retry.WithMaxRetries(cfg.Attempts, retry.NewConstant(time.MustParseDuration(cfg.Backoff)))
+	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(time.MustParseDuration(cfg.Backoff)))
 
 	return &RoundTripper{RoundTripper: hrt, timeout: timeout, backoff: backoff}
 }

@@ -44,10 +44,26 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 	}
 }
 
+func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
+	rt := &roundTripper{codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  "1s",
+		Backoff:  "1ms",
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.Equal(t, 1, rt.calls)
+}
+
 func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
 	rt := &roundTripper{codes: []int{http.StatusTooManyRequests, http.StatusTooManyRequests}}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, rt)
@@ -63,7 +79,7 @@ func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
 func TestRoundTripperReturnsFirstRetryableResponseWhenExhausted(t *testing.T) {
 	rt := &bodyRoundTripper{responses: []string{"first failure", "second failure"}}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, rt)
@@ -84,7 +100,7 @@ func TestRoundTripperReturnsFirstRetryableResponseWhenExhausted(t *testing.T) {
 func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 	rt := &requestRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, rt)
@@ -101,7 +117,7 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 	rt := &requestRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, rt)
@@ -119,7 +135,7 @@ func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 func TestRoundTripperPreservesRetryableTransportError(t *testing.T) {
 	rt := &errorRoundTripper{err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, rt)
@@ -137,7 +153,7 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	rt := &authRoundTripper{codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	generator := &tokenGenerator{}
 	retrying := retry.NewRoundTripper(&retry.Config{
-		Attempts: 1,
+		Attempts: 2,
 		Timeout:  "1s",
 		Backoff:  "1ms",
 	}, token.NewRoundTripper(env.UserID("user-id"), generator, rt))
