@@ -12,12 +12,14 @@ import (
 )
 
 type testServer struct {
-	err  error
-	done chan struct{}
+	err         error
+	shutdownErr error
+	done        chan struct{}
+	shutdowns   int
 }
 
-func newTestServer(err error) *testServer {
-	return &testServer{err: err, done: make(chan struct{})}
+func newTestServer(err, shutdownErr error) *testServer {
+	return &testServer{err: err, shutdownErr: shutdownErr, done: make(chan struct{})}
 }
 
 func (s *testServer) Serve() error {
@@ -26,8 +28,10 @@ func (s *testServer) Serve() error {
 	return s.err
 }
 
-func (*testServer) Shutdown(_ context.Context) error {
-	return nil
+func (s *testServer) Shutdown(_ context.Context) error {
+	s.shutdowns++
+
+	return s.shutdownErr
 }
 
 func (*testServer) String() string {
@@ -38,7 +42,7 @@ func TestInvalidServer(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	l := test.NewLogger(lc, test.NewJSONLoggerConfig())
 	sh := test.NewShutdowner()
-	srv := newTestServer(test.ErrFailed)
+	srv := newTestServer(test.ErrFailed, nil)
 	svc := server.NewService("test", srv, l, sh)
 
 	svc.Start()
@@ -60,7 +64,7 @@ func TestInvalidServer(t *testing.T) {
 
 func TestValidServer(t *testing.T) {
 	sh := test.NewShutdowner()
-	srv := newTestServer(nil)
+	srv := newTestServer(nil, nil)
 	svc := server.NewService("test", srv, nil, sh)
 
 	svc.Start()
@@ -73,5 +77,15 @@ func TestValidServer(t *testing.T) {
 
 	require.False(t, sh.Called())
 
-	svc.Stop(t.Context())
+	require.NoError(t, svc.Stop(t.Context()))
+}
+
+func TestInvalidStop(t *testing.T) {
+	sh := test.NewShutdowner()
+	srv := newTestServer(nil, test.ErrFailed)
+	svc := server.NewService("test", srv, nil, sh)
+
+	err := svc.Stop(t.Context())
+	require.EqualError(t, err, "test: failed")
+	require.ErrorIs(t, err, test.ErrFailed)
 }
