@@ -36,6 +36,24 @@ func TestStaticPathValueRejectsTraversal(t *testing.T) {
 	require.Equal(t, http.StatusBadRequest, res.Code)
 }
 
+func TestViewRenderReturnsContextError(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem:  test.FileSystem,
+		Layout:      test.Layout,
+	})
+
+	view := mvc.NewFullView("views/hello.tmpl")
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	err := view.Render(ctx, &test.Model)
+
+	require.ErrorIs(t, err, context.Canceled)
+}
+
 func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
@@ -61,4 +79,30 @@ func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Contains(t, res.Body.String(), fs.ErrInvalid.Error())
+}
+
+func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+			"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+			"views/bad.tmpl":     &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ index .Model 0 }}{{ end }}`)},
+		},
+		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
+	})
+
+	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+		return mvc.NewFullView("views/bad.tmpl"), &test.Model, nil
+	}))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(content.TypeKey, mime.HTMLMediaType)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusInternalServerError, res.Code)
 }

@@ -54,14 +54,14 @@ func resister(pattern string, params RegisterParams) {
 	params.Mux.HandleFunc("GET "+http.Pattern(params.Name, pattern), func(res http.ResponseWriter, req *http.Request) {
 		observer, err := params.Server.Observer(params.Name.String(), pattern[1:])
 		if err != nil {
-			status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
+			_ = status.WriteError(res, status.ServiceUnavailableError(err))
 			return
 		}
 		if err := observer.Error(); err != nil {
-			status.WriteError(req.Context(), res, status.ServiceUnavailableError(err))
+			_ = status.WriteError(res, status.ServiceUnavailableError(err))
 			return
 		}
 
-		status.WriteText(req.Context(), res, "SERVING")
+		_ = status.WriteText(res, "SERVING")
 	})
 }

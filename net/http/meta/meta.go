@@ -159,7 +159,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	auth, err := extractAuthorization(req)
 	if err != nil {
-		status.WriteError(ctx, res, status.BadRequestError(err))
+		_ = status.WriteError(res, status.BadRequestError(err))
 		return
 	}
 	ctx = meta.WithAuthorization(ctx, auth)

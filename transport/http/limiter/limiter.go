@@ -69,14 +69,14 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 
 	ok, header, err := h.limiter.Take(ctx)
 	if err != nil {
-		status.WriteError(ctx, res, status.InternalServerError(err))
+		_ = status.WriteError(res, status.InternalServerError(err))
 		return
 	}
 
 	res.Header().Add("RateLimit", header)
 
 	if !ok {
-		status.WriteError(ctx, res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header))
+		_ = status.WriteError(res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header))
 		return
 	}
 
