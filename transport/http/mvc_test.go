@@ -184,6 +184,7 @@ func TestMissingViews(t *testing.T) {
 	mvc.Register(mvc.RegisterParams{
 		Mux:         http.NewServeMux(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
 
@@ -197,6 +198,7 @@ func TestMissingViews(t *testing.T) {
 		Mux:         http.NewServeMux(),
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
 		FileSystem:  test.FileSystem,
+		Pool:        test.Pool,
 	})
 
 	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {

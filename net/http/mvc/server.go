@@ -1,12 +1,13 @@
 package mvc
 
 import (
-	"errors"
 	"io"
 	"io/fs"
 	"path"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
@@ -47,8 +48,9 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 // The handler sets the response Content-Type to HTML and stores the request and response writer in the
 // request context (via net/http/meta) before invoking the controller.
 //
-// If controller returns an error, the handler writes the corresponding status code (see net/http/status.Code)
-// and renders the view using the error value as the template model.
+// If controller returns an error, the handler renders the returned view using the error value as the template
+// model and writes the corresponding status code (see net/http/status.Code) only after rendering succeeds.
+// If rendering itself fails, the handler writes the render error status instead.
 func Route[Model any](pattern string, controller Controller[Model]) bool {
 	if !IsDefined() {
 		return false
@@ -64,15 +66,11 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		view, model, err := controller(ctx)
 		if err != nil {
 			ctx = meta.WithAttribute(ctx, "mvcModelError", meta.Error(err))
-			writeHeader(ctx, res, status.Code(err))
-
-			_ = view.Render(ctx, err)
+			writeView(ctx, res, view, err, status.Code(err))
 			return
 		}
 
-		if err := view.Render(ctx, model); err != nil {
-			writeHeader(ctx, res, status.Code(err))
-		}
+		writeView(ctx, res, view, model, http.StatusOK)
 	}
 
 	http.HandleFunc(mux, pattern, handler)
@@ -88,11 +86,17 @@ func StaticFile(pattern, name string) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
+		buffer := pool.Get()
+		defer pool.Put(buffer)
+
 		ctx := req.Context()
 
-		if err := writeFile(name, res); err != nil {
+		if err := writeFile(name, buffer); err != nil {
 			writeHeader(ctx, res, staticStatusCode(err))
+			return
 		}
+
+		writeBuffer(ctx, res, http.StatusOK, buffer)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -111,6 +115,9 @@ func StaticPathValue(pattern, value, prefix string) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
+		buffer := pool.Get()
+		defer pool.Put(buffer)
+
 		ctx := req.Context()
 		cleaned := path.Clean(req.PathValue(value))
 		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
@@ -119,9 +126,12 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		}
 
 		name := path.Join(prefix, cleaned)
-		if err := writeFile(name, res); err != nil {
+		if err := writeFile(name, buffer); err != nil {
 			writeHeader(ctx, res, staticStatusCode(err))
+			return
 		}
+
+		writeBuffer(ctx, res, http.StatusOK, buffer)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -146,10 +156,31 @@ func staticStatusCode(err error) int {
 	return status.Code(err)
 }
 
-func writeHeader(ctx context.Context, res http.ResponseWriter, code int) {
-	if ctx.Err() != nil {
+func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
+	buffer := pool.Get()
+	defer pool.Put(buffer)
+
+	if err := view.render(ctx, buffer, model); err != nil {
+		writeHeader(ctx, res, status.Code(err))
 		return
 	}
 
+	writeBuffer(ctx, res, code, buffer)
+}
+
+func writeBuffer(ctx context.Context, res http.ResponseWriter, code int, buffer *bytes.Buffer) {
+	if !writeHeader(ctx, res, code) {
+		return
+	}
+
+	_, _ = buffer.WriteTo(res)
+}
+
+func writeHeader(ctx context.Context, res http.ResponseWriter, code int) bool {
+	if ctx.Err() != nil {
+		return false
+	}
+
 	res.WriteHeader(code)
+	return true
 }
