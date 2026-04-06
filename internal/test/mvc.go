@@ -48,6 +48,7 @@ func registerMVC(mux *http.ServeMux, logger *slog.Logger) {
 		Mux:         mux,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: logger}),
 		FileSystem:  FileSystem,
+		Pool:        Pool,
 		Layout:      Layout,
 	})
 }

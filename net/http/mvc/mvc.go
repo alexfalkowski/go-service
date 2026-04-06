@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/go-sprout/sprout"
 )
 
@@ -13,6 +14,7 @@ var (
 	fmap       sprout.FunctionMap
 	fileSystem fs.FS
 	layout     *Layout
+	pool       *sync.BufferPool
 )
 
 // RegisterParams defines dependencies used to register MVC package globals.
@@ -35,6 +37,9 @@ type RegisterParams struct {
 	// It is optional: when nil, MVC is considered not defined and routing helpers return false.
 	FileSystem fs.FS `optional:"true"`
 
+	// Pool is the shared buffer pool used to reduce allocations while rendering views and buffering static files.
+	Pool *sync.BufferPool
+
 	// Layout defines the base templates used to render full and partial views.
 	//
 	// It is optional: when nil or invalid (see Layout.IsValid), MVC is considered not defined and
@@ -51,12 +56,15 @@ type RegisterParams struct {
 //   - FileSystem is non-nil, and
 //   - Layout is valid (see (*Layout).IsValid).
 //
+// Pool must be non-nil. Standard go-service module wiring provides it from sync.Module.
+//
 // If MVC is not defined, routing helpers (Route/Get/Post/etc. and static helpers) return false and do not
 // register handlers.
 func Register(params RegisterParams) {
 	mux = params.Mux
 	fmap = params.FunctionMap
 	fileSystem = params.FileSystem
+	pool = params.Pool
 	layout = params.Layout
 }
 

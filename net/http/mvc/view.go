@@ -2,6 +2,7 @@ package mvc
 
 import (
 	"html/template"
+	"io"
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -109,18 +110,30 @@ type View struct {
 // to explicitly thread those values through the model.
 //
 // Error handling:
-// If ctx is already canceled, Render returns the context error without executing the template.
-// Otherwise, Render returns any template execution error and leaves terminal response handling to the caller.
+// Render renders into an internal buffer before writing to the response so template execution failures do not
+// commit a partial response. If ctx is already canceled, Render returns the context error without executing the
+// template. Otherwise, Render returns any template execution error or final response write error.
 func (v *View) Render(ctx context.Context, model any) error {
+	buffer := pool.Get()
+	defer pool.Put(buffer)
+
+	if err := v.render(ctx, buffer, model); err != nil {
+		return err
+	}
+
+	_, err := buffer.WriteTo(hm.Response(ctx))
+	return err
+}
+
+func (v *View) render(ctx context.Context, writer io.Writer, model any) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 
-	res := hm.Response(ctx)
 	template := &Template{
 		Meta:  meta.Strings(ctx, meta.NoPrefix),
 		Model: model,
 	}
 
-	return v.template.ExecuteTemplate(res, v.name, template)
+	return v.template.ExecuteTemplate(writer, v.name, template)
 }
