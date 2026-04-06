@@ -38,7 +38,7 @@
 // to understand default values and how zero values are handled.
 //
 // A common convention is:
-//   - Attempts == 0: treated as "unspecified" and replaced with a transport default.
+//   - Attempts == 0: retries disabled using the transport's zero-value behavior.
 //   - Attempts == 1: retries disabled.
 //   - Timeout == "" or Backoff == "": treated as "unspecified" and replaced with
 //     transport defaults.
