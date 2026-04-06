@@ -1,9 +1,11 @@
 package pg_test
 
 import (
+	"io/fs"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
+	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -51,8 +53,9 @@ func TestOpen(t *testing.T) {
 
 func TestInvalidOpen(t *testing.T) {
 	tests := []struct {
-		config *pg.Config
-		name   string
+		wantErr error
+		config  *pg.Config
+		name    string
 	}{
 		{
 			name: "invalid masters",
@@ -65,6 +68,7 @@ func TestInvalidOpen(t *testing.T) {
 					ConnMaxLifetime: time.Hour.String(),
 				},
 			},
+			wantErr: fs.ErrNotExist,
 		},
 		{
 			name: "invalid slaves",
@@ -77,6 +81,18 @@ func TestInvalidOpen(t *testing.T) {
 					ConnMaxLifetime: time.Hour.String(),
 				},
 			},
+			wantErr: fs.ErrNotExist,
+		},
+		{
+			name: "empty dsn configuration",
+			config: &pg.Config{
+				Config: &config.Config{
+					MaxOpenConns:    5,
+					MaxIdleConns:    5,
+					ConnMaxLifetime: time.Hour.String(),
+				},
+			},
+			wantErr: driver.ErrNoDSNs,
 		},
 	}
 
@@ -86,8 +102,8 @@ func TestInvalidOpen(t *testing.T) {
 			world.Register()
 
 			_, err := world.OpenDatabase()
+			require.ErrorIs(t, err, tt.wantErr)
 			world.RequireStart()
-			require.Error(t, err)
 
 			world.RequireStop()
 		})

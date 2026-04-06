@@ -23,6 +23,9 @@ import (
 // It is the concrete driver type expected by Register.
 type Driver = driver.Driver
 
+// ErrNoDSNs is returned when SQL configuration enables a driver without any master or slave DSNs.
+var ErrNoDSNs = errors.New("driver: no database DSNs configured")
+
 // Register registers a `database/sql` driver under name and wraps it with OpenTelemetry instrumentation.
 //
 // This function registers the wrapped driver with the global `database/sql` driver registry. It is therefore
@@ -61,6 +64,7 @@ func Register(name string, driver Driver) (err error) {
 //
 // Failure behavior:
 //   - returns errors encountered while resolving DSNs or connecting, and
+//   - returns ErrNoDSNs when neither masters nor slaves are configured, and
 //   - panics if ConnMaxLifetime cannot be parsed, because it uses time.MustParseDuration.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
@@ -106,6 +110,10 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 }
 
 func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
+	if len(masterDSNs)+len(slaveDSNs) == 0 {
+		return nil, ErrNoDSNs
+	}
+
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 	if err := errors.Join(errs...); err != nil {
 		return nil, err
