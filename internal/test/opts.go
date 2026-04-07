@@ -61,7 +61,7 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ 
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", timeout, nc)
 	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientUserAgent(ua))
-	hc := checker.NewHTTPChecker("https://google.com", timeout, checker.WithRoundTripper(rt))
+	hc := checker.NewHTTPChecker(StatusURL("200"), timeout, checker.WithRoundTripper(rt))
 	hr := server.NewRegistration("http", timeout, hc)
 
 	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
