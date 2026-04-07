@@ -15,9 +15,7 @@ import (
 )
 
 func TestInsecureUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := meta.WithAttribute(t.Context(), "test", meta.Ignored("test"))
 	ctx = meta.WithAttribute(ctx, "real-ip", meta.ToString(net.ParseIP("192.168.8.0")))
@@ -37,14 +35,10 @@ func TestInsecureUnary(t *testing.T) {
 	require.NotEmpty(t, h)
 	require.Equal(t, "1.0.0", h[0])
 	require.Equal(t, "Hello test", resp.GetMessage())
-
-	world.RequireStop()
 }
 
 func TestSecureUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
 
 	ctx := meta.WithAttribute(t.Context(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
@@ -57,14 +51,10 @@ func TestSecureUnary(t *testing.T) {
 	resp, err := client.SayHello(ctx, req)
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
-
-	world.RequireStop()
 }
 
 func TestStream(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := meta.WithAttribute(t.Context(), "test", meta.Redacted("test"))
 
@@ -86,6 +76,4 @@ func TestStream(t *testing.T) {
 	resp, err := stream.Recv()
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
-
-	world.RequireStop()
 }

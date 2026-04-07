@@ -27,9 +27,7 @@ func TestTokenAuthUnary(t *testing.T) {
 			gen := uuid.NewGenerator()
 			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -45,8 +43,6 @@ func TestTokenAuthUnary(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.StatusCode)
 			require.NotEmpty(t, body)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -55,9 +51,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -71,14 +65,10 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	require.Contains(t, body, "token: invalid config")
-
-	world.RequireStop()
 }
 
 func TestValidAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -93,14 +83,10 @@ func TestValidAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.NotEmpty(t, body)
-
-	world.RequireStop()
 }
 
 func TestInvalidAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -114,14 +100,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	require.Contains(t, body, `token: invalid match`)
-
-	world.RequireStop()
 }
 
 func TestAuthUnaryWithAppend(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -136,14 +118,10 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, res.StatusCode)
 	require.NotEmpty(t, body)
-
-	world.RequireStop()
 }
 
 func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -158,14 +136,10 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.NotEmpty(t, body)
-
-	world.RequireStop()
 }
 
 func TestMissingAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -179,14 +153,10 @@ func TestMissingAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	require.Contains(t, body, "invalid match")
-
-	world.RequireStop()
 }
 
 func TestEmptyAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -199,14 +169,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 	_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "authorization is invalid")
-
-	world.RequireStop()
 }
 
 func TestMissingClientAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -220,17 +186,13 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 	require.Contains(t, body, "invalid match")
-
-	world.RequireStop()
 }
 
 func TestTokenErrorAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 		test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
 
 	rpc.Route("/hello", test.SuccessSayHello)
 
@@ -243,18 +205,14 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 	_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "token: generation issue")
-
-	world.RequireStop()
 }
 
 func TestBreakerAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 		test.WithWorldHTTP(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	var err error
 	url := world.PathServerURL("http", "hello")
@@ -269,6 +227,4 @@ func TestBreakerAuthUnary(t *testing.T) {
 		})
 	}
 	require.Error(t, err)
-
-	world.RequireStop()
 }

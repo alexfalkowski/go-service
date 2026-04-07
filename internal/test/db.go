@@ -1,35 +1,40 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/linxGnu/mssqlx"
+	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/errors"
 )
-
-// WithWorldPGConfig overrides the Postgres config used when the world opens databases.
-func WithWorldPGConfig(config *pg.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.pg = config
-	})
-}
-
-// OpenDatabase opens the world's configured Postgres connection set through the shared test filesystem.
-func (w *World) OpenDatabase() (*mssqlx.DBs, error) {
-	dbs, err := pg.Open(w.Lifecycle, FS, w.PG)
-	if err != nil {
-		return nil, err
-	}
-
-	return dbs, err
-}
 
 func (w *World) registerDatabase() {
 	pg.Register()
+
+	w.Append(di.Hook{
+		OnStart: func(_ context.Context) error {
+			if w.PG == nil || !w.PG.IsEnabled() {
+				return nil
+			}
+
+			return w.openDatabase()
+		},
+		OnStop: func(_ context.Context) error {
+			if w.DB == nil {
+				return nil
+			}
+
+			return errors.Join(w.DB.Destroy()...)
+		},
+	})
 }
 
-func pgConfig(os *worldOpts) *pg.Config {
-	if os.pg != nil {
-		return os.pg
+func (w *World) openDatabase() error {
+	db, err := pg.Connect(FS, w.PG)
+	if err != nil {
+		return err
 	}
 
-	return NewPGConfig()
+	w.DB = db
+
+	return nil
 }

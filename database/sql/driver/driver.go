@@ -50,7 +50,7 @@ func Register(name string, driver Driver) (err error) {
 	return err
 }
 
-// Open opens master/slave `database/sql` connection pools for a previously registered driver name.
+// Connect opens master/slave `database/sql` connection pools for a previously registered driver name.
 //
 // It resolves DSNs from cfg using the provided filesystem (DSNs are configured as go-service "source strings"),
 // connects using `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for each pool, and then
@@ -59,14 +59,11 @@ func Register(name string, driver Driver) (err error) {
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
 //
-// Lifecycle:
-//   - Open appends an OnStop hook to the provided lifecycle that closes all returned pools by calling Destroy.
-//
 // Failure behavior:
 //   - returns errors encountered while resolving DSNs or connecting, and
 //   - returns ErrNoDSNs when neither masters nor slaves are configured, and
 //   - panics if ConnMaxLifetime cannot be parsed, because it uses time.MustParseDuration.
-func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
+func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
 	for i, m := range cfg.Masters {
@@ -89,16 +86,10 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 		slaves[i] = bytes.String(u)
 	}
 
-	db, err := connect(name, masters, slaves)
+	db, err := connectDBs(name, masters, slaves)
 	if err != nil {
 		return nil, err
 	}
-
-	lc.Append(di.Hook{
-		OnStop: func(_ context.Context) error {
-			return errors.Join(db.Destroy()...)
-		},
-	})
 
 	d := time.MustParseDuration(cfg.ConnMaxLifetime)
 
@@ -109,7 +100,26 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.
 	return db, nil
 }
 
-func connect(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
+// Open opens master/slave `database/sql` connection pools for a previously registered driver name.
+//
+// Open delegates the connection work to Connect and then appends an OnStop hook
+// to the provided lifecycle that closes all returned pools by calling Destroy.
+func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
+	db, err := Connect(name, fs, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Append(di.Hook{
+		OnStop: func(_ context.Context) error {
+			return errors.Join(db.Destroy()...)
+		},
+	})
+
+	return db, nil
+}
+
+func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
 	if len(masterDSNs)+len(slaveDSNs) == 0 {
 		return nil, ErrNoDSNs
 	}

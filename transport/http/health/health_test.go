@@ -16,16 +16,10 @@ func TestHealth(t *testing.T) {
 
 	for _, check := range checks {
 		t.Run(check, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-			world.Register()
-
-			server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-			err := server.Observe(test.Name.String(), check, "http")
-			require.NoError(t, err)
-
-			test.RegisterHealth(world.Mux, server)
-			world.RequireStart()
+			world := test.NewStartedWorld(t,
+				test.WithWorldTelemetry("otlp"),
+				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200"), test.HealthObserve(check, "http")),
+			)
 
 			ctx := t.Context()
 			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
@@ -39,23 +33,15 @@ func TestHealth(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, res.StatusCode)
 			require.Equal(t, "SERVING", body)
-
-			world.RequireStop()
 		})
 	}
 }
 
 func TestReadinessNoop(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-
-	server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := server.Observe(test.Name.String(), "readyz", "noop")
-	require.NoError(t, err)
-
-	test.RegisterHealth(world.Mux, server)
-	world.RequireStart()
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("500"), test.HealthObserve("readyz", "noop")),
+	)
 
 	header := http.Header{}
 	header.Add("Request-Id", "test-id")
@@ -69,21 +55,13 @@ func TestReadinessNoop(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "SERVING", body)
 	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
-
-	world.RequireStop()
 }
 
 func TestInvalidHealth(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-
-	server := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := server.Observe(test.Name.String(), "healthz", "http")
-	require.NoError(t, err)
-
-	test.RegisterHealth(world.Mux, server)
-	world.RequireStart()
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("500"), test.HealthObserve("healthz", "http")),
+	)
 
 	header := http.Header{}
 	url := world.NamedServerURL("http", "healthz")
@@ -94,8 +72,6 @@ func TestInvalidHealth(t *testing.T) {
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, "http: http checker: invalid status code", body)
 	require.Equal(t, mime.ErrorMediaType, res.Header.Get(content.TypeKey))
-
-	world.RequireStop()
 }
 
 func TestMissingHealth(t *testing.T) {
@@ -103,13 +79,10 @@ func TestMissingHealth(t *testing.T) {
 
 	for _, check := range checks {
 		t.Run(check, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-			world.Register()
-
-			server := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-			test.RegisterHealth(world.Mux, server)
-			world.RequireStart()
+			world := test.NewStartedWorld(t,
+				test.WithWorldTelemetry("otlp"),
+				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200")),
+			)
 
 			ctx := t.Context()
 			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
@@ -124,8 +97,6 @@ func TestMissingHealth(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-
-			world.RequireStop()
 		})
 	}
 }

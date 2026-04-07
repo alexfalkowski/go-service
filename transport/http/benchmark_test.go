@@ -191,10 +191,7 @@ func BenchmarkMVC(b *testing.B) {
 
 	logger, _ := logger.NewLogger(logger.LoggerParams{})
 
-	world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-	world.Register()
-
-	world.RequireStart()
+	world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
 	view := mvc.NewFullView("views/hello.tmpl")
 
@@ -220,7 +217,6 @@ func BenchmarkMVC(b *testing.B) {
 	})
 
 	b.StopTimer()
-	world.RequireStop()
 }
 
 //nolint:funlen
@@ -230,10 +226,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
-		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-		world.Register()
-
-		world.RequireStart()
+		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
 		rpc.Route("/hello", test.SuccessSayHello)
 
@@ -258,7 +251,6 @@ func BenchmarkRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
-		world.RequireStop()
 	})
 
 	b.Run("proto", func(b *testing.B) {
@@ -266,10 +258,7 @@ func BenchmarkRPC(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
-		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-		world.Register()
-
-		world.RequireStart()
+		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
 		rpc.Route("/hello", test.SuccessProtobufSayHello)
 
@@ -293,7 +282,6 @@ func BenchmarkRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
-		world.RequireStop()
 	})
 }
 
@@ -304,10 +292,7 @@ func BenchmarkRest(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
-		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-		world.Register()
-
-		world.RequireStart()
+		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
 		test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 		mvc.StaticFile("/robots.txt", "static/robots.txt")
@@ -355,7 +340,6 @@ func BenchmarkRest(b *testing.B) {
 		})
 
 		b.StopTimer()
-		world.RequireStop()
 	})
 
 	b.Run("proto", func(b *testing.B) {
@@ -363,10 +347,7 @@ func BenchmarkRest(b *testing.B) {
 
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 
-		world := test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-		world.Register()
-
-		world.RequireStart()
+		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
 		test.RegisterRequestHandlers("/hello", test.RestRequestProtobuf)
 
@@ -394,6 +375,5 @@ func BenchmarkRest(b *testing.B) {
 		}
 
 		b.StopTimer()
-		world.RequireStop()
 	})
 }

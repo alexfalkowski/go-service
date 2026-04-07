@@ -41,14 +41,11 @@ func down(db *mssqlx.DBs) error {
 	return err
 }
 
-func TestOpen(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("text"))
+func TestConnect(t *testing.T) {
+	cfg := test.NewPGConfig()
 
-	_, err := world.OpenDatabase()
-	world.RequireStart()
+	_, err := driver.Connect("missing", test.FS, cfg.Config)
 	require.Error(t, err)
-
-	world.RequireStop()
 }
 
 func TestInvalidOpen(t *testing.T) {
@@ -99,45 +96,29 @@ func TestInvalidOpen(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(tt.config), test.WithWorldLoggerConfig("json"))
-			world.Register()
 
-			_, err := world.OpenDatabase()
+			err := world.Lifecycle.Start(t.Context())
 			require.ErrorIs(t, err, tt.wantErr)
-			world.RequireStart()
-
-			world.RequireStop()
 		})
 	}
 }
 
 func TestSQL(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("otlp"))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, errors.Join(db.Ping()...))
-
-	world.RequireStop()
+	require.NoError(t, errors.Join(world.DB.Ping()...))
 }
 
 func TestDBQuery(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
-	rows, err := db.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+	rows, err := world.DB.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
 	require.NoError(t, err)
 
 	var count int
@@ -148,52 +129,40 @@ func TestDBQuery(t *testing.T) {
 	require.NoError(t, rows.Err())
 	require.NoError(t, rows.Close())
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestDBExec(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	result, err := db.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
+	result, err := world.DB.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
 	require.NoError(t, err)
 
 	num, err := result.RowsAffected()
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestDBCommitTransExec(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := world.DB.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
 	//nolint:errcheck
@@ -212,26 +181,20 @@ func TestDBCommitTransExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestDBRollbackTransExec(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	tx, err := db.BeginTx(ctx, nil)
+	tx, err := world.DB.BeginTx(ctx, nil)
 	require.NoError(t, err)
 
 	result, err := tx.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
@@ -247,26 +210,20 @@ func TestDBRollbackTransExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestStatementQuery(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -282,26 +239,20 @@ func TestStatementQuery(t *testing.T) {
 	require.NoError(t, rows.Err())
 	require.NoError(t, rows.Close())
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestStatementExec(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	_, stmt, err := db.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
+	_, stmt, err := world.DB.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -316,26 +267,20 @@ func TestStatementExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestTransStatementExec(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	tx, err := db.Begin()
+	tx, err := world.DB.Begin()
 	require.NoError(t, err)
 
 	//nolint:errcheck
@@ -359,26 +304,20 @@ func TestTransStatementExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestInvalidStatementQuery(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldLoggerConfig("tint"))
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("tint"))
 
-	db, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
-	require.NoError(t, up(db))
+	require.NoError(t, up(world.DB))
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
 
-	_, stmt, err := db.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
+	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
 
 	defer stmt.Close()
@@ -386,8 +325,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	_, err = stmt.QueryContext(ctx, 1)
 	require.Error(t, err)
 
-	require.NoError(t, down(db))
-	world.RequireStop()
+	require.NoError(t, down(world.DB))
 }
 
 func TestInvalidSQLPort(t *testing.T) {

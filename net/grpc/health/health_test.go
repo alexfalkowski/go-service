@@ -21,18 +21,10 @@ import (
 )
 
 func TestCheck(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+	)
 	requireGRPCReady(t, world)
 
 	ctx := t.Context()
@@ -49,25 +41,12 @@ func TestCheck(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
-
-	world.RequireStop()
 }
 
 func TestInvalidCheck(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
-	requireObservedHealth(t, so, test.Name.String(), false)
+	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -82,23 +61,10 @@ func TestInvalidCheck(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, v1.HealthCheckResponse_NOT_SERVING, resp.GetStatus())
-
-	world.RequireStop()
 }
 
 func TestNotFoundCheck(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
@@ -110,26 +76,16 @@ func TestNotFoundCheck(t *testing.T) {
 	md := metadata.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
 	ctx := metadata.NewOutgoingContext(t.Context(), md)
 
-	_, err = client.Check(ctx, req)
+	_, err := client.Check(ctx, req)
 	require.Error(t, err)
 	require.Equal(t, codes.NotFound, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestIgnoreAuthCheck(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldToken(nil, test.NewVerifier("test")),
+	)
 	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
@@ -142,23 +98,13 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
-
-	world.RequireStop()
 }
 
 func TestList(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+	)
 	requireGRPCReady(t, world)
 
 	ctx := t.Context()
@@ -178,23 +124,13 @@ func TestList(t *testing.T) {
 		test.Name.String(): {Status: v1.HealthCheckResponse_SERVING},
 	}
 	require.Equal(t, expected, resp.GetStatuses())
-
-	world.RequireStop()
 }
 
 func TestWatch(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
+	)
 	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
@@ -214,25 +150,12 @@ func TestWatch(t *testing.T) {
 
 	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
-
-	world.RequireStop()
 }
 
 func TestInvalidWatch(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
-	requireObservedHealth(t, so, test.Name.String(), false)
+	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -251,23 +174,10 @@ func TestInvalidWatch(t *testing.T) {
 
 	require.Equal(t, v1.HealthCheckResponse_NOT_SERVING, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
-
-	world.RequireStop()
 }
 
 func TestNotFoundWatch(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("500"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
@@ -286,23 +196,13 @@ func TestNotFoundWatch(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, v1.HealthCheckResponse_SERVICE_UNKNOWN, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
-
-	world.RequireStop()
 }
 
 func TestIgnoreAuthWatch(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
-	world.Register()
-
-	so := world.HealthServer(test.Name.String(), test.StatusURL("200"))
-
-	err := so.Observe(test.Name.String(), "grpc", "http")
-	require.NoError(t, err)
-
-	server := health.NewServer(health.ServerParams{Server: so})
-	health.Register(health.RegisterParams{Registrar: world.GRPCServer.ServiceRegistrar(), Server: server})
-
-	world.RequireStart()
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldToken(nil, test.NewVerifier("test")),
+	)
 	requireGRPCReady(t, world)
 
 	conn := world.NewGRPC()
@@ -322,14 +222,9 @@ func TestIgnoreAuthWatch(t *testing.T) {
 
 	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
-
-	world.RequireStop()
 }
 
 func TestWatchStatusChanges(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"))
-	world.Register()
-
 	var unhealthy sync.Bool
 	probe := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		if unhealthy.Load() {
@@ -341,13 +236,9 @@ func TestWatchStatusChanges(t *testing.T) {
 	}))
 	defer probe.Close()
 
-	so := world.HealthServer(test.Name.String(), probe.URL)
-	require.NoError(t, so.Observe(test.Name.String(), "grpc", "http"))
+	world := newGRPCHealthWorld(t, probe.URL, test.WithWorldTelemetry("otlp"))
 
-	world.RequireStart()
-	defer world.RequireStop()
-
-	watcher := health.NewServer(health.ServerParams{Server: so})
+	watcher := health.NewServer(health.ServerParams{Server: world.GRPCHealth})
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
@@ -429,6 +320,14 @@ func requireObservedHealth(t *testing.T, server *server.Server, service string, 
 
 		return observer.Error() != nil
 	}, time.Second, 10*time.Millisecond)
+}
+
+func newGRPCHealthWorld(t *testing.T, url string, opts ...test.WorldOption) *test.World {
+	t.Helper()
+
+	opts = append(opts, test.WithWorldGRPCHealth(test.Name.String(), url, test.HealthObserve("grpc", "http")))
+
+	return test.NewStartedWorld(t, opts...)
 }
 
 func requireWatchResponse(t *testing.T, responses <-chan *v1.HealthCheckResponse) *v1.HealthCheckResponse {

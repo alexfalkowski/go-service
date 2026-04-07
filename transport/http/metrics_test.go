@@ -12,13 +12,12 @@ import (
 )
 
 func TestPrometheusHTTP(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("prometheus"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-	world.Register()
-
-	_, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("prometheus"),
+		test.WithWorldPGConfig(nil),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+		test.WithWorldHTTP(),
+	)
 
 	ctx, cancel := test.Timeout()
 	defer cancel()
@@ -35,8 +34,6 @@ func TestPrometheusHTTP(t *testing.T) {
 	require.Contains(t, body, "system")
 	require.Contains(t, body, "process")
 	require.Contains(t, body, "runtime")
-
-	world.RequireStop()
 }
 
 func TestPrometheusAuthHTTP(t *testing.T) {
@@ -47,18 +44,13 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 	gen := uuid.NewGenerator()
 	tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("prometheus"),
+		test.WithWorldPGConfig(nil),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 		test.WithWorldToken(tkn, tkn),
 		test.WithWorldHTTP(),
 	)
-	world.Register()
-
-	_, err := world.OpenDatabase()
-	require.NoError(t, err)
-
-	world.RequireStart()
 
 	header := http.Header{}
 	url := world.NamedServerURL("http", "metrics")
@@ -72,6 +64,4 @@ func TestPrometheusAuthHTTP(t *testing.T) {
 	require.Contains(t, body, "system")
 	require.Contains(t, body, "process")
 	require.Contains(t, body, "runtime")
-
-	world.RequireStop()
 }

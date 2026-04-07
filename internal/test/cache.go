@@ -1,12 +1,15 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/stretchr/testify/require"
 )
 
 // Cache is a cache.Cache test double that reports hits and returns a fixed value from Fetch.
@@ -90,6 +93,48 @@ func redisCache(lc di.Lifecycle) *cache.Cache {
 		Encoder:    Encoder,
 		Pool:       Pool,
 		Driver:     driver,
+	}
+
+	return cache.NewCache(params)
+}
+
+func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) *cache.Cache {
+	tb.Helper()
+
+	var kind *cache.Cache
+	if opts.cache == nil {
+		kind = redisCache(lc)
+	} else {
+		kind = createWorldCache(tb, lc, opts.cache)
+	}
+
+	if opts.registerCache {
+		cache.Register(kind)
+		tb.Cleanup(func() {
+			cache.Register(nil)
+		})
+	}
+
+	return kind
+}
+
+func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) *cache.Cache {
+	tb.Helper()
+
+	drv := opts.driver
+	if drv == nil {
+		var err error
+		drv, err = driver.NewDriver(FS, opts.config)
+		require.NoError(tb, err)
+	}
+
+	params := cache.CacheParams{
+		Lifecycle:  lc,
+		Config:     opts.config,
+		Compressor: Compressor,
+		Encoder:    Encoder,
+		Pool:       Pool,
+		Driver:     drv,
 	}
 
 	return cache.NewCache(params)

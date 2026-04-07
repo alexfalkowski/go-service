@@ -50,30 +50,12 @@ func TestValidCache(t *testing.T) {
 func testValidCacheCase(t *testing.T, cfg *config.Config, persist, get any) {
 	t.Helper()
 
-	world := test.NewWorld(t)
-	world.Register()
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
 
-	driver, err := driver.NewDriver(test.FS, cfg)
-	require.NoError(t, err)
-
-	params := cache.CacheParams{
-		Lifecycle:  world.Lifecycle,
-		Config:     cfg,
-		Compressor: test.Compressor,
-		Encoder:    test.Encoder,
-		Pool:       test.Pool,
-		Driver:     driver,
-	}
-
-	cache := cache.NewCache(params)
-	world.RequireStart()
-
-	require.NoError(t, cache.Persist(t.Context(), "test", persist, time.Minute))
-	require.NoError(t, cache.Get(t.Context(), "test", get))
+	require.NoError(t, world.Persist(t.Context(), "test", persist, time.Minute))
+	require.NoError(t, world.Get(t.Context(), "test", get))
 	assertValidCacheValue(t, get)
-	require.NoError(t, cache.Remove(t.Context(), "test"))
-
-	world.RequireStop()
+	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
 func assertValidCacheValue(t *testing.T, get any) {
@@ -94,36 +76,16 @@ func assertValidCacheValue(t *testing.T, get any) {
 }
 
 func TestGenericValidCache(t *testing.T) {
-	world := test.NewWorld(t)
-	world.Register()
-
 	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
 
-	driver, err := driver.NewDriver(test.FS, config)
-	require.NoError(t, err)
-
-	params := cache.CacheParams{
-		Lifecycle:  world.Lifecycle,
-		Config:     config,
-		Compressor: test.Compressor,
-		Encoder:    test.Encoder,
-		Pool:       test.Pool,
-		Driver:     driver,
-	}
-
-	kind := cache.NewCache(params)
-	cache.Register(kind)
-
-	world.RequireStart()
 	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
 
 	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
 	require.Equal(t, "hello?", *value)
 
-	require.NoError(t, kind.Remove(t.Context(), "test"))
-
-	world.RequireStop()
+	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
 func TestGenericDisabledCache(t *testing.T) {
@@ -137,38 +99,17 @@ func TestGenericDisabledCache(t *testing.T) {
 }
 
 func TestExpiredCache(t *testing.T) {
-	world := test.NewWorld(t)
-	world.Register()
-
 	config := test.NewCacheConfig("sync", "snappy", "json", "redis")
-
-	driver, err := driver.NewDriver(test.FS, config)
-	require.NoError(t, err)
-
-	params := cache.CacheParams{
-		Lifecycle:  world.Lifecycle,
-		Config:     config,
-		Compressor: test.Compressor,
-		Encoder:    test.Encoder,
-		Pool:       test.Pool,
-		Driver:     driver,
-	}
-
-	kind := cache.NewCache(params)
-	cache.Register(kind)
-
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
 	require.NoError(t, cache.Persist(t.Context(), "test", ptr.Value("hello?"), time.Nanosecond))
 
 	// Simulate expiry.
 	time.Sleep(time.Second)
 
-	_, err = cache.Get[string](t.Context(), "test")
+	_, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
 
-	require.NoError(t, kind.Remove(t.Context(), "test"))
-
-	world.RequireStop()
+	require.NoError(t, world.Remove(t.Context(), "test"))
 }
 
 func TestErroneousCache(t *testing.T) {
@@ -183,107 +124,40 @@ func TestErroneousCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			world := test.NewWorld(t)
-			world.Register()
-
 			_, err := driver.NewDriver(test.FS, tt.config)
-
-			world.RequireStart()
 			require.Error(t, err)
-			world.RequireStop()
 		})
 	}
 }
 
 func TestDisabledCache(t *testing.T) {
 	t.Run("driver", func(t *testing.T) {
-		world := test.NewWorld(t)
-		world.Register()
-
 		_, err := driver.NewDriver(test.FS, nil)
-
-		world.RequireStart()
 		require.NoError(t, err)
-		world.RequireStop()
 	})
 
 	t.Run("cache", func(t *testing.T) {
-		world := test.NewWorld(t)
-		world.Register()
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(nil), test.WithWorldRegisterCache())
 
-		params := cache.CacheParams{
-			Lifecycle:  world.Lifecycle,
-			Config:     nil,
-			Compressor: test.Compressor,
-			Encoder:    test.Encoder,
-			Pool:       test.Pool,
-			Driver:     &test.Cache{},
-		}
-
-		kind := cache.NewCache(params)
-		cache.Register(kind)
-
-		world.RequireStart()
-		require.Nil(t, kind)
-		world.RequireStop()
+		require.Nil(t, world.Cache)
 	})
 }
 
 func TestErroneousSave(t *testing.T) {
 	t.Run("invalid encoder", func(t *testing.T) {
 		config := test.NewCacheConfig("sync", "snappy", "error", "redis")
-
-		world := test.NewWorld(t)
-		world.Register()
-
-		driver, err := driver.NewDriver(test.FS, config)
-		require.NoError(t, err)
-
-		params := cache.CacheParams{
-			Lifecycle:  world.Lifecycle,
-			Config:     config,
-			Compressor: test.Compressor,
-			Encoder:    test.Encoder,
-			Pool:       test.Pool,
-			Driver:     driver,
-		}
-
-		kind := cache.NewCache(params)
-		cache.Register(kind)
-
-		world.RequireStart()
+		test.NewStartedWorld(t, test.WithWorldCacheConfig(config), test.WithWorldRegisterCache())
 		require.Error(t, cache.Persist(t.Context(), "test", ptr.Value("test"), time.Minute))
-		world.RequireStop()
 	})
 
 	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
 		config := test.NewCacheConfig("sync", "none", "json", "redis")
-
-		world := test.NewWorld(t)
-		world.Register()
-
-		driver, err := driver.NewDriver(test.FS, config)
-		require.NoError(t, err)
-
-		params := cache.CacheParams{
-			Lifecycle:  world.Lifecycle,
-			Config:     config,
-			Compressor: test.Compressor,
-			Encoder:    test.Encoder,
-			Pool:       test.Pool,
-			Driver:     driver,
-		}
-
-		kind := cache.NewCache(params)
-
-		world.RequireStart()
-		require.NoError(t, kind.Persist(t.Context(), "test", &readFromOnly{Name: "hello?"}, time.Minute))
+		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
+		require.NoError(t, world.Persist(t.Context(), "test", &readFromOnly{Name: "hello?"}, time.Minute))
 
 		var get test.Request
-		require.NoError(t, kind.Get(t.Context(), "test", &get))
+		require.NoError(t, world.Get(t.Context(), "test", &get))
 		require.Equal(t, "hello?", get.Name)
-
-		world.RequireStop()
 	})
 }
 
@@ -301,58 +175,24 @@ func TestErroneousGet(t *testing.T) {
 
 	for _, value := range values {
 		t.Run(value.name, func(t *testing.T) {
-			world := test.NewWorld(t)
-			world.Register()
+			world := test.NewStartedWorld(t,
+				test.WithWorldCacheConfig(value.config),
+				test.WithWorldCacheDriver(value.driver),
+			)
 
-			params := cache.CacheParams{
-				Lifecycle:  world.Lifecycle,
-				Config:     value.config,
-				Compressor: test.Compressor,
-				Encoder:    test.Encoder,
-				Pool:       test.Pool,
-				Driver:     value.driver,
-			}
-
-			kind := cache.NewCache(params)
-			cache.Register(kind)
-
-			world.RequireStart()
-
-			require.Error(t, kind.Get(t.Context(), "test", ptr.Zero[string]()))
-
-			world.RequireStop()
+			require.Error(t, world.Get(t.Context(), "test", ptr.Zero[string]()))
 		})
 	}
 }
 
 func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
 	config := test.NewCacheConfig("sync", "none", "json", "redis")
-
-	world := test.NewWorld(t)
-	world.Register()
-
-	driver, err := driver.NewDriver(test.FS, config)
-	require.NoError(t, err)
-
-	params := cache.CacheParams{
-		Lifecycle:  world.Lifecycle,
-		Config:     config,
-		Compressor: test.Compressor,
-		Encoder:    test.Encoder,
-		Pool:       test.Pool,
-		Driver:     driver,
-	}
-
-	kind := cache.NewCache(params)
-
-	world.RequireStart()
-	require.NoError(t, kind.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
+	require.NoError(t, world.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
 
 	get := &writeToOnly{}
-	require.NoError(t, kind.Get(t.Context(), "test", get))
+	require.NoError(t, world.Get(t.Context(), "test", get))
 	require.Equal(t, "hello?", get.Name)
-
-	world.RequireStop()
 }
 
 func TestMissingCache(t *testing.T) {

@@ -10,9 +10,7 @@ import (
 )
 
 func TestSecure(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP())
 
 	client := world.NewHTTP(
 		breaker.WithSettings(breaker.Settings{}),
@@ -27,6 +25,4 @@ func TestSecure(t *testing.T) {
 	defer resp.Body.Close()
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-
-	world.RequireStop()
 }

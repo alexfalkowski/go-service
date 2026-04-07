@@ -22,9 +22,7 @@ var paths = []string{
 func TestInsecureDebug(t *testing.T) {
 	for _, path := range paths {
 		t.Run(path, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldDebug())
 
 			header := http.Header{}
 			url := world.NamedDebugURL("http", path)
@@ -32,8 +30,6 @@ func TestInsecureDebug(t *testing.T) {
 			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.StatusCode)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -41,9 +37,7 @@ func TestInsecureDebug(t *testing.T) {
 func TestSecureDebug(t *testing.T) {
 	for _, path := range paths {
 		t.Run(path, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldSecure(), test.WithWorldDebug())
 
 			header := http.Header{}
 			url := world.NamedDebugURL("https", path)
@@ -51,8 +45,6 @@ func TestSecureDebug(t *testing.T) {
 			res, err := world.ResponseWithNoBody(t.Context(), url, http.MethodGet, header)
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.StatusCode)
-
-			world.RequireStop()
 		})
 	}
 }
