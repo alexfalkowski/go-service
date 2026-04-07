@@ -15,7 +15,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -49,6 +48,8 @@ func init() {
 // so callers only need to add any test-specific routes/handlers and then start
 // the lifecycle. Most tests should prefer Start or NewStartedWorld to ensure
 // cleanup is always registered with the testing framework.
+//
+//nolint:funlen
 func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	tb.Helper()
 
@@ -58,36 +59,50 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	generator := uuid.NewGenerator()
 	os := worldOptions(opts...)
 
-	logger := createLogger(lc, os)
+	logger, err := createLogger(lc, os)
+	require.NoError(tb, err)
 	transportCfg := transportConfig(os)
 	debugCfg := debugConfig(os)
 	tlsCfg := tlsConfig(os)
-	meter := meter(lc, mux, os)
+	meter, err := meter(lc, mux, os)
+	require.NoError(tb, err)
+
+	grpcServerLimiter, err := NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
+	require.NoError(tb, err)
+	httpServerLimiter, err := NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter)
+	require.NoError(tb, err)
+
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
 		TransportConfig: transportCfg, DebugConfig: debugCfg,
 		Meter: meter, Mux: mux,
-		GRPCLimiter: NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
-		HTTPLimiter: NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
+		GRPCLimiter: grpcServerLimiter,
+		HTTPLimiter: httpServerLimiter,
 		Verifier:    os.verifier, Generator: generator,
 		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
 	}
-	server.Register()
+	require.NoError(tb, server.Register())
+
+	httpClientLimiter, err := NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter)
+	require.NoError(tb, err)
+	grpcClientLimiter, err := NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter)
+	require.NoError(tb, err)
 
 	client := &Client{
 		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: transportCfg,
 		Meter: meter, TLS: tlsCfg, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
-		HTTPLimiter: NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
-		GRPCLimiter: NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
+		HTTPLimiter: httpClientLimiter,
+		GRPCLimiter: grpcClientLimiter,
 	}
-	httpClient, err := client.HTTP()
+	httpClient, err := client.NewHTTP()
 	require.NoError(tb, err)
 
 	registerMVC(mux, logger.Logger)
 	registerRest(mux)
 
-	receiver, sender := NewEvents(mux, os.rt, generator)
+	receiver, sender, err := NewEvents(mux, os.rt, generator)
+	require.NoError(tb, err)
 
 	world := &World{
 		t:      tb,
@@ -242,15 +257,17 @@ func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, head
 }
 
 func (w *World) namedURL(host, path string) string {
+	w.t.Helper()
 	url, err := url.JoinPath(host, Name.String(), path)
-	runtime.Must(err)
+	require.NoError(w.t, err)
 
 	return url
 }
 
 func (w *World) pathURL(host, path string) string {
+	w.t.Helper()
 	url, err := url.JoinPath(host, path)
-	runtime.Must(err)
+	require.NoError(w.t, err)
 
 	return url
 }

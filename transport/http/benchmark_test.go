@@ -20,7 +20,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -67,7 +68,7 @@ func BenchmarkHTTP(b *testing.B) {
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
-		h, err := th.NewServer(th.ServerParams{
+		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
 			Config:     cfg.HTTP,
@@ -107,7 +108,7 @@ func BenchmarkHTTP(b *testing.B) {
 		logger, _ := logger.NewLogger(logger.LoggerParams{})
 		cfg := test.NewInsecureTransportConfig()
 
-		h, err := th.NewServer(th.ServerParams{
+		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
 			Config:     cfg.HTTP,
@@ -151,7 +152,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		test.RegisterTracer(lc, nil)
 
-		h, err := th.NewServer(th.ServerParams{
+		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
 			Config:     cfg.HTTP,
@@ -202,7 +203,8 @@ func BenchmarkMVC(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("html", func(b *testing.B) {
-		client := world.NewHTTP()
+		client, err := world.NewHTTP()
+		require.NoError(b, err)
 		url := world.PathServerURL("http", "hello")
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
@@ -233,7 +235,8 @@ func BenchmarkRPC(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
-			cl := world.NewHTTP()
+			cl, err := world.NewHTTP()
+			require.NoError(b, err)
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport),
@@ -265,7 +268,8 @@ func BenchmarkRPC(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-			cl := world.NewHTTP()
+			cl, err := world.NewHTTP()
+			require.NoError(b, err)
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport))
@@ -300,7 +304,8 @@ func BenchmarkRest(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
-			cl := world.NewHTTP()
+			cl, err := world.NewHTTP()
+			require.NoError(b, err)
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
@@ -321,7 +326,8 @@ func BenchmarkRest(b *testing.B) {
 		}
 
 		b.Run("static", func(b *testing.B) {
-			cl := world.NewHTTP()
+			cl, err := world.NewHTTP()
+			require.NoError(b, err)
 			url := world.PathServerURL("http", "robots.txt")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
@@ -354,7 +360,8 @@ func BenchmarkRest(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-			cl := world.NewHTTP()
+			cl, err := world.NewHTTP()
+			require.NoError(b, err)
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 

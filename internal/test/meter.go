@@ -90,9 +90,9 @@ func (InvalidMeter) RegisterCallback(metric.Callback, ...metric.Observable) (met
 	return nil, errInvalid
 }
 
-func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) metrics.Meter {
+func meter(lc di.Lifecycle, mux *http.ServeMux, os *worldOpts) (metrics.Meter, error) {
 	if os.telemetry == "otlp" {
-		return NewOTLPMeter(lc)
+		return NewMeter(lc, NewOTLPMetricsConfig())
 	}
 
 	config := NewPrometheusMetricsConfig()

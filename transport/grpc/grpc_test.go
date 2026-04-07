@@ -19,7 +19,7 @@ func TestInsecureUnary(t *testing.T) {
 	ctx = meta.WithAttribute(ctx, "real-ip", meta.ToString(net.ParseIP("192.168.8.0")))
 	ctx = meta.WithAttribute(ctx, "redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -40,7 +40,7 @@ func TestSecureUnary(t *testing.T) {
 
 	ctx := meta.WithAttribute(t.Context(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -56,7 +56,7 @@ func TestStream(t *testing.T) {
 
 	ctx := meta.WithAttribute(t.Context(), "test", meta.Redacted("test"))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)

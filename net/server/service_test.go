@@ -40,7 +40,8 @@ func (*testServer) String() string {
 
 func TestInvalidServer(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	l := test.NewLogger(lc, test.NewJSONLoggerConfig())
+	l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
+	require.NoError(t, err)
 	sh := test.NewShutdowner()
 	srv := newTestServer(test.ErrFailed, nil)
 	svc := server.NewService("test", srv, l, sh)

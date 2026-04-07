@@ -7,7 +7,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -38,9 +37,9 @@ type Client struct {
 	Compression  bool
 }
 
-// HTTP returns an HTTP client configured with the world's logger, retry policy,
+// NewHTTP returns an HTTP client configured with the world's logger, retry policy,
 // token generator, limiter, tracing, and optional compression.
-func (c *Client) HTTP(os ...httpbreaker.Option) (*http.Client, error) {
+func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 	opts := []transporthttp.ClientOption{
 		transporthttp.WithClientLogger(c.Logger),
 		transporthttp.WithClientRoundTripper(c.RoundTripper),
@@ -61,18 +60,9 @@ func (c *Client) HTTP(os ...httpbreaker.Option) (*http.Client, error) {
 	return transporthttp.NewClient(opts...)
 }
 
-// NewHTTP returns an HTTP client configured with the world's logger, retry policy,
-// token generator, limiter, tracing, and optional compression.
-func (c *Client) NewHTTP(os ...httpbreaker.Option) *http.Client {
-	client, err := c.HTTP(os...)
-	runtime.Must(err)
-
-	return client
-}
-
-// GRPC returns a gRPC client connection configured with the world's interceptors,
+// NewGRPC returns a gRPC client connection configured with the world's interceptors,
 // retry policy, token generator, limiter, tracing, and optional compression.
-func (c *Client) GRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
+func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
 	opts := []transportgrpc.ClientOption{
 		transportgrpc.WithClientUnaryInterceptors(),
 		transportgrpc.WithClientStreamInterceptors(),
@@ -96,13 +86,4 @@ func (c *Client) GRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
 	_, target := net.ListenNetworkAddress(c.Transport.GRPC.Address)
 
 	return transportgrpc.NewClient(target, opts...)
-}
-
-// NewGRPC returns a gRPC client connection configured with the world's interceptors,
-// retry policy, token generator, limiter, tracing, and optional compression.
-func (c *Client) NewGRPC(os ...grpcbreaker.Option) *grpc.ClientConn {
-	conn, err := c.GRPC(os...)
-	runtime.Must(err)
-
-	return conn
 }
