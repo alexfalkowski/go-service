@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// Connect retries dialing address until it succeeds or the test timeout expires.
+// Connect retries dialing address for up to one second until it succeeds.
 //
 // The address may be a raw host:port or a go-service "<network>://<address>" string.
 func Connect(ctx context.Context, address string) (net.Conn, error) {
