@@ -12,7 +12,8 @@ import (
 
 func TestLogger(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	log := test.NewLogger(lc, test.NewTextLoggerConfig())
+	log, err := test.NewLogger(lc, test.NewTextLoggerConfig())
+	require.NoError(t, err)
 
 	log.Log(t.Context(), logger.NewText("test"), logger.Bool("yes", true))
 	log.Log(t.Context(), logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))

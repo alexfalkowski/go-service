@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	hh "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -13,16 +12,20 @@ import (
 )
 
 // NewEvents builds a webhook-backed CloudEvents receiver and sender using the shared hook fixture.
-func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client) {
+func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client, error) {
 	h, err := hooks.NewHook(FS, NewHook())
-	runtime.Must(err)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	receiver := events.NewReceiver(mux, hh.NewWebhook(h, generator))
 
 	sender, err := events.NewSender(hh.NewWebhook(h, generator), events.WithSenderRoundTripper(rt))
-	runtime.Must(err)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return receiver, sender
+	return receiver, sender, nil
 }
 
 // RegisterEvents registers an `/events` receiver that stores the last delivered event on the world.

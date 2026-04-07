@@ -12,10 +12,11 @@ import (
 func TestSecure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP())
 
-	client := world.NewHTTP(
+	client, err := world.NewHTTP(
 		breaker.WithSettings(breaker.Settings{}),
 		breaker.WithFailureStatuses(http.StatusInternalServerError),
 	)
+	require.NoError(t, err)
 
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://github.com/alexfalkowski", http.NoBody)
 	require.NoError(t, err)

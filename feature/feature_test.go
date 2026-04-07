@@ -13,11 +13,13 @@ import (
 func TestNoProvider(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	attrs := map[string]any{"favorite_color": "blue"}
+	provider, err := test.NewPrometheusMeterProvider(lc)
+	require.NoError(t, err)
 
 	feature.Register(feature.ProviderParams{
 		Lifecycle:      lc,
 		Name:           test.Name,
-		MetricProvider: test.NewPrometheusMeterProvider(lc),
+		MetricProvider: provider,
 	})
 
 	client := feature.NewClient(test.Name)
@@ -34,10 +36,12 @@ func TestNoProvider(t *testing.T) {
 func TestProvider(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	attrs := map[string]any{"favorite_color": "blue"}
+	provider, err := test.NewPrometheusMeterProvider(lc)
+	require.NoError(t, err)
 	feature.Register(feature.ProviderParams{
 		Lifecycle:       lc,
 		Name:            test.Name,
-		MetricProvider:  test.NewPrometheusMeterProvider(lc),
+		MetricProvider:  provider,
 		FeatureProvider: openfeature.NoopProvider{},
 	})
 

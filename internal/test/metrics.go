@@ -2,40 +2,46 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"go.opentelemetry.io/otel/metric"
 )
 
 // NewOTLPMeter returns a meter backed by the shared OTLP metrics config.
-func NewOTLPMeter(lc di.Lifecycle) metrics.Meter {
+func NewOTLPMeter(lc di.Lifecycle) (metrics.Meter, error) {
 	return NewMeter(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeter returns a meter backed by the shared Prometheus metrics config.
-func NewPrometheusMeter(lc di.Lifecycle) metrics.Meter {
+func NewPrometheusMeter(lc di.Lifecycle) (metrics.Meter, error) {
 	return NewMeter(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeter returns a repository meter scoped to the shared test name and version.
-func NewMeter(lc di.Lifecycle, c *metrics.Config) metrics.Meter {
-	return metrics.NewMeter(Name, Version, NewMeterProvider(lc, c))
+func NewMeter(lc di.Lifecycle, c *metrics.Config) (metrics.Meter, error) {
+	provider, err := NewMeterProvider(lc, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return metrics.NewMeter(Name, Version, provider), nil
 }
 
 // NewOTLPMeterProvider returns a meter provider backed by the shared OTLP metrics config.
-func NewOTLPMeterProvider(lc di.Lifecycle) metric.MeterProvider {
+func NewOTLPMeterProvider(lc di.Lifecycle) (metric.MeterProvider, error) {
 	return NewMeterProvider(lc, NewOTLPMetricsConfig())
 }
 
 // NewPrometheusMeterProvider returns a meter provider backed by the shared Prometheus metrics config.
-func NewPrometheusMeterProvider(lc di.Lifecycle) metric.MeterProvider {
+func NewPrometheusMeterProvider(lc di.Lifecycle) (metric.MeterProvider, error) {
 	return NewMeterProvider(lc, NewPrometheusMetricsConfig())
 }
 
 // NewMeterProvider creates a meter provider with a reader registered on the supplied lifecycle.
-func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) metric.MeterProvider {
+func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) (metric.MeterProvider, error) {
 	r, err := metrics.NewReader(lc, Name, config)
-	runtime.Must(err)
+	if err != nil {
+		return nil, err
+	}
 
 	params := metrics.MeterProviderParams{
 		Lifecycle:   lc,
@@ -46,5 +52,5 @@ func NewMeterProvider(lc di.Lifecycle, config *metrics.Config) metric.MeterProvi
 		Name:        Name,
 	}
 
-	return metrics.NewMeterProvider(params)
+	return metrics.NewMeterProvider(params), nil
 }
