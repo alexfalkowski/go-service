@@ -11,13 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 )
 
-// WithWorldRest configures NewWorld to create a REST client backed by the world's HTTP transport.
-func WithWorldRest() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.rest = true
-	})
-}
-
 // RegisterHandlers registers DELETE and GET REST handlers for the service-prefixed path.
 func RegisterHandlers[Res any](path string, h content.Handler[Res]) {
 	rest.Delete(http.Pattern(Name, path), h)

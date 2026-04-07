@@ -13,9 +13,7 @@ import (
 )
 
 func TestSendReceiveWithRoundTripper(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 
 	world.RegisterEvents(t.Context())
 
@@ -30,14 +28,10 @@ func TestSendReceiveWithRoundTripper(t *testing.T) {
 	require.True(t, protocol.IsACK(result))
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
-
-	world.RequireStop()
 }
 
 func TestSendReceiveWithoutRoundTripper(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	world.RegisterEvents(t.Context())
 
@@ -52,14 +46,10 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 	require.True(t, protocol.IsACK(result))
 	require.NotNil(t, world.Event)
 	require.Equal(t, "test", bytes.String(e.Data()))
-
-	world.RequireStop()
 }
 
 func TestSendNotReceive(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}), test.WithWorldHTTP())
 
 	world.RegisterEvents(t.Context())
 
@@ -73,8 +63,6 @@ func TestSendNotReceive(t *testing.T) {
 	result := world.Sender.Send(ctx, e)
 	require.True(t, protocol.IsNACK(result))
 	require.Nil(t, world.Event)
-
-	world.RequireStop()
 }
 
 type delRoundTripper struct {

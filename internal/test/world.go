@@ -3,15 +3,14 @@ package test
 import (
 	"io"
 	"net/url"
+	"testing"
 
+	health "github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/context"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
-	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
@@ -20,126 +19,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/token"
-	"github.com/alexfalkowski/go-service/v2/transport"
-	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	th "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	sdk "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
+	"github.com/linxGnu/mssqlx"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
 	telemetry.Register()
-	tg.Register(FS)
+	grpc.Register(FS)
 	th.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
-}
-
-// WorldOption configures optional features on a World before it is created.
-type WorldOption interface {
-	apply(opts *worldOpts)
-}
-
-type worldOpts struct {
-	verifier      token.Verifier
-	rt            http.RoundTripper
-	generator     token.Generator
-	logger        *logger.Logger
-	clientLimiter *limiter.Config
-	serverLimiter *limiter.Config
-	pg            *pg.Config
-	telemetry     string
-	loggerConfig  string
-	secure        bool
-	compression   bool
-	http          bool
-	grpc          bool
-	debug         bool
-	rest          bool
-}
-
-type worldOptionFunc func(*worldOpts)
-
-func (f worldOptionFunc) apply(o *worldOpts) {
-	f(o)
-}
-
-// WithWorldSecure enables TLS for the transport and debug servers in the test world.
-func WithWorldSecure() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.secure = true
-	})
-}
-
-// WithWorldTelemetry selects the telemetry exporter kind used by the world meter.
-//
-// The current helpers recognize "otlp" for OTLP metrics and fall back to the
-// Prometheus test setup for any other value.
-func WithWorldTelemetry(kind string) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.telemetry = kind
-	})
-}
-
-// WithWorldClientLimiter installs the provided client-side rate limiter config.
-func WithWorldClientLimiter(config *limiter.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.clientLimiter = config
-	})
-}
-
-// WithWorldServerLimiter installs the provided server-side rate limiter config.
-func WithWorldServerLimiter(config *limiter.Config) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.serverLimiter = config
-	})
-}
-
-// WithWorldCompression enables transport compression for clients created by the world.
-func WithWorldCompression() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.compression = true
-	})
-}
-
-// WithWorldRoundTripper overrides the HTTP round tripper used by world clients and event senders.
-func WithWorldRoundTripper(rt http.RoundTripper) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.rt = rt
-	})
-}
-
-// WithWorldHTTP enables registration of the HTTP transport server.
-func WithWorldHTTP() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.http = true
-	})
-}
-
-// WithWorldGRPC enables registration of the gRPC transport server.
-func WithWorldGRPC() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.grpc = true
-	})
-}
-
-// WithWorldDebug enables registration of the debug server.
-func WithWorldDebug() WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.debug = true
-	})
-}
-
-func worldOptions(opts ...WorldOption) *worldOpts {
-	os := &worldOpts{}
-	for _, o := range opts {
-		o.apply(os)
-	}
-
-	return os
 }
 
 // NewWorld builds a shared integration test harness around the repository's transport,
@@ -147,26 +41,29 @@ func worldOptions(opts ...WorldOption) *worldOpts {
 //
 // The returned World owns a fresh Fx test lifecycle, HTTP mux, server/client
 // builders, telemetry config, cache handle, database config, and optional REST
-// client. Callers typically enable transports with WithWorldHTTP and/or
-// WithWorldGRPC, then use the returned helpers to register routes and start the
-// lifecycle under test control.
-func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
+// client.
+//
+// NewWorld completes the package-level helper registrations during construction,
+// so callers only need to add any test-specific routes/handlers and then start
+// the lifecycle. Most tests should prefer Start or NewStartedWorld to ensure
+// cleanup is always registered with the testing framework.
+func NewWorld(tb testing.TB, opts ...WorldOption) *World {
+	tb.Helper()
+
 	mux := http.NewServeMux()
-	lc := fxtest.NewLifecycle(t)
+	lc := fxtest.NewLifecycle(tb)
 	tracer := NewOTLPTracerConfig()
 	generator := uuid.NewGenerator()
 	os := worldOptions(opts...)
 
 	logger := createLogger(lc, os)
-	tranConfig := transportConfig(os)
-	debugConfig := debugConfig(os)
-	tlsConfig := tlsConfig(os)
+	transportCfg := transportConfig(os)
+	debugCfg := debugConfig(os)
+	tlsCfg := tlsConfig(os)
 	meter := meter(lc, mux, os)
-	pgConfig := pgConfig(os)
-
 	server := &Server{
 		Lifecycle: lc, Logger: logger, Tracer: tracer,
-		TransportConfig: tranConfig, DebugConfig: debugConfig,
+		TransportConfig: transportCfg, DebugConfig: debugCfg,
 		Meter: meter, Mux: mux,
 		GRPCLimiter: NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
 		HTTPLimiter: NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
@@ -176,8 +73,8 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 	server.Register()
 
 	client := &Client{
-		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: tranConfig,
-		Meter: meter, TLS: tlsConfig, Generator: os.generator,
+		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: transportCfg,
+		Meter: meter, TLS: tlsCfg, Generator: os.generator,
 		Compression: os.compression, RoundTripper: os.rt,
 		HTTPLimiter: NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
 		GRPCLimiter: NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
@@ -188,14 +85,36 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 
 	receiver, sender := NewEvents(mux, os.rt, generator)
 
-	return &World{
+	world := &World{
+		t:      tb,
 		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
 		Rest:     restClient(client, os),
 		Receiver: receiver, Sender: sender,
-		Cache: redisCache(lc), PG: pgConfig,
+		Cache: newWorldCache(tb, lc, os), PG: os.pg,
 	}
+
+	world.registerOptions(os)
+	world.registerRPC()
+	world.registerDatabase()
+	world.registerTelemetry()
+
+	return world
+}
+
+// NewStartedWorld constructs a World, starts its lifecycle, and registers test cleanup.
+//
+// Use NewStartedWorld when the test does not need to install additional routes or
+// mutate the harness before startup. For pre-start customization, call NewWorld
+// and then Start.
+func NewStartedWorld(tb testing.TB, opts ...WorldOption) *World {
+	tb.Helper()
+
+	world := NewWorld(tb, opts...)
+	world.Start()
+
+	return world
 }
 
 // World groups the shared components used by integration-style tests.
@@ -204,6 +123,7 @@ func NewWorld(t fxtest.TB, opts ...WorldOption) *World {
 // sender/receiver, and generated configs so tests can compose realistic service
 // scenarios with minimal boilerplate.
 type World struct {
+	t testing.TB
 	*fxtest.Lifecycle
 	*http.ServeMux
 	*logger.Logger
@@ -216,16 +136,26 @@ type World struct {
 	*cache.Cache
 	Sender client.Client
 	Rest   *rest.Client
+
+	DB         *mssqlx.DBs
+	HTTPHealth *health.Server
+	GRPCHealth *health.Server
 }
 
-// Register installs the package-level registrations required by the test world.
+// Start starts the World's lifecycle and schedules cleanup with the test that
+// created the World.
 //
-// It enables RPC routing, database drivers, and telemetry error handling so the
-// world behaves like the normal production wiring used elsewhere in the module.
-func (w *World) Register() {
-	w.registerRPC()
-	w.registerDatabase()
-	w.registerTelemetry()
+// Start is the preferred entry point for most tests because it pairs
+// RequireStart with a cleanup-driven RequireStop.
+func (w *World) Start() *World {
+	w.t.Helper()
+	w.t.Cleanup(func() {
+		w.RequireStop()
+	})
+
+	w.RequireStart()
+
+	return w
 }
 
 // HandleHello registers a simple HTTP hello endpoint on the world's mux.
@@ -322,28 +252,4 @@ func (w *World) url(protocol, address string) string {
 	_, host, _ := net.SplitNetworkAddress(address)
 
 	return strings.Concat(protocol, "://", host)
-}
-
-func transportConfig(os *worldOpts) *transport.Config {
-	if os.secure {
-		return NewSecureTransportConfig()
-	}
-
-	return NewInsecureTransportConfig()
-}
-
-func debugConfig(os *worldOpts) *debug.Config {
-	if os.secure {
-		return NewSecureDebugConfig()
-	}
-
-	return NewInsecureDebugConfig()
-}
-
-func tlsConfig(os *worldOpts) *tls.Config {
-	if os.secure {
-		return NewTLSClientConfig()
-	}
-
-	return nil
 }

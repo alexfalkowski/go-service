@@ -13,17 +13,13 @@ import (
 func TestRestNoContent(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
 			test.RegisterHandlers("/hello", test.RestNoContent)
 
 			url := world.NamedServerURL("http", "hello")
 			err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 			require.NoError(t, err)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -31,9 +27,7 @@ func TestRestNoContent(t *testing.T) {
 func TestRestRequestNoContent(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestNoContent)
 
@@ -45,8 +39,6 @@ func TestRestRequestNoContent(t *testing.T) {
 			}
 			err := world.Rest.Do(t.Context(), method, url, opts)
 			require.NoError(t, err)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -54,17 +46,13 @@ func TestRestRequestNoContent(t *testing.T) {
 func TestRestError(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tint"))
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP(), test.WithWorldLoggerConfig("tint"))
 
 			test.RegisterHandlers("/hello", test.RestError)
 
 			url := world.NamedServerURL("http", "hello")
 			err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
 			require.Error(t, err)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -72,9 +60,7 @@ func TestRestError(t *testing.T) {
 func TestRestRequestError(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestError)
 
@@ -86,8 +72,6 @@ func TestRestRequestError(t *testing.T) {
 			}
 			err := world.Rest.Do(t.Context(), method, url, opts)
 			require.Error(t, err)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -95,9 +79,7 @@ func TestRestRequestError(t *testing.T) {
 func TestRestWithContent(t *testing.T) {
 	for _, method := range []string{http.MethodDelete, http.MethodGet} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 			test.RegisterHandlers("/hello", test.RestContent)
 
@@ -109,8 +91,6 @@ func TestRestWithContent(t *testing.T) {
 			err := world.Rest.Do(t.Context(), method, url, opts)
 			require.NoError(t, err)
 			require.Equal(t, "Hello Bob", resp.Greeting)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -118,9 +98,7 @@ func TestRestWithContent(t *testing.T) {
 func TestRestRequestWithContent(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 			test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 
@@ -135,16 +113,12 @@ func TestRestRequestWithContent(t *testing.T) {
 			err := world.Rest.Do(t.Context(), method, url, opts)
 			require.NoError(t, err)
 			require.Equal(t, "Hello test", resp.Greeting)
-
-			world.RequireStop()
 		})
 	}
 }
 
 func TestRestInvalidStatusCode(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	test.RegisterHandlers("/hello", test.RestInvalidStatusCode)
 
@@ -169,6 +143,4 @@ func TestRestInvalidStatusCode(t *testing.T) {
 
 	err = world.Rest.Patch(t.Context(), url, opts)
 	require.Error(t, err)
-
-	world.RequireStop()
 }

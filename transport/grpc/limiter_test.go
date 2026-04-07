@@ -12,9 +12,7 @@ import (
 )
 
 func TestServerLimiterUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -26,14 +24,10 @@ func TestServerLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestClientLimiterUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -45,20 +39,16 @@ func TestClientLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 10)
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldClientLimiter(cfg),
 		test.WithWorldServerLimiter(cfg),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -68,19 +58,15 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req)
 	require.NoError(t, err)
-
-	world.RequireStop()
 }
 
 func TestLimiterAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("bob")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -95,14 +81,10 @@ func TestLimiterAuthUnary(t *testing.T) {
 		})
 	}
 	require.NoError(t, err)
-
-	world.RequireStop()
 }
 
 func TestServerClosedLimiterUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 
 	require.NoError(t, world.Server.GRPCLimiter.Close(t.Context()))
 
@@ -115,14 +97,10 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestClientClosedLimiterUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -135,6 +113,4 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
-
-	world.RequireStop()
 }

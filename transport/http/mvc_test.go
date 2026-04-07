@@ -17,9 +17,7 @@ import (
 )
 
 func TestRouteSuccess(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 
 	full, _ := mvc.NewViewPair("views/hello.tmpl")
 
@@ -46,14 +44,10 @@ func TestRouteSuccess(t *testing.T) {
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
-
-	world.RequireStop()
 }
 
 func TestRoutePartialViewSuccess(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldCompression(), test.WithWorldHTTP())
 
 	_, partial := mvc.NewViewPair("views/hello.tmpl")
 
@@ -74,14 +68,10 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
-
-	world.RequireStop()
 }
 
 func TestRouteError(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(http.DefaultTransport), test.WithWorldHTTP())
 
 	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return mvc.NewFullView("views/error.tmpl"), &test.Model, status.ServiceUnavailableError(test.ErrInternal)
@@ -100,14 +90,10 @@ func TestRouteError(t *testing.T) {
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
-
-	world.RequireStop()
 }
 
 func TestStaticFileSuccess(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticFile("/robots.txt", "static/robots.txt")
 
@@ -121,14 +107,10 @@ func TestStaticFileSuccess(t *testing.T) {
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
-
-	world.RequireStop()
 }
 
 func TestStaticFileError(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticFile("/robots.txt", "static/bob.txt")
 
@@ -138,14 +120,10 @@ func TestStaticFileError(t *testing.T) {
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-
-	world.RequireStop()
 }
 
 func TestStaticPathValueSuccess(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticPathValue("/{file}", "file", "static")
 
@@ -159,14 +137,10 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
-
-	world.RequireStop()
 }
 
 func TestStaticPathValueError(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
 	mvc.StaticPathValue("/{file}", "file", "static")
 
@@ -176,8 +150,6 @@ func TestStaticPathValueError(t *testing.T) {
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
-
-	world.RequireStop()
 }
 
 func TestMissingViews(t *testing.T) {

@@ -17,9 +17,7 @@ import (
 func TestRPCNoContent(t *testing.T) {
 	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.NoContent)
 
@@ -34,8 +32,6 @@ func TestRPCNoContent(t *testing.T) {
 			err := client.Post(t.Context(), "/hello", req, res)
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, status.Code(err))
-
-			world.RequireStop()
 		})
 	}
 }
@@ -43,9 +39,7 @@ func TestRPCNoContent(t *testing.T) {
 func TestRPCWithContent(t *testing.T) {
 	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -60,8 +54,6 @@ func TestRPCWithContent(t *testing.T) {
 			err := client.Post(t.Context(), "/hello", req, res)
 			require.NoError(t, err)
 			require.Equal(t, "Hello Bob", res.Greeting)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -69,9 +61,7 @@ func TestRPCWithContent(t *testing.T) {
 func TestSuccessProtobufRPC(t *testing.T) {
 	for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessProtobufSayHello)
 
@@ -82,8 +72,6 @@ func TestSuccessProtobufRPC(t *testing.T) {
 			err := client.Post(t.Context(), "/hello", req, res)
 			require.NoError(t, err)
 			require.Equal(t, "Hello Bob", res.GetMessage())
-
-			world.RequireStop()
 		})
 	}
 }
@@ -102,9 +90,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 		t.Run(handler.name, func(t *testing.T) {
 			for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
 				t.Run(mt, func(t *testing.T) {
-					world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-					world.Register()
-					world.RequireStart()
+					world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 					rpc.Route("/hello", handler.handler)
 
@@ -116,8 +102,6 @@ func TestErroneousProtobufRPC(t *testing.T) {
 					require.Error(t, err)
 					require.True(t, status.IsError(err))
 					require.Equal(t, http.StatusInternalServerError, status.Code(err))
-
-					world.RequireStop()
 				})
 			}
 		})
@@ -127,9 +111,7 @@ func TestErroneousProtobufRPC(t *testing.T) {
 func TestErroneousUnmarshalRPC(t *testing.T) {
 	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -142,8 +124,6 @@ func TestErroneousUnmarshalRPC(t *testing.T) {
 			require.NoError(t, err)
 			require.NotEmpty(t, body)
 			require.Equal(t, http.StatusBadRequest, res.StatusCode)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -161,9 +141,7 @@ func TestErrorRPC(t *testing.T) {
 		t.Run(handler.name, func(t *testing.T) {
 			for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 				t.Run(mt, func(t *testing.T) {
-					world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-					world.Register()
-					world.RequireStart()
+					world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 					rpc.Route("/hello", handler.handler)
 
@@ -184,8 +162,6 @@ func TestErrorRPC(t *testing.T) {
 					require.NoError(t, err)
 					require.Equal(t, "failed", body)
 					require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-
-					world.RequireStop()
 				})
 			}
 		})
@@ -195,9 +171,7 @@ func TestErrorRPC(t *testing.T) {
 func TestAllowedRPC(t *testing.T) {
 	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -210,8 +184,6 @@ func TestAllowedRPC(t *testing.T) {
 			err := client.Post(t.Context(), "/hello", req, res)
 			require.NoError(t, err)
 			require.Equal(t, "Hello Bob", res.Greeting)
-
-			world.RequireStop()
 		})
 	}
 }
@@ -219,12 +191,10 @@ func TestAllowedRPC(t *testing.T) {
 func TestDisallowedRPC(t *testing.T) {
 	for _, mt := range []string{mime.JSONMediaType, mime.HJSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t,
+			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
 				test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP(),
 			)
-			world.Register()
-			world.RequireStart()
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -239,8 +209,6 @@ func TestDisallowedRPC(t *testing.T) {
 			require.True(t, status.IsError(err))
 			require.Equal(t, http.StatusUnauthorized, status.Code(err))
 			require.Equal(t, "token: invalid match", err.Error())
-
-			world.RequireStop()
 		})
 	}
 }
@@ -248,9 +216,7 @@ func TestDisallowedRPC(t *testing.T) {
 func TestInvalidRPCRequest(t *testing.T) {
 	for _, mt := range []string{"gob"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -259,7 +225,6 @@ func TestInvalidRPCRequest(t *testing.T) {
 				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
 			require.Error(t, client.Post(t.Context(), "/hello", nil, &test.Response{}))
-			world.RequireStop()
 		})
 	}
 }
@@ -267,9 +232,7 @@ func TestInvalidRPCRequest(t *testing.T) {
 func TestInvalidRPCResponse(t *testing.T) {
 	for _, mt := range []string{"json"} {
 		t.Run(mt, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
 
 			rpc.Route("/hello", test.SuccessSayHello)
 
@@ -278,7 +241,6 @@ func TestInvalidRPCResponse(t *testing.T) {
 				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
 
 			require.Error(t, client.Post(t.Context(), "/hello", &test.Request{Name: "Bob"}, nil))
-			world.RequireStop()
 		})
 	}
 }

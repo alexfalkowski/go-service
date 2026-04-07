@@ -3,16 +3,7 @@ package test
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/alexfalkowski/go-service/v2/token"
 )
-
-// WithWorldToken overrides the token generator and verifier used by world clients and servers.
-func WithWorldToken(generator token.Generator, verifier token.Verifier) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.generator = generator
-		o.verifier = verifier
-	})
-}
 
 // NewGenerator returns a token generator test double that always yields the configured token and error.
 func NewGenerator(token string, err error) *Generator {

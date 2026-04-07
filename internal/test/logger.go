@@ -15,20 +15,6 @@ func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
 	return logger
 }
 
-// WithWorldLogger injects a prebuilt logger into the world instead of constructing one from config.
-func WithWorldLogger(logger *logger.Logger) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.logger = logger
-	})
-}
-
-// WithWorldLoggerConfig selects the named logger config variant used when the world builds its own logger.
-func WithWorldLoggerConfig(config string) WorldOption {
-	return worldOptionFunc(func(o *worldOpts) {
-		o.loggerConfig = config
-	})
-}
-
 func (w *World) registerTelemetry() {
 	errors.Register(errors.NewHandler(w.Logger))
 }

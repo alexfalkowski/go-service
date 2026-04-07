@@ -11,15 +11,13 @@ import (
 
 func TestUnlimited(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 100)
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldClientLimiter(cfg),
 		test.WithWorldServerLimiter(cfg),
 		test.WithWorldHTTP(),
+		test.WithWorldHello(),
 	)
-	world.Register()
-	world.HandleHello()
-	world.RequireStart()
 
 	url := world.PathServerURL("http", "hello")
 
@@ -30,17 +28,17 @@ func TestUnlimited(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "hello!", body)
-
-	world.RequireStop()
 }
 
 func TestServerLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		t.Run(f, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
-			world.Register()
-			world.HandleHello()
-			world.RequireStart()
+			world := test.NewStartedWorld(t,
+				test.WithWorldTelemetry("otlp"),
+				test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)),
+				test.WithWorldHTTP(),
+				test.WithWorldHello(),
+			)
 
 			url := world.PathServerURL("http", "hello")
 
@@ -51,8 +49,6 @@ func TestServerLimiter(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
 			require.NotEmpty(t, res.Header.Get("Ratelimit"))
-
-			world.RequireStop()
 		})
 	}
 }
@@ -60,10 +56,12 @@ func TestServerLimiter(t *testing.T) {
 func TestClientLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		t.Run(f, func(t *testing.T) {
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)), test.WithWorldHTTP())
-			world.Register()
-			world.HandleHello()
-			world.RequireStart()
+			world := test.NewStartedWorld(t,
+				test.WithWorldTelemetry("otlp"),
+				test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)),
+				test.WithWorldHTTP(),
+				test.WithWorldHello(),
+			)
 
 			url := world.PathServerURL("http", "hello")
 
@@ -73,17 +71,17 @@ func TestClientLimiter(t *testing.T) {
 			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 			require.Error(t, err)
 			require.Equal(t, http.StatusTooManyRequests, status.Code(err))
-
-			world.RequireStop()
 		})
 	}
 }
 
 func TestServerClosedLimiter(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-	world.Register()
-	world.HandleHello()
-	world.RequireStart()
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+		test.WithWorldHTTP(),
+		test.WithWorldHello(),
+	)
 
 	err := world.Server.HTTPLimiter.Close(t.Context())
 	require.NoError(t, err)
@@ -93,15 +91,15 @@ func TestServerClosedLimiter(t *testing.T) {
 	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-
-	world.RequireStop()
 }
 
 func TestClientClosedLimiter(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 100)), test.WithWorldHTTP())
-	world.Register()
-	world.HandleHello()
-	world.RequireStart()
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
+		test.WithWorldHTTP(),
+		test.WithWorldHello(),
+	)
 
 	url := world.PathServerURL("http", "hello")
 
@@ -111,6 +109,4 @@ func TestClientClosedLimiter(t *testing.T) {
 	_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.Error(t, err)
 	require.Equal(t, http.StatusInternalServerError, status.Code(err))
-
-	world.RequireStop()
 }

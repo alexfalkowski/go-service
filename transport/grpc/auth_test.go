@@ -18,13 +18,11 @@ import (
 )
 
 func TestTokenErrorAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", test.ErrGenerate), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -34,18 +32,14 @@ func TestTokenErrorAuthUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestEmptyAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -55,14 +49,10 @@ func TestEmptyAuthUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestMissingClientAuthUnary(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -72,18 +62,14 @@ func TestMissingClientAuthUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestInvalidAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	ctx := t.Context()
 	ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
@@ -97,14 +83,10 @@ func TestInvalidAuthUnary(t *testing.T) {
 
 	_, err := client.SayHello(ctx, req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestAuthUnaryWithAppend(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
 	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
@@ -117,14 +99,10 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 
 	_, err := client.SayHello(ctx, req)
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestAuthStreamWithAppend(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
 	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
@@ -142,14 +120,10 @@ func TestAuthStreamWithAppend(t *testing.T) {
 
 	_, err = stream.Recv()
 	require.Equal(t, codes.InvalidArgument, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	ctx := t.Context()
 	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "bearer test")
@@ -163,8 +137,6 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	resp, err := client.SayHello(ctx, req)
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
-
-	world.RequireStop()
 }
 
 func TestValidAuthUnary(t *testing.T) {
@@ -177,9 +149,7 @@ func TestValidAuthUnary(t *testing.T) {
 			gen := uuid.NewGenerator()
 			tkn := token.NewToken(test.Name, cfg, test.FS, signer, verifier, gen)
 
-			world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
-			world.Register()
-			world.RequireStart()
+			world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(tkn, tkn), test.WithWorldGRPC())
 
 			conn := world.NewGRPC()
 			defer conn.Close()
@@ -190,8 +160,6 @@ func TestValidAuthUnary(t *testing.T) {
 			resp, err := client.SayHello(t.Context(), req)
 			require.NoError(t, err)
 			require.Equal(t, "Hello test", resp.GetMessage())
-
-			world.RequireStop()
 		})
 	}
 }
@@ -200,9 +168,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	cfg := test.NewToken("none")
 	tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
-	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
-	world.Register()
-	world.RequireStart()
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("test", nil), tkn), test.WithWorldGRPC())
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -213,19 +179,15 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
 	require.Contains(t, err.Error(), "token: invalid config")
-
-	world.RequireStop()
 }
 
 func TestBreakerAuthUnary(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 		test.WithWorldCompression(),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC(
 		breaker.WithSettings(breaker.Settings{}),
@@ -244,18 +206,14 @@ func TestBreakerAuthUnary(t *testing.T) {
 	}
 
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestValidAuthStream(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("test", nil), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -272,18 +230,14 @@ func TestValidAuthStream(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, "Hello test", resp.GetMessage())
-
-	world.RequireStop()
 }
 
 func TestInvalidAuthStream(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -298,18 +252,14 @@ func TestInvalidAuthStream(t *testing.T) {
 
 	_, err = stream.Recv()
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestEmptyAuthStream(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, nil), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -318,18 +268,14 @@ func TestEmptyAuthStream(t *testing.T) {
 
 	_, err := client.SayStreamHello(t.Context())
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestMissingClientAuthStream(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(nil, test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -344,18 +290,14 @@ func TestMissingClientAuthStream(t *testing.T) {
 
 	_, err = stream.Recv()
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }
 
 func TestTokenErrorAuthStream(t *testing.T) {
-	world := test.NewWorld(t,
+	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldToken(test.NewGenerator(strings.Empty, test.ErrGenerate), test.NewVerifier("test")),
 		test.WithWorldGRPC(),
 	)
-	world.Register()
-	world.RequireStart()
 
 	conn := world.NewGRPC()
 	defer conn.Close()
@@ -364,6 +306,4 @@ func TestTokenErrorAuthStream(t *testing.T) {
 
 	_, err := client.SayStreamHello(t.Context())
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-
-	world.RequireStop()
 }

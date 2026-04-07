@@ -19,17 +19,27 @@ func Register() {
 	_ = driver.Register("pg", pgx.GetDefaultDriver())
 }
 
-// Open opens PostgreSQL master/slave connection pools.
+// Connect opens PostgreSQL master/slave connection pools.
 //
-// Disabled behavior: if cfg is nil/disabled, Open returns (nil, nil).
+// Disabled behavior: if cfg is nil/disabled, Connect returns (nil, nil).
 //
-// Enabled behavior: Open delegates to the shared SQL driver helper to:
+// Enabled behavior: Connect delegates to the shared SQL driver helper to:
 //   - resolve master and replica DSNs (expressed as go-service "source strings"),
 //   - connect using the previously registered driver name "pg",
 //   - register OpenTelemetry DB stats metrics, and
 //   - apply connection pool limits/lifetime.
+func Connect(fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
+	if !cfg.IsEnabled() {
+		return nil, nil
+	}
+
+	return driver.Connect("pg", fs, cfg.Config)
+}
+
+// Open opens PostgreSQL master/slave connection pools.
 //
-// The returned pools are closed on Fx lifecycle stop (via an OnStop hook).
+// Open preserves PostgreSQL's nil/disabled config semantics and then delegates
+// connection lifecycle ownership to the shared SQL driver helper.
 func Open(lc di.Lifecycle, fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
