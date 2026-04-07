@@ -76,10 +76,14 @@ func (s *Service) Stop(ctx context.Context) error {
 	return nil
 }
 
+// String returns the underlying server identifier or bound address.
+func (s *Service) String() string {
+	return s.server.String()
+}
+
 func (s *Service) log(fn func(l *logger.Logger)) {
 	if s.logger == nil {
 		return
 	}
-
 	fn(s.logger)
 }

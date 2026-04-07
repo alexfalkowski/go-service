@@ -58,6 +58,11 @@ func ListenNetworkAddress(address string) (string, string) {
 	return "tcp", address
 }
 
+// NetworkAddress returns an address in the "<network>://<address>" form used by go-service.
+func NetworkAddress(network, address string) string {
+	return strings.Concat(network, "://", address)
+}
+
 // Host returns the host portion of addr if it is in host:port form.
 //
 // If addr cannot be parsed by net.SplitHostPort (for example it has no port, or it is malformed),
@@ -70,9 +75,19 @@ func Host(addr string) string {
 	return host
 }
 
+// SplitHostPort splits addr into host and port using the standard host:port rules.
+func SplitHostPort(addr string) (string, string, error) {
+	return net.SplitHostPort(addr)
+}
+
+// JoinHostPort combines host and port into a network address.
+func JoinHostPort(host, port string) string {
+	return net.JoinHostPort(host, port)
+}
+
 // DefaultAddress returns a go-service server address in the form "tcp://:<port>".
 //
 // This is commonly used as a default bind address when only a port is configured.
 func DefaultAddress(port string) string {
-	return "tcp://:" + port
+	return NetworkAddress("tcp", ":"+port)
 }

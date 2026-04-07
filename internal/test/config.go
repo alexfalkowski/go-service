@@ -165,7 +165,7 @@ func NewTLSConfig(c, k string) *tls.Config {
 	return tc
 }
 
-// NewInsecureTransportConfig returns HTTP and gRPC transport configs that listen on random local addresses without TLS.
+// NewInsecureTransportConfig returns HTTP and gRPC transport configs that listen on ephemeral local addresses without TLS.
 func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
@@ -195,7 +195,7 @@ func NewGRPCTransportConfig() *grpc.Config {
 	return &grpc.Config{Config: &server.Config{}}
 }
 
-// NewSecureTransportConfig returns HTTP and gRPC transport configs wired with the shared TLS server fixtures.
+// NewSecureTransportConfig returns HTTP and gRPC transport configs wired with the shared TLS server fixtures on ephemeral local addresses.
 func NewSecureTransportConfig() *transport.Config {
 	config := NewTLSServerConfig()
 	retry := NewRetry()
@@ -298,7 +298,7 @@ func NewPGConfig() *pg.Config {
 	}
 }
 
-// NewInsecureDebugConfig returns a debug server config bound to a random local address without TLS.
+// NewInsecureDebugConfig returns a debug server config bound to an ephemeral local address without TLS.
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
@@ -309,7 +309,7 @@ func NewInsecureDebugConfig() *debug.Config {
 	}
 }
 
-// NewSecureDebugConfig returns a debug server config bound to a random local address with the shared TLS fixture.
+// NewSecureDebugConfig returns a debug server config bound to an ephemeral local address with the shared TLS fixture.
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{

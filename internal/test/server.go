@@ -46,6 +46,8 @@ type Server struct {
 // HTTP, gRPC, and debug servers are created only when their corresponding
 // Register* flag is set. The method also wires the shared tracer registration
 // and attaches common middleware, token handling, and test service handlers.
+//
+//nolint:funlen
 func (s *Server) Register() error {
 	RegisterTracer(s.Lifecycle, s.Tracer)
 
@@ -69,6 +71,7 @@ func (s *Server) Register() error {
 		}
 
 		s.HTTPServer = httpServer
+		s.TransportConfig.HTTP.Address = BoundAddress(s.TransportConfig.HTTP.Address, httpServer.GetService().String())
 		servers = append(servers, httpServer.GetService())
 	}
 
@@ -88,6 +91,7 @@ func (s *Server) Register() error {
 		}
 
 		s.GRPCServer = grpcServer
+		s.TransportConfig.GRPC.Address = BoundAddress(s.TransportConfig.GRPC.Address, grpcServer.GetService().String())
 		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService())
 		servers = append(servers, grpcServer.GetService())
 	}
@@ -99,6 +103,7 @@ func (s *Server) Register() error {
 		}
 
 		s.DebugServer = debugServer
+		s.DebugConfig.Address = BoundAddress(s.DebugConfig.Address, debugServer.GetService().String())
 		servers = append(servers, debugServer.GetService())
 	}
 
