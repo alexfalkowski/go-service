@@ -1,6 +1,7 @@
 package test
 
 import (
+	"errors"
 	"io"
 	"net/url"
 	"testing"
@@ -19,19 +20,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	sdk "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/linxGnu/mssqlx"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
 	telemetry.Register()
-	grpc.Register(FS)
-	th.Register(FS)
+	transportgrpc.Register(FS)
+	transporthttp.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }
@@ -79,6 +81,8 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		HTTPLimiter: NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
 		GRPCLimiter: NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
 	}
+	httpClient, err := client.HTTP()
+	require.NoError(tb, err)
 
 	registerMVC(mux, logger.Logger)
 	registerRest(mux)
@@ -90,9 +94,10 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 		Logger: logger, Tracer: tracer,
 		Lifecycle: lc, ServeMux: mux,
 		Server: server, Client: client,
-		Rest:     restClient(client, os),
+		Rest:     restClient(httpClient, os),
 		Receiver: receiver, Sender: sender,
 		Cache: newWorldCache(tb, lc, os), PG: os.pg,
+		httpClient: httpClient,
 	}
 
 	world.registerOptions(os)
@@ -140,6 +145,7 @@ type World struct {
 	DB         *mssqlx.DBs
 	HTTPHealth *health.Server
 	GRPCHealth *health.Server
+	httpClient *http.Client
 }
 
 // Start starts the World's lifecycle and schedules cleanup with the test that
@@ -195,38 +201,39 @@ func (w *World) DebugURL(protocol string) string {
 	return w.url(protocol, w.DebugConfig.Address)
 }
 
+// Do executes req with the world's shared HTTP client.
+func (w *World) Do(req *http.Request) (*http.Response, error) {
+	return w.httpClient.Do(req)
+}
+
 // ResponseWithBody issues an HTTP request through the world's client and returns the response plus a trimmed body string.
 func (w *World) ResponseWithBody(ctx context.Context, url, method string, header http.Header, body io.Reader) (*http.Response, string, error) {
-	client := w.NewHTTP()
-
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
-	runtime.Must(err)
-
-	req.Header = header
-
-	res, err := client.Do(req)
+	req, err := w.request(ctx, url, method, header, body)
 	if err != nil {
 		return nil, strings.Empty, err
 	}
 
-	data, err := io.ReadAll(res.Body)
+	res, err := w.Do(req)
 	if err != nil {
-		runtime.Must(err)
+		return nil, strings.Empty, err
 	}
 
-	return res, bytes.String(bytes.TrimSpace(data)), res.Body.Close()
+	data, err := w.readBody(res)
+	if err != nil {
+		return res, strings.Empty, err
+	}
+
+	return res, bytes.String(bytes.TrimSpace(data)), nil
 }
 
 // ResponseWithNoBody issues an HTTP request through the world's client and closes the response body before returning.
 func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, header http.Header) (*http.Response, error) {
-	client := w.NewHTTP()
+	req, err := w.request(ctx, url, method, header, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, http.NoBody)
-	runtime.Must(err)
-
-	req.Header = header
-
-	res, err := client.Do(req)
+	res, err := w.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -252,4 +259,20 @@ func (w *World) url(protocol, address string) string {
 	_, host, _ := net.SplitNetworkAddress(address)
 
 	return strings.Concat(protocol, "://", host)
+}
+
+func (w *World) request(ctx context.Context, url, method string, header http.Header, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header = header
+
+	return req, nil
+}
+
+func (w *World) readBody(res *http.Response) ([]byte, error) {
+	data, err := io.ReadAll(res.Body)
+	return data, errors.Join(err, res.Body.Close())
 }

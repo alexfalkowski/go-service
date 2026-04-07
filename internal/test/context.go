@@ -8,7 +8,7 @@ import (
 // DefaultTimeout is the standard timeout used by test contexts in this package.
 const DefaultTimeout = 10 * time.Minute
 
-// Timeout returns a background context with DefaultTimeout applied.
-func Timeout() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), DefaultTimeout)
+// Timeout returns a child context with DefaultTimeout applied.
+func Timeout(parent context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(parent, DefaultTimeout)
 }

@@ -4,11 +4,9 @@ import (
 	"net"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/meta"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -63,9 +61,7 @@ func TestStream(t *testing.T) {
 
 	client := v1.NewGreeterServiceClient(conn)
 
-	test.Timeout()
-
-	ctx, cancel := context.WithDeadline(ctx, time.Now().Add(10*time.Minute))
+	ctx, cancel := test.Timeout(ctx)
 	defer cancel()
 
 	stream, err := client.SayStreamHello(ctx)

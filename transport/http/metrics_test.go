@@ -19,7 +19,7 @@ func TestPrometheusHTTP(t *testing.T) {
 		test.WithWorldHTTP(),
 	)
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	header := http.Header{}
