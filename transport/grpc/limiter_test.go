@@ -14,7 +14,7 @@ import (
 func TestServerLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -29,7 +29,7 @@ func TestServerLimiterUnary(t *testing.T) {
 func TestClientLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -50,7 +50,7 @@ func TestLimiterUnlimitedUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -68,7 +68,7 @@ func TestLimiterAuthUnary(t *testing.T) {
 		test.WithWorldGRPC(),
 	)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -88,7 +88,7 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 
 	require.NoError(t, world.Server.GRPCLimiter.Close(t.Context()))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -102,7 +102,7 @@ func TestServerClosedLimiterUnary(t *testing.T) {
 func TestClientClosedLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 10)), test.WithWorldGRPC())
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)

@@ -7,16 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug/pprof"
 	"github.com/alexfalkowski/go-service/v2/debug/psutil"
 	"github.com/alexfalkowski/go-service/v2/debug/statsviz"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
 // NewDebugServer returns a debug server with the standard pprof, fgprof, psutil, and statsviz handlers registered.
-func NewDebugServer(config *debug.Config, logger *logger.Logger) *debug.Server {
-	server, err := newDebugServer(config, logger)
-	runtime.Must(err)
-
-	return server
+func NewDebugServer(config *debug.Config, logger *logger.Logger) (*debug.Server, error) {
+	return newDebugServer(config, logger)
 }
 
 func newDebugServer(config *debug.Config, logger *logger.Logger) (*debug.Server, error) {

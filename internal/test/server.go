@@ -8,7 +8,6 @@ import (
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -47,8 +46,8 @@ type Server struct {
 // HTTP, gRPC, and debug servers are created only when their corresponding
 // Register* flag is set. The method also wires the shared tracer registration
 // and attaches common middleware, token handling, and test service handlers.
-func (s *Server) Register() {
-	runtime.Must(s.register())
+func (s *Server) Register() error {
+	return s.register()
 }
 
 func (s *Server) register() error {

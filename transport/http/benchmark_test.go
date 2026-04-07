@@ -202,7 +202,7 @@ func BenchmarkMVC(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("html", func(b *testing.B) {
-		client := world.NewHTTP()
+		client := requireHTTPClient(b, world)
 		url := world.PathServerURL("http", "hello")
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
@@ -233,7 +233,7 @@ func BenchmarkRPC(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
-			cl := world.NewHTTP()
+			cl := requireHTTPClient(b, world)
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport),
@@ -265,7 +265,7 @@ func BenchmarkRPC(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-			cl := world.NewHTTP()
+			cl := requireHTTPClient(b, world)
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
 				rpc.WithClientRoundTripper(cl.Transport))
@@ -300,7 +300,7 @@ func BenchmarkRest(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
-			cl := world.NewHTTP()
+			cl := requireHTTPClient(b, world)
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
@@ -321,7 +321,7 @@ func BenchmarkRest(b *testing.B) {
 		}
 
 		b.Run("static", func(b *testing.B) {
-			cl := world.NewHTTP()
+			cl := requireHTTPClient(b, world)
 			url := world.PathServerURL("http", "robots.txt")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
@@ -354,7 +354,7 @@ func BenchmarkRest(b *testing.B) {
 		b.ResetTimer()
 
 		for _, mt := range []string{"proto", "protobuf", "prototext", "protojson"} {
-			cl := world.NewHTTP()
+			cl := requireHTTPClient(b, world)
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 

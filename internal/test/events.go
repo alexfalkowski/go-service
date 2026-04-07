@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	hh "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -13,11 +12,8 @@ import (
 )
 
 // NewEvents builds a webhook-backed CloudEvents receiver and sender using the shared hook fixture.
-func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client) {
-	receiver, sender, err := newEvents(mux, rt, generator)
-	runtime.Must(err)
-
-	return receiver, sender
+func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client, error) {
+	return newEvents(mux, rt, generator)
 }
 
 func newEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client, error) {

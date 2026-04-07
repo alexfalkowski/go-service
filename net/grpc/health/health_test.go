@@ -31,7 +31,7 @@ func TestCheck(t *testing.T) {
 	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
 	ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -48,7 +48,7 @@ func TestInvalidCheck(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -67,7 +67,7 @@ func TestNotFoundCheck(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -88,7 +88,7 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -111,7 +111,7 @@ func TestList(t *testing.T) {
 	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
 	ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -133,7 +133,7 @@ func TestWatch(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -157,7 +157,7 @@ func TestInvalidWatch(t *testing.T) {
 	requireGRPCReady(t, world)
 	requireObservedHealth(t, world.GRPCHealth, test.Name.String(), false)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -180,7 +180,7 @@ func TestNotFoundWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -205,7 +205,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	conn := world.NewGRPC()
+	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
 	client := v1.NewHealthClient(conn)
@@ -305,6 +305,15 @@ func requireGRPCReady(t *testing.T, world *test.World) {
 	conn, err := test.Connect(t.Context(), world.TransportConfig.GRPC.Address)
 	require.NoError(t, err)
 	require.NoError(t, conn.Close())
+}
+
+func requireGRPCConn(t *testing.T, world *test.World) *grpc.ClientConn {
+	t.Helper()
+
+	conn, err := world.NewGRPC()
+	require.NoError(t, err)
+
+	return conn
 }
 
 func requireObservedHealth(t *testing.T, server *server.Server, service string, healthy bool) {

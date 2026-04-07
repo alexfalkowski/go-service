@@ -2,17 +2,13 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
 // NewLogger constructs a test logger bound to the supplied lifecycle and logger config.
-func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
-	logger, err := newLogger(lc, config)
-	runtime.Must(err)
-
-	return logger
+func NewLogger(lc di.Lifecycle, config *logger.Config) (*logger.Logger, error) {
+	return newLogger(lc, config)
 }
 
 func (w *World) registerTelemetry() {

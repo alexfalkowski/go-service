@@ -12,7 +12,7 @@ import (
 func TestSecure(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldSecure(), test.WithWorldTelemetry("prometheus"), test.WithWorldHTTP())
 
-	client := world.NewHTTP(
+	client := requireHTTPClient(t, world,
 		breaker.WithSettings(breaker.Settings{}),
 		breaker.WithFailureStatuses(http.StatusInternalServerError),
 	)

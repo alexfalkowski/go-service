@@ -19,14 +19,16 @@ func init() {
 func TestServer(t *testing.T) {
 	mux := http.NewServeMux()
 	lc := fxtest.NewLifecycle(t)
-	logger := test.NewLogger(lc, test.NewTextLoggerConfig())
-	meter := test.NewPrometheusMeter(lc)
+	logger, err := test.NewLogger(lc, test.NewTextLoggerConfig())
+	require.NoError(t, err)
+	meter, err := test.NewPrometheusMeter(lc)
+	require.NoError(t, err)
 
 	c := test.NewInsecureTransportConfig()
 	c.GRPC.TLS = &tls.Config{}
 
 	s := &test.Server{Lifecycle: lc, Logger: logger, TransportConfig: c, Meter: meter, Mux: mux}
-	s.Register()
+	require.NoError(t, s.Register())
 
 	lc.RequireStart()
 	lc.RequireStop()

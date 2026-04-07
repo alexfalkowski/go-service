@@ -23,7 +23,7 @@ func TestRPCNoContent(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport),
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport),
 				rpc.WithClientTimeout("10s"),
 			)
 			req := &test.Request{Name: "Bob"}
@@ -45,7 +45,7 @@ func TestRPCWithContent(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport),
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport),
 				rpc.WithClientTimeout("10s"),
 			)
 			req := &test.Request{Name: "Bob"}
@@ -177,7 +177,7 @@ func TestAllowedRPC(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport))
 			req := &test.Request{Name: "Bob"}
 			res := &test.Response{}
 
@@ -200,7 +200,7 @@ func TestDisallowedRPC(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType(mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport))
 			req := &test.Request{Name: "Bob"}
 			res := &test.Response{}
 
@@ -222,7 +222,7 @@ func TestInvalidRPCRequest(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport))
 
 			require.Error(t, client.Post(t.Context(), "/hello", nil, &test.Response{}))
 		})
@@ -238,7 +238,7 @@ func TestInvalidRPCResponse(t *testing.T) {
 
 			client := rpc.NewClient(world.ServerURL("http"),
 				rpc.WithClientContentType("application/"+mt),
-				rpc.WithClientRoundTripper(world.NewHTTP().Transport))
+				rpc.WithClientRoundTripper(requireHTTPClient(t, world).Transport))
 
 			require.Error(t, client.Post(t.Context(), "/hello", &test.Request{Name: "Bob"}, nil))
 		})
