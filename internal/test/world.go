@@ -221,6 +221,21 @@ func (w *World) Do(req *http.Request) (*http.Response, error) {
 	return w.httpClient.Do(req)
 }
 
+// GetBody issues an HTTP GET request through the world's client and returns the response plus a trimmed body string.
+func (w *World) GetBody(ctx context.Context, url string, header http.Header) (*http.Response, string, error) {
+	return w.ResponseWithBody(ctx, url, http.MethodGet, header, http.NoBody)
+}
+
+// GetNoBody issues an HTTP GET request through the world's client and closes the response body before returning.
+func (w *World) GetNoBody(ctx context.Context, url string, header http.Header) (*http.Response, error) {
+	return w.ResponseWithNoBody(ctx, url, http.MethodGet, header)
+}
+
+// PostBody issues an HTTP POST request through the world's client and returns the response plus a trimmed body string.
+func (w *World) PostBody(ctx context.Context, url string, header http.Header, body io.Reader) (*http.Response, string, error) {
+	return w.ResponseWithBody(ctx, url, http.MethodPost, header, body)
+}
+
 // ResponseWithBody issues an HTTP request through the world's client and returns the response plus a trimmed body string.
 func (w *World) ResponseWithBody(ctx context.Context, url, method string, header http.Header, body io.Reader) (*http.Response, string, error) {
 	req, err := w.request(ctx, url, method, header, body)
