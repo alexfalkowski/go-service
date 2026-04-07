@@ -273,23 +273,25 @@ func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, head
 
 func (w *World) namedURL(host, path string) string {
 	w.t.Helper()
+
 	url, err := url.JoinPath(host, Name.String(), path)
 	require.NoError(w.t, err)
-
 	return url
 }
 
 func (w *World) pathURL(host, path string) string {
 	w.t.Helper()
+
 	url, err := url.JoinPath(host, path)
 	require.NoError(w.t, err)
-
 	return url
 }
 
 func (w *World) url(protocol, address string) string {
-	_, host, _ := net.SplitNetworkAddress(address)
+	w.t.Helper()
 
+	_, host, ok := net.SplitNetworkAddress(address)
+	require.True(w.t, ok, "invalid network address: %s", address)
 	return strings.Concat(protocol, "://", host)
 }
 
