@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -51,11 +50,13 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		for b.Loop() {
 			_, err = client.Do(req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -76,7 +77,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Version:    test.Version,
 			ID:         uuid.NewGenerator(),
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		server.Register(lc, []*server.Service{h.GetService()})
 
@@ -89,11 +90,13 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		for b.Loop() {
 			_, err = client.Do(req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -105,7 +108,8 @@ func BenchmarkHTTP(b *testing.B) {
 
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 		cfg := test.NewInsecureTransportConfig()
 
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
@@ -117,7 +121,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Version:    test.Version,
 			ID:         uuid.NewGenerator(),
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
@@ -131,11 +135,13 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		for b.Loop() {
 			_, err = client.Do(req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -147,7 +153,8 @@ func BenchmarkHTTP(b *testing.B) {
 
 		mux := http.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 		cfg := test.NewInsecureTransportConfig()
 
 		test.RegisterTracer(lc, nil)
@@ -161,7 +168,7 @@ func BenchmarkHTTP(b *testing.B) {
 			Version:    test.Version,
 			ID:         uuid.NewGenerator(),
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
@@ -175,11 +182,13 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ResetTimer()
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		for b.Loop() {
 			_, err = client.Do(req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -190,7 +199,8 @@ func BenchmarkHTTP(b *testing.B) {
 func BenchmarkMVC(b *testing.B) {
 	b.ReportAllocs()
 
-	logger, _ := logger.NewLogger(logger.LoggerParams{})
+	logger, err := logger.NewLogger(logger.LoggerParams{})
+	require.NoError(b, err)
 
 	world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
@@ -208,13 +218,15 @@ func BenchmarkMVC(b *testing.B) {
 		url := world.PathServerURL("http", "hello")
 
 		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		req.Header.Set(content.TypeKey, mime.HTMLMediaType)
 
 		for b.Loop() {
-			_, err := client.Do(req)
-			runtime.Must(err)
+			_, err = client.Do(req)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 	})
 
@@ -226,7 +238,8 @@ func BenchmarkRPC(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 
 		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
@@ -248,7 +261,9 @@ func BenchmarkRPC(b *testing.B) {
 					res := &test.Response{}
 
 					err := client.Post(b.Context(), "/hello", req, res)
-					runtime.Must(err)
+					if err != nil {
+						require.NoError(b, err)
+					}
 				}
 			})
 		}
@@ -259,7 +274,8 @@ func BenchmarkRPC(b *testing.B) {
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 
 		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
@@ -280,7 +296,9 @@ func BenchmarkRPC(b *testing.B) {
 					res := &v1.SayHelloResponse{}
 
 					err := client.Post(b.Context(), "/hello", req, res)
-					runtime.Must(err)
+					if err != nil {
+						require.NoError(b, err)
+					}
 				}
 			})
 		}
@@ -294,7 +312,8 @@ func BenchmarkRest(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 
 		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
@@ -320,7 +339,9 @@ func BenchmarkRest(b *testing.B) {
 					}
 
 					err := client.Post(b.Context(), url, opts)
-					runtime.Must(err)
+					if err != nil {
+						require.NoError(b, err)
+					}
 				}
 			})
 		}
@@ -339,7 +360,9 @@ func BenchmarkRest(b *testing.B) {
 				}
 
 				err := client.Get(b.Context(), url, opts)
-				runtime.Must(err)
+				if err != nil {
+					require.NoError(b, err)
+				}
 
 				test.Pool.Put(buffer)
 			}
@@ -351,7 +374,8 @@ func BenchmarkRest(b *testing.B) {
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 
 		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
 
@@ -376,7 +400,9 @@ func BenchmarkRest(b *testing.B) {
 					}
 
 					err := client.Post(b.Context(), url, opts)
-					runtime.Must(err)
+					if err != nil {
+						require.NoError(b, err)
+					}
 				}
 			})
 		}

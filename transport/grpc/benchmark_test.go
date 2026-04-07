@@ -9,10 +9,10 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/server"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -28,7 +28,7 @@ func BenchmarkGRPC(b *testing.B) {
 		n, a, _ := net.SplitNetworkAddress(test.RandomAddress())
 
 		l, err := net.Listen(b.Context(), n, a)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		server := grpc.NewServer(test.ConfigOptions, test.DefaultTimeout)
 		defer server.GracefulStop()
@@ -39,7 +39,7 @@ func BenchmarkGRPC(b *testing.B) {
 		go server.Serve(l)
 
 		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
@@ -48,7 +48,9 @@ func BenchmarkGRPC(b *testing.B) {
 
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -65,7 +67,7 @@ func BenchmarkGRPC(b *testing.B) {
 			Config:     cfg.GRPC,
 			UserAgent:  test.UserAgent, Version: test.Version,
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})
@@ -76,7 +78,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
@@ -85,7 +87,9 @@ func BenchmarkGRPC(b *testing.B) {
 
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -95,7 +99,8 @@ func BenchmarkGRPC(b *testing.B) {
 	b.Run("log", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
@@ -104,7 +109,7 @@ func BenchmarkGRPC(b *testing.B) {
 			Config:     cfg.GRPC, Logger: logger,
 			UserAgent: test.UserAgent, Version: test.Version,
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})
@@ -116,7 +121,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
@@ -125,7 +130,9 @@ func BenchmarkGRPC(b *testing.B) {
 
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()
@@ -135,7 +142,8 @@ func BenchmarkGRPC(b *testing.B) {
 	b.Run("trace", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, _ := logger.NewLogger(logger.LoggerParams{})
+		logger, err := logger.NewLogger(logger.LoggerParams{})
+		require.NoError(b, err)
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
@@ -146,7 +154,7 @@ func BenchmarkGRPC(b *testing.B) {
 			Config:     cfg.GRPC, Logger: logger,
 			UserAgent: test.UserAgent, Version: test.Version,
 		})
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})
@@ -158,7 +166,7 @@ func BenchmarkGRPC(b *testing.B) {
 		cl := &client.Config{Address: addr}
 
 		conn, err := tg.NewClient(cl.Address)
-		runtime.Must(err)
+		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
 		req := &v1.SayHelloRequest{Name: "test"}
@@ -167,7 +175,9 @@ func BenchmarkGRPC(b *testing.B) {
 
 		for b.Loop() {
 			_, err := client.SayHello(b.Context(), req)
-			runtime.Must(err)
+			if err != nil {
+				require.NoError(b, err)
+			}
 		}
 
 		b.StopTimer()

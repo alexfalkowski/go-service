@@ -52,19 +52,23 @@ func Options() []di.Option {
 	}
 }
 
-func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ env.Version) health.Registrations {
+func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ env.Version) (health.Registrations, error) {
 	if cfg == nil {
-		return nil
+		return nil, nil
 	}
 
 	timeout := 5 * time.Second
 	nc := checker.NewNoopChecker()
 	nr := server.NewRegistration("noop", timeout, nc)
-	rt, _ := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientUserAgent(ua))
+	rt, err := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientUserAgent(ua))
+	if err != nil {
+		return nil, err
+	}
+
 	hc := checker.NewHTTPChecker(StatusURL("200"), timeout, checker.WithRoundTripper(rt))
 	hr := server.NewRegistration("http", timeout, hc)
 
-	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}
+	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}, nil
 }
 
 func healthRegister(cfg *http.Config, name env.Name, server *server.Server, regs health.Registrations) {
