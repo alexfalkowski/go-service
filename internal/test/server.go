@@ -48,6 +48,10 @@ type Server struct {
 // Register* flag is set. The method also wires the shared tracer registration
 // and attaches common middleware, token handling, and test service handlers.
 func (s *Server) Register() {
+	runtime.Must(s.register())
+}
+
+func (s *Server) register() error {
 	RegisterTracer(s.Lifecycle, s.Tracer)
 
 	sh := NewShutdowner()
@@ -65,7 +69,9 @@ func (s *Server) Register() {
 		}
 
 		httpServer, err := th.NewServer(params)
-		runtime.Must(err)
+		if err != nil {
+			return err
+		}
 
 		s.HTTPServer = httpServer
 		servers = append(servers, httpServer.GetService())
@@ -82,7 +88,9 @@ func (s *Server) Register() {
 		}
 
 		grpcServer, err := grpc.NewServer(params)
-		runtime.Must(err)
+		if err != nil {
+			return err
+		}
 
 		s.GRPCServer = grpcServer
 		v1.RegisterGreeterServiceServer(grpcServer.ServiceRegistrar(), NewService())
@@ -90,13 +98,18 @@ func (s *Server) Register() {
 	}
 
 	if s.RegisterDebug {
-		debugServer := NewDebugServer(s.DebugConfig, s.Logger)
+		debugServer, err := newDebugServer(s.DebugConfig, s.Logger)
+		if err != nil {
+			return err
+		}
 
 		s.DebugServer = debugServer
 		servers = append(servers, debugServer.GetService())
 	}
 
 	server.Register(s.Lifecycle, servers)
+
+	return nil
 }
 
 // EmptyHandler is a no-op Negroni middleware used in server tests.

@@ -10,16 +10,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v2/debug"
+	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/transport"
 	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
@@ -58,36 +62,20 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	generator := uuid.NewGenerator()
 	os := worldOptions(opts...)
 
-	logger := createLogger(lc, os)
+	logger, err := createLogger(lc, os)
+	require.NoError(tb, err)
 	transportCfg := transportConfig(os)
 	debugCfg := debugConfig(os)
 	tlsCfg := tlsConfig(os)
-	meter := meter(lc, mux, os)
-	server := &Server{
-		Lifecycle: lc, Logger: logger, Tracer: tracer,
-		TransportConfig: transportCfg, DebugConfig: debugCfg,
-		Meter: meter, Mux: mux,
-		GRPCLimiter: NewGRPCServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
-		HTTPLimiter: NewHTTPServerLimiter(lc, LimiterKeyMap, os.serverLimiter),
-		Verifier:    os.verifier, Generator: generator,
-		RegisterHTTP: os.http, RegisterGRPC: os.grpc, RegisterDebug: os.debug,
-	}
-	server.Register()
-
-	client := &Client{
-		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: transportCfg,
-		Meter: meter, TLS: tlsCfg, Generator: os.generator,
-		Compression: os.compression, RoundTripper: os.rt,
-		HTTPLimiter: NewHTTPClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
-		GRPCLimiter: NewGRPCClientLimiter(lc, LimiterKeyMap, os.clientLimiter),
-	}
-	httpClient, err := client.HTTP()
+	meter, err := meter(lc, mux, os)
 	require.NoError(tb, err)
+	server := newWorldServer(tb, lc, mux, logger, tracer, generator, transportCfg, debugCfg, meter, os)
+	client, httpClient := newWorldClient(tb, lc, logger, tracer, transportCfg, tlsCfg, meter, os)
 
 	registerMVC(mux, logger.Logger)
 	registerRest(mux)
 
-	receiver, sender := NewEvents(mux, os.rt, generator)
+	receiver, sender := newWorldEvents(tb, mux, os.rt, generator)
 
 	world := &World{
 		t:      tb,
@@ -120,6 +108,66 @@ func NewStartedWorld(tb testing.TB, opts ...WorldOption) *World {
 	world.Start()
 
 	return world
+}
+
+func newWorldServer(
+	tb testing.TB, lc *fxtest.Lifecycle, mux *http.ServeMux, logger *logger.Logger,
+	tracer *tracer.Config, generator id.Generator, transportCfg *transport.Config,
+	debugCfg *debug.Config, meter metrics.Meter, opts *worldOpts,
+) *Server {
+	tb.Helper()
+
+	grpcLimiter, err := newGRPCServerLimiter(lc, LimiterKeyMap, opts.serverLimiter)
+	require.NoError(tb, err)
+	httpLimiter, err := newHTTPServerLimiter(lc, LimiterKeyMap, opts.serverLimiter)
+	require.NoError(tb, err)
+
+	server := &Server{
+		Lifecycle: lc, Logger: logger, Tracer: tracer,
+		TransportConfig: transportCfg, DebugConfig: debugCfg,
+		Meter: meter, Mux: mux,
+		GRPCLimiter: grpcLimiter,
+		HTTPLimiter: httpLimiter,
+		Verifier:    opts.verifier, Generator: generator,
+		RegisterHTTP: opts.http, RegisterGRPC: opts.grpc, RegisterDebug: opts.debug,
+	}
+	require.NoError(tb, server.register())
+
+	return server
+}
+
+func newWorldClient(
+	tb testing.TB, lc *fxtest.Lifecycle, logger *logger.Logger, tracer *tracer.Config,
+	transportCfg *transport.Config, tlsCfg *tls.Config, meter metrics.Meter,
+	opts *worldOpts,
+) (*Client, *http.Client) {
+	tb.Helper()
+
+	httpLimiter, err := newHTTPClientLimiter(lc, LimiterKeyMap, opts.clientLimiter)
+	require.NoError(tb, err)
+	grpcLimiter, err := newGRPCClientLimiter(lc, LimiterKeyMap, opts.clientLimiter)
+	require.NoError(tb, err)
+
+	client := &Client{
+		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: transportCfg,
+		Meter: meter, TLS: tlsCfg, Generator: opts.generator,
+		Compression: opts.compression, RoundTripper: opts.rt,
+		HTTPLimiter: httpLimiter,
+		GRPCLimiter: grpcLimiter,
+	}
+	httpClient, err := client.HTTP()
+	require.NoError(tb, err)
+
+	return client, httpClient
+}
+
+func newWorldEvents(tb testing.TB, mux *http.ServeMux, rt http.RoundTripper, generator id.Generator) (*events.Receiver, client.Client) {
+	tb.Helper()
+
+	receiver, sender, err := newEvents(mux, rt, generator)
+	require.NoError(tb, err)
+
+	return receiver, sender
 }
 
 // World groups the shared components used by integration-style tests.
@@ -242,15 +290,17 @@ func (w *World) ResponseWithNoBody(ctx context.Context, url, method string, head
 }
 
 func (w *World) namedURL(host, path string) string {
+	w.t.Helper()
 	url, err := url.JoinPath(host, Name.String(), path)
-	runtime.Must(err)
+	require.NoError(w.t, err)
 
 	return url
 }
 
 func (w *World) pathURL(host, path string) string {
+	w.t.Helper()
 	url, err := url.JoinPath(host, path)
-	runtime.Must(err)
+	require.NoError(w.t, err)
 
 	return url
 }

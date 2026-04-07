@@ -9,7 +9,7 @@ import (
 
 // NewLogger constructs a test logger bound to the supplied lifecycle and logger config.
 func NewLogger(lc di.Lifecycle, config *logger.Config) *logger.Logger {
-	logger, err := logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: config, Version: Version})
+	logger, err := newLogger(lc, config)
 	runtime.Must(err)
 
 	return logger
@@ -19,9 +19,9 @@ func (w *World) registerTelemetry() {
 	errors.Register(errors.NewHandler(w.Logger))
 }
 
-func createLogger(lc di.Lifecycle, os *worldOpts) *logger.Logger {
+func createLogger(lc di.Lifecycle, os *worldOpts) (*logger.Logger, error) {
 	if os.logger != nil {
-		return os.logger
+		return os.logger, nil
 	}
 
 	var config *logger.Config
@@ -38,5 +38,9 @@ func createLogger(lc di.Lifecycle, os *worldOpts) *logger.Logger {
 		config = NewOTLPLoggerConfig()
 	}
 
-	return NewLogger(lc, config)
+	return newLogger(lc, config)
+}
+
+func newLogger(lc di.Lifecycle, config *logger.Config) (*logger.Logger, error) {
+	return logger.NewLogger(logger.LoggerParams{Lifecycle: lc, Config: config, Version: Version})
 }

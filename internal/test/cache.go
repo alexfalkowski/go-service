@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -80,11 +79,13 @@ func (*ErrCache) Save(_, _ string, _ time.Duration) error {
 	return ErrFailed
 }
 
-func redisCache(lc di.Lifecycle) *cache.Cache {
+func newRedisCache(tb testing.TB, lc di.Lifecycle) *cache.Cache {
+	tb.Helper()
+
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
 	driver, err := driver.NewDriver(FS, cfg)
-	runtime.Must(err)
+	require.NoError(tb, err)
 
 	params := cache.CacheParams{
 		Lifecycle:  lc,
@@ -103,7 +104,7 @@ func newWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldOpts) *cache.Cache
 
 	var kind *cache.Cache
 	if opts.cache == nil {
-		kind = redisCache(lc)
+		kind = newRedisCache(tb, lc)
 	} else {
 		kind = createWorldCache(tb, lc, opts.cache)
 	}
