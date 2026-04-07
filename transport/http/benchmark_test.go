@@ -32,20 +32,21 @@ func BenchmarkHTTP(b *testing.B) {
 		mux := http.NewServeMux()
 		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 
-		addr := test.RandomHost()
+		listener, err := net.Listen(b.Context(), "tcp", "localhost:0")
+		require.NoError(b, err)
+		defer listener.Close()
 
 		server := &http.Server{
 			Handler:           mux,
-			Addr:              addr,
 			ReadHeaderTimeout: time.Second,
 		}
 		defer server.Close()
 
 		//nolint:errcheck
-		go server.ListenAndServe()
+		go server.Serve(listener)
 
 		client := &http.Client{Transport: http.DefaultTransport}
-		url := fmt.Sprintf("http://%s/hello", addr)
+		url := fmt.Sprintf("http://%s/hello", listener.Addr().String())
 
 		b.ResetTimer()
 
@@ -78,6 +79,7 @@ func BenchmarkHTTP(b *testing.B) {
 			ID:         uuid.NewGenerator(),
 		})
 		require.NoError(b, err)
+		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
 		server.Register(lc, []*server.Service{h.GetService()})
 
@@ -122,6 +124,7 @@ func BenchmarkHTTP(b *testing.B) {
 			ID:         uuid.NewGenerator(),
 		})
 		require.NoError(b, err)
+		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
 		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))
@@ -169,6 +172,7 @@ func BenchmarkHTTP(b *testing.B) {
 			ID:         uuid.NewGenerator(),
 		})
 		require.NoError(b, err)
+		cfg.HTTP.Address = test.BoundAddress(cfg.HTTP.Address, h.GetService().String())
 
 		server.Register(lc, []*server.Service{h.GetService()})
 		errors.Register(errors.NewHandler(logger))

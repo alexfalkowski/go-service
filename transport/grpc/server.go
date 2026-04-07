@@ -83,6 +83,9 @@ type ServerParams struct {
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
 // sources may be resolved via the package-registered filesystem (see `Register` in this package).
+//
+// If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
+// to the actual bound listener address after construction.
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil

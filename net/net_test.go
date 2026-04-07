@@ -11,8 +11,20 @@ func TestDefaultAddress(t *testing.T) {
 	require.Equal(t, "tcp://:9000", net.DefaultAddress("9000"))
 }
 
+func TestNetworkAddressValue(t *testing.T) {
+	require.Equal(t, "tcp://localhost:9000", net.NetworkAddress("tcp", "localhost:9000"))
+}
+
 func TestHost(t *testing.T) {
 	require.Equal(t, "none", net.Host("none"))
+}
+
+func TestSplitAndJoinHostPort(t *testing.T) {
+	host, port, err := net.SplitHostPort("localhost:9000")
+	require.NoError(t, err)
+	require.Equal(t, "localhost", host)
+	require.Equal(t, "9000", port)
+	require.Equal(t, "localhost:9000", net.JoinHostPort(host, port))
 }
 
 func TestNetworkAddress(t *testing.T) {

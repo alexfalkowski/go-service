@@ -1,36 +1,39 @@
 package test
 
-import (
-	"context"
+import "github.com/alexfalkowski/go-service/v2/net"
 
-	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/strings"
+const (
+	localNetwork = "tcp"
+	localAddress = "localhost:0"
 )
 
-// RandomAddress returns a transport address in `<network>://<host:port>` form backed by a free local port.
+// RandomAddress returns a local transport address in `<network>://<host:port>` form that lets the server pick an ephemeral port.
 func RandomAddress() string {
-	network, address := RandomNetworkHost()
-
-	return strings.Concat(network, "://", address)
+	return net.NetworkAddress(localNetwork, localAddress)
 }
 
-// RandomHost returns a free local `host:port` pair.
+// RandomHost returns a local `host:port` listen address that lets the server pick an ephemeral port.
 func RandomHost() string {
-	_, address := RandomNetworkHost()
-
-	return address
+	return localAddress
 }
 
-// RandomNetworkHost returns a network name and free local address discovered by binding to `localhost:0`.
+// RandomNetworkHost returns the local network name and listen address that let the server pick an ephemeral port.
 func RandomNetworkHost() (string, string) {
-	l, err := net.Listen(context.Background(), "tcp", "localhost:0")
-	runtime.Must(err)
+	return localNetwork, localAddress
+}
 
-	defer l.Close()
+// BoundAddress rewrites configured to the bound listener address while preserving the configured network and host when possible.
+func BoundAddress(configured, actual string) string {
+	network, address := net.ListenNetworkAddress(configured)
+	host, _, err := net.SplitHostPort(address)
+	if err != nil || host == "" {
+		return net.NetworkAddress(network, actual)
+	}
 
-	addr := l.Addr().String()
-	addr = strings.ReplaceAll(addr, "127.0.0.1", "localhost")
+	_, port, err := net.SplitHostPort(actual)
+	if err != nil {
+		return net.NetworkAddress(network, actual)
+	}
 
-	return l.Addr().Network(), addr
+	return net.NetworkAddress(network, net.JoinHostPort(host, port))
 }

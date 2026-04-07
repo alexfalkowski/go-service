@@ -25,9 +25,7 @@ func BenchmarkGRPC(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
 		b.ReportAllocs()
 
-		n, a, _ := net.SplitNetworkAddress(test.RandomAddress())
-
-		l, err := net.Listen(b.Context(), n, a)
+		l, err := net.Listen(b.Context(), "tcp", "localhost:0")
 		require.NoError(b, err)
 
 		server := grpc.NewServer(test.ConfigOptions, test.DefaultTimeout)
@@ -68,6 +66,7 @@ func BenchmarkGRPC(b *testing.B) {
 			UserAgent:  test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
+		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})
@@ -110,6 +109,7 @@ func BenchmarkGRPC(b *testing.B) {
 			UserAgent: test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
+		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})
@@ -155,6 +155,7 @@ func BenchmarkGRPC(b *testing.B) {
 			UserAgent: test.UserAgent, Version: test.Version,
 		})
 		require.NoError(b, err)
+		cfg.GRPC.Address = test.BoundAddress(cfg.GRPC.Address, g.GetService().String())
 
 		v1.RegisterGreeterServiceServer(g.ServiceRegistrar(), test.NewService())
 		server.Register(lc, []*server.Service{g.GetService()})

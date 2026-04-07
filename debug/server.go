@@ -52,6 +52,8 @@ type ServerParams struct {
 //   - underlying service construction errors are returned.
 //
 // Errors are prefixed with "debug" for easier attribution.
+// If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
+// to the actual bound listener address after construction.
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil
