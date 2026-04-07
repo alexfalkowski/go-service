@@ -62,7 +62,7 @@ func (w *World) RegisterGRPCHealth(name, url string, observations ...HealthObser
 // All registrations are attached under name and share the world's lifecycle so tests can register
 // the server and then hit the generated HTTP health endpoints through RegisterHealth.
 func (w *World) HealthServer(name, url string) *server.Server {
-	t := w.NewHTTP().Transport
+	t := w.httpClient.Transport
 	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(t))
 	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
 

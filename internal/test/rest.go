@@ -94,10 +94,10 @@ func registerRest(mux *http.ServeMux) {
 	})
 }
 
-func restClient(client *Client, os *worldOpts) *rest.Client {
+func restClient(client *http.Client, os *worldOpts) *rest.Client {
 	if os.rest {
 		return rest.NewClient(
-			rest.WithClientRoundTripper(client.NewHTTP().Transport),
+			rest.WithClientRoundTripper(client.Transport),
 			rest.WithClientTimeout("10s"),
 		)
 	}

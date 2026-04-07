@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -16,8 +17,8 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func up(db *mssqlx.DBs) error {
-	ctx, cancel := test.Timeout()
+func up(ctx context.Context, db *mssqlx.DBs) error {
+	ctx, cancel := test.Timeout(ctx)
 	defer cancel()
 
 	query := `CREATE TABLE IF NOT EXISTS accounts (
@@ -30,8 +31,8 @@ func up(db *mssqlx.DBs) error {
 	return err
 }
 
-func down(db *mssqlx.DBs) error {
-	ctx, cancel := test.Timeout()
+func down(ctx context.Context, db *mssqlx.DBs) error {
+	ctx, cancel := test.Timeout(ctx)
 	defer cancel()
 
 	query := "DROP TABLE IF EXISTS accounts;"
@@ -112,9 +113,9 @@ func TestSQL(t *testing.T) {
 func TestDBQuery(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -129,15 +130,15 @@ func TestDBQuery(t *testing.T) {
 	require.NoError(t, rows.Err())
 	require.NoError(t, rows.Close())
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestDBExec(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -149,15 +150,15 @@ func TestDBExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestDBCommitTransExec(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -181,15 +182,15 @@ func TestDBCommitTransExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestDBRollbackTransExec(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -210,15 +211,15 @@ func TestDBRollbackTransExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestStatementQuery(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -239,15 +240,15 @@ func TestStatementQuery(t *testing.T) {
 	require.NoError(t, rows.Err())
 	require.NoError(t, rows.Close())
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestStatementExec(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -267,15 +268,15 @@ func TestStatementExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestTransStatementExec(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -304,15 +305,15 @@ func TestTransStatementExec(t *testing.T) {
 	require.NoError(t, err)
 	require.Positive(t, num)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestInvalidStatementQuery(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil), test.WithWorldLoggerConfig("tint"))
 
-	require.NoError(t, up(world.DB))
+	require.NoError(t, up(t.Context(), world.DB))
 
-	ctx, cancel := test.Timeout()
+	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
 	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
@@ -325,7 +326,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	_, err = stmt.QueryContext(ctx, 1)
 	require.Error(t, err)
 
-	require.NoError(t, down(world.DB))
+	require.NoError(t, down(t.Context(), world.DB))
 }
 
 func TestInvalidSQLPort(t *testing.T) {
