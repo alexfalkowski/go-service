@@ -15,8 +15,14 @@ func TestLogger(t *testing.T) {
 	log, err := test.NewLogger(lc, test.NewTextLoggerConfig())
 	require.NoError(t, err)
 
-	log.Log(t.Context(), logger.NewText("test"), logger.Bool("yes", true))
-	log.Log(t.Context(), logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))
+	require.NotPanics(t, func() {
+		log.Log(t.Context(), logger.NewText("test"), logger.Bool("yes", true))
+		log.Log(t.Context(), logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))
+		log.LogAttrs(t.Context(), logger.LevelInfo, logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))
+		log.Info("hello")
+		log.Warn("hello")
+		log.Error("hello")
+	})
 }
 
 func TestInvalidLogger(t *testing.T) {
@@ -31,13 +37,23 @@ func TestInvalidLogger(t *testing.T) {
 		Environment: test.Environment,
 	}
 
-	_, err := logger.NewLogger(params)
+	log, err := logger.NewLogger(params)
 	require.Error(t, err)
+	require.Nil(t, log)
+
+	require.NotPanics(t, func() {
+		log.Log(t.Context(), logger.NewText("test"), logger.Bool("yes", true))
+		log.Log(t.Context(), logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))
+		log.LogAttrs(t.Context(), logger.LevelInfo, logger.NewMessage("test", context.Canceled), logger.Bool("yes", true))
+		log.Info("hello")
+		log.Warn("hello")
+		log.Error("hello")
+	})
 }
 
 func TestInvalidLevel(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	cfg := &logger.Config{Kind: "text", Level: "erorr"}
+	cfg := &logger.Config{Kind: "text", Level: "bob"}
 	params := logger.LoggerParams{
 		Lifecycle:   lc,
 		Config:      cfg,
