@@ -94,6 +94,12 @@ type ServerParams struct {
 // If TLS is enabled, TLS configuration is constructed using the package-registered filesystem dependency
 // (see `Register` in this package) to resolve certificate/key "source strings" (for example `file:` or `env:`).
 //
+// Inbound size limits:
+//
+// params.Config.GetMaxReceiveBytes() is projected into the low-level HTTP server config and enforced by
+// net/http/server.NewServer via http.MaxBytesHandler. The limit applies per inbound request body before
+// downstream handlers read from it.
+//
 // If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
 // to the actual bound listener address after construction.
 func NewServer(params ServerParams) (*Server, error) {
@@ -160,7 +166,8 @@ func (s *Server) GetService() *server.Service {
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
-		Address: cmp.Or(cfg.Address, net.DefaultAddress("8080")),
+		Address:         cmp.Or(cfg.Address, net.DefaultAddress("8080")),
+		MaxReceiveBytes: cfg.GetMaxReceiveBytes(),
 	}
 	if !cfg.TLS.IsEnabled() {
 		return config, nil

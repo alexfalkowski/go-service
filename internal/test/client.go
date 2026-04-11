@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
-	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -16,7 +15,7 @@ import (
 	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http"
 	httpbreaker "github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 )
@@ -40,24 +39,24 @@ type Client struct {
 // NewHTTP returns an HTTP client configured with the world's logger, retry policy,
 // token generator, limiter, tracing, and optional compression.
 func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
-	opts := []transporthttp.ClientOption{
-		transporthttp.WithClientLogger(c.Logger),
-		transporthttp.WithClientRoundTripper(c.RoundTripper),
-		transporthttp.WithClientBreaker(os...),
-		transporthttp.WithClientRetry(c.Transport.HTTP.Retry),
-		transporthttp.WithClientUserAgent(UserAgent),
-		transporthttp.WithClientTokenGenerator(UserID, c.Generator),
-		transporthttp.WithClientTimeout(time.Minute),
-		transporthttp.WithClientTLS(c.TLS),
-		transporthttp.WithClientID(c.ID),
-		transporthttp.WithClientLimiter(c.HTTPLimiter),
+	opts := []http.ClientOption{
+		http.WithClientLogger(c.Logger),
+		http.WithClientRoundTripper(c.RoundTripper),
+		http.WithClientBreaker(os...),
+		http.WithClientRetry(c.Transport.HTTP.Retry),
+		http.WithClientUserAgent(UserAgent),
+		http.WithClientTokenGenerator(UserID, c.Generator),
+		http.WithClientTimeout(time.Minute),
+		http.WithClientTLS(c.TLS),
+		http.WithClientID(c.ID),
+		http.WithClientLimiter(c.HTTPLimiter),
 	}
 
 	if c.Compression {
-		opts = append(opts, transporthttp.WithClientCompression())
+		opts = append(opts, http.WithClientCompression())
 	}
 
-	return transporthttp.NewClient(opts...)
+	return http.NewClient(opts...)
 }
 
 // NewGRPC returns a gRPC client connection configured with the world's interceptors,

@@ -25,6 +25,19 @@ func TestFromErrorKeepsWrappedCoder(t *testing.T) {
 	require.Same(t, err, status.FromError(http.StatusBadRequest, err))
 }
 
+func TestCodeRecognizesMaxBytesError(t *testing.T) {
+	err := &http.MaxBytesError{Limit: 1}
+
+	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
+}
+
+func TestBadRequestErrorUsesRequestEntityTooLargeForMaxBytesError(t *testing.T) {
+	err := status.BadRequestError(&http.MaxBytesError{Limit: 1})
+
+	require.True(t, status.IsError(err))
+	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
+}
+
 func TestWriteErrorReturnsWriteFailure(t *testing.T) {
 	res := &test.ErrResponseWriter{}
 

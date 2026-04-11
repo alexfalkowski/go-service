@@ -13,16 +13,15 @@ import (
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
-	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	sdk "github.com/cloudevents/sdk-go/v2"
+	v2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/linxGnu/mssqlx"
 	"github.com/stretchr/testify/require"
@@ -31,8 +30,8 @@ import (
 
 func init() {
 	telemetry.Register()
-	transportgrpc.Register(FS)
-	transporthttp.Register(FS)
+	grpc.Register(FS)
+	http.Register(FS)
 	Encoder.Register("error", NewEncoder(ErrFailed))
 	Compressor.Register("error", NewCompressor(ErrFailed))
 }
@@ -151,7 +150,7 @@ type World struct {
 	PG     *pg.Config
 	*Server
 	*Client
-	*sdk.Event
+	*v2.Event
 	*events.Receiver
 	*cache.Cache
 	Sender client.Client

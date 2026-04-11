@@ -7,6 +7,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -72,4 +75,43 @@ func TestStream(t *testing.T) {
 	resp, err := stream.Recv()
 	require.NoError(t, err)
 	require.Equal(t, "Hello test", resp.GetMessage())
+}
+
+func TestUnaryMaxReceiveBytes(t *testing.T) {
+	world := newStartedGRPCWorld(t, 64)
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: strings.Repeat("a", 256)})
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func TestStreamMaxReceiveBytes(t *testing.T) {
+	world := newStartedGRPCWorld(t, 64)
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	err = stream.Send(&v1.SayStreamHelloRequest{Name: strings.Repeat("a", 256)})
+	if err == nil {
+		_, err = stream.Recv()
+	}
+
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func newStartedGRPCWorld(t *testing.T, maxReceiveBytes int64) *test.World {
+	t.Helper()
+
+	cfg := test.NewInsecureTransportConfig()
+	cfg.GRPC.MaxReceiveBytes = maxReceiveBytes
+
+	return test.NewStartedWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldGRPC())
 }

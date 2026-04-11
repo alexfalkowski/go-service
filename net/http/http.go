@@ -13,55 +13,56 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-const (
-	// MethodDelete is an alias of http.MethodDelete.
-	MethodDelete = http.MethodDelete
+// MethodDelete is an alias of http.MethodDelete.
+const MethodDelete = http.MethodDelete
 
-	// MethodGet is an alias of http.MethodGet.
-	MethodGet = http.MethodGet
+// MethodGet is an alias of http.MethodGet.
+const MethodGet = http.MethodGet
 
-	// MethodPatch is an alias of http.MethodPatch.
-	MethodPatch = http.MethodPatch
+// MethodPatch is an alias of http.MethodPatch.
+const MethodPatch = http.MethodPatch
 
-	// MethodPost is an alias of http.MethodPost.
-	MethodPost = http.MethodPost
+// MethodPost is an alias of http.MethodPost.
+const MethodPost = http.MethodPost
 
-	// MethodPut is an alias of http.MethodPut.
-	MethodPut = http.MethodPut
+// MethodPut is an alias of http.MethodPut.
+const MethodPut = http.MethodPut
 
-	// StatusBadRequest is an alias of http.StatusBadRequest.
-	StatusBadRequest = http.StatusBadRequest
+// StatusBadRequest is an alias of http.StatusBadRequest.
+const StatusBadRequest = http.StatusBadRequest
 
-	// StatusConflict is an alias of http.StatusConflict.
-	StatusConflict = http.StatusConflict
+// StatusConflict is an alias of http.StatusConflict.
+const StatusConflict = http.StatusConflict
 
-	// StatusForbidden is an alias of http.StatusForbidden.
-	StatusForbidden = http.StatusForbidden
+// StatusForbidden is an alias of http.StatusForbidden.
+const StatusForbidden = http.StatusForbidden
 
-	// StatusGatewayTimeout is an alias of http.StatusGatewayTimeout.
-	StatusGatewayTimeout = http.StatusGatewayTimeout
+// StatusGatewayTimeout is an alias of http.StatusGatewayTimeout.
+const StatusGatewayTimeout = http.StatusGatewayTimeout
 
-	// StatusOK is an alias of http.StatusOK.
-	StatusOK = http.StatusOK
+// StatusOK is an alias of http.StatusOK.
+const StatusOK = http.StatusOK
 
-	// StatusInternalServerError is an alias of http.StatusInternalServerError.
-	StatusInternalServerError = http.StatusInternalServerError
+// StatusRequestEntityTooLarge is an alias of http.StatusRequestEntityTooLarge.
+const StatusRequestEntityTooLarge = http.StatusRequestEntityTooLarge
 
-	// StatusNotFound is an alias of http.StatusNotFound.
-	StatusNotFound = http.StatusNotFound
+// StatusInternalServerError is an alias of http.StatusInternalServerError.
+const StatusInternalServerError = http.StatusInternalServerError
 
-	// StatusNotImplemented is an alias of http.StatusNotImplemented.
-	StatusNotImplemented = http.StatusNotImplemented
+// StatusNotFound is an alias of http.StatusNotFound.
+const StatusNotFound = http.StatusNotFound
 
-	// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
-	StatusServiceUnavailable = http.StatusServiceUnavailable
+// StatusNotImplemented is an alias of http.StatusNotImplemented.
+const StatusNotImplemented = http.StatusNotImplemented
 
-	// StatusTooManyRequests is an alias of http.StatusTooManyRequests.
-	StatusTooManyRequests = http.StatusTooManyRequests
+// StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
+const StatusServiceUnavailable = http.StatusServiceUnavailable
 
-	// StatusUnauthorized is an alias of http.StatusUnauthorized.
-	StatusUnauthorized = http.StatusUnauthorized
-)
+// StatusTooManyRequests is an alias of http.StatusTooManyRequests.
+const StatusTooManyRequests = http.StatusTooManyRequests
+
+// StatusUnauthorized is an alias of http.StatusUnauthorized.
+const StatusUnauthorized = http.StatusUnauthorized
 
 type (
 	// Client is an alias for net/http.Client.
@@ -69,6 +70,12 @@ type (
 	// It is provided so go-service code can depend on a consistent import path while preserving
 	// standard library semantics.
 	Client = http.Client
+
+	// MaxBytesError is an alias for net/http.MaxBytesError.
+	//
+	// It is returned when MaxBytesReader or MaxBytesHandler observes an inbound request body exceeding
+	// the configured byte limit.
+	MaxBytesError = http.MaxBytesError
 	// Handler is an alias for net/http.Handler.
 	//
 	// It is provided so go-service code can depend on a consistent import path while preserving
@@ -171,6 +178,13 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // This is a thin wrapper around net/http.NewServeMux.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
+}
+
+// MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.
+//
+// This is a thin wrapper around net/http.MaxBytesHandler.
+func MaxBytesHandler(h Handler, n int64) Handler {
+	return http.MaxBytesHandler(h, n)
 }
 
 // HandleFunc registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.

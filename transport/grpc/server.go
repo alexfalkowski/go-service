@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"cmp"
+	"math"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -84,6 +85,10 @@ type ServerParams struct {
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
 // sources may be resolved via the package-registered filesystem (see `Register` in this package).
 //
+// Inbound size limits:
+// params.Config.GetMaxReceiveBytes() is applied via grpc.MaxRecvMsgSize, which caps each inbound unary
+// request and each inbound stream message independently.
+//
 // If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
 // to the actual bound listener address after construction.
 func NewServer(params ServerParams) (*Server, error) {
@@ -101,6 +106,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		grpc.StatsHandler(telemetry.NewServerHandler()),
 		unaryServerOption(params, params.Unary...),
 		streamServerOption(params, params.Stream...),
+		maxReceiveSizeOption(params.Config),
 		opt,
 	)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
@@ -180,6 +186,12 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 	sis = append(sis, interceptors...)
 
 	return grpc.ChainStreamInterceptor(sis...)
+}
+
+func maxReceiveSizeOption(cfg *Config) grpc.ServerOption {
+	limit := min(cfg.GetMaxReceiveBytes(), int64(math.MaxInt))
+
+	return grpc.MaxRecvMsgSize(int(limit))
 }
 
 func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
