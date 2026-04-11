@@ -5,17 +5,21 @@ import (
 	"strings"
 )
 
-const (
-	// Empty is the empty string constant.
-	//
-	// It is provided as a named constant for readability and reuse.
-	Empty = ""
+// Empty is the empty string constant.
+//
+// It is provided as a named constant for readability and reuse.
+const Empty = ""
 
-	// Space is the single ASCII space character (" ").
-	//
-	// It is provided as a named constant for readability and reuse.
-	Space = " "
-)
+// Space is the single ASCII space character (" ").
+//
+// It is provided as a named constant for readability and reuse.
+const Space = " "
+
+// Reader is an alias of strings.Reader.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Reader = strings.Reader
 
 // Contains reports whether substr is within s.
 //
@@ -59,6 +63,13 @@ func HasPrefix(s, prefix string) bool {
 // This is a thin wrapper around strings.Repeat and does not change semantics.
 func Repeat(s string, count int) string {
 	return strings.Repeat(s, count)
+}
+
+// NewReader returns a new Reader reading from s.
+//
+// This is a thin wrapper around strings.NewReader and does not change semantics.
+func NewReader(s string) *Reader {
+	return strings.NewReader(s)
 }
 
 // ReplaceAll returns a copy of s with all non-overlapping instances of o replaced by n.

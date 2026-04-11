@@ -13,8 +13,9 @@
 //   - health endpoints wiring (`transport/http/health`)
 //   - Prometheus metrics endpoint wiring (`transport/http/telemetry/metrics`)
 //
-// Lower-level HTTP primitives and shared helpers live under sibling `net/http/...` packages. This package
-// focuses on higher-level server/client composition, middleware policy, and Fx wiring.
+// Common lower-level HTTP primitives from `net/http` are also re-exported here so transport consumers can
+// stay on a single import path. This package still focuses on higher-level server/client composition,
+// middleware policy, and Fx wiring.
 //
 // The primary entrypoint for DI consumers is `Module`, which composes the HTTP transport stack and
 // registers handlers/constructors needed to run an HTTP server.

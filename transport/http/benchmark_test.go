@@ -66,7 +66,7 @@ func BenchmarkHTTP(b *testing.B) {
 	b.Run("none", func(b *testing.B) {
 		b.ReportAllocs()
 
-		mux := http.NewServeMux()
+		mux := transporthttp.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
@@ -86,12 +86,12 @@ func BenchmarkHTTP(b *testing.B) {
 		lc.RequireStart()
 
 		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
-		client := &http.Client{Transport: http.DefaultTransport}
+		client := &transporthttp.Client{Transport: transporthttp.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
+		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
 		for b.Loop() {
@@ -108,7 +108,7 @@ func BenchmarkHTTP(b *testing.B) {
 	b.Run("log", func(b *testing.B) {
 		b.ReportAllocs()
 
-		mux := http.NewServeMux()
+		mux := transporthttp.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
 		require.NoError(b, err)
@@ -132,12 +132,12 @@ func BenchmarkHTTP(b *testing.B) {
 		lc.RequireStart()
 
 		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
-		client := &http.Client{Transport: http.DefaultTransport}
+		client := &transporthttp.Client{Transport: transporthttp.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
+		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
 		for b.Loop() {
@@ -154,7 +154,7 @@ func BenchmarkHTTP(b *testing.B) {
 	b.Run("trace", func(b *testing.B) {
 		b.ReportAllocs()
 
-		mux := http.NewServeMux()
+		mux := transporthttp.NewServeMux()
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
 		require.NoError(b, err)
@@ -180,12 +180,12 @@ func BenchmarkHTTP(b *testing.B) {
 		lc.RequireStart()
 
 		_, addr, _ := net.SplitNetworkAddress(cfg.HTTP.Address)
-		client := &http.Client{Transport: http.DefaultTransport}
+		client := &transporthttp.Client{Transport: transporthttp.DefaultTransport}
 		url := fmt.Sprintf("http://%s/hello", addr)
 
 		b.ResetTimer()
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
+		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
 		for b.Loop() {
@@ -221,7 +221,7 @@ func BenchmarkMVC(b *testing.B) {
 		require.NoError(b, err)
 		url := world.PathServerURL("http", "hello")
 
-		req, err := http.NewRequestWithContext(b.Context(), http.MethodGet, url, http.NoBody)
+		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
 		req.Header.Set(content.TypeKey, mime.HTMLMediaType)

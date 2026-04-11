@@ -48,11 +48,17 @@ func BadRequestError(err error) error {
 //
 // This helper is intentionally idempotent for errors already produced by this package (or any error
 // implementing Coder): calling FromError on such errors does not overwrite the original status code.
+// Raw *http.MaxBytesError values are normalized to StatusRequestEntityTooLarge (413) regardless of the
+// provided code so oversized request bodies surface consistently.
 //
 // Note: err must be non-nil. Passing a nil error will panic because err.Error() will be called.
 func FromError(code int, err error) error {
 	if IsError(err) {
 		return err
+	}
+
+	if isMaxBytesError(err) {
+		code = http.StatusRequestEntityTooLarge
 	}
 
 	return Error(code, err.Error())
@@ -79,11 +85,16 @@ func IsError(err error) bool {
 //
 // Resolution order:
 //  1. If err implements Coder, return coder.Code().
-//  2. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
-//  3. Otherwise return StatusInternalServerError (500).
+//  2. If err is a raw *http.MaxBytesError, return StatusRequestEntityTooLarge (413).
+//  3. If err is a gRPC status error, map its gRPC code to an HTTP status code using the statusCodes table.
+//  4. Otherwise return StatusInternalServerError (500).
 func Code(err error) int {
 	if coder, ok := coderFromError(err); ok {
 		return coder.Code()
+	}
+
+	if isMaxBytesError(err) {
+		return http.StatusRequestEntityTooLarge
 	}
 
 	s, ok := status.FromError(err)
@@ -101,6 +112,11 @@ func coderFromError(err error) (Coder, bool) {
 	}
 
 	return nil, false
+}
+
+func isMaxBytesError(err error) bool {
+	_, ok := errors.AsType[*http.MaxBytesError](err)
+	return ok
 }
 
 type statusError struct {

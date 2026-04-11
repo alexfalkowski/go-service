@@ -6,7 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -15,7 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	gl "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
-	th "github.com/alexfalkowski/go-service/v2/transport/http"
+	"github.com/alexfalkowski/go-service/v2/transport/http"
 	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/urfave/negroni/v3"
 )
@@ -26,7 +25,7 @@ type Server struct {
 	Meter           metrics.Meter
 	Verifier        token.Verifier
 	Mux             *http.ServeMux
-	HTTPServer      *th.Server
+	HTTPServer      *http.Server
 	GRPCServer      *grpc.Server
 	DebugServer     *debug.Server
 	TransportConfig *transport.Config
@@ -55,7 +54,7 @@ func (s *Server) Register() error {
 	servers := []*server.Service{}
 
 	if s.RegisterHTTP {
-		params := th.ServerParams{
+		params := http.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
 			Config:   s.TransportConfig.HTTP,
 			Logger:   s.Logger,
@@ -65,7 +64,7 @@ func (s *Server) Register() error {
 			UserAgent: UserAgent, Version: Version,
 		}
 
-		httpServer, err := th.NewServer(params)
+		httpServer, err := http.NewServer(params)
 		if err != nil {
 			return err
 		}

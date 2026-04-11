@@ -88,7 +88,7 @@ As a rule of thumb: if you want protocol primitives or shared helpers, start in 
 The config decoder supports:
 
 - JSON (`encoding/json`)
-- HJSON (`github.com/hjson/hjson-go`)
+- HJSON (`github.com/hjson/hjson-go/v4`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
 
@@ -724,6 +724,18 @@ Notes:
 
 - Address format should be `<network>://<address>` (for example `tcp://:8000`).
 - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
+- `max_receive_bytes` limits inbound payload size. A zero value uses the default `4194304` bytes (`4 MiB`).
+- For HTTP, `max_receive_bytes` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
+
+Receive-limit example:
+
+```yaml
+transport:
+  http:
+    max_receive_bytes: 2097152
+  grpc:
+    max_receive_bytes: 3145728
+```
 
 With retry + low-level options map:
 

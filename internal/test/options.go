@@ -29,6 +29,7 @@ type worldOpts struct {
 	cache         *worldCacheOpts
 	httpHealth    *worldHealthOpts
 	grpcHealth    *worldHealthOpts
+	transport     *transport.Config
 	telemetry     string
 	loggerConfig  string
 	secure        bool
@@ -115,6 +116,13 @@ func WithWorldServerLimiter(config *limiter.Config) WorldOption {
 func WithWorldCompression() WorldOption {
 	return worldOptionFunc(func(o *worldOpts) {
 		o.compression = true
+	})
+}
+
+// WithWorldTransportConfig enables the transport servers with an explicit config override.
+func WithWorldTransportConfig(config *transport.Config) WorldOption {
+	return worldOptionFunc(func(o *worldOpts) {
+		o.transport = config
 	})
 }
 
@@ -267,6 +275,10 @@ func (w *World) registerOptions(opts *worldOpts) {
 }
 
 func transportConfig(opts *worldOpts) *transport.Config {
+	if opts.transport != nil {
+		return opts.transport
+	}
+
 	if opts.secure {
 		return NewSecureTransportConfig()
 	}

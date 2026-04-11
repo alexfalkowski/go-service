@@ -17,6 +17,7 @@ import (
 // The HTTP status code is derived from err using Code(err), which understands:
 //   - errors implementing Coder,
 //   - errors created by this package, and
+//   - raw *http.MaxBytesError values mapped to 413 Request Entity Too Large, and
 //   - gRPC status errors mapped to HTTP codes.
 //
 // Write behavior:

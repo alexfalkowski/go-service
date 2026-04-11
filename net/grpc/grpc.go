@@ -171,6 +171,13 @@ func Creds(c credentials.TransportCredentials) ServerOption {
 	return grpc.Creds(c)
 }
 
+// MaxRecvMsgSize returns a ServerOption that caps inbound message size in bytes.
+//
+// This is a thin wrapper around grpc.MaxRecvMsgSize.
+func MaxRecvMsgSize(m int) ServerOption {
+	return grpc.MaxRecvMsgSize(m)
+}
+
 // NewClient creates a gRPC client connection to target using opts.
 //
 // This forwards to grpc.NewClient. The target format and supported schemes are
