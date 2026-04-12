@@ -13,9 +13,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
-	gl "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
+	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
-	hl "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/urfave/negroni/v3"
 )
 
@@ -31,8 +31,8 @@ type Server struct {
 	TransportConfig *transport.Config
 	DebugConfig     *debug.Config
 	Tracer          *tracer.Config
-	GRPCLimiter     *gl.Server
-	HTTPLimiter     *hl.Server
+	GRPCLimiter     *grpclimiter.Server
+	HTTPLimiter     *httplimiter.Server
 	Logger          *logger.Logger
 	Generator       id.Generator
 	RegisterHTTP    bool

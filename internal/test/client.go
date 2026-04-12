@@ -5,14 +5,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net"
-	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport"
-	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	grpcbreaker "github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -62,27 +61,27 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 // NewGRPC returns a gRPC client connection configured with the world's interceptors,
 // retry policy, token generator, limiter, tracing, and optional compression.
 func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
-	opts := []transportgrpc.ClientOption{
-		transportgrpc.WithClientUnaryInterceptors(),
-		transportgrpc.WithClientStreamInterceptors(),
-		transportgrpc.WithClientLogger(c.Logger),
-		transportgrpc.WithClientBreaker(os...),
-		transportgrpc.WithClientRetry(c.Transport.GRPC.Retry),
-		transportgrpc.WithClientUserAgent(UserAgent),
-		transportgrpc.WithClientTokenGenerator(UserID, c.Generator),
-		transportgrpc.WithClientTimeout(time.Minute),
-		transportgrpc.WithClientKeepalive(time.Minute, time.Minute),
-		transportgrpc.WithClientDialOption(),
-		transportgrpc.WithClientTLS(c.TLS),
-		transportgrpc.WithClientID(c.ID),
-		transportgrpc.WithClientLimiter(c.GRPCLimiter),
+	opts := []grpc.ClientOption{
+		grpc.WithClientUnaryInterceptors(),
+		grpc.WithClientStreamInterceptors(),
+		grpc.WithClientLogger(c.Logger),
+		grpc.WithClientBreaker(os...),
+		grpc.WithClientRetry(c.Transport.GRPC.Retry),
+		grpc.WithClientUserAgent(UserAgent),
+		grpc.WithClientTokenGenerator(UserID, c.Generator),
+		grpc.WithClientTimeout(time.Minute),
+		grpc.WithClientKeepalive(time.Minute, time.Minute),
+		grpc.WithClientDialOption(),
+		grpc.WithClientTLS(c.TLS),
+		grpc.WithClientID(c.ID),
+		grpc.WithClientLimiter(c.GRPCLimiter),
 	}
 
 	if c.Compression {
-		opts = append(opts, transportgrpc.WithClientCompression())
+		opts = append(opts, grpc.WithClientCompression())
 	}
 
 	_, target := net.ListenNetworkAddress(c.Transport.GRPC.Address)
 
-	return transportgrpc.NewClient(target, opts...)
+	return grpc.NewClient(target, opts...)
 }
