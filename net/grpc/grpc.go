@@ -18,116 +18,117 @@ import (
 	"google.golang.org/grpc/stats"
 )
 
-type (
-	// CallOption is an alias of grpc.CallOption.
-	//
-	// It represents a per-RPC option (for example compression, per-call
-	// credentials, etc.) passed to a client call.
-	CallOption = grpc.CallOption
+// CallOption is an alias of grpc.CallOption.
+//
+// It represents a per-RPC option (for example compression, per-call
+// credentials, etc.) passed to a client call.
+type CallOption = grpc.CallOption
 
-	// ClientConn is an alias of grpc.ClientConn.
-	//
-	// It represents a virtual connection to a gRPC endpoint and is used to create
-	// generated service clients.
-	ClientConn = grpc.ClientConn
+// ClientConn is an alias of grpc.ClientConn.
+//
+// It represents a virtual connection to a gRPC endpoint and is used to create
+// generated service clients.
+type ClientConn = grpc.ClientConn
 
-	// ClientStream is an alias of grpc.ClientStream.
-	//
-	// It is the client-side stream interface used by streaming RPCs.
-	ClientStream = grpc.ClientStream
+// ClientStream is an alias of grpc.ClientStream.
+//
+// It is the client-side stream interface used by streaming RPCs.
+type ClientStream = grpc.ClientStream
 
-	// DialOption is an alias of grpc.DialOption.
-	//
-	// It configures client connection creation (dialing, credentials, interceptors,
-	// stats handlers, etc.).
-	DialOption = grpc.DialOption
+// DialOption is an alias of grpc.DialOption.
+//
+// It configures client connection creation (dialing, credentials, interceptors,
+// stats handlers, etc.).
+type DialOption = grpc.DialOption
 
-	// EmptyServerOption is an alias of grpc.EmptyServerOption.
-	//
-	// It is used when building server options that conditionally return "no option".
-	EmptyServerOption = grpc.EmptyServerOption
+// EmptyServerOption is an alias of grpc.EmptyServerOption.
+//
+// It is used when building server options that conditionally return "no option".
+type EmptyServerOption = grpc.EmptyServerOption
 
-	// UnaryInvoker is an alias of grpc.UnaryInvoker.
-	//
-	// It is the function signature used by unary client interceptors to invoke the
-	// next interceptor/transport.
-	UnaryInvoker = grpc.UnaryInvoker
+// UnaryInvoker is an alias of grpc.UnaryInvoker.
+//
+// It is the function signature used by unary client interceptors to invoke the
+// next interceptor/transport.
+type UnaryInvoker = grpc.UnaryInvoker
 
-	// ServerOption is an alias of grpc.ServerOption.
-	//
-	// It configures server construction (credentials, interceptors, keepalive,
-	// stats handlers, etc.).
-	ServerOption = grpc.ServerOption
+// ServerOption is an alias of grpc.ServerOption.
+//
+// It configures server construction (credentials, interceptors, keepalive,
+// stats handlers, etc.).
+type ServerOption = grpc.ServerOption
 
-	// Server is an alias of grpc.Server.
-	//
-	// It is the gRPC server implementation that hosts registered services.
-	Server = grpc.Server
+// Server is an alias of grpc.Server.
+//
+// It is the gRPC server implementation that hosts registered services.
+type Server = grpc.Server
 
-	// ServerStream is an alias of grpc.ServerStream.
-	//
-	// It is the server-side stream interface used by streaming RPCs.
-	ServerStream = grpc.ServerStream
+// ServerStream is an alias of grpc.ServerStream.
+//
+// It is the server-side stream interface used by streaming RPCs.
+type ServerStream = grpc.ServerStream
 
-	// ServiceRegistrar is an alias of grpc.ServiceRegistrar.
-	//
-	// It is implemented by *grpc.Server and is accepted by generated Register*
-	// functions.
-	ServiceRegistrar = grpc.ServiceRegistrar
+// ServiceRegistrar is an alias of grpc.ServiceRegistrar.
+//
+// It is implemented by *grpc.Server and is accepted by generated Register*
+// functions.
+type ServiceRegistrar = grpc.ServiceRegistrar
 
-	// StreamClientInterceptor is an alias of grpc.StreamClientInterceptor.
-	//
-	// It intercepts client-side streaming RPCs.
-	StreamClientInterceptor = grpc.StreamClientInterceptor
+// StreamClientInterceptor is an alias of grpc.StreamClientInterceptor.
+//
+// It intercepts client-side streaming RPCs.
+type StreamClientInterceptor = grpc.StreamClientInterceptor
 
-	// StreamDesc is an alias of grpc.StreamDesc.
-	//
-	// It describes streaming RPC characteristics.
-	StreamDesc = grpc.StreamDesc
+// StreamDesc is an alias of grpc.StreamDesc.
+//
+// It describes streaming RPC characteristics.
+type StreamDesc = grpc.StreamDesc
 
-	// Streamer is an alias of grpc.Streamer.
-	//
-	// It is the function signature used by stream client interceptors to create a
-	// client stream.
-	Streamer = grpc.Streamer
+// Streamer is an alias of grpc.Streamer.
+//
+// It is the function signature used by stream client interceptors to create a
+// client stream.
+type Streamer = grpc.Streamer
 
-	// StreamHandler is an alias of grpc.StreamHandler.
-	//
-	// It is the function signature used by stream server interceptors to handle a
-	// server stream.
-	StreamHandler = grpc.StreamHandler
+// StreamHandler is an alias of grpc.StreamHandler.
+//
+// It is the function signature used by stream server interceptors to handle a
+// server stream.
+type StreamHandler = grpc.StreamHandler
 
-	// StreamServerInfo is an alias of grpc.StreamServerInfo.
-	//
-	// It provides information about a streaming RPC to a server interceptor.
-	StreamServerInfo = grpc.StreamServerInfo
+// StreamServerInfo is an alias of grpc.StreamServerInfo.
+//
+// It provides information about a streaming RPC to a server interceptor.
+type StreamServerInfo = grpc.StreamServerInfo
 
-	// StreamServerInterceptor is an alias of grpc.StreamServerInterceptor.
-	//
-	// It intercepts server-side streaming RPCs.
-	StreamServerInterceptor = grpc.StreamServerInterceptor
+// StreamServerInterceptor is an alias of grpc.StreamServerInterceptor.
+//
+// It intercepts server-side streaming RPCs.
+type StreamServerInterceptor = grpc.StreamServerInterceptor
 
-	// UnaryClientInterceptor is an alias of grpc.UnaryClientInterceptor.
-	//
-	// It intercepts client-side unary RPCs.
-	UnaryClientInterceptor = grpc.UnaryClientInterceptor
+// UnaryClientInterceptor is an alias of grpc.UnaryClientInterceptor.
+//
+// It intercepts client-side unary RPCs.
+type UnaryClientInterceptor = grpc.UnaryClientInterceptor
 
-	// UnaryHandler is an alias of grpc.UnaryHandler.
-	//
-	// It is the function signature used by unary server interceptors to invoke the
-	// handler.
-	UnaryHandler = grpc.UnaryHandler
+// UnaryHandler is an alias of grpc.UnaryHandler.
+//
+// It is the function signature used by unary server interceptors to invoke the
+// handler.
+type UnaryHandler = grpc.UnaryHandler
 
-	// UnaryServerInfo is an alias of grpc.UnaryServerInfo.
-	//
-	// It provides information about a unary RPC to a server interceptor.
-	UnaryServerInfo = grpc.UnaryServerInfo
+// UnaryServerInfo is an alias of grpc.UnaryServerInfo.
+//
+// It provides information about a unary RPC to a server interceptor.
+type UnaryServerInfo = grpc.UnaryServerInfo
 
-	// UnaryServerInterceptor is an alias of grpc.UnaryServerInterceptor.
-	//
-	// It intercepts server-side unary RPCs.
-	UnaryServerInterceptor = grpc.UnaryServerInterceptor
-)
+// UnaryServerInterceptor is an alias of grpc.UnaryServerInterceptor.
+//
+// It intercepts server-side unary RPCs.
+type UnaryServerInterceptor = grpc.UnaryServerInterceptor
+
+// TransportCredentials is an alias of credentials.TransportCredentials.
+type TransportCredentials = credentials.TransportCredentials
 
 // StatsHandler returns a ServerOption that installs h as the server stats handler.
 //
@@ -178,10 +179,14 @@ func MaxRecvMsgSize(m int) ServerOption {
 	return grpc.MaxRecvMsgSize(m)
 }
 
-// NewClient creates a gRPC client connection to target using opts.
+// NewClient creates a new gRPC client channel for target using opts.
 //
-// This forwards to grpc.NewClient. The target format and supported schemes are
-// defined by gRPC and any registered resolvers in your binary.
+// This forwards to grpc.NewClient. No I/O is performed during construction; the
+// returned ClientConn connects automatically when it is used for RPCs (or when
+// Connect is called explicitly).
+//
+// The target format and supported schemes are defined by gRPC and any
+// registered resolvers in your binary.
 func NewClient(target string, opts ...DialOption) (*ClientConn, error) {
 	return grpc.NewClient(target, opts...)
 }

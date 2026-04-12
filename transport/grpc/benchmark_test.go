@@ -11,13 +11,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	tg "github.com/alexfalkowski/go-service/v2/transport/grpc"
+	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
 func init() {
-	tg.Register(test.FS)
+	transportgrpc.Register(test.FS)
 }
 
 //nolint:funlen
@@ -36,7 +36,7 @@ func BenchmarkGRPC(b *testing.B) {
 		//nolint:errcheck
 		go server.Serve(l)
 
-		conn, err := grpc.NewClient(l.Addr().String(), grpc.WithTransportCredentials(grpc.NewInsecureCredentials()))
+		conn, err := transportgrpc.NewClientConn(l.Addr().String(), transportgrpc.WithTransportCredentials(transportgrpc.NewInsecureCredentials()))
 		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
@@ -60,7 +60,7 @@ func BenchmarkGRPC(b *testing.B) {
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
-		g, err := tg.NewServer(tg.ServerParams{
+		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC,
 			UserAgent:  test.UserAgent, Version: test.Version,
@@ -76,7 +76,7 @@ func BenchmarkGRPC(b *testing.B) {
 		_, addr, _ := net.SplitNetworkAddress(cfg.GRPC.Address)
 		cl := &client.Config{Address: addr}
 
-		conn, err := tg.NewClient(cl.Address)
+		conn, err := transportgrpc.NewClient(cl.Address)
 		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
@@ -103,7 +103,7 @@ func BenchmarkGRPC(b *testing.B) {
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
-		g, err := tg.NewServer(tg.ServerParams{
+		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC, Logger: logger,
 			UserAgent: test.UserAgent, Version: test.Version,
@@ -120,7 +120,7 @@ func BenchmarkGRPC(b *testing.B) {
 		_, addr, _ := net.SplitNetworkAddress(cfg.GRPC.Address)
 		cl := &client.Config{Address: addr}
 
-		conn, err := tg.NewClient(cl.Address)
+		conn, err := transportgrpc.NewClient(cl.Address)
 		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)
@@ -149,7 +149,7 @@ func BenchmarkGRPC(b *testing.B) {
 
 		test.RegisterTracer(lc, nil)
 
-		g, err := tg.NewServer(tg.ServerParams{
+		g, err := transportgrpc.NewServer(transportgrpc.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Config:     cfg.GRPC, Logger: logger,
 			UserAgent: test.UserAgent, Version: test.Version,
@@ -166,7 +166,7 @@ func BenchmarkGRPC(b *testing.B) {
 		_, addr, _ := net.SplitNetworkAddress(cfg.GRPC.Address)
 		cl := &client.Config{Address: addr}
 
-		conn, err := tg.NewClient(cl.Address)
+		conn, err := transportgrpc.NewClient(cl.Address)
 		require.NoError(b, err)
 
 		client := v1.NewGreeterServiceClient(conn)

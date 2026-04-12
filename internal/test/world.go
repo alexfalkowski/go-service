@@ -21,7 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	v2 "github.com/cloudevents/sdk-go/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 	"github.com/linxGnu/mssqlx"
 	"github.com/stretchr/testify/require"
@@ -150,7 +150,7 @@ type World struct {
 	PG     *pg.Config
 	*Server
 	*Client
-	*v2.Event
+	*cloudevents.Event
 	*events.Receiver
 	*cache.Cache
 	Sender client.Client
