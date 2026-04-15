@@ -1,5 +1,7 @@
 package paseto
 
+import "github.com/alexfalkowski/go-service/v2/time"
+
 // Config configures PASETO issuance and verification for the go-service PASETO token kind.
 //
 // This configuration is intended to capture the common knobs for token issuance:
@@ -21,9 +23,9 @@ package paseto
 //
 // # Expiration parsing and panics
 //
-// Token issuance parses Expiration as a Go duration string (time.ParseDuration format) using
-// a strict helper that panics on parse error. This is intended for fail-fast startup/config
-// paths; validate Expiration earlier if you need non-panicking behavior.
+// Token issuance uses Expiration directly. In config files it is encoded using the standard
+// Go duration string format, so invalid values fail during decoding. Apply additional
+// validation earlier if you need stricter startup policy.
 //
 // # Enablement
 //
@@ -44,10 +46,10 @@ type Config struct {
 	// Issuer is written to and verified against the `iss` claim.
 	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
 
-	// Expiration is a Go duration string used to set token expiration (for example "15m", "24h").
+	// Expiration is the duration used to set token expiration.
 	//
-	// Issuance parses this value using a strict helper and will panic if it is invalid.
-	Expiration string `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
+	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
 }
 
 // IsEnabled reports whether PASETO configuration is present.

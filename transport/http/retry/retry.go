@@ -14,7 +14,7 @@ import (
 //
 // It describes the retry policy used by NewRoundTripper:
 //   - `Attempts`: maximum number of attempts including the initial attempt.
-//   - `Timeout`: per-attempt timeout duration string.
+//   - `Timeout`: per-attempt timeout duration.
 //   - `Backoff`: constant delay between retries.
 type Config = config.Config
 
@@ -42,10 +42,9 @@ var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 //   - If retries are exhausted after retryable HTTP responses, the first retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
-	timeout := time.MustParseDuration(cfg.Timeout)
-	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(time.MustParseDuration(cfg.Backoff)))
+	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(cfg.Backoff.Duration()))
 
-	return &RoundTripper{RoundTripper: hrt, timeout: timeout, backoff: backoff}
+	return &RoundTripper{RoundTripper: hrt, timeout: cfg.Timeout, backoff: backoff}
 }
 
 // RoundTripper wraps an underlying `http.RoundTripper` and retries requests according to its configuration.

@@ -63,7 +63,7 @@ func TestInvalidOpen(t *testing.T) {
 					Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg")}},
 					MaxOpenConns:    5,
 					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour.String(),
+					ConnMaxLifetime: time.Hour,
 				},
 			},
 			wantErr: fs.ErrNotExist,
@@ -76,7 +76,7 @@ func TestInvalidOpen(t *testing.T) {
 					Slaves:          []config.DSN{{URL: test.FilePath("secrets/none")}},
 					MaxOpenConns:    5,
 					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour.String(),
+					ConnMaxLifetime: time.Hour,
 				},
 			},
 			wantErr: fs.ErrNotExist,
@@ -87,7 +87,7 @@ func TestInvalidOpen(t *testing.T) {
 				Config: &config.Config{
 					MaxOpenConns:    5,
 					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour.String(),
+					ConnMaxLifetime: time.Hour,
 				},
 			},
 			wantErr: driver.ErrNoDSNs,
@@ -335,7 +335,7 @@ func TestInvalidSQLPort(t *testing.T) {
 		Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg_invalid")}},
 		MaxOpenConns:    5,
 		MaxIdleConns:    5,
-		ConnMaxLifetime: time.Hour.String(),
+		ConnMaxLifetime: time.Hour,
 	}}
 
 	lc := fxtest.NewLifecycle(t)

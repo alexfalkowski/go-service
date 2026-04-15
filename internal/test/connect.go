@@ -12,7 +12,7 @@ import (
 func Connect(ctx context.Context, address string) (net.Conn, error) {
 	network, addr := net.ListenNetworkAddress(address)
 	dialer := &net.Dialer{}
-	deadline := time.Now().Add(time.Second)
+	deadline := time.Now().Add(time.Second.Duration())
 	var err error
 
 	for time.Now().Before(deadline) {

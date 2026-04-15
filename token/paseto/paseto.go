@@ -47,17 +47,13 @@ type Token struct {
 //   - iss: from cfg.Issuer
 //   - aud: set to the provided aud
 //   - sub: set to the provided sub
-//
-// Expiration parsing uses time.MustParseDuration and will panic if cfg.Expiration is invalid.
-// This is intended for fail-fast configuration behavior.
 func (t *Token) Generate(aud, sub string) (string, error) {
-	exp := time.MustParseDuration(t.cfg.Expiration)
 	now := time.Now()
 	token := paseto.NewToken()
 	token.SetJti(t.generator.Generate())
 	token.SetIssuedAt(now)
 	token.SetNotBefore(now)
-	token.SetExpiration(now.Add(exp))
+	token.SetExpiration(now.Add(t.cfg.Expiration.Duration()))
 	token.SetIssuer(t.cfg.Issuer)
 	token.SetAudience(aud)
 	token.SetSubject(sub)

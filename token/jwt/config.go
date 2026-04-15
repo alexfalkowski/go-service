@@ -1,5 +1,7 @@
 package jwt
 
+import "github.com/alexfalkowski/go-service/v2/time"
+
 // Config configures JWT issuance and verification for the go-service JWT token kind.
 //
 // This configuration is consumed by Token.Generate and Token.Verify.
@@ -9,7 +11,7 @@ package jwt
 // Issued tokens use standard registered claims and populate them from this config:
 //
 //   - Issuer is written to and verified against the `iss` claim.
-//   - Expiration is parsed as a Go duration string and is used to set/validate the `exp` claim.
+//   - Expiration is a typed duration and is used to set/validate the `exp` claim.
 //   - KeyID is written to and verified against the JWT header `kid`.
 //
 // # Key ID (kid) enforcement
@@ -24,9 +26,9 @@ package jwt
 //
 // # Expiration parsing and panics
 //
-// Issuance parses Expiration using a strict helper that panics on parse errors. This is
-// intended for fail-fast startup/configuration paths. If your deployment requires
-// non-panicking behavior, validate Expiration earlier during configuration loading.
+// Issuance uses Expiration directly. Invalid config-file values fail during decoding because
+// the field is encoded as a Go duration string. If your deployment requires additional
+// validation policy, apply it earlier during configuration loading.
 //
 // # Enablement
 //
@@ -36,18 +38,16 @@ type Config struct {
 	// Issuer is written to and verified against the `iss` claim.
 	Issuer string `yaml:"iss,omitempty" json:"iss,omitempty" toml:"iss,omitempty"`
 
-	// Expiration is a Go duration string used to set/validate the `exp` claim.
-	//
-	// Examples: "15m", "24h".
-	//
-	// Token issuance parses this value using a strict helper and will panic if it is invalid.
-	Expiration string `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
-
 	// KeyID is written to and verified against the JWT header `kid`.
 	//
-	// Note: this repository’s JWT verification expects the `kid` header to be set and
+	// Note: this repository's JWT verification expects the `kid` header to be set and
 	// to match this value exactly.
 	KeyID string `yaml:"kid,omitempty" json:"kid,omitempty" toml:"kid,omitempty"`
+
+	// Expiration is the duration used to set and validate the `exp` claim.
+	//
+	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
 }
 
 // IsEnabled reports whether JWT configuration is present.

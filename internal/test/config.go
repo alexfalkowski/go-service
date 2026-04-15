@@ -1,8 +1,6 @@
 package test
 
 import (
-	"time"
-
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/config/options"
@@ -23,6 +21,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/token/access"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
@@ -72,12 +71,12 @@ func NewToken(kind string) *token.Config {
 		Kind: kind,
 		JWT: &jwt.Config{
 			Issuer:     "iss",
-			Expiration: "1h",
+			Expiration: time.Hour,
 			KeyID:      "1234567890",
 		},
 		Paseto: &paseto.Config{
 			Issuer:     "iss",
-			Expiration: "1h",
+			Expiration: time.Hour,
 		},
 		SSH: &ssh.Config{
 			Key: &ssh.Key{
@@ -134,8 +133,8 @@ func NewHook() *hooks.Config {
 // NewRetry returns a short retry policy suitable for deterministic tests.
 func NewRetry() *retry.Config {
 	return &retry.Config{
-		Timeout:  timeout.String(),
-		Backoff:  "100ms",
+		Timeout:  timeout,
+		Backoff:  100 * time.Millisecond,
 		Attempts: 1,
 	}
 }
@@ -170,14 +169,14 @@ func NewInsecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout: timeout.String(),
+				Timeout: timeout,
 				Address: RandomAddress(),
 				Retry:   NewRetry(),
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout: timeout.String(),
+				Timeout: timeout,
 				Address: RandomAddress(),
 				Retry:   NewRetry(),
 			},
@@ -203,7 +202,7 @@ func NewSecureTransportConfig() *transport.Config {
 	return &transport.Config{
 		HTTP: &http.Config{
 			Config: &server.Config{
-				Timeout: timeout.String(),
+				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
 				Retry:   retry,
@@ -211,7 +210,7 @@ func NewSecureTransportConfig() *transport.Config {
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
-				Timeout: timeout.String(),
+				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
 				Retry:   retry,
@@ -293,7 +292,7 @@ func NewPGConfig() *pg.Config {
 			Slaves:          []sql.DSN{{URL: FilePath("secrets/pg")}},
 			MaxOpenConns:    5,
 			MaxIdleConns:    5,
-			ConnMaxLifetime: time.Hour.String(),
+			ConnMaxLifetime: time.Hour,
 		},
 	}
 }
@@ -302,7 +301,7 @@ func NewPGConfig() *pg.Config {
 func NewInsecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout: "5s",
+			Timeout: 5 * time.Second,
 			Address: RandomAddress(),
 			Retry:   NewRetry(),
 		},
@@ -313,7 +312,7 @@ func NewInsecureDebugConfig() *debug.Config {
 func NewSecureDebugConfig() *debug.Config {
 	return &debug.Config{
 		Config: &server.Config{
-			Timeout: "5s",
+			Timeout: 5 * time.Second,
 			TLS:     NewTLSServerConfig(),
 			Address: RandomAddress(),
 			Retry:   NewRetry(),
@@ -336,7 +335,7 @@ func NewCacheConfig(kind, compressor, encoder, secret string) *cache.Config {
 func NewLimiterConfig(kind, interval string, tokens uint64) *limiter.Config {
 	return &limiter.Config{
 		Kind:     kind,
-		Interval: interval,
+		Interval: time.MustParseDuration(interval),
 		Tokens:   tokens,
 	}
 }

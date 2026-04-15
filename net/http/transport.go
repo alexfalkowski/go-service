@@ -25,16 +25,16 @@ import (
 //   - If cfg is non-nil it is assigned to Transport.TLSClientConfig.
 //   - If cfg is nil, the standard library defaults apply.
 func Transport(cfg *tls.Config) *http.Transport {
-	dialer := &net.Dialer{Timeout: time.Minute, KeepAlive: 30 * time.Second}
+	dialer := &net.Dialer{Timeout: time.Minute.Duration(), KeepAlive: (30 * time.Second).Duration()}
 
 	return &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext:           dialer.DialContext,
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
+		IdleConnTimeout:       (90 * time.Second).Duration(),
+		TLSHandshakeTimeout:   (10 * time.Second).Duration(),
+		ExpectContinueTimeout: time.Second.Duration(),
 		MaxConnsPerHost:       100,
 		MaxIdleConnsPerHost:   100,
 		TLSClientConfig:       cfg,

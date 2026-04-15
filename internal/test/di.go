@@ -59,16 +59,16 @@ func registrations(logger *logger.Logger, cfg *http.Config, ua env.UserAgent, _ 
 
 	timeout := 5 * time.Second
 	nc := checker.NewNoopChecker()
-	nr := server.NewRegistration("noop", timeout, nc)
+	nr := server.NewRegistration("noop", timeout.Duration(), nc)
 	rt, err := http.NewRoundTripper(http.WithClientLogger(logger), http.WithClientUserAgent(ua))
 	if err != nil {
 		return nil, err
 	}
 
-	hc := checker.NewHTTPChecker(StatusURL("200"), timeout, checker.WithRoundTripper(rt))
-	hr := server.NewRegistration("http", timeout, hc)
+	hc := checker.NewHTTPChecker(StatusURL("200"), timeout.Duration(), checker.WithRoundTripper(rt))
+	hr := server.NewRegistration("http", timeout.Duration(), hc)
 
-	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout, timeout)}, nil
+	return health.Registrations{nr, hr, server.NewOnlineRegistration(timeout.Duration(), timeout.Duration())}, nil
 }
 
 func healthRegister(cfg *http.Config, name env.Name, server *server.Server, regs health.Registrations) {

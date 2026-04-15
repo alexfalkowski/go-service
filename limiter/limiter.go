@@ -57,7 +57,7 @@ var ErrMissingKey = errors.New("limiter: missing key")
 //   - Returns ErrMissingKey when cfg.Kind is not present in keys.
 //
 // Notes:
-//   - cfg.Interval is parsed using time.MustParseDuration and will panic if invalid.
+//   - cfg.Interval is used directly as a typed duration decoded from config.
 //   - The underlying store constructor currently does not return an error (it is ignored).
 func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	if !cfg.IsEnabled() {
@@ -69,12 +69,11 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 		return nil, ErrMissingKey
 	}
 
-	interval := time.MustParseDuration(cfg.Interval)
 	config := &memorystore.Config{
 		Tokens:        cfg.Tokens,
-		Interval:      interval,
-		SweepMinTTL:   time.Hour,
-		SweepInterval: time.Hour,
+		Interval:      cfg.Interval.Duration(),
+		SweepMinTTL:   time.Hour.Duration(),
+		SweepInterval: time.Hour.Duration(),
 	}
 	store, _ := memorystore.New(config)
 	limiter := &Limiter{store: store, key: k}

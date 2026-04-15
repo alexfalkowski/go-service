@@ -65,7 +65,7 @@ func WithDeadline(parent Context, d time.Time) (Context, CancelFunc) {
 // This is a thin wrapper around context.WithTimeout. The returned CancelFunc should be called to release
 // resources associated with the derived context.
 func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
-	return context.WithTimeout(parent, timeout)
+	return context.WithTimeout(parent, timeout.Duration())
 }
 
 // WithoutCancel returns a copy of parent that is not canceled when parent is canceled.

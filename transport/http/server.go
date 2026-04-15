@@ -14,7 +14,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
@@ -128,8 +127,7 @@ func NewServer(params ServerParams) (*Server, error) {
 
 	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
 
-	timeout := time.MustParseDuration(params.Config.Timeout)
-	httpServer := http.NewServer(params.Config.Options, timeout, neg)
+	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, neg)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {

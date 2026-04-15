@@ -16,7 +16,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
@@ -101,8 +100,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, prefix(err)
 	}
 
-	timeout := time.MustParseDuration(params.Config.Timeout)
-	grpcServer := grpc.NewServer(params.Config.Options, timeout,
+	grpcServer := grpc.NewServer(params.Config.Options, params.Config.Timeout,
 		grpc.StatsHandler(telemetry.NewServerHandler()),
 		unaryServerOption(params, params.Unary...),
 		streamServerOption(params, params.Stream...),

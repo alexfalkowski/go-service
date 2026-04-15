@@ -127,7 +127,7 @@ func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Durat
 		return err
 	}
 
-	return c.driver.Save(key, enc, ttl)
+	return c.driver.Save(key, enc, ttl.Duration())
 }
 
 func (c *Cache) encode(value any) (string, error) {

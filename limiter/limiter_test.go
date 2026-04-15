@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -12,7 +13,7 @@ import (
 func TestValidLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
-	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
 	limiter, err := limiter.NewLimiter(lc, m, config)
 	require.NoError(t, err)
@@ -24,7 +25,7 @@ func TestValidLimiter(t *testing.T) {
 func TestMissingLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{}
-	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
 	_, err := limiter.NewLimiter(lc, m, config)
 	require.Error(t, err)
@@ -42,7 +43,7 @@ func TestDisabledLimiter(t *testing.T) {
 func TestClosedLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	m := limiter.KeyMap{"user-agent": meta.UserAgent}
-	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: "1s"}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
 	limiter, err := limiter.NewLimiter(lc, m, config)
 	require.NoError(t, err)

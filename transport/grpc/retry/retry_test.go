@@ -7,15 +7,17 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	config "github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/retry"
 	"github.com/stretchr/testify/require"
 )
 
 func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&retry.Config{
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
 		Attempts: 1,
-		Timeout:  "1s",
-		Backoff:  "1ms",
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
 	})
 
 	calls := 0
@@ -29,10 +31,10 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 }
 
 func TestUnaryClientInterceptorRetriesWhenAttemptsIsTwo(t *testing.T) {
-	interceptor := retry.UnaryClientInterceptor(&retry.Config{
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
 		Attempts: 2,
-		Timeout:  "1s",
-		Backoff:  "1ms",
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
 	})
 
 	calls := 0

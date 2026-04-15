@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/paseto"
 	"github.com/stretchr/testify/require"
 )
@@ -43,7 +44,7 @@ func TestInvalid(t *testing.T) {
 	_, err = token.Verify(tkn, "test")
 	require.Error(t, err)
 
-	token = paseto.NewToken(&paseto.Config{Issuer: "test", Expiration: "1h"}, signer, verifier, gen)
+	token = paseto.NewToken(&paseto.Config{Issuer: "test", Expiration: time.Hour}, signer, verifier, gen)
 
 	tkn, err = token.Generate("hello", test.UserID.String())
 	require.NoError(t, err)

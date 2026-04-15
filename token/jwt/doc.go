@@ -67,10 +67,9 @@
 // Config provides the issuer, expiration, and key id settings used for issuance and
 // verification. A nil *Config is treated as disabled: NewToken returns nil.
 //
-// Expiration is a Go duration string (time.ParseDuration format, such as "15m" or
-// "24h"). Issuance uses MustParseDuration and will panic if Expiration is invalid.
-// This is intended for strict startup/configuration paths; validate configuration
-// earlier if you need non-panicking behavior.
+// Expiration is a typed duration. In config files it is encoded using the standard
+// Go duration string format (such as "15m" or "24h"), so invalid values fail during
+// decoding rather than during token issuance.
 //
 // # Relationship to the top-level token facade
 //

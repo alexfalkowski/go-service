@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -241,7 +242,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "file:../test/secrets/pg", config.SQL.PG.Slaves[0].URL)
 	require.Equal(t, 5, config.SQL.PG.MaxIdleConns)
 	require.Equal(t, 5, config.SQL.PG.MaxOpenConns)
-	require.Equal(t, "1h", config.SQL.PG.ConnMaxLifetime)
+	require.Equal(t, time.Hour, config.SQL.PG.ConnMaxLifetime)
 	require.Equal(t, "text", config.Telemetry.Logger.Kind)
 	require.Equal(t, "info", config.Telemetry.Logger.Level)
 	require.Equal(t, "prometheus", config.Telemetry.Metrics.Kind)
@@ -252,7 +253,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.True(t, config.Transport.GRPC.Token.IsEnabled())
 	require.Equal(t, "../test/configs/rbac.csv", config.Transport.GRPC.Token.Access.Policy)
 	require.Equal(t, "jwt", config.Transport.GRPC.Token.Kind)
-	require.Equal(t, "1h", config.Transport.GRPC.Token.JWT.Expiration)
+	require.Equal(t, time.Hour, config.Transport.GRPC.Token.JWT.Expiration)
 	require.Equal(t, "iss", config.Transport.GRPC.Token.JWT.Issuer)
 	require.Equal(t, "1234567890", config.Transport.GRPC.Token.JWT.KeyID)
 	require.True(t, config.Transport.GRPC.Config.IsEnabled())
@@ -260,7 +261,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, int64(3145728), config.Transport.GRPC.MaxReceiveBytes)
 	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
-	require.Equal(t, "1s", config.Transport.GRPC.Limiter.Interval)
+	require.Equal(t, time.Second, config.Transport.GRPC.Limiter.Interval)
 	require.Equal(t,
 		options.Map{
 			"keepalive_enforcement_policy_ping_min_time": "10s",
@@ -272,12 +273,12 @@ func verifyConfig(t *testing.T, config *config.Config) {
 		config.Transport.GRPC.Options,
 	)
 	require.Equal(t, 3, int(config.Transport.GRPC.Retry.Attempts))
-	require.Equal(t, "1s", config.Transport.GRPC.Retry.Timeout)
+	require.Equal(t, time.Second, config.Transport.GRPC.Retry.Timeout)
 	require.False(t, config.Transport.GRPC.TLS.IsEnabled())
 	require.True(t, config.Transport.HTTP.Token.IsEnabled())
 	require.Equal(t, "../test/configs/rbac.csv", config.Transport.HTTP.Token.Access.Policy)
 	require.Equal(t, "jwt", config.Transport.HTTP.Token.Kind)
-	require.Equal(t, "1h", config.Transport.HTTP.Token.JWT.Expiration)
+	require.Equal(t, time.Hour, config.Transport.HTTP.Token.JWT.Expiration)
 	require.Equal(t, "iss", config.Transport.HTTP.Token.JWT.Issuer)
 	require.Equal(t, "1234567890", config.Transport.HTTP.Token.JWT.KeyID)
 	require.True(t, config.Transport.HTTP.Config.IsEnabled())
@@ -285,7 +286,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, int64(2097152), config.Transport.HTTP.MaxReceiveBytes)
 	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
-	require.Equal(t, "1s", config.Transport.HTTP.Limiter.Interval)
+	require.Equal(t, time.Second, config.Transport.HTTP.Limiter.Interval)
 	require.Equal(t,
 		options.Map{
 			"read_timeout":        "10s",
@@ -296,6 +297,6 @@ func verifyConfig(t *testing.T, config *config.Config) {
 		config.Transport.HTTP.Options,
 	)
 	require.Equal(t, 3, int(config.Transport.HTTP.Retry.Attempts))
-	require.Equal(t, "1s", config.Transport.HTTP.Retry.Timeout)
+	require.Equal(t, time.Second, config.Transport.HTTP.Retry.Timeout)
 	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
 }

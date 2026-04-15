@@ -3,32 +3,34 @@
 //
 // This package serves two purposes:
 //
-//  1. Standard library compatibility via aliases.
+//  1. Standard library compatibility via wrappers and aliases.
 //     It re-exports a small subset of the Go standard library time API so code across
 //     go-service can consistently import go-service packages while still using the
 //     underlying time semantics.
 //
-//     Exported aliases include Time (time.Time), Duration (time.Duration), common
-//     duration constants (Second, Minute, Hour, etc.), and RFC3339.
+//     Exported types include Time (an alias of time.Time), Duration (a named type over
+//     time.Duration), common duration constants (Second, Minute, Hour, etc.), and RFC3339.
 //
 //  2. Optional network time sourcing.
 //     In environments where local wall-clock time may drift or needs stronger
 //     guarantees, this package can construct a Network provider that fetches time
 //     from external services (for example NTP or NTS).
 //
-// # Standard library aliases
+// # Standard library compatibility
 //
-// The following identifiers are thin wrappers/aliases of the standard library and do
-// not change semantics:
+// The following identifiers are thin wrappers around the standard library and do not
+// materially change semantics:
 //
-//   - Time and Duration alias time.Time and time.Duration.
+//   - Time aliases time.Time.
+//   - Duration wraps time.Duration and adds Text/JSON marshaling helpers while preserving
+//     Go duration string semantics.
 //   - Now, Since, Sleep, and ParseDuration forward to time.Now, time.Since,
 //     time.Sleep, and time.ParseDuration respectively.
-//   - Constants such as Second, Minute, Hour, and RFC3339 alias the standard library
+//   - Constants such as Second, Minute, Hour, and RFC3339 mirror the standard library
 //     values.
 //
 // Use these when you want to keep dependencies within the go-service module while
-// remaining fully compatible with the standard library time types.
+// remaining close to the standard library time types.
 //
 // # Strict helpers
 //

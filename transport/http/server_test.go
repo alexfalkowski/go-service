@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +19,7 @@ func TestInvalidServer(t *testing.T) {
 
 	cfg := &http.Config{
 		Config: &server.Config{
-			Timeout: "5s",
+			Timeout: 5 * time.Second,
 			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
 	}

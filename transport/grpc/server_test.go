@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
@@ -37,7 +38,7 @@ func TestServer(t *testing.T) {
 func TestInvalidServer(t *testing.T) {
 	cfg := &grpc.Config{
 		Config: &server.Config{
-			Timeout: "5s",
+			Timeout: 5 * time.Second,
 			TLS:     test.NewTLSConfig("certs/client-cert.pem", "secrets/none"),
 		},
 	}

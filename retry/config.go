@@ -1,5 +1,7 @@
 package retry
 
+import "github.com/alexfalkowski/go-service/v2/time"
+
 // Config configures retry behavior for an operation.
 //
 // This package defines configuration only; concrete retry behavior is implemented
@@ -8,8 +10,8 @@ package retry
 // whether jitter is applied, etc.) is transport-defined, but these fields are
 // the common knobs most implementations interpret similarly.
 //
-// Timeout and Backoff are encoded as Go duration strings (see time.ParseDuration),
-// such as "250ms", "5s", or "1m".
+// Timeout and Backoff are typed durations encoded as Go duration strings in config
+// (see time.ParseDuration), such as "250ms", "5s", or "1m".
 type Config struct {
 	// Timeout is the per-attempt timeout duration.
 	//
@@ -17,7 +19,7 @@ type Config struct {
 	// independently (for example by deriving a per-attempt context deadline).
 	//
 	// Value encoding: Go duration string (for example "250ms", "5s").
-	Timeout string `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 
 	// Backoff is the delay between attempts after a failed attempt.
 	//
@@ -26,7 +28,7 @@ type Config struct {
 	// implementation.
 	//
 	// Value encoding: Go duration string (for example "100ms", "1s").
-	Backoff string `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty"`
+	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty"`
 
 	// Attempts is the maximum number of attempts, including the initial attempt.
 	//

@@ -14,8 +14,8 @@
 //   - Timeout: a per-attempt timeout. Each attempt is bounded independently.
 //   - Backoff: a delay inserted between failed attempts.
 //
-// Timeout and Backoff are encoded as Go duration strings (see time.ParseDuration),
-// such as "250ms", "5s", or "1m".
+// Timeout and Backoff are typed durations. In config files they are encoded as
+// Go duration strings (see time.ParseDuration), such as "250ms", "5s", or "1m".
 //
 // # Transport interpretation
 //
@@ -40,7 +40,7 @@
 // A common convention is:
 //   - Attempts == 0: retries disabled using the transport's zero-value behavior.
 //   - Attempts == 1: retries disabled.
-//   - Timeout == "" or Backoff == "": treated as "unspecified" and replaced with
+//   - Timeout == 0 or Backoff == 0: treated as "unspecified" and replaced with
 //     transport defaults.
 //
 // # Usage

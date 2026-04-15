@@ -63,16 +63,16 @@ func (w *World) RegisterGRPCHealth(name, url string, observations ...HealthObser
 // the server and then hit the generated HTTP health endpoints through RegisterHealth.
 func (w *World) HealthServer(name, url string) *server.Server {
 	t := w.httpClient.Transport
-	cc := checker.NewHTTPChecker(url, 5*time.Second, checker.WithRoundTripper(t))
-	hr := server.NewRegistration("http", 10*time.Millisecond, cc)
+	cc := checker.NewHTTPChecker(url, (5 * time.Second).Duration(), checker.WithRoundTripper(t))
+	hr := server.NewRegistration("http", (10 * time.Millisecond).Duration(), cc)
 
 	no := checker.NewNoopChecker()
-	nr := server.NewRegistration("noop", 10*time.Millisecond, no)
+	nr := server.NewRegistration("noop", (10 * time.Millisecond).Duration(), no)
 
 	regs := health.Registrations{hr, nr}
 	if w.DB != nil {
 		dc := hc.NewDBChecker(w.DB, 1*time.Second)
-		dr := server.NewRegistration("db", 10*time.Millisecond, dc)
+		dr := server.NewRegistration("db", (10 * time.Millisecond).Duration(), dc)
 		regs = append(regs, dr)
 	}
 

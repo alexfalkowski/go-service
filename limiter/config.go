@@ -1,5 +1,7 @@
 package limiter
 
+import "github.com/alexfalkowski/go-service/v2/time"
+
 // Config configures the in-memory rate limiter.
 //
 // The limiter is typically constructed by `NewLimiter`, which interprets these fields as:
@@ -7,8 +9,8 @@ package limiter
 //   - Kind: selects how request keys are derived from context metadata (see NewKeyMap for default kinds).
 //     Examples: "user-agent", "ip", "token".
 //
-//   - Interval: a Go duration string (e.g. "1s", "1m") defining the refill/measurement window used by the
-//     underlying token bucket store.
+//   - Interval: a typed duration encoded as a Go duration string (e.g. "1s", "1m")
+//     defining the refill/measurement window used by the underlying token bucket store.
 //
 //   - Tokens: the maximum number of tokens available per Interval for a given key.
 //
@@ -22,11 +24,10 @@ type Config struct {
 	// If Kind is not present in the KeyMap passed to NewLimiter, NewLimiter returns ErrMissingKey.
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
-	// Interval is a Go duration string (for example "1s" or "1m") that defines the refill window.
+	// Interval is a typed duration that defines the refill window.
 	//
-	// NewLimiter parses this value using time.MustParseDuration; invalid values will panic during
-	// limiter construction.
-	Interval string `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty"`
+	// In config files it is encoded as a Go duration string, for example "1s" or "1m".
+	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty"`
 
 	// Tokens is the maximum number of tokens available per interval, per derived key.
 	//

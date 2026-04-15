@@ -13,7 +13,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // ServerParams defines dependencies for constructing the debug server.
@@ -41,13 +40,11 @@ type ServerParams struct {
 // Disabled behavior: if params.Config is nil/disabled, NewServer returns (nil, nil).
 //
 // Enabled behavior:
-//   - parses the configured timeout,
-//   - constructs an HTTP server using the debug mux,
+//   - constructs an HTTP server using the configured timeout and debug mux,
 //   - builds the net/http server config (address and optional TLS), and
 //   - wraps it in a managed service ("debug") that integrates with DI lifecycle/shutdown.
 //
 // Failure behavior:
-//   - invalid timeout configuration panics via time.MustParseDuration,
 //   - TLS configuration errors (when TLS is enabled) are returned, and
 //   - underlying service construction errors are returned.
 //
@@ -59,8 +56,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	timeout := time.MustParseDuration(params.Config.Timeout)
-	httpServer := http.NewServer(params.Config.Options, timeout, params.Mux)
+	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, params.Mux)
 
 	cfg, err := newConfig(params.FS, params.Config)
 	if err != nil {
