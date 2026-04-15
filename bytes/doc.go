@@ -15,4 +15,10 @@
 // This package also exposes `String`, which converts a `[]byte` to a `string` without allocating.
 // This is an advanced, performance-oriented helper with important safety constraints; see `String`
 // for details.
+//
+// # Human-readable sizes
+//
+// `Size` is a named byte-count type that marshals to and from human-readable SI strings such as
+// `64B`, `2MB`, and `4GB`. It is intended for typed configuration surfaces that need text/JSON
+// encoding while still being easy to convert back to raw bytes.
 package bytes

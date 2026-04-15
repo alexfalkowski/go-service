@@ -4,6 +4,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/meta"
@@ -77,7 +78,7 @@ func TestStream(t *testing.T) {
 	require.Equal(t, "Hello test", resp.GetMessage())
 }
 
-func TestUnaryMaxReceiveBytes(t *testing.T) {
+func TestUnaryMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -89,7 +90,7 @@ func TestUnaryMaxReceiveBytes(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func TestStreamMaxReceiveBytes(t *testing.T) {
+func TestStreamMaxReceiveSize(t *testing.T) {
 	world := newStartedGRPCWorld(t, 64)
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -107,11 +108,11 @@ func TestStreamMaxReceiveBytes(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func newStartedGRPCWorld(t *testing.T, maxReceiveBytes int64) *test.World {
+func newStartedGRPCWorld(t *testing.T, maxReceiveSize bytes.Size) *test.World {
 	t.Helper()
 
 	cfg := test.NewInsecureTransportConfig()
-	cfg.GRPC.MaxReceiveBytes = maxReceiveBytes
+	cfg.GRPC.MaxReceiveSize = maxReceiveSize
 
 	return test.NewStartedWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldGRPC())
 }

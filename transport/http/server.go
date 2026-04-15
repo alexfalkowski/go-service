@@ -95,7 +95,7 @@ type ServerParams struct {
 //
 // Inbound size limits:
 //
-// params.Config.GetMaxReceiveBytes() is projected into the low-level HTTP server config and enforced by
+// params.Config.GetMaxReceiveSize() is projected into the low-level HTTP server config and enforced by
 // net/http/server.NewServer via http.MaxBytesHandler. The limit applies per inbound request body before
 // downstream handlers read from it.
 //
@@ -165,7 +165,7 @@ func (s *Server) GetService() *server.Service {
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
 		Address:         cmp.Or(cfg.Address, net.DefaultAddress("8080")),
-		MaxReceiveBytes: cfg.GetMaxReceiveBytes(),
+		MaxReceiveBytes: cfg.GetMaxReceiveSize().Bytes(),
 	}
 	if !cfg.TLS.IsEnabled() {
 		return config, nil

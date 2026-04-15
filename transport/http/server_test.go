@@ -32,9 +32,9 @@ func TestInvalidServer(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestServerMaxReceiveBytes(t *testing.T) {
+func TestServerMaxReceiveSize(t *testing.T) {
 	cfg := test.NewInsecureTransportConfig()
-	cfg.HTTP.MaxReceiveBytes = 64
+	cfg.HTTP.MaxReceiveSize = 64
 
 	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
 	http.Handle(world.ServeMux, "POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {

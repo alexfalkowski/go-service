@@ -78,7 +78,7 @@ address = "time.cloudflare.com"
 
 [transport.http]
 address = "tcp://localhost:11000"
-max_receive_bytes = 2097152
+max_receive_size = "2MB"
 user_agent = "Service http/1.0"
 timeout = "10s"
 
@@ -111,7 +111,7 @@ kid = "1234567890"
 
 [transport.grpc]
 address = "tcp://localhost:12000"
-max_receive_bytes = 3145728
+max_receive_size = "3MB"
 user_agent = "Service grpc/1.0"
 timeout = "10s"
 
