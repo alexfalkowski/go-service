@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 )
 
@@ -28,8 +29,10 @@ type Config struct {
 	// Address is the remote address for the client to connect to (for example "host:port").
 	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
 
-	// Timeout is the client request timeout duration, encoded as a Go duration string (for example "30s", "5m").
-	Timeout string `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	// Timeout is the client request timeout duration.
+	//
+	// In config files it is encoded as a Go duration string (for example "30s", "5m").
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 }
 
 // IsEnabled reports whether client configuration is present.

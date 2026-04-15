@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
@@ -61,8 +60,7 @@ func Register(name string, driver Driver) (err error) {
 //
 // Failure behavior:
 //   - returns errors encountered while resolving DSNs or connecting, and
-//   - returns ErrNoDSNs when neither masters nor slaves are configured, and
-//   - panics if ConnMaxLifetime cannot be parsed, because it uses time.MustParseDuration.
+//   - returns ErrNoDSNs when neither masters nor slaves are configured.
 func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
@@ -91,9 +89,7 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 		return nil, err
 	}
 
-	d := time.MustParseDuration(cfg.ConnMaxLifetime)
-
-	db.SetConnMaxLifetime(d)
+	db.SetConnMaxLifetime(cfg.ConnMaxLifetime.Duration())
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 

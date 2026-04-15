@@ -47,8 +47,8 @@ type Settings = breaker.Settings
 //   - Settings.IsSuccessful to classify which errors should count as failures
 var DefaultSettings = Settings{
 	MaxRequests: 3,
-	Interval:    30 * time.Second,
-	Timeout:     10 * time.Second,
+	Interval:    (30 * time.Second).Duration(),
+	Timeout:     (10 * time.Second).Duration(),
 	ReadyToTrip: func(counts breaker.Counts) bool {
 		return counts.ConsecutiveFailures >= 5
 	},

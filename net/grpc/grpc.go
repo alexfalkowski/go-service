@@ -220,7 +220,7 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 // This forwards to timeout.UnaryClientInterceptor from go-grpc-middleware.
 // The interceptor typically wraps the outgoing context with a deadline of d.
 func TimeoutUnaryClientInterceptor(d time.Duration) grpc.UnaryClientInterceptor {
-	return timeout.UnaryClientInterceptor(d)
+	return timeout.UnaryClientInterceptor(d.Duration())
 }
 
 // UseCompressor returns a CallOption that requests message compression by name.
@@ -285,8 +285,8 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 // so that the client may send pings even when there are no active RPC streams.
 func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 	return grpc.WithKeepaliveParams(keepalive.ClientParameters{
-		Time:                ping,
-		Timeout:             timeout,
+		Time:                ping.Duration(),
+		Timeout:             timeout.Duration(),
 		PermitWithoutStream: true,
 	})
 }
@@ -312,15 +312,15 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
 	os := make([]ServerOption, 0, 2+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             options.Duration("keepalive_enforcement_policy_ping_min_time", timeout),
+		MinTime:             options.Duration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
 		PermitWithoutStream: true,
 	}))
 	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     options.Duration("keepalive_max_connection_idle", timeout),
-		MaxConnectionAge:      options.Duration("keepalive_max_connection_age", timeout),
-		MaxConnectionAgeGrace: options.Duration("keepalive_max_connection_age_grace", timeout),
-		Time:                  options.Duration("keepalive_ping_time", timeout),
-		Timeout:               timeout,
+		MaxConnectionIdle:     options.Duration("keepalive_max_connection_idle", timeout).Duration(),
+		MaxConnectionAge:      options.Duration("keepalive_max_connection_age", timeout).Duration(),
+		MaxConnectionAgeGrace: options.Duration("keepalive_max_connection_age_grace", timeout).Duration(),
+		Time:                  options.Duration("keepalive_ping_time", timeout).Duration(),
+		Timeout:               timeout.Duration(),
 	}))
 	os = append(os, opts...)
 

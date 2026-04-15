@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 )
 
@@ -28,11 +29,13 @@ type Config struct {
 	// Options provides transport/server-specific options as key-value pairs.
 	Options options.Map `yaml:"options,omitempty" json:"options,omitempty" toml:"options,omitempty"`
 
-	// Timeout is the server request timeout duration, encoded as a Go duration string (for example "30s", "5m").
-	Timeout string `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
-
 	// Address is the bind address for the server (for example ":8080").
 	Address string `yaml:"address,omitempty" json:"address,omitempty" toml:"address,omitempty"`
+
+	// Timeout is the server request timeout duration.
+	//
+	// In config files it is encoded as a Go duration string (for example "30s", "5m").
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 
 	// MaxReceiveBytes limits inbound request payload size in bytes.
 	//

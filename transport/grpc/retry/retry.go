@@ -4,7 +4,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	config "github.com/alexfalkowski/go-service/v2/retry"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 )
 
@@ -12,8 +11,8 @@ import (
 //
 // It describes the retry policy for gRPC unary client calls, including:
 //   - `Attempts`: maximum number of attempts (initial call + retries).
-//   - `Timeout`: per-attempt timeout duration string.
-//   - `Backoff`: backoff duration string used by the chosen backoff strategy.
+//   - `Timeout`: per-attempt timeout duration.
+//   - `Backoff`: backoff duration used by the chosen backoff strategy.
 type Config = config.Config
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that retries failed calls.
@@ -22,7 +21,7 @@ type Config = config.Config
 // client side.
 //
 // Behavior:
-//   - It parses per-attempt timeout and backoff durations from cfg (`cfg.Timeout` and `cfg.Backoff`).
+//   - It uses the typed per-attempt timeout and backoff durations from cfg.
 //   - It retries up to `cfg.MaxAttempts()` total attempts (including the initial attempt).
 //   - It applies a per-attempt timeout (`retry.WithPerRetryTimeout`) so each attempt is bounded.
 //   - It uses a linear backoff strategy with a step duration derived from `cfg.Backoff`.
@@ -35,13 +34,10 @@ type Config = config.Config
 // This interceptor does not automatically retry on every error; application-level errors that map to other
 // status codes will not be retried by default.
 func UnaryClientInterceptor(cfg *Config) grpc.UnaryClientInterceptor {
-	timeout := time.MustParseDuration(cfg.Timeout)
-	backoff := time.MustParseDuration(cfg.Backoff)
-
 	return retry.UnaryClientInterceptor(
 		retry.WithCodes(codes.Unavailable, codes.DataLoss),
 		retry.WithMax(uint(cfg.MaxAttempts())),
-		retry.WithBackoff(retry.BackoffLinear(backoff)),
-		retry.WithPerRetryTimeout(timeout),
+		retry.WithBackoff(retry.BackoffLinear(cfg.Backoff.Duration())),
+		retry.WithPerRetryTimeout(cfg.Timeout.Duration()),
 	)
 }

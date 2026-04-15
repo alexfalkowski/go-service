@@ -28,6 +28,7 @@ linters:
     - nonamedreturns
     - noinlineerr
     - paralleltest
+    - recvcheck
     - revive
     - tagalign
     - tagliatelle

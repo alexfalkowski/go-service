@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token/errors"
 	"github.com/alexfalkowski/go-service/v2/token/jwt"
 	v4 "github.com/golang-jwt/jwt/v4"
@@ -56,7 +57,7 @@ func TestInvalid(t *testing.T) {
 	_, err = token.Verify(tkn, "test")
 	require.Error(t, err)
 
-	token = jwt.NewToken(&jwt.Config{Issuer: "test", Expiration: "1h", KeyID: "1234567890"}, signer, verifier, gen)
+	token = jwt.NewToken(&jwt.Config{Issuer: "test", Expiration: time.Hour, KeyID: "1234567890"}, signer, verifier, gen)
 
 	tkn, err = token.Generate("hello", test.UserID.String())
 	require.NoError(t, err)
@@ -76,7 +77,7 @@ func TestInvalidKeyID(t *testing.T) {
 	signer, _ := ed25519.NewSigner(test.PEM, ec)
 	verifier, _ := ed25519.NewVerifier(test.PEM, ec)
 	gen := uuid.NewGenerator()
-	wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: "1h", KeyID: "test"}, signer, verifier, gen)
+	wrong := jwt.NewToken(&jwt.Config{Issuer: cfg.JWT.Issuer, Expiration: time.Hour, KeyID: "test"}, signer, verifier, gen)
 
 	tkn, err := wrong.Generate("hello", test.UserID.String())
 	require.NoError(t, err)

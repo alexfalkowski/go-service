@@ -38,7 +38,7 @@ func BenchmarkHTTP(b *testing.B) {
 
 		server := &http.Server{
 			Handler:           mux,
-			ReadHeaderTimeout: time.Second,
+			ReadHeaderTimeout: time.Second.Duration(),
 		}
 		defer server.Close()
 

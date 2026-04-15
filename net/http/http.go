@@ -161,7 +161,7 @@ func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 				return telemetry.NewClientTrace(ctx)
 			}),
 		),
-		Timeout: timeout,
+		Timeout: timeout.Duration(),
 	}
 }
 
@@ -225,10 +225,10 @@ func StatusText(code int) string {
 func NewServer(options options.Map, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{
 		Handler:           handler,
-		ReadTimeout:       options.Duration("read_timeout", timeout),
-		WriteTimeout:      options.Duration("write_timeout", timeout),
-		IdleTimeout:       options.Duration("idle_timeout", timeout),
-		ReadHeaderTimeout: options.Duration("read_header_timeout", timeout),
+		ReadTimeout:       options.Duration("read_timeout", timeout).Duration(),
+		WriteTimeout:      options.Duration("write_timeout", timeout).Duration(),
+		IdleTimeout:       options.Duration("idle_timeout", timeout).Duration(),
+		ReadHeaderTimeout: options.Duration("read_header_timeout", timeout).Duration(),
 		Protocols:         Protocols(),
 	}
 }

@@ -260,7 +260,7 @@ func TestWatchStatusChanges(t *testing.T) {
 		default:
 			return false
 		}
-	}, time.Second, 25*time.Millisecond)
+	}, time.Second.Duration(), (25 * time.Millisecond).Duration())
 
 	cancel()
 
@@ -328,7 +328,7 @@ func requireObservedHealth(t *testing.T, server *server.Server, service string, 
 		}
 
 		return observer.Error() != nil
-	}, time.Second, 10*time.Millisecond)
+	}, time.Second.Duration(), (10 * time.Millisecond).Duration())
 }
 
 func newGRPCHealthWorld(t *testing.T, url string, opts ...test.WorldOption) *test.World {

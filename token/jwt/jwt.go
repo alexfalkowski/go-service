@@ -52,15 +52,11 @@ type Token struct {
 // In addition, it sets the JWT header:
 //
 //   - kid: from cfg.KeyID
-//
-// Expiration parsing uses time.MustParseDuration and will panic if cfg.Expiration is invalid.
-// This is intended for fail-fast configuration behavior.
 func (t *Token) Generate(aud, sub string) (string, error) {
-	exp := time.MustParseDuration(t.cfg.Expiration)
 	key := t.signer.PrivateKey
 	now := time.Now()
 	claims := &jwt.RegisteredClaims{
-		ExpiresAt: &jwt.NumericDate{Time: now.Add(exp)},
+		ExpiresAt: &jwt.NumericDate{Time: now.Add(t.cfg.Expiration.Duration())},
 		ID:        t.generator.Generate(),
 		IssuedAt:  &jwt.NumericDate{Time: now},
 		Issuer:    t.cfg.Issuer,
