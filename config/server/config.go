@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/limiter"
@@ -9,8 +10,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/token"
 )
 
-// DefaultMaxReceiveBytes is the default inbound payload limit applied when MaxReceiveBytes is omitted or zero.
-const DefaultMaxReceiveBytes int64 = 4 * 1024 * 1024
+// DefaultMaxReceiveSize is the default inbound payload limit applied when MaxReceiveSize is omitted or zero.
+const DefaultMaxReceiveSize bytes.Size = 4 * bytes.MB
 
 // Config configures server-side behavior shared across transports.
 type Config struct {
@@ -37,10 +38,12 @@ type Config struct {
 	// In config files it is encoded as a Go duration string (for example "30s", "5m").
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 
-	// MaxReceiveBytes limits inbound request payload size in bytes.
+	// MaxReceiveSize limits inbound request payload size.
 	//
-	// A zero value applies DefaultMaxReceiveBytes. Negative values are invalid.
-	MaxReceiveBytes int64 `yaml:"max_receive_bytes,omitempty" json:"max_receive_bytes,omitempty" toml:"max_receive_bytes,omitempty" validate:"gte=0"`
+	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
+	//
+	// A zero value applies DefaultMaxReceiveSize. Negative values are invalid.
+	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether server configuration is present.
@@ -48,13 +51,13 @@ func (c *Config) IsEnabled() bool {
 	return c != nil
 }
 
-// GetMaxReceiveBytes returns the configured inbound payload limit in bytes.
+// GetMaxReceiveSize returns the configured inbound payload limit.
 //
-// A nil receiver or a zero value falls back to DefaultMaxReceiveBytes.
-func (c *Config) GetMaxReceiveBytes() int64 {
-	if c == nil || c.MaxReceiveBytes == 0 {
-		return DefaultMaxReceiveBytes
+// A nil receiver or a zero value falls back to DefaultMaxReceiveSize.
+func (c *Config) GetMaxReceiveSize() bytes.Size {
+	if c == nil || c.MaxReceiveSize == 0 {
+		return DefaultMaxReceiveSize
 	}
 
-	return c.MaxReceiveBytes
+	return c.MaxReceiveSize
 }

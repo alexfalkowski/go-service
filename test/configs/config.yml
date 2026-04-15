@@ -59,7 +59,7 @@ time:
 transport:
   http:
     address: tcp://localhost:11000
-    max_receive_bytes: 2097152
+    max_receive_size: 2MB
     limiter:
       kind: user-agent
       tokens: 10
@@ -84,7 +84,7 @@ transport:
         kid: "1234567890"
   grpc:
     address: tcp://localhost:12000
-    max_receive_bytes: 3145728
+    max_receive_size: 3MB
     limiter:
       kind: user-agent
       tokens: 10

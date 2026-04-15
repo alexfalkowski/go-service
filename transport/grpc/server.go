@@ -85,7 +85,7 @@ type ServerParams struct {
 // sources may be resolved via the package-registered filesystem (see `Register` in this package).
 //
 // Inbound size limits:
-// params.Config.GetMaxReceiveBytes() is applied via grpc.MaxRecvMsgSize, which caps each inbound unary
+// params.Config.GetMaxReceiveSize() is applied via grpc.MaxRecvMsgSize, which caps each inbound unary
 // request and each inbound stream message independently.
 //
 // If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
@@ -187,7 +187,7 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 }
 
 func maxReceiveSizeOption(cfg *Config) grpc.ServerOption {
-	limit := min(cfg.GetMaxReceiveBytes(), int64(math.MaxInt))
+	limit := min(cfg.GetMaxReceiveSize().Bytes(), int64(math.MaxInt))
 
 	return grpc.MaxRecvMsgSize(int(limit))
 }

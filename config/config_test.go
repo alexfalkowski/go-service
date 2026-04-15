@@ -3,6 +3,7 @@ package config_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
@@ -258,7 +259,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "1234567890", config.Transport.GRPC.Token.JWT.KeyID)
 	require.True(t, config.Transport.GRPC.Config.IsEnabled())
 	require.Equal(t, "tcp://localhost:12000", config.Transport.GRPC.Address)
-	require.Equal(t, int64(3145728), config.Transport.GRPC.MaxReceiveBytes)
+	require.Equal(t, 3*bytes.MB, config.Transport.GRPC.MaxReceiveSize)
 	require.Equal(t, "user-agent", config.Transport.GRPC.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.GRPC.Limiter.Tokens))
 	require.Equal(t, time.Second, config.Transport.GRPC.Limiter.Interval)
@@ -283,7 +284,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "1234567890", config.Transport.HTTP.Token.JWT.KeyID)
 	require.True(t, config.Transport.HTTP.Config.IsEnabled())
 	require.Equal(t, "tcp://localhost:11000", config.Transport.HTTP.Address)
-	require.Equal(t, int64(2097152), config.Transport.HTTP.MaxReceiveBytes)
+	require.Equal(t, 2*bytes.MB, config.Transport.HTTP.MaxReceiveSize)
 	require.Equal(t, "user-agent", config.Transport.HTTP.Limiter.Kind)
 	require.Equal(t, 10, int(config.Transport.HTTP.Limiter.Tokens))
 	require.Equal(t, time.Second, config.Transport.HTTP.Limiter.Interval)

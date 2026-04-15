@@ -724,17 +724,17 @@ Notes:
 
 - Address format should be `<network>://<address>` (for example `tcp://:8000`).
 - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
-- `max_receive_bytes` limits inbound payload size. A zero value uses the default `4194304` bytes (`4 MiB`).
-- For HTTP, `max_receive_bytes` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
+- `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
+- For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
 
 Receive-limit example:
 
 ```yaml
 transport:
   http:
-    max_receive_bytes: 2097152
+    max_receive_size: 2MB
   grpc:
-    max_receive_bytes: 3145728
+    max_receive_size: 3MB
 ```
 
 With retry + low-level options map:
