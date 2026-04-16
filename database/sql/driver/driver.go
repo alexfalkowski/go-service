@@ -49,11 +49,14 @@ func Register(name string, driver Driver) (err error) {
 	return err
 }
 
-// Connect opens master/slave `database/sql` connection pools for a previously registered driver name.
+// Connect opens master/slave `database/sql` connection pools for a previously
+// registered driver name.
 //
-// It resolves DSNs from cfg using the provided filesystem (DSNs are configured as go-service "source strings"),
-// connects using `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for each pool, and then
-// applies pool settings (connection lifetime, max idle, and max open connections).
+// It resolves DSNs from cfg using the provided filesystem (DSNs are configured
+// as go-service "source strings"), connects using
+// `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for
+// each pool, and then applies pool settings (connection lifetime, max idle, and
+// max open connections).
 //
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
@@ -61,6 +64,11 @@ func Register(name string, driver Driver) (err error) {
 // Failure behavior:
 //   - returns errors encountered while resolving DSNs or connecting, and
 //   - returns ErrNoDSNs when neither masters nor slaves are configured.
+//
+// The returned type is the upstream master/slave pool collection used
+// internally by the SQL driver layer. Higher-level repository code can usually
+// treat it interchangeably with `database/sql.DBs`, which aliases the same
+// upstream type.
 func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
@@ -96,10 +104,14 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	return db, nil
 }
 
-// Open opens master/slave `database/sql` connection pools for a previously registered driver name.
+// Open opens master/slave `database/sql` connection pools for a previously
+// registered driver name.
 //
 // Open delegates the connection work to Connect and then appends an OnStop hook
 // to the provided lifecycle that closes all returned pools by calling Destroy.
+//
+// The returned type is the same upstream master/slave pool collection returned
+// by Connect.
 func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	db, err := Connect(name, fs, cfg)
 	if err != nil {

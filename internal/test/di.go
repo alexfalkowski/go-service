@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
+	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
@@ -27,7 +28,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	ht "github.com/alexfalkowski/go-service/v2/transport/http/token"
-	"github.com/linxGnu/mssqlx"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
@@ -135,7 +135,7 @@ func invokeAccessController(_ ht.AccessController, _ gt.AccessController) {}
 
 func invokeTokens(_ ht.Generator, _ ht.Verifier, _ gt.Generator, _ gt.Verifier) {}
 
-func invokeDB(_ *mssqlx.DBs) {}
+func invokeDB(_ *sql.DBs) {}
 
 func invokeCrypt(
 	signer *bcrypt.Signer,

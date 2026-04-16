@@ -28,6 +28,10 @@ func Register() {
 //   - connect using the previously registered driver name "pg",
 //   - register OpenTelemetry DB stats metrics, and
 //   - apply connection pool limits/lifetime.
+//
+// The returned type is the upstream master/slave pool collection used
+// throughout the SQL layer. The root `database/sql` package aliases the same
+// type as `sql.DBs` for higher-level callers.
 func Connect(fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
@@ -40,6 +44,9 @@ func Connect(fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 //
 // Open preserves PostgreSQL's nil/disabled config semantics and then delegates
 // connection lifecycle ownership to the shared SQL driver helper.
+//
+// The returned type is the same upstream master/slave pool collection returned
+// by Connect.
 func Open(lc di.Lifecycle, fs *os.FS, cfg *Config) (*mssqlx.DBs, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
