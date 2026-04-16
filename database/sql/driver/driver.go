@@ -12,9 +12,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
-	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
 )
 
 // Driver aliases `database/sql/driver`.Driver.
@@ -32,7 +32,7 @@ var ErrNoDSNs = errors.New("driver: no database DSNs configured")
 //
 // Telemetry:
 //   - The driver is wrapped using database/sql/telemetry.WrapDriver.
-//   - The DB system name attribute is set to the provided name (semconv.DBSystemNameKey).
+//   - The DB system name attribute is set to the provided name (attributes.DBSystemNameKey).
 //
 // Errors:
 //   - If the underlying `sql.Register` panics (for example, due to registering the same name more than once),
@@ -44,7 +44,7 @@ func Register(name string, driver Driver) (err error) {
 		}
 	}()
 
-	sql.Register(name, telemetry.WrapDriver(driver, telemetry.WithAttributes(semconv.DBSystemNameKey.String(name))))
+	sql.Register(name, telemetry.WrapDriver(driver, telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))))
 
 	return err
 }
@@ -137,7 +137,7 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error
 		return nil, err
 	}
 
-	attrs := telemetry.WithAttributes(semconv.DBSystemNameKey.String(name))
+	attrs := telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))
 
 	masters, _ := db.GetAllMasters()
 	register(masters, attrs)
