@@ -3,13 +3,13 @@ package driver
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
+	"github.com/alexfalkowski/go-service/v2/cache/telemetry"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/redis"
 	"github.com/faabiosr/cachego/sync"
-	otel "github.com/redis/go-redis/extra/redisotel/v9"
 	client "github.com/redis/go-redis/v9"
 	"github.com/redis/go-redis/v9/maintnotifications"
 )
@@ -39,8 +39,13 @@ var ErrNotFound = errors.New("cache: driver not found")
 //
 //   - options["url"] to be a string "source string" (e.g. "env:REDIS_URL" or "file:/path/to/url" or a literal URL)
 //
-// The URL is read via fs.ReadSource, parsed using redis/go-redis ParseURL, and then the client is instrumented
-// for tracing and metrics.
+// The URL is read via fs.ReadSource, parsed using redis/go-redis ParseURL, and
+// then the client is instrumented for tracing and metrics via
+// `cache/telemetry`.
+//
+// Instrumentation errors are treated as fatal configuration/runtime errors and
+// are converted into panics via runtime.Must, matching the existing repository
+// convention for mandatory telemetry wiring in internal constructors.
 //
 // # Backends
 //
@@ -74,8 +79,8 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 		}
 
 		client := client.NewClient(opts)
-		runtime.Must(otel.InstrumentTracing(client))
-		runtime.Must(otel.InstrumentMetrics(client))
+		runtime.Must(telemetry.InstrumentTracing(client))
+		runtime.Must(telemetry.InstrumentMetrics(client))
 
 		return redis.New(client), nil
 	case "sync":
@@ -109,4 +114,6 @@ func IsMissingError(err error) bool {
 //
 // It is the minimal interface used by the cache facade (`cache.Cache`) for persistence operations:
 // fetch/save/delete/flush.
+//
+// The alias preserves the upstream cachego interface shape exactly.
 type Driver = cachego.Cache
