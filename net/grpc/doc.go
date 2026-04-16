@@ -1,20 +1,18 @@
-// Package grpc provides small, stable wrappers and aliases around
-// google.golang.org/grpc for use within go-service.
+// Package grpc provides the go-service gRPC import path.
 //
-// This package deliberately exposes a narrow surface area:
+// This package deliberately exposes a small, stable surface area over
+// `google.golang.org/grpc` so repository packages can depend on a consistent
+// go-service import path instead of importing upstream gRPC packages directly.
 //
-//   - Type aliases for commonly used gRPC types (for example CallOption,
-//     DialOption, ServerOption, Server, ClientConn, interceptors, and stream
-//     types). These allow go-service code to depend on go-service packages while
-//     still using the underlying gRPC implementations.
+// It includes:
 //
-//   - Thin helper functions that forward to gRPC constructors/options (for
-//     example StatsHandler, WithStatsHandler, ChainUnaryInterceptor,
-//     ChainStreamInterceptor, Creds, NewTLS, NewInsecureCredentials, and
-//     UseCompressor).
-//
-//   - A convenience NewServer constructor that applies standard server-side
-//     keepalive configuration and registers gRPC reflection.
+//   - type aliases for commonly used gRPC types such as CallOption, DialOption,
+//     ServerOption, Server, ClientConn, interceptors, and stream interfaces
+//   - thin helper functions that forward to common constructors and options
+//     such as StatsHandler, Header, ChainUnaryInterceptor, Creds, NewTLS,
+//     NewInsecureCredentials, and UseCompressor
+//   - a convenience NewServer constructor that applies standard server-side
+//     keepalive configuration and registers gRPC reflection
 //
 // # Server construction
 //

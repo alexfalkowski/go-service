@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -13,7 +14,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	_ "google.golang.org/grpc/encoding/gzip" // Install the gzip compressor.
 	"google.golang.org/grpc/keepalive"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/stats"
 )
@@ -211,8 +211,16 @@ func NewTLS(c *tls.Config) credentials.TransportCredentials {
 //
 // This forwards to grpc.SetHeader. It is typically called by a handler to add
 // response headers.
-func SetHeader(ctx context.Context, md metadata.MD) error {
+func SetHeader(ctx context.Context, md meta.Map) error {
 	return grpc.SetHeader(ctx, md)
+}
+
+// Header returns a call option that captures response header metadata.
+//
+// This forwards to grpc.Header. The provided map is populated by the client
+// call with any header metadata returned by the server.
+func Header(md *meta.Map) CallOption {
+	return grpc.Header(md)
 }
 
 // TimeoutUnaryClientInterceptor returns a unary client interceptor that applies a per-RPC timeout.

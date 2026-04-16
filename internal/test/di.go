@@ -18,6 +18,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/health"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/module"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -29,7 +30,6 @@ import (
 	"github.com/linxGnu/mssqlx"
 	"github.com/open-feature/go-sdk/openfeature"
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
-	"google.golang.org/grpc"
 )
 
 // Options returns the DI options used by tests that exercise the full server module wiring.

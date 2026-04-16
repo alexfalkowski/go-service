@@ -87,7 +87,7 @@ As a rule of thumb: if you want protocol primitives or shared helpers, start in 
 
 The config decoder supports:
 
-- JSON (`encoding/json`)
+- JSON
 - HJSON (`github.com/hjson/hjson-go/v4`)
 - TOML (`github.com/BurntSushi/toml`)
 - YAML (`go.yaml.in/yaml/v3`)
