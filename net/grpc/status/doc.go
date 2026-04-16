@@ -61,7 +61,9 @@
 //
 // # Non-goals
 //
-// This package intentionally does not expose the full status API surface (for
-// example status.FromError, status.New, or Status.Details). Higher-level code
-// that needs structured details should use the upstream status package directly.
+// This package intentionally exposes only the small subset of the upstream
+// status API that go-service uses broadly: Code, FromError, Error, Errorf, and
+// the Status type alias. Higher-level code that needs additional constructors or
+// richer structured-detail helpers should use the upstream status package
+// directly.
 package status

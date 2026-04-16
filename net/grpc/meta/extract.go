@@ -1,29 +1,26 @@
 package meta
 
-import (
-	"github.com/alexfalkowski/go-service/v2/context"
-	"google.golang.org/grpc/metadata"
-)
+import "github.com/alexfalkowski/go-service/v2/context"
 
 // ExtractIncoming extracts incoming gRPC metadata from ctx.
 //
 // If no incoming metadata is present, it returns an empty metadata map.
 // The returned metadata is a copy and is safe to mutate by the caller.
-func ExtractIncoming(ctx context.Context) metadata.MD {
-	return extract(metadata.FromIncomingContext(ctx))
+func ExtractIncoming(ctx context.Context) Map {
+	return extract(FromIncomingContext(ctx))
 }
 
 // ExtractOutgoing extracts outgoing gRPC metadata from ctx.
 //
 // If no outgoing metadata is present, it returns an empty metadata map.
 // The returned metadata is a copy and is safe to mutate by the caller.
-func ExtractOutgoing(ctx context.Context) metadata.MD {
-	return extract(metadata.FromOutgoingContext(ctx))
+func ExtractOutgoing(ctx context.Context) Map {
+	return extract(FromOutgoingContext(ctx))
 }
 
-func extract(md metadata.MD, ok bool) metadata.MD {
+func extract(md Map, ok bool) Map {
 	if !ok {
-		return metadata.MD{}
+		return Map{}
 	}
 
 	return md.Copy()

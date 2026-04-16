@@ -8,13 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 func TestTokenErrorAuthUnary(t *testing.T) {
@@ -72,8 +72,8 @@ func TestInvalidAuthUnary(t *testing.T) {
 	)
 
 	ctx := t.Context()
-	ctx = metadata.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
-	ctx = metadata.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
+	ctx = meta.AppendToOutgoingContext(ctx, "x-forwarded-for", "127.0.0.1")
+	ctx = meta.AppendToOutgoingContext(ctx, "geolocation", "geo:47,11")
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -89,7 +89,7 @@ func TestAuthUnaryWithAppend(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -105,7 +105,7 @@ func TestAuthStreamWithAppend(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
+	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "What Invalid")
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -126,7 +126,7 @@ func TestAuthUnaryWithLowercaseBearer(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldGRPC())
 
 	ctx := t.Context()
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "bearer test")
+	ctx = meta.AppendToOutgoingContext(ctx, "authorization", "bearer test")
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()

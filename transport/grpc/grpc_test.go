@@ -7,13 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 )
 
 func TestInsecureUnary(t *testing.T) {
@@ -28,7 +27,7 @@ func TestInsecureUnary(t *testing.T) {
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
-	var header metadata.MD
+	var header meta.Map
 
 	resp, err := client.SayHello(ctx, req, grpc.Header(&header))
 	require.NoError(t, err)

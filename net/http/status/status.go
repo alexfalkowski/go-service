@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"google.golang.org/grpc/status"
 )
 
 // Error constructs an error that carries an HTTP status code and a message.

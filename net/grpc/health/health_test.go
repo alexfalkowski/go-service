@@ -7,17 +7,16 @@ import (
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 	v1 "google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/metadata"
 )
 
 func TestCheck(t *testing.T) {
@@ -54,8 +53,8 @@ func TestInvalidCheck(t *testing.T) {
 	client := v1.NewHealthClient(conn)
 	req := &v1.HealthCheckRequest{Service: test.Name.String()}
 
-	md := metadata.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
-	ctx := metadata.NewOutgoingContext(t.Context(), md)
+	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
+	ctx := meta.NewOutgoingContext(t.Context(), md)
 
 	resp, err := client.Check(ctx, req)
 	require.NoError(t, err)
@@ -73,8 +72,8 @@ func TestNotFoundCheck(t *testing.T) {
 	client := v1.NewHealthClient(conn)
 	req := &v1.HealthCheckRequest{Service: "bob"}
 
-	md := metadata.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
-	ctx := metadata.NewOutgoingContext(t.Context(), md)
+	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
+	ctx := meta.NewOutgoingContext(t.Context(), md)
 
 	_, err := client.Check(ctx, req)
 	require.Error(t, err)
@@ -374,15 +373,15 @@ func (w *watchStream) Send(resp *v1.HealthCheckResponse) error {
 	}
 }
 
-func (*watchStream) SetHeader(metadata.MD) error {
+func (*watchStream) SetHeader(meta.Map) error {
 	return nil
 }
 
-func (*watchStream) SendHeader(metadata.MD) error {
+func (*watchStream) SendHeader(meta.Map) error {
 	return nil
 }
 
-func (*watchStream) SetTrailer(metadata.MD) {}
+func (*watchStream) SetTrailer(meta.Map) {}
 
 func (*watchStream) SendMsg(any) error {
 	return nil

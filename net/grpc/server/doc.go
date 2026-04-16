@@ -1,14 +1,13 @@
 // Package server provides helpers for running a gRPC server as a managed go-service server.
 //
 // This package is intentionally small: it adapts a configured
-// google.golang.org/grpc.Server to the go-service `server.Service` lifecycle,
+// `net/grpc.Server` to the go-service `server.Service` lifecycle,
 // and it provides a lightweight wrapper that binds a listener and exposes a
 // `Serve`/`Shutdown` API compatible with the generic server runner.
 //
 // In most cases you will:
 //
-//  1. Construct a *grpc.Server (for example via net/grpc.NewServer, or by calling
-//     google.golang.org/grpc.NewServer directly with your chosen options).
+//  1. Construct a *grpc.Server (typically via net/grpc.NewServer).
 //  2. Provide a bind address via net/grpc/config.Config.
 //  3. Call NewService to get a `server.Service` that starts and stops the gRPC
 //     server and wires shutdown and logging.
