@@ -2,7 +2,6 @@ package http_test
 
 import (
 	"log/slog"
-	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -12,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/html"
 )

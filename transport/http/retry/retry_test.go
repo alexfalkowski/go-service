@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
