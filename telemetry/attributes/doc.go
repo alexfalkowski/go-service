@@ -2,11 +2,8 @@
 // semantic convention attributes used by go-service.
 //
 // This package is intentionally thin. It primarily re-exports selected identifiers
-// from the OpenTelemetry semantic conventions package:
-//
-//	go.opentelemetry.io/otel/semconv/v1.40.0
-//
-// The goal is to centralize common resource/telemetry attributes that are used
+// from the vendored OpenTelemetry semantic conventions package. The goal is to
+// centralize common resource/telemetry attributes that are used
 // across go-service telemetry wiring (logging, metrics, tracing) without requiring
 // every package to import semconv directly.
 //
@@ -33,7 +30,11 @@
 //
 // Some instrumentation requires standard system identifiers (for example RPC system
 // names). This package re-exports the gRPC RPC system name constant
-// (RPCSystemNameGRPC) from semconv.
+// (RPCSystemNameGRPC) and selected attribute keys from semconv.
+//
+// Database instrumentation can also reuse database-system helpers such as
+// DBSystemNameKey and DBSystemNamePostgreSQL instead of importing semconv
+// directly.
 //
 // # Notes
 //
