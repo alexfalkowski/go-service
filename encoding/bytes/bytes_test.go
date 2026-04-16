@@ -1,12 +1,12 @@
 package bytes_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	eb "github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
