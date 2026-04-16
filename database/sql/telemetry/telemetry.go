@@ -15,6 +15,13 @@ import (
 // attributes and metric/tracing options.
 type Option = otelsql.Option
 
+// Open opens a `database/sql` DB handle with OpenTelemetry instrumentation.
+//
+// This is a thin wrapper around otelsql.Open.
+func Open(driverName, dataSourceName string, options ...Option) (*sql.DB, error) {
+	return otelsql.Open(driverName, dataSourceName, options...)
+}
+
 // WrapDriver wraps a `database/sql/driver.Driver` with OpenTelemetry
 // instrumentation.
 //
