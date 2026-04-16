@@ -1,10 +1,10 @@
 package bytes_test
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/stretchr/testify/require"
 )
 

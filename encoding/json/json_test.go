@@ -27,3 +27,18 @@ func TestDecode(t *testing.T) {
 	require.NoError(t, encoder.Decode(bytes.NewBufferString("{\"test\":\"test\"}"), &msg))
 	require.Equal(t, map[string]string{"test": "test"}, msg)
 }
+
+func TestMarshal(t *testing.T) {
+	msg := map[string]string{"test": "test"}
+
+	data, err := json.Marshal(msg)
+	require.NoError(t, err)
+	require.JSONEq(t, "{\"test\":\"test\"}", string(data))
+}
+
+func TestUnmarshal(t *testing.T) {
+	var msg map[string]string
+
+	require.NoError(t, json.Unmarshal([]byte("{\"test\":\"test\"}"), &msg))
+	require.Equal(t, map[string]string{"test": "test"}, msg)
+}
