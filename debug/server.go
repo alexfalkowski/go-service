@@ -3,7 +3,7 @@ package debug
 import (
 	"cmp"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	debug "github.com/alexfalkowski/go-service/v2/debug/http"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -98,12 +98,12 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 		return config, nil
 	}
 
-	tls, err := tls.NewConfig(fs, cfg.TLS)
+	tlsConfig, err := tls.NewConfig(fs, cfg.TLS)
 	if err != nil {
 		return nil, prefix(err)
 	}
 
-	config.TLS = tls
+	config.TLS = tlsConfig
 	return config, nil
 }
 

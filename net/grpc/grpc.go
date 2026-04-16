@@ -1,10 +1,9 @@
 package grpc
 
 import (
-	"crypto/tls"
-
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -166,8 +165,8 @@ func ChainStreamInterceptor(interceptors ...StreamServerInterceptor) ServerOptio
 
 // Creds returns a ServerOption that configures server-side transport credentials.
 //
-// It forwards to grpc.Creds. For TLS, use NewTLS to create credentials.TransportCredentials
-// from a *tls.Config.
+// It forwards to grpc.Creds. For TLS, use NewTLS to create
+// credentials.TransportCredentials from a go-service `crypto/tls.Config`.
 func Creds(c credentials.TransportCredentials) ServerOption {
 	return grpc.Creds(c)
 }
@@ -201,8 +200,9 @@ func NewInsecureCredentials() credentials.TransportCredentials {
 
 // NewTLS constructs TLS transport credentials from c.
 //
-// This is a thin wrapper around credentials.NewTLS. The provided tls.Config is
-// used by the gRPC transport for handshake and peer verification.
+// This is a thin wrapper around credentials.NewTLS. The provided
+// `crypto/tls.Config` is used by the gRPC transport for handshake and peer
+// verification.
 func NewTLS(c *tls.Config) credentials.TransportCredentials {
 	return credentials.NewTLS(c)
 }
@@ -281,8 +281,9 @@ func WithUserAgent(s string) DialOption {
 
 // WithTransportCredentials returns a DialOption that configures client-side transport credentials.
 //
-// This forwards to grpc.WithTransportCredentials. For TLS, use NewTLS to create
-// credentials.TransportCredentials from a *tls.Config.
+// This forwards to grpc.WithTransportCredentials. For TLS, use NewTLS to
+// create credentials.TransportCredentials from a go-service
+// `crypto/tls.Config`.
 func WithTransportCredentials(creds credentials.TransportCredentials) DialOption {
 	return grpc.WithTransportCredentials(creds)
 }

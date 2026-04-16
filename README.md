@@ -770,7 +770,7 @@ transport:
 
 ### TLS for transports
 
-TLS config uses `crypto/tls.Config` and fields are source strings:
+TLS config uses `crypto/tls/config.Config` and fields are source strings:
 
 ```yaml
 transport:

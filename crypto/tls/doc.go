@@ -1,15 +1,16 @@
-// Package tls provides helpers for constructing `crypto/tls` configurations from go-service config.
+// Package tls exposes selected standard library crypto/tls types and helpers
+// through the go-service import path.
 //
-// This package focuses on turning go-service TLS configuration (`tls.Config`) into a standard library
-// `*crypto/tls.Config` via `NewConfig`.
+// This package is the low-level runtime TLS surface for the repository. It
+// intentionally preserves standard library semantics while allowing internal
+// packages to depend on a go-service import path instead of importing
+// `crypto/tls` directly.
 //
-// # Defaults
+// Use this package when code needs runtime TLS values such as `*tls.Config`,
+// parsed certificates, protocol-version constants, or helpers such as
+// `X509KeyPair`.
 //
-// `NewConfig` applies conservative defaults suitable for service-to-service deployments:
-//
-//   - Minimum TLS version: 1.2
-//   - Client authentication: `tls.RequireAndVerifyClientCert` (mTLS)
-//
-// If you need different semantics (for example optional client certs, server-only TLS, or TLS 1.3-only),
-// construct a `*crypto/tls.Config` directly or wrap the returned config and adjust fields as needed.
+// Use `crypto/tls/config` when working with go-service TLS configuration
+// values that resolve certificate and key "source strings" and materialize a
+// runtime TLS config via `config.NewConfig`.
 package tls

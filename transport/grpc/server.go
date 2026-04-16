@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"math"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"

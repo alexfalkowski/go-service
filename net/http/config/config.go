@@ -1,6 +1,6 @@
 package config
 
-import "crypto/tls"
+import "github.com/alexfalkowski/go-service/v2/crypto/tls"
 
 // Config configures the internal HTTP server wiring.
 //

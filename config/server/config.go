@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"

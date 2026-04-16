@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"

@@ -21,8 +21,10 @@
 //
 // # TLS
 //
-// When TLS config is enabled for the debug server, the server loads the configured certificate and key
-// material using go-service "source strings" and constructs a `*crypto/tls.Config` via `crypto/tls.NewConfig`.
+// When TLS is enabled for the debug server, the package uses
+// `crypto/tls/config.NewConfig` to resolve `crypto/tls/config.Config` source
+// strings and build the runtime `*crypto/tls.Config` assigned to the underlying
+// HTTP server.
 //
 // Start with `Module` and `NewServer`.
 package debug
