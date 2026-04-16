@@ -9,7 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ed25519"
 	"github.com/alexfalkowski/go-service/v2/crypto/hmac"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	sql "github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"

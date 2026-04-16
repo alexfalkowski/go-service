@@ -1,8 +1,7 @@
 package grpc
 
 import (
-	"crypto/tls"
-
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 )
 

@@ -28,8 +28,9 @@
 // # Registration gotcha (TLS filesystem)
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS configuration.
-// The registered filesystem is used to resolve certificate/key "source strings" (for example `file:/path/to/cert` or
-// `env:VAR`) during TLS configuration.
+// The registered filesystem is used by `crypto/tls/config.NewConfig` to
+// resolve certificate/key "source strings" (for example `file:/path/to/cert`
+// or `env:VAR`) during TLS configuration.
 //
 // If you enable TLS and do not call `Register` before constructing clients/servers, TLS configuration may fail to
 // load key material.

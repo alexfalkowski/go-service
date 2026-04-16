@@ -1,57 +1,42 @@
 package tls
 
-import (
-	"crypto/tls"
+import "crypto/tls"
 
-	"github.com/alexfalkowski/go-service/v2/os"
-)
+// Config is an alias of crypto/tls.Config.
+//
+// It configures TLS handshake behavior, certificates, protocol versions, and
+// peer verification for clients and servers.
+//
+// The alias exists so repository packages can stay on the go-service import
+// path without changing the behavior or shape of the standard library type.
+type Config = tls.Config
 
-// NewConfig constructs a `crypto/tls`.Config from cfg.
+// Certificate is an alias of crypto/tls.Certificate.
 //
-// # Defaults
+// It holds a parsed certificate chain and corresponding private key used during
+// TLS handshakes.
 //
-// NewConfig always applies the following defaults:
-//   - MinVersion: TLS 1.2 (tls.VersionTLS12)
-//   - ClientAuth: require and verify client certificates (mTLS) via tls.RequireAndVerifyClientCert
-//
-// # Key material loading
-//
-// If cfg is nil (disabled) or cfg does not have both a certificate and key configured (see cfg.HasKeyPair),
-// NewConfig returns a config with the defaults above and does not attempt to load any key material.
-//
-// When cfg is enabled and has a key pair, certificate and key bytes are resolved via the provided filesystem
-// using go-service "source strings" (literal value, `file:` path, or `env:` reference). The resolved PEM
-// is then parsed using tls.X509KeyPair and attached to the returned config.
-//
-// # Errors
-//
-// NewConfig returns the partially constructed config along with any error encountered while resolving the
-// certificate/key sources or parsing them as an X.509 key pair.
-func NewConfig(fs *os.FS, cfg *Config) (*tls.Config, error) {
-	config := &tls.Config{
-		MinVersion: tls.VersionTLS12,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-	}
+// The alias preserves the standard library representation exactly.
+type Certificate = tls.Certificate
 
-	if !cfg.IsEnabled() || !cfg.HasKeyPair() {
-		return config, nil
-	}
+// VersionTLS12 is an alias of crypto/tls.VersionTLS12.
+//
+// It identifies TLS 1.2 for use in runtime TLS config defaults and protocol
+// minimum-version checks.
+const VersionTLS12 = tls.VersionTLS12
 
-	cert, err := cfg.GetCert(fs)
-	if err != nil {
-		return config, err
-	}
+// RequireAndVerifyClientCert is an alias of
+// crypto/tls.RequireAndVerifyClientCert.
+//
+// It configures mutual TLS by requiring a client certificate and verifying it
+// during the handshake.
+const RequireAndVerifyClientCert = tls.RequireAndVerifyClientCert
 
-	key, err := cfg.GetKey(fs)
-	if err != nil {
-		return config, err
-	}
-
-	pair, err := tls.X509KeyPair(cert, key)
-	if err != nil {
-		return config, err
-	}
-
-	config.Certificates = []tls.Certificate{pair}
-	return config, nil
+// X509KeyPair parses a public/private key pair from PEM data.
+//
+// This is a thin wrapper around crypto/tls.X509KeyPair and preserves the
+// standard library behavior exactly, including PEM parsing and validation
+// errors.
+func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (Certificate, error) {
+	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
 }

@@ -3,7 +3,7 @@ package test
 import (
 	cacheconfig "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/limiter"
