@@ -1,66 +1,80 @@
 package time
 
 import (
-	"encoding/json"
 	"time"
 
+	"github.com/alexfalkowski/go-service/v2/encoding/json"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 )
 
-// Hour is a duration constant equal to 60 minutes.
+// Hour is the go-service representation of the standard library `time.Hour`
+// constant.
 //
-// It is an alias of time.Hour, provided so callers can depend on go-service
-// packages while using standard library time values.
+// Its value is one hour.
 const Hour Duration = Duration(time.Hour)
 
-// Microsecond is a duration constant equal to 1e3 nanoseconds.
+// Microsecond is the go-service representation of the standard library
+// `time.Microsecond` constant.
 //
-// It is an alias of time.Microsecond.
+// Its value is one microsecond.
 const Microsecond Duration = Duration(time.Microsecond)
 
-// Millisecond is a duration constant equal to 1e6 nanoseconds.
+// Millisecond is the go-service representation of the standard library
+// `time.Millisecond` constant.
 //
-// It is an alias of time.Millisecond.
+// Its value is one millisecond.
 const Millisecond Duration = Duration(time.Millisecond)
 
-// Minute is a duration constant equal to 60 seconds.
+// Minute is the go-service representation of the standard library `time.Minute`
+// constant.
 //
-// It is an alias of time.Minute.
+// Its value is one minute.
 const Minute Duration = Duration(time.Minute)
 
-// Nanosecond is a duration constant equal to 1.
+// Nanosecond is the go-service representation of the standard library
+// `time.Nanosecond` constant.
 //
-// It is an alias of time.Nanosecond.
+// Its value is one nanosecond.
 const Nanosecond Duration = Duration(time.Nanosecond)
 
-// Second is a duration constant equal to 1e9 nanoseconds.
+// Second is the go-service representation of the standard library `time.Second`
+// constant.
 //
-// It is an alias of time.Second.
+// Its value is one second.
 const Second Duration = Duration(time.Second)
 
 // Duration is the go-service duration type used across the repository.
 //
-// It is a named type over the standard library time.Duration so it can expose
-// config-friendly marshaling helpers while remaining easy to convert at API
-// boundaries.
+// It is a named type over the standard library `time.Duration` so it can expose
+// config-friendly text and JSON marshaling helpers while remaining easy to
+// convert at API boundaries.
+//
+// Duration values serialize as Go duration strings such as `250ms`, `5s`, or
+// `3m15s`.
 type Duration time.Duration
 
-// Duration converts d to the standard library time.Duration type.
+// Duration converts d to the standard library `time.Duration` type.
+//
+// Use it when calling APIs that accept the standard library duration type.
 func (d Duration) Duration() time.Duration {
 	return time.Duration(d)
 }
 
-// String returns the Go duration string for d.
+// String returns d in the standard Go duration format.
 func (d Duration) String() string {
 	return d.Duration().String()
 }
 
-// MarshalText encodes d using the standard Go duration string format.
+// MarshalText encodes d using the same duration string returned by
+// [Duration.String].
 func (d Duration) MarshalText() ([]byte, error) {
 	return []byte(d.String()), nil
 }
 
-// UnmarshalText decodes a Go duration string into d.
+// UnmarshalText parses a Go duration string into d.
+//
+// Accepted inputs use the same format as [ParseDuration], such as `250ms`,
+// `5s`, or `1m`.
 func (d *Duration) UnmarshalText(text []byte) error {
 	duration, err := ParseDuration(string(text))
 	if err != nil {
@@ -71,12 +85,15 @@ func (d *Duration) UnmarshalText(text []byte) error {
 	return nil
 }
 
-// MarshalJSON encodes d as a quoted Go duration string.
+// MarshalJSON encodes d as a quoted Go duration string, such as `"5s"`.
 func (d Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.String())
 }
 
 // UnmarshalJSON decodes a quoted Go duration string into d.
+//
+// Non-string JSON values are rejected by the underlying JSON decoder before the
+// duration parser runs.
 func (d *Duration) UnmarshalJSON(data []byte) error {
 	var text string
 	if err := json.Unmarshal(data, &text); err != nil {
@@ -88,8 +105,9 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 
 // ParseDuration parses a duration string.
 //
-// This is a thin wrapper around time.ParseDuration. The input uses the standard
-// Go duration format such as "250ms", "5s", or "1m".
+// This is a thin wrapper around `time.ParseDuration` that returns the
+// repository's [Duration] type. The input uses the standard Go duration format
+// such as `250ms`, `5s`, or `1m`.
 func ParseDuration(s string) (Duration, error) {
 	d, err := time.ParseDuration(s)
 	return Duration(d), err
