@@ -13,6 +13,10 @@
 // package currently includes built-in constructors for common backends (for example Redis and an in-memory
 // sync driver).
 //
+// The built-in Redis backend resolves its URL from a go-service "source
+// string", constructs a go-redis client, and instruments that client via
+// `cache/telemetry` before exposing it through the cachego Redis adapter.
+//
 // The built-in `sync` driver comes from the upstream cachego dependency and currently has whole-second TTL
 // resolution. Callers should not rely on sub-second expiration with that backend.
 //

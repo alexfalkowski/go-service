@@ -10,9 +10,10 @@ import (
 
 // Register registers the pgx stdlib `database/sql` driver under the name "pg".
 //
-// The registration is performed via `database/sql/driver.Register`, which wraps the underlying
-// driver with OpenTelemetry instrumentation (via otelsql.WrapDriver). The returned error from
-// registration is intentionally ignored.
+// The registration is performed via `database/sql/driver.Register`, which wraps
+// the underlying driver with OpenTelemetry instrumentation via
+// `database/sql/telemetry`. The returned error from registration is
+// intentionally ignored.
 //
 // Register is typically called during process initialization via DI wiring (see `pg.Module`).
 func Register() {

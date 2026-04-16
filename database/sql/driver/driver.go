@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"database/sql/driver"
 
-	"github.com/XSAM/otelsql"
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
+	"github.com/alexfalkowski/go-service/v2/database/sql/telemetry"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
@@ -31,7 +31,7 @@ var ErrNoDSNs = errors.New("driver: no database DSNs configured")
 // intended to be called during process initialization (for example from an init hook or DI registration).
 //
 // Telemetry:
-//   - The driver is wrapped using otelsql.WrapDriver.
+//   - The driver is wrapped using database/sql/telemetry.WrapDriver.
 //   - The DB system name attribute is set to the provided name (semconv.DBSystemNameKey).
 //
 // Errors:
@@ -44,7 +44,7 @@ func Register(name string, driver Driver) (err error) {
 		}
 	}()
 
-	sql.Register(name, otelsql.WrapDriver(driver, otelsql.WithAttributes(semconv.DBSystemNameKey.String(name))))
+	sql.Register(name, telemetry.WrapDriver(driver, telemetry.WithAttributes(semconv.DBSystemNameKey.String(name))))
 
 	return err
 }
@@ -137,7 +137,7 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error
 		return nil, err
 	}
 
-	attrs := otelsql.WithAttributes(semconv.DBSystemNameKey.String(name))
+	attrs := telemetry.WithAttributes(semconv.DBSystemNameKey.String(name))
 
 	masters, _ := db.GetAllMasters()
 	register(masters, attrs)
@@ -148,9 +148,9 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error
 	return db, nil
 }
 
-func register(dbs []*sqlx.DB, opts ...otelsql.Option) {
+func register(dbs []*sqlx.DB, opts ...telemetry.Option) {
 	for _, db := range dbs {
-		_, err := otelsql.RegisterDBStatsMetrics(db.DB, opts...)
+		_, err := telemetry.RegisterDBStatsMetrics(db.DB, opts...)
 		runtime.Must(err)
 	}
 }
