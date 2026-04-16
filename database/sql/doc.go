@@ -10,6 +10,22 @@
 // is treated as "disabled". Driver-specific configs typically follow the same convention, and
 // constructors that depend on config often return (nil, nil) when disabled.
 //
+// # Master/slave pool wrapper
+//
+// This package also exposes the shared master/slave pool abstraction used by
+// repository code:
+//   - `DBs`, the go-service alias for the upstream pool collection type, and
+//   - `ConnectMasterSlaves`, the go-service wrapper for opening those pools.
+//
+// This keeps internal code on a go-service import path instead of importing the
+// upstream helper package directly where the package graph allows it.
+//
+// Driver-oriented subpackages such as `database/sql/driver` and
+// `database/sql/pg` still use the upstream pool package internally because the
+// root `database/sql` package already depends on those subpackages for config
+// and module composition. Re-importing the root package from those subpackages
+// would create an import cycle.
+//
 // # Master/slave pools and telemetry
 //
 // Driver integrations typically open master/slave connection pools, configure pool limits/lifetimes,

@@ -12,9 +12,14 @@
 //
 // # Master/slave pools
 //
-// `Open` resolves master and replica DSNs from configuration (DSNs are expressed as go-service "source strings"),
-// connects using a master/slave pool abstraction, applies pool settings (max lifetime/open/idle), and registers
-// OpenTelemetry DB stats metrics.
+// `Open` resolves master and replica DSNs from configuration (DSNs are
+// expressed as go-service "source strings"), connects using the shared
+// master/slave pool abstraction used by the repository, applies pool settings
+// (max lifetime/open/idle), and registers OpenTelemetry DB stats metrics.
+//
+// Although the package-level SQL wrapper aliases this pool type as
+// `database/sql.DBs`, this package returns the underlying upstream type
+// directly to avoid an import cycle with the root `database/sql` package.
 //
 // Start with `Config`, `Register`, and `Open`.
 package pg

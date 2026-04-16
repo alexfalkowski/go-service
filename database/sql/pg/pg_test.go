@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/config"
 	"github.com/alexfalkowski/go-service/v2/database/sql/driver"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
@@ -12,12 +13,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/linxGnu/mssqlx"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
-func up(ctx context.Context, db *mssqlx.DBs) error {
+func up(ctx context.Context, db *sql.DBs) error {
 	ctx, cancel := test.Timeout(ctx)
 	defer cancel()
 
@@ -31,7 +31,7 @@ func up(ctx context.Context, db *mssqlx.DBs) error {
 	return err
 }
 
-func down(ctx context.Context, db *mssqlx.DBs) error {
+func down(ctx context.Context, db *sql.DBs) error {
 	ctx, cancel := test.Timeout(ctx)
 	defer cancel()
 

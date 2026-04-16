@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/net"
@@ -23,7 +24,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
-	"github.com/linxGnu/mssqlx"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -156,7 +156,7 @@ type World struct {
 	Sender client.Client
 	Rest   *rest.Client
 
-	DB         *mssqlx.DBs
+	DB         *sql.DBs
 	HTTPHealth *health.Server
 	GRPCHealth *health.Server
 	httpClient *http.Client

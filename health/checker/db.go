@@ -3,10 +3,10 @@ package checker
 import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/jmoiron/sqlx"
-	"github.com/linxGnu/mssqlx"
 )
 
 var _ checker.Checker = (*DBChecker)(nil)
@@ -22,7 +22,7 @@ var ErrNoConnections = errors.New("db: no connections")
 //
 // Note: db is expected to be non-nil. If the database subsystem is disabled and no
 // pools are available, callers should avoid constructing/registering this checker.
-func NewDBChecker(db *mssqlx.DBs, timeout time.Duration) *DBChecker {
+func NewDBChecker(db *sql.DBs, timeout time.Duration) *DBChecker {
 	return &DBChecker{db: db, timeout: timeout}
 }
 
@@ -31,7 +31,7 @@ func NewDBChecker(db *mssqlx.DBs, timeout time.Duration) *DBChecker {
 // It pings each configured master and slave database pool using PingContext. Any
 // ping failures are aggregated and returned from Check.
 type DBChecker struct {
-	db      *mssqlx.DBs
+	db      *sql.DBs
 	timeout time.Duration
 }
 
