@@ -1,11 +1,14 @@
 package retry
 
 import (
+	"fmt"
+
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	config "github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-sync"
 	retryable "github.com/hashicorp/go-retryablehttp"
 	"github.com/sethvargo/go-retry"
 )
@@ -27,7 +30,7 @@ type Config = config.Config
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
 // ErrAttemptTimeout is the cause recorded when a retry attempt times out.
-var ErrAttemptTimeout = errors.New("retry: attempt timeout")
+var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout)
 
 // NewRoundTripper constructs a RoundTripper that applies per-attempt timeouts and retries.
 //
