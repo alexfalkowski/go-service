@@ -61,6 +61,8 @@ var (
 	// Many of these subsystems are optional and are enabled/disabled by configuration (often via nil pointer
 	// sub-configs). This bundle wires constructors/registrations; runtime behavior depends on the config
 	// supplied to the graph.
+	//
+	// This is the primary entrypoint for server applications built from `go-service-template`.
 	Server = di.Module(
 		Library,
 		debug.Module,
@@ -88,6 +90,8 @@ var (
 	//
 	// Unlike Server, Client does not wire debug endpoints, transports, or a health server by default.
 	// Those can be added explicitly by composing additional modules on top of Client if needed.
+	//
+	// This is the primary entrypoint for client-style applications built from `go-service-template`.
 	Client = di.Module(
 		Library,
 		cache.Module,

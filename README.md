@@ -11,6 +11,8 @@
 
 This repo is primarily a **library of packages** (no top-level `cmd/` binary). Services built on top typically define their own `main` package elsewhere and import this module.
 
+Most services are expected to be bootstrapped from [`go-service-template`](https://github.com/alexfalkowski/go-service-template) and to compose the high-level module bundles from this repository. That is the primary supported path. Lower-level package-by-package composition is still available, but it is an advanced mode and may require extra manual registration.
+
 ---
 
 ## Dependency Injection (Fx)
@@ -26,6 +28,8 @@ The module package exposes three top-level bundles:
 - `module.Library` for shared foundations (env, compress, encoding, crypto, time, sync buffer-pool wiring, id)
 - `module.Server` for server processes (Library + config, transports, telemetry, debug, health, etc.)
 - `module.Client` for short-lived/batch/client processes (Library + config, telemetry, sql, hooks, etc.)
+
+These bundles are the intended default for services generated from `go-service-template`. They handle the internal registration expected by the framework so most services do not need to wire lower-level transport or lifecycle helpers manually.
 
 ### Minimal CLI bootstrap example
 
@@ -62,7 +66,7 @@ Services commonly expose two command shapes:
 
 The framework uses [acmd](https://github.com/cristalhq/acmd). Your service’s `main` typically wires Fx modules + commands.
 
-> This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks.
+> This repo intentionally does not ship a ready-to-run `main` — it provides the building blocks. In normal usage those building blocks are consumed through `go-service-template` plus `module.Server` / `module.Client`, not by wiring every subsystem manually.
 
 ---
 
@@ -78,6 +82,8 @@ The repo is intentionally split between high-level service composition and lower
 - `internal/test/` contains the shared test world and fixtures used across packages
 
 As a rule of thumb: if you want protocol primitives or shared helpers, start in `net/...`; if you want service wiring and middleware policy, start in `transport/...`.
+
+For most service authors, the right starting point is still the high-level module bundles rather than these lower-level packages directly.
 
 ---
 
@@ -784,9 +790,10 @@ transport:
       key: file:test/certs/key.pem
 ```
 
-Important gotcha:
+Important note:
 
-- Some transport packages require that you call a package `Register(...)` function to provide an `os.FS` used to read key material. If you enable TLS and have not registered the FS, TLS construction may not have access to the filesystem.
+- If you are using `go-service-template` or composing the standard bundles such as `module.Server`, `module.Client`, or `transport.Module`, the required transport registration is handled for you by DI.
+- You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the standard module graph.
 - If you are wiring server lifecycle manually, use `net/server.Register(...)`.
 
 ### Transport Dependencies
@@ -1034,9 +1041,10 @@ All exported identifiers should have GoDoc comments, and each comment should sta
 ### Additional gotchas
 
 - `make kind=status encode-config` uses `base64 -w 0` (GNU style). On macOS/BSD use `base64 | tr -d '\n'`.
-- If you enable transport TLS and wire transports manually (without transport modules), call:
+- If you enable transport TLS and wire transports manually (without `transport.Module` or the higher-level `module.Server` bundle), call:
   - `transport/http.Register(fs)`
   - `transport/grpc.Register(fs)`
+- Services built from `go-service-template` normally do not need to call those registration helpers directly.
 - Shared metadata and header helpers live under `net/...`, for example:
   - `net/http/meta`
   - `net/grpc/meta`

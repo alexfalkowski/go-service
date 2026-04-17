@@ -18,7 +18,9 @@
 // middleware policy, and Fx wiring.
 //
 // The primary entrypoint for DI consumers is `Module`, which composes the HTTP transport stack and
-// registers handlers/constructors needed to run an HTTP server.
+// registers handlers/constructors needed to run an HTTP server. In typical service applications this
+// happens through `module.Server` and `go-service-template`, so most consumers never call lower-level
+// registration helpers directly.
 //
 // # Server wiring
 //
@@ -38,7 +40,7 @@
 // retries, optional circuit breaking, and optional client-side rate limiting, depending on the provided
 // client options.
 //
-// # Registration gotcha (TLS filesystem)
+// # Manual composition note (TLS filesystem)
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS
 // configuration. The registered filesystem is used by
@@ -46,6 +48,7 @@
 // (for example `file:/path/to/cert` or `env:VAR`) when materializing the
 // runtime `*crypto/tls.Config`.
 //
-// If you enable TLS and do not call `Register` before constructing HTTP servers or clients, TLS configuration
-// may fail to load key material.
+// When you use `Module` (directly or through higher-level bundles such as `module.Server`), DI performs
+// this registration for you. Call `Register` yourself only when you intentionally compose the HTTP transport
+// package manually outside the standard module graph.
 package http

@@ -43,8 +43,11 @@ type Default struct {
 // The first match is opened and decoded using the encoder keyed by the discovered kind/extension.
 // If no configuration file is found, Decode returns ErrLocationMissing.
 //
-// Note: this decoder assumes the encoding.Map contains decoders for the supported kinds. If a kind is
-// missing, Decode may panic due to a nil encoder; ensure your wiring registers the standard encoders.
+// Note: this decoder assumes the encoding.Map contains decoders for the supported kinds. In the standard
+// go-service module graph, those encoders are registered for you (for example via `encoding.Module` in
+// higher-level bundles such as `module.Server` and `module.Client`). The nil-encoder panic risk therefore
+// only applies when you intentionally construct custom or partial wiring without the standard encoder
+// registrations.
 func (c *Default) Decode(v any) error {
 	kind, file, err := c.find()
 	if err != nil {
