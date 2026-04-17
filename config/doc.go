@@ -26,4 +26,9 @@
 //
 // `Module` wires the decoder, validator, and a standard top-level `Config` into Fx/Dig, and also
 // provides constructors for commonly-used sub-config projections.
+//
+// In normal service applications, this package is consumed through higher-level bundles such as
+// `module.Server` or `module.Client`, which also include the standard encoder registrations needed by
+// the config decoders. Custom or partial wiring is still supported, but advanced compositions are
+// responsible for registering any required encoders themselves.
 package config

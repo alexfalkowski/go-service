@@ -21,6 +21,9 @@ import (
 // Server lifecycle wiring:
 // This module also provides `NewServers` (to collect enabled `*server.Service` instances) and registers
 // `net/server.Register`, which attaches lifecycle hooks to start and stop those services.
+//
+// In typical service applications this module is consumed through `module.Server`, so callers normally do
+// not need to invoke lower-level transport registration or lifecycle helpers themselves.
 var Module = di.Module(
 	grpc.Module,
 	http.Module,

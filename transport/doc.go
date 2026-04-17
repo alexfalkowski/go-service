@@ -7,20 +7,21 @@
 // (for example `net/http/meta`, `net/grpc/meta`, `net/header`, and `net/server`).
 //
 // Typical usage is to include `transport.Module` in your application module graph and let DI construct the
-// underlying transports:
+// underlying transports. Services created from `go-service-template` usually reach this package indirectly
+// via `module.Server`, so transport registration and lifecycle wiring are handled by the standard module
+// graph.
 //
 // - `transport/http` for HTTP servers and clients.
 // - `transport/grpc` for gRPC servers and clients.
 // - `debug` (wired via `transport.NewServers`) for the optional debug server.
 //
-// # Registration gotchas
+// # Manual composition notes
 //
 // Some transport subpackages require package-level registration to inject dependencies that cannot be
 // automatically provided via constructors. In particular, the HTTP and gRPC transport packages use a
 // registered filesystem when building TLS configuration (to read certificates/keys via source strings such
-// as `file:` and `env:`). If you enable TLS and do not call the relevant transport registration prior to
-// constructing clients/servers, TLS configuration may fail to load key material.
+// as `file:` and `env:`). The standard module graph performs this registration for you.
 //
-// When in doubt, call the transport-specific registration during application initialization (for example in
-// your application's composition root) before constructing any transport servers or clients.
+// Call the transport-specific registration yourself only when you intentionally bypass `transport.Module`
+// (or higher-level bundles such as `module.Server`) and construct transport clients/servers manually.
 package transport

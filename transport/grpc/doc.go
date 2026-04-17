@@ -6,7 +6,8 @@
 //
 // The primary entrypoint for DI wiring is `Module`, which composes this package with supporting subpackages:
 // breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
-// `net/grpc/health`.
+// `net/grpc/health`. In typical service applications this happens through `module.Server` and
+// `go-service-template`, so most consumers do not need to wire this package manually.
 //
 // Lower-level gRPC primitives and shared helpers live under sibling `net/grpc/...` packages. This package
 // focuses on higher-level server/client composition, middleware policy, and Fx wiring.
@@ -25,13 +26,14 @@
 // Client-side concerns are expressed via options such as `WithClientTimeout`, `WithClientRetry`, `WithClientBreaker`,
 // `WithClientLimiter`, and token-generator options. These options configure which interceptors are installed.
 //
-// # Registration gotcha (TLS filesystem)
+// # Manual composition note (TLS filesystem)
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS configuration.
 // The registered filesystem is used by `crypto/tls/config.NewConfig` to
 // resolve certificate/key "source strings" (for example `file:/path/to/cert`
 // or `env:VAR`) during TLS configuration.
 //
-// If you enable TLS and do not call `Register` before constructing clients/servers, TLS configuration may fail to
-// load key material.
+// When you use `Module` (directly or through higher-level bundles such as `module.Server`), DI performs
+// this registration for you. Call `Register` yourself only when you intentionally compose the gRPC transport
+// package manually outside the standard module graph.
 package grpc

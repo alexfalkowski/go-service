@@ -13,9 +13,12 @@ var fs *os.FS
 // "source strings" (for example `file:/path/to/cert` or `env:VAR`) via the
 // `os.FS.ReadSource` helper when materializing a runtime `*crypto/tls.Config`.
 //
-// Registration is required because the filesystem is stored in a package-level variable. If TLS is enabled,
-// call Register during application startup (composition root) before constructing any gRPC clients or servers;
-// otherwise TLS config construction may fail to load key material.
+// In the standard go-service module graph, this registration is performed automatically by `Module`
+// (and therefore by higher-level bundles such as `module.Server`). Call Register directly only when you
+// intentionally compose gRPC transport pieces manually outside that graph.
+//
+// If TLS is enabled and registration has not happened before constructing gRPC clients or servers, TLS
+// config construction may fail to load key material.
 func Register(f *os.FS) {
 	fs = f
 }
