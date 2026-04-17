@@ -14,6 +14,9 @@ var _ checker.Checker = (*DBChecker)(nil)
 // ErrNoConnections is returned when a DBChecker has no master or slave pools to verify.
 var ErrNoConnections = errors.New("db: no connections")
 
+// ErrPingTimeout is the cause recorded when a DB health-check ping times out.
+var ErrPingTimeout = errors.New("db: ping timeout")
+
 // NewDBChecker constructs a DBChecker that verifies database connectivity by pinging
 // all configured master and slave pools in db.
 //
@@ -64,7 +67,7 @@ func (c *DBChecker) dbs() []*sqlx.DB {
 }
 
 func (o *DBChecker) ping(ctx context.Context, db *sqlx.DB) error {
-	ctx, cancel := context.WithTimeout(ctx, o.timeout)
+	ctx, cancel := context.WithTimeoutCause(ctx, o.timeout, ErrPingTimeout)
 	defer cancel()
 
 	return db.PingContext(ctx)

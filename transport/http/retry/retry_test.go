@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -168,6 +169,23 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	require.Equal(t, []int{1, 1}, rt.authCounts)
 }
 
+func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
+	transport := &causeRoundTripper{}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  0,
+		Backoff:  time.Millisecond,
+	}, transport)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	require.ErrorIs(t, transport.err, context.DeadlineExceeded)
+	require.ErrorIs(t, transport.cause, retry.ErrAttemptTimeout)
+}
+
 type roundTripper struct {
 	codes []int
 	calls int
@@ -248,6 +266,23 @@ func (r *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	return &http.Response{
 		StatusCode: code,
 		Status:     fmt.Sprintf("%d %s", code, http.StatusText(code)),
+		Body:       http.NoBody,
+		Header:     make(http.Header),
+	}, nil
+}
+
+type causeRoundTripper struct {
+	cause error
+	err   error
+}
+
+func (r *causeRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	r.cause = context.Cause(req.Context())
+	r.err = req.Context().Err()
+
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Status:     http.StatusText(http.StatusOK),
 		Body:       http.NoBody,
 		Header:     make(http.Header),
 	}, nil
