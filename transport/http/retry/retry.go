@@ -26,6 +26,9 @@ type Config = config.Config
 // `429 Too Many Requests` or retryable `5xx` responses.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
+// ErrAttemptTimeout is the cause recorded when a retry attempt times out.
+var ErrAttemptTimeout = errors.New("retry: attempt timeout")
+
 // NewRoundTripper constructs a RoundTripper that applies per-attempt timeouts and retries.
 //
 // The constructed RoundTripper wraps hrt and, for each request:
@@ -93,7 +96,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (r *RoundTripper) attempt(req *http.Request, ctx context.Context, attempt *roundTripAttempt) (*http.Response, error) {
-	ctx, cancel := context.WithTimeout(ctx, r.timeout)
+	ctx, cancel := context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
 	defer cancel()
 
 	attemptReq, err := attempt.request(req, ctx)
