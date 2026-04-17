@@ -14,6 +14,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http/retry"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
 )
 
@@ -184,6 +185,7 @@ func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
 	require.NotNil(t, res)
 	require.ErrorIs(t, transport.err, context.DeadlineExceeded)
 	require.ErrorIs(t, transport.cause, retry.ErrAttemptTimeout)
+	require.ErrorIs(t, transport.cause, sync.ErrTimeout)
 }
 
 type roundTripper struct {

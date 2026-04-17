@@ -1,11 +1,14 @@
 package checker
 
 import (
+	"fmt"
+
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-sync"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,7 +18,7 @@ var _ checker.Checker = (*DBChecker)(nil)
 var ErrNoConnections = errors.New("db: no connections")
 
 // ErrPingTimeout is the cause recorded when a DB health-check ping times out.
-var ErrPingTimeout = errors.New("db: ping timeout")
+var ErrPingTimeout = fmt.Errorf("db: ping timeout: %w", sync.ErrTimeout)
 
 // NewDBChecker constructs a DBChecker that verifies database connectivity by pinging
 // all configured master and slave pools in db.
