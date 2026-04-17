@@ -28,7 +28,7 @@
 // provides constructors for commonly-used sub-config projections.
 //
 // In normal service applications, this package is consumed through higher-level bundles such as
-// `module.Server` or `module.Client`, which also include the standard encoder registrations needed by
-// the config decoders. Custom or partial wiring is still supported, but advanced compositions are
-// responsible for registering any required encoders themselves.
+// `module.Server` or `module.Client` from `go-service-template`, which also include the standard
+// encoder registrations needed by the config decoders. Custom or partial wiring is still supported,
+// but advanced compositions are responsible for registering any required encoders themselves.
 package config
