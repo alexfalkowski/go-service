@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alexfalkowski/go:3.9
+      - image: alexfalkowski/go:3.11
       - image: postgres:18-trixie
         environment:
           POSTGRES_DB: test
@@ -72,7 +72,7 @@ jobs:
     resource_class: arm.large
   sync:
     docker:
-      - image: alexfalkowski/release:7.7
+      - image: alexfalkowski/release:7.8
     working_directory: ~/go-service
     steps:
       - checkout:
@@ -83,7 +83,7 @@ jobs:
     resource_class: arm.large
   version:
     docker:
-      - image: alexfalkowski/release:7.7
+      - image: alexfalkowski/release:7.8
     working_directory: ~/go-service
     steps:
       - checkout:
@@ -95,7 +95,7 @@ jobs:
     resource_class: arm.large
   wait-all:
     docker:
-      - image: alexfalkowski/go:3.9
+      - image: alexfalkowski/go:3.11
     steps:
       - run: echo "all applicable jobs finished"
     resource_class: arm.large
