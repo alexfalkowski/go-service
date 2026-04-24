@@ -1,6 +1,7 @@
 package grpc_test
 
 import (
+	"maps"
 	"net"
 	"testing"
 
@@ -107,11 +108,53 @@ func TestStreamMaxReceiveSize(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
+func TestUnaryMaxSendSize(t *testing.T) {
+	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_, err := client.SayHello(t.Context(), &v1.SayHelloRequest{Name: strings.Repeat("a", 256)})
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func TestStreamMaxSendSize(t *testing.T) {
+	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	stream, err := client.SayStreamHello(t.Context())
+	require.NoError(t, err)
+
+	require.NoError(t, stream.Send(&v1.SayStreamHelloRequest{Name: strings.Repeat("a", 256)}))
+
+	_, err = stream.Recv()
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
 func newStartedGRPCWorld(t *testing.T, maxReceiveSize bytes.Size) *test.World {
 	t.Helper()
 
+	return newStartedGRPCWorldWithOptions(t, maxReceiveSize, nil)
+}
+
+func newStartedGRPCWorldWithOptions(t *testing.T, maxReceiveSize bytes.Size, opts map[string]string) *test.World {
+	t.Helper()
+
 	cfg := test.NewInsecureTransportConfig()
-	cfg.GRPC.MaxReceiveSize = maxReceiveSize
+	if maxReceiveSize > 0 {
+		cfg.GRPC.MaxReceiveSize = maxReceiveSize
+	}
+	if len(opts) > 0 {
+		if cfg.GRPC.Options == nil {
+			cfg.GRPC.Options = map[string]string{}
+		}
+		maps.Copy(cfg.GRPC.Options, opts)
+	}
 
 	return test.NewStartedWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldGRPC())
 }
