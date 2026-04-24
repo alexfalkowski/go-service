@@ -92,6 +92,7 @@ read_timeout = "10s"
 write_timeout = "10s"
 idle_timeout = "10s"
 read_header_timeout = "10s"
+max_header_bytes = "32KB"
 
 [transport.http.retry]
 backoff = "100ms"
