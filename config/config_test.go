@@ -300,6 +300,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 			"write_timeout":       "10s",
 			"idle_timeout":        "10s",
 			"read_header_timeout": "10s",
+			"max_header_bytes":    "32KB",
 		},
 		config.Transport.HTTP.Options,
 	)

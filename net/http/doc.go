@@ -8,5 +8,8 @@
 //   - Handle/HandleFunc, which register handlers wrapped with OpenTelemetry instrumentation,
 //   - Pattern and ParseServiceMethod, which help standardize route naming for telemetry.
 //
+// Server construction reads timeout keys from options.Map (`read_timeout`, `write_timeout`,
+// `idle_timeout`, `read_header_timeout`) and also supports `max_header_bytes` as an SI size string.
+//
 // Start with `NewClient` and `NewServer`.
 package http

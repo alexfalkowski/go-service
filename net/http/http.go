@@ -1,15 +1,19 @@
 package http
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"net/http/httptrace"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -63,6 +67,9 @@ const StatusTooManyRequests = http.StatusTooManyRequests
 
 // StatusUnauthorized is an alias of http.StatusUnauthorized.
 const StatusUnauthorized = http.StatusUnauthorized
+
+// DefaultMaxHeaderBytes is an alias of http.DefaultMaxHeaderBytes.
+const DefaultMaxHeaderBytes = http.DefaultMaxHeaderBytes
 
 type (
 	// Client is an alias for net/http.Client.
@@ -218,6 +225,9 @@ func StatusText(code int) string {
 //   - idle_timeout
 //   - read_header_timeout
 //
+// Additional low-level server tuning may be provided through options using:
+//   - max_header_bytes
+//
 // Protocols are configured via Protocols().
 //
 // Note: options.Duration uses MustParseDuration under the hood; invalid option values will panic at
@@ -229,8 +239,18 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 		WriteTimeout:      options.Duration("write_timeout", timeout).Duration(),
 		IdleTimeout:       options.Duration("idle_timeout", timeout).Duration(),
 		ReadHeaderTimeout: options.Duration("read_header_timeout", timeout).Duration(),
+		MaxHeaderBytes:    mustIntSize(options, "max_header_bytes", bytes.Size(DefaultMaxHeaderBytes)),
 		Protocols:         Protocols(),
 	}
+}
+
+func mustIntSize(options options.Map, key string, fallback bytes.Size) int {
+	size := options.Size(key, fallback)
+	if size.Bytes() > math.MaxInt {
+		runtime.Must(fmt.Errorf("http: %s exceeds max int: %s", key, size))
+	}
+
+	return int(size.Bytes())
 }
 
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.
