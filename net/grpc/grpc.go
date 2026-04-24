@@ -306,21 +306,22 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 
 // NewServer constructs a *grpc.Server with standard keepalive configuration and reflection enabled.
 //
-// Keepalive enforcement and server parameters are populated from options using the
-// following duration keys (falling back to timeout when a key is not present):
+// Keepalive enforcement, connection establishment timeout, and server parameters are
+// populated from options using the following duration keys (falling back to timeout
+// when a key is not present):
 //
 //   - keepalive_enforcement_policy_ping_min_time
 //   - keepalive_max_connection_idle
 //   - keepalive_max_connection_age
 //   - keepalive_max_connection_age_grace
 //   - keepalive_ping_time
+//   - connection_timeout
 //
 // In addition, the provided timeout is used as the keepalive ping Timeout.
 //
 // Additional low-level server tuning may be provided through options using:
 //
 //   - max_concurrent_streams
-//   - connection_timeout
 //   - max_header_list_size
 //   - initial_window_size
 //   - initial_conn_window_size
@@ -344,12 +345,9 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 		Time:                  options.Duration("keepalive_ping_time", timeout).Duration(),
 		Timeout:               timeout.Duration(),
 	}))
+	os = append(os, grpc.ConnectionTimeout(options.Duration("connection_timeout", timeout).Duration()))
 	if _, ok := options["max_concurrent_streams"]; ok {
 		os = append(os, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
-	}
-
-	if _, ok := options["connection_timeout"]; ok {
-		os = append(os, grpc.ConnectionTimeout(options.Duration("connection_timeout", 0).Duration()))
 	}
 
 	if _, ok := options["max_header_list_size"]; ok {
