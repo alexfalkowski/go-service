@@ -1,11 +1,15 @@
 package grpc
 
 import (
+	"fmt"
+	"math"
+
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -313,13 +317,22 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 //
 // In addition, the provided timeout is used as the keepalive ping Timeout.
 //
+// Additional low-level server tuning may be provided through options using:
+//
+//   - max_concurrent_streams
+//   - connection_timeout
+//   - max_header_list_size
+//   - initial_window_size
+//   - initial_conn_window_size
+//   - max_send_msg_size
+//
 // This function always registers server reflection via reflection.Register so
 // tools such as grpcurl can discover services when reflection is permitted.
 //
 // Any additional opts are appended after the keepalive options and may further
 // customize server behavior (for example interceptors, credentials, or stats handlers).
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
-	os := make([]ServerOption, 0, 2+len(opts))
+	os := make([]ServerOption, 0, 8+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 		MinTime:             options.Duration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
 		PermitWithoutStream: true,
@@ -331,10 +344,62 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 		Time:                  options.Duration("keepalive_ping_time", timeout).Duration(),
 		Timeout:               timeout.Duration(),
 	}))
+	if _, ok := options["max_concurrent_streams"]; ok {
+		os = append(os, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
+	}
+
+	if _, ok := options["connection_timeout"]; ok {
+		os = append(os, grpc.ConnectionTimeout(options.Duration("connection_timeout", 0).Duration()))
+	}
+
+	if _, ok := options["max_header_list_size"]; ok {
+		os = append(os, grpc.MaxHeaderListSize(mustUint32Size(options, "max_header_list_size")))
+	}
+
+	if _, ok := options["initial_window_size"]; ok {
+		os = append(os, grpc.InitialWindowSize(mustInt32Size(options, "initial_window_size")))
+	}
+
+	if _, ok := options["initial_conn_window_size"]; ok {
+		os = append(os, grpc.InitialConnWindowSize(mustInt32Size(options, "initial_conn_window_size")))
+	}
+
+	if _, ok := options["max_send_msg_size"]; ok {
+		os = append(os, grpc.MaxSendMsgSize(mustIntSize(options, "max_send_msg_size")))
+	}
 	os = append(os, opts...)
 
 	server := grpc.NewServer(os...)
 	reflection.Register(server)
 
 	return server
+}
+
+func mustInt32Size(options options.Map, key string) int32 {
+	size := options.Size(key, 0)
+	if size.Bytes() > math.MaxInt32 {
+		runtime.Must(fmt.Errorf("grpc: %s exceeds max int32: %s", key, size))
+	}
+
+	//nolint:gosec // Size is range-checked against MaxInt32 above.
+	return int32(size.Bytes())
+}
+
+func mustIntSize(options options.Map, key string) int {
+	size := options.Size(key, 0)
+	if size.Bytes() > math.MaxInt {
+		runtime.Must(fmt.Errorf("grpc: %s exceeds max int: %s", key, size))
+	}
+
+	return int(size.Bytes())
+}
+
+func mustUint32Size(options options.Map, key string) uint32 {
+	size := options.Size(key, 0)
+	if size.Bytes() > math.MaxUint32 {
+		runtime.Must(fmt.Errorf("grpc: %s exceeds max uint32: %s", key, size))
+	}
+
+	//nolint:gosec // Size is range-checked against MaxUint32 above.
+	return uint32(size.Bytes())
 }
