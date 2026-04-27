@@ -8,14 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
-	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
@@ -114,7 +113,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(logger.NewHandler(params.Logger))
 	}
 
-	neg.Use(maxReceiveHandler(params.Config.GetMaxReceiveSize().Bytes()))
+	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))
 
 	for _, hd := range params.Handlers {
 		neg.Use(hd)
@@ -184,28 +183,4 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 
 func prefix(err error) error {
 	return errors.Prefix("http", err)
-}
-
-func maxReceiveHandler(limit int64) negroni.Handler {
-	return negroni.HandlerFunc(func(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		if req.ContentLength > limit {
-			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
-			return
-		}
-
-		data, body, err := io.ReadAll(io.LimitReader(req.Body, limit+1))
-		if err != nil {
-			_ = status.WriteError(res, status.BadRequestError(err))
-			return
-		}
-		defer req.Body.Close()
-
-		if int64(len(data)) > limit {
-			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
-			return
-		}
-
-		req.Body = body
-		next(res, req)
-	})
 }
