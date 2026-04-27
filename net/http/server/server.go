@@ -51,19 +51,10 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 // cert/key file paths (because certificate material is expected to be present in TLSConfig). If cfg.TLS is nil,
 // Serve will call Serve and serve plain HTTP.
 //
-// Inbound size limits:
-// If cfg.MaxReceiveBytes is greater than zero and the underlying server has a non-nil Handler, NewServer wraps
-// that handler with http.MaxBytesHandler before creating the listener. This caps each inbound request body at
-// the configured byte limit for all downstream handlers.
-//
 // Address formats:
 // cfg.Address may use either the go-service "<network>://<address>" convention or a raw listen address such as
 // ":8080". Raw addresses default to the "tcp" network.
 func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
-	if cfg.MaxReceiveBytes > 0 && server.Handler != nil {
-		server.Handler = http.MaxBytesHandler(server.Handler, cfg.MaxReceiveBytes)
-	}
-
 	srv := &Server{server: server, tls: cfg.TLS}
 	n, a := net.ListenNetworkAddress(cfg.Address)
 

@@ -55,3 +55,31 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Contains(t, body, "http: request body too large")
 }
+
+func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
+	cfg := test.NewInsecureTransportConfig()
+	cfg.HTTP.MaxReceiveSize = 64
+
+	world := test.NewWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldHTTP())
+	http.Handle(world.ServeMux, "POST /hello", content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
+		return &test.Response{Greeting: "hello"}, nil
+	}))
+	world.Start()
+
+	header := http.Header{}
+	header.Set(content.TypeKey, mime.JSONMediaType)
+
+	res, body, err := world.PostBody(
+		t.Context(),
+		world.PathServerURL("http", "hello"),
+		header,
+		&unknownLengthReader{Reader: strings.NewReader(`{"name":"` + strings.Repeat("a", 256) + `"}`)},
+	)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
+	require.Contains(t, body, "http: request body too large")
+}
+
+type unknownLengthReader struct {
+	*strings.Reader
+}

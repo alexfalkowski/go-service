@@ -8,11 +8,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/server"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
@@ -95,9 +97,8 @@ type ServerParams struct {
 //
 // Inbound size limits:
 //
-// params.Config.GetMaxReceiveSize() is projected into the low-level HTTP server config and enforced by
-// net/http/server.NewServer via http.MaxBytesHandler. The limit applies per inbound request body before
-// downstream handlers read from it.
+// params.Config.GetMaxReceiveSize() is enforced in this transport stack before downstream handlers read
+// from the request body.
 //
 // If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
 // to the actual bound listener address after construction.
@@ -112,6 +113,8 @@ func NewServer(params ServerParams) (*Server, error) {
 	if params.Logger != nil {
 		neg.Use(logger.NewHandler(params.Logger))
 	}
+
+	neg.Use(maxReceiveHandler(params.Config.GetMaxReceiveSize().Bytes()))
 
 	for _, hd := range params.Handlers {
 		neg.Use(hd)
@@ -164,8 +167,7 @@ func (s *Server) GetService() *server.Service {
 
 func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
-		Address:         cmp.Or(cfg.Address, net.DefaultAddress("8080")),
-		MaxReceiveBytes: cfg.GetMaxReceiveSize().Bytes(),
+		Address: cmp.Or(cfg.Address, net.DefaultAddress("8080")),
 	}
 	if !cfg.TLS.IsEnabled() {
 		return config, nil
@@ -182,4 +184,28 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 
 func prefix(err error) error {
 	return errors.Prefix("http", err)
+}
+
+func maxReceiveHandler(limit int64) negroni.Handler {
+	return negroni.HandlerFunc(func(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+		if req.ContentLength > limit {
+			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
+			return
+		}
+
+		data, body, err := io.ReadAll(io.LimitReader(req.Body, limit+1))
+		if err != nil {
+			_ = status.WriteError(res, status.BadRequestError(err))
+			return
+		}
+		defer req.Body.Close()
+
+		if int64(len(data)) > limit {
+			_ = status.WriteError(res, &http.MaxBytesError{Limit: limit})
+			return
+		}
+
+		req.Body = body
+		next(res, req)
+	})
 }
