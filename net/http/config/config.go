@@ -5,11 +5,11 @@ import "github.com/alexfalkowski/go-service/v2/crypto/tls"
 // Config configures the internal HTTP server wiring.
 //
 // This config is used by go-service HTTP server adapters (for example `net/http/server.NewServer`) to
-// create a listener and serve HTTP with optional TLS and inbound request-body limits.
+// create a listener and serve HTTP with optional TLS.
 //
-// It is intentionally minimal: it models the bind address, optional TLS configuration, and the inbound
-// request size cap enforced by the low-level HTTP server wrapper. Higher-level transport packages
-// typically layer additional config (timeouts, protocol settings, middleware, etc.) elsewhere.
+// It is intentionally minimal: it models the bind address and optional TLS configuration. Higher-level
+// transport packages typically layer additional config (timeouts, protocol settings, middleware, etc.)
+// elsewhere.
 type Config struct {
 	// TLS configures the TLS settings used by the HTTP server.
 	//
@@ -26,9 +26,4 @@ type Config struct {
 	// network and address can be parsed and passed to net.Listen. Some callers may also supply a raw
 	// host:port address depending on the surrounding wiring.
 	Address string
-
-	// MaxReceiveBytes limits inbound request body size in bytes.
-	//
-	// When greater than zero, server wiring wraps the root handler with MaxBytesHandler before serving.
-	MaxReceiveBytes int64
 }

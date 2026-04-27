@@ -51,6 +51,13 @@ func NopCloser(r Reader) ReadCloser {
 	return io.NopCloser(r)
 }
 
+// LimitReader returns a Reader that reads from r but stops with EOF after n bytes.
+//
+// This is a thin wrapper around io.LimitReader.
+func LimitReader(r Reader, n int64) Reader {
+	return io.LimitReader(r, n)
+}
+
 // ReadAll reads all remaining bytes from r and returns:
 //
 //   - the captured bytes, and
