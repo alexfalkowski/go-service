@@ -21,6 +21,12 @@
 // Server interceptors also emit response header metadata such as
 // "service-version" and "request-id".
 //
+// Server metadata extraction intentionally prefers common forwarding metadata such
+// as "x-forwarded-for", "x-real-ip", "cf-connecting-ip", and
+// "true-client-ip" over peer addresses. Deployments that use the extracted IP for
+// access logs, policy, or rate limiting should place the service behind trusted
+// proxies that strip or overwrite spoofed forwarding metadata.
+//
 // Start with `UnaryServerInterceptor` / `StreamServerInterceptor` for
 // server-side extraction and `UnaryClientInterceptor` /
 // `StreamClientInterceptor` for client-side injection. Use `ExtractIncoming`

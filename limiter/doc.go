@@ -17,6 +17,11 @@
 // The configured kind is typically provided via `Config.Kind`. If the kind is not present in the KeyMap,
 // limiter construction fails with ErrMissingKey.
 //
+// The "ip" key uses IP metadata populated by transport metadata middleware. That
+// middleware intentionally trusts common forwarding headers such as X-Forwarded-For
+// and CF-Connecting-IP. Use this key only when requests first pass through trusted
+// proxies that strip or overwrite client-supplied forwarding headers.
+//
 // # In-memory behavior and lifecycle
 //
 // The limiter uses an in-memory store. Limits are enforced per process and are not shared across replicas.

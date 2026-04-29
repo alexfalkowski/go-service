@@ -5,25 +5,20 @@ package access
 // The policy is consumed by NewController, which constructs a Casbin-backed
 // controller/enforcer using the embedded ModelConfig and a policy adapter.
 //
-// # Source string convention
+// # Policy path
 //
-// Policy supports the go-service “source string” pattern:
-//   - "env:NAME" to read from an environment variable
-//   - "file:/path" to read from a file
-//   - otherwise treated as the literal policy content
-//
-// Note: This package does not resolve source strings itself. If you configure Policy
-// as a source string, resolve it before calling NewController (for example by using
-// os.FS.ReadSource elsewhere in your config projection/wiring).
+// Policy is passed directly to Casbin's file adapter, so it must be a real
+// filesystem path. This package does not resolve go-service source strings such
+// as "env:" or "file:", and it does not accept literal policy payloads.
 //
 // # Enablement
 //
 // Enablement is modeled by presence: a nil *Config disables access control wiring,
 // and NewController returns (nil, nil).
 type Config struct {
-	// Policy is the access control policy document source.
+	// Policy is the access control policy file path.
 	//
-	// It may be a go-service “source string” (see Config docs) or a literal policy.
+	// The path is passed directly to Casbin's file adapter.
 	Policy string `yaml:"policy,omitempty" json:"policy,omitempty" toml:"policy,omitempty"`
 }
 
