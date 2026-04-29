@@ -11,6 +11,8 @@
 //   - thin helper functions that forward to common constructors and options
 //     such as StatsHandler, Header, ChainUnaryInterceptor, Creds, NewTLS,
 //     NewInsecureCredentials, and UseCompressor
+//   - a convenience NewClient constructor that creates a grpc.ClientConn and
+//     installs unary request hedging
 //   - a convenience NewServer constructor that applies standard server-side
 //     keepalive configuration and registers gRPC reflection
 //

@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/bhope/hedge"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -182,15 +183,25 @@ func MaxRecvMsgSize(m int) ServerOption {
 	return grpc.MaxRecvMsgSize(m)
 }
 
-// NewClient creates a new gRPC client channel for target using opts.
+// NewClient creates a new gRPC client channel for target using opts and unary request hedging.
 //
-// This forwards to grpc.NewClient. No I/O is performed during construction; the
-// returned ClientConn connects automatically when it is used for RPCs (or when
-// Connect is called explicitly).
+// This appends a hedging unary client interceptor before forwarding to grpc.NewClient. No I/O is
+// performed during construction; the returned ClientConn connects automatically when it is used for RPCs
+// (or when Connect is called explicitly).
+//
+// The hedging interceptor may issue a second unary RPC attempt after an adaptive delay and returns the
+// first completed result. The losing attempt is canceled. Streaming RPCs are not hedged by this helper.
+//
+// Because the hedge interceptor is installed with grpc.WithUnaryInterceptor, callers that need additional
+// unary interceptors should prefer WithChainUnaryInterceptor. A unary interceptor provided earlier with
+// WithUnaryInterceptor is replaced by this helper's hedge interceptor according to gRPC dial option
+// semantics.
 //
 // The target format and supported schemes are defined by gRPC and any
 // registered resolvers in your binary.
 func NewClient(target string, opts ...DialOption) (*ClientConn, error) {
+	opts = append(opts, grpc.WithUnaryInterceptor(hedge.NewUnaryClientInterceptor()))
+
 	return grpc.NewClient(target, opts...)
 }
 

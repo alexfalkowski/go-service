@@ -267,6 +267,11 @@ type ClientConn = grpc.ClientConn
 // It uses dial options derived from opts (see `NewDialOptions`) and always adds OpenTelemetry stats handling
 // via `grpc.WithStatsHandler(telemetry.NewClientHandler())` so that client RPCs are instrumented.
 //
+// The lower-level `grpc.NewClient` wrapper also installs unary request hedging. Hedging is applied outside
+// the unary interceptor chain returned by `UnaryClientInterceptors`, so primary and hedged unary attempts
+// still pass through this package's timeout, limiter, retry, breaker, logging, token, and metadata
+// interceptors. Streaming RPCs are not hedged.
+//
 // The returned connection should be closed by the caller when no longer needed.
 func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 	os, err := NewDialOptions(opts...)
@@ -280,6 +285,9 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 }
 
 // UnaryClientInterceptors builds the unary client interceptor chain derived from opts.
+//
+// This function only returns the transport-level interceptor chain. The lower-level `grpc.NewClient`
+// wrapper installs unary request hedging when a connection is constructed.
 //
 // Order matters. Interceptors are appended in the following sequence:
 //   - any custom interceptors provided via `WithClientUnaryInterceptors`

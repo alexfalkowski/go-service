@@ -15,6 +15,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/bhope/hedge"
 )
 
 // MethodDelete is an alias of http.MethodDelete.
@@ -80,7 +81,7 @@ type (
 
 	// MaxBytesError is an alias for net/http.MaxBytesError.
 	//
-	// It is returned when MaxBytesReader or MaxBytesHandler observes an inbound request body exceeding
+	// It is returned when net/http request body limiting observes an inbound request body exceeding
 	// the configured byte limit.
 	MaxBytesError = http.MaxBytesError
 	// Handler is an alias for net/http.Handler.
@@ -152,24 +153,30 @@ var (
 	NoBody = http.NoBody
 )
 
-// NewClient constructs an HTTP client with OpenTelemetry instrumentation and a request timeout.
+// NewClient constructs an HTTP client with hedging, OpenTelemetry instrumentation, and a request timeout.
 //
 // The returned client wraps the provided RoundTripper with a telemetry transport and installs an
-// httptrace-based client trace derived from the request context. This enables client-side spans and
-// timing events to be captured by the configured OpenTelemetry instrumentation.
+// httptrace-based client trace derived from the request context. The telemetry transport is then wrapped
+// by a hedging transport, so each primary or hedged attempt is traced by the configured OpenTelemetry
+// instrumentation.
+//
+// The hedging transport may issue a second attempt for slow eligible requests and returns the first
+// completed response or error. Requests with nil bodies, http.NoBody, or replayable bodies using GetBody
+// may be hedged; requests with non-replayable bodies fall back to the primary attempt only. The losing
+// attempt is canceled, and any losing response body is drained up to the hedge package limit before close.
 //
 // The provided timeout is assigned to http.Client.Timeout (total time limit for requests, including
 // connection time, redirects, and reading the response body).
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
-	return &http.Client{
-		Transport: telemetry.NewTransport(
-			rt,
-			telemetry.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
-				return telemetry.NewClientTrace(ctx)
-			}),
-		),
-		Timeout: timeout.Duration(),
-	}
+	rt = telemetry.NewTransport(
+		rt,
+		telemetry.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+			return telemetry.NewClientTrace(ctx)
+		}),
+	)
+	rt = hedge.New(rt)
+
+	return &http.Client{Transport: rt, Timeout: timeout.Duration()}
 }
 
 // NewRequestWithContext constructs a new outgoing HTTP request with ctx.
@@ -185,13 +192,6 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // This is a thin wrapper around net/http.NewServeMux.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
-}
-
-// MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.
-//
-// This is a thin wrapper around net/http.MaxBytesHandler.
-func MaxBytesHandler(h Handler, n int64) Handler {
-	return http.MaxBytesHandler(h, n)
 }
 
 // HandleFunc registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.

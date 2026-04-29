@@ -8,7 +8,8 @@
 //   - RPC and REST routing helpers (`net/http/rpc`, `net/http/rest`)
 //   - request metadata extraction and propagation (`net/http/meta`)
 //   - token authentication (server-side verification and client-side injection) (`transport/http/token`)
-//   - client retries and circuit breakers (`transport/http/retry`, `transport/http/breaker`)
+//   - client request hedging, retries, and circuit breakers (`net/http`, `transport/http/retry`,
+//     `transport/http/breaker`)
 //   - server-side and client-side rate limiting (`transport/http/limiter`)
 //   - health endpoints wiring (`transport/http/health`)
 //   - Prometheus metrics endpoint wiring (`transport/http/telemetry/metrics`)
@@ -36,9 +37,9 @@
 // # Client wiring
 //
 // `NewClient` constructs an `*http.Client` whose `Transport` is assembled by `NewRoundTripper`. The
-// resulting client can include metadata propagation, optional logging, optional token injection, optional
-// retries, optional circuit breaking, and optional client-side rate limiting, depending on the provided
-// client options.
+// resulting client includes lower-level OpenTelemetry instrumentation and request hedging, and can also
+// include metadata propagation, optional logging, optional token injection, optional retries, optional
+// circuit breaking, and optional client-side rate limiting, depending on the provided client options.
 //
 // # Manual composition note (TLS filesystem)
 //

@@ -1,6 +1,6 @@
 module github.com/alexfalkowski/go-service/v2
 
-go 1.26.0
+go 1.26.1
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
@@ -13,6 +13,7 @@ require (
 	github.com/avfs/avfs v0.35.0
 	github.com/beevik/ntp v1.5.0
 	github.com/beevik/nts v0.3.0
+	github.com/bhope/hedge v1.0.1
 	github.com/casbin/casbin/v2 v2.135.0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/cristalhq/acmd v0.12.0

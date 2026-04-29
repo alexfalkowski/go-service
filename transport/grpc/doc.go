@@ -2,7 +2,8 @@
 //
 // It provides constructors, interceptors, and Fx module wiring for:
 //   - gRPC servers (`NewServer`) with standardized interceptors (metadata, logging, auth, rate limiting, etc.).
-//   - gRPC clients (`NewClient`) with standardized dial options and client interceptors (timeouts, retries, breakers, auth, etc.).
+//   - gRPC clients (`NewClient`) with standardized dial options and client interceptors (hedging, timeouts,
+//     retries, breakers, auth, etc.).
 //
 // The primary entrypoint for DI wiring is `Module`, which composes this package with supporting subpackages:
 // breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
@@ -20,8 +21,10 @@
 //
 // # Client wiring
 //
-// `NewDialOptions` builds a slice of `grpc.DialOption` based on provided `ClientOption`s. `NewClient` is a convenience
-// that applies those options and dials a `*grpc.ClientConn` to a target.
+// `NewDialOptions` builds a slice of `grpc.DialOption` based on provided `ClientOption`s. `NewClient` is a
+// convenience that applies those options, adds client telemetry stats handling, and dials a `*grpc.ClientConn`
+// to a target.
+// The lower-level gRPC helper also installs unary request hedging for the resulting connection.
 //
 // Client-side concerns are expressed via options such as `WithClientTimeout`, `WithClientRetry`, `WithClientBreaker`,
 // `WithClientLimiter`, and token-generator options. These options configure which interceptors are installed.

@@ -62,6 +62,9 @@ const StatusUnauthorized = http.StatusUnauthorized
 type Client = http.Client
 
 // MaxBytesError is an alias for net/http.MaxBytesError.
+//
+// It is returned when net/http request body limiting observes an inbound request body exceeding
+// the configured byte limit.
 type MaxBytesError = http.MaxBytesError
 
 // Handler is an alias for net/http.Handler.
@@ -108,11 +111,6 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // NewServeMux constructs a new HTTP request multiplexer.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
-}
-
-// MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.
-func MaxBytesHandler(h Handler, n int64) Handler {
-	return http.MaxBytesHandler(h, n)
 }
 
 // HandleFunc registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.

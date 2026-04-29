@@ -245,8 +245,13 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 //   - uses the RoundTripper stack built by `NewRoundTripper`, and
 //   - applies the configured client timeout (see `WithClientTimeout`).
 //
-// Note: `http.NewClient` wraps the provided transport with OpenTelemetry instrumentation, so requests
-// made with the returned client are traced/observed by default.
+// The lower-level `http.NewClient` wrapper also adds OpenTelemetry instrumentation and request hedging.
+// The effective transport order is hedging outside telemetry outside the RoundTripper stack returned by
+// `NewRoundTripper`. As a result, primary and hedged attempts are traced/observed by default while still
+// using this package's metadata, logging, retry, breaker, limiter, compression, and token middleware.
+//
+// Hedging is only attempted for requests that can be replayed safely by the hedge transport: requests
+// without a body, requests with http.NoBody, or requests whose body can be recreated with GetBody.
 func NewClient(opts ...ClientOption) (*http.Client, error) {
 	os := options(opts...)
 
