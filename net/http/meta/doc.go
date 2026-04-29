@@ -25,5 +25,11 @@
 // `net/http/content.NewHandler` / `NewRequestHandler`), which populate the context before invoking
 // downstream logic.
 //
+// HTTP server metadata extraction intentionally prefers common forwarding headers
+// such as X-Forwarded-For, X-Real-IP, CF-Connecting-IP, and True-Client-IP over
+// RemoteAddr. Deployments that use the extracted IP for access logs, policy, or
+// rate limiting should place the service behind trusted proxies that strip or
+// overwrite spoofed forwarding headers.
+//
 // This package also provides HTTP metadata middleware via `NewHandler` and `NewRoundTripper`.
 package meta

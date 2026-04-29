@@ -25,9 +25,9 @@
 //   - The model is created from the embedded ModelConfig.
 //   - The policy is loaded using Casbin’s file adapter.
 //
-// Note: despite the adapter name, the policy string is passed directly to the adapter.
-// Ensure the configured policy value matches what the underlying adapter expects for
-// your deployment (for example a path vs. a literal policy payload).
+// Policy is passed directly to Casbin's file adapter, so it must be a real
+// filesystem path. This package does not resolve go-service source strings such
+// as "env:" or "file:", and it does not accept literal policy payloads.
 //
 // # Enablement
 //

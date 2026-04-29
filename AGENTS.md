@@ -55,7 +55,9 @@ Before answering any covered task, read `bin/skills/coding-standards/SKILL.md` a
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
+- Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access policy config is passed to Casbin's file adapter, so it must be a real path.
+- IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - JWT verification requires both the expected algorithm and a `kid` header.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
 - Health registration helpers require `*net/http.ServeMux`.
