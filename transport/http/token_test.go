@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewControllerWithoutTokenConfig(t *testing.T) {
-	controller, err := http.NewController(test.NewHTTPTransportConfig())
+	controller, err := http.NewController(test.NewHTTPTransportConfig(), test.FS)
 	require.NoError(t, err)
 	require.Nil(t, controller)
 }

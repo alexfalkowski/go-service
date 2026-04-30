@@ -14,11 +14,11 @@ import (
 // authenticated subjects against configured access rules.
 //
 // If cfg is disabled, it returns (nil, nil) so downstream wiring can treat access control as not configured.
-func NewController(cfg *Config) (token.AccessController, error) {
+func NewController(cfg *Config, fs *os.FS) (token.AccessController, error) {
 	if !cfg.IsEnabled() || !cfg.Token.IsEnabled() {
 		return nil, nil
 	}
-	return token.NewAccessController(cfg.Token)
+	return token.NewAccessController(cfg.Token, fs)
 }
 
 // NewToken constructs a token service for HTTP transport integration.

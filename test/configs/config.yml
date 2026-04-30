@@ -77,7 +77,8 @@ transport:
     timeout: 10s
     token:
       access:
-        policy: ../test/configs/rbac.csv
+        model: file:../test/configs/rbac.conf
+        policy: file:../test/configs/rbac.csv
       kind: "jwt"
       jwt:
         iss: "iss"
@@ -109,7 +110,8 @@ transport:
     timeout: 10s
     token:
       access:
-        policy: ../test/configs/rbac.csv
+        model: file:../test/configs/rbac.conf
+        policy: file:../test/configs/rbac.csv
       kind: "jwt"
       jwt:
         iss: "iss"

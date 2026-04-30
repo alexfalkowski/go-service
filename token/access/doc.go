@@ -5,7 +5,6 @@
 //
 //   - Controller: an interface for permission checks.
 //   - A Casbin-backed implementation of Controller.
-//   - A default RBAC model definition (ModelConfig) suitable for simple subject/object/action checks.
 //
 // # Permission strings
 //
@@ -22,12 +21,11 @@
 //
 // NewController constructs a CasbinController backed by github.com/casbin/casbin/v2:
 //
-//   - The model is created from the embedded ModelConfig.
-//   - The policy is loaded using Casbin’s file adapter.
+//   - The model is resolved with os.FS.ReadSource and parsed by Casbin.
+//   - The policy is resolved with os.FS.ReadSource and loaded using Casbin's string adapter.
 //
-// Policy is passed directly to Casbin's file adapter, so it must be a real
-// filesystem path. This package does not resolve go-service source strings such
-// as "env:" or "file:", and it does not accept literal policy payloads.
+// Model and Policy support go-service source strings such as "env:" and "file:",
+// plus literal content.
 //
 // # Enablement
 //
