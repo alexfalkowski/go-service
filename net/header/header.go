@@ -62,6 +62,10 @@ func ParseAuthorization(header string) (string, string, error) {
 	if !ok {
 		return strings.Empty, strings.Empty, ErrInvalidAuthorization
 	}
+
+	// Design note: this parser intentionally accepts all supported Authorization schemes.
+	// Token middleware consumes only the credential value, so scheme-specific enforcement belongs
+	// at the middleware/policy layer rather than in this shared parser.
 	key, ok = canonicalAuthorization(key)
 	if !ok {
 		return strings.Empty, strings.Empty, ErrNotSupportedAuthorization

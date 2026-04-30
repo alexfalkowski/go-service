@@ -35,10 +35,10 @@ func TestValidParseAuthorizationWithLowercaseScheme(t *testing.T) {
 
 func TestMissingParseAuthorization(t *testing.T) {
 	_, _, err := header.ParseAuthorization(strings.Empty)
-	require.ErrorIs(t, header.ErrInvalidAuthorization, err)
+	require.ErrorIs(t, err, header.ErrInvalidAuthorization)
 }
 
 func TestNotSupportedParseAuthorization(t *testing.T) {
 	_, _, err := header.ParseAuthorization("Bob token")
-	require.ErrorIs(t, header.ErrNotSupportedAuthorization, err)
+	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)
 }
