@@ -46,10 +46,11 @@ var ConfigOptions = options.Map{
 	"read_header_timeout": "10m",
 }
 
-// NewAccessConfig returns an access policy config backed by the RBAC fixture in `test/configs`.
+// NewAccessConfig returns an access model and policy config backed by the RBAC fixtures in `test/configs`.
 func NewAccessConfig() *access.Config {
 	return &access.Config{
-		Policy: Path("configs/rbac.csv"),
+		Model:  FilePath("configs/rbac.conf"),
+		Policy: FilePath("configs/rbac.csv"),
 	}
 }
 

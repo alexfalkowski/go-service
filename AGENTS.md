@@ -56,7 +56,7 @@ Before answering any covered task, read `bin/skills/coding-standards/SKILL.md` a
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
-- Access policy config is passed to Casbin's file adapter, so it must be a real path.
+- Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - JWT verification requires both the expected algorithm and a `kid` header.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.

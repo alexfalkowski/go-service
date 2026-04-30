@@ -1,11 +1,11 @@
 package access
 
 import (
-	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	file "github.com/casbin/casbin/v2/persist/file-adapter"
+	persist "github.com/casbin/casbin/v2/persist/string-adapter"
 )
 
 // Controller answers authorization questions of the form “is user allowed to do X?”
@@ -34,24 +34,29 @@ type Controller interface {
 // When cfg is nil (disabled), NewController returns (nil, nil).
 //
 // When enabled, NewController builds a Casbin enforcer using:
-//   - the embedded RBAC model definition (ModelConfig), and
-//   - the configured policy value (cfg.Policy) via Casbin’s file adapter.
-//
-// Note: the policy string is passed directly to the adapter constructor. Ensure
-// cfg.Policy matches what the underlying adapter expects in your environment
-// (for example a path vs. a literal policy payload).
-//
-// Any model parse error triggers a panic via runtime.Must; this is treated as a
-// programmer error because ModelConfig is a package constant.
-func NewController(cfg *Config) (Controller, error) {
+//   - the configured model value (cfg.Model) resolved through fs.ReadSource, and
+//   - the configured policy value (cfg.Policy) resolved through fs.ReadSource.
+func NewController(cfg *Config, fs *os.FS) (Controller, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 
-	m, err := model.NewModelFromString(ModelConfig)
-	runtime.Must(err)
+	modelConfig, err := cfg.GetModel(fs)
+	if err != nil {
+		return nil, err
+	}
 
-	e, err := casbin.NewEnforcer(m, file.NewAdapter(cfg.Policy))
+	policy, err := cfg.GetPolicy(fs)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := model.NewModelFromString(modelConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	e, err := casbin.NewEnforcer(m, persist.NewAdapter(policy))
 	if err != nil {
 		return nil, err
 	}

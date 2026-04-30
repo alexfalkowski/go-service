@@ -529,7 +529,8 @@ transport:
   http:
     token:
       access:
-        policy: ./config/rbac.csv
+        model: file:./config/rbac.conf
+        policy: file:./config/rbac.csv
 ```
 
 The model is based on Casbin RBAC:
@@ -537,7 +538,7 @@ The model is based on Casbin RBAC:
 
 Note:
 
-- `access.policy` is passed directly to Casbin's file adapter. Use a real file path, or pre-resolve any source string/literal policy handling in your own wiring before constructing the controller.
+- `access.model` and `access.policy` are resolved through `os.FS.ReadSource`; use `file:` for files, `env:` for environment-provided content, or literal content.
 
 ### JWT
 

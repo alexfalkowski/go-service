@@ -103,7 +103,8 @@ attempts = 3
 kind = "jwt"
 
 [transport.http.token.access]
-policy = "../test/configs/rbac.csv"
+model = "file:../test/configs/rbac.conf"
+policy = "file:../test/configs/rbac.csv"
 
 [transport.http.token.jwt]
 iss = "iss"
@@ -143,7 +144,8 @@ attempts = 3
 kind = "jwt"
 
 [transport.grpc.token.access]
-policy = "../test/configs/rbac.csv"
+model = "file:../test/configs/rbac.conf"
+policy = "file:../test/configs/rbac.csv"
 
 [transport.grpc.token.jwt]
 iss = "iss"

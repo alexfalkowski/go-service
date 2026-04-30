@@ -20,11 +20,11 @@ import (
 // The controller is responsible for evaluating access rules associated with token-authenticated subjects.
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat access control as not configured.
-func NewAccessController(cfg *token.Config) (AccessController, error) {
+func NewAccessController(cfg *token.Config, fs *os.FS) (AccessController, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
-	return access.NewController(cfg.Access)
+	return access.NewController(cfg.Access, fs)
 }
 
 // AccessController is an alias for `token/access.Controller`.
