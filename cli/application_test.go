@@ -189,6 +189,29 @@ func TestApplicationClientCanRunTwice(t *testing.T) {
 	require.NoError(t, app.Run(t.Context()))
 }
 
+func TestApplicationClientRecoversFromPanic(t *testing.T) {
+	os.Args = []string{test.Name.String(), "client"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddClient(
+				"client",
+				"Start the client.",
+				di.Constructor(func() string {
+					panic("bad client")
+				}),
+				di.Register(func(string) {}),
+			)
+		},
+	)
+
+	err := app.Run(t.Context())
+	require.Error(t, err)
+	require.Contains(t, err.Error(), `panic: "bad client"`)
+}
+
 func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 	os.Args = []string{test.Name.String(), "server"}
 	cli.Name = test.Name
