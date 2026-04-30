@@ -81,6 +81,13 @@ func Register(funcs ...any) Option {
 	return fx.Invoke(funcs...)
 }
 
+// Recover recovers panics from constructors, decorators, and invocations.
+//
+// This is a thin wrapper around fx.RecoverFromPanics and should be included as a top-level app option.
+func Recover() Option {
+	return fx.RecoverFromPanics()
+}
+
 // RootCause returns the underlying root cause of an error returned by Fx/Dig.
 //
 // This is a thin wrapper around dig.RootCause and is useful for formatting/attributing startup failures.

@@ -19,7 +19,7 @@ func NewCommand(name string) *Command {
 //
 // The embedded FlagSet is intended to be configured with flags by the caller, then parsed by the
 // subcommand execution path. The `module` method exposes providers for the filesystem/name/version
-// metadata and the command's FlagSet.
+// metadata and the command's FlagSet, and enables DI panic recovery.
 type Command struct {
 	*flag.FlagSet
 }
@@ -32,6 +32,7 @@ func (c *Command) module() di.Option {
 	return di.Module(
 		di.Constructor(provide),
 		di.Constructor(c.provide),
+		di.Recover(),
 		di.NoLogger,
 	)
 }

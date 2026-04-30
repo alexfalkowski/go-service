@@ -57,7 +57,8 @@ type Application struct {
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
-//   - build a DI application with a fresh copy of the provided options, plus the command's module and runtime.Module
+//   - build a DI application with panic recovery, a fresh copy of the provided options, plus the
+//     command's module and runtime.Module
 //   - start the DI application
 //   - block until the DI application's Done channel is closed or ctx is canceled
 //   - stop the DI application
@@ -102,7 +103,8 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 //
 // Execution semantics:
 //   - parse the command args into the command's FlagSet
-//   - build a DI application with a fresh copy of the provided options, plus the command's module
+//   - build a DI application with panic recovery, a fresh copy of the provided options, plus the
+//     command's module
 //   - start the DI application
 //   - stop the DI application immediately after startup completes
 //

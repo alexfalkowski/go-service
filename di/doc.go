@@ -15,7 +15,8 @@
 //   - Use `di.Constructor` to provide constructors (Fx Provide).
 //   - Use `di.Decorate` to wrap/modify provided values (Fx Decorate).
 //   - Use `di.Register` to run registration/invocation hooks at startup (Fx Invoke).
+//   - Use `di.Recover` to recover constructor, decorator, and invocation panics.
 //   - Use `di.RootCause` to unwrap Fx/Dig errors to the underlying cause for reporting.
 //
-// Start with `Module`, `Constructor`, `Register`, `Decorate`, and `RootCause`.
+// Start with `Module`, `Constructor`, `Register`, `Decorate`, `Recover`, and `RootCause`.
 package di
