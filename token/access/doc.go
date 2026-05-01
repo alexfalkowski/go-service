@@ -6,16 +6,11 @@
 //   - Controller: an interface for permission checks.
 //   - A Casbin-backed implementation of Controller.
 //
-// # Permission strings
+// # Access checks
 //
-// Controller.HasAccess expects the permission string to be in the form:
-//
-//	<system>:<action>
-//
-// Example: "service:read".
-//
-// The implementation splits this string on the first ":" and treats the parts as the
-// object (system) and action components in the authorization request.
+// Controller.HasAccess expects separate user, system, and action values. The
+// implementation treats system as the authorization object and action as the
+// operation being requested.
 //
 // # Casbin implementation
 //

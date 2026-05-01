@@ -27,7 +27,7 @@ func TestHasAccess(t *testing.T) {
 	controller, err := access.NewController(config, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service:read")
+	ok, err := controller.HasAccess("alice", "service", "read")
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -98,7 +98,7 @@ func TestHasAccessWithEnvSources(t *testing.T) {
 	}, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service:read")
+	ok, err := controller.HasAccess("alice", "service", "read")
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -116,7 +116,7 @@ func TestHasAccessWithLiteralSources(t *testing.T) {
 	}, test.FS)
 	require.NoError(t, err)
 
-	ok, err := controller.HasAccess("alice", "service:read")
+	ok, err := controller.HasAccess("alice", "service", "read")
 	require.NoError(t, err)
 	require.True(t, ok)
 }
