@@ -2,31 +2,20 @@ package access
 
 import (
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	persist "github.com/casbin/casbin/v2/persist/string-adapter"
 )
 
-// Controller answers authorization questions of the form “is user allowed to do X?”
+// Controller answers authorization questions for a user, system, and action.
 //
 // Implementations typically evaluate a policy and return whether the permission is
 // granted, along with any evaluation/IO error.
 type Controller interface {
-	// HasAccess reports whether user is allowed the given permission.
-	//
-	// permission is expected to be in the form:
-	//
-	//	<system>:<action>
-	//
-	// For example:
-	//
-	//	"service:read"
-	//
-	// Implementations split this string into object (system) and action components
-	// and evaluate a policy. The returned bool indicates whether access is granted.
-	// If an error is returned, the boolean result should not be trusted.
-	HasAccess(user, permission string) (bool, error)
+	// HasAccess reports whether user is allowed to perform action on system.
+	// The returned bool indicates whether access is granted. If an error is
+	// returned, the boolean result should not be trusted.
+	HasAccess(user, system, action string) (bool, error)
 }
 
 // NewController constructs a Controller from cfg.
@@ -41,7 +30,7 @@ func NewController(cfg *Config, fs *os.FS) (Controller, error) {
 		return nil, nil
 	}
 
-	modelConfig, err := cfg.GetModel(fs)
+	config, err := cfg.GetModel(fs)
 	if err != nil {
 		return nil, err
 	}
@@ -51,38 +40,32 @@ func NewController(cfg *Config, fs *os.FS) (Controller, error) {
 		return nil, err
 	}
 
-	m, err := model.NewModelFromString(modelConfig)
+	model, err := model.NewModelFromString(config)
 	if err != nil {
 		return nil, err
 	}
 
-	e, err := casbin.NewEnforcer(m, persist.NewAdapter(policy))
+	enforcer, err := casbin.NewEnforcer(model, persist.NewAdapter(policy))
 	if err != nil {
 		return nil, err
 	}
 
-	return &CasbinController{e}, nil
+	return &CasbinController{enforcer: enforcer}, nil
 }
 
 // CasbinController is a Controller backed by a Casbin enforcer.
 //
-// It embeds *casbin.Enforcer so callers can access Casbin capabilities directly
-// when needed, while still satisfying the Controller interface used by go-service.
+// It owns the enforcer used to evaluate access checks while exposing only the
+// Controller interface used by go-service.
 type CasbinController struct {
-	*casbin.Enforcer
+	enforcer *casbin.Enforcer
 }
 
-// HasAccess evaluates whether user is allowed the given permission.
+// HasAccess evaluates whether user is allowed to perform action on system.
 //
-// It splits permission on the first ":" into (system, action) and calls the embedded
-// Casbin enforcer as:
+// It calls the configured Casbin enforcer as:
 //
-//	c.Enforce(user, system, action)
-//
-// The permission string is expected to be in the form "<system>:<action>". If the
-// string does not contain ":", the action will be empty and the policy will be
-// evaluated accordingly.
-func (c *CasbinController) HasAccess(user, permission string) (bool, error) {
-	system, action := strings.CutColon(permission)
-	return c.Enforce(user, system, action)
+//	c.enforcer.Enforce(user, system, action)
+func (c *CasbinController) HasAccess(user, system, action string) (bool, error) {
+	return c.enforcer.Enforce(user, system, action)
 }
