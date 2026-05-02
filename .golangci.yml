@@ -20,6 +20,8 @@ linters:
     - funcorder
     - gochecknoglobals
     - gochecknoinits
+    - goconst
+    - gomodguard_v2
     - ireturn
     - mnd
     - nakedret
