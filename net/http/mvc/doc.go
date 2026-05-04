@@ -12,5 +12,5 @@
 // Context requirements:
 //
 // Controllers and views use net/http/meta to retrieve the request and response writer from context.
-// The routing helpers set these values via meta.WithRequest and meta.WithResponse before invoking the controller.
+// The routing helpers set these values before invoking the controller.
 package mvc

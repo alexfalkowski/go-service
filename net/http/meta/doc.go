@@ -18,8 +18,8 @@
 // # Safety and expectations
 //
 // Request, Response, and Encoder are intentionally strict helpers: they expect the corresponding values
-// to have been stored in the context via WithRequest, WithResponse, and WithEncoder. Calling them without
-// those values present will panic due to type assertions.
+// to have been stored in the context via WithContent. Calling them without content metadata present will
+// panic due to type assertions.
 //
 // These helpers are typically used in tightly controlled handler pipelines (for example those created by
 // `net/http/content.NewHandler` / `NewRequestHandler`), which populate the context before invoking

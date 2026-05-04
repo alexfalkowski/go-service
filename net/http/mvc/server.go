@@ -60,8 +60,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 		res.Header().Set(content.TypeKey, mime.HTMLMediaType)
 
 		ctx := req.Context()
-		ctx = meta.WithRequest(ctx, req)
-		ctx = meta.WithResponse(ctx, res)
+		ctx = meta.WithContent(ctx, req, res, nil)
 
 		view, model, err := controller(ctx)
 		if err != nil {

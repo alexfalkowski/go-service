@@ -70,7 +70,7 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 	})
 
 	view := mvc.NewFullView("views/hello.tmpl")
-	ctx := hm.WithResponse(t.Context(), &test.ErrResponseWriter{})
+	ctx := hm.WithContent(t.Context(), nil, &test.ErrResponseWriter{}, nil)
 
 	err := view.Render(ctx, &test.Model)
 
