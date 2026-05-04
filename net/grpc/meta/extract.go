@@ -23,5 +23,5 @@ func extract(md Map, ok bool) Map {
 		return Map{}
 	}
 
-	return md.Copy()
+	return md
 }
