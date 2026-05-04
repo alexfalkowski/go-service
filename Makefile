@@ -21,16 +21,16 @@ transport-diagram:
 benchmarks: http-benchmarks grpc-benchmarks bytes-benchmarks strings-benchmarks
 
 http-benchmarks:
-	@go test -vet=off -mod vendor -bench=. -run=Benchmark -benchmem -benchtime=100x -memprofile test/reports/mem.prof ./transport/http
+	@make package=transport/http benchtime=100x benchmark
 
 grpc-benchmarks:
-	@go test -vet=off -mod vendor -bench=. -run=Benchmark -benchmem -benchtime=100x -memprofile test/reports/mem.prof ./transport/grpc
+	@make package=transport/grpc benchtime=100x benchmark
 
 bytes-benchmarks:
-	@go test -vet=off -mod vendor -bench=. -run=Benchmark -benchmem -benchtime=100x -memprofile test/reports/mem.prof ./bytes
+	@make package=bytes benchtime=100x benchmark
 
 strings-benchmarks:
-	@go test -vet=off -mod vendor -bench=. -run=Benchmark -benchmem -benchtime=100x -memprofile test/reports/mem.prof ./strings
+	@make package=strings benchtime=100x benchmark
 
 # Generate for tests.
 generate:
