@@ -15,6 +15,15 @@ func TestValidParseAuthorization(t *testing.T) {
 	require.Equal(t, "token", value)
 }
 
+func TestForwardedIPs(t *testing.T) {
+	require.Equal(t, [...]header.ForwardedIP{
+		{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},
+		{HTTP: "CF-Connecting-Ip", GRPC: "cf-connecting-ip"},
+		{HTTP: "True-Client-Ip", GRPC: "true-client-ip"},
+		{HTTP: "X-Forwarded-For", GRPC: "x-forwarded-for"},
+	}, header.ForwardedIPs)
+}
+
 func TestValidParseAuthorizationWithLowercaseScheme(t *testing.T) {
 	for _, tc := range []struct {
 		name   string

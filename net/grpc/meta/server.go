@@ -122,8 +122,8 @@ func serverResponseHeaders(serviceVersion, requestID string) Map {
 }
 
 func serverIPAddr(ctx context.Context) (meta.Value, meta.Value) {
-	headers := []string{"x-real-ip", "cf-connecting-ip", "true-client-ip", "x-forwarded-for"}
-	for _, k := range headers {
+	for _, h := range header.ForwardedIPs {
+		k := h.GRPC
 		if f := serverValue(ctx, k); !strings.IsEmpty(f) {
 			ip, _, _ := strings.Cut(f, ",")
 
