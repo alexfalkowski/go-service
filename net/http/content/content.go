@@ -2,19 +2,14 @@ package content
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	"github.com/alexfalkowski/go-sync"
 	content "github.com/elnormous/contenttype"
 )
 
-const (
-	jsonKind     = "json"
-	errorSubtype = "error"
-
-	// TypeKey is the HTTP header key used for Content-Type.
-	TypeKey = "Content-Type"
-)
+// TypeKey is the HTTP header key used for Content-Type.
+const TypeKey = "Content-Type"
 
 // NewContent constructs a Content that resolves encoders from enc and buffers responses using pool.
 func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
@@ -47,61 +42,38 @@ type Content struct {
 //
 // Note: this parses the request Content-Type, not the Accept header.
 func (c *Content) NewFromRequest(req *http.Request) *Media {
-	t, err := content.GetMediaType(req)
-	if err != nil {
-		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
-	}
-
-	return NewMedia(t, c.enc)
+	return ptr.Value(c.resolveRequestMedia(req))
 }
 
 // NewFromMedia parses mediaType and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) *Media {
+	return ptr.Value(c.resolveMediaType(mediaType))
+}
+
+func (c *Content) resolveRequestMedia(req *http.Request) Media {
+	if media, ok := knownMedia(req.Header.Get(TypeKey), c.enc); ok {
+		return media
+	}
+
+	t, err := content.GetMediaType(req)
+	if err != nil {
+		return jsonMedia(c.enc)
+	}
+
+	return newMedia(t, c.enc)
+}
+
+func (c *Content) resolveMediaType(mediaType string) Media {
+	if media, ok := knownMedia(mediaType, c.enc); ok {
+		return media
+	}
+
 	t, err := content.ParseMediaType(mediaType)
 	if err != nil {
-		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: c.enc.Get(jsonKind)}
+		return jsonMedia(c.enc)
 	}
 
-	return NewMedia(t, c.enc)
-}
-
-// NewMedia builds a Media from a parsed media type and encoder map.
-//
-// Encoder selection:
-//   - If the subtype is "error", it returns a Media without an encoder.
-//   - If no encoder is registered for the subtype, it falls back to JSON.
-//   - Otherwise it returns the encoder registered for the subtype.
-func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
-	if media.Subtype == errorSubtype {
-		return &Media{Type: media.String(), Subtype: media.Subtype}
-	}
-
-	e := enc.Get(media.Subtype)
-	if e == nil {
-		return &Media{Type: mime.JSONMediaType, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
-	}
-
-	return &Media{Type: media.String(), Subtype: media.Subtype, Encoder: e}
-}
-
-// Media describes an HTTP media type and its associated encoder.
-//
-// Type is the full media type string (including parameters if present). Subtype is the parsed media subtype used
-// for encoder lookup. Encoder may be nil when Subtype is "error".
-type Media struct {
-	// Encoder is the encoder/decoder associated with the media subtype.
-	Encoder encoding.Encoder
-
-	// Type is the full media type string (for example "application/json", "application/hjson", or "text/plain; charset=utf-8").
-	Type string
-
-	// Subtype is the parsed subtype (for example "json", "hjson", or "plain").
-	Subtype string
-}
-
-// IsError reports whether the media subtype represents an error payload.
-func (t *Media) IsError() bool {
-	return t.Subtype == errorSubtype
+	return newMedia(t, c.enc)
 }
