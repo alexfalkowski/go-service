@@ -88,6 +88,28 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 	require.Equal(t, "ok", resp)
 }
 
+func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
+	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs("request-id", "original"))
+
+	md := meta.ExtractIncoming(ctx)
+	md.Set("request-id", "changed")
+
+	original, ok := meta.FromIncomingContext(ctx)
+	require.True(t, ok)
+	require.Equal(t, []string{"original"}, original.Get("request-id"))
+}
+
+func TestExtractOutgoingReturnsMutableCopy(t *testing.T) {
+	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("request-id", "original"))
+
+	md := meta.ExtractOutgoing(ctx)
+	md.Set("request-id", "changed")
+
+	original, ok := meta.FromOutgoingContext(ctx)
+	require.True(t, ok)
+	require.Equal(t, []string{"original"}, original.Get("request-id"))
+}
+
 type staticGenerator string
 
 func (g staticGenerator) Generate() string {
