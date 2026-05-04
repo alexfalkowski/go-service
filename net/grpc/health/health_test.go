@@ -26,9 +26,10 @@ func TestCheck(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	ctx := t.Context()
-	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-	ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithRequestID(meta.String("test-id")),
+		meta.WithUserAgent(meta.String("test-user-agent")),
+	)
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -106,9 +107,10 @@ func TestList(t *testing.T) {
 	)
 	requireGRPCReady(t, world)
 
-	ctx := t.Context()
-	ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-	ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+	ctx := meta.WithAttributes(t.Context(),
+		meta.WithRequestID(meta.String("test-id")),
+		meta.WithUserAgent(meta.String("test-user-agent")),
+	)
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()

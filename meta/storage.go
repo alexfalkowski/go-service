@@ -15,17 +15,22 @@ type Converter func(string) string
 // Storage stores meta values keyed by attribute name.
 //
 // Storage is the internal backing map used by this package to hold context-scoped attributes.
-// It is typically treated as immutable by callers. Helpers such as WithAttribute use copy-on-write
-// updates so derived contexts do not mutate parent storage.
+// It is typically treated as immutable by callers. WithAttributes uses copy-on-write updates so
+// derived contexts do not mutate parent storage.
 type Storage map[string]Value
 
-// Add stores value under key in a copied Storage and returns the updated copy.
+// AddPairs stores pairs in a copied Storage and returns the updated copy.
 //
-// The receiver is not mutated. This preserves context isolation when a derived context adds or
-// overrides attributes.
-func (s Storage) Add(key string, value Value) Storage {
-	cloned := s.Clone()
-	cloned[key] = value
+// The receiver is cloned once before all pairs are applied. This preserves context isolation while
+// avoiding repeated map copies when several attributes are added together.
+func (s Storage) AddPairs(pairs ...Pair) Storage {
+	cloned := make(Storage, len(s)+len(pairs))
+	maps.Copy(cloned, s)
+
+	for _, pair := range pairs {
+		cloned[pair.Key] = pair.Value
+	}
+
 	return cloned
 }
 
@@ -76,7 +81,8 @@ func (s Storage) key(prefix, key string) string {
 func attributes(ctx context.Context) Storage {
 	m := ctx.Value(meta)
 	if m == nil {
-		return make(Storage)
+		// Nil Storage avoids allocating on read-only paths; map reads, ranges, and the first AddPairs call are nil-safe.
+		return nil
 	}
 
 	return m.(Storage)

@@ -5,9 +5,11 @@
 //
 // # Storage model
 //
-// Attributes are stored on the context under a single internal key as a map-like Storage. Helpers such as
-// WithAttribute update that storage using copy-on-write semantics so derived contexts do not mutate parent
-// or sibling context metadata.
+// Attributes are stored on the context under a single internal key as a map-like Storage. WithAttributes
+// updates that storage using copy-on-write semantics so derived contexts do not mutate parent or sibling
+// context metadata. Callers provide updates as Pair values so multiple attributes can be stored with one
+// storage clone. Use NewPair for arbitrary keys, or the typed With* helpers such as WithRequestID and
+// WithUserID for standard metadata keys.
 //
 // # Value rendering semantics
 //
@@ -27,6 +29,7 @@
 //
 // Export helpers skip attributes whose rendered string is empty. A prefix may be prepended to each exported key.
 //
-// Start with `WithAttribute` / `Attribute` for arbitrary attributes, `Value` constructors (String/Blank/Ignored/Redacted)
-// for controlling rendering, and `Strings` / `SnakeStrings` / `CamelStrings` for exporting attributes.
+// Start with `WithAttributes`, `NewPair`, the typed With* pair helpers, and `Attribute` for arbitrary
+// attributes. Use `Value` constructors (String/Blank/Ignored/Redacted) for controlling rendering, and
+// `Strings` / `SnakeStrings` / `CamelStrings` for exporting attributes.
 package meta

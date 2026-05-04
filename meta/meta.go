@@ -13,17 +13,17 @@ const (
 	meta = context.Key("meta")
 )
 
-// WithAttribute returns a copy of ctx with the given attribute stored under key.
+// WithAttributes returns a copy of ctx with all provided attributes stored.
 //
-// Attributes are stored on the context under a single internal key as a Storage map. Each call to
-// WithAttribute returns a derived context containing an updated Storage. The storage update is
-// copy-on-write so parent and sibling contexts remain isolated.
-//
-// Rendering and export behavior is controlled by the provided Value. For example:
-//   - Blank and Ignored values render as empty strings and are skipped by export helpers.
-//   - Redacted values render as asterisks while preserving the underlying value in-context.
-func WithAttribute(ctx context.Context, key string, value Value) context.Context {
-	return context.WithValue(ctx, meta, attributes(ctx).Add(key, value))
+// The storage update is copy-on-write and clones existing attributes only once before applying the
+// full batch. Metadata writes use pairs so hot paths can set several attributes without repeated
+// map copies and context wrappers.
+func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
+	if len(pairs) == 0 {
+		return ctx
+	}
+
+	return context.WithValue(ctx, meta, attributes(ctx).AddPairs(pairs...))
 }
 
 // Attribute returns the stored attribute value for key.

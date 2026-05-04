@@ -118,7 +118,7 @@ func TestDBQuery(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 	rows, err := world.DB.QueryContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
 	require.NoError(t, err)
 
@@ -141,7 +141,7 @@ func TestDBExec(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	result, err := world.DB.ExecContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)", time.Now())
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestDBCommitTransExec(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	tx, err := world.DB.BeginTx(ctx, nil)
 	require.NoError(t, err)
@@ -193,7 +193,7 @@ func TestDBRollbackTransExec(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	tx, err := world.DB.BeginTx(ctx, nil)
 	require.NoError(t, err)
@@ -222,7 +222,7 @@ func TestStatementQuery(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
@@ -251,7 +251,7 @@ func TestStatementExec(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	_, stmt, err := world.DB.PrepareContext(ctx, "INSERT INTO accounts(created_at) VALUES($1)")
 	require.NoError(t, err)
@@ -279,7 +279,7 @@ func TestTransStatementExec(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	tx, err := world.DB.Begin()
 	require.NoError(t, err)
@@ -316,7 +316,7 @@ func TestInvalidStatementQuery(t *testing.T) {
 	ctx, cancel := test.Timeout(t.Context())
 	defer cancel()
 
-	ctx = meta.WithAttribute(ctx, "test", meta.String("test"))
+	ctx = meta.WithAttributes(ctx, test.WithTest(meta.String("test")))
 
 	_, stmt, err := world.DB.PrepareContext(ctx, "SELECT table_name FROM information_schema.tables WHERE table_schema = $1")
 	require.NoError(t, err)
