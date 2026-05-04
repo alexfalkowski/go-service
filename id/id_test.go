@@ -37,32 +37,3 @@ func TestInvalidID(t *testing.T) {
 	_, err := id.NewGenerator(&id.Config{Kind: "invalid"}, test.Generators)
 	require.Error(t, err)
 }
-
-func BenchmarkGenerators(b *testing.B) {
-	benchmarks := []struct {
-		name string
-		kind string
-	}{
-		{name: "ksuid", kind: "ksuid"},
-		{name: "nanoid", kind: "nanoid"},
-		{name: "ulid", kind: "ulid"},
-		{name: "uuid", kind: "uuid"},
-		{name: "xid", kind: "xid"},
-	}
-
-	for _, benchmark := range benchmarks {
-		b.Run(benchmark.name, func(b *testing.B) {
-			gen, err := id.NewGenerator(&id.Config{Kind: benchmark.kind}, test.Generators)
-			require.NoError(b, err)
-
-			b.ReportAllocs()
-
-			var value string
-			for b.Loop() {
-				value = gen.Generate()
-			}
-
-			require.NotEmpty(b, value)
-		})
-	}
-}
