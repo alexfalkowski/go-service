@@ -31,6 +31,16 @@ var (
 	// Values are matched case-insensitively against the parsed scheme token.
 	AllAuthorizations = []string{BasicAuthorization, BearerAuthorization}
 
+	// ForwardedIPs lists the forwarding headers used to derive a client IP address.
+	//
+	// The order reflects the preferred source when multiple headers are present.
+	ForwardedIPs = [...]ForwardedIP{
+		{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},
+		{HTTP: "CF-Connecting-Ip", GRPC: "cf-connecting-ip"},
+		{HTTP: "True-Client-Ip", GRPC: "true-client-ip"},
+		{HTTP: "X-Forwarded-For", GRPC: "x-forwarded-for"},
+	}
+
 	// ErrInvalidAuthorization is returned when an Authorization header cannot be parsed.
 	//
 	// This is returned when the header does not contain a scheme and value separated by a single ASCII space
@@ -42,6 +52,20 @@ var (
 	// This is returned when the parsed scheme is not present in AllAuthorizations.
 	ErrNotSupportedAuthorization = errors.New("header: authorization is not supported")
 )
+
+// ForwardedIP describes one forwarding header used to derive a client IP address.
+type ForwardedIP struct {
+	// HTTP is the canonical HTTP header key.
+	//
+	// net/http.Header.Get avoids allocating when the lookup key is already canonical.
+	HTTP string
+
+	// GRPC is the lowercase gRPC metadata key and stored IP address kind.
+	//
+	// gRPC metadata is normalized to lowercase, so lowercase keys hit the direct
+	// metadata lookup path instead of falling back to case-insensitive scanning.
+	GRPC string
+}
 
 // ParseAuthorization parses an HTTP Authorization header into scheme and value.
 //
