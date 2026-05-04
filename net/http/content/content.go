@@ -3,7 +3,6 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	"github.com/alexfalkowski/go-sync"
 	content "github.com/elnormous/contenttype"
 )
@@ -41,15 +40,15 @@ type Content struct {
 // If parsing fails, it falls back to JSON.
 //
 // Note: this parses the request Content-Type, not the Accept header.
-func (c *Content) NewFromRequest(req *http.Request) *Media {
-	return ptr.Value(c.resolveRequestMedia(req))
+func (c *Content) NewFromRequest(req *http.Request) Media {
+	return c.resolveRequestMedia(req)
 }
 
 // NewFromMedia parses mediaType and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.
-func (c *Content) NewFromMedia(mediaType string) *Media {
-	return ptr.Value(c.resolveMediaType(mediaType))
+func (c *Content) NewFromMedia(mediaType string) Media {
+	return c.resolveMediaType(mediaType)
 }
 
 func (c *Content) resolveRequestMedia(req *http.Request) Media {

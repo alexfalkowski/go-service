@@ -8,7 +8,7 @@
 // The core type is `Content`, which uses an `encoding.Map` registry to resolve an encoder by
 // media subtype (e.g. "json", "hjson", "yaml", "toml", "proto").
 //
-// `Content` can derive a `*Media` from either:
+// `Content` can derive a `Media` from either:
 //   - an incoming HTTP request's Content-Type header (`NewFromRequest`), or
 //   - a raw media type string (`NewFromMedia`).
 //

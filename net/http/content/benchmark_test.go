@@ -10,7 +10,7 @@ import (
 )
 
 // benchmarkMedia prevents the compiler from eliminating media negotiation work.
-var benchmarkMedia *content.Media
+var benchmarkMedia content.Media
 
 func BenchmarkNewFromMediaJSON(b *testing.B) {
 	b.ReportAllocs()
