@@ -67,8 +67,6 @@ func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
-		ctx = meta.WithRequest(ctx, req)
-		ctx = meta.WithResponse(ctx, res)
 
 		media := cont.NewFromRequest(req)
 		if media.Encoder == nil {
@@ -77,7 +75,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 			return
 		}
 
-		ctx = meta.WithEncoder(ctx, media.Encoder)
+		ctx = meta.WithContent(ctx, req, res, media.Encoder)
 		res.Header().Add(TypeKey, media.Type)
 
 		data, err := handler(ctx)

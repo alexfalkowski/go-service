@@ -13,11 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
 )
 
-const (
-	requestKey  = context.Key("request")
-	responseKey = context.Key("response")
-	encoderKey  = context.Key("encoder")
-)
+const contentKey = context.Key("content")
 
 // NoPrefix is an alias for meta.NoPrefix.
 const NoPrefix = meta.NoPrefix
@@ -27,6 +23,12 @@ type Map = meta.Map
 
 // Pair is an alias for meta.Pair.
 type Pair = meta.Pair
+
+type content struct {
+	request  *http.Request
+	response http.ResponseWriter
+	encoder  encoding.Encoder
+}
 
 // CamelStrings exports all stored meta attributes as a string map with lowerCamelCased keys.
 //
@@ -51,52 +53,35 @@ func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
 	return meta.WithAttributes(ctx, pairs...)
 }
 
-// WithRequest stores req in ctx and returns the derived context.
-//
-// This is commonly used by go-service HTTP content handlers/middleware to make the request available to
-// downstream handlers via Request(ctx).
-func WithRequest(ctx context.Context, req *http.Request) context.Context {
-	return context.WithValue(ctx, requestKey, req)
-}
-
 // Request returns the stored *http.Request from ctx.
 //
-// Panics: Request expects WithRequest to have been called. It will panic if no request is stored in ctx
-// or if the stored value is not a *http.Request.
+// Panics: Request expects WithContent to have been called. It will panic if no content metadata is stored
+// in ctx or if the stored value is invalid.
 func Request(ctx context.Context) *http.Request {
-	return ctx.Value(requestKey).(*http.Request)
-}
-
-// WithResponse stores res in ctx and returns the derived context.
-//
-// This is commonly used by go-service HTTP content handlers/middleware to make the response writer available
-// to downstream handlers via Response(ctx).
-func WithResponse(ctx context.Context, res http.ResponseWriter) context.Context {
-	return context.WithValue(ctx, responseKey, res)
+	return ctx.Value(contentKey).(content).request
 }
 
 // Response returns the stored http.ResponseWriter from ctx.
 //
-// Panics: Response expects WithResponse to have been called. It will panic if no response writer is stored
-// in ctx or if the stored value is not an http.ResponseWriter.
+// Panics: Response expects WithContent to have been called. It will panic if no content metadata is stored
+// in ctx or if the stored value is invalid.
 func Response(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(responseKey).(http.ResponseWriter)
-}
-
-// WithEncoder stores enc in ctx and returns the derived context.
-//
-// This is commonly used by go-service HTTP content handlers/middleware to make the negotiated encoder
-// (selected from Content-Type) available to downstream handlers via Encoder(ctx).
-func WithEncoder(ctx context.Context, enc encoding.Encoder) context.Context {
-	return context.WithValue(ctx, encoderKey, enc)
+	return ctx.Value(contentKey).(content).response
 }
 
 // Encoder returns the stored encoding.Encoder from ctx.
 //
-// Panics: Encoder expects WithEncoder to have been called. It will panic if no encoder is stored in ctx
-// or if the stored value is not an encoding.Encoder.
+// Panics: Encoder expects WithContent to have been called. It will panic if no content metadata is stored
+// in ctx or if the stored value is invalid.
 func Encoder(ctx context.Context) encoding.Encoder {
-	return ctx.Value(encoderKey).(encoding.Encoder)
+	return ctx.Value(contentKey).(content).encoder
+}
+
+// WithContent stores HTTP content metadata in ctx and returns the derived context.
+//
+// The encoder may be nil when a handler only needs request and response access.
+func WithContent(ctx context.Context, req *http.Request, res http.ResponseWriter, enc encoding.Encoder) context.Context {
+	return context.WithValue(ctx, contentKey, content{request: req, response: res, encoder: enc})
 }
 
 // NewHandler constructs server-side metadata middleware for HTTP requests.

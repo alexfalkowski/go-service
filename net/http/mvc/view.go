@@ -101,7 +101,7 @@ type View struct {
 // Render executes the view template against a Template model and writes it to the HTTP response writer.
 //
 // Context requirements:
-// Render expects the HTTP response writer to be present in ctx via net/http/meta.WithResponse.
+// Render expects the HTTP response writer to be present in ctx via net/http/meta.
 // (Handlers created by this package's routing helpers populate that value before invoking controllers/views.)
 //
 // Render model:

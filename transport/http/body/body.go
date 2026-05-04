@@ -23,6 +23,11 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
+	if req.Body == nil || req.Body == http.NoBody {
+		next(res, req)
+		return
+	}
+
 	data, body, err := io.ReadAll(io.LimitReader(req.Body, h.limit+1))
 	if err != nil {
 		_ = status.WriteError(res, status.BadRequestError(err))
