@@ -12,9 +12,10 @@ import (
 )
 
 func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
-	ctx := context.Background()
-	ctx = meta.WithUserAgent(ctx, meta.String("current-agent"))
-	ctx = meta.WithRequestID(ctx, meta.String("current-id"))
+	ctx := meta.WithAttributes(context.Background(),
+		meta.WithUserAgent(meta.String("current-agent")),
+		meta.WithRequestID(meta.String("current-id")),
+	)
 	ctx = meta.NewOutgoingContext(ctx, meta.Pairs(
 		"user-agent", "stale-agent",
 		"request-id", "stale-id",
@@ -33,9 +34,10 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 }
 
 func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
-	ctx := context.Background()
-	ctx = meta.WithUserAgent(ctx, meta.String("current-agent"))
-	ctx = meta.WithRequestID(ctx, meta.String("current-id"))
+	ctx := meta.WithAttributes(context.Background(),
+		meta.WithUserAgent(meta.String("current-agent")),
+		meta.WithRequestID(meta.String("current-id")),
+	)
 	ctx = meta.NewOutgoingContext(ctx, meta.Pairs(
 		"user-agent", "stale-agent",
 		"request-id", "stale-id",

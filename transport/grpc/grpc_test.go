@@ -19,9 +19,11 @@ import (
 func TestInsecureUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
-	ctx := meta.WithAttribute(t.Context(), "test", meta.Ignored("test"))
-	ctx = meta.WithAttribute(ctx, "real-ip", meta.ToString(net.ParseIP("192.168.8.0")))
-	ctx = meta.WithAttribute(ctx, "redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0")))
+	ctx := meta.WithAttributes(t.Context(),
+		test.WithTest(meta.Ignored("test")),
+		meta.NewPair("real-ip", meta.ToString(net.ParseIP("192.168.8.0"))),
+		meta.NewPair("redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0"))),
+	)
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -42,7 +44,7 @@ func TestInsecureUnary(t *testing.T) {
 func TestSecureUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC(), test.WithWorldSecure())
 
-	ctx := meta.WithAttribute(t.Context(), "ip", meta.ToIgnored(net.ParseIP("192.168.8.0")))
+	ctx := meta.WithAttributes(t.Context(), meta.NewPair("ip", meta.ToIgnored(net.ParseIP("192.168.8.0"))))
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
@@ -58,7 +60,7 @@ func TestSecureUnary(t *testing.T) {
 func TestStream(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
 
-	ctx := meta.WithAttribute(t.Context(), "test", meta.Redacted("test"))
+	ctx := meta.WithAttributes(t.Context(), test.WithTest(meta.Redacted("test")))
 
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()

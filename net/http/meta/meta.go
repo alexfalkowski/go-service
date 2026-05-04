@@ -25,26 +25,30 @@ const NoPrefix = meta.NoPrefix
 // Map is an alias for meta.Map.
 type Map = meta.Map
 
+// Pair is an alias for meta.Pair.
+type Pair = meta.Pair
+
 // CamelStrings exports all stored meta attributes as a string map with lowerCamelCased keys.
 //
-// This is a thin wrapper around meta.CamelStrings. The prefix parameter is prepended to each exported key
-// (if non-empty). Attributes whose rendered value is empty are skipped.
+// The prefix parameter is prepended to each exported key (if non-empty). Attributes whose rendered value is
+// empty are skipped.
 func CamelStrings(ctx context.Context, prefix string) Map {
 	return meta.CamelStrings(ctx, prefix)
 }
 
 // Error converts err to a meta.Value using err.Error().
-//
-// This is a thin wrapper around meta.Error.
 func Error(err error) meta.Value {
 	return meta.Error(err)
 }
 
-// WithAttribute stores an arbitrary meta attribute on ctx.
-//
-// This is a thin wrapper around meta.WithAttribute.
-func WithAttribute(ctx context.Context, key string, value meta.Value) context.Context {
-	return meta.WithAttribute(ctx, key, value)
+// NewPair creates one metadata key/value pair for batched storage updates.
+func NewPair(key string, value meta.Value) Pair {
+	return meta.NewPair(key, value)
+}
+
+// WithAttributes stores all provided metadata pairs on ctx.
+func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
+	return meta.WithAttributes(ctx, pairs...)
 }
 
 // WithRequest stores req in ctx and returns the derived context.
@@ -145,24 +149,27 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	header.Add("Service-Version", h.version.String())
 
 	ctx := req.Context()
-	ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, req, h.userAgent))
+	userAgent := extractUserAgent(ctx, req, h.userAgent)
 
 	requestID := extractRequestID(ctx, h.generator, req)
 	header.Set("Request-Id", requestID.Value())
-	ctx = meta.WithRequestID(ctx, requestID)
 
 	kind, ip := extractIP(req)
-	ctx = meta.WithIPAddr(ctx, ip)
-	ctx = meta.WithIPAddrKind(ctx, kind)
-
-	ctx = meta.WithGeolocation(ctx, extractGeolocation(req))
+	geolocation := extractGeolocation(req)
 
 	auth, err := extractAuthorization(req)
 	if err != nil {
 		_ = status.WriteError(res, status.BadRequestError(err))
 		return
 	}
-	ctx = meta.WithAuthorization(ctx, auth)
+	ctx = meta.WithAttributes(ctx,
+		meta.WithUserAgent(userAgent),
+		meta.WithRequestID(requestID),
+		meta.WithIPAddr(ip),
+		meta.WithIPAddrKind(kind),
+		meta.WithGeolocation(geolocation),
+		meta.WithAuthorization(auth),
+	)
 
 	next(res, req.WithContext(ctx))
 }
@@ -198,14 +205,14 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
 	userAgent := extractUserAgent(ctx, req, r.userAgent)
-
-	req.Header.Set("User-Agent", userAgent.Value())
-	ctx = meta.WithUserAgent(ctx, userAgent)
-
 	requestID := extractRequestID(ctx, r.generator, req)
 
+	req.Header.Set("User-Agent", userAgent.Value())
 	req.Header.Set("Request-Id", requestID.Value())
-	ctx = meta.WithRequestID(ctx, requestID)
+	ctx = meta.WithAttributes(ctx,
+		meta.WithUserAgent(userAgent),
+		meta.WithRequestID(requestID),
+	)
 
 	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
 }

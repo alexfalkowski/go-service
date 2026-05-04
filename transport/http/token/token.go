@@ -111,7 +111,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 		return
 	}
 
-	ctx = meta.WithUserID(ctx, meta.Ignored(sub))
+	ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.Ignored(sub)))
 	next(res, req.WithContext(ctx))
 }
 

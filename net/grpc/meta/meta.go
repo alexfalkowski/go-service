@@ -33,26 +33,66 @@ type Map = metadata.MD
 // package's helper functions.
 type Value = meta.Value
 
+// Pair aliases the root go-service metadata pair type.
+type Pair = meta.Pair
+
 // IPAddrKindKey is the attribute key that describes how an IP address was derived.
 //
 // The value typically distinguishes between peer-derived addresses and trusted
 // forwarding headers.
 const IPAddrKindKey = meta.IPAddrKindKey
 
-// Authorization returns the authorization attribute stored on ctx.
-//
-// It forwards to the root `meta.Authorization` helper so callers can keep gRPC
-// metadata and request attribute access under one import path.
-func Authorization(ctx context.Context) meta.Value {
-	return meta.Authorization(ctx)
-}
-
 // Attribute returns the stored request attribute for key.
 //
-// If no attribute is present, it returns the zero-value [Value]. It forwards to
-// the root `meta.Attribute` helper.
+// If no attribute is present, it returns the zero-value [Value].
 func Attribute(ctx context.Context, key string) meta.Value {
 	return meta.Attribute(ctx, key)
+}
+
+// NewPair creates one metadata key/value pair for batched storage updates.
+func NewPair(key string, value meta.Value) Pair {
+	return meta.NewPair(key, value)
+}
+
+// WithAttributes stores all provided metadata pairs on ctx.
+func WithAttributes(ctx context.Context, pairs ...Pair) context.Context {
+	return meta.WithAttributes(ctx, pairs...)
+}
+
+// WithRequestID creates a request ID pair for WithAttributes.
+func WithRequestID(value meta.Value) Pair {
+	return meta.WithRequestID(value)
+}
+
+// WithUserAgent creates a user agent pair for WithAttributes.
+func WithUserAgent(value meta.Value) Pair {
+	return meta.WithUserAgent(value)
+}
+
+// WithUserID creates a user ID pair for WithAttributes.
+func WithUserID(value meta.Value) Pair {
+	return meta.WithUserID(value)
+}
+
+// IPAddr returns the stored IP address attribute from ctx.
+//
+// If no value is present, it returns the zero-value meta.Value.
+func IPAddr(ctx context.Context) meta.Value {
+	return meta.IPAddr(ctx)
+}
+
+// WithAuthorization creates an authorization pair for WithAttributes.
+//
+// Authorization values often contain secrets; prefer Ignored or Redacted values if they might be exported.
+func WithAuthorization(value meta.Value) Pair {
+	return meta.WithAuthorization(value)
+}
+
+// Authorization returns the authorization attribute stored on ctx.
+//
+// If no value is present, it returns the zero-value meta.Value.
+func Authorization(ctx context.Context) meta.Value {
+	return meta.Authorization(ctx)
 }
 
 // AppendToOutgoingContext adds kv to the outgoing metadata in ctx.
@@ -66,17 +106,9 @@ func AppendToOutgoingContext(ctx context.Context, kv ...string) context.Context 
 // Ignored constructs a [Value] that is retained in-context but omitted when
 // rendered/exported.
 //
-// It forwards to the root `meta.Ignored` helper and is useful for sensitive
-// metadata such as authorization-derived values.
+// It is useful for sensitive metadata such as authorization-derived values.
 func Ignored(value string) meta.Value {
 	return meta.Ignored(value)
-}
-
-// IPAddr returns the stored IP address attribute from ctx.
-//
-// It forwards to the root `meta.IPAddr` helper.
-func IPAddr(ctx context.Context) meta.Value {
-	return meta.IPAddr(ctx)
 }
 
 // FromOutgoingContext returns the outgoing metadata in ctx, if any.
@@ -95,8 +127,7 @@ func FromIncomingContext(ctx context.Context) (Map, bool) {
 
 // New constructs metadata from a string map.
 //
-// It forwards to `metadata.New`. Keys are normalized using the same rules as
-// upstream gRPC metadata handling.
+// Keys are normalized using the same rules as upstream gRPC metadata handling.
 func New(md map[string]string) Map {
 	return metadata.New(md)
 }
@@ -109,94 +140,47 @@ func NewIncomingContext(ctx context.Context, md Map) context.Context {
 }
 
 // NewOutgoingContext attaches md as outgoing metadata to ctx.
-//
-// It forwards to `metadata.NewOutgoingContext`.
 func NewOutgoingContext(ctx context.Context, md Map) context.Context {
 	return metadata.NewOutgoingContext(ctx, md)
 }
 
 // Pairs constructs metadata from alternating key/value arguments.
 //
-// It forwards to `metadata.Pairs`. The kv slice must contain an even number of
-// elements.
+// The kv slice must contain an even number of elements.
 func Pairs(kv ...string) Map {
 	return metadata.Pairs(kv...)
 }
 
 // Redacted constructs a [Value] that renders as a mask while preserving the
 // underlying value in-context.
-//
-// It forwards to the root `meta.Redacted` helper.
 func Redacted(value string) meta.Value {
 	return meta.Redacted(value)
 }
 
 // String constructs a normal [Value] that renders as-is.
-//
-// It forwards to the root `meta.String` helper.
 func String(value string) meta.Value {
 	return meta.String(value)
 }
 
 // ToIgnored converts st to an ignored [Value] using st.String().
 //
-// If st is nil, it returns a blank value. It forwards to the root
-// `meta.ToIgnored` helper.
+// If st is nil, it returns a blank value.
 func ToIgnored(st fmt.Stringer) meta.Value {
 	return meta.ToIgnored(st)
 }
 
 // ToRedacted converts st to a redacted [Value] using st.String().
 //
-// If st is nil, it returns a blank value. It forwards to the root
-// `meta.ToRedacted` helper.
+// If st is nil, it returns a blank value.
 func ToRedacted(st fmt.Stringer) meta.Value {
 	return meta.ToRedacted(st)
 }
 
 // ToString converts st to a normal [Value] using st.String().
 //
-// If st is nil, it returns a blank value. It forwards to the root
-// `meta.ToString` helper.
+// If st is nil, it returns a blank value.
 func ToString(st fmt.Stringer) meta.Value {
 	return meta.ToString(st)
-}
-
-// WithAttribute stores key/value on ctx as a request-scoped attribute.
-//
-// It forwards to the root `meta.WithAttribute` helper and is primarily useful
-// when tests or interceptors need to seed context values before gRPC transport
-// processing begins.
-func WithAttribute(ctx context.Context, key string, value meta.Value) context.Context {
-	return meta.WithAttribute(ctx, key, value)
-}
-
-// WithRequestID stores a request ID attribute on ctx.
-//
-// It forwards to the root `meta.WithRequestID` helper.
-func WithRequestID(ctx context.Context, id meta.Value) context.Context {
-	return meta.WithRequestID(ctx, id)
-}
-
-// WithUserID stores a user ID attribute on ctx.
-//
-// It forwards to the root `meta.WithUserID` helper.
-func WithUserID(ctx context.Context, id meta.Value) context.Context {
-	return meta.WithUserID(ctx, id)
-}
-
-// WithUserAgent stores a user-agent attribute on ctx.
-//
-// It forwards to the root `meta.WithUserAgent` helper.
-func WithUserAgent(ctx context.Context, userAgent meta.Value) context.Context {
-	return meta.WithUserAgent(ctx, userAgent)
-}
-
-// WithAuthorization stores an authorization attribute on ctx.
-//
-// It forwards to the root `meta.WithAuthorization` helper.
-func WithAuthorization(ctx context.Context, auth meta.Value) context.Context {
-	return meta.WithAuthorization(ctx, auth)
 }
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that extracts metadata into the context.
@@ -225,22 +209,25 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 
 		md := ExtractIncoming(ctx)
 
-		ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ua := extractUserAgent(ctx, md, userAgent)
 
 		id := extractRequestID(ctx, generator, md)
-		ctx = meta.WithRequestID(ctx, id)
 
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = meta.WithIPAddr(ctx, ip)
-		ctx = meta.WithIPAddrKind(ctx, kind)
-
-		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
+		geolocation := extractGeolocation(md)
 
 		auth, err := extractAuthorization(md)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
-		ctx = meta.WithAuthorization(ctx, auth)
+		ctx = meta.WithAttributes(ctx,
+			meta.WithUserAgent(ua),
+			meta.WithRequestID(id),
+			meta.WithIPAddr(ip),
+			meta.WithIPAddrKind(kind),
+			meta.WithGeolocation(geolocation),
+			meta.WithAuthorization(auth),
+		)
 
 		_ = grpc.SetHeader(ctx, Pairs("service-version", version.String(), "request-id", id.Value()))
 
@@ -265,24 +252,26 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 
 		ctx := stream.Context()
 		md := ExtractIncoming(ctx)
-		ctx = meta.WithUserAgent(ctx, extractUserAgent(ctx, md, userAgent))
+		ua := extractUserAgent(ctx, md, userAgent)
 
 		id := extractRequestID(ctx, generator, md)
 		_ = stream.SetHeader(Pairs("request-id", id.Value()))
 
-		ctx = meta.WithRequestID(ctx, id)
-
 		kind, ip := extractIPAddr(ctx, md)
-		ctx = meta.WithIPAddr(ctx, ip)
-		ctx = meta.WithIPAddrKind(ctx, kind)
-
-		ctx = meta.WithGeolocation(ctx, extractGeolocation(md))
+		geolocation := extractGeolocation(md)
 
 		auth, err := extractAuthorization(md)
 		if err != nil {
 			return status.Error(codes.InvalidArgument, err.Error())
 		}
-		ctx = meta.WithAuthorization(ctx, auth)
+		ctx = meta.WithAttributes(ctx,
+			meta.WithUserAgent(ua),
+			meta.WithRequestID(id),
+			meta.WithIPAddr(ip),
+			meta.WithIPAddrKind(kind),
+			meta.WithGeolocation(geolocation),
+			meta.WithAuthorization(auth),
+		)
 
 		wrappedStream := middleware.WrapServerStream(stream)
 		wrappedStream.WrappedContext = ctx
@@ -305,13 +294,15 @@ func UnaryClientInterceptor(userAgent env.UserAgent, generator id.Generator) grp
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = meta.WithUserAgent(ctx, ua)
-		md.Set("user-agent", ua.Value())
-
 		id := extractRequestID(ctx, generator, md)
-		ctx = meta.WithRequestID(ctx, id)
+
+		md.Set("user-agent", ua.Value())
 		md.Set("request-id", id.Value())
 
+		ctx = meta.WithAttributes(ctx,
+			meta.WithUserAgent(ua),
+			meta.WithRequestID(id),
+		)
 		ctx = NewOutgoingContext(ctx, md)
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
 	}
@@ -331,13 +322,15 @@ func StreamClientInterceptor(userAgent env.UserAgent, generator id.Generator) gr
 		md := ExtractOutgoing(ctx)
 
 		ua := extractUserAgent(ctx, md, userAgent)
-		ctx = meta.WithUserAgent(ctx, ua)
-		md.Set("user-agent", ua.Value())
-
 		id := extractRequestID(ctx, generator, md)
-		ctx = meta.WithRequestID(ctx, id)
+
+		md.Set("user-agent", ua.Value())
 		md.Set("request-id", id.Value())
 
+		ctx = meta.WithAttributes(ctx,
+			meta.WithUserAgent(ua),
+			meta.WithRequestID(id),
+		)
 		ctx = NewOutgoingContext(ctx, md)
 		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}

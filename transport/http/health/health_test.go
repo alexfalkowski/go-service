@@ -21,9 +21,10 @@ func TestHealth(t *testing.T) {
 				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200"), test.HealthObserve(check, "http")),
 			)
 
-			ctx := t.Context()
-			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			ctx := meta.WithAttributes(t.Context(),
+				meta.WithRequestID(meta.String("test-id")),
+				meta.WithUserAgent(meta.String("test-user-agent")),
+			)
 
 			header := http.Header{}
 			url := world.NamedServerURL("http", check)
@@ -84,9 +85,10 @@ func TestMissingHealth(t *testing.T) {
 				test.WithWorldHTTPHealth(test.Name.String(), test.StatusURL("200")),
 			)
 
-			ctx := t.Context()
-			ctx = meta.WithRequestID(ctx, meta.String("test-id"))
-			ctx = meta.WithUserAgent(ctx, meta.String("test-user-agent"))
+			ctx := meta.WithAttributes(t.Context(),
+				meta.WithRequestID(meta.String("test-id")),
+				meta.WithUserAgent(meta.String("test-user-agent")),
+			)
 
 			header := http.Header{}
 			header.Set(content.TypeKey, mime.JSONMediaType)
