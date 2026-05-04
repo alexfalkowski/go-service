@@ -1,10 +1,11 @@
 package meta_test
 
 import (
-	"context"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/stretchr/testify/require"
@@ -81,6 +82,21 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
 		require.Equal(t, meta.String("peer"), meta.Attribute(ctx, meta.IPAddrKindKey))
 		require.True(t, meta.IPAddr(ctx).IsEmpty())
+
+		return "ok", nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "ok", resp)
+}
+
+func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
+	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
+
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
+		require.Equal(t, meta.String("peer"), meta.Attribute(ctx, meta.IPAddrKindKey))
+		require.Equal(t, meta.String("127.0.0.1"), meta.IPAddr(ctx))
 
 		return "ok", nil
 	})

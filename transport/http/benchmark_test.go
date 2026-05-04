@@ -70,6 +70,7 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
 
@@ -114,6 +115,7 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
 		require.NoError(b, err)
@@ -162,6 +164,7 @@ func BenchmarkHTTP(b *testing.B) {
 		b.ReportAllocs()
 
 		mux := transporthttp.NewServeMux()
+		mux.HandleFunc("GET /hello", func(_ http.ResponseWriter, _ *http.Request) {})
 		lc := fxtest.NewLifecycle(b)
 		logger, err := logger.NewLogger(logger.LoggerParams{})
 		require.NoError(b, err)
