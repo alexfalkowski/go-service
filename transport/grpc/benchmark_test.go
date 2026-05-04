@@ -52,6 +52,7 @@ func BenchmarkGRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
+		require.NoError(b, conn.Close())
 	})
 
 	b.Run("none", func(b *testing.B) {
@@ -92,6 +93,7 @@ func BenchmarkGRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
+		require.NoError(b, conn.Close())
 		lc.RequireStop()
 	})
 
@@ -136,6 +138,7 @@ func BenchmarkGRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
+		require.NoError(b, conn.Close())
 		lc.RequireStop()
 	})
 
@@ -182,6 +185,7 @@ func BenchmarkGRPC(b *testing.B) {
 		}
 
 		b.StopTimer()
+		require.NoError(b, conn.Close())
 		lc.RequireStop()
 	})
 }

@@ -8,6 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// benchmarkBytesSink keeps conversion results observable so benchmarks report real allocation costs.
+var benchmarkBytesSink []byte
+
 func BenchmarkStrings(b *testing.B) {
 	b.ReportAllocs()
 
@@ -21,13 +24,13 @@ func BenchmarkStrings(b *testing.B) {
 
 	b.Run("copy", func(b *testing.B) {
 		for n := 0; b.Loop(); n++ {
-			_ = cp(s)
+			benchmarkBytesSink = cp(s)
 		}
 	})
 
 	b.Run("convert", func(b *testing.B) {
 		for n := 0; b.Loop(); n++ {
-			_ = strings.Bytes(s)
+			benchmarkBytesSink = strings.Bytes(s)
 		}
 	})
 }

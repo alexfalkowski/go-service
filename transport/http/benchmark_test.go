@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -54,13 +55,15 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 
 		for b.Loop() {
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				require.NoError(b, err)
 			}
+			closeResponse(b, resp)
 		}
 
 		b.StopTimer()
+		client.CloseIdleConnections()
 	})
 
 	b.Run("none", func(b *testing.B) {
@@ -95,13 +98,15 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 
 		for b.Loop() {
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				require.NoError(b, err)
 			}
+			closeResponse(b, resp)
 		}
 
 		b.StopTimer()
+		client.CloseIdleConnections()
 		lc.RequireStop()
 	})
 
@@ -141,13 +146,15 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 
 		for b.Loop() {
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				require.NoError(b, err)
 			}
+			closeResponse(b, resp)
 		}
 
 		b.StopTimer()
+		client.CloseIdleConnections()
 		lc.RequireStop()
 	})
 
@@ -189,34 +196,32 @@ func BenchmarkHTTP(b *testing.B) {
 		require.NoError(b, err)
 
 		for b.Loop() {
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				require.NoError(b, err)
 			}
+			closeResponse(b, resp)
 		}
 
 		b.StopTimer()
+		client.CloseIdleConnections()
 		lc.RequireStop()
 	})
 }
 
 func BenchmarkMVC(b *testing.B) {
-	b.ReportAllocs()
-
-	logger, err := logger.NewLogger(logger.LoggerParams{})
-	require.NoError(b, err)
-
-	world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-
-	view := mvc.NewFullView("views/hello.tmpl")
-
-	mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
-		return view, &test.Model, nil
-	})
-
-	b.ResetTimer()
-
 	b.Run("html", func(b *testing.B) {
+		b.ReportAllocs()
+
+		world := newHTTPBenchmarkWorld(b)
+		view := mvc.NewFullView("views/hello.tmpl")
+
+		mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
+			return view, &test.Model, nil
+		})
+
+		startHTTPBenchmarkWorld(b, world)
+
 		client, err := world.NewHTTP()
 		require.NoError(b, err)
 		url := world.PathServerURL("http", "hello")
@@ -226,15 +231,45 @@ func BenchmarkMVC(b *testing.B) {
 
 		req.Header.Set(content.TypeKey, mime.HTMLMediaType)
 
+		b.ResetTimer()
+
 		for b.Loop() {
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 			if err != nil {
 				require.NoError(b, err)
 			}
+			closeResponse(b, resp)
 		}
-	})
 
-	b.StopTimer()
+		client.CloseIdleConnections()
+		world.RequireStop()
+	})
+}
+
+func closeResponse(b *testing.B, resp *http.Response) {
+	b.Helper()
+
+	_, err := io.Copy(io.Discard, resp.Body)
+	require.NoError(b, err)
+	require.NoError(b, resp.Body.Close())
+}
+
+func newHTTPBenchmarkWorld(b *testing.B) *test.World {
+	b.Helper()
+
+	logger, err := logger.NewLogger(logger.LoggerParams{})
+	require.NoError(b, err)
+
+	return test.NewWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
+}
+
+func startHTTPBenchmarkWorld(b *testing.B, world *test.World) {
+	b.Helper()
+
+	world.RequireStart()
+	conn, err := test.Connect(b.Context(), world.TransportConfig.HTTP.Address)
+	require.NoError(b, err)
+	require.NoError(b, conn.Close())
 }
 
 //nolint:funlen
@@ -242,12 +277,9 @@ func BenchmarkRPC(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-
+		world := newHTTPBenchmarkWorld(b)
 		rpc.Route("/hello", test.SuccessSayHello)
+		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
 
@@ -270,20 +302,19 @@ func BenchmarkRPC(b *testing.B) {
 					}
 				}
 			})
+			cl.CloseIdleConnections()
 		}
 
 		b.StopTimer()
+		world.RequireStop()
 	})
 
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-
+		world := newHTTPBenchmarkWorld(b)
 		rpc.Route("/hello", test.SuccessProtobufSayHello)
+		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
 
@@ -305,9 +336,11 @@ func BenchmarkRPC(b *testing.B) {
 					}
 				}
 			})
+			cl.CloseIdleConnections()
 		}
 
 		b.StopTimer()
+		world.RequireStop()
 	})
 }
 
@@ -316,13 +349,10 @@ func BenchmarkRest(b *testing.B) {
 	b.Run("text", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-
+		world := newHTTPBenchmarkWorld(b)
 		test.RegisterRequestHandlers("/hello", test.RestRequestContent)
 		mvc.StaticFile("/robots.txt", "static/robots.txt")
+		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
 
@@ -348,6 +378,7 @@ func BenchmarkRest(b *testing.B) {
 					}
 				}
 			})
+			cl.CloseIdleConnections()
 		}
 
 		b.Run("static", func(b *testing.B) {
@@ -370,20 +401,20 @@ func BenchmarkRest(b *testing.B) {
 
 				test.Pool.Put(buffer)
 			}
+
+			cl.CloseIdleConnections()
 		})
 
 		b.StopTimer()
+		world.RequireStop()
 	})
 
 	b.Run("proto", func(b *testing.B) {
 		b.ReportAllocs()
 
-		logger, err := logger.NewLogger(logger.LoggerParams{})
-		require.NoError(b, err)
-
-		world := test.NewStartedWorld(b, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP(), test.WithWorldLogger(logger))
-
+		world := newHTTPBenchmarkWorld(b)
 		test.RegisterRequestHandlers("/hello", test.RestRequestProtobuf)
+		startHTTPBenchmarkWorld(b, world)
 
 		b.ResetTimer()
 
@@ -409,8 +440,10 @@ func BenchmarkRest(b *testing.B) {
 					}
 				}
 			})
+			cl.CloseIdleConnections()
 		}
 
 		b.StopTimer()
+		world.RequireStop()
 	})
 }
