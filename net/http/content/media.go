@@ -3,7 +3,6 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/mime"
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	content "github.com/elnormous/contenttype"
 )
 
@@ -18,8 +17,8 @@ const (
 //   - If the subtype is "error", it returns a Media without an encoder.
 //   - If no encoder is registered for the subtype, it falls back to JSON.
 //   - Otherwise it returns the encoder registered for the subtype.
-func NewMedia(media content.MediaType, enc *encoding.Map) *Media {
-	return ptr.Value(newMedia(media, enc))
+func NewMedia(media content.MediaType, enc *encoding.Map) Media {
+	return newMedia(media, enc)
 }
 
 // Media describes an HTTP media type and its associated encoder.
@@ -38,7 +37,7 @@ type Media struct {
 }
 
 // IsError reports whether the media subtype represents an error payload.
-func (t *Media) IsError() bool {
+func (t Media) IsError() bool {
 	return t.Subtype == errorSubtype
 }
 
@@ -65,8 +64,6 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	}
 }
 
-// newMedia returns a value so internal hot paths can avoid the pointer allocation
-// while NewMedia keeps the public pointer-returning API unchanged.
 func newMedia(media content.MediaType, enc *encoding.Map) Media {
 	if media.Subtype == errorSubtype {
 		return Media{Type: media.String(), Subtype: media.Subtype}
