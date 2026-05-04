@@ -7,6 +7,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
+// Addr is an alias for net.Addr.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Addr = net.Addr
+
 // Conn is an alias for net.Conn.
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
@@ -19,11 +25,29 @@ type Conn = net.Conn
 // standard library semantics.
 type Dialer = net.Dialer
 
+// IP is an alias for net.IP.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type IP = net.IP
+
 // Listener is an alias for net.Listener.
 //
 // It is provided so go-service code can depend on a consistent import path while preserving
 // standard library semantics.
 type Listener = net.Listener
+
+// TCPAddr is an alias for net.TCPAddr.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type TCPAddr = net.TCPAddr
+
+// UDPAddr is an alias for net.UDPAddr.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type UDPAddr = net.UDPAddr
 
 // Listen creates a listener bound to address on the given network.
 //

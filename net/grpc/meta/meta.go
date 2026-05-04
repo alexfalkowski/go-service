@@ -348,7 +348,18 @@ func serverIPAddr(ctx context.Context) (meta.Value, meta.Value) {
 		return peerKind, meta.Blank()
 	}
 
-	return peerKind, meta.String(net.Host(peer.Addr.String()))
+	return peerKind, meta.String(serverPeerIPAddr(peer.Addr))
+}
+
+func serverPeerIPAddr(addr net.Addr) string {
+	switch addr := addr.(type) {
+	case *net.TCPAddr:
+		return addr.IP.String()
+	case *net.UDPAddr:
+		return addr.IP.String()
+	default:
+		return net.Host(addr.String())
+	}
 }
 
 func serverUserAgent(ctx context.Context, userAgent env.UserAgent) meta.Value {
