@@ -32,6 +32,33 @@ func TestInvalidServer(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestSecureServer(t *testing.T) {
+	http.Register(test.FS)
+
+	cfg := test.NewSecureTransportConfig().HTTP
+	params := http.ServerParams{
+		Shutdowner: test.NewShutdowner(),
+		Mux:        http.NewServeMux(),
+		Config:     cfg,
+	}
+
+	server, err := http.NewServer(params)
+	require.NoError(t, err)
+
+	service := server.GetService()
+	service.Start()
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		require.NoError(t, service.Stop(ctx))
+	})
+
+	conn, err := test.Connect(t.Context(), service.String())
+	require.NoError(t, err)
+	require.NoError(t, conn.Close())
+}
+
 func TestServerMaxReceiveSize(t *testing.T) {
 	cfg := test.NewInsecureTransportConfig()
 	cfg.HTTP.MaxReceiveSize = 64

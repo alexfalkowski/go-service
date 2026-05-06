@@ -11,20 +11,18 @@ import (
 
 func TestUnlimited(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 100)
-	world := test.NewStartedWorld(t,
-		test.WithWorldTelemetry("otlp"),
-		test.WithWorldClientLimiter(cfg),
-		test.WithWorldServerLimiter(cfg),
-		test.WithWorldHTTP(),
-		test.WithWorldHello(),
+	server := test.NewHTTPTestServer(t,
+		test.WithHTTPTestHello(),
+		test.WithHTTPTestServerLimiter(test.NewHTTPTestServerLimiter(t, cfg)),
 	)
+	client := test.NewHTTPTestClient(t, server, test.WithHTTPClientLimiter(test.NewHTTPTestClientLimiter(t, cfg)))
 
-	url := world.PathServerURL("http", "hello")
+	url := server.URL + "/hello"
 
-	_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	_, _, err := test.HTTPClientResponseWithBody(t, client, http.MethodGet, url, http.Header{}, http.NoBody)
 	require.NoError(t, err)
 
-	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	res, body, err := test.HTTPClientResponseWithBody(t, client, http.MethodGet, url, http.Header{}, http.NoBody)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "hello!", body)
@@ -33,20 +31,16 @@ func TestUnlimited(t *testing.T) {
 func TestServerLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		t.Run(f, func(t *testing.T) {
-			world := test.NewStartedWorld(t,
-				test.WithWorldTelemetry("otlp"),
-				test.WithWorldServerLimiter(test.NewLimiterConfig(f, "1s", 0)),
-				test.WithWorldHTTP(),
-				test.WithWorldHello(),
+			server := test.NewHTTPTestServer(t,
+				test.WithHTTPTestHello(),
+				test.WithHTTPTestServerLimiter(test.NewHTTPTestServerLimiter(t, test.NewLimiterConfig(f, "1s", 0))),
 			)
 
-			url := world.PathServerURL("http", "hello")
+			url := server.URL + "/hello"
 
-			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-			require.NoError(t, err)
+			_, _ = test.HTTPResponseWithBody(t, server, http.MethodGet, url, http.Header{}, http.NoBody)
 
-			res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-			require.NoError(t, err)
+			res, _ := test.HTTPResponseWithBody(t, server, http.MethodGet, url, http.Header{}, http.NoBody)
 			require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
 			require.NotEmpty(t, res.Header.Get("Ratelimit"))
 		})
@@ -56,19 +50,17 @@ func TestServerLimiter(t *testing.T) {
 func TestClientLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		t.Run(f, func(t *testing.T) {
-			world := test.NewStartedWorld(t,
-				test.WithWorldTelemetry("otlp"),
-				test.WithWorldClientLimiter(test.NewLimiterConfig(f, "1s", 0)),
-				test.WithWorldHTTP(),
-				test.WithWorldHello(),
+			server := test.NewHTTPTestServer(t, test.WithHTTPTestHello())
+			client := test.NewHTTPTestClient(t, server,
+				test.WithHTTPClientLimiter(test.NewHTTPTestClientLimiter(t, test.NewLimiterConfig(f, "1s", 0))),
 			)
 
-			url := world.PathServerURL("http", "hello")
+			url := server.URL + "/hello"
 
-			_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			_, _, err := test.HTTPClientResponseWithBody(t, client, http.MethodGet, url, http.Header{}, http.NoBody)
 			require.NoError(t, err)
 
-			_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+			_, _, err = test.HTTPClientResponseWithBody(t, client, http.MethodGet, url, http.Header{}, http.NoBody)
 			require.Error(t, err)
 			require.Equal(t, http.StatusTooManyRequests, status.Code(err))
 		})
@@ -76,37 +68,34 @@ func TestClientLimiter(t *testing.T) {
 }
 
 func TestServerClosedLimiter(t *testing.T) {
-	world := test.NewStartedWorld(t,
-		test.WithWorldTelemetry("otlp"),
-		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
-		test.WithWorldHTTP(),
-		test.WithWorldHello(),
+	limiter := test.NewHTTPTestServerLimiter(t, test.NewLimiterConfig("user-agent", "1s", 100))
+	server := test.NewHTTPTestServer(t,
+		test.WithHTTPTestHello(),
+		test.WithHTTPTestServerLimiter(limiter),
 	)
 
-	err := world.Server.HTTPLimiter.Close(t.Context())
+	err := limiter.Close(t.Context())
 	require.NoError(t, err)
 
-	url := world.PathServerURL("http", "hello")
+	url := server.URL + "/hello"
 
-	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
-	require.NoError(t, err)
+	res, _ := test.HTTPResponseWithBody(t, server, http.MethodGet, url, http.Header{}, http.NoBody)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 }
 
 func TestClientClosedLimiter(t *testing.T) {
-	world := test.NewStartedWorld(t,
-		test.WithWorldTelemetry("otlp"),
-		test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),
-		test.WithWorldHTTP(),
-		test.WithWorldHello(),
+	server := test.NewHTTPTestServer(t, test.WithHTTPTestHello())
+	limiter := test.NewHTTPTestClientLimiter(t, test.NewLimiterConfig("user-agent", "1s", 100))
+	client := test.NewHTTPTestClient(t, server,
+		test.WithHTTPClientLimiter(limiter),
 	)
 
-	url := world.PathServerURL("http", "hello")
+	url := server.URL + "/hello"
 
-	err := world.Client.HTTPLimiter.Close(t.Context())
+	err := limiter.Close(t.Context())
 	require.NoError(t, err)
 
-	_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	_, _, err = test.HTTPClientResponseWithBody(t, client, http.MethodGet, url, http.Header{}, http.NoBody)
 	require.Error(t, err)
 	require.Equal(t, http.StatusInternalServerError, status.Code(err))
 }

@@ -1,11 +1,10 @@
 package grpc_test
 
 import (
-	"maps"
 	"net"
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
@@ -17,16 +16,13 @@ import (
 )
 
 func TestInsecureUnary(t *testing.T) {
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-
 	ctx := meta.WithAttributes(t.Context(),
 		test.WithTest(meta.Ignored("test")),
 		meta.NewPair("real-ip", meta.ToString(net.ParseIP("192.168.8.0"))),
 		meta.NewPair("redacted-ip", meta.ToRedacted(net.ParseIP("192.168.8.0"))),
 	)
 
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t)
 
 	client := v1.NewGreeterServiceClient(conn)
 	req := &v1.SayHelloRequest{Name: "test"}
@@ -46,7 +42,8 @@ func TestSecureUnary(t *testing.T) {
 
 	ctx := meta.WithAttributes(t.Context(), meta.NewPair("ip", meta.ToIgnored(net.ParseIP("192.168.8.0"))))
 
-	conn := requireGRPCConn(t, world)
+	conn, err := world.NewGRPC()
+	require.NoError(t, err)
 	defer conn.Close()
 
 	client := v1.NewGreeterServiceClient(conn)
@@ -58,12 +55,9 @@ func TestSecureUnary(t *testing.T) {
 }
 
 func TestStream(t *testing.T) {
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldGRPC())
-
 	ctx := meta.WithAttributes(t.Context(), test.WithTest(meta.Redacted("test")))
 
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t)
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -81,9 +75,7 @@ func TestStream(t *testing.T) {
 }
 
 func TestUnaryMaxReceiveSize(t *testing.T) {
-	world := newStartedGRPCWorld(t, 64)
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t, test.WithBufconnMaxReceiveSize(64))
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -93,9 +85,7 @@ func TestUnaryMaxReceiveSize(t *testing.T) {
 }
 
 func TestStreamMaxReceiveSize(t *testing.T) {
-	world := newStartedGRPCWorld(t, 64)
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t, test.WithBufconnMaxReceiveSize(64))
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())
@@ -111,9 +101,7 @@ func TestStreamMaxReceiveSize(t *testing.T) {
 }
 
 func TestUnaryMaxSendSize(t *testing.T) {
-	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t, test.WithBufconnServerOptions(options.Map{"max_send_msg_size": "64B"}))
 
 	client := v1.NewGreeterServiceClient(conn)
 
@@ -123,9 +111,7 @@ func TestUnaryMaxSendSize(t *testing.T) {
 }
 
 func TestStreamMaxSendSize(t *testing.T) {
-	world := newStartedGRPCWorldWithOptions(t, 0, map[string]string{"max_send_msg_size": "64B"})
-	conn := requireGRPCConn(t, world)
-	defer conn.Close()
+	conn := test.NewBufconnGRPCConn(t, test.WithBufconnServerOptions(options.Map{"max_send_msg_size": "64B"}))
 
 	client := v1.NewGreeterServiceClient(conn)
 	stream, err := client.SayStreamHello(t.Context())
@@ -136,27 +122,4 @@ func TestStreamMaxSendSize(t *testing.T) {
 	_, err = stream.Recv()
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
-}
-
-func newStartedGRPCWorld(t *testing.T, maxReceiveSize bytes.Size) *test.World {
-	t.Helper()
-
-	return newStartedGRPCWorldWithOptions(t, maxReceiveSize, nil)
-}
-
-func newStartedGRPCWorldWithOptions(t *testing.T, maxReceiveSize bytes.Size, opts map[string]string) *test.World {
-	t.Helper()
-
-	cfg := test.NewInsecureTransportConfig()
-	if maxReceiveSize > 0 {
-		cfg.GRPC.MaxReceiveSize = maxReceiveSize
-	}
-	if len(opts) > 0 {
-		if cfg.GRPC.Options == nil {
-			cfg.GRPC.Options = map[string]string{}
-		}
-		maps.Copy(cfg.GRPC.Options, opts)
-	}
-
-	return test.NewStartedWorld(t, test.WithWorldTransportConfig(cfg), test.WithWorldGRPC())
 }
