@@ -12,7 +12,9 @@
 // Most applications then call either:
 //
 //   - `(*Application).Run` to execute the CLI and return any error, or
-//   - `(*Application).ExitOnError` to log failures and invoke `cli.Exit` with a non-zero status code.
+//   - `(*Application).RunCode` to execute the CLI and return a process exit code.
+//
+// Use `WithExitCodeFunc` when an application needs to map specific errors to specific process exit codes.
 //
 // # Subcommands and DI wiring
 //

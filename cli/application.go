@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
@@ -16,11 +17,6 @@ import (
 
 // ErrCommandRegistered indicates a subcommand name has already been registered on an Application.
 var ErrCommandRegistered = errors.New("command already registered")
-
-// Exit is invoked by (*Application).ExitOnError after logging a startup failure.
-//
-// Tests may replace this variable to avoid terminating the test process.
-var Exit = os.Exit
 
 // RegisterFunc registers subcommands on a Commander.
 //
@@ -32,8 +28,9 @@ type RegisterFunc = func(commander Commander)
 //
 // The returned Application is pre-populated with module-level Name and Version derived from the environment
 // (see cli.Name and cli.Version).
-func NewApplication(register RegisterFunc) *Application {
-	app := &Application{name: Name, version: Version}
+func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
+	options := newApplicationOpts(opts...)
+	app := &Application{name: Name, version: Version, exitCode: options.exitCode}
 	register(app)
 
 	return app
@@ -44,9 +41,10 @@ func NewApplication(register RegisterFunc) *Application {
 // An Application maintains a set of commands and delegates parsing/execution to the underlying command
 // framework (github.com/cristalhq/acmd).
 type Application struct {
-	cmds    map[string]cmd.Command
-	name    env.Name
-	version env.Version
+	cmds     map[string]cmd.Command
+	exitCode ExitCodeFunc
+	name     env.Name
+	version  env.Version
 }
 
 // AddServer adds a long-running server subcommand with DI lifecycle wiring.
@@ -156,14 +154,19 @@ func (a *Application) Run(ctx context.Context) error {
 	return runner.Run()
 }
 
-// ExitOnError runs the application and terminates the process with exit status 1 if Run returns an error.
+// RunCode executes the application and returns the process exit code that represents the result.
 //
-// The error is logged using the telemetry logger before Exit is invoked.
-func (a *Application) ExitOnError(ctx context.Context) {
+// RunCode returns 0 when Run succeeds. When Run returns an error, RunCode logs the error using the
+// telemetry logger and returns the configured exit code for that error.
+func (a *Application) RunCode(ctx context.Context) int {
 	if err := a.Run(ctx); err != nil {
-		logger.LogError(ctx, "could not start", logger.Error(err))
-		Exit(1)
+		code := a.code(err)
+		logger.LogError(ctx, "could not start", logger.Error(err), logger.Int(meta.CodeKey, code))
+
+		return code
 	}
+
+	return 0
 }
 
 func (a *Application) register(command cmd.Command) error {
@@ -182,6 +185,20 @@ func (a *Application) register(command cmd.Command) error {
 
 func (a *Application) prefix(prefix string, err error) error {
 	return errors.Prefix(prefix+": failed to run", di.RootCause(err))
+}
+
+func (a *Application) code(err error) int {
+	exitCode := a.exitCode
+	if exitCode == nil {
+		exitCode = defaultExitCode
+	}
+
+	code := exitCode(err)
+	if code <= 0 {
+		return defaultExitCode(err)
+	}
+
+	return code
 }
 
 func (a *Application) stopContext(ctx context.Context) context.Context {

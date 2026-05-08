@@ -39,10 +39,10 @@ This repository is a library, so your binary is usually in another module. A typ
 package main
 
 import (
-    "context"
-
     "github.com/alexfalkowski/go-service/v2/cli"
+    "github.com/alexfalkowski/go-service/v2/context"
     "github.com/alexfalkowski/go-service/v2/module"
+    "github.com/alexfalkowski/go-service/v2/os"
 )
 
 func main() {
@@ -51,9 +51,13 @@ func main() {
        server.AddInput("file:./config.yml") // enables the `-i` flag used by config.NewDecoder
     })
 
-    app.ExitOnError(context.Background())
+    os.Exit(app.RunCode(context.Background()))
 }
 ```
+
+Use `app.Run(context.Background())` when the caller should receive the execution error directly, or
+`app.RunCode(context.Background())` when the caller wants a process exit code. Applications can pass
+`cli.WithExitCodeFunc` to `cli.NewApplication` to map specific errors to specific exit codes.
 
 ---
 
