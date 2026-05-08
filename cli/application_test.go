@@ -31,19 +31,28 @@ func TestApplicationRun(t *testing.T) {
 	require.NoError(t, app.Run(t.Context()))
 }
 
-func TestApplicationExitOnRun(t *testing.T) {
+func TestApplicationRunCode(t *testing.T) {
 	config := test.FilePath("configs/invalid_http.config.yml")
 
 	os.Args = []string{test.Name.String(), "server", "-i", config}
 
-	var exitCode int
-	previous := cli.Exit
-	cli.Exit = func(code int) {
-		exitCode = code
-	}
-	t.Cleanup(func() {
-		cli.Exit = previous
-	})
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+		cli.WithExitCodeFunc(func(error) int {
+			return 4
+		}),
+	)
+
+	require.Equal(t, 4, app.RunCode(t.Context()))
+}
+
+func TestApplicationRunCodeWithDefaultExitCode(t *testing.T) {
+	config := test.FilePath("configs/invalid_http.config.yml")
+
+	os.Args = []string{test.Name.String(), "server", "-i", config}
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
@@ -52,8 +61,39 @@ func TestApplicationExitOnRun(t *testing.T) {
 		},
 	)
 
-	app.ExitOnError(t.Context())
-	require.Equal(t, 1, exitCode)
+	require.Equal(t, 1, app.RunCode(t.Context()))
+}
+
+func TestApplicationRunCodeWithInvalidExitCode(t *testing.T) {
+	config := test.FilePath("configs/invalid_http.config.yml")
+
+	os.Args = []string{test.Name.String(), "server", "-i", config}
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			cmd := c.AddServer("server", "Start the server.", test.Options()...)
+			cmd.AddInput(strings.Empty)
+		},
+		cli.WithExitCodeFunc(func(error) int {
+			return 0
+		}),
+	)
+
+	require.Equal(t, 1, app.RunCode(t.Context()))
+}
+
+func TestApplicationRunCodeOnSuccess(t *testing.T) {
+	os.Args = []string{test.Name.String(), "client"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddClient("client", "Start the client.", di.NoLogger)
+		},
+	)
+
+	require.Equal(t, 0, app.RunCode(t.Context()))
 }
 
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
