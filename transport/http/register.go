@@ -9,7 +9,7 @@ var fs *os.FS
 // Register injects the filesystem dependency used by this package.
 //
 // The registered filesystem is consulted when constructing TLS configuration for both clients and servers.
-// It is used by `crypto/tls/config.NewConfig` to resolve certificate/key
+// It is used by `config/server.NewConfig` and `config/client.NewConfig` to resolve TLS
 // "source strings" (for example `file:/path/to/cert` or `env:VAR`) via the
 // `os.FS.ReadSource` helper when materializing a runtime `*crypto/tls.Config`.
 //

@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"github.com/alexfalkowski/go-service/v2/config/client"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -127,8 +128,8 @@ func WithClientBreaker(opts ...breaker.Option) ClientOption {
 
 // WithClientTLS enables TLS for the client connection using sec.
 //
-// TLS configuration is materialized when building dial options. If TLS is enabled, certificate/key
-// sources may be resolved via the package-registered filesystem (see the package `Register` function).
+// TLS configuration is materialized when building dial options. If TLS is enabled, source strings may be
+// resolved via the package-registered filesystem (see the package `Register` function).
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.security = sec
@@ -216,7 +217,7 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //
 // Transport security:
 //   - if TLS is enabled, TLS config is constructed using the package-registered filesystem (see `Register`)
-//     to resolve certificate and key sources.
+//     to resolve TLS source strings.
 //   - otherwise, insecure transport credentials are used.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
@@ -231,7 +232,7 @@ func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 
 	var security grpc.DialOption
 	if os.security.IsEnabled() {
-		conf, err := tls.NewConfig(fs, os.security)
+		conf, err := client.NewConfig(fs, os.security)
 		if err != nil {
 			return nil, err
 		}

@@ -3,8 +3,10 @@ package server
 import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/config/options"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -22,7 +24,7 @@ type Config struct {
 	Retry *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
 
 	// TLS configures server-side TLS (certificate and key material).
-	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
+	TLS *tlsconfig.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Token configures server-side token validation/handling.
 	Token *token.Config `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
@@ -60,4 +62,40 @@ func (c *Config) GetMaxReceiveSize() bytes.Size {
 	}
 
 	return c.MaxReceiveSize
+}
+
+// NewConfig constructs a server-side runtime TLS config from cfg.
+//
+// If cfg has a CA configured, NewConfig uses it as ClientCAs and sets
+// ClientAuth to tls.RequireAndVerifyClientCert. Without CA, the server config
+// does not request client certificates.
+func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
+	config := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	if !cfg.IsEnabled() {
+		return config, nil
+	}
+
+	if cfg.HasKeyPair() {
+		pair, err := tlsconfig.NewKeyPair(fs, cfg)
+		if err != nil {
+			return config, err
+		}
+
+		config.Certificates = []tls.Certificate{pair}
+	}
+
+	if cfg.HasCA() {
+		pool, err := tlsconfig.NewCertPool(fs, cfg)
+		if err != nil {
+			return config, err
+		}
+
+		config.ClientCAs = pool
+		config.ClientAuth = tls.RequireAndVerifyClientCert
+	}
+
+	return config, nil
 }

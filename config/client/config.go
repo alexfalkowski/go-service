@@ -2,8 +2,10 @@ package client
 
 import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/crypto/tls"
+	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/limiter"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
@@ -15,7 +17,7 @@ type Config struct {
 	Limiter *limiter.Config `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
 
 	// TLS configures client-side TLS settings (for example trusted roots, certs, and keys where applicable).
-	TLS *tls.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
+	TLS *tlsconfig.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`
 
 	// Token configures client-side token handling (for example minting/attaching auth tokens).
 	Token *token.Config `yaml:"token,omitempty" json:"token,omitempty" toml:"token,omitempty"`
@@ -38,4 +40,42 @@ type Config struct {
 // IsEnabled reports whether client configuration is present.
 func (c *Config) IsEnabled() bool {
 	return c != nil
+}
+
+// NewConfig constructs a client-side runtime TLS config from cfg.
+//
+// It uses CA as RootCAs and uses any configured certificate/key pair as the
+// client certificate presented to servers that request one. If ServerName is
+// configured, it is copied into the runtime TLS config for server certificate
+// hostname verification.
+func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
+	config := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	if !cfg.IsEnabled() {
+		return config, nil
+	}
+
+	if cfg.HasKeyPair() {
+		pair, err := tlsconfig.NewKeyPair(fs, cfg)
+		if err != nil {
+			return config, err
+		}
+
+		config.Certificates = []tls.Certificate{pair}
+	}
+
+	if cfg.HasCA() {
+		pool, err := tlsconfig.NewCertPool(fs, cfg)
+		if err != nil {
+			return config, err
+		}
+
+		config.RootCAs = pool
+	}
+
+	config.ServerName = cfg.ServerName
+
+	return config, nil
 }

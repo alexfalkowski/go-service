@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/alexfalkowski/go-service/v2/config/client"
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
@@ -147,7 +148,7 @@ func WithClientUserAgent(userAgent env.UserAgent) ClientOption {
 // round tripper is provided explicitly, it is used as-is.
 //
 // If TLS is enabled and no base round tripper is provided, TLS config is constructed using the package-
-// registered filesystem dependency (see `Register` in this package) to resolve certificate/key sources.
+// registered filesystem dependency (see `Register` in this package) to resolve TLS source strings.
 func WithClientTLS(sec *tls.Config) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.tls = sec
@@ -268,7 +269,7 @@ func roundTripper(os *clientOpts) (http.RoundTripper, error) {
 		return http.Transport(nil), nil
 	}
 
-	conf, err := tls.NewConfig(fs, os.tls)
+	conf, err := client.NewConfig(fs, os.tls)
 	if err != nil {
 		return nil, err
 	}

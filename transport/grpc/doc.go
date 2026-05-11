@@ -29,8 +29,8 @@
 // # Manual composition note (TLS filesystem)
 //
 // This package uses package-level registration to inject filesystem access used when constructing TLS configuration.
-// The registered filesystem is used by `crypto/tls/config.NewConfig` to
-// resolve certificate/key "source strings" (for example `file:/path/to/cert`
+// The registered filesystem is used by `config/server.NewConfig` and `config/client.NewConfig`
+// to resolve TLS "source strings" (for example `file:/path/to/cert`
 // or `env:VAR`) during TLS configuration.
 //
 // When you use `Module` (directly or through higher-level bundles such as `module.Server`), DI performs

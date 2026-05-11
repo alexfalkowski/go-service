@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"math"
 
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -13,7 +13,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/config"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
+	grpcserver "github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
@@ -115,7 +115,7 @@ func NewServer(params ServerParams) (*Server, error) {
 	grpcServer := grpc.NewServer(params.Config.Options, params.Config.Timeout, options...)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
-	service, err := server.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)
+	service, err := grpcserver.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -125,12 +125,12 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server wraps a configured gRPC server and its runnable service wrapper.
 //
-// The embedded `*server.Service` provides start/stop orchestration and integrates with the application's
+// The embedded `*grpcserver.Service` provides start/stop orchestration and integrates with the application's
 // lifecycle, while the underlying `*grpc.Server` is used as the `grpc.ServiceRegistrar` for registering
 // service implementations.
 type Server struct {
 	server *grpc.Server
-	*server.Service
+	*grpcserver.Service
 }
 
 // ServiceRegistrar returns the underlying gRPC service registrar.
@@ -149,7 +149,7 @@ func (s *Server) ServiceRegistrar() grpc.ServiceRegistrar {
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
 // registration (see `transport.NewServers` and `net/server.Register`).
-func (s *Server) GetService() *server.Service {
+func (s *Server) GetService() *grpcserver.Service {
 	if s == nil {
 		return nil
 	}
@@ -203,7 +203,7 @@ func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
 		return grpc.EmptyServerOption{}, nil
 	}
 
-	conf, err := tls.NewConfig(fs, cfg.TLS)
+	conf, err := server.NewConfig(fs, cfg.TLS)
 	if err != nil {
 		return grpc.EmptyServerOption{}, prefix(err)
 	}

@@ -22,7 +22,7 @@
 // # TLS
 //
 // When TLS is enabled for the debug server, the package uses
-// `crypto/tls/config.NewConfig` to resolve `crypto/tls/config.Config` source
+// `config/server.NewConfig` to resolve `crypto/tls/config.Config` source
 // strings and build the runtime `*crypto/tls.Config` assigned to the underlying
 // HTTP server.
 //
