@@ -8,6 +8,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
@@ -264,8 +266,8 @@ type ClientConn = grpc.ClientConn
 
 // NewClient constructs and dials a gRPC client connection to target.
 //
-// It uses dial options derived from opts (see `NewDialOptions`) and always adds OpenTelemetry stats handling
-// via `grpc.WithStatsHandler(telemetry.NewClientHandler())` so that client RPCs are instrumented.
+// It uses dial options derived from opts (see `NewDialOptions`) and adds OpenTelemetry stats handling
+// when tracing or metrics are enabled.
 //
 // The returned connection should be closed by the caller when no longer needed.
 func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
@@ -274,7 +276,9 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 		return nil, err
 	}
 
-	os = append(os, grpc.WithStatsHandler(telemetry.NewClientHandler()))
+	if metrics.IsEnabled() || tracer.IsEnabled() {
+		os = append(os, grpc.WithStatsHandler(telemetry.NewClientHandler()))
+	}
 
 	return grpc.NewClient(target, os...)
 }

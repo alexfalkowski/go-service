@@ -18,13 +18,19 @@ transport-diagram:
 	@make package=transport create-diagram
 
 # Run all the benchmarks.
-benchmarks: http-benchmarks grpc-benchmarks bytes-benchmarks strings-benchmarks id-benchmarks http-content-benchmarks
+benchmarks: http-benchmarks grpc-benchmarks sql-benchmarks cache-benchmarks bytes-benchmarks strings-benchmarks id-benchmarks http-content-benchmarks
 
 http-benchmarks:
 	@make package=transport/http benchtime=100x benchmark
 
 grpc-benchmarks:
 	@make package=transport/grpc benchtime=100x benchmark
+
+sql-benchmarks:
+	@make package=database/sql/driver benchtime=100x benchmark
+
+cache-benchmarks:
+	@make package=cache/driver benchtime=100x benchmark
 
 bytes-benchmarks:
 	@make package=bytes benchtime=100x benchmark

@@ -49,11 +49,11 @@ var (
 	//
 	// It builds on Library and adds server-oriented wiring commonly needed by services:
 	//   - debug.Module (debug server + diagnostic endpoints)
-	//   - cache.Module (cache drivers, cache facade, and package-level cache registration)
 	//   - config.Module (config decoding + validation + common sub-config projections)
+	//   - telemetry.Module (logging/tracing/metrics wiring)
+	//   - cache.Module (cache drivers, cache facade, and package-level cache registration)
 	//   - feature.Module (OpenFeature client + optional provider registration)
 	//   - sql.Module (SQL database wiring; currently PostgreSQL)
-	//   - telemetry.Module (logging/tracing/metrics wiring)
 	//   - limiter.Module (rate limiter key map wiring; transport modules typically construct limiters)
 	//   - transport.Module (HTTP/gRPC transports and related client/server integrations)
 	//   - health.Module (health server wiring)
@@ -66,11 +66,11 @@ var (
 	Server = di.Module(
 		Library,
 		debug.Module,
-		cache.Module,
 		config.Module,
+		telemetry.Module,
+		cache.Module,
 		feature.Module,
 		sql.Module,
-		telemetry.Module,
 		limiter.Module,
 		transport.Module,
 		health.Module,
@@ -80,12 +80,12 @@ var (
 	//
 	// It builds on Library and adds client-oriented wiring commonly needed by client processes
 	// and batch jobs:
-	//   - cache.Module (cache drivers/facade; optional by config)
 	//   - config.Module (config decoding + validation + common sub-config projections)
+	//   - telemetry.Module (logging/tracing/metrics wiring)
+	//   - cache.Module (cache drivers/facade; optional by config)
 	//   - feature.Module (OpenFeature client + optional provider registration)
 	//   - hooks.Module (Standard Webhooks helpers; used by HTTP hook integrations)
 	//   - sql.Module (SQL database wiring; currently PostgreSQL)
-	//   - telemetry.Module (logging/tracing/metrics wiring)
 	//   - limiter.Module (rate limiter key map wiring)
 	//
 	// Unlike Server, Client does not wire debug endpoints, transports, or a health server by default.
@@ -94,12 +94,12 @@ var (
 	// This is the primary entrypoint for client-style applications built from `go-service-template`.
 	Client = di.Module(
 		Library,
-		cache.Module,
 		config.Module,
+		telemetry.Module,
+		cache.Module,
 		feature.Module,
 		hooks.Module,
 		sql.Module,
-		telemetry.Module,
 		limiter.Module,
 	)
 )

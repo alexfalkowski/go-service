@@ -12,7 +12,8 @@
 // # Enablement model
 //
 // Tracing is enabled by presence: a nil *Config indicates tracing is disabled.
-// When disabled, Register is a no-op.
+// When disabled, Register installs this package's noop provider. IsEnabled reports
+// whether the current global provider is not that noop provider.
 //
 // # Global provider installation
 //

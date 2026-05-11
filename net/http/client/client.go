@@ -73,8 +73,8 @@ func WithIgnoreRedirect() ClientOption {
 //
 // It reuses buffers from pool and applies the configured transport, timeout, and redirect policy.
 //
-// The underlying *http.Client is constructed via http.NewClient, which instruments requests with
-// OpenTelemetry and sets http.Client.Timeout.
+// The underlying *http.Client is constructed via http.NewClient, which sets http.Client.Timeout and
+// instruments requests with OpenTelemetry when tracing or metrics are enabled.
 //
 // Callers should treat the returned Client as safe for concurrent use.
 func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOption) *Client {

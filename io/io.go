@@ -6,6 +6,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 )
 
+// EOF aliases io.EOF.
+var EOF = io.EOF
+
 // WriterTo is an alias for io.WriterTo.
 //
 // It is provided so go-service code can depend on a consistent import path while

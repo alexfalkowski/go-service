@@ -9,6 +9,9 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
+// Option configures OpenTelemetry HTTP instrumentation.
+type Option = otelhttp.Option
+
 // NewClientTrace returns a net/http/httptrace.ClientTrace that is integrated with
 // OpenTelemetry.
 //
@@ -53,7 +56,7 @@ func WithClientTrace(f func(context.Context) *httptrace.ClientTrace) otelhttp.Op
 // This function delegates to otelhttp.NewTransport. For exact semantics and
 // supported otelhttp.Option values, consult the upstream otelhttp documentation
 // for the version you vend.
-func NewTransport(base http.RoundTripper, opts ...otelhttp.Option) *otelhttp.Transport {
+func NewTransport(base http.RoundTripper, opts ...Option) *otelhttp.Transport {
 	return otelhttp.NewTransport(base, opts...)
 }
 

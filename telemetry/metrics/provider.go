@@ -9,9 +9,13 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/metric/noop"
 	sdk "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 )
+
+var noopProvider metric.MeterProvider = noop.NewMeterProvider()
 
 // MeterProviderParams declares the dependencies required by NewMeterProvider.
 //
@@ -59,10 +63,11 @@ type MeterProviderParams struct {
 //
 // Provider shutdown errors are intentionally ignored to avoid blocking other stop hooks.
 //
-// If metrics are disabled or Reader is nil, it returns nil.
+// If metrics are disabled or Reader is nil, it installs and returns the package noop provider.
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !params.Config.IsEnabled() || params.Reader == nil {
-		return nil
+		otel.SetMeterProvider(noopProvider)
+		return noopProvider
 	}
 
 	reader := params.Reader
@@ -85,10 +90,21 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 		OnStop: func(ctx context.Context) error {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
+			otel.SetMeterProvider(noopProvider)
 
 			return nil
 		},
 	})
 
 	return provider
+}
+
+// IsEnabled reports whether metrics are backed by a non-noop provider installed by this package.
+func IsEnabled() bool {
+	return otel.GetMeterProvider() != noopProvider
+}
+
+// NewManualReader constructs an OpenTelemetry SDK manual metric reader.
+func NewManualReader() sdk.Reader {
+	return sdk.NewManualReader()
 }

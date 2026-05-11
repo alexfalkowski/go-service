@@ -16,6 +16,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/server"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/telemetry"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc/token"
@@ -74,7 +76,7 @@ type ServerParams struct {
 // as not configured.
 //
 // The constructed server includes:
-//   - OpenTelemetry stats handling (server-side RPC instrumentation).
+//   - OpenTelemetry stats handling when tracing or metrics are enabled.
 //   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, and rate limiting, followed by any user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging
@@ -100,13 +102,17 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, prefix(err)
 	}
 
-	grpcServer := grpc.NewServer(params.Config.Options, params.Config.Timeout,
-		grpc.StatsHandler(telemetry.NewServerHandler()),
+	options := []grpc.ServerOption{
 		unaryServerOption(params, params.Unary...),
 		streamServerOption(params, params.Stream...),
 		maxReceiveSizeOption(params.Config),
 		opt,
-	)
+	}
+	if metrics.IsEnabled() || tracer.IsEnabled() {
+		options = append(options, grpc.StatsHandler(telemetry.NewServerHandler()))
+	}
+
+	grpcServer := grpc.NewServer(params.Config.Options, params.Config.Timeout, options...)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
 	service, err := server.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)

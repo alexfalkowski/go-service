@@ -10,7 +10,11 @@ import (
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdk "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
+
+var noopProvider trace.TracerProvider = noop.NewTracerProvider()
 
 // TracerParams declares the dependencies required by Register.
 //
@@ -52,6 +56,7 @@ type TracerParams struct {
 // Shutdown errors are intentionally ignored to avoid blocking other stop hooks.
 func Register(params TracerParams) {
 	if !params.Config.IsEnabled() {
+		otel.SetTracerProvider(noopProvider)
 		return
 	}
 
@@ -76,8 +81,14 @@ func Register(params TracerParams) {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
 			_ = exporter.Shutdown(ctx)
+			otel.SetTracerProvider(noopProvider)
 
 			return nil
 		},
 	})
+}
+
+// IsEnabled reports whether tracing is backed by a non-noop provider installed by this package.
+func IsEnabled() bool {
+	return otel.GetTracerProvider() != noopProvider
 }
