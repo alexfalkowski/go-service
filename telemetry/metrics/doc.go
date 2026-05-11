@@ -23,7 +23,9 @@
 //     Config is non-nil (this allows DI to short-circuit metrics when reader
 //     construction fails or is intentionally omitted).
 //
-// When disabled, NewReader returns (nil, nil) and NewMeterProvider returns nil.
+// When disabled, NewReader returns (nil, nil) and NewMeterProvider installs and
+// returns this package's noop provider. IsEnabled reports whether the current global
+// provider is not that noop provider.
 //
 // # Exporters / readers
 //

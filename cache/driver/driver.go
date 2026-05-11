@@ -7,6 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/faabiosr/cachego"
 	"github.com/faabiosr/cachego/redis"
 	"github.com/faabiosr/cachego/sync"
@@ -40,8 +42,8 @@ var ErrNotFound = errors.New("cache: driver not found")
 //   - options["url"] to be a string "source string" (e.g. "env:REDIS_URL" or "file:/path/to/url" or a literal URL)
 //
 // The URL is read via fs.ReadSource, parsed using redis/go-redis ParseURL, and
-// then the client is instrumented for tracing and metrics via
-// `cache/telemetry`.
+// then the client is instrumented for tracing and metrics via `cache/telemetry`
+// when those telemetry providers are enabled.
 //
 // Instrumentation errors are treated as fatal configuration/runtime errors and
 // are converted into panics via runtime.Must, matching the existing repository
@@ -79,8 +81,12 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 		}
 
 		client := client.NewClient(opts)
-		runtime.Must(telemetry.InstrumentTracing(client))
-		runtime.Must(telemetry.InstrumentMetrics(client))
+		if tracer.IsEnabled() {
+			runtime.Must(telemetry.InstrumentTracing(client))
+		}
+		if metrics.IsEnabled() {
+			runtime.Must(telemetry.InstrumentMetrics(client))
+		}
 
 		return redis.New(client), nil
 	case "sync":

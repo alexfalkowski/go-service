@@ -115,12 +115,12 @@ func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
 }
 
-// HandleFunc registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.
+// HandleFunc registers handler for pattern on mux.
 func HandleFunc(mux *ServeMux, pattern string, handler HandlerFunc) {
 	http.HandleFunc(mux, pattern, handler)
 }
 
-// Handle registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.
+// Handle registers handler for pattern on mux.
 func Handle(mux *ServeMux, pattern string, handler Handler) {
 	http.Handle(mux, pattern, handler)
 }

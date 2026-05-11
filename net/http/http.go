@@ -14,6 +14,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
@@ -152,23 +154,33 @@ var (
 	NoBody = http.NoBody
 )
 
-// NewClient constructs an HTTP client with OpenTelemetry instrumentation and a request timeout.
+// NewClient constructs an HTTP client with a request timeout.
 //
-// The returned client wraps the provided RoundTripper with a telemetry transport and installs an
-// httptrace-based client trace derived from the request context. This enables client-side spans and
-// timing events to be captured by the configured OpenTelemetry instrumentation.
+// When tracing or metrics are enabled, the returned client wraps the provided RoundTripper with a telemetry
+// transport. When tracing is enabled, it also installs an httptrace-based client trace derived from the
+// request context.
 //
 // The provided timeout is assigned to http.Client.Timeout (total time limit for requests, including
 // connection time, redirects, and reading the response body).
 func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
-	return &http.Client{
-		Transport: telemetry.NewTransport(
-			rt,
-			telemetry.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+	var transport http.RoundTripper
+
+	if metrics.IsEnabled() || tracer.IsEnabled() {
+		options := []telemetry.Option{}
+		if tracer.IsEnabled() {
+			options = append(options, telemetry.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
 				return telemetry.NewClientTrace(ctx)
-			}),
-		),
-		Timeout: timeout.Duration(),
+			}))
+		}
+
+		transport = telemetry.NewTransport(rt, options...)
+	} else {
+		transport = rt
+	}
+
+	return &http.Client{
+		Transport: transport,
+		Timeout:   timeout.Duration(),
 	}
 }
 
@@ -194,19 +206,24 @@ func MaxBytesHandler(h Handler, n int64) Handler {
 	return http.MaxBytesHandler(h, n)
 }
 
-// HandleFunc registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.
+// HandleFunc registers handler for pattern on mux.
 //
-// This helper ensures that handlers registered via this package are consistently instrumented by
-// wrapping them with telemetry.NewHandler before registration.
+// When tracing or metrics are enabled, handler is wrapped with OpenTelemetry instrumentation before
+// registration.
 func HandleFunc(mux *ServeMux, pattern string, handler http.HandlerFunc) {
 	Handle(mux, pattern, handler)
 }
 
-// Handle registers handler for pattern on mux and wraps it with OpenTelemetry instrumentation.
+// Handle registers handler for pattern on mux.
 //
-// The handler is wrapped with telemetry.NewHandler using the provided pattern as the handler name.
-// This is useful for consistent HTTP server span naming and handler metrics attribution.
+// When tracing or metrics are enabled, handler is wrapped with telemetry.NewHandler using the provided
+// pattern as the handler name.
 func Handle(mux *ServeMux, pattern string, handler http.Handler) {
+	if !metrics.IsEnabled() && !tracer.IsEnabled() {
+		mux.Handle(pattern, handler)
+		return
+	}
+
 	mux.Handle(pattern, telemetry.NewHandler(handler, pattern))
 }
 

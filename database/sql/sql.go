@@ -1,6 +1,16 @@
 package sql
 
-import "github.com/linxGnu/mssqlx"
+import (
+	"database/sql"
+
+	"github.com/linxGnu/mssqlx"
+)
+
+// DB aliases `database/sql`.DB.
+//
+// It is exposed so go-service SQL packages can use the local package namespace
+// while preserving standard-library behavior.
+type DB = sql.DB
 
 // DBs is an alias of mssqlx.DBs.
 //
@@ -11,6 +21,20 @@ import "github.com/linxGnu/mssqlx"
 // helper methods for querying masters, slaves, and running operations against
 // the configured pools.
 type DBs = mssqlx.DBs
+
+// Rows aliases `database/sql`.Rows.
+//
+// It is exposed so go-service SQL packages can use the local package namespace
+// while preserving standard-library behavior.
+type Rows = sql.Rows
+
+// Open aliases `database/sql`.Open.
+//
+// The driver name must already be registered with the global `database/sql`
+// registry. The returned DB uses standard-library database/sql behavior.
+func Open(driverName, dataSourceName string) (*DB, error) {
+	return sql.Open(driverName, dataSourceName)
+}
 
 // ConnectMasterSlaves is a thin wrapper around mssqlx.ConnectMasterSlaves.
 //

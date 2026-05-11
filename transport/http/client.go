@@ -239,14 +239,14 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	return hrt, nil
 }
 
-// NewClient constructs a new instrumented `http.Client`.
+// NewClient constructs a new `http.Client`.
 //
 // The returned client:
 //   - uses the RoundTripper stack built by `NewRoundTripper`, and
 //   - applies the configured client timeout (see `WithClientTimeout`).
 //
-// Note: `http.NewClient` wraps the provided transport with OpenTelemetry instrumentation, so requests
-// made with the returned client are traced/observed by default.
+// Note: `http.NewClient` wraps the provided transport with OpenTelemetry instrumentation when tracing
+// or metrics are enabled.
 func NewClient(opts ...ClientOption) (*http.Client, error) {
 	os := options(opts...)
 

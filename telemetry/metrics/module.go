@@ -11,9 +11,12 @@ import "github.com/alexfalkowski/go-service/v2/di"
 //   - `NewMeter`, which returns a Meter scoped to the service name and instrumentation version.
 //
 // When metrics are disabled (`*Config` is nil), `NewReader` returns a nil reader and
-// `NewMeterProvider` returns a nil provider.
+// `NewMeterProvider` installs and returns the package noop provider.
 var Module = di.Module(
 	di.Constructor(NewReader),
 	di.Constructor(NewMeterProvider),
 	di.Constructor(NewMeter),
+	di.Register(registerMeterProvider),
 )
+
+func registerMeterProvider(_ MeterProvider) {}

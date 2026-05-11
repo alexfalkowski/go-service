@@ -13,6 +13,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
+	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/jmoiron/sqlx"
 	"github.com/linxGnu/mssqlx"
 )
@@ -22,16 +24,37 @@ import (
 // It is the concrete driver type expected by Register.
 type Driver = driver.Driver
 
+// Conn aliases `database/sql/driver`.Conn.
+type Conn = driver.Conn
+
+// NamedValue aliases `database/sql/driver`.NamedValue.
+type NamedValue = driver.NamedValue
+
+// Rows aliases `database/sql/driver`.Rows.
+type Rows = driver.Rows
+
+// Stmt aliases `database/sql/driver`.Stmt.
+type Stmt = driver.Stmt
+
+// Tx aliases `database/sql/driver`.Tx.
+type Tx = driver.Tx
+
+// Value aliases `database/sql/driver`.Value.
+type Value = driver.Value
+
+// ErrSkip aliases `database/sql/driver`.ErrSkip.
+var ErrSkip = driver.ErrSkip
+
 // ErrNoDSNs is returned when SQL configuration enables a driver without any master or slave DSNs.
 var ErrNoDSNs = errors.New("driver: no database DSNs configured")
 
-// Register registers a `database/sql` driver under name and wraps it with OpenTelemetry instrumentation.
+// Register registers a `database/sql` driver under name.
 //
-// This function registers the wrapped driver with the global `database/sql` driver registry. It is therefore
-// intended to be called during process initialization (for example from an init hook or DI registration).
+// This function registers the driver with the global `database/sql` driver registry. It is therefore intended
+// to be called during process initialization (for example from an init hook or DI registration).
 //
 // Telemetry:
-//   - The driver is wrapped using database/sql/telemetry.WrapDriver.
+//   - The driver is wrapped using database/sql/telemetry.WrapDriver when tracing or metrics are enabled.
 //   - The DB system name attribute is set to the provided name (attributes.DBSystemNameKey).
 //
 // Errors:
@@ -44,7 +67,11 @@ func Register(name string, driver Driver) (err error) {
 		}
 	}()
 
-	sql.Register(name, telemetry.WrapDriver(driver, telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))))
+	if metrics.IsEnabled() || tracer.IsEnabled() {
+		driver = telemetry.WrapDriver(driver, telemetry.WithAttributes(attributes.DBSystemNameKey.String(name)))
+	}
+
+	sql.Register(name, driver)
 
 	return err
 }
@@ -55,8 +82,8 @@ func Register(name string, driver Driver) (err error) {
 // It resolves DSNs from cfg using the provided filesystem (DSNs are configured
 // as go-service "source strings"), connects using
 // `mssqlx.ConnectMasterSlaves`, registers OpenTelemetry DB stats metrics for
-// each pool, and then applies pool settings (connection lifetime, max idle, and
-// max open connections).
+// each pool when metrics are enabled, and then applies pool settings
+// (connection lifetime, max idle, and max open connections).
 //
 // Preconditions:
 //   - cfg must be non-nil and already treated as enabled/validated by the caller.
@@ -137,13 +164,15 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error
 		return nil, err
 	}
 
-	attrs := telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))
+	if metrics.IsEnabled() {
+		attrs := telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))
 
-	masters, _ := db.GetAllMasters()
-	register(masters, attrs)
+		masters, _ := db.GetAllMasters()
+		register(masters, attrs)
 
-	slaves, _ := db.GetAllSlaves()
-	register(slaves, attrs)
+		slaves, _ := db.GetAllSlaves()
+		register(slaves, attrs)
+	}
 
 	return db, nil
 }
