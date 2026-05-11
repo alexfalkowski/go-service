@@ -155,11 +155,13 @@ func NewTLSServerConfig() *tls.Config {
 	return NewTLSConfig("certs/cert.pem", "certs/key.pem")
 }
 
-// NewTLSConfig returns a TLS config that resolves the given certificate and key relative to `test/`.
+// NewTLSConfig returns a TLS config that resolves test TLS fixtures relative to `test/`.
 func NewTLSConfig(c, k string) *tls.Config {
 	tc := &tls.Config{
-		Cert: FilePath(c),
-		Key:  FilePath(k),
+		Cert:       FilePath(c),
+		Key:        FilePath(k),
+		CA:         FilePath("certs/rootCA.pem"),
+		ServerName: "localhost",
 	}
 
 	return tc

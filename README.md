@@ -292,6 +292,8 @@ feature:
   tls:
     cert: file:test/certs/client-cert.pem
     key: file:test/certs/client-key.pem
+    ca: file:test/certs/rootCA.pem
+    server_name: localhost
 ```
 
 Notes:
@@ -789,11 +791,17 @@ transport:
     tls:
       cert: file:test/certs/cert.pem
       key: file:test/certs/key.pem
+      ca: file:test/certs/rootCA.pem
   grpc:
     tls:
       cert: file:test/certs/cert.pem
       key: file:test/certs/key.pem
+      ca: file:test/certs/rootCA.pem
 ```
+
+Set `ca` on server TLS config to require and verify client certificates for mTLS. Set `ca` on client TLS
+config to verify server certificates issued by the same local or private CA. `server_name` is only needed
+on clients when the dial address differs from the certificate DNS name.
 
 Important note:
 
@@ -874,6 +882,7 @@ debug:
   tls:
     cert: file:test/certs/cert.pem
     key: file:test/certs/key.pem
+    ca: file:test/certs/rootCA.pem
 ```
 
 All debug endpoints are namespaced by service name: `/<name>/debug/...`.

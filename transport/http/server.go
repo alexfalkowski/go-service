@@ -3,7 +3,7 @@ package http
 import (
 	"cmp"
 
-	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/server"
+	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
@@ -92,7 +92,7 @@ type ServerParams struct {
 // TLS:
 //
 // If TLS is enabled, TLS configuration is constructed using the package-registered filesystem dependency
-// (see `Register` in this package) to resolve certificate/key "source strings" (for example `file:` or `env:`).
+// (see `Register` in this package) to resolve TLS "source strings" (for example `file:` or `env:`).
 //
 // Inbound size limits:
 //
@@ -136,7 +136,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, prefix(err)
 	}
 
-	service, err := server.NewService("http", httpServer, cfg, params.Logger, params.Shutdowner)
+	service, err := httpserver.NewService("http", httpServer, cfg, params.Logger, params.Shutdowner)
 	if err != nil {
 		return nil, prefix(err)
 	}
@@ -146,10 +146,10 @@ func NewServer(params ServerParams) (*Server, error) {
 
 // Server wraps an HTTP server service wrapper.
 //
-// The embedded `*server.Service` provides start/stop orchestration and integrates with the application's
+// The embedded `*httpserver.Service` provides start/stop orchestration and integrates with the application's
 // lifecycle.
 type Server struct {
-	*server.Service
+	*httpserver.Service
 }
 
 // GetService returns the runnable service wrapper.
@@ -157,7 +157,7 @@ type Server struct {
 // It returns nil if s is nil (for example, when the transport is disabled).
 // This method is commonly used by higher-level wiring to collect enabled server services for lifecycle
 // registration (see `transport.NewServers` and `net/server.Register`).
-func (s *Server) GetService() *server.Service {
+func (s *Server) GetService() *httpserver.Service {
 	if s == nil {
 		return nil
 	}
@@ -172,7 +172,7 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 		return config, nil
 	}
 
-	tlsConfig, err := tls.NewConfig(fs, cfg.TLS)
+	tlsConfig, err := server.NewConfig(fs, cfg.TLS)
 	if err != nil {
 		return nil, prefix(err)
 	}

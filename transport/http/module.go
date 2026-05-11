@@ -25,7 +25,7 @@ import (
 //   - operational endpoints (Prometheus metrics and health)
 //
 // This module also registers `Register`, which injects the filesystem dependency used by this package
-// (required when constructing TLS configuration from certificate/key source strings).
+// (required when constructing TLS configuration from source strings).
 var Module = di.Module(
 	di.Register(Register),
 	di.Constructor(http.NewServeMux),
