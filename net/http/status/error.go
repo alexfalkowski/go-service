@@ -11,7 +11,7 @@ import (
 //
 // Content-Type:
 // WriteError always writes the response as a plain-text error payload using the go-service specific
-// error media type "text/error; charset=utf-8" and sets "X-Content-Type-Options: nosniff".
+// error media type "text/error" and sets "X-Content-Type-Options: nosniff".
 //
 // Status code selection:
 // The HTTP status code is derived from err using Code(err), which understands:

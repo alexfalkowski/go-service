@@ -712,7 +712,7 @@ Notes:
 
 - `application/hjson` maps to the built-in `hjson` encoder kind.
 - Unknown or invalid request media types fall back to JSON selection.
-- `text/error; charset=utf-8` is reserved for error responses and should not be sent by clients as a request content type.
+- `text/error` is reserved for error responses and should not be sent by clients as a request content type.
 
 ### Transport configuration (servers)
 
