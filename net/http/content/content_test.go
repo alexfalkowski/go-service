@@ -36,7 +36,7 @@ func TestNewFromRequest(t *testing.T) {
 }
 
 func TestNewFromMediaWithParameters(t *testing.T) {
-	media := test.Content.NewFromMedia("application/json; charset=utf-8")
+	media := test.Content.NewFromMedia("application/json; profile=test")
 
 	require.Equal(t, "application/json", media.Type)
 	require.Equal(t, "json", media.Subtype)
