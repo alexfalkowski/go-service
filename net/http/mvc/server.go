@@ -10,8 +10,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -57,7 +57,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set(content.TypeKey, mime.HTMLMediaType)
+		res.Header().Set(content.TypeKey, media.HTML)
 
 		ctx := req.Context()
 		ctx = meta.WithContent(ctx, req, res, nil)

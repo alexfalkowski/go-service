@@ -1,0 +1,55 @@
+package media
+
+// Error is the media type used for plain-text error bodies.
+//
+// This is intended for responses where the body is a human-readable error message.
+// Note: "text/error" is not a standard IANA media type, but is used within go-service
+// for consistent internal error rendering.
+const Error = "text/error; charset=utf-8"
+
+// HTML is the media type for HTML documents encoded as UTF-8.
+//
+// This is typically used for HTML responses or debug pages.
+const HTML = "text/html; charset=utf-8"
+
+// JPEG is the media type for JPEG images.
+const JPEG = "image/jpeg"
+
+// JSON is the media type for JSON documents.
+//
+// This is commonly used as the Content-Type for JSON request/response bodies.
+const JSON = "application/json"
+
+// HJSON is the media type for HJSON documents.
+//
+// This is commonly used as the Content-Type for HJSON request/response bodies.
+const HJSON = "application/hjson"
+
+// Markdown is the media type for Markdown documents encoded as UTF-8.
+const Markdown = "text/markdown; charset=utf-8"
+
+// Protobuf is the media type for protobuf binary payloads.
+//
+// This is commonly used when transporting protobuf wire-format bodies over HTTP.
+const Protobuf = "application/protobuf"
+
+// ProtobufJSON is the media type for protobuf JSON-encoded payloads.
+//
+// Note: this is a go-service specific media type string used to distinguish protobuf JSON
+// from generic JSON in content negotiation.
+const ProtobufJSON = "application/pbjson"
+
+// ProtobufText is the media type for protobuf text-format payloads.
+//
+// Note: this is a go-service specific media type string used to distinguish protobuf text format
+// in content negotiation.
+const ProtobufText = "application/pbtxt"
+
+// Text is the media type for plain text encoded as UTF-8.
+const Text = "text/plain; charset=utf-8"
+
+// TOML is the media type for TOML documents.
+const TOML = "application/toml"
+
+// YAML is the media type for YAML documents.
+const YAML = "application/yaml"

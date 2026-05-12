@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/stretchr/testify/require"
 )
 
@@ -55,7 +55,7 @@ func TestReadinessNoop(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "SERVING", body)
-	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.Text, res.Header.Get(content.TypeKey))
 }
 
 func TestInvalidHealth(t *testing.T) {
@@ -72,7 +72,7 @@ func TestInvalidHealth(t *testing.T) {
 
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, "http: http checker: invalid status code", body)
-	require.Equal(t, mime.ErrorMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.Error, res.Header.Get(content.TypeKey))
 }
 
 func TestMissingHealth(t *testing.T) {
@@ -91,7 +91,7 @@ func TestMissingHealth(t *testing.T) {
 			)
 
 			header := http.Header{}
-			header.Set(content.TypeKey, mime.JSONMediaType)
+			header.Set(content.TypeKey, media.JSON)
 
 			url := world.NamedServerURL("http", check)
 

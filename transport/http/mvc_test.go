@@ -8,7 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -32,7 +32,7 @@ func TestRouteSuccess(t *testing.T) {
 	mvc.Patch("/hello", controller)
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.HTMLMediaType)
+	header.Set(content.TypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "hello")
 
@@ -40,7 +40,7 @@ func TestRouteSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.HTML, res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -56,7 +56,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 	})
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.HTMLMediaType)
+	header.Set(content.TypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "hello")
 
@@ -64,7 +64,7 @@ func TestRoutePartialViewSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.HTML, res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -78,7 +78,7 @@ func TestRouteError(t *testing.T) {
 	})
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.HTMLMediaType)
+	header.Set(content.TypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "hello")
 
@@ -86,7 +86,7 @@ func TestRouteError(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, mime.HTMLMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.HTML, res.Header.Get(content.TypeKey))
 
 	_, err = html.Parse(strings.NewReader(body))
 	require.NoError(t, err)
@@ -98,7 +98,7 @@ func TestStaticFileSuccess(t *testing.T) {
 	mvc.StaticFile("/robots.txt", "static/robots.txt")
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.TextMediaType)
+	header.Set(content.TypeKey, media.Text)
 
 	url := world.PathServerURL("http", "robots.txt")
 
@@ -106,7 +106,7 @@ func TestStaticFileSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.Text, res.Header.Get(content.TypeKey))
 }
 
 func TestStaticFileError(t *testing.T) {
@@ -128,7 +128,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	mvc.StaticPathValue("/{file}", "file", "static")
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.TextMediaType)
+	header.Set(content.TypeKey, media.Text)
 
 	url := world.PathServerURL("http", "robots.txt")
 
@@ -136,7 +136,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, mime.TextMediaType, res.Header.Get(content.TypeKey))
+	require.Equal(t, media.Text, res.Header.Get(content.TypeKey))
 }
 
 func TestStaticPathValueError(t *testing.T) {

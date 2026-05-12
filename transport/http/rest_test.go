@@ -5,7 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +34,7 @@ func TestRestRequestNoContent(t *testing.T) {
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
 			opts := &rest.Options{
-				ContentType: mime.JSONMediaType,
+				ContentType: media.JSON,
 				Request:     req,
 			}
 			err := world.Rest.Do(t.Context(), method, url, opts)
@@ -67,7 +67,7 @@ func TestRestRequestError(t *testing.T) {
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
 			opts := &rest.Options{
-				ContentType: mime.JSONMediaType,
+				ContentType: media.JSON,
 				Request:     req,
 			}
 			err := world.Rest.Do(t.Context(), method, url, opts)
@@ -106,7 +106,7 @@ func TestRestRequestWithContent(t *testing.T) {
 			req := &test.Request{Name: "test"}
 			resp := &test.Response{}
 			opts := &rest.Options{
-				ContentType: mime.JSONMediaType,
+				ContentType: media.JSON,
 				Request:     req,
 				Response:    resp,
 			}

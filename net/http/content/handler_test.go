@@ -10,7 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +24,7 @@ func TestNewRequestHandlerRejectsErrorContentType(t *testing.T) {
 	})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(`{"name":"Bob"}`))
-	req.Header.Set(content.TypeKey, mime.ErrorMediaType)
+	req.Header.Set(content.TypeKey, media.Error)
 
 	res := httptest.NewRecorder()
 
@@ -34,7 +34,7 @@ func TestNewRequestHandlerRejectsErrorContentType(t *testing.T) {
 
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, mime.ErrorMediaType, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error;charset=utf-8"`)
 }
 
@@ -47,7 +47,7 @@ func TestNewHandlerRejectsErrorContentType(t *testing.T) {
 	})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, mime.ErrorMediaType)
+	req.Header.Set(content.TypeKey, media.Error)
 
 	res := httptest.NewRecorder()
 
@@ -56,7 +56,7 @@ func TestNewHandlerRejectsErrorContentType(t *testing.T) {
 	})
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, mime.ErrorMediaType, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error;charset=utf-8"`)
 }
 
@@ -70,13 +70,13 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, mime.JSONMediaType)
+	req.Header.Set(content.TypeKey, media.JSON)
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Equal(t, mime.ErrorMediaType, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
 	require.Equal(t, test.ErrFailed.Error()+"\n", res.Body.String())
 	require.NotContains(t, res.Body.String(), "partial")
 }
