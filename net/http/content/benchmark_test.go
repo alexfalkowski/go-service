@@ -29,9 +29,9 @@ func BenchmarkNewFromRequestJSON(b *testing.B) {
 	}
 }
 
-func BenchmarkNewFromMediaWithCharset(b *testing.B) {
+func BenchmarkNewFromMediaWithParameters(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
-		benchmarkMedia = test.Content.NewFromMedia("application/json; charset=utf-8")
+		benchmarkMedia = test.Content.NewFromMedia("application/json; profile=test")
 	}
 }

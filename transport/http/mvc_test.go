@@ -106,7 +106,7 @@ func TestStaticFileSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.Text, res.Header.Get(content.TypeKey))
+	require.Contains(t, res.Header.Get(content.TypeKey), media.Text)
 }
 
 func TestStaticFileError(t *testing.T) {
@@ -136,7 +136,7 @@ func TestStaticPathValueSuccess(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, body)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, media.Text, res.Header.Get(content.TypeKey))
+	require.Contains(t, res.Header.Get(content.TypeKey), media.Text)
 }
 
 func TestStaticPathValueError(t *testing.T) {

@@ -28,12 +28,12 @@ func Parse(value string) (string, string, error) {
 // This is intended for responses where the body is a human-readable error message.
 // Note: "text/error" is not a standard IANA media type, but is used within go-service
 // for consistent internal error rendering.
-const Error = "text/error; charset=utf-8"
+const Error = "text/error"
 
-// HTML is the media type for HTML documents encoded as UTF-8.
+// HTML is the media type for HTML documents.
 //
 // This is typically used for HTML responses or debug pages.
-const HTML = "text/html; charset=utf-8"
+const HTML = "text/html"
 
 // JPEG is the media type for JPEG images.
 const JPEG = "image/jpeg"
@@ -48,8 +48,8 @@ const JSON = "application/json"
 // This is commonly used as the Content-Type for HJSON request/response bodies.
 const HJSON = "application/hjson"
 
-// Markdown is the media type for Markdown documents encoded as UTF-8.
-const Markdown = "text/markdown; charset=utf-8"
+// Markdown is the media type for Markdown documents.
+const Markdown = "text/markdown"
 
 // Protobuf is the media type for protobuf binary payloads.
 //
@@ -68,8 +68,8 @@ const ProtobufJSON = "application/pbjson"
 // in content negotiation.
 const ProtobufText = "application/pbtxt"
 
-// Text is the media type for plain text encoded as UTF-8.
-const Text = "text/plain; charset=utf-8"
+// Text is the media type for plain text.
+const Text = "text/plain"
 
 // TOML is the media type for TOML documents.
 const TOML = "application/toml"
