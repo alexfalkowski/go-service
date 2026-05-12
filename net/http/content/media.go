@@ -3,32 +3,40 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
-	content "github.com/elnormous/contenttype"
 )
 
 const jsonKind = "json"
 
 const errorSubtype = "error"
 
-// NewMedia builds a Media from a parsed media type and encoder map.
+// NewMedia builds a Media from a media type string and encoder map.
 //
 // Encoder selection:
 //   - If the subtype is "error", it returns a Media without an encoder.
 //   - If no encoder is registered for the subtype, it falls back to JSON.
 //   - Otherwise it returns the encoder registered for the subtype.
-func NewMedia(mediaType content.MediaType, enc *encoding.Map) Media {
-	return newMedia(mediaType, enc)
+func NewMedia(mediaType string, enc *encoding.Map) Media {
+	if media, ok := knownMedia(mediaType, enc); ok {
+		return media
+	}
+
+	value, subtype, err := media.Parse(mediaType)
+	if err != nil {
+		return jsonMedia(enc)
+	}
+
+	return newMedia(value, subtype, enc)
 }
 
 // Media describes an HTTP media type and its associated encoder.
 //
-// Type is the full media type string (including parameters if present). Subtype is the parsed media subtype used
-// for encoder lookup. Encoder may be nil when Subtype is "error".
+// Type is the base media type string. Subtype is the parsed media subtype used for encoder lookup.
+// Encoder may be nil when Subtype is "error".
 type Media struct {
 	// Encoder is the encoder/decoder associated with the media subtype.
 	Encoder encoding.Encoder
 
-	// Type is the full media type string (for example "application/json", "application/hjson", or "text/plain; charset=utf-8").
+	// Type is the base media type string (for example "application/json", "application/hjson", or "text/plain").
 	Type string
 
 	// Subtype is the parsed subtype (for example "json", "hjson", or "plain").
@@ -63,17 +71,17 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	}
 }
 
-func newMedia(mediaType content.MediaType, enc *encoding.Map) Media {
-	if mediaType.Subtype == errorSubtype {
-		return Media{Type: mediaType.String(), Subtype: mediaType.Subtype}
+func newMedia(value, subtype string, enc *encoding.Map) Media {
+	if subtype == errorSubtype {
+		return Media{Type: value, Subtype: subtype}
 	}
 
-	e := enc.Get(mediaType.Subtype)
+	e := enc.Get(subtype)
 	if e == nil {
 		return jsonMedia(enc)
 	}
 
-	return Media{Type: mediaType.String(), Subtype: mediaType.Subtype, Encoder: e}
+	return Media{Type: value, Subtype: subtype, Encoder: e}
 }
 
 func jsonMedia(enc *encoding.Map) Media {

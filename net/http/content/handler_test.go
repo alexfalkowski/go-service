@@ -35,7 +35,7 @@ func TestNewRequestHandlerRejectsErrorContentType(t *testing.T) {
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
-	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error;charset=utf-8"`)
+	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
 }
 
 func TestNewHandlerRejectsErrorContentType(t *testing.T) {
@@ -57,7 +57,7 @@ func TestNewHandlerRejectsErrorContentType(t *testing.T) {
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
 	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
-	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error;charset=utf-8"`)
+	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
 }
 
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
