@@ -12,8 +12,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -96,7 +96,7 @@ func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, mime.HTMLMediaType)
+	req.Header.Set(content.TypeKey, media.HTML)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
@@ -124,7 +124,7 @@ func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, mime.HTMLMediaType)
+	req.Header.Set(content.TypeKey, media.HTML)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)
@@ -152,7 +152,7 @@ func TestRouteErrorWritesRenderStatusWhenErrorViewFails(t *testing.T) {
 	}))
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, mime.HTMLMediaType)
+	req.Header.Set(content.TypeKey, media.HTML)
 	res := httptest.NewRecorder()
 
 	mux.ServeHTTP(res, req)

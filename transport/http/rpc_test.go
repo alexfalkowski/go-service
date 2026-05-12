@@ -8,7 +8,7 @@ import (
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/stretchr/testify/require"
@@ -195,7 +195,7 @@ func TestAllowedRPC(t *testing.T) {
 }
 
 func TestDisallowedRPC(t *testing.T) {
-	for _, mt := range []string{mime.JSONMediaType, mime.HJSONMediaType, mime.YAMLMediaType, "application/yml", mime.TOMLMediaType, "application/gob", "test"} {
+	for _, mt := range []string{media.JSON, media.HJSON, media.YAML, "application/yml", media.TOML, "application/gob", "test"} {
 		t.Run(mt, func(t *testing.T) {
 			world := test.NewStartedWorld(t,
 				test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 100)),

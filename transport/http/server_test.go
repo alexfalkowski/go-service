@@ -7,7 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
@@ -43,7 +43,7 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	world.Start()
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.JSONMediaType)
+	header.Set(content.TypeKey, media.JSON)
 
 	res, body, err := world.PostBody(
 		t.Context(),
@@ -67,7 +67,7 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	world.Start()
 
 	header := http.Header{}
-	header.Set(content.TypeKey, mime.JSONMediaType)
+	header.Set(content.TypeKey, media.JSON)
 
 	res, body, err := world.PostBody(
 		t.Context(),

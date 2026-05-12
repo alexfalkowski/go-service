@@ -12,7 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/net/http/rpc"
@@ -232,7 +232,7 @@ func BenchmarkMVC(b *testing.B) {
 		req, err := transporthttp.NewRequestWithContext(b.Context(), transporthttp.MethodGet, url, transporthttp.NoBody)
 		require.NoError(b, err)
 
-		req.Header.Set(content.TypeKey, mime.HTMLMediaType)
+		req.Header.Set(content.TypeKey, media.HTML)
 
 		b.ResetTimer()
 
@@ -393,7 +393,7 @@ func BenchmarkRest(b *testing.B) {
 			for b.Loop() {
 				buffer := test.Pool.Get()
 				opts := &rest.Options{
-					ContentType: mime.TextMediaType,
+					ContentType: media.Text,
 					Response:    buffer,
 				}
 

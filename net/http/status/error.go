@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/net/http/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
 
 // WriteError writes an error response to res.
@@ -30,7 +30,7 @@ import (
 func WriteError(res http.ResponseWriter, err error) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", mime.ErrorMediaType)
+	header.Set("Content-Type", media.Error)
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(Code(err))
@@ -41,7 +41,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 
 // WriteText writes a plain-text success response to res.
 //
-// It clears any precomputed Content-Length, sets "Content-Type" to mime.TextMediaType,
+// It clears any precomputed Content-Length, sets "Content-Type" to media.Text,
 // sets "X-Content-Type-Options: nosniff", writes HTTP 200 OK, and emits text followed by
 // a trailing newline via fmt.Fprintln.
 //
@@ -50,7 +50,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 func WriteText(res http.ResponseWriter, text string) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", mime.TextMediaType)
+	header.Set("Content-Type", media.Text)
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(http.StatusOK)
