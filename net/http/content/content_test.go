@@ -35,6 +35,14 @@ func TestNewFromRequest(t *testing.T) {
 	}
 }
 
+func TestNewFromMediaWithParameters(t *testing.T) {
+	media := test.Content.NewFromMedia("application/json; charset=utf-8")
+
+	require.Equal(t, "application/json", media.Type)
+	require.Equal(t, "json", media.Subtype)
+	require.Same(t, test.Encoder.Get("json"), media.Encoder)
+}
+
 type mediaTest struct {
 	name      string
 	mediaType string

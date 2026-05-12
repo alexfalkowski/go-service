@@ -4,7 +4,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-sync"
-	content "github.com/elnormous/contenttype"
 )
 
 // TypeKey is the HTTP header key used for Content-Type.
@@ -41,38 +40,12 @@ type Content struct {
 //
 // Note: this parses the request Content-Type, not the Accept header.
 func (c *Content) NewFromRequest(req *http.Request) Media {
-	return c.resolveRequestMedia(req)
+	return NewMedia(req.Header.Get(TypeKey), c.enc)
 }
 
 // NewFromMedia parses mediaType and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) Media {
-	return c.resolveMediaType(mediaType)
-}
-
-func (c *Content) resolveRequestMedia(req *http.Request) Media {
-	if media, ok := knownMedia(req.Header.Get(TypeKey), c.enc); ok {
-		return media
-	}
-
-	t, err := content.GetMediaType(req)
-	if err != nil {
-		return jsonMedia(c.enc)
-	}
-
-	return newMedia(t, c.enc)
-}
-
-func (c *Content) resolveMediaType(mediaType string) Media {
-	if media, ok := knownMedia(mediaType, c.enc); ok {
-		return media
-	}
-
-	t, err := content.ParseMediaType(mediaType)
-	if err != nil {
-		return jsonMedia(c.enc)
-	}
-
-	return newMedia(t, c.enc)
+	return NewMedia(mediaType, c.enc)
 }

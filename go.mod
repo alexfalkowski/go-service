@@ -17,7 +17,6 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/cristalhq/acmd v0.12.0
 	github.com/docker/go-units v0.5.0
-	github.com/elnormous/contenttype v1.0.4
 	github.com/faabiosr/cachego v0.26.0
 	github.com/felixge/fgprof v0.9.5
 	github.com/felixge/httpsnoop v1.0.4
