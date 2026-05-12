@@ -1,8 +1,8 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 )
 
 // Option configures the HTTP circuit breaker `RoundTripper` created by `NewRoundTripper`.

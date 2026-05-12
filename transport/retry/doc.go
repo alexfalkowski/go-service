@@ -45,7 +45,7 @@
 //
 // # Usage
 //
-// Embed retry.Config into a larger service configuration and pass it to the relevant
+// Embed transport/retry.Config into a larger service configuration and pass it to the relevant
 // transport wiring. For example, a service might expose retry configuration for outbound
 // HTTP calls and gRPC calls using the same struct, while each transport package applies
 // the details appropriate for that protocol.

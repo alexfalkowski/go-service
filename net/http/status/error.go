@@ -3,8 +3,8 @@ package status
 import (
 	"fmt"
 
-	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 )
 
 // WriteError writes an error response to res.

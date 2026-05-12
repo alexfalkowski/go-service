@@ -6,14 +6,14 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	config "github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
+	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/alexfalkowski/go-sync"
 	retryable "github.com/hashicorp/go-retryablehttp"
 	"github.com/sethvargo/go-retry"
 )
 
-// Config is an alias for `github.com/alexfalkowski/go-service/v2/retry.Config`.
+// Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
 //
 // It describes the retry policy used by NewRoundTripper:
 //   - `Attempts`: maximum number of attempts including the initial attempt.

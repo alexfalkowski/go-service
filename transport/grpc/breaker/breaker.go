@@ -1,16 +1,16 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-sync"
 )
 
-// Settings is an alias for `github.com/alexfalkowski/go-service/v2/breaker.Settings`.
+// Settings is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Settings`.
 //
 // It is re-exported from this package so callers can configure breaker behavior (trip thresholds, timeouts,
 // half-open probing, etc.) without importing the lower-level breaker package directly.

@@ -3,9 +3,9 @@ package limiter_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
+	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 	"github.com/stretchr/testify/require"
 )
 

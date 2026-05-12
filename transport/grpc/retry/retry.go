@@ -3,11 +3,11 @@ package retry
 import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
-	config "github.com/alexfalkowski/go-service/v2/retry"
+	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 )
 
-// Config is an alias for `github.com/alexfalkowski/go-service/v2/retry.Config`.
+// Config is an alias for `github.com/alexfalkowski/go-service/v2/transport/retry.Config`.
 //
 // It describes the retry policy for gRPC unary client calls, including:
 //   - `Attempts`: maximum number of attempts (initial call + retries).

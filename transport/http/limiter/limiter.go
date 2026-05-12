@@ -2,10 +2,10 @@ package limiter
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
+	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
 // KeyMap is an alias for `limiter.KeyMap`.
