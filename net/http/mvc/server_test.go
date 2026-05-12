@@ -10,10 +10,10 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
-	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -70,7 +70,7 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 	})
 
 	view := mvc.NewFullView("views/hello.tmpl")
-	ctx := hm.WithContent(t.Context(), nil, &test.ErrResponseWriter{}, nil)
+	ctx := meta.WithContent(t.Context(), nil, &test.ErrResponseWriter{}, nil)
 
 	err := view.Render(ctx, &test.Model)
 

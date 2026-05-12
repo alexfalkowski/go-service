@@ -1,8 +1,8 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 )
 
 // Option configures the gRPC circuit breaker interceptor returned by `UnaryClientInterceptor`.

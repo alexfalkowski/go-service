@@ -3,7 +3,7 @@ package retry_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/retry"
+	"github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/stretchr/testify/require"
 )
 

@@ -629,7 +629,7 @@ Notes:
 
 ## Limiter
 
-Limiter config is `limiter.Config` and is typically applied at transport level.
+Limiter config is `transport/limiter.Config` and is typically applied at transport level.
 
 Supported key kinds (built-in):
 

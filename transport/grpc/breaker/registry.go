@@ -1,8 +1,8 @@
 package breaker
 
 import (
-	"github.com/alexfalkowski/go-service/v2/breaker"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
+	"github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-sync"
 )
 

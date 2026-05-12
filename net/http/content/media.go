@@ -2,7 +2,7 @@ package content
 
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
-	"github.com/alexfalkowski/go-service/v2/mime"
+	"github.com/alexfalkowski/go-service/v2/net/http/mime"
 	content "github.com/elnormous/contenttype"
 )
 

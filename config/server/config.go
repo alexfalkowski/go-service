@@ -5,11 +5,11 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
-	"github.com/alexfalkowski/go-service/v2/limiter"
 	"github.com/alexfalkowski/go-service/v2/os"
-	"github.com/alexfalkowski/go-service/v2/retry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
+	"github.com/alexfalkowski/go-service/v2/transport/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
 // DefaultMaxReceiveSize is the default inbound payload limit applied when MaxReceiveSize is omitted or zero.
