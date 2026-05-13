@@ -34,7 +34,7 @@ func TestNewRequestHandlerRejectsErrorContentType(t *testing.T) {
 
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
 }
 
@@ -56,7 +56,7 @@ func TestNewHandlerRejectsErrorContentType(t *testing.T) {
 	})
 	require.False(t, called)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
 	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
 }
 
@@ -76,7 +76,7 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Equal(t, media.Error, res.Header().Get(content.TypeKey))
+	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
 	require.Equal(t, test.ErrFailed.Error()+"\n", res.Body.String())
 	require.NotContains(t, res.Body.String(), "partial")
 }

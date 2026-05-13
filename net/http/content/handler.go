@@ -3,6 +3,7 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/types/ptr"
@@ -68,15 +69,15 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		media := cont.NewFromRequest(req)
-		if media.Encoder == nil {
-			_ = status.WriteError(res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", media.Type))
+		mediaType := cont.NewFromRequest(req)
+		if mediaType.Encoder == nil {
+			_ = status.WriteError(res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", mediaType.Type))
 
 			return
 		}
 
-		ctx = meta.WithContent(ctx, req, res, media.Encoder)
-		res.Header().Add(TypeKey, media.Type)
+		ctx = meta.WithContent(ctx, req, res, mediaType.Encoder)
+		res.Header().Add(TypeKey, media.WithUTF8(mediaType.Type))
 
 		data, err := handler(ctx)
 		if err != nil {
@@ -88,7 +89,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		buffer := cont.pool.Get()
 		defer cont.pool.Put(buffer)
 
-		if err := media.Encoder.Encode(buffer, data); err != nil {
+		if err := mediaType.Encoder.Encode(buffer, data); err != nil {
 			_ = status.WriteError(res, err)
 
 			return
