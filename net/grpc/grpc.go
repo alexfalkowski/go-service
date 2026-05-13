@@ -33,6 +33,12 @@ type CallOption = grpc.CallOption
 // generated service clients.
 type ClientConn = grpc.ClientConn
 
+// ClientConnInterface is an alias of grpc.ClientConnInterface.
+//
+// It represents the subset of client connection behavior required by generated
+// service clients.
+type ClientConnInterface = grpc.ClientConnInterface
+
 // ClientStream is an alias of grpc.ClientStream.
 //
 // It is the client-side stream interface used by streaming RPCs.

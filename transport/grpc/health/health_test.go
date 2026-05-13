@@ -14,9 +14,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
+	grpchealth "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
 	"github.com/alexfalkowski/go-sync"
 	"github.com/stretchr/testify/require"
-	v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func TestCheck(t *testing.T) {
@@ -34,13 +34,13 @@ func TestCheck(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	resp, err := client.Check(ctx, req)
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
+	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
 func TestInvalidCheck(t *testing.T) {
@@ -51,8 +51,8 @@ func TestInvalidCheck(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
 	ctx := meta.NewOutgoingContext(t.Context(), md)
@@ -60,7 +60,7 @@ func TestInvalidCheck(t *testing.T) {
 	resp, err := client.Check(ctx, req)
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_NOT_SERVING, resp.GetStatus())
+	require.Equal(t, health.NotServing, resp.GetStatus())
 }
 
 func TestNotFoundCheck(t *testing.T) {
@@ -70,8 +70,8 @@ func TestNotFoundCheck(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: "bob"}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: "bob"}
 
 	md := meta.New(map[string]string{"request-id": "test-id", "user-agent": "test-user-agent"})
 	ctx := meta.NewOutgoingContext(t.Context(), md)
@@ -91,13 +91,13 @@ func TestIgnoreAuthCheck(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	resp, err := client.Check(t.Context(), req)
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
+	require.Equal(t, health.Serving, resp.GetStatus())
 }
 
 func TestList(t *testing.T) {
@@ -115,14 +115,14 @@ func TestList(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthListRequest{}
+	client := health.NewClient(conn)
+	req := &health.ListRequest{}
 
 	resp, err := client.List(ctx, req)
 	require.NoError(t, err)
 
-	expected := map[string]*v1.HealthCheckResponse{
-		test.Name.String(): {Status: v1.HealthCheckResponse_SERVING},
+	expected := map[string]*health.Response{
+		test.Name.String(): {Status: health.Serving},
 	}
 	require.Equal(t, expected, resp.GetStatuses())
 }
@@ -137,8 +137,8 @@ func TestWatch(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -149,7 +149,7 @@ func TestWatch(t *testing.T) {
 	resp, err := wc.Recv()
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
+	require.Equal(t, health.Serving, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
 }
 
@@ -161,8 +161,8 @@ func TestInvalidWatch(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -173,7 +173,7 @@ func TestInvalidWatch(t *testing.T) {
 	resp, err := wc.Recv()
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_NOT_SERVING, resp.GetStatus())
+	require.Equal(t, health.NotServing, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
 }
 
@@ -184,8 +184,8 @@ func TestNotFoundWatch(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: "bob"}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: "bob"}
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -195,7 +195,7 @@ func TestNotFoundWatch(t *testing.T) {
 
 	resp, err := wc.Recv()
 	require.NoError(t, err)
-	require.Equal(t, v1.HealthCheckResponse_SERVICE_UNKNOWN, resp.GetStatus())
+	require.Equal(t, health.ServiceUnknown, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
 }
 
@@ -209,8 +209,8 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	conn := requireGRPCConn(t, world)
 	defer conn.Close()
 
-	client := v1.NewHealthClient(conn)
-	req := &v1.HealthCheckRequest{Service: test.Name.String()}
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
 
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
@@ -221,7 +221,7 @@ func TestIgnoreAuthWatch(t *testing.T) {
 	resp, err := wc.Recv()
 	require.NoError(t, err)
 
-	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
+	require.Equal(t, health.Serving, resp.GetStatus())
 	requireWatchStaysOpen(t, cancel, wc)
 }
 
@@ -239,25 +239,25 @@ func TestWatchStatusChanges(t *testing.T) {
 
 	world := newGRPCHealthWorld(t, probe.URL, test.WithWorldTelemetry("otlp"))
 
-	watcher := health.NewServer(health.ServerParams{Server: world.GRPCHealth})
+	watcher := grpchealth.NewServer(grpchealth.ServerParams{Server: world.GRPCHealth})
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	stream := newWatchStream(ctx)
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- watcher.Watch(&v1.HealthCheckRequest{Service: test.Name.String()}, stream)
+		errCh <- watcher.Watch(&health.Request{Service: test.Name.String()}, stream)
 	}()
 
 	resp := requireWatchResponse(t, stream.responses)
-	require.Equal(t, v1.HealthCheckResponse_SERVING, resp.GetStatus())
+	require.Equal(t, health.Serving, resp.GetStatus())
 
 	unhealthy.Store(true)
 
 	require.Eventually(t, func() bool {
 		select {
 		case resp = <-stream.responses:
-			return resp.GetStatus() == v1.HealthCheckResponse_NOT_SERVING
+			return resp.GetStatus() == health.NotServing
 		default:
 			return false
 		}
@@ -274,7 +274,7 @@ func TestWatchStatusChanges(t *testing.T) {
 	}
 }
 
-func requireWatchStaysOpen(t *testing.T, cancel context.CancelFunc, wc v1.Health_WatchClient) {
+func requireWatchStaysOpen(t *testing.T, cancel context.CancelFunc, wc health.WatchClient) {
 	t.Helper()
 
 	errCh := make(chan error, 1)
@@ -340,7 +340,7 @@ func newGRPCHealthWorld(t *testing.T, url string, opts ...test.WorldOption) *tes
 	return test.NewStartedWorld(t, opts...)
 }
 
-func requireWatchResponse(t *testing.T, responses <-chan *v1.HealthCheckResponse) *v1.HealthCheckResponse {
+func requireWatchResponse(t *testing.T, responses <-chan *health.Response) *health.Response {
 	t.Helper()
 
 	select {
@@ -353,20 +353,20 @@ func requireWatchResponse(t *testing.T, responses <-chan *v1.HealthCheckResponse
 }
 
 func newWatchStream(ctx context.Context) *watchStream {
-	return &watchStream{ctx: ctx, responses: make(chan *v1.HealthCheckResponse, 4)}
+	return &watchStream{ctx: ctx, responses: make(chan *health.Response, 4)}
 }
 
 type watchStream struct {
 	grpc.ServerStream
 	ctx       context.Context
-	responses chan *v1.HealthCheckResponse
+	responses chan *health.Response
 }
 
 func (w *watchStream) Context() context.Context {
 	return w.ctx
 }
 
-func (w *watchStream) Send(resp *v1.HealthCheckResponse) error {
+func (w *watchStream) Send(resp *health.Response) error {
 	select {
 	case <-w.ctx.Done():
 		return w.ctx.Err()

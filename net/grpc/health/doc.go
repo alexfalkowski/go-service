@@ -1,7 +1,9 @@
-// Package health provides gRPC health protocol wiring for go-service.
+// Package health provides go-service aliases for the standard gRPC health protocol.
 //
-// It contains the standard gRPC health service implementation and Fx wiring used to register that
-// service with a gRPC server.
+// This package re-exports google.golang.org/grpc/health/grpc_health_v1 behind a
+// go-service import path. It intentionally does not add transport wiring,
+// application health checks, or lifecycle behavior.
 //
-// Start with `NewServer`, `Register`, and `Module`.
+// Use transport/grpc/health for the go-service adapter that exposes application
+// health state through this protocol.
 package health
