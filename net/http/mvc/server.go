@@ -57,7 +57,7 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set(content.TypeKey, media.HTML)
+		res.Header().Set(content.TypeKey, media.WithUTF8(media.HTML))
 
 		ctx := req.Context()
 		ctx = meta.WithContent(ctx, req, res, nil)

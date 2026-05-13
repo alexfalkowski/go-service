@@ -11,7 +11,7 @@ import (
 //
 // Content-Type:
 // WriteError always writes the response as a plain-text error payload using the go-service specific
-// error media type "text/error" and sets "X-Content-Type-Options: nosniff".
+// error media type "text/error; charset=utf-8" and sets "X-Content-Type-Options: nosniff".
 //
 // Status code selection:
 // The HTTP status code is derived from err using Code(err), which understands:
@@ -30,7 +30,7 @@ import (
 func WriteError(res http.ResponseWriter, err error) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", media.Error)
+	header.Set("Content-Type", media.WithUTF8(media.Error))
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(Code(err))
@@ -41,7 +41,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 
 // WriteText writes a plain-text success response to res.
 //
-// It clears any precomputed Content-Length, sets "Content-Type" to media.Text,
+// It clears any precomputed Content-Length, sets "Content-Type" to media.Text with UTF-8 charset,
 // sets "X-Content-Type-Options: nosniff", writes HTTP 200 OK, and emits text followed by
 // a trailing newline via fmt.Fprintln.
 //
@@ -50,7 +50,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 func WriteText(res http.ResponseWriter, text string) error {
 	header := res.Header()
 	header.Del("Content-Length")
-	header.Set("Content-Type", media.Text)
+	header.Set("Content-Type", media.WithUTF8(media.Text))
 	header.Set("X-Content-Type-Options", "nosniff")
 
 	res.WriteHeader(http.StatusOK)

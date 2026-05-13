@@ -5,24 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-// ErrInvalidType is returned when a media type cannot be parsed.
-var ErrInvalidType = errors.New("media: invalid type")
-
-// Parse parses value into a base media type and subtype.
-//
-// Parameters are ignored because content negotiation only uses the base media type.
-func Parse(value string) (string, string, error) {
-	mediaType, _, _ := strings.Cut(value, ";")
-	mediaType = strings.TrimSpace(mediaType)
-
-	_, subtype, ok := strings.Cut(mediaType, "/")
-	if !ok || strings.IsEmpty(subtype) {
-		return strings.Empty, strings.Empty, ErrInvalidType
-	}
-
-	return mediaType, subtype, nil
-}
-
 // Error is the media type used for plain-text error bodies.
 //
 // This is intended for responses where the body is a human-readable error message.
@@ -76,3 +58,33 @@ const TOML = "application/toml"
 
 // YAML is the media type for YAML documents.
 const YAML = "application/yaml"
+
+// ErrInvalidType is returned when a media type cannot be parsed.
+var ErrInvalidType = errors.New("media: invalid type")
+
+// Parse parses value into a base media type and subtype.
+//
+// Parameters are ignored because content negotiation only uses the base media type.
+func Parse(value string) (string, string, error) {
+	mediaType, _, _ := strings.Cut(value, ";")
+	mediaType = strings.TrimSpace(mediaType)
+
+	_, subtype, ok := strings.Cut(mediaType, "/")
+	if !ok || strings.IsEmpty(subtype) {
+		return strings.Empty, strings.Empty, ErrInvalidType
+	}
+
+	return mediaType, subtype, nil
+}
+
+// WithUTF8 appends a UTF-8 charset parameter to text media types.
+//
+// Non-text media types and media types that already contain a charset parameter are returned unchanged.
+func WithUTF8(mediaType string) string {
+	value, _, err := Parse(mediaType)
+	if err != nil || !strings.HasPrefix(value, "text/") || strings.Contains(mediaType, "charset=") {
+		return mediaType
+	}
+
+	return strings.Concat(mediaType, "; ", "charset=utf-8")
+}
