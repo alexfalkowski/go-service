@@ -1,15 +1,10 @@
 # AGENTS.md
 
-## Shared Skill
+## Shared skills
 
-Use the shared `coding-standards` skill from `bin/skills/coding-standards` for code changes, bug fixes, refactors, reviews, tests, linting, documentation, PR summaries, commits, Makefile changes, CI validation, and verification.
-
-Before answering any covered task, read `bin/skills/coding-standards/SKILL.md` and the relevant reference file under `bin/skills/coding-standards/references/`.
-
-- Commit messages and PR summaries: read `references/pr.md` and follow its required format exactly.
-- Reviews: read `references/review.md`.
-- Verification: read `references/verification.md`.
-- Go changes: read `references/go.md`, plus workflow or change-safety references when relevant.
+This repository uses the shared skills from `bin/skills/`. Read
+`bin/AGENTS.md` for the canonical shared skill list and use the smallest
+matching skill for the task.
 
 ## Repo Snapshot
 
