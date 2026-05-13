@@ -6,7 +6,7 @@
 //
 // The primary entrypoint for DI wiring is `Module`, which composes this package with supporting subpackages:
 // breaker, retry, limiter, metadata extraction/injection, token auth, and the gRPC health wiring in
-// `net/grpc/health`. In typical service applications this happens through `module.Server` and
+// `transport/grpc/health`. In typical service applications this happens through `module.Server` and
 // `go-service-template`, so most consumers do not need to wire this package manually.
 //
 // Lower-level gRPC primitives and shared helpers live under sibling `net/grpc/...` packages. This package

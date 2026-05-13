@@ -1,14 +1,14 @@
 package health
 
 import (
-	health "github.com/alexfalkowski/go-health/v2/server"
+	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-health/v2/subscriber"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/time"
-	v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // ServerParams defines dependencies for constructing the gRPC health `Server` implementation.
@@ -21,26 +21,26 @@ type ServerParams struct {
 	// Server is the underlying health server that stores and exposes health observers.
 	//
 	// It is expected to be non-nil when this gRPC health service is wired.
-	Server *health.Server
+	Server *server.Server
 }
 
 // NewServer constructs a new gRPC health `Server` implementation.
 //
-// The returned server implements the standard gRPC health protocol service
+// The returned server implements the standard gRPC health service
 // (`grpc.health.v1.Health`) and delegates health state lookups to the provided
 // underlying `*health.Server`.
 func NewServer(params ServerParams) *Server {
 	return &Server{server: params.Server}
 }
 
-// Server implements the standard gRPC health protocol service.
+// Server implements the standard gRPC health service.
 //
 // It exposes health state by querying observers registered in the underlying `*health.Server`.
 // The service is typically used by load balancers and orchestration systems to determine whether
 // a server is serving traffic.
 type Server struct {
-	v1.UnimplementedHealthServer
-	server *health.Server
+	health.UnimplementedServer
+	server *server.Server
 }
 
 // Check returns the health status for a single service.
@@ -50,24 +50,24 @@ type Server struct {
 //
 // Error mapping:
 //   - If the requested service does not exist, it returns `codes.NotFound`.
-//   - Otherwise, it returns a `HealthCheckResponse` whose status is derived from the observer's error state.
-func (s *Server) Check(_ context.Context, req *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error) {
+//   - Otherwise, it returns a `Response` whose status is derived from the observer's error state.
+func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	observer, err := s.server.Observer(req.GetService(), "grpc")
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	return &v1.HealthCheckResponse{Status: s.status(observer)}, nil
+	return &health.Response{Status: s.status(observer)}, nil
 }
 
 // List returns the health status for all registered services.
 //
 // It enumerates all observers registered for the "grpc" transport kind and returns their current serving
 // statuses.
-func (s *Server) List(_ context.Context, req *v1.HealthListRequest) (*v1.HealthListResponse, error) {
-	res := &v1.HealthListResponse{Statuses: map[string]*v1.HealthCheckResponse{}}
+func (s *Server) List(_ context.Context, req *health.ListRequest) (*health.ListResponse, error) {
+	res := &health.ListResponse{Statuses: map[string]*health.Response{}}
 	for name, observer := range s.server.Observers("grpc") {
-		res.Statuses[name] = &v1.HealthCheckResponse{Status: s.status(observer)}
+		res.Statuses[name] = &health.Response{Status: s.status(observer)}
 	}
 
 	return res, nil
@@ -80,9 +80,9 @@ func (s *Server) List(_ context.Context, req *v1.HealthListRequest) (*v1.HealthL
 //
 // This package's underlying health server exposes observer state but not a push-based watch API, so Watch
 // polls that in-memory state and only emits a response when the effective serving status changes.
-func (s *Server) Watch(req *v1.HealthCheckRequest, w v1.Health_WatchServer) error {
+func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 	service := req.GetService()
-	current := v1.HealthCheckResponse_UNKNOWN
+	current := health.Unknown
 	ticker := time.NewTicker(50 * time.Millisecond)
 	defer ticker.Stop()
 
@@ -90,7 +90,7 @@ func (s *Server) Watch(req *v1.HealthCheckRequest, w v1.Health_WatchServer) erro
 		next := s.watchStatus(service)
 		if next != current {
 			current = next
-			if err := w.Send(&v1.HealthCheckResponse{Status: current}); err != nil {
+			if err := w.Send(&health.Response{Status: current}); err != nil {
 				return status.Error(codes.Canceled, "stream has ended")
 			}
 		}
@@ -103,18 +103,18 @@ func (s *Server) Watch(req *v1.HealthCheckRequest, w v1.Health_WatchServer) erro
 	}
 }
 
-func (s *Server) status(observer *subscriber.Observer) v1.HealthCheckResponse_ServingStatus {
+func (s *Server) status(observer *subscriber.Observer) health.Status {
 	if err := observer.Error(); err != nil {
-		return v1.HealthCheckResponse_NOT_SERVING
+		return health.NotServing
 	}
 
-	return v1.HealthCheckResponse_SERVING
+	return health.Serving
 }
 
-func (s *Server) watchStatus(service string) v1.HealthCheckResponse_ServingStatus {
+func (s *Server) watchStatus(service string) health.Status {
 	observer, err := s.server.Observer(service, "grpc")
 	if err != nil {
-		return v1.HealthCheckResponse_SERVICE_UNKNOWN
+		return health.ServiceUnknown
 	}
 
 	return s.status(observer)

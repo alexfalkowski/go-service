@@ -81,7 +81,7 @@ The repo is intentionally split between high-level service composition and lower
 - `module/` exposes the opinionated Fx bundles (`Library`, `Server`, `Client`)
 - `config/` defines the standard top-level config shape plus projections used by module wiring
 - feature packages such as `cache/`, `crypto/`, `database/sql/`, `feature/`, `telemetry/`, `time/`, and `id/` provide config, constructors, and Fx modules for a subsystem
-- `net/...` contains lower-level protocol helpers and reusable primitives (`net/http`, `net/grpc`, metadata/header helpers, gRPC health, and `net/server`)
+- `net/...` contains lower-level protocol helpers and reusable primitives (`net/http`, `net/grpc`, metadata/header helpers, gRPC health protocol aliases, and `net/server`)
 - `transport/...` contains the higher-level service transport layer: composed HTTP/gRPC stacks, policy middleware, operational endpoints, and transport-specific modules
 - `internal/test/` contains the shared test world and fixtures used across packages
 

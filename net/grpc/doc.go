@@ -46,6 +46,7 @@
 // targets, TLS material loading, interceptors, lifecycle management, etc.).
 // Those concerns are handled by higher-level packages (for example the transport
 // and module packages). For OpenTelemetry gRPC stats handlers, see the sibling
-// package net/grpc/telemetry. For the standard gRPC health protocol service,
-// see the sibling package net/grpc/health.
+// package net/grpc/telemetry. For standard gRPC health protocol aliases, see
+// the sibling package net/grpc/health; for go-service health transport wiring,
+// see transport/grpc/health.
 package grpc

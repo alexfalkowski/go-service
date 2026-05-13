@@ -7,8 +7,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 func TestValidBinaryEncoder(t *testing.T) {
@@ -17,11 +17,11 @@ func TestValidBinaryEncoder(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
-	var decode grpc_health_v1.HealthCheckResponse
+	var decode health.Response
 	require.NoError(t, encoder.Decode(bytes, &decode))
-	require.Equal(t, grpc_health_v1.HealthCheckResponse_SERVING, decode.GetStatus())
+	require.Equal(t, health.Serving, decode.GetStatus())
 }
 
 func TestInvalidBinaryEncode(t *testing.T) {
@@ -40,7 +40,7 @@ func TestInvalidBinaryDecode(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
 	var msg string
 	require.Error(t, encoder.Decode(bytes, &msg))
@@ -62,11 +62,11 @@ func TestValidTextEncoder(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
-	var decode grpc_health_v1.HealthCheckResponse
+	var decode health.Response
 	require.NoError(t, encoder.Decode(bytes, &decode))
-	require.Equal(t, grpc_health_v1.HealthCheckResponse_SERVING, decode.GetStatus())
+	require.Equal(t, health.Serving, decode.GetStatus())
 }
 
 func TestInvalidTextEncode(t *testing.T) {
@@ -85,7 +85,7 @@ func TestInvalidTextDecode(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
 	var msg string
 	require.Error(t, encoder.Decode(bytes, &msg))
@@ -107,11 +107,11 @@ func TestValidJSONEncoder(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
-	var decode grpc_health_v1.HealthCheckResponse
+	var decode health.Response
 	require.NoError(t, encoder.Decode(bytes, &decode))
-	require.Equal(t, grpc_health_v1.HealthCheckResponse_SERVING, decode.GetStatus())
+	require.Equal(t, health.Serving, decode.GetStatus())
 }
 
 func TestInvalidJSONEncode(t *testing.T) {
@@ -130,7 +130,7 @@ func TestInvalidJSONDecode(t *testing.T) {
 	bytes := test.Pool.Get()
 	defer test.Pool.Put(bytes)
 
-	require.NoError(t, encoder.Encode(bytes, &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}))
+	require.NoError(t, encoder.Encode(bytes, &health.Response{Status: health.Serving}))
 
 	var msg string
 	require.Error(t, encoder.Decode(bytes, &msg))
@@ -148,19 +148,19 @@ func TestInvalidJSONDecodeDoesNotRead(t *testing.T) {
 
 func TestErrBinaryDecode(t *testing.T) {
 	encoder := proto.NewBinary()
-	var msg grpc_health_v1.HealthCheckResponse
+	var msg health.Response
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
 }
 
 func TestErrTextDecode(t *testing.T) {
 	encoder := proto.NewText()
-	var msg grpc_health_v1.HealthCheckResponse
+	var msg health.Response
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
 }
 
 func TestErrJSONDecode(t *testing.T) {
 	encoder := proto.NewJSON()
-	var msg grpc_health_v1.HealthCheckResponse
+	var msg health.Response
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
 }
 

@@ -4,11 +4,11 @@ import (
 	"github.com/alexfalkowski/go-health/v2/checker"
 	"github.com/alexfalkowski/go-health/v2/server"
 	"github.com/alexfalkowski/go-service/v2/health"
-	hc "github.com/alexfalkowski/go-service/v2/health/checker"
-	gh "github.com/alexfalkowski/go-service/v2/net/grpc/health"
+	healthchecker "github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
-	hh "github.com/alexfalkowski/go-service/v2/transport/http/health"
+	grpchealth "github.com/alexfalkowski/go-service/v2/transport/grpc/health"
+	httphealth "github.com/alexfalkowski/go-service/v2/transport/http/health"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,13 +18,13 @@ import (
 // provided health server so integration-style tests can exercise the same route registration
 // path used in production wiring.
 func RegisterHealth(mux *http.ServeMux, server *server.Server) {
-	params := hh.RegisterParams{
+	params := httphealth.RegisterParams{
 		Name:   Name,
 		Server: server,
 		Mux:    mux,
 	}
 
-	hh.Register(params)
+	httphealth.Register(params)
 }
 
 // RegisterHTTPHealth creates and registers the HTTP health routes on the world's mux.
@@ -42,8 +42,8 @@ func (w *World) RegisterGRPCHealth(name, url string, observations ...HealthObser
 	server := w.HealthServer(name, url)
 	w.observeHealth(server, name, observations...)
 
-	grpcServer := gh.NewServer(gh.ServerParams{Server: server})
-	gh.Register(gh.RegisterParams{
+	grpcServer := grpchealth.NewServer(grpchealth.ServerParams{Server: server})
+	grpchealth.Register(grpchealth.RegisterParams{
 		Registrar: w.GRPCServer.ServiceRegistrar(),
 		Server:    grpcServer,
 	})
@@ -71,7 +71,7 @@ func (w *World) HealthServer(name, url string) *server.Server {
 
 	regs := health.Registrations{hr, nr}
 	if w.DB != nil {
-		dc := hc.NewDBChecker(w.DB, 1*time.Second)
+		dc := healthchecker.NewDBChecker(w.DB, 1*time.Second)
 		dr := server.NewRegistration("db", (10 * time.Millisecond).Duration(), dc)
 		regs = append(regs, dr)
 	}
