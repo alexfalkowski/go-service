@@ -113,19 +113,14 @@ type Options struct {
 }
 
 // HasRequest reports whether a request payload is set.
-func (o *Options) HasRequest() bool {
+func (o Options) HasRequest() bool {
 	return o.Request != nil
 }
 
 // HasResponse reports whether a response payload is set.
-func (o *Options) HasResponse() bool {
+func (o Options) HasResponse() bool {
 	return o.Response != nil
 }
-
-// NoOptions is a reusable empty Options value.
-//
-// It can be passed when no request/response bodies are needed and defaults are acceptable.
-var NoOptions = &Options{}
 
 // Client wraps *http.Client with content-aware encoding and decoding helpers.
 //
@@ -140,35 +135,35 @@ type Client struct {
 // Delete issues an HTTP DELETE request to url using opts.
 //
 // It is a convenience wrapper around Do.
-func (c *Client) Delete(ctx context.Context, url string, opts *Options) error {
+func (c *Client) Delete(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodDelete, url, opts)
 }
 
 // Get issues an HTTP GET request to url using opts.
 //
 // It is a convenience wrapper around Do.
-func (c *Client) Get(ctx context.Context, url string, opts *Options) error {
+func (c *Client) Get(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodGet, url, opts)
 }
 
 // Post issues an HTTP POST request to url using opts.
 //
 // It is a convenience wrapper around Do.
-func (c *Client) Post(ctx context.Context, url string, opts *Options) error {
+func (c *Client) Post(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodPost, url, opts)
 }
 
 // Put issues an HTTP PUT request to url using opts.
 //
 // It is a convenience wrapper around Do.
-func (c *Client) Put(ctx context.Context, url string, opts *Options) error {
+func (c *Client) Put(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodPut, url, opts)
 }
 
 // Patch issues an HTTP PATCH request to url using opts.
 //
 // It is a convenience wrapper around Do.
-func (c *Client) Patch(ctx context.Context, url string, opts *Options) error {
+func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 	return c.Do(ctx, http.MethodPatch, url, opts)
 }
 
@@ -190,11 +185,11 @@ func (c *Client) Patch(ctx context.Context, url string, opts *Options) error {
 //     selected by the response Content-Type (falling back to opts.ContentType if absent).
 //
 // Notes:
-//   - opts must be non-nil; callers may pass NoOptions.
+//   - callers may pass the zero Options value when no request/response bodies are needed.
 //   - This method buffers the entire response body in memory.
 //
 //nolint:cyclop
-func (c *Client) Do(ctx context.Context, method, url string, opts *Options) error {
+func (c *Client) Do(ctx context.Context, method, url string, opts Options) error {
 	buffer := c.pool.Get()
 	defer c.pool.Put(buffer)
 

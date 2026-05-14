@@ -113,7 +113,7 @@ func (c *Client) Post(ctx context.Context, path string, req, res any) error {
 		return ErrInvalidResponse
 	}
 
-	opts := &client.Options{ContentType: c.contentType, Request: req, Response: res}
+	opts := client.Options{ContentType: c.contentType, Request: req, Response: res}
 	return c.client.Post(ctx, c.url+path, opts)
 }
 
