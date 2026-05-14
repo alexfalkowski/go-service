@@ -114,7 +114,11 @@ func TestNewConfigInvalidKeyPair(t *testing.T) {
 }
 
 func TestNewConfigInvalidCA(t *testing.T) {
-	_, err := server.NewConfig(test.FS, &config.Config{CA: "invalid ca"})
+	_, err := server.NewConfig(test.FS, &config.Config{
+		Cert: test.FilePath("certs/cert.pem"),
+		Key:  test.FilePath("certs/key.pem"),
+		CA:   "invalid ca",
+	})
 	require.Error(t, err)
 	require.True(t, errors.Is(err, config.ErrInvalidCA))
 }

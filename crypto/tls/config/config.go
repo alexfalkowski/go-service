@@ -1,9 +1,6 @@
 package config
 
 import (
-	"crypto/x509"
-
-	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -53,13 +50,17 @@ type Config struct {
 	ServerName string `yaml:"server_name,omitempty" json:"server_name,omitempty" toml:"server_name,omitempty"`
 }
 
-// IsEnabled reports whether TLS configuration is present.
+// IsEnabled reports whether TLS configuration has any configured TLS material.
 //
-// By convention across go-service config types, a nil *Config is treated as
-// "disabled", so callers can omit TLS config entirely to leave transports in
-// plain-text mode.
+// By convention across go-service config types, a nil *Config is treated as "disabled".
+// An empty *Config is also disabled so decoders that allocate an empty TLS block do not
+// accidentally enable TLS without key material.
 func (c *Config) IsEnabled() bool {
-	return c != nil
+	if c == nil {
+		return false
+	}
+
+	return c.hasKeyMaterial() || c.HasCA() || !strings.IsEmpty(c.ServerName)
 }
 
 // HasKeyPair reports whether both certificate and key sources are configured.
@@ -69,6 +70,10 @@ func (c *Config) IsEnabled() bool {
 // valid X.509 key pair.
 func (c *Config) HasKeyPair() bool {
 	return c != nil && !strings.IsEmpty(c.Cert) && !strings.IsEmpty(c.Key)
+}
+
+func (c *Config) hasKeyMaterial() bool {
+	return !strings.IsEmpty(c.Cert) || !strings.IsEmpty(c.Key)
 }
 
 // HasCA reports whether a peer CA source is configured.
@@ -104,39 +109,4 @@ func (c *Config) GetKey(fs *os.FS) ([]byte, error) {
 // from that operation.
 func (c *Config) GetCA(fs *os.FS) ([]byte, error) {
 	return fs.ReadSource(c.CA)
-}
-
-// NewKeyPair resolves and parses cfg's configured leaf certificate/private-key pair.
-func NewKeyPair(fs *os.FS, cfg *Config) (tls.Certificate, error) {
-	cert, err := cfg.GetCert(fs)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	key, err := cfg.GetKey(fs)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	pair, err := tls.X509KeyPair(cert, key)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	return pair, nil
-}
-
-// NewCertPool resolves and parses cfg's configured CA bundle.
-func NewCertPool(fs *os.FS, cfg *Config) (*x509.CertPool, error) {
-	ca, err := cfg.GetCA(fs)
-	if err != nil {
-		return nil, err
-	}
-
-	pool := x509.NewCertPool()
-	if !pool.AppendCertsFromPEM(ca) {
-		return nil, ErrInvalidCA
-	}
-
-	return pool, nil
 }
