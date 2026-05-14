@@ -145,7 +145,7 @@ func NewTLSClientConfig() *tls.Config {
 	return NewTLSConfig("certs/client-cert.pem", "certs/client-key.pem")
 }
 
-// NewInsecureConfig returns an empty TLS config, which the transport treats as insecure mode.
+// NewInsecureConfig returns an empty TLS config for client tests that do not load key material.
 func NewInsecureConfig() *tls.Config {
 	return &tls.Config{}
 }
