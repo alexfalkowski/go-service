@@ -61,6 +61,8 @@ func IsIgnorable(name string) bool {
 // This is the canonical shape of gRPC full method names as they appear in interceptors (for example
 // "/helloworld.Greeter/SayHello").
 func IsFullMethod(name string) bool {
+	// Buf-managed protos in this repo require a package, so service names are
+	// expected to include a package-qualified dot, e.g. "/greet.v1.Greeter/SayHello".
 	return strings.HasPrefix(name, "/") && strings.Count(name, "/") == 2 && strings.Count(name, ".") > 0
 }
 
