@@ -166,9 +166,10 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, status.UnauthorizedError(header.ErrInvalidAuthorization)
 	}
 
-	req.Header.Set(
+	cloned := req.Clone(req.Context())
+	cloned.Header.Set(
 		"Authorization",
 		strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)),
 	)
-	return r.RoundTripper.RoundTrip(req)
+	return r.RoundTripper.RoundTrip(cloned)
 }
