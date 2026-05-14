@@ -33,6 +33,6 @@ var statusCodes = map[codes.Code]int{
 	codes.OutOfRange:         http.StatusBadRequest,
 	codes.Unimplemented:      http.StatusNotImplemented,
 	codes.Internal:           http.StatusInternalServerError,
-	codes.Unavailable:        http.StatusInternalServerError,
+	codes.Unavailable:        http.StatusServiceUnavailable,
 	codes.DataLoss:           http.StatusInternalServerError,
 }

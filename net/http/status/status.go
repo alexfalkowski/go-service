@@ -61,7 +61,7 @@ func FromError(code int, err error) error {
 		code = http.StatusRequestEntityTooLarge
 	}
 
-	return Error(code, err.Error())
+	return &statusError{code: code, msg: err.Error(), err: err}
 }
 
 // Errorf formats a message and returns an error with the provided status code.
@@ -120,6 +120,7 @@ func isMaxBytesError(err error) bool {
 }
 
 type statusError struct {
+	err  error
 	msg  string
 	code int
 }
@@ -132,4 +133,9 @@ func (s *statusError) Code() int {
 // Error returns the status message.
 func (s *statusError) Error() string {
 	return s.msg
+}
+
+// Unwrap returns the wrapped cause, if any.
+func (s *statusError) Unwrap() error {
+	return s.err
 }
