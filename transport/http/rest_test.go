@@ -18,7 +18,7 @@ func TestRestNoContent(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestNoContent)
 
 			url := world.NamedServerURL("http", "hello")
-			err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
+			err := world.Rest.Do(t.Context(), method, url, rest.Options{})
 			require.NoError(t, err)
 		})
 	}
@@ -33,7 +33,7 @@ func TestRestRequestNoContent(t *testing.T) {
 
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
-			opts := &rest.Options{
+			opts := rest.Options{
 				ContentType: media.JSON,
 				Request:     req,
 			}
@@ -51,7 +51,7 @@ func TestRestError(t *testing.T) {
 			test.RegisterHandlers("/hello", test.RestError)
 
 			url := world.NamedServerURL("http", "hello")
-			err := world.Rest.Do(t.Context(), method, url, rest.NoOptions)
+			err := world.Rest.Do(t.Context(), method, url, rest.Options{})
 			require.Error(t, err)
 		})
 	}
@@ -66,7 +66,7 @@ func TestRestRequestError(t *testing.T) {
 
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
-			opts := &rest.Options{
+			opts := rest.Options{
 				ContentType: media.JSON,
 				Request:     req,
 			}
@@ -85,7 +85,7 @@ func TestRestWithContent(t *testing.T) {
 
 			url := world.NamedServerURL("http", "hello")
 			resp := &test.Response{}
-			opts := &rest.Options{
+			opts := rest.Options{
 				Response: resp,
 			}
 			err := world.Rest.Do(t.Context(), method, url, opts)
@@ -105,7 +105,7 @@ func TestRestRequestWithContent(t *testing.T) {
 			url := world.NamedServerURL("http", "hello")
 			req := &test.Request{Name: "test"}
 			resp := &test.Response{}
-			opts := &rest.Options{
+			opts := rest.Options{
 				ContentType: media.JSON,
 				Request:     req,
 				Response:    resp,
@@ -123,17 +123,17 @@ func TestRestInvalidStatusCode(t *testing.T) {
 	test.RegisterHandlers("/hello", test.RestInvalidStatusCode)
 
 	url := world.NamedServerURL("http", "hello")
-	err := world.Rest.Get(t.Context(), url, rest.NoOptions)
+	err := world.Rest.Get(t.Context(), url, rest.Options{})
 	require.Error(t, err)
 
-	err = world.Rest.Delete(t.Context(), url, rest.NoOptions)
+	err = world.Rest.Delete(t.Context(), url, rest.Options{})
 	require.Error(t, err)
 
 	test.RegisterRequestHandlers("/hello", test.RestRequestInvalidStatusCode)
 
 	url = world.NamedServerURL("http", "hello")
 	req := &test.Request{}
-	opts := &rest.Options{Request: req}
+	opts := rest.Options{Request: req}
 
 	err = world.Rest.Post(t.Context(), url, opts)
 	require.Error(t, err)

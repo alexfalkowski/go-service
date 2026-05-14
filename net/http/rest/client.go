@@ -6,9 +6,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 )
 
-// NoOptions is an alias for client.NoOptions.
-var NoOptions = client.NoOptions
-
 // Options is an alias for client.Options.
 type Options = client.Options
 

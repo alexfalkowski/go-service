@@ -369,7 +369,7 @@ func BenchmarkRest(b *testing.B) {
 				for b.Loop() {
 					req := &test.Request{Name: "Bob"}
 					res := &test.Response{}
-					opts := &rest.Options{
+					opts := rest.Options{
 						ContentType: "application/" + mt,
 						Request:     req,
 						Response:    res,
@@ -392,7 +392,7 @@ func BenchmarkRest(b *testing.B) {
 
 			for b.Loop() {
 				buffer := test.Pool.Get()
-				opts := &rest.Options{
+				opts := rest.Options{
 					ContentType: media.Text,
 					Response:    buffer,
 				}
@@ -431,7 +431,7 @@ func BenchmarkRest(b *testing.B) {
 				for b.Loop() {
 					req := &v1.SayHelloRequest{Name: "Bob"}
 					res := &v1.SayHelloResponse{}
-					opts := &rest.Options{
+					opts := rest.Options{
 						ContentType: "application/" + mt,
 						Request:     req,
 						Response:    res,
