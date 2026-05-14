@@ -17,31 +17,6 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func up(ctx context.Context, db *sql.DBs) error {
-	ctx, cancel := test.Timeout(ctx)
-	defer cancel()
-
-	query := `CREATE TABLE IF NOT EXISTS accounts (
-		user_id serial PRIMARY KEY,
-		created_at TIMESTAMP NOT NULL
-	);`
-
-	_, err := db.ExecContext(ctx, query)
-
-	return err
-}
-
-func down(ctx context.Context, db *sql.DBs) error {
-	ctx, cancel := test.Timeout(ctx)
-	defer cancel()
-
-	query := "DROP TABLE IF EXISTS accounts;"
-
-	_, err := db.ExecContext(ctx, query)
-
-	return err
-}
-
 func TestConnect(t *testing.T) {
 	cfg := test.NewPGConfig()
 
@@ -57,42 +32,44 @@ func TestInvalidOpen(t *testing.T) {
 	}{
 		{
 			name: "invalid masters",
-			config: &pg.Config{
-				Config: &config.Config{
-					Masters:         []config.DSN{{URL: test.FilePath("secrets/none")}},
-					Slaves:          []config.DSN{{URL: test.FilePath("secrets/pg")}},
-					MaxOpenConns:    5,
-					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour,
-				},
-			},
+			config: pgConfig(
+				[]config.DSN{{URL: test.FilePath("secrets/none")}},
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+			),
 			wantErr: fs.ErrNotExist,
 		},
 		{
 			name: "invalid slaves",
-			config: &pg.Config{
-				Config: &config.Config{
-					Masters:         []config.DSN{{URL: test.FilePath("secrets/pg")}},
-					Slaves:          []config.DSN{{URL: test.FilePath("secrets/none")}},
-					MaxOpenConns:    5,
-					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour,
-				},
-			},
+			config: pgConfig(
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{URL: test.FilePath("secrets/none")}},
+			),
 			wantErr: fs.ErrNotExist,
 		},
 		{
-			name: "empty dsn configuration",
-			config: &pg.Config{
-				Config: &config.Config{
-					MaxOpenConns:    5,
-					MaxIdleConns:    5,
-					ConnMaxLifetime: time.Hour,
-				},
-			},
+			name:    "empty dsn configuration",
+			config:  pgConfig(nil, nil),
 			wantErr: driver.ErrNoDSNs,
 		},
+		{
+			name: "empty master dsn",
+			config: pgConfig(
+				[]config.DSN{{}},
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+			),
+			wantErr: driver.ErrEmptyDSN,
+		},
+		{
+			name: "empty slave dsn",
+			config: pgConfig(
+				[]config.DSN{{URL: test.FilePath("secrets/pg")}},
+				[]config.DSN{{URL: "env:PG_EMPTY_DSN"}},
+			),
+			wantErr: driver.ErrEmptyDSN,
+		},
 	}
+
+	t.Setenv("PG_EMPTY_DSN", "")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -352,4 +329,41 @@ func TestInvalidSQLPort(t *testing.T) {
 	lc.RequireStart()
 	require.Error(t, errors.Join(db.Ping()...))
 	lc.RequireStop()
+}
+
+func up(ctx context.Context, db *sql.DBs) error {
+	ctx, cancel := test.Timeout(ctx)
+	defer cancel()
+
+	query := `CREATE TABLE IF NOT EXISTS accounts (
+		user_id serial PRIMARY KEY,
+		created_at TIMESTAMP NOT NULL
+	);`
+
+	_, err := db.ExecContext(ctx, query)
+
+	return err
+}
+
+func down(ctx context.Context, db *sql.DBs) error {
+	ctx, cancel := test.Timeout(ctx)
+	defer cancel()
+
+	query := "DROP TABLE IF EXISTS accounts;"
+
+	_, err := db.ExecContext(ctx, query)
+
+	return err
+}
+
+func pgConfig(masters, slaves []config.DSN) *pg.Config {
+	return &pg.Config{
+		Config: &config.Config{
+			Masters:         masters,
+			Slaves:          slaves,
+			MaxOpenConns:    5,
+			MaxIdleConns:    5,
+			ConnMaxLifetime: time.Hour,
+		},
+	}
 }

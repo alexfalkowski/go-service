@@ -48,6 +48,9 @@ var ErrSkip = driver.ErrSkip
 // ErrNoDSNs is returned when SQL configuration enables a driver without any master or slave DSNs.
 var ErrNoDSNs = errors.New("driver: no database DSNs configured")
 
+// ErrEmptyDSN is returned when a configured DSN source resolves to an empty string.
+var ErrEmptyDSN = errors.New("driver: empty database DSN")
+
 // Register registers a `database/sql` driver under name.
 //
 // This function registers the driver with the global `database/sql` driver registry. It is therefore intended
@@ -104,6 +107,9 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 		if err != nil {
 			return nil, err
 		}
+		if len(u) == 0 {
+			return nil, ErrEmptyDSN
+		}
 
 		masters[i] = bytes.String(u)
 	}
@@ -114,6 +120,9 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 		u, err := s.GetURL(fs)
 		if err != nil {
 			return nil, err
+		}
+		if len(u) == 0 {
+			return nil, ErrEmptyDSN
 		}
 
 		slaves[i] = bytes.String(u)
