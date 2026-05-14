@@ -104,6 +104,19 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 	require.Equal(t, "ok", resp)
 }
 
+func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
+	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	stream := &serverStream{ctx: ctx}
+
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(any, grpc.ServerStream) error {
+		return nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, []string{"1", "v2"}, stream.header.Get("service-version"))
+	require.Equal(t, []string{"generated-id"}, stream.header.Get("request-id"))
+}
+
 func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
 	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs("request-id", "original"))
 
@@ -130,4 +143,21 @@ type staticGenerator string
 
 func (g staticGenerator) Generate() string {
 	return string(g)
+}
+
+type serverStream struct {
+	grpc.ServerStream
+	header meta.Map
+	ctx    context.Context
+}
+
+func (s *serverStream) SetHeader(md meta.Map) error {
+	md.Append("service-version", "v2")
+	s.header = md
+
+	return nil
+}
+
+func (s *serverStream) Context() context.Context {
+	return s.ctx
 }

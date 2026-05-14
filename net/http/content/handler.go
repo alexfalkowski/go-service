@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
+	"github.com/alexfalkowski/go-service/v2/ptr"
 )
 
 // RequestHandler handles a decoded request and returns a response model.

@@ -2,7 +2,7 @@ package ssh
 
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
-	"github.com/alexfalkowski/go-service/v2/types/slices"
+	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
 // Config configures the SSH-style token implementation.

@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -67,19 +68,21 @@ func clientMetadata(ctx context.Context, userAgent env.UserAgent, generator id.G
 }
 
 func clientOutgoingHeaders(userAgent, requestID string) Map {
-	// One backing array avoids allocating a separate one-element slice for each metadata key.
+	// Clip caps each metadata value at one element so later appends allocate
+	// instead of overwriting the neighboring value in this backing array.
 	values := [...]string{userAgent, requestID}
 	return Map{
-		"user-agent": values[0:1],
-		"request-id": values[1:2],
+		"user-agent": slices.Clip(values[0:1]),
+		"request-id": slices.Clip(values[1:2]),
 	}
 }
 
 func setClientOutgoingHeaders(md Map, userAgent, requestID string) {
-	// One backing array avoids allocating a separate one-element slice for each metadata key.
+	// Clip caps each metadata value at one element so later appends allocate
+	// instead of overwriting the neighboring value in this backing array.
 	values := [...]string{userAgent, requestID}
-	md["user-agent"] = values[0:1]
-	md["request-id"] = values[1:2]
+	md["user-agent"] = slices.Clip(values[0:1])
+	md["request-id"] = slices.Clip(values[1:2])
 }
 
 func clientUserAgent(ctx context.Context, md metadata.MD, userAgent env.UserAgent) meta.Value {
