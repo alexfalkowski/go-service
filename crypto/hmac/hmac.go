@@ -4,8 +4,9 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 
-	"github.com/alexfalkowski/go-service/v2/crypto/errors"
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewSigner constructs an HMAC-SHA-512 Signer when configuration is enabled.
@@ -20,9 +21,19 @@ func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
+	if strings.IsEmpty(cfg.Key) {
+		return nil, crypto.ErrMissingKey
+	}
 
 	k, err := cfg.GetKey(fs)
-	return &Signer{key: k}, err
+	if err != nil {
+		return nil, err
+	}
+	if len(k) == 0 {
+		return nil, crypto.ErrMissingKey
+	}
+
+	return &Signer{key: k}, nil
 }
 
 // Signer signs and verifies messages using HMAC-SHA-512.
@@ -53,7 +64,7 @@ func (s *Signer) Verify(sig, msg []byte) error {
 	mac.Write(msg)
 
 	if !hmac.Equal(sig, mac.Sum(nil)) {
-		return errors.ErrInvalidMatch
+		return crypto.ErrInvalidMatch
 	}
 
 	return nil

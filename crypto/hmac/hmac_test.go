@@ -23,6 +23,12 @@ func TestGenerator(t *testing.T) {
 	require.Empty(t, key)
 }
 
+func TestIsEnabled(t *testing.T) {
+	require.False(t, (*hmac.Config)(nil).IsEnabled())
+	require.True(t, (&hmac.Config{}).IsEnabled())
+	require.True(t, test.NewHMAC().IsEnabled())
+}
+
 func TestValidSigner(t *testing.T) {
 	signer, err := hmac.NewSigner(test.FS, test.NewHMAC())
 	require.NoError(t, err)
@@ -37,6 +43,18 @@ func TestValidSigner(t *testing.T) {
 
 	signer, err = hmac.NewSigner(nil, nil)
 	require.NoError(t, err)
+	require.Nil(t, signer)
+}
+
+func TestSignerMissingKey(t *testing.T) {
+	signer, err := hmac.NewSigner(test.FS, &hmac.Config{})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, signer)
+
+	t.Setenv("HMAC_EMPTY", "")
+
+	signer, err = hmac.NewSigner(test.FS, &hmac.Config{Key: "env:HMAC_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
 	require.Nil(t, signer)
 }
 

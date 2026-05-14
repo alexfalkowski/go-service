@@ -74,11 +74,11 @@ func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 		MinVersion: tls.VersionTLS12,
 	}
 
-	if !cfg.IsEnabled() {
+	if !cfg.HasKeyMaterial() && !cfg.HasCA() {
 		return config, nil
 	}
 
-	if cfg.HasKeyPair() {
+	if cfg.HasKeyMaterial() {
 		pair, err := tlsconfig.NewKeyPair(fs, cfg)
 		if err != nil {
 			return config, err

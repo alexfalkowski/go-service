@@ -8,6 +8,10 @@ import "github.com/alexfalkowski/go-service/v2/errors"
 // signature/hash does not match the expected value for the input message.
 var ErrInvalidMatch = errors.New("crypto: invalid match")
 
+// ErrMissingKey indicates that required cryptographic key material was not configured
+// or resolved to empty bytes.
+var ErrMissingKey = errors.New("crypto: missing key")
+
 // ErrInvalidKeyType indicates that parsed key material was valid, but not of the
 // key type expected by the caller.
 //

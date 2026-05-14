@@ -5,6 +5,7 @@ import (
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewVerifier constructs an Ed25519 Verifier when configuration is enabled.
@@ -16,6 +17,9 @@ import (
 func NewVerifier(decoder *pem.Decoder, cfg *Config) (*Verifier, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
+	}
+	if strings.IsEmpty(cfg.Public) {
+		return nil, crypto.ErrMissingKey
 	}
 
 	pub, err := cfg.PublicKey(decoder)

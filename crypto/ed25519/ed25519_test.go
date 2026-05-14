@@ -58,13 +58,20 @@ func TestInvalidConfig(t *testing.T) {
 		name   string
 	}{
 		{name: "empty signer config", config: &ed25519.Config{}},
+		{name: "empty signer private key", config: &ed25519.Config{Private: "env:ED25519_EMPTY"}},
 		{name: "invalid signer private key", config: &ed25519.Config{Public: test.FilePath("secrets/ed25519_public"), Private: test.FilePath("secrets/ed25519_private_invalid")}},
 	}
+
+	t.Setenv("ED25519_EMPTY", "")
 
 	for _, tt := range signerTests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := ed25519.NewSigner(test.PEM, tt.config)
-			require.Error(t, err)
+			if tt.name == "invalid signer private key" {
+				require.Error(t, err)
+				return
+			}
+			require.ErrorIs(t, err, errors.ErrMissingKey)
 		})
 	}
 
@@ -73,13 +80,18 @@ func TestInvalidConfig(t *testing.T) {
 		name   string
 	}{
 		{name: "empty verifier config", config: &ed25519.Config{}},
+		{name: "empty verifier public key", config: &ed25519.Config{Public: "env:ED25519_EMPTY"}},
 		{name: "invalid verifier public key", config: &ed25519.Config{Public: test.FilePath("secrets/ed25519_public_invalid"), Private: test.FilePath("secrets/ed25519_private")}},
 	}
 
 	for _, tt := range verifierTests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := ed25519.NewVerifier(test.PEM, tt.config)
-			require.Error(t, err)
+			if tt.name == "invalid verifier public key" {
+				require.Error(t, err)
+				return
+			}
+			require.ErrorIs(t, err, errors.ErrMissingKey)
 		})
 	}
 }

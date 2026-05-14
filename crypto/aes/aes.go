@@ -4,9 +4,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // ErrInvalidLength is returned when a ciphertext is too short to contain the required nonce prefix.
@@ -25,9 +27,19 @@ func NewCipher(gen *rand.Generator, fs *os.FS, cfg *Config) (*Cipher, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
+	if strings.IsEmpty(cfg.Key) {
+		return nil, crypto.ErrMissingKey
+	}
 
 	k, err := cfg.GetKey(fs)
-	return &Cipher{gen: gen, key: k}, err
+	if err != nil {
+		return nil, err
+	}
+	if len(k) == 0 {
+		return nil, crypto.ErrMissingKey
+	}
+
+	return &Cipher{gen: gen, key: k}, nil
 }
 
 // Cipher provides AES-GCM encryption and decryption using a configured key.

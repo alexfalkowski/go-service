@@ -50,17 +50,11 @@ type Config struct {
 	ServerName string `yaml:"server_name,omitempty" json:"server_name,omitempty" toml:"server_name,omitempty"`
 }
 
-// IsEnabled reports whether TLS configuration has any configured TLS material.
+// IsEnabled reports whether TLS configuration has any configured TLS field.
 //
-// By convention across go-service config types, a nil *Config is treated as "disabled".
-// An empty *Config is also disabled so decoders that allocate an empty TLS block do not
-// accidentally enable TLS without key material.
+// By convention, nil and empty configs are disabled.
 func (c *Config) IsEnabled() bool {
-	if c == nil {
-		return false
-	}
-
-	return c.hasKeyMaterial() || c.HasCA() || !strings.IsEmpty(c.ServerName)
+	return c.HasKeyMaterial() || c.HasCA() || c.HasServerName()
 }
 
 // HasKeyPair reports whether both certificate and key sources are configured.
@@ -72,8 +66,9 @@ func (c *Config) HasKeyPair() bool {
 	return c != nil && !strings.IsEmpty(c.Cert) && !strings.IsEmpty(c.Key)
 }
 
-func (c *Config) hasKeyMaterial() bool {
-	return !strings.IsEmpty(c.Cert) || !strings.IsEmpty(c.Key)
+// HasKeyMaterial reports whether certificate or private key source is configured.
+func (c *Config) HasKeyMaterial() bool {
+	return c != nil && (!strings.IsEmpty(c.Cert) || !strings.IsEmpty(c.Key))
 }
 
 // HasCA reports whether a peer CA source is configured.
@@ -82,6 +77,11 @@ func (c *Config) hasKeyMaterial() bool {
 // that the resolved contents are readable or contain PEM-encoded certificates.
 func (c *Config) HasCA() bool {
 	return c != nil && !strings.IsEmpty(c.CA)
+}
+
+// HasServerName reports whether a client-side server name override is configured.
+func (c *Config) HasServerName() bool {
+	return c != nil && !strings.IsEmpty(c.ServerName)
 }
 
 // GetCert resolves and returns the certificate bytes from the configured source

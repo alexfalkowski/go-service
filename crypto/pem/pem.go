@@ -3,8 +3,10 @@ package pem
 import (
 	"encoding/pem"
 
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 var (
@@ -46,9 +48,16 @@ type Decoder struct {
 //   - returns ErrInvalidKind if a PEM block is decoded but its Type does not equal kind.
 //   - returns any error from fs.ReadSource if the input cannot be resolved/read.
 func (d *Decoder) Decode(path, kind string) ([]byte, error) {
+	if strings.IsEmpty(path) {
+		return nil, crypto.ErrMissingKey
+	}
+
 	data, err := d.fs.ReadSource(path)
 	if err != nil {
 		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, crypto.ErrMissingKey
 	}
 
 	block, _ := pem.Decode(data)

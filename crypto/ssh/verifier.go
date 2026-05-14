@@ -5,6 +5,7 @@ import (
 
 	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewVerifier constructs an SSH Verifier when configuration is enabled.
@@ -18,6 +19,9 @@ import (
 func NewVerifier(fs *os.FS, cfg *Config) (*Verifier, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
+	}
+	if strings.IsEmpty(cfg.Public) {
+		return nil, crypto.ErrMissingKey
 	}
 
 	pub, err := cfg.PublicKey(fs)

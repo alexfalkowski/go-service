@@ -53,10 +53,18 @@ func TestValid(t *testing.T) {
 
 func TestInvalidConfig(t *testing.T) {
 	_, err := ssh.NewSigner(test.FS, &ssh.Config{})
-	require.Error(t, err)
+	require.ErrorIs(t, err, errors.ErrMissingKey)
 
 	_, err = ssh.NewVerifier(test.FS, &ssh.Config{})
-	require.Error(t, err)
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+
+	t.Setenv("SSH_EMPTY", "")
+
+	_, err = ssh.NewSigner(test.FS, &ssh.Config{Private: "env:SSH_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+
+	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: "env:SSH_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
 
 	_, err = ssh.NewVerifier(test.FS, &ssh.Config{Public: test.FilePath("secrets/redis")})
 	require.Error(t, err)
