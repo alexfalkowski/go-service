@@ -4,9 +4,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/debug"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/server"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/types/slices"
 )
 
 // ServersParams defines dependencies used to collect transport servers.

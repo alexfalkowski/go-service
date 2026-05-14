@@ -10,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/header"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -113,11 +114,12 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 }
 
 func serverResponseHeaders(serviceVersion, requestID string) Map {
-	// One backing array avoids allocating a separate one-element slice for each metadata key.
+	// Clip caps each metadata value at one element so later appends allocate
+	// instead of overwriting the neighboring value in this backing array.
 	values := [...]string{serviceVersion, requestID}
 	return Map{
-		"service-version": values[0:1],
-		"request-id":      values[1:2],
+		"service-version": slices.Clip(values[0:1]),
+		"request-id":      slices.Clip(values[1:2]),
 	}
 }
 

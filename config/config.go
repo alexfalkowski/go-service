@@ -10,13 +10,13 @@ import (
 	"github.com/alexfalkowski/go-service/v2/feature"
 	"github.com/alexfalkowski/go-service/v2/hooks"
 	"github.com/alexfalkowski/go-service/v2/id"
+	"github.com/alexfalkowski/go-service/v2/ptr"
+	"github.com/alexfalkowski/go-service/v2/structs"
 	"github.com/alexfalkowski/go-service/v2/telemetry"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport"
 	"github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
-	"github.com/alexfalkowski/go-service/v2/types/structs"
 )
 
 // NewConfig decodes configuration into a newly allocated *T and validates it.

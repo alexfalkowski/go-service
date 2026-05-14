@@ -10,9 +10,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
