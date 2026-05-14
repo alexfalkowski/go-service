@@ -33,6 +33,12 @@
 // It is a convenience wrapper around `slices.IndexFunc` that returns the element
 // directly instead of an index.
 //
+// # Capacity helpers
+//
+// Clip removes unused capacity from a slice. Use it when returning a slice that
+// may share a backing array with neighboring values and future appends should not
+// mutate that shared backing array.
+//
 // # Notes
 //
 // These helpers are designed to be predictable and side-effect free aside from

@@ -3,7 +3,7 @@ package slices
 import (
 	"slices"
 
-	"github.com/alexfalkowski/go-service/v2/types/structs"
+	"github.com/alexfalkowski/go-service/v2/structs"
 )
 
 // AppendNotZero appends elems to slice, skipping elements that are the zero value for T.
@@ -68,4 +68,13 @@ func ElemFunc[T any](slice []*T, f func(*T) bool) (*T, bool) {
 	}
 
 	return slice[index], true
+}
+
+// Clip removes unused capacity from slice.
+//
+// It is a thin wrapper around the standard library slices.Clip. Use it when a
+// returned slice may share a backing array with neighboring values and future
+// appends should allocate instead of modifying that shared backing array.
+func Clip[T any](slice []T) []T {
+	return slices.Clip(slice)
 }

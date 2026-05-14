@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
+	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
 // NewRoundTripper constructs client-side metadata middleware for HTTP requests.
@@ -52,10 +53,11 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func clientSetRequestHeaders(header http.Header, userAgent, requestID string) {
-	// One backing array avoids allocating a separate one-element slice for each header.
+	// Clip caps each header at one element so later appends allocate instead of
+	// overwriting the neighboring value in this backing array.
 	values := [...]string{userAgent, requestID}
-	header["User-Agent"] = values[0:1]
-	header["Request-Id"] = values[1:2]
+	header["User-Agent"] = slices.Clip(values[0:1])
+	header["Request-Id"] = slices.Clip(values[1:2])
 }
 
 func clientUserAgent(ctx context.Context, req *http.Request, userAgent env.UserAgent) meta.Value {

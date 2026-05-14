@@ -3,8 +3,8 @@ package slices_test
 import (
 	"testing"
 
-	"github.com/alexfalkowski/go-service/v2/types/ptr"
-	"github.com/alexfalkowski/go-service/v2/types/slices"
+	"github.com/alexfalkowski/go-service/v2/ptr"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/stretchr/testify/require"
 )
 
@@ -60,4 +60,15 @@ func TestElemFunc(t *testing.T) {
 	elem, ok = slices.ElemFunc(elems, func(t *string) bool { return *t == "bob" })
 	require.Nil(t, elem)
 	require.False(t, ok)
+}
+
+func TestClip(t *testing.T) {
+	values := [...]string{"first", "second"}
+	first := slices.Clip(values[0:1])
+	second := values[1:2]
+
+	first = append(first, "next")
+
+	require.Equal(t, []string{"first", "next"}, first)
+	require.Equal(t, []string{"second"}, second)
 }
