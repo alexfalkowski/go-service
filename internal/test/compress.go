@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/compress"
 	"github.com/alexfalkowski/go-service/v2/compress/none"
 	"github.com/alexfalkowski/go-service/v2/compress/s2"
@@ -26,11 +27,11 @@ type compressor struct {
 }
 
 // Compress implements compress.Compressor for tests.
-func (c *compressor) Compress(_ []byte) []byte {
-	return nil
+func (c *compressor) Compress(_ []byte, _ bytes.Size) ([]byte, error) {
+	return nil, c.err
 }
 
 // Decompress implements compress.Compressor for tests.
-func (c *compressor) Decompress(_ []byte) ([]byte, error) {
+func (c *compressor) Decompress(_ []byte, _ bytes.Size) ([]byte, error) {
 	return nil, c.err
 }

@@ -216,6 +216,7 @@ func verifyConfig(t *testing.T, config *config.Config) {
 	require.Equal(t, "redis", config.Cache.Kind)
 	require.Equal(t, "snappy", config.Cache.Compressor)
 	require.Equal(t, "proto", config.Cache.Encoder)
+	require.Equal(t, 4*bytes.MB, config.Cache.MaxSize)
 	require.Equal(t, "file:../test/secrets/redis", config.Cache.Options["url"])
 	require.True(t, config.Crypto.IsEnabled())
 	require.True(t, config.Crypto.AES.IsEnabled())

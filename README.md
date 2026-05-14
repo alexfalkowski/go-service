@@ -255,6 +255,7 @@ cache:
   kind: redis
   compressor: zstd
   encoder: json
+  max_size: 4MB
   options:
     url: env:CACHE_URL
 ```
@@ -263,6 +264,7 @@ Notes:
 
 - Built-in driver kinds in this repo are `redis` and `sync`.
 - `kind` is still wiring-dependent in practice: services can register additional drivers.
+- `max_size` limits encoded cache values before compression and after decompression. A zero value uses the default `4MB`.
 - `options` is backend-specific and decoded as `map[string]any`.
 
 ---

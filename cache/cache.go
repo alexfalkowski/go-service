@@ -139,7 +139,11 @@ func (c *Cache) encode(value any) (string, error) {
 	}
 
 	data := buf.Bytes()
-	compressed := c.compressor().Compress(data)
+	compressed, err := c.compressor().Compress(data, c.cfg.GetMaxSize())
+	if err != nil {
+		return strings.Empty, err
+	}
+
 	encoded := base64.Encode(compressed)
 
 	return encoded, nil
@@ -151,7 +155,7 @@ func (c *Cache) decode(value string, field any) error {
 		return err
 	}
 
-	decompressed, err := c.compressor().Decompress(decoded)
+	decompressed, err := c.compressor().Decompress(decoded, c.cfg.GetMaxSize())
 	if err != nil {
 		return err
 	}

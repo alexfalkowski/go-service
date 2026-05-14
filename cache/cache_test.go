@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache"
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	"github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/ptr"
@@ -96,6 +97,27 @@ func TestGenericDisabledCache(t *testing.T) {
 	value, err := cache.Get[string](t.Context(), "test")
 	require.NoError(t, err)
 	require.Equal(t, strings.Empty, *value)
+}
+
+func TestMaxSizeOnPersist(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg.MaxSize = 4
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	err := world.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute)
+	require.ErrorIs(t, err, errors.ErrTooLarge)
+}
+
+func TestMaxSizeOnGet(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	require.NoError(t, world.Persist(t.Context(), "test", ptr.Value("hello?"), time.Minute))
+
+	cfg.MaxSize = 4
+
+	err := world.Get(t.Context(), "test", ptr.Zero[string]())
+	require.ErrorIs(t, err, errors.ErrTooLarge)
 }
 
 func TestExpiredCache(t *testing.T) {

@@ -6,6 +6,7 @@ cache:
   kind: redis
   encoder: proto
   compressor: snappy
+  max_size: 4MB
   options:
     url: file:../test/secrets/redis
 crypto:

@@ -1,5 +1,10 @@
 package none
 
+import (
+	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/compress/errors"
+)
+
 // NewCompressor constructs a no-op compressor implementation.
 //
 // The returned value implements `github.com/alexfalkowski/go-service/v2/compress.Compressor` and is
@@ -16,11 +21,23 @@ func NewCompressor() *Compressor {
 type Compressor struct{}
 
 // Compress returns data unchanged.
-func (c *Compressor) Compress(data []byte) []byte {
-	return data
+//
+// An error is returned if data exceeds size.
+func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
+	if int64(len(data)) > size.Bytes() {
+		return nil, errors.ErrTooLarge
+	}
+
+	return data, nil
 }
 
 // Decompress returns data unchanged.
-func (c *Compressor) Decompress(data []byte) ([]byte, error) {
+//
+// An error is returned if data exceeds size.
+func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
+	if int64(len(data)) > size.Bytes() {
+		return nil, errors.ErrTooLarge
+	}
+
 	return data, nil
 }
