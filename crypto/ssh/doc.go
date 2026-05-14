@@ -19,7 +19,7 @@
 //
 // If the provided key material is valid SSH key data but not an Ed25519 key,
 // key parsing helpers return crypto/errors.ErrInvalidKeyType instead of
-// panicking. Callers can use errors.Is(err, cryptoerrors.ErrInvalidKeyType) to
+// panicking. Callers can use errors.Is(err, crypto.ErrInvalidKeyType) to
 // detect that case while still receiving wrapped context about the actual
 // decoded type.
 package ssh

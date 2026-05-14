@@ -71,6 +71,7 @@ func TestNewConfigDefaults(t *testing.T) {
 	}{
 		{name: "nil"},
 		{name: "empty", config: &config.Config{}},
+		{name: "server name", config: &config.Config{ServerName: "localhost"}},
 	}
 
 	for _, tt := range tests {

@@ -57,7 +57,7 @@ func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 		return config, nil
 	}
 
-	if cfg.HasKeyPair() {
+	if cfg.HasKeyMaterial() {
 		pair, err := tlsconfig.NewKeyPair(fs, cfg)
 		if err != nil {
 			return config, err

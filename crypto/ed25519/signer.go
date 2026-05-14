@@ -3,7 +3,9 @@ package ed25519
 import (
 	"crypto/ed25519"
 
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewSigner constructs an Ed25519 Signer when configuration is enabled.
@@ -15,6 +17,9 @@ import (
 func NewSigner(decoder *pem.Decoder, cfg *Config) (*Signer, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
+	}
+	if strings.IsEmpty(cfg.Private) {
+		return nil, crypto.ErrMissingKey
 	}
 
 	pri, err := cfg.PrivateKey(decoder)

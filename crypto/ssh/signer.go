@@ -3,7 +3,9 @@ package ssh
 import (
 	"crypto/ed25519"
 
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewSigner constructs an SSH Signer when configuration is enabled.
@@ -17,6 +19,9 @@ import (
 func NewSigner(fs *os.FS, cfg *Config) (*Signer, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
+	}
+	if strings.IsEmpty(cfg.Private) {
+		return nil, crypto.ErrMissingKey
 	}
 
 	pri, err := cfg.PrivateKey(fs)

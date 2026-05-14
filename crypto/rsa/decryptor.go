@@ -4,8 +4,10 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/pem"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // NewDecryptor constructs an RSA Decryptor when configuration is enabled.
@@ -19,6 +21,9 @@ import (
 func NewDecryptor(generator *rand.Generator, decoder *pem.Decoder, cfg *Config) (*Decryptor, error) {
 	if !cfg.IsEnabled() {
 		return nil, nil
+	}
+	if strings.IsEmpty(cfg.Private) {
+		return nil, crypto.ErrMissingKey
 	}
 
 	pri, err := cfg.PrivateKey(decoder)

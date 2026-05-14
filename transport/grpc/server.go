@@ -199,7 +199,7 @@ func maxReceiveSizeOption(cfg *Config) grpc.ServerOption {
 }
 
 func credsServerOption(fs *os.FS, cfg *Config) (grpc.ServerOption, error) {
-	if !cfg.TLS.IsEnabled() {
+	if !cfg.TLS.HasKeyMaterial() && !cfg.TLS.HasCA() {
 		return grpc.EmptyServerOption{}, nil
 	}
 

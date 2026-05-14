@@ -1,12 +1,12 @@
 package ssh
 
 import (
-	cryptoerrors "github.com/alexfalkowski/go-service/v2/crypto/errors"
+	crypto "github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	tokenerrors "github.com/alexfalkowski/go-service/v2/token/errors"
+	token "github.com/alexfalkowski/go-service/v2/token/errors"
 )
 
 // Signer is an alias for crypto/ssh.Signer.
@@ -63,7 +63,7 @@ type Token struct {
 // key material cannot be loaded, or signature generation fails.
 func (t *Token) Generate() (string, error) {
 	if t.cfg.Key == nil || t.cfg.Key.Config == nil {
-		return strings.Empty, tokenerrors.ErrInvalidConfig
+		return strings.Empty, token.ErrInvalidConfig
 	}
 
 	sig, err := ssh.NewSigner(t.fs, t.cfg.Key.Config)
@@ -106,20 +106,20 @@ func (t *Token) Generate() (string, error) {
 //
 // On success, Verify returns the extracted name. On failure, it always returns an
 // empty name alongside the error.
-func (t *Token) Verify(token string) (string, error) {
-	index := strings.LastIndex(token, "-")
-	if index <= 0 || index == len(token)-1 {
-		return strings.Empty, cryptoerrors.ErrInvalidMatch
+func (t *Token) Verify(tkn string) (string, error) {
+	index := strings.LastIndex(tkn, "-")
+	if index <= 0 || index == len(tkn)-1 {
+		return strings.Empty, crypto.ErrInvalidMatch
 	}
-	name, key := token[:index], token[index+1:]
+	name, key := tkn[:index], tkn[index+1:]
 
 	cfg := t.cfg.Keys.Get(name)
 	if cfg == nil {
-		return strings.Empty, cryptoerrors.ErrInvalidMatch
+		return strings.Empty, crypto.ErrInvalidMatch
 	}
 
 	if cfg.Config == nil {
-		return strings.Empty, tokenerrors.ErrInvalidConfig
+		return strings.Empty, token.ErrInvalidConfig
 	}
 
 	verifier, err := ssh.NewVerifier(t.fs, cfg.Config)
