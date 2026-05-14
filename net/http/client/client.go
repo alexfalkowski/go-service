@@ -60,9 +60,7 @@ func WithTimeout(timeout time.Duration) ClientOption {
 // WithIgnoreRedirect disables automatic redirect following.
 //
 // When set, the underlying http.Client.CheckRedirect is configured to return http.ErrUseLastResponse,
-// causing the client to return the redirect response (3xx) instead of following it.
-//
-// This can be useful when you want to inspect Location headers or preserve redirect responses as-is.
+// causing the underlying client to use the last response instead of following the redirect.
 func WithIgnoreRedirect() ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.ignoreRedirect = true
