@@ -43,13 +43,15 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	userAgent := clientUserAgent(ctx, req, r.userAgent)
 	requestID := clientRequestID(ctx, r.generator, req)
 
-	clientSetRequestHeaders(req.Header, userAgent.Value(), requestID.Value())
 	ctx = meta.WithAttributes(ctx,
 		meta.WithUserAgent(userAgent),
 		meta.WithRequestID(requestID),
 	)
 
-	return r.RoundTripper.RoundTrip(req.WithContext(ctx))
+	cloned := req.Clone(ctx)
+	clientSetRequestHeaders(cloned.Header, userAgent.Value(), requestID.Value())
+
+	return r.RoundTripper.RoundTrip(cloned)
 }
 
 func clientSetRequestHeaders(header http.Header, userAgent, requestID string) {

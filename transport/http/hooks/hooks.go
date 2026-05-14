@@ -170,9 +170,20 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return r.RoundTripper.RoundTrip(req)
 	}
 
-	if err := r.hook.Sign(req); err != nil {
+	cloned := req.Clone(req.Context())
+	body := cloned.Body
+	if err := r.hook.Sign(cloned); err != nil {
+		closeBody(body)
+
 		return nil, err
 	}
+	closeBody(body)
 
-	return r.RoundTripper.RoundTrip(req)
+	return r.RoundTripper.RoundTrip(cloned)
+}
+
+func closeBody(body io.ReadCloser) {
+	if body != nil && body != http.NoBody {
+		_ = body.Close()
+	}
 }

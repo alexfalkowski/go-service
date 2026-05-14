@@ -52,6 +52,28 @@ func TestRoundTripper(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.StatusCode)
 }
 
+func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
+
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
+	}))
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookID))
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookSignature))
+	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookTimestamp))
+}
+
 func TestHandler(t *testing.T) {
 	handler := hooks.NewHandler(nil)
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)

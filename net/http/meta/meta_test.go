@@ -51,6 +51,8 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 	res, err := roundTripper.RoundTrip(req)
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
+	require.Empty(t, req.Header.Values("User-Agent"))
+	require.Empty(t, req.Header.Values("Request-Id"))
 }
 
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
