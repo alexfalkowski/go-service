@@ -94,7 +94,7 @@ func newConfig(fs *os.FS, cfg *Config) (*config.Config, error) {
 	config := &config.Config{
 		Address: cmp.Or(cfg.Address, net.DefaultAddress("6060")),
 	}
-	if !cfg.TLS.IsEnabled() {
+	if !cfg.TLS.HasKeyMaterial() && !cfg.TLS.HasCA() {
 		return config, nil
 	}
 

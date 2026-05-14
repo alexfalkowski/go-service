@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/aes"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -45,7 +46,17 @@ func TestValidCipher(t *testing.T) {
 func TestInvalidCipher(t *testing.T) {
 	gen := rand.NewGenerator(rand.NewReader())
 
-	cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
+	cipher, err := aes.NewCipher(gen, test.FS, &aes.Config{})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, cipher)
+
+	t.Setenv("AES_EMPTY", "")
+
+	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: "env:AES_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, cipher)
+
+	cipher, err = aes.NewCipher(gen, test.FS, &aes.Config{Key: test.FilePath("secrets/aes_invalid")})
 	require.NoError(t, err)
 
 	_, err = cipher.Encrypt(strings.Bytes("test"))

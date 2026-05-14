@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/crypto/errors"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/crypto/rsa"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -58,11 +59,21 @@ func TestInvalid(t *testing.T) {
 	rand := rand.NewGenerator(rand.NewReader())
 
 	enc, err := rsa.NewEncryptor(rand, test.PEM, &rsa.Config{})
-	require.Error(t, err)
+	require.ErrorIs(t, err, errors.ErrMissingKey)
 	require.Nil(t, enc)
 
 	dec, err := rsa.NewDecryptor(rand, test.PEM, &rsa.Config{})
-	require.Error(t, err)
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, dec)
+
+	t.Setenv("RSA_EMPTY", "")
+
+	enc, err = rsa.NewEncryptor(rand, test.PEM, &rsa.Config{Public: "env:RSA_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
+	require.Nil(t, enc)
+
+	dec, err = rsa.NewDecryptor(rand, test.PEM, &rsa.Config{Private: "env:RSA_EMPTY"})
+	require.ErrorIs(t, err, errors.ErrMissingKey)
 	require.Nil(t, dec)
 
 	cfg := test.NewRSA()

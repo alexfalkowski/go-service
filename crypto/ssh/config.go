@@ -54,6 +54,9 @@ func (c *Config) PublicKey(fs *os.FS) (ed25519.PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(data) == 0 {
+		return nil, errors.ErrMissingKey
+	}
 
 	//nolint:dogsled
 	parsed, _, _, _, err := ssh.ParseAuthorizedKey(data)
@@ -88,6 +91,9 @@ func (c *Config) PrivateKey(fs *os.FS) (ed25519.PrivateKey, error) {
 	data, err := fs.ReadSource(c.Private)
 	if err != nil {
 		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, errors.ErrMissingKey
 	}
 
 	key, err := ssh.ParseRawPrivateKey(data)
