@@ -195,14 +195,14 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //   - logger (optional)
 //   - breaker (optional)
 //   - retry (optional)
+//   - token injection (optional)
 //   - limiter (optional)
 //   - compression (optional)
-//   - token injection (optional)
 //   - base transport
 //
 // Notes:
 //   - `WithClientRoundTripper` short-circuits base transport selection and TLS config construction.
-//   - Token injection is applied closest to the base transport so subsequent wrappers see the Authorization header.
+//   - Token injection remains inside retry so a fresh token is generated for each retry attempt.
 func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	os := options(opts...)
 
@@ -211,16 +211,16 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 		return nil, err
 	}
 
-	if os.gen != nil {
-		hrt = token.NewRoundTripper(os.id, os.gen, hrt)
-	}
-
 	if os.compression {
 		hrt = gzhttp.Transport(hrt, gzhttp.TransportEnableGzip(true))
 	}
 
 	if os.limiter != nil {
 		hrt = limiter.NewRoundTripper(os.limiter, hrt)
+	}
+
+	if os.gen != nil {
+		hrt = token.NewRoundTripper(os.id, os.gen, hrt)
 	}
 
 	if os.retry != nil {

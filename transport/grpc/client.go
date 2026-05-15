@@ -289,22 +289,18 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 // Order matters. Interceptors are appended in the following sequence:
 //   - any custom interceptors provided via `WithClientUnaryInterceptors`
 //   - a timeout interceptor
-//   - optional limiter interceptor (when configured)
 //   - optional retry interceptor (when configured)
 //   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
 //   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)
 //   - metadata propagation interceptor (user-agent and request-id)
+//   - optional limiter interceptor (when configured)
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	os := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
 	unary = append(unary, os.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
-
-	if os.limiter != nil {
-		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
-	}
 
 	if os.retry != nil {
 		unary = append(unary, retry.UnaryClientInterceptor(os.retry))
@@ -323,6 +319,10 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	}
 
 	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
+	if os.limiter != nil {
+		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
+	}
+
 	return unary
 }
 

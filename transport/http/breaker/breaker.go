@@ -102,14 +102,6 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 
 	s := r.opts.settings
 	s.Name = key
-	s.IsSuccessful = func(err error) bool {
-		if err == nil {
-			return true
-		}
-
-		_, ok := errors.AsType[responseError](err)
-		return !ok
-	}
 
 	cb := breaker.NewCircuitBreaker(s)
 	actual, _ := r.breakers.LoadOrStore(key, cb)
