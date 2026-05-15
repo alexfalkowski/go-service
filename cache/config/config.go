@@ -22,7 +22,8 @@ type Config struct {
 	// Encoder selects the value encoding used when storing objects in the cache (if applicable).
 	Encoder string `yaml:"encoder,omitempty" json:"encoder,omitempty" toml:"encoder,omitempty"`
 
-	// MaxSize limits encoded cache value size before compression and after decompression.
+	// MaxSize limits encoded cache value size before compression, after compression, and after
+	// decompression.
 	//
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//

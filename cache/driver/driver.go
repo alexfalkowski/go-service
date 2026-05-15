@@ -4,6 +4,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	cache "github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/telemetry"
+	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
@@ -13,7 +15,7 @@ import (
 	"github.com/faabiosr/cachego/redis"
 	"github.com/faabiosr/cachego/sync"
 	client "github.com/redis/go-redis/v9"
-	"github.com/redis/go-redis/v9/maintnotifications"
+	notifications "github.com/redis/go-redis/v9/maintnotifications"
 )
 
 // ErrExpired is an alias for cachego.ErrCacheExpired.
@@ -25,8 +27,13 @@ const ErrExpired = cachego.ErrCacheExpired
 // ErrNotFound is returned when the configured cache driver kind is unknown.
 var ErrNotFound = errors.New("cache: driver not found")
 
-//
-// It is returned by NewDriver when Config.Kind does not match any backend compiled into this module.
+// DriverParams defines dependencies for constructing a Driver.
+type DriverParams struct {
+	di.In
+	Lifecycle di.Lifecycle
+	FS        *os.FS
+	Config    *cache.Config
+}
 
 // NewDriver constructs a cache Driver for the configured backend.
 //
@@ -45,6 +52,8 @@ var ErrNotFound = errors.New("cache: driver not found")
 // then the client is instrumented for tracing and metrics via `cache/telemetry`
 // when those telemetry providers are enabled.
 //
+// The Redis client is closed from the supplied lifecycle's OnStop hook.
+//
 // Instrumentation errors are treated as fatal configuration/runtime errors and
 // are converted into panics via runtime.Must, matching the existing repository
 // convention for mandatory telemetry wiring in internal constructors.
@@ -59,14 +68,15 @@ var ErrNotFound = errors.New("cache: driver not found")
 // dependency, so callers should not rely on sub-second expiration with that backend.
 //
 // If cfg.Kind is unknown, NewDriver returns ErrNotFound.
-func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
+func NewDriver(params DriverParams) (Driver, error) {
+	cfg := params.Config
 	if !cfg.IsEnabled() {
 		return nil, nil
 	}
 
 	switch cfg.Kind {
 	case "redis":
-		data, err := fs.ReadSource(cfg.Options["url"].(string))
+		data, err := params.FS.ReadSource(cfg.Options["url"].(string))
 		if err != nil {
 			return nil, err
 		}
@@ -76,19 +86,25 @@ func NewDriver(fs *os.FS, cfg *cache.Config) (Driver, error) {
 			return nil, err
 		}
 
-		opts.MaintNotificationsConfig = &maintnotifications.Config{
-			Mode: maintnotifications.ModeDisabled,
+		opts.MaintNotificationsConfig = &notifications.Config{
+			Mode: notifications.ModeDisabled,
 		}
 
-		client := client.NewClient(opts)
+		redisClient := client.NewClient(opts)
 		if tracer.IsEnabled() {
-			runtime.Must(telemetry.InstrumentTracing(client))
+			runtime.Must(telemetry.InstrumentTracing(redisClient))
 		}
 		if metrics.IsEnabled() {
-			runtime.Must(telemetry.InstrumentMetrics(client))
+			runtime.Must(telemetry.InstrumentMetrics(redisClient))
 		}
 
-		return redis.New(client), nil
+		params.Lifecycle.Append(di.Hook{
+			OnStop: func(context.Context) error {
+				return redisClient.Close()
+			},
+		})
+
+		return redis.New(redisClient), nil
 	case "sync":
 		return sync.New(), nil
 	default:

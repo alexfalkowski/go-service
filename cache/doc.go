@@ -1,7 +1,6 @@
 // Package cache provides cache abstractions, configuration, and drivers for go-service.
 //
-// The primary entrypoint is `NewCache`, which constructs a `*Cache` from configuration and registers
-// lifecycle hooks to flush/close the underlying cache driver on shutdown.
+// The primary entrypoint is `NewCache`, which constructs a `*Cache` from configuration.
 //
 // # Disabled / nil behavior
 //

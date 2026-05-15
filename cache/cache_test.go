@@ -108,6 +108,15 @@ func TestMaxSizeOnPersist(t *testing.T) {
 	require.ErrorIs(t, err, errors.ErrTooLarge)
 }
 
+func TestMaxSizeOnPersistCompressedValue(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
+	cfg.MaxSize = 4
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
+
+	err := world.Persist(t.Context(), "test", ptr.Value("a"), time.Minute)
+	require.ErrorIs(t, err, errors.ErrTooLarge)
+}
+
 func TestMaxSizeOnGet(t *testing.T) {
 	cfg := test.NewCacheConfig("sync", "snappy", "json", "redis")
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg), test.WithWorldRegisterCache())
@@ -146,7 +155,11 @@ func TestErroneousCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := driver.NewDriver(test.FS, tt.config)
+			_, err := driver.NewDriver(driver.DriverParams{
+				Lifecycle: fxtest.NewLifecycle(t),
+				FS:        test.FS,
+				Config:    tt.config,
+			})
 			require.Error(t, err)
 		})
 	}
@@ -154,7 +167,10 @@ func TestErroneousCache(t *testing.T) {
 
 func TestDisabledCache(t *testing.T) {
 	t.Run("driver", func(t *testing.T) {
-		_, err := driver.NewDriver(test.FS, nil)
+		_, err := driver.NewDriver(driver.DriverParams{
+			Lifecycle: fxtest.NewLifecycle(t),
+			FS:        test.FS,
+		})
 		require.NoError(t, err)
 	})
 
@@ -221,11 +237,13 @@ func TestMissingCache(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	cfg := &config.Config{Kind: "sync"}
 
-	d, err := driver.NewDriver(nil, cfg)
+	d, err := driver.NewDriver(driver.DriverParams{
+		Lifecycle: lc,
+		Config:    cfg,
+	})
 	require.NoError(t, err)
 
 	params := cache.CacheParams{
-		Lifecycle:  lc,
 		Config:     cfg,
 		Compressor: test.Compressor,
 		Encoder:    test.Encoder,
@@ -234,6 +252,9 @@ func TestMissingCache(t *testing.T) {
 	}
 
 	kind := cache.NewCache(params)
+	t.Cleanup(func() {
+		require.NoError(t, kind.Flush(t.Context()))
+	})
 	value := "existing"
 
 	require.NoError(t, kind.Get(t.Context(), "missing", &value))
