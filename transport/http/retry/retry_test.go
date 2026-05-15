@@ -117,6 +117,30 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
 }
 
+func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
+	body := &trackedBody{Reader: strings.NewReader("hello")}
+	rt := &originalBodyRoundTripper{original: body}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+	require.NoError(t, err)
+	req.Body = body
+	req.GetBody = func() (io.ReadCloser, error) {
+		return io.NopCloser(strings.NewReader("hello")), nil
+	}
+
+	res, roundTripErr := retrying.RoundTrip(req)
+	require.NoError(t, roundTripErr)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.True(t, rt.firstUsedOriginal)
+	require.True(t, body.closed)
+	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
+}
+
 func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 	rt := &requestRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -242,6 +266,37 @@ func (r *requestRoundTripper) RoundTrip(req *http.Request) (*http.Response, erro
 	}, nil
 }
 
+type originalBodyRoundTripper struct {
+	original          io.ReadCloser
+	bodies            []string
+	calls             int
+	firstUsedOriginal bool
+}
+
+func (r *originalBodyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if r.calls == 0 {
+		r.firstUsedOriginal = req.Body == r.original
+	}
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, err
+	}
+	if err := req.Body.Close(); err != nil {
+		return nil, err
+	}
+
+	r.calls++
+	r.bodies = append(r.bodies, string(body))
+
+	return &http.Response{
+		StatusCode: http.StatusInternalServerError,
+		Status:     fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)),
+		Body:       http.NoBody,
+		Header:     make(http.Header),
+	}, nil
+}
+
 type errorRoundTripper struct {
 	err   error
 	calls int
@@ -312,4 +367,14 @@ func (r *nonReplayableReader) Read(p []byte) (int, error) {
 	r.read = true
 	copy(p, r.value)
 	return len(r.value), io.EOF
+}
+
+type trackedBody struct {
+	*strings.Reader
+	closed bool
+}
+
+func (b *trackedBody) Close() error {
+	b.closed = true
+	return nil
 }
