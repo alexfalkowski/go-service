@@ -99,7 +99,11 @@ func Code(err error) int {
 
 	s, ok := status.FromError(err)
 	if ok {
-		return statusCodes[s.Code()]
+		if code, ok := statusCodes[s.Code()]; ok {
+			return code
+		}
+
+		return http.StatusInternalServerError
 	}
 
 	return http.StatusInternalServerError
