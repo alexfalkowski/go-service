@@ -82,13 +82,16 @@ func (*ErrCache) Save(_, _ string, _ time.Duration) error {
 func redisCache(lc di.Lifecycle) (*cache.Cache, error) {
 	cfg := NewCacheConfig("redis", "snappy", "json", "redis")
 
-	driver, err := driver.NewDriver(FS, cfg)
+	driver, err := driver.NewDriver(driver.DriverParams{
+		Lifecycle: lc,
+		FS:        FS,
+		Config:    cfg,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	params := cache.CacheParams{
-		Lifecycle:  lc,
 		Config:     cfg,
 		Compressor: Compressor,
 		Encoder:    Encoder,
@@ -127,12 +130,15 @@ func createWorldCache(tb testing.TB, lc di.Lifecycle, opts *worldCacheOpts) *cac
 	drv := opts.driver
 	if drv == nil {
 		var err error
-		drv, err = driver.NewDriver(FS, opts.config)
+		drv, err = driver.NewDriver(driver.DriverParams{
+			Lifecycle: lc,
+			FS:        FS,
+			Config:    opts.config,
+		})
 		require.NoError(tb, err)
 	}
 
 	params := cache.CacheParams{
-		Lifecycle:  lc,
 		Config:     opts.config,
 		Compressor: Compressor,
 		Encoder:    Encoder,

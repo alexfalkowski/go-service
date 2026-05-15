@@ -7,6 +7,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/compress"
+	"github.com/alexfalkowski/go-service/v2/compress/errors"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding"
@@ -22,7 +23,6 @@ import (
 // It is intended for dependency injection (Fx/Dig). The constructor will typically be wired via `Module`.
 type CacheParams struct {
 	di.In
-	Lifecycle  di.Lifecycle
 	Config     *config.Config
 	Encoder    *encoding.Map
 	Pool       *sync.BufferPool
@@ -30,33 +30,22 @@ type CacheParams struct {
 	Driver     driver.Driver
 }
 
-// NewCache constructs a Cache from configuration and registers a shutdown hook.
+// NewCache constructs a Cache from configuration.
 //
 // If caching is disabled (i.e. params.Config is nil), NewCache returns nil. Callers are expected to
 // tolerate a nil cache instance.
-//
-// When enabled, NewCache registers an OnStop lifecycle hook that calls (*Cache).Close to flush the
-// underlying driver on shutdown.
 func NewCache(params CacheParams) *Cache {
 	if !params.Config.IsEnabled() {
 		return nil
 	}
 
-	cache := &Cache{
+	return &Cache{
 		cm:     params.Compressor,
 		em:     params.Encoder,
 		cfg:    params.Config,
 		pool:   params.Pool,
 		driver: params.Driver,
 	}
-
-	params.Lifecycle.Append(di.Hook{
-		OnStop: func(ctx context.Context) error {
-			return cache.Close(ctx)
-		},
-	})
-
-	return cache
 }
 
 // Cache provides a typed-ish cache facade on top of a cache driver.
@@ -79,10 +68,11 @@ type Cache struct {
 	driver driver.Driver
 }
 
-// Close flushes the underlying driver.
+// Flush removes all cached keys from the underlying driver.
 //
-// This is typically invoked automatically via the lifecycle hook registered by NewCache.
-func (c *Cache) Close(_ context.Context) error {
+// For persistent backends such as Redis this can be a destructive operation for the selected database.
+// It is intentionally not called during lifecycle shutdown.
+func (c *Cache) Flush(_ context.Context) error {
 	return c.driver.Flush()
 }
 
@@ -143,6 +133,9 @@ func (c *Cache) encode(value any) (string, error) {
 	if err != nil {
 		return strings.Empty, err
 	}
+	if int64(len(compressed)) > c.cfg.GetMaxSize().Bytes() {
+		return strings.Empty, errors.ErrTooLarge
+	}
 
 	encoded := base64.Encode(compressed)
 
@@ -155,6 +148,7 @@ func (c *Cache) decode(value string, field any) error {
 		return err
 	}
 
+	// Enforce the read-side limit on decompressed payloads, not on the stored base64 wrapper.
 	decompressed, err := c.compressor().Decompress(decoded, c.cfg.GetMaxSize())
 	if err != nil {
 		return err

@@ -264,7 +264,7 @@ Notes:
 
 - Built-in driver kinds in this repo are `redis` and `sync`.
 - `kind` is still wiring-dependent in practice: services can register additional drivers.
-- `max_size` limits encoded cache values before compression and after decompression. A zero value uses the default `4MB`.
+- `max_size` limits encoded cache values before compression, after compression, and after decompression. A zero value uses the default `4MB`.
 - `options` is backend-specific and decoded as `map[string]any`.
 
 ---

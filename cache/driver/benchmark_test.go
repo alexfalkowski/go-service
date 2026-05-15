@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
@@ -28,11 +29,17 @@ func BenchmarkRedisTelemetry(b *testing.B) {
 				},
 			}
 
+			lc := noopLifecycle{}
+
 			b.ReportAllocs()
 			b.ResetTimer()
 
 			for b.Loop() {
-				cache, err := driver.NewDriver(test.FS, cfg)
+				cache, err := driver.NewDriver(driver.DriverParams{
+					Lifecycle: lc,
+					FS:        test.FS,
+					Config:    cfg,
+				})
 				require.NoError(b, err)
 				driverSink = cache
 			}
@@ -44,6 +51,10 @@ func BenchmarkRedisTelemetry(b *testing.B) {
 	bench("tracer", enableTracer)
 	bench("enabled", enableTelemetry)
 }
+
+type noopLifecycle struct{}
+
+func (noopLifecycle) Append(di.Hook) {}
 
 func resetTelemetry(tb testing.TB) {
 	tb.Helper()

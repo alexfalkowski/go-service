@@ -170,6 +170,10 @@ type World struct {
 func (w *World) Start() *World {
 	w.t.Helper()
 	w.t.Cleanup(func() {
+		if w.Cache != nil {
+			require.NoError(w.t, w.Flush(context.Background()))
+		}
+
 		w.RequireStop()
 	})
 
