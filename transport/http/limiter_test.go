@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
@@ -75,6 +76,28 @@ func TestClientLimiter(t *testing.T) {
 	}
 }
 
+func TestClientLimiterUsesGeneratedToken(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldToken(&sequenceGenerator{}, acceptingVerifier{}),
+		test.WithWorldHTTP(),
+		test.WithWorldHello(),
+	)
+
+	url := world.PathServerURL("http", "hello")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, "hello!", body)
+
+	res, body, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, "hello!", body)
+}
+
 func TestServerClosedLimiter(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
@@ -109,4 +132,20 @@ func TestClientClosedLimiter(t *testing.T) {
 	_, _, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.Error(t, err)
 	require.Equal(t, http.StatusInternalServerError, status.Code(err))
+}
+
+type sequenceGenerator struct {
+	next int
+}
+
+func (g *sequenceGenerator) Generate(_, _ string) ([]byte, error) {
+	g.next++
+
+	return []byte("token-" + strconv.Itoa(g.next)), nil
+}
+
+type acceptingVerifier struct{}
+
+func (acceptingVerifier) Verify([]byte, string) (string, error) {
+	return test.UserID.String(), nil
 }

@@ -41,6 +41,27 @@ func TestClientLimiterUnary(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
+func TestClientLimiterUsesGeneratedTokenUnary(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldToken(&sequenceGenerator{}, acceptingVerifier{}),
+		test.WithWorldGRPC(),
+	)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+	req := &v1.SayHelloRequest{Name: "test"}
+
+	_, err := client.SayHello(t.Context(), req)
+	require.NoError(t, err)
+
+	_, err = client.SayHello(t.Context(), req)
+	require.NoError(t, err)
+}
+
 func TestLimiterUnlimitedUnary(t *testing.T) {
 	cfg := test.NewLimiterConfig("user-agent", "1s", 10)
 	world := test.NewStartedWorld(t,
@@ -113,4 +134,20 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
+}
+
+type sequenceGenerator struct {
+	next int
+}
+
+func (g *sequenceGenerator) Generate(_, _ string) ([]byte, error) {
+	g.next++
+
+	return []byte("token-" + strconv.Itoa(g.next)), nil
+}
+
+type acceptingVerifier struct{}
+
+func (acceptingVerifier) Verify([]byte, string) (string, error) {
+	return test.UserID.String(), nil
 }
