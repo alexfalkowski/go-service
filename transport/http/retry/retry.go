@@ -116,7 +116,7 @@ func (r *RoundTripper) attempt(req *http.Request, ctx context.Context, attempt *
 }
 
 func request(req *http.Request, ctx context.Context, attempt int) (*http.Request, error) {
-	if attempt == 0 && req.GetBody == nil {
+	if attempt == 0 {
 		return req.WithContext(ctx), nil
 	}
 

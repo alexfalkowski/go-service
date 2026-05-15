@@ -60,7 +60,7 @@ func (h *Webhook) Sign(req *http.Request) error {
 		return nil
 	}
 
-	payload, body, err := io.ReadAll(req.Body)
+	payload, body, err := readBody(req)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (h *Webhook) Verify(req *http.Request) error {
 		return nil
 	}
 
-	payload, body, err := io.ReadAll(req.Body)
+	payload, body, err := readBody(req)
 	if err != nil {
 		return err
 	}
@@ -103,6 +103,14 @@ func (h *Webhook) Verify(req *http.Request) error {
 	}
 
 	return nil
+}
+
+func readBody(req *http.Request) ([]byte, io.ReadCloser, error) {
+	if req.Body == nil {
+		req.Body = http.NoBody
+	}
+
+	return io.ReadAll(req.Body)
 }
 
 // Handler verifies webhook signatures on inbound requests.

@@ -40,6 +40,21 @@ func TestSignOverwritesHeaders(t *testing.T) {
 	require.NoError(t, hook.Verify(req))
 }
 
+func TestSignAndVerifyNilBody(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	req := &http.Request{Header: make(http.Header)}
+
+	require.NoError(t, hook.Sign(req))
+	require.NotNil(t, req.Body)
+
+	verifyReq := &http.Request{Header: req.Header.Clone()}
+	require.NoError(t, hook.Verify(verifyReq))
+	require.NotNil(t, verifyReq.Body)
+}
+
 func TestRoundTripper(t *testing.T) {
 	hook := hooks.NewWebhook(nil, nil)
 	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
