@@ -12,9 +12,8 @@
 //
 // # Configuration and enablement
 //
-// ID generation configuration is optional. By convention across go-service config types, a nil
-// `*id.Config` is treated as "disabled" and `NewGenerator` returns (nil, nil) when disabled.
-// If configuration is enabled but the configured kind is unknown, `NewGenerator` returns ErrNotFound.
+// ID generation configuration is optional. A nil `*id.Config` selects the default "uuid" generator.
+// If configuration is present but the configured kind is unknown, `NewGenerator` returns ErrNotFound.
 //
 // Start with `Generator`, `Config`, `NewGenerator`, `Map`, and `Module`.
 package id

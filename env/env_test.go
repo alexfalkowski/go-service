@@ -27,4 +27,5 @@ func TestID(t *testing.T) {
 
 	t.Setenv("SERVICE_ID", "new_id")
 	require.Equal(t, "new_id", env.NewID(generator).String())
+	require.Equal(t, "new_id", env.NewID(nil).String())
 }

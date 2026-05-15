@@ -27,10 +27,11 @@ func TestValidID(t *testing.T) {
 	}
 }
 
-func TestNilID(t *testing.T) {
+func TestDefaultID(t *testing.T) {
 	gen, err := id.NewGenerator(nil, test.Generators)
 	require.NoError(t, err)
-	require.Nil(t, gen)
+	require.NotNil(t, gen)
+	require.NotEmpty(t, gen.Generate())
 }
 
 func TestInvalidID(t *testing.T) {
