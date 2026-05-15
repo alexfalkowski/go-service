@@ -45,7 +45,7 @@ func TestAppendNil(t *testing.T) {
 
 	for _, elem := range []*int{&integer} {
 		t.Run("non-nil pointer", func(t *testing.T) {
-			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
+			require.NotEmpty(t, slices.AppendNotNil([]*int{}, elem))
 		})
 	}
 }
