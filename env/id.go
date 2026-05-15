@@ -1,8 +1,6 @@
 package env
 
 import (
-	"cmp"
-
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/os"
 )
@@ -15,7 +13,11 @@ import (
 // This is commonly used to distinguish service instances in logs/metrics/traces when multiple replicas
 // are running.
 func NewID(generator id.Generator) ID {
-	return ID(cmp.Or(os.Getenv("SERVICE_ID"), generator.Generate()))
+	if id := os.Getenv("SERVICE_ID"); id != "" {
+		return ID(id)
+	}
+
+	return ID(generator.Generate())
 }
 
 // ID is the service instance identifier.

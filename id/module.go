@@ -21,8 +21,8 @@ import (
 // It then constructs a generator registry (*id.Map) via NewMap and finally selects a concrete
 // Generator via NewGenerator using Config.Kind.
 //
-// Disabled behavior: when *id.Config is nil/disabled, NewGenerator returns (nil, nil) so downstream
-// consumers can treat ID generation as optional.
+// Default behavior: when *id.Config is nil/disabled, NewGenerator returns the "uuid" generator so
+// downstream consumers always have a usable ID source.
 var Module = di.Module(
 	di.Constructor(ksuid.NewGenerator),
 	di.Constructor(nanoid.NewGenerator),

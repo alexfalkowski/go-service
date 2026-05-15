@@ -77,13 +77,13 @@ func (f *Map) Get(kind string) Generator {
 
 // NewGenerator selects a Generator based on config.Kind from the provided registry.
 //
-// Disabled behavior: if config is nil/disabled, NewGenerator returns (nil, nil).
+// Default behavior: if config is nil/disabled, NewGenerator returns the "uuid" generator.
 //
 // Enabled behavior: if config is enabled, NewGenerator looks up the generator for config.Kind in m.
 // If the kind is registered, it returns that generator. If the kind is not registered, it returns ErrNotFound.
 func NewGenerator(config *Config, m *Map) (Generator, error) {
 	if !config.IsEnabled() {
-		return nil, nil
+		return m.Get("uuid"), nil
 	}
 
 	g := m.Get(config.Kind)

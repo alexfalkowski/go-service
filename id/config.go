@@ -8,9 +8,8 @@ package id
 //
 // # Optional pointers and "enabled" semantics
 //
-// This config is intentionally optional. By convention across go-service configuration types, a nil
-// *Config is treated as "ID generation disabled". When disabled, wiring that depends on this config
-// often returns (nil, nil) rather than failing.
+// This config is intentionally optional. When nil, generator selection falls back to the default
+// "uuid" generator.
 type Config struct {
 	// Kind selects the ID generator implementation.
 	//
