@@ -87,6 +87,12 @@ func TestCodeMapsGRPCStatusCodes(t *testing.T) {
 	}
 }
 
+func TestCodeMapsUnknownGRPCStatusCodeToInternalServerError(t *testing.T) {
+	err := grpcstatus.Error(codes.Code(999), "unknown")
+
+	require.Equal(t, http.StatusInternalServerError, httpstatus.Code(err))
+}
+
 func TestWriteErrorReturnsWriteFailure(t *testing.T) {
 	res := &test.ErrResponseWriter{}
 
