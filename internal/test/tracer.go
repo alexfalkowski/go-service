@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 )
 
@@ -15,5 +16,5 @@ func RegisterTracer(lc di.Lifecycle, config *tracer.Config) {
 		Config:      config,
 	}
 
-	tracer.Register(params)
+	runtime.Must(tracer.Register(params))
 }
