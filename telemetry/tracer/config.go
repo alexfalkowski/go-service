@@ -17,8 +17,8 @@ type Config struct {
 
 	// Kind selects the tracer/exporter implementation.
 	//
-	// Supported kinds depend on what the service links in. This package wires an
-	// OTLP/HTTP exporter when tracing is enabled.
+	// An empty kind means tracing is not configured. This package supports "otlp" and
+	// wires an OTLP/HTTP exporter for that kind.
 	Kind string `yaml:"kind,omitempty" json:"kind,omitempty" toml:"kind,omitempty"`
 
 	// URL is the destination endpoint for the selected Kind, when applicable.
@@ -28,9 +28,9 @@ type Config struct {
 	URL string `yaml:"url,omitempty" json:"url,omitempty" toml:"url,omitempty" validate:"omitempty,http_url"`
 }
 
-// IsEnabled reports whether tracing configuration is present.
+// IsEnabled reports whether tracing is configured.
 //
-// A nil *Config indicates tracing is disabled.
+// A nil *Config or empty Kind indicates tracing is disabled.
 func (c *Config) IsEnabled() bool {
-	return c != nil
+	return c != nil && c.Kind != ""
 }

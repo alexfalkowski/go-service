@@ -197,6 +197,6 @@ func BenchmarkGRPC(b *testing.B) {
 func disableTelemetry(b *testing.B) {
 	b.Helper()
 
-	tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(b)})
+	require.NoError(b, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(b)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(b)})
 }

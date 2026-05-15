@@ -2,8 +2,9 @@
 //
 // # What it does
 //
-// When enabled via Config, Register configures and installs a process-wide OpenTelemetry
-// TracerProvider (via otel.SetTracerProvider) backed by an OTLP/HTTP exporter.
+// When configured with kind "otlp", Register configures and installs a process-wide
+// OpenTelemetry TracerProvider (via otel.SetTracerProvider) backed by an OTLP/HTTP
+// exporter.
 //
 // The provider is configured with a Resource describing the running service instance,
 // including standard service identity attributes (host ID, service name, service version,
@@ -11,9 +12,9 @@
 //
 // # Enablement model
 //
-// Tracing is enabled by presence: a nil *Config indicates tracing is disabled.
-// When disabled, Register installs this package's noop provider. IsEnabled reports
-// whether the current global provider is not that noop provider.
+// Tracing is enabled by kind: a nil *Config or an empty Config.Kind indicates tracing
+// is not configured. When disabled, Register installs this package's noop provider.
+// IsEnabled reports whether the current global provider is not that noop provider.
 //
 // # Global provider installation
 //
@@ -35,6 +36,9 @@
 // Shutdown errors are intentionally ignored to avoid blocking other lifecycle stop hooks.
 //
 // # Configuration
+//
+// The supported kind is "otlp". Unknown non-empty kinds cause Register to return
+// ErrNotFound.
 //
 // The exporter request headers are provided by Config.Headers. Header values may be
 // configured as go-service “source strings” (for example "env:NAME", "file:/path", or a

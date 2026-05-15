@@ -45,7 +45,7 @@ type TracerParams struct {
 
 // Register configures and installs a global OpenTelemetry TracerProvider.
 //
-// When tracing is enabled (`params.Config != nil`), Register:
+// When tracing is configured with kind "otlp", Register:
 //
 //  1. Creates an OTLP/HTTP trace exporter using `Config.URL` and `Config.Headers`.
 //  2. Creates an OpenTelemetry resource describing the running service.
@@ -53,39 +53,49 @@ type TracerParams struct {
 //  4. Appends lifecycle hooks to start the exporter on application start and to
 //     shut down the provider/exporter on application stop.
 //
+// If Config is nil or Kind is empty, Register installs the noop provider. Unknown
+// non-empty kinds return ErrNotFound.
+//
 // Shutdown errors are intentionally ignored to avoid blocking other stop hooks.
-func Register(params TracerParams) {
+func Register(params TracerParams) error {
 	if !params.Config.IsEnabled() {
 		otel.SetTracerProvider(noopProvider)
-		return
+		return nil
 	}
 
-	client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
-	exporter := otlptrace.NewUnstarted(client)
-	attrs := resource.NewWithAttributes(
-		attributes.SchemaURL,
-		attributes.HostID(params.ID.String()),
-		attributes.ServiceName(params.Name.String()),
-		attributes.ServiceVersion(params.Version.String()),
-		attributes.DeploymentEnvironmentName(params.Environment.String()),
-	)
+	switch params.Config.Kind {
+	case "otlp":
+		client := otlp.NewClient(otlp.WithEndpointURL(params.Config.URL), otlp.WithHeaders(params.Config.Headers))
+		exporter := otlptrace.NewUnstarted(client)
+		attrs := resource.NewWithAttributes(
+			attributes.SchemaURL,
+			attributes.HostID(params.ID.String()),
+			attributes.ServiceName(params.Name.String()),
+			attributes.ServiceVersion(params.Version.String()),
+			attributes.DeploymentEnvironmentName(params.Environment.String()),
+		)
 
-	provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
-	otel.SetTracerProvider(provider)
+		provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
+		otel.SetTracerProvider(provider)
 
-	params.Lifecycle.Append(di.Hook{
-		OnStart: func(ctx context.Context) error {
-			return prefix(exporter.Start(ctx))
-		},
-		OnStop: func(ctx context.Context) error {
-			// Do not return error as this will stop all others.
-			_ = provider.Shutdown(ctx)
-			_ = exporter.Shutdown(ctx)
-			otel.SetTracerProvider(noopProvider)
+		params.Lifecycle.Append(di.Hook{
+			OnStart: func(ctx context.Context) error {
+				return prefix(exporter.Start(ctx))
+			},
+			OnStop: func(ctx context.Context) error {
+				// Do not return error as this will stop all others.
+				_ = provider.Shutdown(ctx)
+				_ = exporter.Shutdown(ctx)
+				otel.SetTracerProvider(noopProvider)
 
-			return nil
-		},
-	})
+				return nil
+			},
+		})
+
+		return nil
+	default:
+		return ErrNotFound
+	}
 }
 
 // IsEnabled reports whether tracing is backed by a non-noop provider installed by this package.

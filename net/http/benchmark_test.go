@@ -50,7 +50,7 @@ func BenchmarkClientTelemetry(b *testing.B) {
 func resetTelemetry(tb testing.TB) {
 	tb.Helper()
 
-	tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(tb)})
+	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(tb)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(tb)})
 }
 
@@ -71,12 +71,12 @@ func enableMetrics(tb testing.TB) {
 func enableTracer(tb testing.TB) {
 	tb.Helper()
 
-	tracer.Register(tracer.TracerParams{
+	require.NoError(tb, tracer.Register(tracer.TracerParams{
 		Lifecycle:   fxtest.NewLifecycle(tb),
-		Config:      &tracer.Config{},
+		Config:      &tracer.Config{Kind: "otlp"},
 		ID:          test.ID,
 		Name:        test.Name,
 		Version:     test.Version,
 		Environment: test.Environment,
-	})
+	}))
 }

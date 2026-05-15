@@ -31,7 +31,7 @@ func TestMaxBytesHandler(t *testing.T) {
 }
 
 func TestHandleWhenTelemetryDisabled(t *testing.T) {
-	tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)})
+	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 
 	mux := http.NewServeMux()
@@ -54,11 +54,11 @@ func TestHandleWhenTelemetryDisabled(t *testing.T) {
 
 func TestHandleWhenMetricsEnabled(t *testing.T) {
 	t.Cleanup(func() {
-		tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)})
+		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 		metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})
 	})
 
-	tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)})
+	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{
 		Lifecycle: fxtest.NewLifecycle(t),
 		Config:    &metrics.Config{},
