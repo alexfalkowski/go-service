@@ -104,6 +104,17 @@ func TestInvalidConfigDoesNotPanic(t *testing.T) {
 		require.ErrorIs(t, err, errors.ErrInvalidConfig)
 	})
 
+	t.Run("generate with empty key name", func(t *testing.T) {
+		cfg := test.NewToken("ssh").SSH
+		cfg.Key.Name = strings.Empty
+
+		token := ssh.NewToken(cfg, test.FS)
+
+		tkn, err := token.Generate()
+		require.Empty(t, tkn)
+		require.ErrorIs(t, err, errors.ErrInvalidConfig)
+	})
+
 	t.Run("verify with matching key missing config", func(t *testing.T) {
 		token := ssh.NewToken(&ssh.Config{
 			Keys: ssh.Keys{

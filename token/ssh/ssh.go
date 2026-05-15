@@ -62,7 +62,7 @@ type Token struct {
 // Errors are returned when the signing key configuration is missing/partial,
 // key material cannot be loaded, or signature generation fails.
 func (t *Token) Generate() (string, error) {
-	if t.cfg.Key == nil || t.cfg.Key.Config == nil {
+	if t.cfg.Key == nil || t.cfg.Key.Config == nil || strings.IsEmpty(t.cfg.Key.Name) {
 		return strings.Empty, token.ErrInvalidConfig
 	}
 
