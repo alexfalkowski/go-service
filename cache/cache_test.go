@@ -9,6 +9,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
 	"github.com/alexfalkowski/go-service/v2/ptr"
@@ -127,6 +128,19 @@ func TestMaxSizeOnGet(t *testing.T) {
 
 	err := world.Get(t.Context(), "test", ptr.Zero[string]())
 	require.ErrorIs(t, err, errors.ErrTooLarge)
+}
+
+func TestMaxSizeOnGetAllowsEncodedValueLargerThanLimit(t *testing.T) {
+	cfg := test.NewCacheConfig("sync", "none", "json", "redis")
+	cfg.MaxSize = 4
+	world := test.NewStartedWorld(t,
+		test.WithWorldCacheConfig(cfg),
+		test.WithWorldCacheDriver(&test.Cache{Value: base64.Encode(strings.Bytes(`"ok"`))}),
+	)
+
+	value := ptr.Zero[string]()
+	require.NoError(t, world.Get(t.Context(), "test", value))
+	require.Equal(t, "ok", *value)
 }
 
 func TestExpiredCache(t *testing.T) {
