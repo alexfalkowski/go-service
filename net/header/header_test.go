@@ -8,10 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidParseAuthorization(t *testing.T) {
-	key, value, err := header.ParseAuthorization("Bearer token")
+func TestValidParseBearer(t *testing.T) {
+	value, err := header.ParseBearer("Bearer token")
 	require.NoError(t, err)
-	require.Equal(t, "Bearer", key)
 	require.Equal(t, "token", value)
 }
 
@@ -24,30 +23,23 @@ func TestForwardedIPs(t *testing.T) {
 	}, header.ForwardedIPs)
 }
 
-func TestValidParseAuthorizationWithLowercaseScheme(t *testing.T) {
-	for _, tc := range []struct {
-		name   string
-		value  string
-		scheme string
-	}{
-		{name: "bearer", value: "bearer token", scheme: header.BearerAuthorization},
-		{name: "basic", value: "basic token", scheme: header.BasicAuthorization},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			key, value, err := header.ParseAuthorization(tc.value)
-			require.NoError(t, err)
-			require.Equal(t, tc.scheme, key)
-			require.Equal(t, "token", value)
-		})
-	}
+func TestValidParseBearerWithLowercaseScheme(t *testing.T) {
+	value, err := header.ParseBearer("bearer token")
+	require.NoError(t, err)
+	require.Equal(t, "token", value)
 }
 
-func TestMissingParseAuthorization(t *testing.T) {
-	_, _, err := header.ParseAuthorization(strings.Empty)
+func TestMissingParseBearer(t *testing.T) {
+	_, err := header.ParseBearer(strings.Empty)
 	require.ErrorIs(t, err, header.ErrInvalidAuthorization)
 }
 
-func TestNotSupportedParseAuthorization(t *testing.T) {
-	_, _, err := header.ParseAuthorization("Bob token")
+func TestNotSupportedParseBearer(t *testing.T) {
+	_, err := header.ParseBearer("Bob token")
+	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)
+}
+
+func TestParseBearerRejectsBasic(t *testing.T) {
+	_, err := header.ParseBearer("Basic token")
 	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)
 }

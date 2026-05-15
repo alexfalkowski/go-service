@@ -138,7 +138,7 @@ func serverAuthorization(req *http.Request) (meta.Value, error) {
 		return meta.Blank(), nil
 	}
 
-	_, value, err := header.ParseAuthorization(a)
+	value, err := header.ParseBearer(a)
 	if err != nil {
 		return meta.Blank(), err
 	}
