@@ -43,6 +43,7 @@ matching skill for the task.
 - Default file lookup checks the executable directory, `$XDG_CONFIG_HOME/<serviceName>/`, and `/etc/<serviceName>/`.
 - Many config fields use source strings through `os.FS.ReadSource`: `env:NAME`, `file:/path`, or a literal value.
 - Nil pointer sub-configs usually mean "disabled".
+- Standard module wiring is the supported path. Do not flag hypothetical failures that require hand-wiring an incomplete DI graph unless the public API explicitly promises that custom construction mode.
 
 ## Gotchas
 
