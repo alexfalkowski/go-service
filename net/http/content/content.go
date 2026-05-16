@@ -3,11 +3,15 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-sync"
 )
 
 // TypeKey is the HTTP header key used for Content-Type.
 const TypeKey = "Content-Type"
+
+// AcceptKey is the HTTP header key used for Accept.
+const AcceptKey = "Accept"
 
 // NewContent constructs a Content that resolves encoders from enc and buffers responses using pool.
 func NewContent(enc *encoding.Map, pool *sync.BufferPool) *Content {
@@ -36,10 +40,22 @@ type Content struct {
 
 // NewFromRequest parses the request Content-Type header and returns a matching Media.
 //
-// If parsing fails, it falls back to JSON.
+// If Content-Type is not set, it falls back to the first media type in Accept.
 //
-// Note: this parses the request Content-Type, not the Accept header.
+// If parsing fails, it falls back to JSON.
 func (c *Content) NewFromRequest(req *http.Request) Media {
+	mediaType := req.Header.Get(TypeKey)
+	if strings.IsEmpty(mediaType) {
+		mediaType = firstMediaType(req.Header.Get(AcceptKey))
+	}
+
+	return NewMedia(mediaType, c.enc)
+}
+
+// NewFromContentType parses the request Content-Type header and returns a matching Media.
+//
+// If parsing fails, it falls back to JSON.
+func (c *Content) NewFromContentType(req *http.Request) Media {
 	return NewMedia(req.Header.Get(TypeKey), c.enc)
 }
 
@@ -48,4 +64,9 @@ func (c *Content) NewFromRequest(req *http.Request) Media {
 // If parsing fails, it falls back to JSON.
 func (c *Content) NewFromMedia(mediaType string) Media {
 	return NewMedia(mediaType, c.enc)
+}
+
+func firstMediaType(value string) string {
+	mediaType, _, _ := strings.Cut(value, ",")
+	return strings.TrimSpace(mediaType)
 }

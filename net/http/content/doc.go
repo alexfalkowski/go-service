@@ -1,6 +1,6 @@
 // Package content provides HTTP content negotiation helpers used by go-service.
 //
-// This package helps select an encoder/decoder based on HTTP media types (Content-Type) and
+// This package helps select an encoder/decoder based on HTTP media types (Content-Type and Accept) and
 // provides small building blocks for content-aware request/response handling.
 //
 // # Media types and encoders
@@ -9,7 +9,8 @@
 // media subtype (e.g. "json", "hjson", "yaml", "toml", "proto").
 //
 // `Content` can derive a `Media` from either:
-//   - an incoming HTTP request's Content-Type header (`NewFromRequest`), or
+//   - an incoming HTTP request's Content-Type header, falling back to Accept (`NewFromRequest`),
+//   - an incoming HTTP request's Content-Type header (`NewFromContentType`), or
 //   - a raw media type string (`NewFromMedia`).
 //
 // # Error payloads

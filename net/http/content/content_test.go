@@ -35,6 +35,41 @@ func TestNewFromRequest(t *testing.T) {
 	}
 }
 
+func TestNewFromRequestPrefersContentType(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.TOML)
+	req.Header.Set(content.AcceptKey, media.YAML)
+
+	media := test.Content.NewFromRequest(req)
+
+	require.Equal(t, "toml", media.Subtype)
+	require.Same(t, test.Encoder.Get("toml"), media.Encoder)
+}
+
+func TestNewFromRequestFallsBackToAccept(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.AcceptKey, "application/yaml, application/toml")
+
+	media := test.Content.NewFromRequest(req)
+
+	require.Equal(t, "yaml", media.Subtype)
+	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
+}
+
+func TestNewFromContentType(t *testing.T) {
+	for _, tc := range mediaTests() {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+			req.Header.Set(content.TypeKey, tc.mediaType)
+
+			media := test.Content.NewFromContentType(req)
+
+			require.Equal(t, tc.subtype, media.Subtype)
+			require.Same(t, test.Encoder.Get(tc.kind), media.Encoder)
+		})
+	}
+}
+
 func TestNewFromMediaWithParameters(t *testing.T) {
 	media := test.Content.NewFromMedia("application/json; profile=test")
 

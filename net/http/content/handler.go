@@ -18,10 +18,10 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 // The handler attaches request-scoped values to the context via net/http/meta:
 //   - the original *http.Request,
 //   - the http.ResponseWriter, and
-//   - the selected encoder (derived from the request Content-Type).
+//   - the selected encoder.
 //
 // Content negotiation:
-// The encoder is selected based on the request Content-Type (via (*Content).NewFromRequest).
+// The encoder is selected based on the request Content-Type, falling back to Accept when Content-Type is absent.
 // The response Content-Type header is set to the negotiated media type.
 //
 // Errors:
@@ -30,19 +30,13 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
-//
-// Constraints:
-// The negotiated media type must resolve to a non-nil encoder. If the request Content-Type resolves to
-// the error media subtype ("error"), Media.Encoder will be nil and decoding will panic. In practice,
-// clients should never send Content-Type "text/error"; that media type is reserved for error responses.
 func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
 
-		encoder := meta.Encoder(ctx)
 		request := meta.Request(ctx)
-
-		if err := encoder.Decode(request.Body, req); err != nil {
+		mediaType := cont.NewFromContentType(request)
+		if err := mediaType.Encoder.Decode(request.Body, req); err != nil {
 			return nil, status.BadRequestError(err)
 		}
 
@@ -55,7 +49,7 @@ type Handler[Res any] func(ctx context.Context) (*Res, error)
 
 // NewHandler builds a handler that encodes the response and writes errors using status helpers.
 //
-// Context population and content negotiation are the same as NewRequestHandler (see its documentation).
+// Context population and response content negotiation are the same as NewRequestHandler (see its documentation).
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
@@ -80,12 +74,6 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 		ctx := req.Context()
 
 		mediaType := cont.NewFromRequest(req)
-		if mediaType.Encoder == nil {
-			_ = status.WriteError(res, status.Errorf(http.StatusBadRequest, "content: invalid request media type %q", mediaType.Type))
-
-			return
-		}
-
 		ctx = meta.WithContent(ctx, req, res, mediaType.Encoder)
 		res.Header().Add(TypeKey, media.WithUTF8(mediaType.Type))
 
