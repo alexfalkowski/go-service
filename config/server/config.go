@@ -9,7 +9,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
-	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
 // DefaultMaxReceiveSize is the default inbound payload limit applied when MaxReceiveSize is omitted or zero.
@@ -19,9 +18,6 @@ const DefaultMaxReceiveSize bytes.Size = 4 * bytes.MB
 type Config struct {
 	// Limiter configures server-side request limiting.
 	Limiter *limiter.Config `yaml:"limiter,omitempty" json:"limiter,omitempty" toml:"limiter,omitempty"`
-
-	// Retry configures server-side retry behavior where applicable.
-	Retry *retry.Config `yaml:"retry,omitempty" json:"retry,omitempty" toml:"retry,omitempty"`
 
 	// TLS configures server-side TLS (certificate and key material).
 	TLS *tlsconfig.Config `yaml:"tls,omitempty" json:"tls,omitempty" toml:"tls,omitempty"`

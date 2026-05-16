@@ -11,8 +11,4 @@ telemetry:
 transport:
   http:
     address: tcp://:6000
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
     timeout: 10s

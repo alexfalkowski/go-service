@@ -174,14 +174,12 @@ func NewInsecureTransportConfig() *transport.Config {
 			Config: &server.Config{
 				Timeout: timeout,
 				Address: RandomAddress(),
-				Retry:   NewRetry(),
 			},
 		},
 		GRPC: &grpc.Config{
 			Config: &server.Config{
 				Timeout: timeout,
 				Address: RandomAddress(),
-				Retry:   NewRetry(),
 			},
 		},
 	}
@@ -200,7 +198,6 @@ func NewGRPCTransportConfig() *grpc.Config {
 // NewSecureTransportConfig returns HTTP and gRPC transport configs wired with the shared TLS server fixtures on ephemeral local addresses.
 func NewSecureTransportConfig() *transport.Config {
 	config := NewTLSServerConfig()
-	retry := NewRetry()
 
 	return &transport.Config{
 		HTTP: &http.Config{
@@ -208,7 +205,6 @@ func NewSecureTransportConfig() *transport.Config {
 				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
-				Retry:   retry,
 			},
 		},
 		GRPC: &grpc.Config{
@@ -216,7 +212,6 @@ func NewSecureTransportConfig() *transport.Config {
 				Timeout: timeout,
 				TLS:     config,
 				Address: RandomAddress(),
-				Retry:   retry,
 			},
 		},
 	}
@@ -306,7 +301,6 @@ func NewInsecureDebugConfig() *debug.Config {
 		Config: &server.Config{
 			Timeout: 5 * time.Second,
 			Address: RandomAddress(),
-			Retry:   NewRetry(),
 		},
 	}
 }
@@ -318,7 +312,6 @@ func NewSecureDebugConfig() *debug.Config {
 			Timeout: 5 * time.Second,
 			TLS:     NewTLSServerConfig(),
 			Address: RandomAddress(),
-			Retry:   NewRetry(),
 		},
 	}
 }

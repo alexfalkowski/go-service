@@ -281,8 +281,6 @@ func verifyConfig(t *testing.T, config *config.Config) {
 		},
 		config.Transport.GRPC.Options,
 	)
-	require.Equal(t, 3, int(config.Transport.GRPC.Retry.Attempts))
-	require.Equal(t, time.Second, config.Transport.GRPC.Retry.Timeout)
 	require.False(t, config.Transport.GRPC.TLS.IsEnabled())
 	require.True(t, config.Transport.HTTP.Token.IsEnabled())
 	require.Equal(t, "file:../test/configs/rbac.conf", config.Transport.HTTP.Token.Access.Model)
@@ -307,7 +305,5 @@ func verifyConfig(t *testing.T, config *config.Config) {
 		},
 		config.Transport.HTTP.Options,
 	)
-	require.Equal(t, 3, int(config.Transport.HTTP.Retry.Attempts))
-	require.Equal(t, time.Second, config.Transport.HTTP.Retry.Timeout)
 	require.False(t, config.Transport.HTTP.TLS.IsEnabled())
 }
