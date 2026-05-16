@@ -15,49 +15,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRequestHandlerRejectsErrorContentType(t *testing.T) {
-	called := false
-
-	handler := content.NewRequestHandler(test.Content, func(_ context.Context, _ *test.Request) (*test.Response, error) {
-		called = true
-		return &test.Response{}, nil
+func TestNewRequestHandlerPrefersContentType(t *testing.T) {
+	handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *test.Request) (*test.Response, error) {
+		return &test.Response{Greeting: "Hello " + req.Name}, nil
 	})
 
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", strings.NewReader(`{"name":"Bob"}`))
-	req.Header.Set(content.TypeKey, media.Error)
-
+	req.Header.Set(content.TypeKey, media.JSON)
+	req.Header.Set(content.AcceptKey, media.YAML)
 	res := httptest.NewRecorder()
 
-	require.NotPanics(t, func() {
-		handler.ServeHTTP(res, req)
-	})
+	handler.ServeHTTP(res, req)
 
-	require.False(t, called)
-	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
-	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
-}
-
-func TestNewHandlerRejectsErrorContentType(t *testing.T) {
-	called := false
-
-	handler := content.NewHandler(test.Content, func(_ context.Context) (*test.Response, error) {
-		called = true
-		return &test.Response{}, nil
-	})
-
-	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
-	req.Header.Set(content.TypeKey, media.Error)
-
-	res := httptest.NewRecorder()
-
-	require.NotPanics(t, func() {
-		handler.ServeHTTP(res, req)
-	})
-	require.False(t, called)
-	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
-	require.Contains(t, res.Body.String(), `content: invalid request media type "text/error"`)
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.WithUTF8(media.JSON), res.Header().Get(content.TypeKey))
+	require.JSONEq(t, `{"Greeting":"Hello Bob","Meta":null}`, res.Body.String())
 }
 
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {

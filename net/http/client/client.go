@@ -105,8 +105,8 @@ type Options struct {
 	// It is typically a pointer to a struct or message.
 	Response any
 
-	// ContentType is the request Content-Type used for encoding, and is also used as a fallback
-	// decoder selection when the response does not provide a Content-Type header.
+	// ContentType is the request Content-Type used for encoding and the fallback decoder selection
+	// when the response does not provide a Content-Type header.
 	ContentType string
 }
 
