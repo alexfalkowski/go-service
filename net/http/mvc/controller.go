@@ -17,3 +17,8 @@ import "github.com/alexfalkowski/go-service/v2/context"
 // error (via net/http/status.Code) and renders the returned view using the error value as the template model.
 // Implementations should therefore ensure view is non-nil even in error cases, or accept that rendering may panic.
 type Controller[Model any] func(ctx context.Context) (*View, *Model, error)
+
+// NotFoundController returns the view and model used to render an MVC not-found response.
+//
+// It is used by Handler for unmatched routes.
+type NotFoundController[Model any] func(ctx context.Context) (*View, *Model)

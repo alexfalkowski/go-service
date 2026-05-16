@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
+	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/transport/http/body"
@@ -127,7 +128,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(limiter.NewHandler(params.Limiter))
 	}
 
-	neg.UseHandler(gzhttp.GzipHandler(params.Mux))
+	neg.UseHandler(gzhttp.GzipHandler(mvc.NewHandler(params.Mux)))
 
 	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, neg)
 

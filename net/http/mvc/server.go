@@ -16,6 +16,21 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
+// NotFound registers controller as the MVC not-found renderer.
+//
+// It returns false when MVC is not defined (see IsDefined).
+func NotFound[Model any](controller NotFoundController[Model]) bool {
+	if !IsDefined() {
+		return false
+	}
+
+	notFoundController = func(ctx context.Context) (*View, any) {
+		view, model := controller(ctx)
+		return view, model
+	}
+	return true
+}
+
 // Delete registers an HTTP DELETE route that invokes controller.
 func Delete[Model any](pattern string, controller Controller[Model]) bool {
 	return Route(strings.Join(strings.Space, http.MethodDelete, pattern), controller)
@@ -88,14 +103,12 @@ func StaticFile(pattern, name string) bool {
 		buffer := pool.Get()
 		defer pool.Put(buffer)
 
-		ctx := req.Context()
-
 		if err := writeFile(name, buffer); err != nil {
-			writeHeader(ctx, res, staticStatusCode(err))
+			res.WriteHeader(staticStatusCode(err))
 			return
 		}
 
-		writeBuffer(ctx, res, http.StatusOK, buffer)
+		writeBuffer(res, http.StatusOK, buffer)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -117,20 +130,19 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		buffer := pool.Get()
 		defer pool.Put(buffer)
 
-		ctx := req.Context()
 		cleaned := path.Clean(req.PathValue(value))
 		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
-			writeHeader(ctx, res, staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
+			res.WriteHeader(staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
 			return
 		}
 
 		name := path.Join(prefix, cleaned)
 		if err := writeFile(name, buffer); err != nil {
-			writeHeader(ctx, res, staticStatusCode(err))
+			res.WriteHeader(staticStatusCode(err))
 			return
 		}
 
-		writeBuffer(ctx, res, http.StatusOK, buffer)
+		writeBuffer(res, http.StatusOK, buffer)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -156,30 +168,46 @@ func staticStatusCode(err error) int {
 }
 
 func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
+	if err := renderView(ctx, res, view, model, code); err != nil {
+		res.WriteHeader(status.Code(err))
+	}
+}
+
+func writeNotFound(req *http.Request, res http.ResponseWriter) {
+	if notFoundController == nil {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err := status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	res.Header().Set(content.TypeKey, media.WithUTF8(media.HTML))
+	ctx := req.Context()
+	ctx = meta.WithContent(ctx, req, res, nil)
+	ctx = meta.WithAttributes(ctx, meta.NewPair("mvcModelError", meta.Error(err)))
+
+	view, model := notFoundController(ctx)
+	if err := renderView(ctx, res, view, model, http.StatusNotFound); err != nil {
+		res.WriteHeader(status.Code(err))
+	}
+}
+
+func renderView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) error {
+	if view == nil {
+		return ErrMissingView
+	}
+
 	buffer := pool.Get()
 	defer pool.Put(buffer)
 
 	if err := view.render(ctx, buffer, model); err != nil {
-		writeHeader(ctx, res, status.Code(err))
-		return
+		return err
 	}
 
-	writeBuffer(ctx, res, code, buffer)
+	writeBuffer(res, code, buffer)
+	return nil
 }
 
-func writeBuffer(ctx context.Context, res http.ResponseWriter, code int, buffer *bytes.Buffer) {
-	if !writeHeader(ctx, res, code) {
-		return
-	}
-
-	_, _ = buffer.WriteTo(res)
-}
-
-func writeHeader(ctx context.Context, res http.ResponseWriter, code int) bool {
-	if ctx.Err() != nil {
-		return false
-	}
-
+func writeBuffer(res http.ResponseWriter, code int, buffer *bytes.Buffer) {
 	res.WriteHeader(code)
-	return true
+	_, _ = buffer.WriteTo(res)
 }
