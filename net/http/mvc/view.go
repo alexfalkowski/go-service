@@ -6,10 +6,14 @@ import (
 	"path/filepath"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	hm "github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
+
+// ErrMissingView is returned when MVC rendering is requested without a view.
+var ErrMissingView = errors.New("mvc: missing view")
 
 // NewLayout constructs a Layout that defines the base templates used for rendering views.
 //

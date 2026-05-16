@@ -3,6 +3,7 @@ package mvc
 import (
 	"io/fs"
 
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-sync"
@@ -10,11 +11,12 @@ import (
 )
 
 var (
-	mux        *http.ServeMux
-	fmap       sprout.FunctionMap
-	fileSystem fs.FS
-	layout     *Layout
-	pool       *sync.BufferPool
+	mux                *http.ServeMux
+	fmap               sprout.FunctionMap
+	fileSystem         fs.FS
+	layout             *Layout
+	pool               *sync.BufferPool
+	notFoundController func(ctx context.Context) (*View, any)
 )
 
 // RegisterParams defines dependencies used to register MVC package globals.
@@ -66,6 +68,7 @@ func Register(params RegisterParams) {
 	fileSystem = params.FileSystem
 	pool = params.Pool
 	layout = params.Layout
+	notFoundController = nil
 }
 
 // IsDefined reports whether MVC routing and rendering has been configured.

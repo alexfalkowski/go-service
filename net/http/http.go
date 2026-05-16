@@ -55,6 +55,9 @@ const StatusRequestEntityTooLarge = http.StatusRequestEntityTooLarge
 // StatusInternalServerError is an alias of http.StatusInternalServerError.
 const StatusInternalServerError = http.StatusInternalServerError
 
+// StatusMethodNotAllowed is an alias of http.StatusMethodNotAllowed.
+const StatusMethodNotAllowed = http.StatusMethodNotAllowed
+
 // StatusNotFound is an alias of http.StatusNotFound.
 const StatusNotFound = http.StatusNotFound
 

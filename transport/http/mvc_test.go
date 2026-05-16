@@ -92,6 +92,28 @@ func TestRouteError(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestNotFound(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
+		return mvc.NewFullView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	}))
+
+	header := http.Header{}
+	header.Set(content.TypeKey, media.HTML)
+
+	url := world.PathServerURL("http", "missing")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
+	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+
+	_, err = html.Parse(strings.NewReader(body))
+	require.NoError(t, err)
+}
+
 func TestStaticFileSuccess(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
@@ -163,6 +185,9 @@ func TestMissingViews(t *testing.T) {
 	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
 	}))
+	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+		return mvc.NewFullView("views/error.tmpl"), nil
+	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
 
@@ -176,6 +201,13 @@ func TestMissingViews(t *testing.T) {
 	require.False(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
 	}))
+	require.False(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *test.Page) {
+		return mvc.NewFullView("views/error.tmpl"), nil
+	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
+}
+
+type notFoundModel struct {
+	Error string
 }
