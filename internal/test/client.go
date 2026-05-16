@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	httpbreaker "github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
+	"github.com/alexfalkowski/go-service/v2/transport/retry"
 )
 
 // Client bundles the dependencies needed to construct instrumented HTTP and gRPC clients for tests.
@@ -30,6 +31,7 @@ type Client struct {
 	RoundTripper http.RoundTripper
 	Meter        metrics.Meter
 	Generator    token.Generator
+	Retry        *retry.Config
 	HTTPLimiter  *httplimiter.Client
 	GRPCLimiter  *grpclimiter.Client
 	Compression  bool
@@ -42,7 +44,7 @@ func (c *Client) NewHTTP(os ...httpbreaker.Option) (*http.Client, error) {
 		http.WithClientLogger(c.Logger),
 		http.WithClientRoundTripper(c.RoundTripper),
 		http.WithClientBreaker(os...),
-		http.WithClientRetry(c.Transport.HTTP.Retry),
+		http.WithClientRetry(c.Retry),
 		http.WithClientUserAgent(UserAgent),
 		http.WithClientTokenGenerator(UserID, c.Generator),
 		http.WithClientTimeout(time.Minute),
@@ -66,7 +68,7 @@ func (c *Client) NewGRPC(os ...grpcbreaker.Option) (*grpc.ClientConn, error) {
 		grpc.WithClientStreamInterceptors(),
 		grpc.WithClientLogger(c.Logger),
 		grpc.WithClientBreaker(os...),
-		grpc.WithClientRetry(c.Transport.GRPC.Retry),
+		grpc.WithClientRetry(c.Retry),
 		grpc.WithClientUserAgent(UserAgent),
 		grpc.WithClientTokenGenerator(UserID, c.Generator),
 		grpc.WithClientTimeout(time.Minute),

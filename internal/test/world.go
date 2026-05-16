@@ -90,7 +90,7 @@ func NewWorld(tb testing.TB, opts ...WorldOption) *World {
 	client := &Client{
 		Lifecycle: lc, Logger: logger, Tracer: tracer, Transport: transportCfg,
 		Meter: meter, TLS: tlsCfg, Generator: os.generator,
-		Compression: os.compression, RoundTripper: os.rt,
+		Retry: NewRetry(), Compression: os.compression, RoundTripper: os.rt,
 		HTTPLimiter: httpClientLimiter,
 		GRPCLimiter: grpcClientLimiter,
 	}

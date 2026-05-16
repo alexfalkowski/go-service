@@ -47,17 +47,16 @@ import (
 
 func main() {
     app := cli.NewApplication(func(commander cli.Commander) {
-       server := commander.AddServer("serve", "Run the service", module.Server)
-       server.AddInput("file:./config.yml") // enables the `-i` flag used by config.NewDecoder
+        serve := commander.AddServer("serve", "Run the service", module.Server)
+        serve.AddInput("file:./config.yml") // adds the `-i` config input flag with this default
     })
 
     os.Exit(app.RunCode(context.Background()))
 }
 ```
 
-Use `app.Run(context.Background())` when the caller should receive the execution error directly, or
-`app.RunCode(context.Background())` when the caller wants a process exit code. Applications can pass
-`cli.WithExitCodeFunc` to `cli.NewApplication` to map specific errors to specific exit codes.
+Use `app.RunCode(context.Background())` from `main` when exiting the process. Use
+`app.Run(context.Background())` in tests or embedding code that needs to inspect the returned error.
 
 ---
 
@@ -702,19 +701,36 @@ Built-in text/object payload media types include:
 - `application/yml`
 - `application/toml`
 - `application/gob`
+- `application/octet-stream`
+- `text/plain`
+- `text/markdown`
 
 Built-in protobuf-oriented media type aliases include:
 
 - `application/proto`
+- `application/pb`
 - `application/protobuf`
+- `application/protobin`
+- `application/pbbin`
 - `application/protojson`
+- `application/pbjson`
 - `application/prototext`
+- `application/prototxt`
+- `application/pbtxt`
 
 Notes:
 
 - `application/hjson` maps to the built-in `hjson` encoder kind.
 - Unknown or invalid request media types fall back to JSON selection.
 - `text/error` is reserved for error responses and should not be sent by clients as a request content type.
+
+### HTTP route misses
+
+The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated 404 responses can be rendered consistently while preserving other mux responses such as 405 Method Not Allowed.
+
+- REST/RPC-style missing routes use `net/http/content.NotFoundHandler`, which writes the standard `status.WriteError` response.
+- MVC missing routes can use `net/http/mvc.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
+- Routes that match and write their own status are not replaced by this mux-level not-found handler.
 
 ### Transport configuration (servers)
 
@@ -752,17 +768,13 @@ transport:
     max_receive_size: 3MB
 ```
 
-With retry + low-level options map:
+With low-level server options:
 
 ```yaml
 transport:
   http:
     address: tcp://localhost:8000
     timeout: 10s
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
     options:
       read_timeout: 10s
       write_timeout: 10s
@@ -771,10 +783,6 @@ transport:
   grpc:
     address: tcp://localhost:9000
     timeout: 10s
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
     options:
       keepalive_enforcement_policy_ping_min_time: 10s
       keepalive_max_connection_idle: 10s

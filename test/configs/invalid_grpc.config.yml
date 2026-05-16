@@ -5,10 +5,6 @@ transport:
   http:
     address: "tcp://localhost:0"
     timeout: 10s
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
   grpc:
     address: "tcp://localhost:invalid"
     timeout: 10s

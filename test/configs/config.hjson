@@ -102,11 +102,6 @@
         read_header_timeout: "10s"
         max_header_bytes: "32KB"
       }
-      retry: {
-        backoff: "100ms"
-        timeout: "1s"
-        attempts: 3
-      }
       timeout: "10s"
       token: {
         access: {
@@ -141,11 +136,6 @@
         initial_window_size: "1MB"
         initial_conn_window_size: "2MB"
         max_send_msg_size: "8MB"
-      }
-      retry: {
-        backoff: "100ms"
-        timeout: "1s"
-        attempts: 3
       }
       timeout: "10s"
       token: {

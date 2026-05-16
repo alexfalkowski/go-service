@@ -63,10 +63,6 @@ transport:
       kind: user-agent
       tokens: 10
       interval: 1s
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
     timeout: 10s
   grpc:
     address: tcp://localhost:12000
@@ -74,8 +70,4 @@ transport:
       kind: user-agent
       tokens: 10
       interval: 1s
-    retry:
-      backoff: 100ms
-      timeout: 1s
-      attempts: 3
     timeout: 10s
