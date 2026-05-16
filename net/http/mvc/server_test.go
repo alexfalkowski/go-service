@@ -275,6 +275,56 @@ func TestNotFoundUsesDefaultWhenControllerMissing(t *testing.T) {
 	require.Contains(t, res.Body.String(), "404 page not found")
 }
 
+func TestFallback(t *testing.T) {
+	tests := []struct {
+		name    string
+		accept  string
+		hx      string
+		handled bool
+	}{
+		{name: "accepts html", accept: media.HTML, handled: true},
+		{name: "accepts htmx", accept: "*/*", hx: "true", handled: true},
+		{name: "ignores api", accept: media.JSON},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mvc.Register(mvc.RegisterParams{
+				Mux:         http.NewServeMux(),
+				FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+				FileSystem: fstest.MapFS{
+					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+					"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
+					"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Err }}{{ end }}`)},
+				},
+				Pool:   test.Pool,
+				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
+			})
+
+			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *errorModel) {
+				return mvc.NewPartialView("views/error.tmpl"), &errorModel{
+					Code: http.StatusNotFound,
+					Err:  status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound)),
+				}
+			}))
+
+			req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
+			req.Header.Set("Accept", tt.accept)
+			req.Header.Set("Hx-Request", tt.hx)
+			res := httptest.NewRecorder()
+
+			require.Equal(t, tt.handled, mvc.NotFoundHandler()(res, req))
+			if !tt.handled {
+				return
+			}
+
+			require.Equal(t, http.StatusNotFound, res.Code)
+			require.Equal(t, media.WithUTF8(media.HTML), res.Header().Get(content.TypeKey))
+			require.Contains(t, res.Body.String(), "404 Not Found")
+		})
+	}
+}
+
 func TestNotFoundWritesRenderStatusWhenViewMissing(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{

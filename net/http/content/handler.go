@@ -65,6 +65,16 @@ func NewHandler[Res any](cont *Content, handler Handler[Res]) http.HandlerFunc {
 	})
 }
 
+// NotFoundHandler returns a not-found handler that writes the standard content error response.
+func NotFoundHandler() http.NotFoundHandler {
+	return func(res http.ResponseWriter, _ *http.Request) bool {
+		err := status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		_ = status.WriteError(res, err)
+
+		return true
+	}
+}
+
 func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res, error)) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()

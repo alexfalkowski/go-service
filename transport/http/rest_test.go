@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/stretchr/testify/require"
@@ -55,6 +56,19 @@ func TestRestError(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestRestNotFound(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRest(), test.WithWorldHTTP())
+
+	header := http.Header{}
+	header.Set(content.TypeKey, media.JSON)
+
+	res, body, err := world.GetBody(t.Context(), world.NamedServerURL("http", "missing"), header)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
+	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, http.StatusText(http.StatusNotFound), body)
 }
 
 func TestRestRequestError(t *testing.T) {

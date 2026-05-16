@@ -56,6 +56,7 @@ func (s *Server) Register() error {
 	if s.RegisterHTTP {
 		params := http.ServerParams{
 			Shutdowner: sh, Mux: s.Mux,
+			Pool:     Pool,
 			Config:   s.TransportConfig.HTTP,
 			Logger:   s.Logger,
 			Limiter:  s.HTTPLimiter,

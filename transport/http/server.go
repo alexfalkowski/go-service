@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/config"
+	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	httpserver "github.com/alexfalkowski/go-service/v2/net/http/server"
@@ -19,6 +20,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
+	sync "github.com/alexfalkowski/go-sync"
 	"github.com/klauspost/compress/gzhttp"
 	"github.com/urfave/negroni/v3"
 )
@@ -41,6 +43,9 @@ type ServerParams struct {
 
 	// Mux is the HTTP request multiplexer that holds registered routes/handlers.
 	Mux *http.ServeMux
+
+	// Pool is the shared buffer pool used to inspect mux 404s without committing the response early.
+	Pool *sync.BufferPool
 
 	// Config controls HTTP server enablement, address, timeouts, TLS, and low-level HTTP options.
 	Config *Config
@@ -85,7 +90,7 @@ type ServerParams struct {
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
 //   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
-//   - gzip compression wrapping the mux handler (`gzhttp.GzipHandler(params.Mux)`)
+//   - gzip compression wrapping the mux not-found handler (`gzhttp.GzipHandler(http.NewNotFoundHandler(...))`)
 //
 // Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
 // as bypassable, so those endpoints do not require auth and do not consume limiter capacity by default.
@@ -128,7 +133,8 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(limiter.NewHandler(params.Limiter))
 	}
 
-	neg.UseHandler(gzhttp.GzipHandler(mvc.NewHandler(params.Mux)))
+	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), content.NotFoundHandler())
+	neg.UseHandler(gzhttp.GzipHandler(handler))
 
 	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, neg)
 

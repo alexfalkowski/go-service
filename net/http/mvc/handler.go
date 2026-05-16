@@ -2,9 +2,31 @@ package mvc
 
 import (
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	snoop "github.com/felixge/httpsnoop"
 )
+
+// NotFoundHandler returns the MVC not-found handler for mixed HTTP transports.
+//
+// The handler only handles requests that explicitly accept HTML or come from HTMX, allowing API clients
+// to receive the transport's content error fallback instead.
+func NotFoundHandler() http.NotFoundHandler {
+	return func(res http.ResponseWriter, req *http.Request) bool {
+		if !IsDefined() || notFoundController == nil {
+			return false
+		}
+
+		acceptsHTML := strings.Contains(req.Header.Get("Accept"), media.HTML)
+		isHTMX := req.Header.Get("Hx-Request") == "true"
+		if !acceptsHTML && !isHTMX {
+			return false
+		}
+
+		writeNotFound(req, res)
+		return true
+	}
+}
 
 // NewHandler wraps mux with MVC error handling when MVC is defined.
 //

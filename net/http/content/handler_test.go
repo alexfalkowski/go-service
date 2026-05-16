@@ -81,6 +81,16 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	require.NotContains(t, res.Body.String(), "partial")
 }
 
+func TestNotFoundHandlerWritesStatusError(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/missing", http.NoBody)
+	res := httptest.NewRecorder()
+
+	require.True(t, content.NotFoundHandler()(res, req))
+	require.Equal(t, http.StatusNotFound, res.Code)
+	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
+	require.Equal(t, "Not Found\n", res.Body.String())
+}
+
 type partialEncoder struct{}
 
 func (partialEncoder) Encode(w io.Writer, _ any) error {
