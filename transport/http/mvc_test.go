@@ -100,6 +100,50 @@ func TestNotFound(t *testing.T) {
 	}))
 
 	header := http.Header{}
+	header.Set("Accept", media.HTML)
+	header.Set(content.TypeKey, media.HTML)
+
+	url := world.PathServerURL("http", "missing")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.NotEmpty(t, body)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
+	require.Equal(t, media.WithUTF8(media.HTML), res.Header.Get(content.TypeKey))
+
+	_, err = html.Parse(strings.NewReader(body))
+	require.NoError(t, err)
+}
+
+func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
+		return mvc.NewFullView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	}))
+
+	header := http.Header{}
+	header.Set(content.TypeKey, media.JSON)
+
+	url := world.PathServerURL("http", "missing")
+
+	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, header, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
+	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, http.StatusText(http.StatusNotFound), body)
+}
+
+func TestNotFoundHandlesHTMXRequest(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
+		return mvc.NewPartialView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	}))
+
+	header := http.Header{}
+	header.Set("Accept", "*/*")
+	header.Set("Hx-Request", "true")
 	header.Set(content.TypeKey, media.HTML)
 
 	url := world.PathServerURL("http", "missing")

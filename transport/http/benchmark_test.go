@@ -77,6 +77,7 @@ func BenchmarkHTTP(b *testing.B) {
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
+			Pool:       test.Pool,
 			Config:     cfg.HTTP,
 			UserAgent:  test.UserAgent,
 			Version:    test.Version,
@@ -124,6 +125,7 @@ func BenchmarkHTTP(b *testing.B) {
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
+			Pool:       test.Pool,
 			Config:     cfg.HTTP,
 			Logger:     logger,
 			UserAgent:  test.UserAgent,
@@ -175,6 +177,7 @@ func BenchmarkHTTP(b *testing.B) {
 		h, err := transporthttp.NewServer(transporthttp.ServerParams{
 			Shutdowner: test.NewShutdowner(),
 			Mux:        mux,
+			Pool:       test.Pool,
 			Config:     cfg.HTTP,
 			Logger:     logger,
 			UserAgent:  test.UserAgent,

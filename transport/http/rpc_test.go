@@ -172,6 +172,19 @@ func TestErrorRPC(t *testing.T) {
 	}
 }
 
+func TestRPCNotFound(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
+
+	header := http.Header{}
+	header.Set(content.TypeKey, media.JSON)
+
+	res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "missing"), http.MethodPost, header, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusNotFound, res.StatusCode)
+	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
+	require.Equal(t, http.StatusText(http.StatusNotFound), body)
+}
+
 func TestAllowedRPC(t *testing.T) {
 	for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
 		t.Run(mt, func(t *testing.T) {
