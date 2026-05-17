@@ -66,6 +66,9 @@ func (h *Webhook) Sign(req *http.Request) error {
 	}
 
 	req.Body = body
+	if req.Header == nil {
+		req.Header = http.Header{}
+	}
 	now := time.Now()
 	id := h.generator.Generate()
 	signature, _ := h.hook.Sign(id, now, payload)

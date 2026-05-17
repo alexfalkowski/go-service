@@ -55,6 +55,27 @@ func TestRoundTripperAppendDoesNotOverwriteRequestID(t *testing.T) {
 	require.Empty(t, req.Header.Values("Request-Id"))
 }
 
+func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
+	roundTripper := meta.NewRoundTripper(
+		env.UserAgent("agent"),
+		staticGenerator("request-id"),
+		roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, "agent", req.Header.Get("User-Agent"))
+			require.Equal(t, "request-id", req.Header.Get("Request-Id"))
+
+			return &http.Response{StatusCode: http.StatusOK, Header: http.Header{}, Body: http.NoBody}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+	req.Header = nil
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+	require.Nil(t, req.Header)
+}
+
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
 	handler := meta.NewHandler(env.UserAgent("agent"), env.Version("v1"), staticGenerator("request-id"))
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)

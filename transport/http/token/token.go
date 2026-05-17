@@ -170,6 +170,9 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := meta.WithAttributes(req.Context(), meta.WithAuthorization(auth))
 
 	cloned := req.Clone(ctx)
+	if cloned.Header == nil {
+		cloned.Header = http.Header{}
+	}
 	cloned.Header.Set("Authorization", auth.Value())
 	return r.RoundTripper.RoundTrip(cloned)
 }

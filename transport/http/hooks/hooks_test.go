@@ -55,6 +55,20 @@ func TestSignAndVerifyNilBody(t *testing.T) {
 	require.NotNil(t, verifyReq.Body)
 }
 
+func TestSignHandlesNilRequestHeader(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	req := &http.Request{Body: http.NoBody}
+
+	require.NoError(t, hook.Sign(req))
+	require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
+	require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
+	require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
+	require.NoError(t, hook.Verify(req))
+}
+
 func TestRoundTripper(t *testing.T) {
 	hook := hooks.NewWebhook(nil, nil)
 	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
@@ -87,6 +101,27 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookID))
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookSignature))
 	require.Empty(t, req.Header.Values(webhooks.HeaderWebhookTimestamp))
+}
+
+func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
+	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
+	require.NoError(t, err)
+
+	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
+		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
+
+		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
+	}))
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
+	req.Header = nil
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Nil(t, req.Header)
 }
 
 func TestHandler(t *testing.T) {
