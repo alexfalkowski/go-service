@@ -59,6 +59,15 @@
 //   - google.golang.org/grpc/status is the upstream implementation; this package
 //     forwards directly to it.
 //
+// # Client-visible messages
+//
+// gRPC status messages are sent to clients. This package intentionally preserves
+// the message provided to Error or Errorf instead of replacing it with a generic
+// response. That keeps the framework useful for diagnostics while leaving
+// application-specific redaction policy to callers. Services that must hide
+// internal details should pass a public message here and record the internal
+// cause through their own logging or observability path.
+//
 // # Non-goals
 //
 // This package intentionally exposes only the small subset of the upstream

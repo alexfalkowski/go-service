@@ -52,6 +52,8 @@ func FromError(err error) (*Status, bool) {
 // This is a thin wrapper around google.golang.org/grpc/status.Error. The
 // returned error is suitable to be returned from a gRPC handler so the runtime
 // can send the corresponding status code and message to the client.
+// The message is client-visible by design. Callers that need redaction should
+// pass a public message and record the internal cause separately.
 //
 // For structured status details (protobuf Any details), use the upstream status
 // API directly (for example status.New(...).WithDetails(...)).
@@ -64,6 +66,8 @@ func Error(c codes.Code, msg string) error {
 // This is a thin wrapper around google.golang.org/grpc/status.Errorf. It formats
 // the message using fmt-style formatting rules and returns an error suitable to
 // be returned from a gRPC handler.
+// The formatted message is client-visible by design. Callers that need redaction
+// should pass a public format string and record the internal cause separately.
 //
 // For structured status details (protobuf Any details), use the upstream status
 // API directly (for example status.New(...).WithDetails(...)).

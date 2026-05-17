@@ -21,7 +21,10 @@ import (
 //   - gRPC status errors mapped to HTTP codes.
 //
 // Write behavior:
-// The error message is written as a single line (via fmt.Fprintln) containing err.Error().
+// The error message is written as a single line (via fmt.Fprintln) containing err.Error(). This is a
+// deliberate framework-level diagnostic contract: WriteError does not replace the message with a generic
+// response body. Applications that need sanitized client output should map the internal error to a public
+// status error before calling WriteError.
 // If writing the body fails, WriteError returns the write error and does not attempt to write a
 // secondary error response.
 //
