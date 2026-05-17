@@ -28,6 +28,26 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 	require.Empty(t, req.Header.Values("Authorization"))
 }
 
+func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
+	roundTripper := token.NewRoundTripper(
+		env.UserID("service-user"),
+		staticGenerator("fresh-token"),
+		roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
+
+			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
+		}),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com/hello", http.NoBody)
+	require.NoError(t, err)
+	req.Header = nil
+
+	res, err := roundTripper.RoundTrip(req)
+	require.NoError(t, err)
+	require.NoError(t, res.Body.Close())
+	require.Nil(t, req.Header)
+}
+
 type roundTripperFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {

@@ -49,6 +49,9 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	)
 
 	cloned := req.Clone(ctx)
+	if cloned.Header == nil {
+		cloned.Header = http.Header{}
+	}
 	clientSetRequestHeaders(cloned.Header, userAgent.Value(), requestID.Value())
 
 	return r.RoundTripper.RoundTrip(cloned)
