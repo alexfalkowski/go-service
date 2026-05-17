@@ -25,11 +25,21 @@
 // `net/http/content.NewHandler` / `NewRequestHandler`), which populate the context before invoking
 // downstream logic.
 //
-// HTTP server metadata extraction intentionally prefers common forwarding headers
-// such as X-Forwarded-For, X-Real-IP, CF-Connecting-IP, and True-Client-IP over
-// RemoteAddr. Deployments that use the extracted IP for access logs, policy, or
-// rate limiting should place the service behind trusted proxies that strip or
-// overwrite spoofed forwarding headers.
+// # Forwarded IP trust boundary
+//
+// HTTP server metadata extraction intentionally treats common forwarding
+// headers, such as X-Forwarded-For, X-Real-IP, CF-Connecting-IP, and
+// True-Client-IP, as trusted inputs and prefers them over RemoteAddr.
+//
+// This package does not fetch CDN provider IP ranges, maintain trusted proxy
+// CIDR lists, or decide whether a request came through a trusted edge. That
+// policy belongs at the infrastructure boundary: CDN, ingress, load balancer,
+// firewall, service mesh, or application-specific middleware.
+//
+// Deployments that use the extracted IP for access logs, policy, or rate
+// limiting should ensure direct origin access is blocked and the trusted edge
+// strips or overwrites client-supplied forwarding headers before traffic reaches
+// the service.
 //
 // This package also provides HTTP metadata middleware via `NewHandler` and `NewRoundTripper`.
 package meta

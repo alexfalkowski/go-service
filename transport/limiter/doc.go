@@ -18,9 +18,16 @@
 // limiter construction fails with ErrMissingKey.
 //
 // The "ip" key uses IP metadata populated by transport metadata middleware. That
-// middleware intentionally trusts common forwarding headers such as X-Forwarded-For
-// and CF-Connecting-IP. Use this key only when requests first pass through trusted
-// proxies that strip or overwrite client-supplied forwarding headers.
+// middleware intentionally trusts common forwarding headers such as
+// X-Forwarded-For and CF-Connecting-IP. The limiter does not validate CDN or
+// proxy source ranges itself; it consumes the metadata provided by the transport
+// stack.
+//
+// Use the "ip" key when the service is only reachable through trusted edge
+// infrastructure that strips or overwrites client-supplied forwarding headers.
+// If direct origin access is possible, prefer a different key such as "token" or
+// add application-specific trusted proxy validation before relying on IP-based
+// limits.
 //
 // # In-memory behavior and lifecycle
 //
