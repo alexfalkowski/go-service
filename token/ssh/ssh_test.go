@@ -134,9 +134,9 @@ func TestInvalid(t *testing.T) {
 	encoded, _, ok := strings.Cut(tkn, ".")
 	require.True(t, ok)
 
-	sub, err = valid.Verify(encoded+"."+base64.Encode([]byte("bad")), strings.Empty)
-	require.Error(t, err)
+	sub, err = valid.Verify(encoded+"."+base64.Encode([]byte("bad")), "other")
 	require.Empty(t, sub)
+	require.ErrorIs(t, err, crypto.ErrInvalidMatch)
 
 	token = ssh.NewToken(nil, test.FS)
 	require.Nil(t, token)
