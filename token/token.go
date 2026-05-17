@@ -62,8 +62,8 @@ type Token struct {
 //   - "jwt" and "paseto": the token is minted for the provided audience (aud) and
 //     subject (sub).
 //
-//   - "ssh": audience and subject are ignored; the SSH token kind uses its own
-//     encoding/signature format and typically identifies a key rather than a subject.
+//   - "ssh": the token is minted for the provided audience (aud), while subject
+//     is ignored. The SSH token kind typically identifies a key rather than a subject.
 //
 // If the configured kind is unknown, Generate returns token/errors.ErrInvalidConfig.
 func (t *Token) Generate(aud, sub string) ([]byte, error) {
@@ -84,7 +84,7 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 		if t.ssh == nil {
 			return nil, errors.ErrInvalidConfig
 		}
-		token, err := t.ssh.Generate()
+		token, err := t.ssh.Generate(aud, sub)
 		return strings.Bytes(token), err
 	default:
 		return nil, errors.ErrInvalidConfig
@@ -98,8 +98,8 @@ func (t *Token) Generate(aud, sub string) ([]byte, error) {
 //   - "jwt" and "paseto": verifies the token for the provided audience (aud) and
 //     returns the subject ("sub") claim.
 //
-//   - "ssh": audience is ignored and the returned string is the selected key name
-//     (not a JWT/PASETO "sub" claim).
+//   - "ssh": verifies the token for the provided audience (aud), and the
+//     returned string is the selected key name (not a JWT/PASETO "sub" claim).
 //
 // If the configured kind is unknown, Verify returns token/errors.ErrInvalidConfig.
 func (t *Token) Verify(token []byte, aud string) (string, error) {
@@ -118,7 +118,7 @@ func (t *Token) Verify(token []byte, aud string) (string, error) {
 		if t.ssh == nil {
 			return strings.Empty, errors.ErrInvalidConfig
 		}
-		return t.ssh.Verify(bytes.String(token))
+		return t.ssh.Verify(bytes.String(token), aud)
 	default:
 		return strings.Empty, errors.ErrInvalidConfig
 	}

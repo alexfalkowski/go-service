@@ -52,11 +52,14 @@ func TestVerify(t *testing.T) {
 			cfg := test.NewToken(kind)
 			tkn := token.NewToken(test.Name, cfg, test.FS, nil, nil, nil)
 
-			gen, err := tkn.Generate(strings.Empty, strings.Empty)
+			gen, err := tkn.Generate("hello", strings.Empty)
 			require.NoError(t, err)
 
-			_, err = tkn.Verify(gen, strings.Empty)
+			_, err = tkn.Verify(gen, "hello")
 			require.NoError(t, err)
+
+			_, err = tkn.Verify(gen, "other")
+			require.ErrorIs(t, err, errors.ErrInvalidAudience)
 		})
 	}
 }
