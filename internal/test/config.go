@@ -80,6 +80,7 @@ func NewToken(kind string) *token.Config {
 			Expiration: time.Hour,
 		},
 		SSH: &ssh.Config{
+			Expiration: time.Hour,
 			Key: &ssh.Key{
 				Name:   UserID.String(),
 				Config: NewSSH("secrets/ssh_public", "secrets/ssh_private"),

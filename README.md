@@ -597,6 +597,7 @@ transport:
     token:
       kind: ssh
       ssh:
+        exp: 5m
         keys:
           - name: active
             public: file:/keys/active.pub
@@ -610,6 +611,7 @@ transport:
     token:
       kind: ssh
       ssh:
+        exp: 5m
         key:
           name: active
           private: file:/keys/active
@@ -624,6 +626,7 @@ Notes:
 
 - `ssh.key` is used for minting tokens (requires private key).
 - `ssh.keys` is used for verification (public keys).
+- `ssh.exp` sets the token validity window; SSH keys remain long-lived, while generated tokens are short-lived.
 - The config does not enforce that the signing key name exists in the verification set; include it if you want round-trip.
 
 ---

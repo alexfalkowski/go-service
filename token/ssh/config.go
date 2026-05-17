@@ -3,6 +3,7 @@ package ssh
 import (
 	"github.com/alexfalkowski/go-service/v2/crypto/ssh"
 	"github.com/alexfalkowski/go-service/v2/slices"
+	"github.com/alexfalkowski/go-service/v2/time"
 )
 
 // Config configures the SSH-style token implementation.
@@ -16,12 +17,13 @@ import (
 //
 //   - Key is the single signing key used by Token.Generate.
 //   - Keys is the set of verification keys that Token.Verify may use.
+//   - Expiration is how long newly generated tokens are valid.
 //
 // # Key rotation and multi-key verification
 //
-// Verification is name-based: the token embeds a key name prefix, and verification selects
-// a matching public key config from Keys (via Keys.Get(name)). This design supports key
-// rotation by allowing you to:
+// Verification is name-based: the signed token claims embed a key id, and
+// verification selects a matching public key config from Keys (via Keys.Get(name)).
+// This design supports key rotation by allowing you to:
 //
 //   - mint new tokens with the active signing key name, and
 //   - continue verifying older tokens by keeping historical public keys in Keys.
@@ -45,11 +47,16 @@ type Config struct {
 
 	// Keys is the set of verification keys that may be used to validate SSH-style tokens.
 	//
-	// Verification uses the token's embedded name to select a key from this set. If Keys
-	// is empty or does not contain the token's name, verification fails.
+	// Verification uses the token's embedded key id to select a key from this set. If Keys
+	// is empty or does not contain the token's key id, verification fails.
 	//
 	// If Keys is nil/empty, Token.Verify will not be usable.
 	Keys Keys `yaml:"keys,omitempty" json:"keys,omitempty" toml:"keys,omitempty"`
+
+	// Expiration is the duration used to set token expiration.
+	//
+	// In config files it is encoded as a Go duration string, for example "15m" or "1h".
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
 }
 
 // IsEnabled reports whether SSH token configuration is enabled.
@@ -71,7 +78,7 @@ type Key struct {
 
 	// Name is the logical key name used to select a key (for example via Keys.Get).
 	//
-	// For signing, this name is embedded into minted tokens as the "<name>-" prefix.
+	// For signing, this name is embedded into the signed token claims as the key id.
 	// For verification, this name is used as the lookup key into Keys.
 	Name string `yaml:"name,omitempty" json:"name,omitempty" toml:"name,omitempty"`
 }
