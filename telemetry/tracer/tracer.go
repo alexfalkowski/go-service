@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	otlp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -14,7 +15,10 @@ import (
 	"go.opentelemetry.io/otel/trace/noop"
 )
 
-var noopProvider trace.TracerProvider = noop.NewTracerProvider()
+var (
+	enabled      sync.Bool
+	noopProvider trace.TracerProvider = noop.NewTracerProvider()
+)
 
 // TracerParams declares the dependencies required by Register.
 //
@@ -59,6 +63,7 @@ type TracerParams struct {
 // Shutdown errors are intentionally ignored to avoid blocking other stop hooks.
 func Register(params TracerParams) error {
 	if !params.Config.IsEnabled() {
+		enabled.Store(false)
 		otel.SetTracerProvider(noopProvider)
 		return nil
 	}
@@ -77,6 +82,7 @@ func Register(params TracerParams) error {
 
 		provider := sdk.NewTracerProvider(sdk.WithResource(attrs), sdk.WithBatcher(exporter))
 		otel.SetTracerProvider(provider)
+		enabled.Store(true)
 
 		params.Lifecycle.Append(di.Hook{
 			OnStart: func(ctx context.Context) error {
@@ -87,6 +93,7 @@ func Register(params TracerParams) error {
 				_ = provider.Shutdown(ctx)
 				_ = exporter.Shutdown(ctx)
 				otel.SetTracerProvider(noopProvider)
+				enabled.Store(false)
 
 				return nil
 			},
@@ -98,7 +105,7 @@ func Register(params TracerParams) error {
 	}
 }
 
-// IsEnabled reports whether tracing is backed by a non-noop provider installed by this package.
+// IsEnabled reports whether this package has registered tracing as enabled.
 func IsEnabled() bool {
-	return otel.GetTracerProvider() != noopProvider
+	return enabled.Load()
 }

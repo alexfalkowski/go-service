@@ -6,6 +6,8 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/fx/fxtest"
 )
 
@@ -13,6 +15,9 @@ func TestIsEnabled(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	})
+
+	otel.SetTracerProvider(noop.NewTracerProvider())
+	require.False(t, tracer.IsEnabled())
 
 	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	require.False(t, tracer.IsEnabled())
@@ -32,6 +37,9 @@ func TestIsEnabled(t *testing.T) {
 		Environment: test.Environment,
 	}))
 	require.True(t, tracer.IsEnabled())
+
+	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
+	require.False(t, tracer.IsEnabled())
 }
 
 func TestConfigIsEnabled(t *testing.T) {
