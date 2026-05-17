@@ -21,11 +21,21 @@
 // Server interceptors also emit response header metadata such as
 // "service-version" and "request-id".
 //
-// Server metadata extraction intentionally prefers common forwarding metadata such
-// as "x-forwarded-for", "x-real-ip", "cf-connecting-ip", and
-// "true-client-ip" over peer addresses. Deployments that use the extracted IP for
-// access logs, policy, or rate limiting should place the service behind trusted
-// proxies that strip or overwrite spoofed forwarding metadata.
+// # Forwarded IP trust boundary
+//
+// Server metadata extraction intentionally treats common forwarding metadata,
+// such as "x-forwarded-for", "x-real-ip", "cf-connecting-ip", and
+// "true-client-ip", as trusted inputs and prefers them over peer addresses.
+//
+// This package does not fetch CDN provider IP ranges, maintain trusted proxy
+// CIDR lists, or decide whether a request came through a trusted edge. That
+// policy belongs at the infrastructure boundary: CDN, ingress, load balancer,
+// firewall, service mesh, or application-specific middleware.
+//
+// Deployments that use the extracted IP for access logs, policy, or rate
+// limiting should ensure direct origin access is blocked and the trusted edge
+// strips or overwrites client-supplied forwarding metadata before traffic
+// reaches the service.
 //
 // Start with `UnaryServerInterceptor` / `StreamServerInterceptor` for
 // server-side extraction and `UnaryClientInterceptor` /
