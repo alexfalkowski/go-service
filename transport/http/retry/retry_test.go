@@ -194,11 +194,28 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	require.Equal(t, []int{1, 1}, rt.authCounts)
 }
 
-func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
+func TestRoundTripperDoesNotSetAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
 	transport := &causeRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
 		Timeout:  0,
+		Backoff:  time.Millisecond,
+	}, transport)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.NotNil(t, res)
+	require.NoError(t, transport.err)
+	require.NoError(t, transport.cause)
+}
+
+func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
+	transport := &causeRoundTripper{wait: true}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  time.Nanosecond,
 		Backoff:  time.Millisecond,
 	}, transport)
 
@@ -331,9 +348,14 @@ func (r *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 type causeRoundTripper struct {
 	cause error
 	err   error
+	wait  bool
 }
 
 func (r *causeRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if r.wait {
+		<-req.Context().Done()
+	}
+
 	r.cause = context.Cause(req.Context())
 	r.err = req.Context().Err()
 

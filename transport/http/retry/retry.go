@@ -91,15 +91,15 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	attempt := &roundTripAttempt{}
 
 	operation := func(ctx context.Context) (*http.Response, error) {
-		return r.attempt(req, ctx, attempt)
+		return r.attempt(ctx, req, attempt)
 	}
 
 	res, err := retry.DoValue(req.Context(), r.backoff, operation)
 	return attempt.finalize(res, err)
 }
 
-func (r *RoundTripper) attempt(req *http.Request, ctx context.Context, attempt *roundTripAttempt) (*http.Response, error) {
-	ctx, cancel := context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
+func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
+	ctx, cancel := r.withAttemptTimeout(ctx)
 	defer cancel()
 
 	attemptReq, err := attempt.request(req, ctx)
@@ -113,6 +113,14 @@ func (r *RoundTripper) attempt(req *http.Request, ctx context.Context, attempt *
 	}
 
 	return res, err
+}
+
+func (r *RoundTripper) withAttemptTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	if r.timeout <= 0 {
+		return ctx, func() {}
+	}
+
+	return context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
 }
 
 func request(req *http.Request, ctx context.Context, attempt int) (*http.Request, error) {
