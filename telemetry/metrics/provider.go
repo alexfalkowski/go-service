@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/attributes"
+	"github.com/alexfalkowski/go-sync"
 	"go.opentelemetry.io/contrib/instrumentation/host"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
@@ -15,7 +16,10 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-var noopProvider metric.MeterProvider = noop.NewMeterProvider()
+var (
+	enabled      sync.Bool
+	noopProvider metric.MeterProvider = noop.NewMeterProvider()
+)
 
 // MeterProviderParams declares the dependencies required by NewMeterProvider.
 //
@@ -66,6 +70,7 @@ type MeterProviderParams struct {
 // If metrics are disabled or Reader is nil, it installs and returns the package noop provider.
 func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	if !params.Config.IsEnabled() || params.Reader == nil {
+		enabled.Store(false)
 		otel.SetMeterProvider(noopProvider)
 		return noopProvider
 	}
@@ -80,6 +85,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	)
 	provider := sdk.NewMeterProvider(sdk.WithReader(reader), sdk.WithResource(attrs))
 	otel.SetMeterProvider(provider)
+	enabled.Store(true)
 
 	params.Lifecycle.Append(di.Hook{
 		OnStart: func(_ context.Context) error {
@@ -91,6 +97,7 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 			// Do not return error as this will stop all others.
 			_ = provider.Shutdown(ctx)
 			otel.SetMeterProvider(noopProvider)
+			enabled.Store(false)
 
 			return nil
 		},
@@ -99,9 +106,9 @@ func NewMeterProvider(params MeterProviderParams) MeterProvider {
 	return provider
 }
 
-// IsEnabled reports whether metrics are backed by a non-noop provider installed by this package.
+// IsEnabled reports whether this package has registered metrics as enabled.
 func IsEnabled() bool {
-	return otel.GetMeterProvider() != noopProvider
+	return enabled.Load()
 }
 
 // NewManualReader constructs an OpenTelemetry SDK manual metric reader.
