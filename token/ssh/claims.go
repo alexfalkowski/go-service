@@ -27,16 +27,16 @@ func parseClaims(tkn string) (*claims, []byte, string, error) {
 		return nil, nil, strings.Empty, crypto.ErrInvalidMatch
 	}
 
-	data := &claims{}
-	if err := json.Unmarshal(encoded, data); err != nil {
+	c := &claims{}
+	if err := json.Unmarshal(encoded, c); err != nil {
 		return nil, nil, strings.Empty, crypto.ErrInvalidMatch
 	}
 
-	if strings.IsEmpty(data.KeyID) {
+	if strings.IsEmpty(c.KeyID) {
 		return nil, nil, strings.Empty, crypto.ErrInvalidMatch
 	}
 
-	return data, encoded, rawSignature, nil
+	return c, encoded, rawSignature, nil
 }
 
 func validateClaims(c *claims, aud string, now int64) error {

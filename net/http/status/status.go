@@ -11,7 +11,8 @@ import (
 // Error constructs an error that carries an HTTP status code and a message.
 //
 // The returned error implements the Coder interface so handlers and helpers can extract the HTTP
-// status code via Code(err).
+// status code via Code(err). The message is diagnostic and may be sent to clients by WriteError,
+// so callers should provide the public message they want exposed.
 func Error(code int, msg string) error {
 	return &statusError{code: code, msg: msg}
 }
@@ -50,6 +51,9 @@ func BadRequestError(err error) error {
 // implementing Coder): calling FromError on such errors does not overwrite the original status code.
 // Raw *http.MaxBytesError values are normalized to StatusRequestEntityTooLarge (413) regardless of the
 // provided code so oversized request bodies surface consistently.
+// The wrapped error message remains diagnostic and may be sent to clients by WriteError. Callers that need
+// a sanitized response body should create a public status error explicitly instead of passing the internal
+// cause to FromError.
 //
 // Note: err must be non-nil. Passing a nil error will panic because err.Error() will be called.
 func FromError(code int, err error) error {
