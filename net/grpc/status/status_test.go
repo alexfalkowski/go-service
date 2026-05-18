@@ -33,3 +33,33 @@ func TestFromErrorUnknown(t *testing.T) {
 	require.False(t, ok)
 	require.Equal(t, codes.Unknown, s.Code())
 }
+
+func TestSafeError(t *testing.T) {
+	cause := errors.New("secret database failure")
+	err := status.SafeError(codes.Internal, "internal server error", cause)
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, codes.Internal, s.Code())
+	require.Equal(t, "internal server error", s.Message())
+	require.ErrorIs(t, err, cause)
+}
+
+func TestSafeErrorWrapped(t *testing.T) {
+	cause := errors.New("secret database failure")
+	err := fmt.Errorf("wrapped: %w", status.SafeError(codes.Internal, "internal server error", cause))
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, codes.Internal, s.Code())
+	require.Contains(t, s.Message(), "wrapped:")
+	require.Contains(t, s.Message(), "internal server error")
+	require.NotContains(t, s.Message(), "secret database failure")
+}
+
+func TestErrorIs(t *testing.T) {
+	err := status.Error(codes.NotFound, "missing")
+	target := status.Error(codes.NotFound, "missing")
+
+	require.ErrorIs(t, err, target)
+}

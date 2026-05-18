@@ -3,6 +3,7 @@ package status
 import (
 	"fmt"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
@@ -21,10 +22,9 @@ import (
 //   - gRPC status errors mapped to HTTP codes.
 //
 // Write behavior:
-// The error message is written as a single line (via fmt.Fprintln) containing err.Error(). This is a
-// deliberate framework-level diagnostic contract: WriteError does not replace the message with a generic
-// response body. Applications that need sanitized client output should map the internal error to a public
-// status error before calling WriteError.
+// The error message is written as a single line (via fmt.Fprintln) containing the first SafeMessage in
+// err's chain. If no safe message is available, WriteError uses the standard HTTP status text for Code(err).
+// Use SafeError when callers need to provide a more specific safe client message for an internal cause.
 // If writing the body fails, WriteError returns the write error and does not attempt to write a
 // secondary error response.
 //
@@ -36,9 +36,10 @@ func WriteError(res http.ResponseWriter, err error) error {
 	header.Set("Content-Type", media.WithUTF8(media.Error))
 	header.Set("X-Content-Type-Options", "nosniff")
 
-	res.WriteHeader(Code(err))
+	code := Code(err)
+	res.WriteHeader(code)
 
-	_, writeErr := fmt.Fprintln(res, err.Error())
+	_, writeErr := fmt.Fprintln(res, errors.SafeMessage(err, defaultSafeMessage(code)))
 	return writeErr
 }
 

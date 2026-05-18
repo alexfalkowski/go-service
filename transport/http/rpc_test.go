@@ -164,7 +164,11 @@ func TestErrorRPC(t *testing.T) {
 
 					res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, b)
 					require.NoError(t, err)
-					require.Equal(t, "failed", body)
+					if handler.name == "mapped" {
+						require.Equal(t, "failed", body)
+					} else {
+						require.Equal(t, http.StatusText(http.StatusInternalServerError), body)
+					}
 					require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 				})
 			}
@@ -229,7 +233,7 @@ func TestDisallowedRPC(t *testing.T) {
 			require.Error(t, err)
 			require.True(t, status.IsError(err))
 			require.Equal(t, http.StatusUnauthorized, status.Code(err))
-			require.Equal(t, "token: invalid match", err.Error())
+			require.Equal(t, http.StatusText(http.StatusUnauthorized), err.Error())
 		})
 	}
 }
