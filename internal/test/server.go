@@ -16,7 +16,6 @@ import (
 	grpclimiter "github.com/alexfalkowski/go-service/v2/transport/grpc/limiter"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	httplimiter "github.com/alexfalkowski/go-service/v2/transport/http/limiter"
-	"github.com/urfave/negroni/v3"
 )
 
 // Server bundles the dependencies required to build HTTP, gRPC, and debug servers for tests.
@@ -60,7 +59,7 @@ func (s *Server) Register() error {
 			Config:   s.TransportConfig.HTTP,
 			Logger:   s.Logger,
 			Limiter:  s.HTTPLimiter,
-			Handlers: []negroni.Handler{&EmptyHandler{}},
+			Handlers: []http.ChainedHandler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
 			UserAgent: UserAgent, Version: Version,
 		}
@@ -112,10 +111,10 @@ func (s *Server) Register() error {
 	return nil
 }
 
-// EmptyHandler is a no-op Negroni middleware used in server tests.
+// EmptyHandler is a no-op chained middleware used in server tests.
 type EmptyHandler struct{}
 
-// ServeHTTP implements negroni.Handler and just calls the next handler.
+// ServeHTTP implements http.ChainedHandler and just calls the next handler.
 func (*EmptyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
 }

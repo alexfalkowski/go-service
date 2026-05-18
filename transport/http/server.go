@@ -34,7 +34,7 @@ import (
 //   - `Logger`: enables server-side request logging middleware when non-nil.
 //   - `Limiter`: enables server-side rate limiting middleware when non-nil.
 //   - `Verifier`: enables server-side token verification middleware when non-nil.
-//   - `Handlers`: allows callers to inject additional Negroni middleware (and is optional in DI).
+//   - `Handlers`: allows callers to inject additional chained middleware (and is optional in DI).
 type ServerParams struct {
 	di.In
 
@@ -71,10 +71,10 @@ type ServerParams struct {
 	// Verifier enables server-side token verification middleware when non-nil.
 	Verifier token.Verifier
 
-	// Handlers are additional Negroni handlers to insert into the middleware chain.
+	// Handlers are additional chained handlers to insert into the middleware chain.
 	//
 	// These handlers are applied in the order provided.
-	Handlers []negroni.Handler `optional:"true"`
+	Handlers []ChainedHandler `optional:"true"`
 }
 
 // NewServer constructs an HTTP transport `Server` when the transport is enabled.
