@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/urfave/negroni/v3"
 )
 
 // MethodDelete is an alias of http.MethodDelete.
@@ -66,6 +67,9 @@ type MaxBytesError = http.MaxBytesError
 
 // Handler is an alias for net/http.Handler.
 type Handler = http.Handler
+
+// ChainedHandler is an alias for negroni.Handler.
+type ChainedHandler = negroni.Handler
 
 // HandlerFunc is an alias for net/http.HandlerFunc.
 type HandlerFunc = http.HandlerFunc
