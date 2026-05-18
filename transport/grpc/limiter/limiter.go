@@ -61,13 +61,13 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 
 		ok, header, err := limiter.Take(ctx)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "limiter: %s", err.Error())
+			return nil, status.SafeError(codes.Internal, grpc.StatusText(codes.Internal), err)
 		}
 
 		_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", header))
 
 		if !ok {
-			return nil, status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", header)
+			return nil, status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
 		}
 
 		return handler(ctx, req)
@@ -109,13 +109,13 @@ type Client struct {
 // Callers should only install this interceptor when limiter is non-nil.
 func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		ok, header, err := limiter.Take(ctx)
+		ok, _, err := limiter.Take(ctx)
 		if err != nil {
-			return status.Errorf(codes.Internal, "limiter: %s", err.Error())
+			return status.SafeError(codes.Internal, grpc.StatusText(codes.Internal), err)
 		}
 
 		if !ok {
-			return status.Errorf(codes.ResourceExhausted, "limiter: resource exhausted, %s", header)
+			return status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
 		}
 
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)

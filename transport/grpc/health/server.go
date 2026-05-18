@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-health/v2/subscriber"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -54,7 +55,7 @@ type Server struct {
 func (s *Server) Check(_ context.Context, req *health.Request) (*health.Response, error) {
 	observer, err := s.server.Observer(req.GetService(), "grpc")
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, status.SafeError(codes.NotFound, grpc.StatusText(codes.NotFound), err)
 	}
 
 	return &health.Response{Status: s.status(observer)}, nil
@@ -97,7 +98,7 @@ func (s *Server) Watch(req *health.Request, w health.WatchServer) error {
 
 		select {
 		case <-w.Context().Done():
-			return status.Error(codes.Canceled, w.Context().Err().Error())
+			return status.SafeError(codes.Canceled, grpc.StatusText(codes.Canceled), w.Context().Err())
 		case <-ticker.C:
 		}
 	}

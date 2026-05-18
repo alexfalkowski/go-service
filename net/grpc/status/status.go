@@ -60,6 +60,13 @@ func Error(c codes.Code, msg string) error {
 	return SafeError(c, msg, nil)
 }
 
+// Errorf formats a message and returns an error with the provided status code.
+//
+// This is a convenience wrapper over Error(c, fmt.Sprintf(...)).
+func Errorf(c codes.Code, format string, a ...any) error {
+	return Error(c, fmt.Sprintf(format, a...))
+}
+
 // SafeError wraps err with c and a message that is safe to send to clients.
 //
 // The wrapped error remains available through Unwrap for internal inspection, while gRPC sends msg instead
@@ -70,17 +77,6 @@ func SafeError(c codes.Code, msg string, err error) error {
 	}
 
 	return &statusError{code: c, msg: msg, err: err}
-}
-
-// Errorf constructs a formatted gRPC status error with code c.
-//
-// It formats the message using fmt-style formatting rules and returns an error suitable to be returned
-// from a gRPC handler. The formatted message is client-visible by design.
-//
-// For structured status details (protobuf Any details), use the upstream status
-// API directly (for example status.New(...).WithDetails(...)).
-func Errorf(c codes.Code, format string, a ...any) error {
-	return Error(c, fmt.Sprintf(format, a...))
 }
 
 type statusError struct {

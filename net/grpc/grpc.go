@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/net"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -138,6 +139,11 @@ type UnaryServerInterceptor = grpc.UnaryServerInterceptor
 
 // TransportCredentials is an alias of credentials.TransportCredentials.
 type TransportCredentials = credentials.TransportCredentials
+
+// StatusText returns the standard gRPC status text for the code.
+func StatusText(code codes.Code) string {
+	return codes.StatusText(code)
+}
 
 // StatsHandler returns a ServerOption that installs h as the server stats handler.
 //

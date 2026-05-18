@@ -23,7 +23,7 @@
 //	type Code = codes.Code
 //
 // and re-exports selected code constants (for example OK, NotFound, Unavailable,
-// etc.).
+// etc.). It also provides StatusText for the standard string form of a code.
 //
 // # Usage
 //
@@ -35,8 +35,7 @@
 //
 // # Notes
 //
-// This package intentionally contains aliases/constants only. It does not define
-// new semantics, mapping logic, or wrappers beyond naming and import
-// consolidation. For detailed behavioral descriptions of each code, consult the
-// upstream gRPC documentation.
+// This package intentionally keeps to the upstream code representation. For
+// detailed behavioral descriptions of each code, consult the upstream gRPC
+// documentation.
 package codes
