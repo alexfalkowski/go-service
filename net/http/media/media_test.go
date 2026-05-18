@@ -15,6 +15,10 @@ func TestParseInvalidMediaType(t *testing.T) {
 	require.True(t, errors.Is(err, media.ErrInvalidType))
 }
 
+func TestTypeByExtension(t *testing.T) {
+	require.Equal(t, "image/svg+xml", media.TypeByExtension(".svg"))
+}
+
 func TestWithUTF8(t *testing.T) {
 	for _, tc := range []struct {
 		name      string
