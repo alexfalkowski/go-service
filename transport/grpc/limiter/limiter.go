@@ -61,7 +61,7 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 
 		ok, header, err := limiter.Take(ctx)
 		if err != nil {
-			return nil, status.SafeError(codes.Internal, grpc.StatusText(codes.Internal), err)
+			return nil, status.SafeError(codes.Internal, err)
 		}
 
 		_ = grpc.SetHeader(ctx, meta.Pairs("ratelimit", header))
@@ -111,7 +111,7 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ok, _, err := limiter.Take(ctx)
 		if err != nil {
-			return status.SafeError(codes.Internal, grpc.StatusText(codes.Internal), err)
+			return status.SafeError(codes.Internal, err)
 		}
 
 		if !ok {

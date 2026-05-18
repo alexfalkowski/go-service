@@ -13,14 +13,17 @@ import (
 // The returned error implements the Coder interface so handlers and helpers can extract the HTTP
 // status code via Code(err). The message is considered safe to send to clients by WriteError.
 func Error(code int, msg string) error {
-	return SafeError(code, msg, nil)
+	return &statusError{code: code, error: msg, msg: msg}
 }
 
-// SafeError wraps err with code and a message that is safe to send to clients.
+// SafeError wraps err with code and the standard status text that is safe to send to clients.
 //
-// The wrapped error remains available through Unwrap for internal inspection, while WriteError sends msg
+// The wrapped error remains available through Unwrap for internal inspection, while WriteError sends StatusText(code)
 // instead of err.Error(). If err already carries a status code, it is returned unchanged.
-func SafeError(code int, msg string, err error) error {
+func SafeError(code int, err error) error {
+	code = normalizeCode(code, err)
+	msg := defaultSafeMessage(code)
+
 	if err == nil {
 		return &statusError{code: code, error: msg, msg: msg}
 	}
@@ -29,7 +32,7 @@ func SafeError(code int, msg string, err error) error {
 		return err
 	}
 
-	return &statusError{code: normalizeCode(code, err), error: err.Error(), msg: msg, err: err}
+	return &statusError{code: code, error: err.Error(), msg: msg, err: err}
 }
 
 // InternalServerError wraps err with StatusInternalServerError (500) unless err already carries a status code.
@@ -66,13 +69,12 @@ func BadRequestError(err error) error {
 // implementing Coder): calling FromError on such errors does not overwrite the original status code.
 // Raw *http.MaxBytesError values are normalized to StatusRequestEntityTooLarge (413) regardless of the
 // provided code so oversized request bodies surface consistently.
-// The wrapped error message remains diagnostic through Error, but WriteError sends a safe message instead
-// of err.Error(). Use SafeError when callers need to provide a more specific safe client message.
+// The wrapped error message remains diagnostic through Error, but WriteError sends a safe status message instead
+// of err.Error().
 //
 // Passing nil returns a status error with the default safe message for code.
 func FromError(code int, err error) error {
-	code = normalizeCode(code, err)
-	return SafeError(code, defaultSafeMessage(code), err)
+	return SafeError(code, err)
 }
 
 // Errorf formats a message and returns an error with the provided status code.

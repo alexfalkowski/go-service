@@ -97,7 +97,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
-			return nil, status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), err)
+			return nil, status.SafeError(codes.Unauthenticated, err)
 		}
 
 		ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.Ignored(sub)))
@@ -130,7 +130,7 @@ func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServer
 
 		sub, err := verifier.Verify(strings.Bytes(auth), info.FullMethod)
 		if err != nil {
-			return status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), err)
+			return status.SafeError(codes.Unauthenticated, err)
 		}
 
 		ctx = meta.WithAttributes(ctx, meta.WithUserID(meta.Ignored(sub)))
@@ -177,11 +177,11 @@ func UnaryClientInterceptor(id env.UserID, generator Generator) grpc.UnaryClient
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		token, err := generator.Generate(fullMethod, id.String())
 		if err != nil {
-			return status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), err)
+			return status.SafeError(codes.Unauthenticated, err)
 		}
 
 		if len(token) == 0 {
-			return status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), header.ErrInvalidAuthorization)
+			return status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
 		}
 
 		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))
@@ -215,11 +215,11 @@ func StreamClientInterceptor(id env.UserID, generator Generator) grpc.StreamClie
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		token, err := generator.Generate(fullMethod, id.String())
 		if err != nil {
-			return nil, status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), err)
+			return nil, status.SafeError(codes.Unauthenticated, err)
 		}
 
 		if len(token) == 0 {
-			return nil, status.SafeError(codes.Unauthenticated, grpc.StatusText(codes.Unauthenticated), header.ErrInvalidAuthorization)
+			return nil, status.SafeError(codes.Unauthenticated, header.ErrInvalidAuthorization)
 		}
 
 		auth := meta.Ignored(strings.Join(strings.Space, header.BearerAuthorization, bytes.String(token)))

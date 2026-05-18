@@ -57,28 +57,28 @@ func TestWriteErrorUsesSafeMessageForFromError(t *testing.T) {
 func TestWriteErrorUsesSafeMessage(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	err := httpstatus.WriteError(res, httpstatus.SafeError(http.StatusUnauthorized, "invalid authorization", test.ErrInvalid))
+	err := httpstatus.WriteError(res, httpstatus.SafeError(http.StatusUnauthorized, test.ErrInvalid))
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.Code)
-	require.Equal(t, "invalid authorization\n", res.Body.String())
+	require.Equal(t, http.StatusText(http.StatusUnauthorized)+"\n", res.Body.String())
 }
 
 func TestSafeErrorAllowsNilCause(t *testing.T) {
-	err := httpstatus.SafeError(http.StatusUnauthorized, "invalid authorization", nil)
+	err := httpstatus.SafeError(http.StatusUnauthorized, nil)
 
-	require.Equal(t, "invalid authorization", err.Error())
+	require.Equal(t, http.StatusText(http.StatusUnauthorized), err.Error())
 	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
 }
 
 func TestSafeErrorKeepsWrappedCoder(t *testing.T) {
 	err := fmt.Errorf("wrapped: %w", &customCoderError{code: http.StatusConflict})
 
-	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, "invalid", err))
+	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, err))
 }
 
 func TestSafeErrorUsesRequestEntityTooLargeForMaxBytesError(t *testing.T) {
-	err := httpstatus.SafeError(http.StatusBadRequest, "too large", &http.MaxBytesError{Limit: 1})
+	err := httpstatus.SafeError(http.StatusBadRequest, &http.MaxBytesError{Limit: 1})
 
 	require.True(t, httpstatus.IsError(err))
 	require.Equal(t, http.StatusRequestEntityTooLarge, httpstatus.Code(err))
