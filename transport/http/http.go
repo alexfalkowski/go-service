@@ -5,7 +5,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/urfave/negroni/v3"
 )
 
 // MethodDelete is an alias of http.MethodDelete.
@@ -68,8 +67,11 @@ type MaxBytesError = http.MaxBytesError
 // Handler is an alias for net/http.Handler.
 type Handler = http.Handler
 
-// ChainedHandler is an alias for negroni.Handler.
-type ChainedHandler = negroni.Handler
+// ChainedHandler is an alias for net/http.ChainedHandler.
+type ChainedHandler = http.ChainedHandler
+
+// ChainedHandlers is an alias for net/http.ChainedHandlers.
+type ChainedHandlers = http.ChainedHandlers
 
 // HandlerFunc is an alias for net/http.HandlerFunc.
 type HandlerFunc = http.HandlerFunc
@@ -112,6 +114,11 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // NewServeMux constructs a new HTTP request multiplexer.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
+}
+
+// NewChainedHandlers constructs an HTTP middleware chain.
+func NewChainedHandlers(handlers ...ChainedHandler) *ChainedHandlers {
+	return http.NewChainedHandlers(handlers...)
 }
 
 // MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.

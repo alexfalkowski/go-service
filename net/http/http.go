@@ -17,6 +17,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
+	"github.com/urfave/negroni/v3"
 )
 
 // MethodDelete is an alias of http.MethodDelete.
@@ -93,6 +94,12 @@ type (
 	// It is provided so go-service code can depend on a consistent import path while preserving
 	// standard library semantics.
 	Handler = http.Handler
+
+	// ChainedHandler is an alias for negroni.Handler.
+	ChainedHandler = negroni.Handler
+
+	// ChainedHandlers is an alias for negroni.Negroni.
+	ChainedHandlers = negroni.Negroni
 
 	// HandlerFunc is an alias for net/http.HandlerFunc.
 	//
@@ -200,6 +207,11 @@ func NewRequestWithContext(ctx context.Context, method, url string, body io.Read
 // This is a thin wrapper around net/http.NewServeMux.
 func NewServeMux() *ServeMux {
 	return http.NewServeMux()
+}
+
+// NewChainedHandlers constructs an HTTP middleware chain.
+func NewChainedHandlers(handlers ...ChainedHandler) *ChainedHandlers {
+	return negroni.New(handlers...)
 }
 
 // MaxBytesHandler wraps h so inbound request bodies are limited to n bytes.
