@@ -45,24 +45,30 @@ func TestErrorf(t *testing.T) {
 
 func TestSafeError(t *testing.T) {
 	cause := errors.New("secret database failure")
-	err := status.SafeError(codes.Internal, "internal server error", cause)
+	err := status.SafeError(codes.Internal, cause)
 
 	s, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.Internal, s.Code())
-	require.Equal(t, "internal server error", s.Message())
+	require.Equal(t, codes.StatusText(codes.Internal), s.Message())
 	require.ErrorIs(t, err, cause)
+}
+
+func TestSafeErrorOK(t *testing.T) {
+	err := status.SafeError(codes.OK, errors.New("ignored"))
+
+	require.NoError(t, err)
 }
 
 func TestSafeErrorWrapped(t *testing.T) {
 	cause := errors.New("secret database failure")
-	err := fmt.Errorf("wrapped: %w", status.SafeError(codes.Internal, "internal server error", cause))
+	err := fmt.Errorf("wrapped: %w", status.SafeError(codes.Internal, cause))
 
 	s, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.Internal, s.Code())
 	require.Contains(t, s.Message(), "wrapped:")
-	require.Contains(t, s.Message(), "internal server error")
+	require.Contains(t, s.Message(), codes.StatusText(codes.Internal))
 	require.NotContains(t, s.Message(), "secret database failure")
 }
 

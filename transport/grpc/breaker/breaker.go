@@ -55,7 +55,7 @@ func UnaryClientInterceptor(options ...Option) grpc.UnaryClientInterceptor {
 		})
 		if err != nil {
 			if errors.Is(err, breaker.ErrOpenState) || errors.Is(err, breaker.ErrTooManyRequests) {
-				return status.SafeError(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted), err)
+				return status.SafeError(codes.ResourceExhausted, err)
 			}
 
 			return err

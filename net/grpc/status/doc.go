@@ -9,10 +9,11 @@
 //   - Ensure status construction and inspection uses the go-service codes.Code
 //     alias (net/grpc/codes), which is itself an alias of gRPC's codes.Code.
 //
-// The functions in this package do not add new semantics beyond forwarding to
-// the upstream gRPC status package. For authoritative behavior, edge cases, and
-// wire-level details, consult the upstream gRPC documentation for the version
-// you vend.
+// Most functions in this package forward to the upstream gRPC status package.
+// SafeError adds go-service safe-message behavior while still exposing a normal
+// gRPC status to the runtime. For authoritative upstream behavior, edge cases,
+// and wire-level details, consult the upstream gRPC documentation for the
+// version you vend.
 //
 // # Background: gRPC status errors
 //
@@ -38,7 +39,7 @@
 //	err := status.Errorf(codes.NotFound, "widget %q does not exist", name)
 //
 // Use SafeError when the internal cause should remain available through
-// unwrapping but the client should receive a separate safe message.
+// unwrapping but the client should receive the standard status text.
 //
 // # Inspecting errors
 //
@@ -64,9 +65,9 @@
 // # Client-visible messages
 //
 // gRPC status messages are sent to clients. Error and Errorf treat their
-// messages as client-visible. SafeError lets callers attach a safe client
-// message while preserving an internal cause through Unwrap for inspection with
-// errors.Is and errors.As.
+// messages as client-visible. SafeError sends the standard status text while
+// preserving an internal cause through Unwrap for inspection with errors.Is and
+// errors.As.
 //
 // # Non-goals
 //
