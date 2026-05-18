@@ -22,7 +22,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	sync "github.com/alexfalkowski/go-sync"
 	"github.com/klauspost/compress/gzhttp"
-	"github.com/urfave/negroni/v3"
 )
 
 // ServerParams defines dependencies for constructing an HTTP transport `Server`.
@@ -112,7 +111,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		return nil, nil
 	}
 
-	neg := negroni.New()
+	neg := NewChainedHandlers()
 	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
 
 	if params.Logger != nil {
