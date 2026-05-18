@@ -76,7 +76,7 @@ func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next htt
 	res.Header().Add("RateLimit", header)
 
 	if !ok {
-		_ = status.WriteError(res, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header))
+		_ = status.WriteError(res, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests)))
 		return
 	}
 
@@ -130,13 +130,13 @@ type RoundTripper struct {
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 
-	ok, header, err := r.limiter.Take(ctx)
+	ok, _, err := r.limiter.Take(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	if !ok {
-		return nil, status.Errorf(http.StatusTooManyRequests, "limiter: too many requests, %s", header)
+		return nil, status.Error(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
 	}
 
 	return r.RoundTripper.RoundTrip(req)

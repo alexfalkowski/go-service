@@ -18,6 +18,11 @@ import "google.golang.org/grpc/codes"
 // consult the upstream gRPC documentation.
 type Code = codes.Code
 
+// StatusText returns the standard gRPC status text for the code.
+func StatusText(code Code) string {
+	return code.String()
+}
+
 const (
 	// Aborted indicates the operation was aborted, typically due to a concurrency
 	// issue such as sequencer check failures, transaction aborts, etc.

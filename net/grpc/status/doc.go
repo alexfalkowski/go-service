@@ -29,14 +29,16 @@
 //
 // # Constructing errors
 //
-// Use Error or Errorf to create an error with a specific gRPC code:
+// Use Error to create an error with a specific gRPC code:
 //
 //	err := status.Error(codes.NotFound, "widget does not exist")
 //
-//	err := status.Errorf(codes.InvalidArgument, "bad widget id: %q", id)
+// Use Errorf when the client-visible message should be formatted:
 //
-// These functions delegate to google.golang.org/grpc/status.Error and
-// google.golang.org/grpc/status.Errorf.
+//	err := status.Errorf(codes.NotFound, "widget %q does not exist", name)
+//
+// Use SafeError when the internal cause should remain available through
+// unwrapping but the client should receive a separate safe message.
 //
 // # Inspecting errors
 //
@@ -61,16 +63,16 @@
 //
 // # Client-visible messages
 //
-// gRPC status messages are sent to clients. Error and Errorf treat their message
-// as client-visible. SafeError lets callers attach a safe client message while
-// preserving an internal cause through Unwrap for inspection with errors.Is and
-// errors.As.
+// gRPC status messages are sent to clients. Error and Errorf treat their
+// messages as client-visible. SafeError lets callers attach a safe client
+// message while preserving an internal cause through Unwrap for inspection with
+// errors.Is and errors.As.
 //
 // # Non-goals
 //
 // This package intentionally exposes only the small subset of the upstream
 // status API that go-service uses broadly: Code, FromError, Error, Errorf,
 // SafeError, and the Status type alias. Higher-level code that needs additional
-// constructors or richer structured-detail helpers should use the upstream status
-// package directly.
+// constructors or richer structured-detail helpers should use the upstream
+// status package directly.
 package status

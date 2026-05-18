@@ -34,6 +34,15 @@ func TestFromErrorUnknown(t *testing.T) {
 	require.Equal(t, codes.Unknown, s.Code())
 }
 
+func TestErrorf(t *testing.T) {
+	err := status.Errorf(codes.InvalidArgument, "invalid %s", "name")
+
+	s, ok := status.FromError(err)
+	require.True(t, ok)
+	require.Equal(t, codes.InvalidArgument, s.Code())
+	require.Equal(t, "invalid name", s.Message())
+}
+
 func TestSafeError(t *testing.T) {
 	cause := errors.New("secret database failure")
 	err := status.SafeError(codes.Internal, "internal server error", cause)

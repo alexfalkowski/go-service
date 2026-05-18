@@ -5,9 +5,14 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
+	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
+
+func TestStatusText(t *testing.T) {
+	require.Equal(t, codes.Unauthenticated.String(), grpc.StatusText(codes.Unauthenticated))
+}
 
 func TestNewServerWithAdvancedOptions(t *testing.T) {
 	opts := options.Map{

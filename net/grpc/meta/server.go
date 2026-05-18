@@ -51,7 +51,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 
 		auth, err := serverAuthorization(ctx)
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, status.SafeError(codes.InvalidArgument, codes.StatusText(codes.InvalidArgument), err)
 		}
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
@@ -93,7 +93,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 
 		auth, err := serverAuthorization(ctx)
 		if err != nil {
-			return status.Error(codes.InvalidArgument, err.Error())
+			return status.SafeError(codes.InvalidArgument, codes.StatusText(codes.InvalidArgument), err)
 		}
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),

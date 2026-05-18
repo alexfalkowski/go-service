@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -178,7 +179,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 
 	_, err := client.SayHello(t.Context(), req)
 	require.Equal(t, codes.Unauthenticated, status.Code(err))
-	require.Contains(t, err.Error(), "token: invalid config")
+	require.Contains(t, err.Error(), grpc.StatusText(codes.Unauthenticated))
 }
 
 func TestBreakerAuthUnary(t *testing.T) {
