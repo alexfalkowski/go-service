@@ -1,6 +1,8 @@
 package media
 
 import (
+	"mime"
+
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -61,6 +63,14 @@ const YAML = "application/yaml"
 
 // ErrInvalidType is returned when a media type cannot be parsed.
 var ErrInvalidType = errors.New("media: invalid type")
+
+// TypeByExtension returns the media type associated with ext.
+//
+// It wraps mime.TypeByExtension so HTTP packages can use the shared media package
+// for media type lookup.
+func TypeByExtension(ext string) string {
+	return mime.TypeByExtension(ext)
+}
 
 // Parse parses value into a base media type and subtype.
 //

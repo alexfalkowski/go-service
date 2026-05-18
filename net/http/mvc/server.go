@@ -108,6 +108,7 @@ func StaticFile(pattern, name string) bool {
 			return
 		}
 
+		setStaticContentType(res, name)
 		writeBuffer(res, http.StatusOK, buffer)
 	}
 
@@ -142,6 +143,7 @@ func StaticPathValue(pattern, value, prefix string) bool {
 			return
 		}
 
+		setStaticContentType(res, name)
 		writeBuffer(res, http.StatusOK, buffer)
 	}
 
@@ -165,6 +167,13 @@ func staticStatusCode(err error) int {
 		return http.StatusNotFound
 	}
 	return status.Code(err)
+}
+
+func setStaticContentType(res http.ResponseWriter, name string) {
+	mediaType := media.TypeByExtension(path.Ext(name))
+	if !strings.IsEmpty(mediaType) {
+		res.Header().Set(content.TypeKey, media.WithUTF8(mediaType))
+	}
 }
 
 func writeView(ctx context.Context, res http.ResponseWriter, view *View, model any, code int) {
