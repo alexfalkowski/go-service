@@ -11,10 +11,25 @@ import (
 // Error constructs an error that carries an HTTP status code and a message.
 //
 // The returned error implements the Coder interface so handlers and helpers can extract the HTTP
-// status code via Code(err). The message is diagnostic and may be sent to clients by WriteError,
-// so callers should provide the public message they want exposed.
+// status code via Code(err). The message is considered safe to send to clients by WriteError.
 func Error(code int, msg string) error {
-	return &statusError{code: code, msg: msg}
+	return SafeError(code, msg, nil)
+}
+
+// SafeError wraps err with code and a message that is safe to send to clients.
+//
+// The wrapped error remains available through Unwrap for internal inspection, while WriteError sends msg
+// instead of err.Error(). If err already carries a status code, it is returned unchanged.
+func SafeError(code int, msg string, err error) error {
+	if err == nil {
+		return &statusError{code: code, error: msg, msg: msg}
+	}
+
+	if IsError(err) {
+		return err
+	}
+
+	return &statusError{code: normalizeCode(code, err), error: err.Error(), msg: msg, err: err}
 }
 
 // InternalServerError wraps err with StatusInternalServerError (500) unless err already carries a status code.
@@ -51,21 +66,13 @@ func BadRequestError(err error) error {
 // implementing Coder): calling FromError on such errors does not overwrite the original status code.
 // Raw *http.MaxBytesError values are normalized to StatusRequestEntityTooLarge (413) regardless of the
 // provided code so oversized request bodies surface consistently.
-// The wrapped error message remains diagnostic and may be sent to clients by WriteError. Callers that need
-// a sanitized response body should create a public status error explicitly instead of passing the internal
-// cause to FromError.
+// The wrapped error message remains diagnostic through Error, but WriteError sends a safe message instead
+// of err.Error(). Use SafeError when callers need to provide a more specific safe client message.
 //
-// Note: err must be non-nil. Passing a nil error will panic because err.Error() will be called.
+// Passing nil returns a status error with the default safe message for code.
 func FromError(code int, err error) error {
-	if IsError(err) {
-		return err
-	}
-
-	if isMaxBytesError(err) {
-		code = http.StatusRequestEntityTooLarge
-	}
-
-	return &statusError{code: code, msg: err.Error(), err: err}
+	code = normalizeCode(code, err)
+	return SafeError(code, defaultSafeMessage(code), err)
 }
 
 // Errorf formats a message and returns an error with the provided status code.
@@ -127,10 +134,19 @@ func isMaxBytesError(err error) bool {
 	return ok
 }
 
+func normalizeCode(code int, err error) int {
+	if isMaxBytesError(err) {
+		return http.StatusRequestEntityTooLarge
+	}
+
+	return code
+}
+
 type statusError struct {
-	err  error
-	msg  string
-	code int
+	err   error
+	error string
+	msg   string
+	code  int
 }
 
 // Code returns the HTTP status code carried by the error.
@@ -138,12 +154,25 @@ func (s *statusError) Code() int {
 	return s.code
 }
 
-// Error returns the status message.
+// Error returns the diagnostic error message.
 func (s *statusError) Error() string {
+	return s.error
+}
+
+// SafeMessage returns the status message that is safe to send to clients.
+func (s *statusError) SafeMessage() string {
 	return s.msg
 }
 
 // Unwrap returns the wrapped cause, if any.
 func (s *statusError) Unwrap() error {
 	return s.err
+}
+
+func defaultSafeMessage(code int) string {
+	if msg := http.StatusText(code); msg != "" {
+		return msg
+	}
+
+	return http.StatusText(http.StatusInternalServerError)
 }

@@ -53,7 +53,7 @@ func TestServerMaxReceiveSize(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
-	require.Contains(t, body, "http: request body too large")
+	require.Equal(t, http.StatusText(http.StatusRequestEntityTooLarge), body)
 }
 
 func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
@@ -77,7 +77,7 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
-	require.Contains(t, body, "http: request body too large")
+	require.Equal(t, http.StatusText(http.StatusRequestEntityTooLarge), body)
 }
 
 type unknownLengthReader struct {

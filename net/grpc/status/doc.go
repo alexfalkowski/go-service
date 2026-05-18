@@ -61,18 +61,16 @@
 //
 // # Client-visible messages
 //
-// gRPC status messages are sent to clients. This package intentionally preserves
-// the message provided to Error or Errorf instead of replacing it with a generic
-// response. That keeps the framework useful for diagnostics while leaving
-// application-specific redaction policy to callers. Services that must hide
-// internal details should pass a public message here and record the internal
-// cause through their own logging or observability path.
+// gRPC status messages are sent to clients. Error and Errorf treat their message
+// as client-visible. SafeError lets callers attach a safe client message while
+// preserving an internal cause through Unwrap for inspection with errors.Is and
+// errors.As.
 //
 // # Non-goals
 //
 // This package intentionally exposes only the small subset of the upstream
-// status API that go-service uses broadly: Code, FromError, Error, Errorf, and
-// the Status type alias. Higher-level code that needs additional constructors or
-// richer structured-detail helpers should use the upstream status package
-// directly.
+// status API that go-service uses broadly: Code, FromError, Error, Errorf,
+// SafeError, and the Status type alias. Higher-level code that needs additional
+// constructors or richer structured-detail helpers should use the upstream status
+// package directly.
 package status

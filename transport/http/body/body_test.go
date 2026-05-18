@@ -35,5 +35,5 @@ func TestHandlerWritesBadRequestWhenBodyReadFails(t *testing.T) {
 	})
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, test.ErrFailed.Error()+"\n", res.Body.String())
+	require.Equal(t, http.StatusText(http.StatusBadRequest)+"\n", res.Body.String())
 }

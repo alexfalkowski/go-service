@@ -49,7 +49,7 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
-	require.Equal(t, test.ErrFailed.Error()+"\n", res.Body.String())
+	require.Equal(t, http.StatusText(http.StatusInternalServerError)+"\n", res.Body.String())
 	require.NotContains(t, res.Body.String(), "partial")
 }
 
