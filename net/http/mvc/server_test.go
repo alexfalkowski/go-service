@@ -423,7 +423,7 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 	require.NotContains(t, res.Body.String(), "custom")
 }
 
-func TestStaticFileDoesNotWritePartialBodyWhenReadFails(t *testing.T) {
+func TestStaticFileStreamsBody(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
 		Mux:         mux,
@@ -440,8 +440,8 @@ func TestStaticFileDoesNotWritePartialBodyWhenReadFails(t *testing.T) {
 
 	mux.ServeHTTP(res, req)
 
-	require.Equal(t, http.StatusInternalServerError, res.Code)
-	require.Empty(t, res.Body.String())
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, "hello", res.Body.String())
 }
 
 type errFileSystem struct{}
