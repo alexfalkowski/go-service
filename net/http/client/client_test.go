@@ -59,6 +59,50 @@ func TestDoRejectsErrorResponseOverMaxResponseSize(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
 }
 
+func TestDoPreservesErrorMediaStatusCode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+		res.Header().Set(content.TypeKey, media.Error)
+		res.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(res, "bad request")
+	}))
+	defer server.Close()
+
+	c := client.NewClient(test.Content, test.Pool)
+
+	err := c.Get(t.Context(), server.URL, client.Options{})
+	require.Error(t, err)
+	require.EqualError(t, err, "bad request")
+	require.Equal(t, http.StatusBadRequest, status.Code(err))
+}
+
+func TestDoNormalizesErrorMediaSuccessStatusCode(t *testing.T) {
+	tests := []struct {
+		name string
+		code int
+	}{
+		{name: "ok", code: http.StatusOK},
+		{name: "redirect", code: 302},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
+				res.Header().Set(content.TypeKey, media.Error)
+				res.WriteHeader(tt.code)
+				_, _ = io.WriteString(res, "upstream error")
+			}))
+			defer server.Close()
+
+			c := client.NewClient(test.Content, test.Pool)
+
+			err := c.Get(t.Context(), server.URL, client.Options{Response: &struct{}{}})
+			require.Error(t, err)
+			require.EqualError(t, err, "upstream error")
+			require.Equal(t, http.StatusInternalServerError, status.Code(err))
+		})
+	}
+}
+
 func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, _ *http.Request) {
 		res.Header().Set(content.TypeKey, media.Text)
