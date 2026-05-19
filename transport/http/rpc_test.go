@@ -167,7 +167,7 @@ func TestErrorRPC(t *testing.T) {
 					if handler.name == "mapped" {
 						require.Equal(t, "failed", body)
 					} else {
-						require.Equal(t, http.StatusText(http.StatusInternalServerError), body)
+						require.Equal(t, "http: internal server error", body)
 					}
 					require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 				})
@@ -186,7 +186,7 @@ func TestRPCNotFound(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
-	require.Equal(t, http.StatusText(http.StatusNotFound), body)
+	require.Equal(t, "http: not found", body)
 }
 
 func TestAllowedRPC(t *testing.T) {
@@ -233,7 +233,7 @@ func TestDisallowedRPC(t *testing.T) {
 			require.Error(t, err)
 			require.True(t, status.IsError(err))
 			require.Equal(t, http.StatusUnauthorized, status.Code(err))
-			require.Equal(t, http.StatusText(http.StatusUnauthorized), err.Error())
+			require.Equal(t, "http: unauthorized", err.Error())
 		})
 	}
 }

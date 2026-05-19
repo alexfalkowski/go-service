@@ -39,7 +39,7 @@ func TestDoRejectsResponseOverMaxResponseSize(t *testing.T) {
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
-	require.EqualError(t, err, "http: response: request entity too large")
+	require.EqualError(t, err, "http: request entity too large")
 	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
 }
 
@@ -55,7 +55,7 @@ func TestDoRejectsErrorResponseOverMaxResponseSize(t *testing.T) {
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.Error(t, err)
-	require.EqualError(t, err, "http: response: request entity too large")
+	require.EqualError(t, err, "http: request entity too large")
 	require.Equal(t, http.StatusRequestEntityTooLarge, status.Code(err))
 }
 

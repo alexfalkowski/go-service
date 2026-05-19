@@ -39,7 +39,8 @@
 //	err := status.Errorf(codes.NotFound, "widget %q does not exist", name)
 //
 // Use SafeError when the internal cause should remain available through
-// unwrapping but the client should receive the standard status text.
+// unwrapping but the client should receive a lowercase "grpc: " prefixed
+// status message.
 //
 // # Inspecting errors
 //
@@ -65,9 +66,9 @@
 // # Client-visible messages
 //
 // gRPC status messages are sent to clients. Error and Errorf treat their
-// messages as client-visible. SafeError sends the standard status text while
-// preserving an internal cause through Unwrap for inspection with errors.Is and
-// errors.As.
+// messages as client-visible. SafeError sends a lowercase "grpc: " prefixed
+// status message while preserving an internal cause through Unwrap for
+// inspection with errors.Is and errors.As.
 //
 // # Non-goals
 //

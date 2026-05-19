@@ -23,8 +23,8 @@ import (
 //
 // Write behavior:
 // The error message is written as a single line (via fmt.Fprintln) containing the first SafeMessage in
-// err's chain. If no safe message is available, WriteError uses the standard HTTP status text for Code(err).
-// Use SafeError to preserve an internal cause while returning the standard HTTP status text to the client.
+// err's chain. If no safe message is available, WriteError uses the default safe HTTP status message for Code(err).
+// Use SafeError to preserve an internal cause while returning the default safe HTTP status message to the client.
 // If writing the body fails, WriteError returns the write error and does not attempt to write a
 // secondary error response.
 //

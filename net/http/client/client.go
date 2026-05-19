@@ -264,7 +264,7 @@ func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
 	}
 
 	if int64(buffer.Len()) > c.maxResponseSize {
-		return errors.Prefix("http: response", status.Error(http.StatusRequestEntityTooLarge, strings.ToLower(http.StatusText(http.StatusRequestEntityTooLarge))))
+		return status.SafeError(http.StatusRequestEntityTooLarge, nil)
 	}
 
 	return nil

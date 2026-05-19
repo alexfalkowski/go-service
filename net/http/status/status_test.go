@@ -10,6 +10,7 @@ import (
 	grpcstatus "github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	httpstatus "github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,7 +41,7 @@ func TestFromErrorWrapsCause(t *testing.T) {
 func TestFromErrorAllowsNil(t *testing.T) {
 	err := httpstatus.FromError(http.StatusBadRequest, nil)
 
-	require.Equal(t, http.StatusText(http.StatusBadRequest), err.Error())
+	require.Equal(t, "http: bad request", err.Error())
 	require.Equal(t, http.StatusBadRequest, httpstatus.Code(err))
 }
 
@@ -51,7 +52,7 @@ func TestWriteErrorUsesSafeMessageForFromError(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Equal(t, http.StatusText(http.StatusBadRequest)+"\n", res.Body.String())
+	require.Equal(t, "http: bad request", strings.TrimSpace(res.Body.String()))
 }
 
 func TestWriteErrorUsesSafeMessage(t *testing.T) {
@@ -61,13 +62,13 @@ func TestWriteErrorUsesSafeMessage(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.Code)
-	require.Equal(t, http.StatusText(http.StatusUnauthorized)+"\n", res.Body.String())
+	require.Equal(t, "http: unauthorized", strings.TrimSpace(res.Body.String()))
 }
 
 func TestSafeErrorAllowsNilCause(t *testing.T) {
 	err := httpstatus.SafeError(http.StatusUnauthorized, nil)
 
-	require.Equal(t, http.StatusText(http.StatusUnauthorized), err.Error())
+	require.Equal(t, "http: unauthorized", err.Error())
 	require.Equal(t, http.StatusUnauthorized, httpstatus.Code(err))
 }
 
@@ -91,7 +92,7 @@ func TestWriteErrorUsesDefaultSafeMessageForUnknownStatusCode(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 999, res.Code)
-	require.Equal(t, http.StatusText(http.StatusInternalServerError)+"\n", res.Body.String())
+	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
 }
 
 func TestCodeRecognizesMaxBytesError(t *testing.T) {

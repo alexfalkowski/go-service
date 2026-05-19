@@ -64,7 +64,7 @@ func TestUnknownTokenKindAuthUnary(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	require.Equal(t, http.StatusText(http.StatusUnauthorized), body)
+	require.Equal(t, "http: unauthorized", body)
 }
 
 func TestValidAuthUnary(t *testing.T) {
@@ -99,7 +99,7 @@ func TestInvalidAuthUnary(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	require.Equal(t, http.StatusText(http.StatusUnauthorized), body)
+	require.Equal(t, "http: unauthorized", body)
 }
 
 func TestAuthUnaryWithAppend(t *testing.T) {
@@ -152,7 +152,7 @@ func TestMissingAuthUnary(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	require.Equal(t, http.StatusText(http.StatusUnauthorized), body)
+	require.Equal(t, "http: unauthorized", body)
 }
 
 func TestEmptyAuthUnary(t *testing.T) {
@@ -185,7 +185,7 @@ func TestMissingClientAuthUnary(t *testing.T) {
 	res, body, err := world.ResponseWithBody(t.Context(), url, http.MethodPost, header, bytes.NewBufferString(`{"name":"test"}`))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
-	require.Equal(t, http.StatusText(http.StatusUnauthorized), body)
+	require.Equal(t, "http: unauthorized", body)
 }
 
 func TestTokenErrorAuthUnary(t *testing.T) {

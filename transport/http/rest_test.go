@@ -68,7 +68,7 @@ func TestRestNotFound(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNotFound, res.StatusCode)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
-	require.Equal(t, http.StatusText(http.StatusNotFound), body)
+	require.Equal(t, "http: not found", body)
 }
 
 func TestRestRequestError(t *testing.T) {

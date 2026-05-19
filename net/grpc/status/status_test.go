@@ -50,7 +50,7 @@ func TestSafeError(t *testing.T) {
 	s, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.Internal, s.Code())
-	require.Equal(t, codes.StatusText(codes.Internal), s.Message())
+	require.Equal(t, "grpc: internal", s.Message())
 	require.ErrorIs(t, err, cause)
 }
 
@@ -68,7 +68,7 @@ func TestSafeErrorWrapped(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, codes.Internal, s.Code())
 	require.Contains(t, s.Message(), "wrapped:")
-	require.Contains(t, s.Message(), codes.StatusText(codes.Internal))
+	require.Contains(t, s.Message(), "grpc: internal")
 	require.NotContains(t, s.Message(), "secret database failure")
 }
 

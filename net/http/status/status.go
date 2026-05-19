@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
 // Error constructs an error that carries an HTTP status code and a message.
@@ -16,9 +17,9 @@ func Error(code int, msg string) error {
 	return &statusError{code: code, error: msg, msg: msg}
 }
 
-// SafeError wraps err with code and the standard status text that is safe to send to clients.
+// SafeError wraps err with code and a safe HTTP-prefixed status message that is safe to send to clients.
 //
-// The wrapped error remains available through Unwrap for internal inspection, while WriteError sends StatusText(code)
+// The wrapped error remains available through Unwrap for internal inspection, while WriteError sends the safe message
 // instead of err.Error(). If err already carries a status code, it is returned unchanged.
 func SafeError(code int, err error) error {
 	code = normalizeCode(code, err)
@@ -173,8 +174,8 @@ func (s *statusError) Unwrap() error {
 
 func defaultSafeMessage(code int) string {
 	if msg := http.StatusText(code); msg != "" {
-		return msg
+		return "http: " + strings.ToLower(msg)
 	}
 
-	return http.StatusText(http.StatusInternalServerError)
+	return "http: " + strings.ToLower(http.StatusText(http.StatusInternalServerError))
 }

@@ -12,7 +12,8 @@
 //
 // Most functions in this package are thin wrappers around the corresponding
 // functions in the standard library strings package (for example Contains,
-// HasPrefix, ReplaceAll, TrimSpace). These wrappers do not change semantics.
+// HasPrefix, ReplaceAll, TrimSpace) or the strcase package (for example
+// ToSnake, ToLowerCamel, ToDelimited). These wrappers do not change semantics.
 //
 // # Convenience helpers
 //
@@ -27,6 +28,9 @@
 //   - CutColon: a small helper that splits on the first ":" using strings.Cut,
 //     returning the part before and after. If ":" is not present, the "after"
 //     return value is empty.
+//
+//   - ToSnake / ToLowerCamel / ToDelimited: common string case conversion
+//     helpers delegated to strcase.
 //
 // # Constants
 //

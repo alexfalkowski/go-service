@@ -3,15 +3,12 @@ package meta
 import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/strings"
-	"github.com/iancoleman/strcase"
 )
 
-const (
-	// NoPrefix is a convenience constant for passing an empty prefix to export helpers.
-	NoPrefix = strings.Empty
+// NoPrefix is a convenience constant for passing an empty prefix to export helpers.
+const NoPrefix = strings.Empty
 
-	meta = context.Key("meta")
-)
+const meta = context.Key("meta")
 
 // WithAttributes returns a copy of ctx with all provided attributes stored.
 //
@@ -44,7 +41,7 @@ type Map map[string]string
 // The prefix parameter is prepended to each exported key (if non-empty).
 // Attributes whose rendered value is empty are skipped.
 func SnakeStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strcase.ToSnake)
+	return attributes(ctx).Strings(prefix, strings.ToSnake)
 }
 
 // CamelStrings returns all stored attributes as a string map with lowerCamelCased keys.
@@ -52,7 +49,7 @@ func SnakeStrings(ctx context.Context, prefix string) Map {
 // The prefix parameter is prepended to each exported key (if non-empty).
 // Attributes whose rendered value is empty are skipped.
 func CamelStrings(ctx context.Context, prefix string) Map {
-	return attributes(ctx).Strings(prefix, strcase.ToLowerCamel)
+	return attributes(ctx).Strings(prefix, strings.ToLowerCamel)
 }
 
 // Strings returns all stored attributes as a string map with keys unchanged.
