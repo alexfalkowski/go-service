@@ -141,6 +141,16 @@ func serveFile(res http.ResponseWriter, name string) {
 	}
 	defer f.Close()
 
+	info, err := f.Stat()
+	if err != nil {
+		res.WriteHeader(staticStatusCode(err))
+		return
+	}
+	if info.IsDir() {
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	setStaticContentType(res, name)
 	res.WriteHeader(http.StatusOK)
 	_, _ = io.Copy(res, f)
