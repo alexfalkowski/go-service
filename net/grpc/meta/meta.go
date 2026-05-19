@@ -59,6 +59,13 @@ func WithUserAgent(value meta.Value) Pair {
 	return meta.WithUserAgent(value)
 }
 
+// UserAgent returns the user agent attribute stored on ctx.
+//
+// If no value is present, it returns the zero-value meta.Value.
+func UserAgent(ctx context.Context) meta.Value {
+	return meta.UserAgent(ctx)
+}
+
 // WithUserID creates a user ID pair for WithAttributes.
 func WithUserID(value meta.Value) Pair {
 	return meta.WithUserID(value)

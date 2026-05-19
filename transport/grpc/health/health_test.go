@@ -153,6 +153,37 @@ func TestWatch(t *testing.T) {
 	requireWatchStaysOpen(t, cancel, wc)
 }
 
+func TestWatchServerLimiter(t *testing.T) {
+	world := newGRPCHealthWorld(t, test.StatusURL("200"),
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
+	)
+	requireGRPCReady(t, world)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := health.NewClient(conn)
+	req := &health.Request{Service: test.Name.String()}
+
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+
+	wc, err := client.Watch(ctx, req)
+	require.NoError(t, err)
+
+	resp, err := wc.Recv()
+	require.NoError(t, err)
+	require.Equal(t, health.Serving, resp.GetStatus())
+
+	rejected, err := client.Watch(t.Context(), req)
+	if err == nil {
+		_, err = rejected.Recv()
+	}
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
 func TestInvalidWatch(t *testing.T) {
 	world := newGRPCHealthWorld(t, test.StatusURL("500"), test.WithWorldTelemetry("otlp"))
 	requireGRPCReady(t, world)

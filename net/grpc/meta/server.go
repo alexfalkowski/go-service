@@ -19,7 +19,7 @@ import (
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that extracts metadata into the context.
 //
-// Requests with ignorable methods bypass extraction.
+// Requests with ignorable unary methods bypass extraction.
 //
 // For non-ignored methods, the interceptor:
 //
@@ -70,19 +70,15 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that extracts metadata into the stream context.
 //
-// Requests with ignorable methods bypass extraction.
+// Stream methods always run metadata extraction. This keeps long-lived operation streams, such as health Watch,
+// visible to downstream stream interceptors that need request metadata for resource controls.
 //
-// For non-ignored methods, the interceptor performs the same metadata-to-context
-// projection as [UnaryServerInterceptor], but applies it to the wrapped stream
-// context and emits response headers through the stream API.
+// The interceptor performs the same metadata-to-context projection as [UnaryServerInterceptor], but applies it to
+// the wrapped stream context and emits response headers through the stream API.
 func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, generator id.Generator) grpc.StreamServerInterceptor {
 	serviceVersion := version.String()
 
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsOperationMethod(info.FullMethod) {
-			return handler(srv, stream)
-		}
-
 		ctx := stream.Context()
 		ua := serverUserAgent(ctx, userAgent)
 
@@ -91,9 +87,17 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 		kind, ip := serverIPAddr(ctx)
 		geolocation := serverGeolocation(ctx)
 
-		auth, err := serverAuthorization(ctx)
-		if err != nil {
-			return status.SafeError(codes.InvalidArgument, err)
+		// Operation streams still need metadata for limiting, but they keep the same auth bypass as unary
+		// operation methods.
+		var auth meta.Value
+		if strings.IsOperationMethod(info.FullMethod) {
+			auth = meta.Blank()
+		} else {
+			a, err := serverAuthorization(ctx)
+			if err != nil {
+				return status.SafeError(codes.InvalidArgument, err)
+			}
+			auth = a
 		}
 		ctx = meta.WithAttributes(ctx,
 			meta.WithUserAgent(ua),
