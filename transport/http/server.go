@@ -86,9 +86,10 @@ type ServerParams struct {
 // The server is built using Negroni and composes middleware in this order (first listed runs first):
 //   - metadata extraction/injection and response headers (`net/http/meta`)
 //   - optional logging (`transport/http/telemetry/logger`) when `params.Logger` is non-nil
-//   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
 //   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
+//   - inbound request body size limiting (`transport/http/body`)
+//   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the mux not-found handler (`gzhttp.GzipHandler(http.NewNotFoundHandler(...))`)
 //
 // Token verification and rate limiting middleware typically treat "ignorable" paths (health/metrics/etc.)
@@ -118,12 +119,6 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(logger.NewHandler(params.Logger))
 	}
 
-	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))
-
-	for _, hd := range params.Handlers {
-		neg.Use(hd)
-	}
-
 	if params.Verifier != nil {
 		neg.Use(token.NewHandler(params.UserID, params.Verifier))
 	}
@@ -132,10 +127,16 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(limiter.NewHandler(params.Limiter))
 	}
 
+	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))
+
+	for _, hd := range params.Handlers {
+		neg.Use(hd)
+	}
+
 	handler := http.NewNotFoundHandler(params.Mux, params.Pool, mvc.NotFoundHandler(), content.NotFoundHandler())
 	neg.UseHandler(gzhttp.GzipHandler(handler))
 
-	httpServer := http.NewServer(params.Config.Options, params.Config.Timeout, neg)
+	httpServer := http.NewServer(params.Config.Options, params.Config.GetTimeout(), neg)
 
 	cfg, err := newConfig(fs, params.Config)
 	if err != nil {

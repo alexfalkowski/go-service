@@ -11,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,6 +29,24 @@ func TestGetMaxReceiveSize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			require.Equal(t, tt.want, tt.cfg.GetMaxReceiveSize())
+		})
+	}
+}
+
+func TestGetTimeout(t *testing.T) {
+	tests := []struct {
+		cfg  *server.Config
+		name string
+		want time.Duration
+	}{
+		{name: "nil", want: server.DefaultTimeout},
+		{name: "zero", cfg: &server.Config{}, want: server.DefaultTimeout},
+		{name: "explicit", cfg: &server.Config{Timeout: 5 * time.Second}, want: 5 * time.Second},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, tt.cfg.GetTimeout())
 		})
 	}
 }

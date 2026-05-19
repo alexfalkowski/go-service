@@ -26,6 +26,20 @@ func TestServerLimiterUnary(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
+func TestServerLimiterStream(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_ = sayStreamHello(t, client)
+	err := sayStreamHello(t, client)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
 func TestClientLimiterUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
 
@@ -37,6 +51,20 @@ func TestClientLimiterUnary(t *testing.T) {
 
 	_, _ = client.SayHello(t.Context(), req)
 	_, err := client.SayHello(t.Context(), req)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
+}
+
+func TestClientLimiterStream(t *testing.T) {
+	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldClientLimiter(test.NewLimiterConfig("user-agent", "1s", 0)), test.WithWorldGRPC())
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	_ = sayStreamHello(t, client)
+	err := sayStreamHello(t, client)
 	require.Error(t, err)
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
@@ -60,6 +88,23 @@ func TestClientLimiterUsesGeneratedTokenUnary(t *testing.T) {
 
 	_, err = client.SayHello(t.Context(), req)
 	require.NoError(t, err)
+}
+
+func TestClientLimiterUsesGeneratedTokenStream(t *testing.T) {
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldToken(&sequenceGenerator{}, acceptingVerifier{}),
+		test.WithWorldGRPC(),
+	)
+
+	conn := requireGRPCConn(t, world)
+	defer conn.Close()
+
+	client := v1.NewGreeterServiceClient(conn)
+
+	require.NoError(t, sayStreamHello(t, client))
+	require.NoError(t, sayStreamHello(t, client))
 }
 
 func TestLimiterUnlimitedUnary(t *testing.T) {
@@ -134,6 +179,22 @@ func TestClientClosedLimiterUnary(t *testing.T) {
 	_, err := client.SayHello(t.Context(), req)
 	require.Error(t, err)
 	require.Equal(t, codes.Internal, status.Code(err))
+}
+
+func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {
+	t.Helper()
+
+	stream, err := client.SayStreamHello(t.Context())
+	if err != nil {
+		return err
+	}
+
+	if err := stream.Send(&v1.SayStreamHelloRequest{Name: "test"}); err != nil {
+		return err
+	}
+
+	_, err = stream.Recv()
+	return err
 }
 
 type sequenceGenerator struct {

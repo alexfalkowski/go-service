@@ -3,5 +3,6 @@
 // This package integrates rate limiting into gRPC servers (server-side interceptors) and gRPC clients
 // (client-side interceptors).
 //
-// Start with `UnaryServerInterceptor` for server-side limiting and `UnaryClientInterceptor` for client-side limiting.
+// Start with `UnaryServerInterceptor` or `StreamServerInterceptor` for server-side limiting and
+// `UnaryClientInterceptor` or `StreamClientInterceptor` for client-side limiting.
 package limiter

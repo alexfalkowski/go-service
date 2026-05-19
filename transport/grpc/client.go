@@ -198,8 +198,8 @@ func WithClientID(generator id.Generator) ClientOption {
 
 // WithClientLimiter enables client-side rate limiting interceptors.
 //
-// When configured, unary client calls are rate-limited before being sent. If limiter is nil, rate limiting
-// is not enabled.
+// When configured, unary client calls and streams are rate-limited before being sent. If limiter is nil,
+// rate limiting is not enabled.
 func WithClientLimiter(limiter *limiter.Client) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.limiter = limiter
@@ -339,6 +339,10 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 	}
 
 	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
+	if opts.limiter != nil {
+		stream = append(stream, limiter.StreamClientInterceptor(opts.limiter))
+	}
+
 	return grpc.WithChainStreamInterceptor(stream...)
 }
 

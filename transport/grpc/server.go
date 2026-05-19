@@ -30,7 +30,7 @@ import (
 //
 // Optional fields:
 //   - `Logger`: enables server-side RPC outcome logging when non-nil.
-//   - `Limiter`: enables server-side unary rate limiting when non-nil.
+//   - `Limiter`: enables server-side rate limiting when non-nil.
 //   - `Verifier`: enables server-side token verification when non-nil.
 //   - `Unary`/`Stream`: allow callers to inject additional interceptors (and are optional in DI).
 type ServerParams struct {
@@ -57,7 +57,7 @@ type ServerParams struct {
 	// ID generates request IDs when one is not already present.
 	ID id.Generator
 
-	// Limiter enables server-side unary rate limiting when non-nil.
+	// Limiter enables server-side rate limiting when non-nil.
 	Limiter *limiter.Server
 
 	// Verifier enables server-side token verification when non-nil.
@@ -80,7 +80,7 @@ type ServerParams struct {
 //   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
 //     token verification, and rate limiting, followed by any user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging
-//     and token verification, followed by any user-provided interceptors.
+//     token verification, and rate limiting, followed by any user-provided interceptors.
 //
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
@@ -112,7 +112,7 @@ func NewServer(params ServerParams) (*Server, error) {
 		options = append(options, grpc.StatsHandler(telemetry.NewServerHandler()))
 	}
 
-	grpcServer := grpc.NewServer(params.Config.Options, params.Config.Timeout, options...)
+	grpcServer := grpc.NewServer(params.Config.Options, params.Config.GetTimeout(), options...)
 	cfg := &config.Config{Address: cmp.Or(params.Config.Address, net.DefaultAddress("9090"))}
 
 	service, err := grpcserver.NewService("grpc", grpcServer, cfg, params.Logger, params.Shutdowner)
@@ -185,6 +185,10 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 
 	if params.Verifier != nil {
 		sis = append(sis, token.StreamServerInterceptor(params.UserID, params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		sis = append(sis, limiter.StreamServerInterceptor(params.Limiter))
 	}
 
 	sis = append(sis, interceptors...)

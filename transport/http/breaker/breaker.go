@@ -25,6 +25,8 @@ type Settings = breaker.Settings
 //
 // A separate circuit breaker is maintained per request key: "<METHOD> <HOST>". The host is derived from
 // `req.URL.Host`, falling back to `req.Host` (and finally "unknown"). This isolates failures per upstream.
+// Breaker keys are retained for the lifetime of the RoundTripper, so this wrapper is intended for a small,
+// bounded set of service-to-service upstream hosts rather than arbitrary user-supplied destinations.
 //
 // # Failure accounting and error semantics
 //
@@ -53,6 +55,7 @@ func NewRoundTripper(hrt http.RoundTripper, options ...Option) *RoundTripper {
 //
 // Breakers are cached per request key (method + host) so each upstream is isolated. Breakers are created lazily
 // on first use and then reused for subsequent requests to the same key.
+// The cache does not evict entries; callers should use this wrapper with bounded upstream host sets.
 //
 // Use `NewRoundTripper` to construct instances with the desired settings and failure classification behavior.
 type RoundTripper struct {
@@ -109,5 +112,8 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 }
 
 func requestKey(req *http.Request) string {
+	// Breaker keys are intentionally stable per method and upstream host. They
+	// are retained for the RoundTripper lifetime, so callers should avoid using
+	// breaker-enabled clients for arbitrary high-cardinality destinations.
 	return strings.Join(" ", req.Method, cmp.Or(req.URL.Host, req.Host, "unknown"))
 }

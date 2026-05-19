@@ -5,6 +5,9 @@
 // # Breaker scope
 //
 // Breakers are maintained per request key (method + host), so each upstream is isolated.
+// Breaker keys are retained for the lifetime of the RoundTripper. This is intended for service-to-service
+// clients with a small, bounded set of configured upstream hosts. Avoid enabling this wrapper for clients that
+// call arbitrary user-supplied or otherwise high-cardinality hosts unless the caller bounds that host set.
 //
 // # Failure accounting vs caller behavior
 //
