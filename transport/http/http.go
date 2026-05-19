@@ -136,11 +136,6 @@ func Handle(mux *ServeMux, pattern string, handler Handler) {
 	http.Handle(mux, pattern, handler)
 }
 
-// StatusText returns the standard HTTP status text for the given status code.
-func StatusText(code int) string {
-	return http.StatusText(code)
-}
-
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.
 func ParseServiceMethod(req *Request) (string, string) {
 	return http.ParseServiceMethod(req)

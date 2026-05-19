@@ -71,7 +71,7 @@ func TestInvalidHealth(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-	require.Equal(t, http.StatusText(http.StatusServiceUnavailable), body)
+	require.Equal(t, "http: service unavailable", body)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header.Get(content.TypeKey))
 }
 

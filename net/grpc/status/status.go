@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"google.golang.org/grpc/status"
 )
 
@@ -71,16 +72,16 @@ func Errorf(c codes.Code, format string, a ...any) error {
 	return Error(c, fmt.Sprintf(format, a...))
 }
 
-// SafeError wraps err with c and the standard status text that is safe to send to clients.
+// SafeError wraps err with c and a safe gRPC-prefixed status message that is safe to send to clients.
 //
-// The wrapped error remains available through Unwrap for internal inspection, while gRPC sends StatusText(c) instead
+// The wrapped error remains available through Unwrap for internal inspection, while gRPC sends the safe message instead
 // of err.Error(). If c is codes.OK, SafeError returns nil to preserve upstream gRPC status invariants.
 func SafeError(c codes.Code, err error) error {
 	if c == codes.OK {
 		return nil
 	}
 
-	return &statusError{code: c, msg: codes.StatusText(c), err: err}
+	return &statusError{code: c, msg: defaultSafeMessage(c), err: err}
 }
 
 type statusError struct {
@@ -124,4 +125,8 @@ func (s *statusError) Is(target error) bool {
 // Unwrap returns the wrapped cause, if any.
 func (s *statusError) Unwrap() error {
 	return s.err
+}
+
+func defaultSafeMessage(c codes.Code) string {
+	return "grpc: " + strings.ToLower(strings.ToDelimited(codes.StatusText(c), ' '))
 }

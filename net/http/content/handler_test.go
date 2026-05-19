@@ -82,7 +82,7 @@ func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 
 	require.Equal(t, http.StatusInternalServerError, res.Code)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
-	require.Equal(t, http.StatusText(http.StatusInternalServerError)+"\n", res.Body.String())
+	require.Equal(t, "http: internal server error", strings.TrimSpace(res.Body.String()))
 	require.NotContains(t, res.Body.String(), "partial")
 }
 
@@ -93,7 +93,7 @@ func TestNotFoundHandlerWritesStatusError(t *testing.T) {
 	require.True(t, content.NotFoundHandler()(res, req))
 	require.Equal(t, http.StatusNotFound, res.Code)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
-	require.Equal(t, "Not Found\n", res.Body.String())
+	require.Equal(t, "http: not found", strings.TrimSpace(res.Body.String()))
 }
 
 type partialEncoder struct{}
