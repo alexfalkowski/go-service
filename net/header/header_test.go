@@ -34,6 +34,23 @@ func TestMissingParseBearer(t *testing.T) {
 	require.ErrorIs(t, err, header.ErrInvalidAuthorization)
 }
 
+func TestParseBearerRejectsEmptyToken(t *testing.T) {
+	tests := []struct {
+		header string
+		name   string
+	}{
+		{name: "empty", header: "Bearer "},
+		{name: "whitespace", header: "Bearer \t"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := header.ParseBearer(tt.header)
+			require.ErrorIs(t, err, header.ErrInvalidAuthorization)
+		})
+	}
+}
+
 func TestNotSupportedParseBearer(t *testing.T) {
 	_, err := header.ParseBearer("Bob token")
 	require.ErrorIs(t, err, header.ErrNotSupportedAuthorization)

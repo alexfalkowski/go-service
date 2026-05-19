@@ -61,6 +61,7 @@ type ForwardedIP struct {
 //
 // Error behavior:
 //   - If the header cannot be split into two parts on the first ASCII space, it returns ErrInvalidAuthorization.
+//   - If the parsed value is empty, it returns ErrInvalidAuthorization.
 //   - If the parsed scheme is not Bearer, it returns ErrNotSupportedAuthorization.
 //
 // On error, the returned value is an empty string.
@@ -72,6 +73,11 @@ func ParseBearer(header string) (string, error) {
 
 	if strings.ToLower(key) != strings.ToLower(BearerAuthorization) {
 		return strings.Empty, ErrNotSupportedAuthorization
+	}
+
+	value = strings.TrimSpace(value)
+	if strings.IsEmpty(value) {
+		return strings.Empty, ErrInvalidAuthorization
 	}
 
 	return value, nil
