@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
 	config "github.com/alexfalkowski/go-service/v2/transport/retry"
 	"github.com/alexfalkowski/go-sync"
@@ -26,7 +27,7 @@ type Config = config.Config
 //
 // This sentinel is used when the retry policy decides a response should be retried but does not provide
 // a more specific error value. In practice this happens for retryable HTTP response codes such as
-// `429 Too Many Requests` or retryable `5xx` responses.
+// `429 Too Many Requests` or `503 Service Unavailable`.
 var ErrInvalidStatusCode = errors.New("retry: invalid status code")
 
 // ErrAttemptTimeout is the cause recorded when a retry attempt times out.
@@ -36,7 +37,8 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //
 // The constructed RoundTripper wraps hrt and, for each request:
 //   - applies a per-attempt timeout derived from `cfg.Timeout`, and
-//   - retries when `retryablehttp.DefaultRetryPolicy` deems the response/error retryable, and
+//   - retries responses and status errors with retryable HTTP status codes, and
+//   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
 //   - waits a constant backoff derived from `cfg.Backoff` between attempts.
 //
 // Attempts/backoff:
@@ -58,7 +60,8 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 // Each attempt:
 //   - runs the underlying `RoundTrip` with a derived per-attempt timeout,
 //   - re-creates the request body for subsequent attempts when `req.GetBody` is available, and
-//   - asks `retryablehttp.DefaultRetryPolicy` whether the result should be retried.
+//   - retries only selected HTTP status codes for responses and status errors.
+//   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`.
 //
 // Important:
 // Many HTTP requests are not safe to retry unless they are idempotent or the server supports safe retries.
@@ -74,7 +77,8 @@ type RoundTripper struct {
 // For each attempt:
 //   - it derives a child context with a timeout (`r.timeout`) and executes the underlying RoundTripper with it,
 //   - it clones the request and replays the body when needed,
-//   - it asks `retryablehttp.DefaultRetryPolicy` whether the response/error is retryable, and
+//   - it checks whether the response/status error carries a retryable HTTP status code, and
+//   - it uses `retryablehttp.DefaultRetryPolicy` for transport error classification, and
 //   - if retryable, it returns a retryable error (`retry.RetryableError`) so the backoff schedules another attempt.
 //
 // When the policy deems the result non-retryable, RoundTrip returns the response/error as produced by the
@@ -157,7 +161,7 @@ func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*htt
 }
 
 func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error) error {
-	ok, retryErr := retryable.DefaultRetryPolicy(ctx, res, err)
+	ok, retryErr := shouldRetryAttempt(ctx, res, err)
 	if !ok {
 		return nil
 	}
@@ -173,6 +177,34 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 
 	a.keepFirst(res)
 	return retry.RetryableError(responseError{resp: a.first, err: retryErr})
+}
+
+func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+
+	if isTransportError(res, err) {
+		return retryable.DefaultRetryPolicy(ctx, res, err)
+	}
+
+	if err != nil {
+		return isRetryableStatusCode(status.Code(err)), err
+	}
+
+	if res == nil {
+		return false, nil
+	}
+
+	return isRetryableStatusCode(res.StatusCode), nil
+}
+
+func isRetryableStatusCode(code int) bool {
+	return code == http.StatusTooManyRequests || code == http.StatusServiceUnavailable
+}
+
+func isTransportError(res *http.Response, err error) bool {
+	return res == nil && err != nil && !status.IsError(err)
 }
 
 func canRetry(req *http.Request) bool {

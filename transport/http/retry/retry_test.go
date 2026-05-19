@@ -63,6 +63,22 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, rt.calls)
 }
 
+func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
+	rt := &roundTripper{codes: []int{http.StatusInternalServerError, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, 1, rt.calls)
+}
+
 func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
 	rt := &roundTripper{codes: []int{http.StatusTooManyRequests, http.StatusTooManyRequests}}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -113,7 +129,7 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
 }
 
@@ -135,7 +151,7 @@ func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
 
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.True(t, rt.firstUsedOriginal)
 	require.True(t, body.closed)
 	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
@@ -155,11 +171,11 @@ func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
-	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 	require.Equal(t, []string{"hello"}, rt.bodies)
 }
 
-func TestRoundTripperPreservesRetryableTransportError(t *testing.T) {
+func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	rt := &errorRoundTripper{err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
@@ -174,6 +190,40 @@ func TestRoundTripperPreservesRetryableTransportError(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, http.StatusTooManyRequests, status.Code(err))
 	require.Equal(t, 2, rt.calls)
+}
+
+func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
+	wantErr := io.ErrUnexpectedEOF
+	rt := &errorRoundTripper{err: wantErr}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, wantErr)
+	require.Equal(t, 2, rt.calls)
+}
+
+func TestRoundTripperDoesNotRetryUnhandledTransportError(t *testing.T) {
+	rt := &errorRoundTripper{err: status.Errorf(http.StatusInternalServerError, "internal")}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.Nil(t, res)
+	require.Error(t, err)
+	require.Equal(t, http.StatusInternalServerError, status.Code(err))
+	require.Equal(t, 1, rt.calls)
 }
 
 func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testing.T) {
@@ -276,8 +326,8 @@ func (r *requestRoundTripper) RoundTrip(req *http.Request) (*http.Response, erro
 	r.bodies = append(r.bodies, string(body))
 
 	return &http.Response{
-		StatusCode: http.StatusInternalServerError,
-		Status:     fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)),
+		StatusCode: http.StatusServiceUnavailable,
+		Status:     fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable)),
 		Body:       http.NoBody,
 		Header:     make(http.Header),
 	}, nil
@@ -307,8 +357,8 @@ func (r *originalBodyRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 	r.bodies = append(r.bodies, string(body))
 
 	return &http.Response{
-		StatusCode: http.StatusInternalServerError,
-		Status:     fmt.Sprintf("%d %s", http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError)),
+		StatusCode: http.StatusServiceUnavailable,
+		Status:     fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable)),
 		Body:       http.NoBody,
 		Header:     make(http.Header),
 	}, nil
