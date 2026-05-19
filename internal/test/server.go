@@ -61,7 +61,7 @@ func (s *Server) Register() error {
 			Limiter:  s.HTTPLimiter,
 			Handlers: []http.ChainedHandler{&EmptyHandler{}},
 			Verifier: s.Verifier, ID: s.Generator, UserID: UserID,
-			UserAgent: UserAgent, Version: Version,
+			Name: Name, UserAgent: UserAgent, Version: Version,
 		}
 
 		httpServer, err := http.NewServer(params)

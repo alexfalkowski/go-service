@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"github.com/alexfalkowski/go-service/v2/di"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
@@ -41,13 +42,14 @@ type Server struct {
 // NewHandler constructs a server-side rate limiting Negroni handler.
 //
 // Callers should only install this handler when limiter is non-nil.
-func NewHandler(limiter *Server) *Handler {
-	return &Handler{limiter: limiter}
+func NewHandler(name env.Name, limiter *Server) *Handler {
+	return &Handler{name: name, limiter: limiter}
 }
 
 // Handler applies server-side rate limiting.
 type Handler struct {
 	limiter *Server
+	name    env.Name
 }
 
 // ServeHTTP enforces the configured limiter.
@@ -60,7 +62,7 @@ type Handler struct {
 //   - If the request is not allowed, it writes an HTTP 429 response.
 //   - Otherwise it calls next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsIgnorable(req.URL.Path) {
+	if strings.IsOperationPath(h.name, req.URL.Path) {
 		next(res, req)
 		return
 	}

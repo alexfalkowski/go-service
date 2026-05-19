@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/strings"
@@ -19,13 +20,14 @@ type Logger = logger.Logger
 //
 // The returned handler logs the outcome of each request after next has completed, including duration
 // and response status code. Ignorable paths (health/metrics/etc.) are skipped.
-func NewHandler(logger *Logger) *Handler {
-	return &Handler{logger: logger}
+func NewHandler(name env.Name, logger *Logger) *Handler {
+	return &Handler{name: name, logger: logger}
 }
 
 // Handler logs HTTP server requests and responses.
 type Handler struct {
 	logger *Logger
+	name   env.Name
 }
 
 // ServeHTTP logs the request outcome after next completes.
@@ -43,7 +45,7 @@ type Handler struct {
 //   - 5xx → error
 //   - otherwise → info
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsIgnorable(req.URL.Path) {
+	if strings.IsOperationPath(h.name, req.URL.Path) {
 		next(res, req)
 		return
 	}
