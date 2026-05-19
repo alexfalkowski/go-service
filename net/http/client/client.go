@@ -241,10 +241,15 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	// The server handlers return text/error to indicate an error.
 	media := c.content.NewFromMedia(contentType)
 	if media.IsError() {
-		return status.Error(response.StatusCode, strings.TrimSpace(buffer.String()))
+		code := response.StatusCode
+		if !isErrorStatus(code) {
+			code = http.StatusInternalServerError
+		}
+
+		return status.Error(code, strings.TrimSpace(buffer.String()))
 	}
 
-	if response.StatusCode >= 400 && response.StatusCode <= 599 {
+	if isErrorStatus(response.StatusCode) {
 		return status.Error(response.StatusCode, strings.ToLower(http.StatusText(response.StatusCode)))
 	}
 
@@ -255,6 +260,10 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	return nil
+}
+
+func isErrorStatus(code int) bool {
+	return code >= 400 && code <= 599
 }
 
 func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
