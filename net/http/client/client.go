@@ -3,8 +3,10 @@ package client
 import (
 	"cmp"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
@@ -12,6 +14,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-sync"
 )
+
+// DefaultMaxResponseSize is the default outbound response body limit.
+const DefaultMaxResponseSize bytes.Size = 4 * bytes.MB
 
 // ClientOption configures the HTTP client wrapper constructed by NewClient.
 //
@@ -22,9 +27,10 @@ type ClientOption interface {
 }
 
 type clientOpts struct {
-	roundTripper   http.RoundTripper
-	timeout        time.Duration
-	ignoreRedirect bool
+	roundTripper    http.RoundTripper
+	timeout         time.Duration
+	maxResponseSize bytes.Size
+	ignoreRedirect  bool
 }
 
 type clientOptionFunc func(*clientOpts)
@@ -57,6 +63,15 @@ func WithTimeout(timeout time.Duration) ClientOption {
 	})
 }
 
+// WithMaxResponseSize sets the maximum response body size buffered by Client.Do.
+//
+// If not provided, NewClient defaults to DefaultMaxResponseSize.
+func WithMaxResponseSize(size bytes.Size) ClientOption {
+	return clientOptionFunc(func(o *clientOpts) {
+		o.maxResponseSize = size
+	})
+}
+
 // WithIgnoreRedirect disables automatic redirect following.
 //
 // When set, the underlying http.Client.CheckRedirect is configured to return http.ErrUseLastResponse,
@@ -85,7 +100,7 @@ func NewClient(content *content.Content, pool *sync.BufferPool, opts ...ClientOp
 		}
 	}
 
-	return &Client{client: client, content: content, pool: pool}
+	return &Client{client: client, content: content, pool: pool, maxResponseSize: os.maxResponseSize.Bytes()}
 }
 
 // Options describes the request/response payloads and content type for a single call.
@@ -125,9 +140,10 @@ func (o Options) HasResponse() bool {
 // It is intended for service-to-service calls where payload formats are selected by Content-Type.
 // The Client uses a shared buffer pool to reduce allocations when encoding/decoding bodies.
 type Client struct {
-	client  *http.Client
-	content *content.Content
-	pool    *sync.BufferPool
+	client          *http.Client
+	content         *content.Content
+	pool            *sync.BufferPool
+	maxResponseSize int64
 }
 
 // Delete issues an HTTP DELETE request to url using opts.
@@ -175,7 +191,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //   - The request Content-Type header is set to the negotiated media type.
 //
 // Response handling:
-//   - The full response body is read into an internal buffer.
+//   - The response body is read into an internal buffer up to the configured response size limit.
 //   - If the response Content-Type indicates an error payload (text/error), the body is treated as an
 //     error message and returned as a net/http/status error.
 //   - Otherwise, if the status code is in the 4xx/5xx range, a generic status error is returned.
@@ -184,7 +200,7 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //
 // Notes:
 //   - callers may pass the zero Options value when no request/response bodies are needed.
-//   - This method buffers the entire response body in memory.
+//   - This method buffers response bodies in memory up to the configured limit.
 //
 //nolint:cyclop
 func (c *Client) Do(ctx context.Context, method, url string, opts Options) error {
@@ -215,9 +231,8 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 
 	buffer.Reset()
 
-	_, err = buffer.ReadFrom(response.Body)
-	if err != nil {
-		return errors.Prefix("http: copy", err)
+	if err := c.readResponse(buffer, response.Body); err != nil {
+		return err
 	}
 
 	// If for some reason the server does not return it, default to opts.
@@ -242,6 +257,19 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	return nil
 }
 
+func (c *Client) readResponse(buffer *bytes.Buffer, body io.Reader) error {
+	_, err := buffer.ReadFrom(io.LimitReader(body, c.maxResponseSize+1))
+	if err != nil {
+		return errors.Prefix("http: copy", err)
+	}
+
+	if int64(buffer.Len()) > c.maxResponseSize {
+		return errors.Prefix("http: response", status.Error(http.StatusRequestEntityTooLarge, strings.ToLower(http.StatusText(http.StatusRequestEntityTooLarge))))
+	}
+
+	return nil
+}
+
 func options(opts ...ClientOption) *clientOpts {
 	os := &clientOpts{}
 	for _, o := range opts {
@@ -250,6 +278,10 @@ func options(opts ...ClientOption) *clientOpts {
 
 	if os.timeout == 0 {
 		os.timeout = 30 * time.Second
+	}
+
+	if os.maxResponseSize <= 0 {
+		os.maxResponseSize = DefaultMaxResponseSize
 	}
 
 	if os.roundTripper == nil {
