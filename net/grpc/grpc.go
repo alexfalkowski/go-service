@@ -380,6 +380,8 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 	os = append(os, opts...)
 
 	server := grpc.NewServer(os...)
+	// security: reflection is intentionally always enabled for go-service
+	// servers so internal tooling can discover registered services.
 	reflection.Register(server)
 
 	return server
