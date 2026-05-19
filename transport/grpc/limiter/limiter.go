@@ -74,6 +74,39 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	}
 }
 
+// StreamServerInterceptor returns a gRPC stream server interceptor that enforces rate limiting.
+//
+// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsIgnorable`).
+//
+// On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
+//
+//   - If `Take` returns an error, the interceptor returns `codes.Internal`.
+//   - If `Take` returns a header string, it is attached to response metadata as the "ratelimit" header.
+//   - If the stream is not allowed, the interceptor returns `codes.ResourceExhausted`.
+//   - Otherwise, it invokes the handler.
+//
+// Callers should only install this interceptor when limiter is non-nil.
+func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		if strings.IsIgnorable(info.FullMethod) {
+			return handler(srv, stream)
+		}
+
+		ok, header, err := limiter.Take(stream.Context())
+		if err != nil {
+			return status.SafeError(codes.Internal, err)
+		}
+
+		_ = stream.SetHeader(meta.Pairs("ratelimit", header))
+
+		if !ok {
+			return status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
+		}
+
+		return handler(srv, stream)
+	}
+}
+
 // NewClientLimiter constructs a gRPC client-side rate limiter.
 //
 // If cfg is disabled, it returns (nil, nil) so callers can treat the limiter as not configured.
@@ -119,5 +152,29 @@ func UnaryClientInterceptor(limiter *Client) grpc.UnaryClientInterceptor {
 		}
 
 		return invoker(ctx, fullMethod, req, resp, conn, opts...)
+	}
+}
+
+// StreamClientInterceptor returns a gRPC stream client interceptor that enforces rate limiting.
+//
+// The interceptor calls `limiter.Take(ctx)` before opening the stream:
+//
+//   - If `Take` returns an error, it returns `codes.Internal`.
+//   - If the stream is not allowed, it returns `codes.ResourceExhausted`.
+//   - Otherwise, it invokes the underlying `streamer`.
+//
+// Callers should only install this interceptor when limiter is non-nil.
+func StreamClientInterceptor(limiter *Client) grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		ok, _, err := limiter.Take(ctx)
+		if err != nil {
+			return nil, status.SafeError(codes.Internal, err)
+		}
+
+		if !ok {
+			return nil, status.Error(codes.ResourceExhausted, grpc.StatusText(codes.ResourceExhausted))
+		}
+
+		return streamer(ctx, desc, conn, fullMethod, opts...)
 	}
 }

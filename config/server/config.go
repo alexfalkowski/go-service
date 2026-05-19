@@ -14,6 +14,9 @@ import (
 // DefaultMaxReceiveSize is the default inbound payload limit applied when MaxReceiveSize is omitted or zero.
 const DefaultMaxReceiveSize bytes.Size = 4 * bytes.MB
 
+// DefaultTimeout is the default server timeout applied when Timeout is omitted or zero.
+const DefaultTimeout time.Duration = 30 * time.Second
+
 // Config configures server-side behavior shared across transports.
 type Config struct {
 	// Limiter configures server-side request limiting.
@@ -34,6 +37,8 @@ type Config struct {
 	// Timeout is the server request timeout duration.
 	//
 	// In config files it is encoded as a Go duration string (for example "30s", "5m").
+	//
+	// A zero value applies DefaultTimeout.
 	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
 
 	// MaxReceiveSize limits inbound request payload size.
@@ -58,6 +63,17 @@ func (c *Config) GetMaxReceiveSize() bytes.Size {
 	}
 
 	return c.MaxReceiveSize
+}
+
+// GetTimeout returns the configured server timeout.
+//
+// A nil receiver or a zero value falls back to DefaultTimeout.
+func (c *Config) GetTimeout() time.Duration {
+	if c == nil || c.Timeout == 0 {
+		return DefaultTimeout
+	}
+
+	return c.Timeout
 }
 
 // NewConfig constructs a server-side runtime TLS config from cfg.
