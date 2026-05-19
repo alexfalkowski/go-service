@@ -3,6 +3,7 @@ package content
 import (
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/net/http"
+	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-sync"
 )
@@ -43,20 +44,22 @@ type Content struct {
 // If Content-Type is not set, it falls back to the first media type in Accept.
 //
 // If parsing fails, it falls back to JSON.
+// If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromRequest(req *http.Request) Media {
 	mediaType := req.Header.Get(TypeKey)
 	if strings.IsEmpty(mediaType) {
 		mediaType = firstMediaType(req.Header.Get(AcceptKey))
 	}
 
-	return NewMedia(mediaType, c.enc)
+	return c.newRequestMedia(mediaType)
 }
 
 // NewFromContentType parses the request Content-Type header and returns a matching Media.
 //
 // If parsing fails, it falls back to JSON.
+// If the internal error media type is selected, it falls back to plain text.
 func (c *Content) NewFromContentType(req *http.Request) Media {
-	return NewMedia(req.Header.Get(TypeKey), c.enc)
+	return c.newRequestMedia(req.Header.Get(TypeKey))
 }
 
 // NewFromMedia parses mediaType and returns a matching Media.
@@ -69,4 +72,13 @@ func (c *Content) NewFromMedia(mediaType string) Media {
 func firstMediaType(value string) string {
 	mediaType, _, _ := strings.Cut(value, ",")
 	return strings.TrimSpace(mediaType)
+}
+
+func (c *Content) newRequestMedia(mediaType string) Media {
+	m := NewMedia(mediaType, c.enc)
+	if m.IsError() {
+		return newMedia(media.Text, "plain", c.enc)
+	}
+
+	return m
 }

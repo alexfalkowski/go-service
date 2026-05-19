@@ -56,6 +56,16 @@ func TestNewFromRequestFallsBackToAccept(t *testing.T) {
 	require.Same(t, test.Encoder.Get("yaml"), media.Encoder)
 }
 
+func TestNewFromRequestFallsBackFromInternalErrorMedia(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.AcceptKey, media.Error)
+
+	media := test.Content.NewFromRequest(req)
+
+	require.Equal(t, "plain", media.Subtype)
+	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
+}
+
 func TestNewFromContentType(t *testing.T) {
 	for _, tc := range mediaTests() {
 		t.Run(tc.name, func(t *testing.T) {
@@ -70,12 +80,29 @@ func TestNewFromContentType(t *testing.T) {
 	}
 }
 
+func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/hello", nil)
+	req.Header.Set(content.TypeKey, media.Error)
+
+	media := test.Content.NewFromContentType(req)
+
+	require.Equal(t, "plain", media.Subtype)
+	require.Same(t, test.Encoder.Get("plain"), media.Encoder)
+}
+
 func TestNewFromMediaWithParameters(t *testing.T) {
 	media := test.Content.NewFromMedia("application/json; profile=test")
 
 	require.Equal(t, "application/json", media.Type)
 	require.Equal(t, "json", media.Subtype)
 	require.Same(t, test.Encoder.Get("json"), media.Encoder)
+}
+
+func TestNewFromMediaPreservesInternalErrorMedia(t *testing.T) {
+	media := test.Content.NewFromMedia(media.Error)
+
+	require.Equal(t, "error", media.Subtype)
+	require.Nil(t, media.Encoder)
 }
 
 type mediaTest struct {

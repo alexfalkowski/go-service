@@ -61,6 +61,13 @@ func LimitReader(r Reader, n int64) Reader {
 	return io.LimitReader(r, n)
 }
 
+// WriteString writes the contents of s to w.
+//
+// This is a thin wrapper around io.WriteString.
+func WriteString(w Writer, s string) (int, error) {
+	return io.WriteString(w, s)
+}
+
 // ReadAll reads all remaining bytes from r and returns:
 //
 //   - the captured bytes, and

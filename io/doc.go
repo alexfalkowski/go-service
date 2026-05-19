@@ -4,7 +4,7 @@
 // io primitives while preserving the exact semantics of the standard library `io` package.
 //
 // Most identifiers in this package are thin aliases/wrappers (for example `Reader`, `Writer`,
-// `ReaderFrom`, `WriterTo`, `ReadCloser`, `Resetter`, and `NopCloser`). They exist so packages within
+// `ReaderFrom`, `WriterTo`, `ReadCloser`, `Resetter`, `NopCloser`, and `WriteString`). They exist so packages within
 // go-service and downstream services can consistently
 // import `github.com/alexfalkowski/go-service/v2/io` without mixing direct stdlib imports across the
 // codebase.
