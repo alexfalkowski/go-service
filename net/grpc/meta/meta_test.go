@@ -117,6 +117,22 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 	require.Equal(t, []string{"generated-id"}, stream.header.Get("request-id"))
 }
 
+func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
+	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs(
+		"authorization", "invalid",
+		"user-agent", "watch-agent",
+	))
+	stream := &serverStream{ctx: ctx}
+
+	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/grpc.health.v1.Health/Watch"}, func(_ any, stream grpc.ServerStream) error {
+		require.Equal(t, meta.String("watch-agent"), meta.UserAgent(stream.Context()))
+
+		return nil
+	})
+	require.NoError(t, err)
+}
+
 func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
 	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs("request-id", "original"))
 

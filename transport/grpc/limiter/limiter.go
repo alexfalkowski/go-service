@@ -43,7 +43,9 @@ type Server struct {
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Operation RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
+// Operation unary RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
+// Stream RPCs do not bypass limiting because long-lived streams, such as health Watch, can hold server resources
+// until the client disconnects.
 //
 // On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
 //
@@ -76,7 +78,8 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that enforces rate limiting.
 //
-// Operation RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
+// Unlike unary RPCs, operation streams are limited. This keeps long-lived streams, such as health Watch, from
+// bypassing the resource controls that protect regular service streams.
 //
 // On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
 //
@@ -87,11 +90,7 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 //
 // Callers should only install this interceptor when limiter is non-nil.
 func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
-	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsOperationMethod(info.FullMethod) {
-			return handler(srv, stream)
-		}
-
+	return func(srv any, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ok, header, err := limiter.Take(stream.Context())
 		if err != nil {
 			return status.SafeError(codes.Internal, err)
