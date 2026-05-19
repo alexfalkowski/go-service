@@ -100,16 +100,7 @@ func StaticFile(pattern, name string) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		buffer := pool.Get()
-		defer pool.Put(buffer)
-
-		if err := writeFile(name, buffer); err != nil {
-			res.WriteHeader(staticStatusCode(err))
-			return
-		}
-
-		setStaticContentType(res, name)
-		writeBuffer(res, http.StatusOK, buffer)
+		serveFile(res, name)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
@@ -128,9 +119,6 @@ func StaticPathValue(pattern, value, prefix string) bool {
 	}
 
 	handler := func(res http.ResponseWriter, req *http.Request) {
-		buffer := pool.Get()
-		defer pool.Put(buffer)
-
 		cleaned := path.Clean(req.PathValue(value))
 		if cleaned == "." || cleaned != req.PathValue(value) || !fs.ValidPath(cleaned) || strings.Contains(cleaned, `\`) {
 			res.WriteHeader(staticStatusCode(status.BadRequestError(fs.ErrInvalid)))
@@ -138,28 +126,24 @@ func StaticPathValue(pattern, value, prefix string) bool {
 		}
 
 		name := path.Join(prefix, cleaned)
-		if err := writeFile(name, buffer); err != nil {
-			res.WriteHeader(staticStatusCode(err))
-			return
-		}
-
-		setStaticContentType(res, name)
-		writeBuffer(res, http.StatusOK, buffer)
+		serveFile(res, name)
 	}
 
 	http.HandleFunc(mux, strings.Join(strings.Space, http.MethodGet, pattern), handler)
 	return true
 }
 
-func writeFile(name string, writer io.Writer) error {
+func serveFile(res http.ResponseWriter, name string) {
 	f, err := fileSystem.Open(name)
 	if err != nil {
-		return err
+		res.WriteHeader(staticStatusCode(err))
+		return
 	}
 	defer f.Close()
 
-	_, err = io.Copy(writer, f)
-	return err
+	setStaticContentType(res, name)
+	res.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(res, f)
 }
 
 func staticStatusCode(err error) int {
