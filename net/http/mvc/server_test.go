@@ -62,6 +62,27 @@ func TestStaticPathValueSetsContentType(t *testing.T) {
 	require.Equal(t, "image/svg+xml", res.Header().Get(content.TypeKey))
 }
 
+func TestStaticPathValueRejectsDirectory(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
+		},
+		Pool:   test.Pool,
+		Layout: test.Layout,
+	})
+	require.True(t, mvc.StaticPathValue("/{file...}", "file", "static"))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/assets", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusNotFound, res.Code)
+}
+
 func TestStaticFileSetsContentType(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
@@ -82,6 +103,27 @@ func TestStaticFileSetsContentType(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, "image/svg+xml", res.Header().Get(content.TypeKey))
+}
+
+func TestStaticFileRejectsDirectory(t *testing.T) {
+	mux := http.NewServeMux()
+	mvc.Register(mvc.RegisterParams{
+		Mux:         mux,
+		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
+		FileSystem: fstest.MapFS{
+			"static/assets": &fstest.MapFile{Mode: fs.ModeDir},
+		},
+		Pool:   test.Pool,
+		Layout: test.Layout,
+	})
+	require.True(t, mvc.StaticFile("/assets", "static/assets"))
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/assets", http.NoBody)
+	res := httptest.NewRecorder()
+
+	mux.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusNotFound, res.Code)
 }
 
 func TestViewRenderReturnsContextError(t *testing.T) {
