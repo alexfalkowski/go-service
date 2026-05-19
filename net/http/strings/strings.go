@@ -3,6 +3,7 @@ package strings
 import (
 	"slices"
 
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
@@ -72,6 +73,25 @@ func IsIgnorable(path string) bool {
 	}
 
 	return slices.Contains(ignorablePaths, last)
+}
+
+// IsOperationPath reports whether path is a service-owned operational endpoint.
+//
+// Matching is exact so application routes such as "/admin/metrics" are not
+// treated as transport operation endpoints for auth or rate-limit bypasses.
+func IsOperationPath(name env.Name, path string) bool {
+	path = strings.Trim(path, "/")
+	service, operation, ok := strings.Cut(path, "/")
+	if !ok || service != name.String() {
+		return false
+	}
+
+	switch operation {
+	case "healthz", "livez", "readyz", "metrics":
+		return true
+	default:
+		return false
+	}
 }
 
 // ToLower is an alias for strings.ToLower.

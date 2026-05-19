@@ -85,6 +85,20 @@ func TestValidAuthUnary(t *testing.T) {
 	require.NotEmpty(t, body)
 }
 
+func TestAuthDoesNotBypassApplicationMetricsPath(t *testing.T) {
+	world := test.NewWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(nil, test.NewVerifier("test")), test.WithWorldHTTP())
+
+	http.HandleFunc(world.ServeMux, "GET /admin/metrics", func(res http.ResponseWriter, _ *http.Request) {
+		_, _ = res.Write([]byte("secret"))
+	})
+	world.Start()
+
+	res, body, err := world.ResponseWithBody(t.Context(), world.PathServerURL("http", "admin/metrics"), http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	require.Equal(t, "http: unauthorized", body)
+}
+
 func TestInvalidAuthUnary(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldToken(test.NewGenerator("bob", nil), test.NewVerifier("test")), test.WithWorldHTTP())
 

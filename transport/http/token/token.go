@@ -74,13 +74,14 @@ type Verifier token.Verifier
 // NewHandler constructs server-side token verification middleware.
 //
 // Callers should only install this handler when verifier is non-nil.
-func NewHandler(id env.UserID, verifier Verifier) *Handler {
-	return &Handler{id: id, verifier: verifier}
+func NewHandler(name env.Name, id env.UserID, verifier Verifier) *Handler {
+	return &Handler{name: name, id: id, verifier: verifier}
 }
 
 // Handler verifies Authorization headers and injects the verified subject into request metadata.
 type Handler struct {
 	verifier Verifier
+	name     env.Name
 	id       env.UserID
 }
 
@@ -97,7 +98,7 @@ type Handler struct {
 //
 // Callers should only install this handler when verifier is non-nil.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsIgnorable(req.URL.Path) {
+	if strings.IsOperationPath(h.name, req.URL.Path) {
 		next(res, req)
 		return
 	}

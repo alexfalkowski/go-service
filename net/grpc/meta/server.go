@@ -39,7 +39,7 @@ func UnaryServerInterceptor(userAgent env.UserAgent, version env.Version, genera
 	serviceVersion := version.String()
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -79,7 +79,7 @@ func StreamServerInterceptor(userAgent env.UserAgent, version env.Version, gener
 	serviceVersion := version.String()
 
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

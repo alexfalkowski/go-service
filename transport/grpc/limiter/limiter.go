@@ -43,7 +43,7 @@ type Server struct {
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that enforces rate limiting.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
 //
 // On every request, the interceptor calls `limiter.Take(ctx)` to determine whether the request is allowed:
 //
@@ -55,7 +55,7 @@ type Server struct {
 // Callers should only install this interceptor when limiter is non-nil.
 func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -76,7 +76,7 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that enforces rate limiting.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass limiting (see `net/grpc/strings.IsOperationMethod`).
 //
 // On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
 //
@@ -88,7 +88,7 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 // Callers should only install this interceptor when limiter is non-nil.
 func StreamServerInterceptor(limiter *Server) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestIsIgnorableFullMethod(t *testing.T) {
+func TestIsOperationMethod(t *testing.T) {
 	tests := []struct {
 		name   string
 		method string
@@ -22,7 +22,7 @@ func TestIsIgnorableFullMethod(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.match, strings.IsIgnorable(tt.method))
+			require.Equal(t, tt.match, strings.IsOperationMethod(tt.method))
 		})
 	}
 }

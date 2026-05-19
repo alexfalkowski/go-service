@@ -52,6 +52,9 @@ type ServerParams struct {
 	// Logger enables HTTP server logging middleware when non-nil.
 	Logger *logger.Logger
 
+	// Name is the service name used to identify service-owned operational endpoints.
+	Name env.Name
+
 	// UserAgent is the service user agent used by metadata middleware.
 	UserAgent env.UserAgent
 
@@ -113,18 +116,18 @@ func NewServer(params ServerParams) (*Server, error) {
 	}
 
 	neg := NewChainedHandlers()
-	neg.Use(meta.NewHandler(params.UserAgent, params.Version, params.ID))
+	neg.Use(meta.NewHandler(params.Name, params.UserAgent, params.Version, params.ID))
 
 	if params.Logger != nil {
-		neg.Use(logger.NewHandler(params.Logger))
+		neg.Use(logger.NewHandler(params.Name, params.Logger))
 	}
 
 	if params.Verifier != nil {
-		neg.Use(token.NewHandler(params.UserID, params.Verifier))
+		neg.Use(token.NewHandler(params.Name, params.UserID, params.Verifier))
 	}
 
 	if params.Limiter != nil {
-		neg.Use(limiter.NewHandler(params.Limiter))
+		neg.Use(limiter.NewHandler(params.Name, params.Limiter))
 	}
 
 	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))

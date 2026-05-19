@@ -54,6 +54,27 @@ func TestServerLimiter(t *testing.T) {
 	}
 }
 
+func TestServerLimiterDoesNotBypassApplicationMetricsPath(t *testing.T) {
+	world := test.NewWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-agent", "1s", 0)),
+		test.WithWorldHTTP(),
+	)
+	http.HandleFunc(world.ServeMux, "GET /admin/metrics", func(res http.ResponseWriter, _ *http.Request) {
+		_, _ = res.Write([]byte("secret"))
+	})
+	world.Start()
+
+	url := world.PathServerURL("http", "admin/metrics")
+	_, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+
+	res, _, err := world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.NotEmpty(t, res.Header.Get("Ratelimit"))
+}
+
 func TestClientLimiter(t *testing.T) {
 	for _, f := range []string{"user-agent", "ip"} {
 		t.Run(f, func(t *testing.T) {

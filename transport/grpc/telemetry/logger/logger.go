@@ -22,7 +22,7 @@ type Logger = logger.Logger
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -34,7 +34,7 @@ type Logger = logger.Logger
 // method name and, when present, error details.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -59,7 +59,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -71,7 +71,7 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 // method name and, when present, error details.
 func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(srv, stream)
 		}
 
@@ -97,7 +97,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 
 // UnaryClientInterceptor returns a gRPC unary client interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -110,7 +110,7 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 // The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		if strings.IsIgnorable(fullMethod) {
+		if strings.IsOperationMethod(fullMethod) {
 			return invoker(ctx, fullMethod, req, resp, conn, opts...)
 		}
 
@@ -135,7 +135,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 
 // StreamClientInterceptor returns a gRPC stream client interceptor that logs the RPC outcome.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
 //
 // Logged attributes include:
 //   - system: "grpc"
@@ -148,7 +148,7 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		if strings.IsIgnorable(fullMethod) {
+		if strings.IsOperationMethod(fullMethod) {
 			return streamer(ctx, desc, conn, fullMethod, opts...)
 		}
 

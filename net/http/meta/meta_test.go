@@ -77,7 +77,7 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 }
 
 func TestHandlerAppendDoesNotOverwriteRequestID(t *testing.T) {
-	handler := meta.NewHandler(env.UserAgent("agent"), env.Version("v1"), staticGenerator("request-id"))
+	handler := meta.NewHandler(env.Name("service"), env.UserAgent("agent"), env.Version("v1"), staticGenerator("request-id"))
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "/test", http.NoBody)
 	require.NoError(t, err)
 	res := httptest.NewRecorder()

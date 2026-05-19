@@ -75,7 +75,7 @@ type Verifier token.Verifier
 
 // UnaryServerInterceptor returns a gRPC unary server interceptor that verifies Authorization tokens.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsOperationMethod`).
 //
 // The interceptor expects an Authorization value to have been extracted into the context by the metadata
 // interceptor (`net/grpc/meta.UnaryServerInterceptor`). It verifies the token using verifier, scoping
@@ -89,7 +89,7 @@ type Verifier token.Verifier
 // Callers should only install this interceptor when verifier is non-nil.
 func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(ctx, req)
 		}
 
@@ -107,7 +107,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 
 // StreamServerInterceptor returns a gRPC stream server interceptor that verifies Authorization tokens.
 //
-// Ignorable RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsIgnorable`).
+// Operation RPC methods (health/metrics/etc.) bypass verification (see `net/grpc/strings.IsOperationMethod`).
 //
 // The interceptor expects an Authorization value to have been extracted into the stream context by the
 // metadata interceptor (`net/grpc/meta.StreamServerInterceptor`). It verifies the token using verifier,
@@ -121,7 +121,7 @@ func UnaryServerInterceptor(id env.UserID, verifier Verifier) grpc.UnaryServerIn
 // Callers should only install this interceptor when verifier is non-nil.
 func StreamServerInterceptor(id env.UserID, verifier Verifier) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if strings.IsIgnorable(info.FullMethod) {
+		if strings.IsOperationMethod(info.FullMethod) {
 			return handler(srv, stream)
 		}
 

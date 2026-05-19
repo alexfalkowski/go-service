@@ -18,8 +18,8 @@ import (
 // The returned handler extracts request metadata into the request context and sets standard response headers.
 // It is designed to be used early in the server middleware chain so downstream middleware and handlers can
 // rely on a populated context (for example, logging, auth, rate limiting, and tracing).
-func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Generator) *Handler {
-	return &Handler{userAgent: userAgent, serviceVersion: version.String(), generator: generator}
+func NewHandler(name env.Name, userAgent env.UserAgent, version env.Version, generator id.Generator) *Handler {
+	return &Handler{name: name, userAgent: userAgent, serviceVersion: version.String(), generator: generator}
 }
 
 // Handler extracts request metadata and stores it in the request context.
@@ -28,6 +28,7 @@ func NewHandler(userAgent env.UserAgent, version env.Version, generator id.Gener
 // and Authorization token value (when present and parseable).
 type Handler struct {
 	generator      id.Generator
+	name           env.Name
 	userAgent      env.UserAgent
 	serviceVersion string
 }
@@ -54,7 +55,7 @@ type Handler struct {
 // If the Authorization header is present but cannot be parsed (unsupported scheme or invalid format),
 // it writes an HTTP 400 error response and does not call next.
 func (h *Handler) ServeHTTP(res http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.IsIgnorable(req.URL.Path) {
+	if strings.IsOperationPath(h.name, req.URL.Path) {
 		next(res, req)
 		return
 	}
