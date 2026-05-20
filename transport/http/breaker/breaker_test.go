@@ -1,11 +1,10 @@
 package breaker_test
 
 import (
-	"errors"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	base "github.com/alexfalkowski/go-service/v2/transport/breaker"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +14,7 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	rt := breaker.NewRoundTripper(
 		errorRoundTripper{err: transportErr},
 		breaker.WithSettings(breaker.Settings{
-			ReadyToTrip: func(counts base.Counts) bool {
+			ReadyToTrip: func(counts breaker.Counts) bool {
 				return counts.ConsecutiveFailures >= 1
 			},
 		}),
@@ -29,7 +28,7 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 
 	res, err = rt.RoundTrip(req)
 	require.Nil(t, res)
-	require.ErrorIs(t, err, base.ErrOpenState)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
 }
 
 type errorRoundTripper struct {

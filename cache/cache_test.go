@@ -1,7 +1,6 @@
 package cache_test
 
 import (
-	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -12,6 +11,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -20,60 +20,10 @@ import (
 )
 
 func TestValidCache(t *testing.T) {
-	configs := []struct {
-		config *config.Config
-		name   string
-	}{
-		{name: "redis", config: test.NewCacheConfig("redis", "snappy", strings.Empty, "redis")},
-		{name: "sync", config: test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis")},
-	}
-	values := []struct {
-		persist func() any
-		get     func() any
-		name    string
-	}{
-		{name: "string", persist: func() any { return ptr.Value("hello?") }, get: func() any { return ptr.Zero[string]() }},
-		{name: "buffer", persist: func() any { return bytes.NewBufferString("hello?") }, get: func() any { return &bytes.Buffer{} }},
-		{name: "protobuf", persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} }, get: func() any { return &v1.SayHelloRequest{} }},
-		{name: "request", persist: func() any { return &test.Request{Name: "hello?"} }, get: func() any { return &test.Request{} }},
-	}
-
-	for _, cfg := range configs {
-		t.Run(cfg.name, func(t *testing.T) {
-			for _, value := range values {
-				t.Run(value.name, func(t *testing.T) {
-					testValidCacheCase(t, cfg.config, value.persist(), value.get())
-				})
-			}
+	for _, tt := range cacheRoundTripCases() {
+		t.Run(tt.name, func(t *testing.T) {
+			testValidCacheCase(t, tt.config, tt.persist(), tt.get())
 		})
-	}
-}
-
-func testValidCacheCase(t *testing.T, cfg *config.Config, persist, get any) {
-	t.Helper()
-
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
-
-	require.NoError(t, world.Persist(t.Context(), "test", persist, time.Minute))
-	require.NoError(t, world.Get(t.Context(), "test", get))
-	assertValidCacheValue(t, get)
-	require.NoError(t, world.Remove(t.Context(), "test"))
-}
-
-func assertValidCacheValue(t *testing.T, get any) {
-	t.Helper()
-
-	switch kind := get.(type) {
-	case *string:
-		require.Equal(t, "hello?", *kind)
-	case *bytes.Buffer:
-		require.Equal(t, strings.Bytes("hello?"), kind.Bytes())
-	case *v1.SayHelloRequest:
-		require.Equal(t, "hello?", kind.GetName())
-	case *test.Request:
-		require.Equal(t, "hello?", kind.Name)
-	default:
-		require.Fail(t, "invalid kind")
 	}
 }
 
@@ -273,6 +223,86 @@ func TestMissingCache(t *testing.T) {
 
 	require.NoError(t, kind.Get(t.Context(), "missing", &value))
 	require.Equal(t, "existing", value)
+}
+
+func cacheRoundTripCases() []cacheRoundTripCase {
+	compressors := []string{"none", "snappy", "s2", "zstd"}
+	encoders := []string{"json", "hjson", "yaml", "yml", "toml", "gob", "msgpack"}
+	tests := make([]cacheRoundTripCase, 0, 4+len(compressors)*len(encoders))
+	tests = append(tests,
+		cacheRoundTripCase{
+			name:    "redis/default/request",
+			config:  test.NewCacheConfig("redis", "snappy", strings.Empty, "redis"),
+			persist: func() any { return &test.Request{Name: "hello?"} },
+			get:     func() any { return &test.Request{} },
+		},
+		cacheRoundTripCase{
+			name:    "sync/default/string",
+			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			persist: func() any { return ptr.Value("hello?") },
+			get:     func() any { return ptr.Zero[string]() },
+		},
+		cacheRoundTripCase{
+			name:    "sync/default/buffer",
+			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			persist: func() any { return bytes.NewBufferString("hello?") },
+			get:     func() any { return &bytes.Buffer{} },
+		},
+		cacheRoundTripCase{
+			name:    "sync/default/protobuf",
+			config:  test.NewCacheConfig("sync", strings.Empty, strings.Empty, "redis"),
+			persist: func() any { return &v1.SayHelloRequest{Name: "hello?"} },
+			get:     func() any { return &v1.SayHelloRequest{} },
+		},
+	)
+
+	for _, compressor := range compressors {
+		for _, encoder := range encoders {
+			tests = append(tests, cacheRoundTripCase{
+				name:    "sync/" + compressor + "/" + encoder + "/request",
+				config:  test.NewCacheConfig("sync", compressor, encoder, "redis"),
+				persist: func() any { return &test.Request{Name: "hello?"} },
+				get:     func() any { return &test.Request{} },
+			})
+		}
+	}
+
+	return tests
+}
+
+func testValidCacheCase(t *testing.T, cfg *config.Config, persist, get any) {
+	t.Helper()
+
+	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
+
+	require.NoError(t, world.Persist(t.Context(), "test", persist, time.Minute))
+	require.NoError(t, world.Get(t.Context(), "test", get))
+	assertValidCacheValue(t, get)
+	require.NoError(t, world.Remove(t.Context(), "test"))
+}
+
+func assertValidCacheValue(t *testing.T, get any) {
+	t.Helper()
+
+	switch kind := get.(type) {
+	case *string:
+		require.Equal(t, "hello?", *kind)
+	case *bytes.Buffer:
+		require.Equal(t, strings.Bytes("hello?"), kind.Bytes())
+	case *v1.SayHelloRequest:
+		require.Equal(t, "hello?", kind.GetName())
+	case *test.Request:
+		require.Equal(t, "hello?", kind.Name)
+	default:
+		require.Fail(t, "invalid kind")
+	}
+}
+
+type cacheRoundTripCase struct {
+	persist func() any
+	get     func() any
+	config  *config.Config
+	name    string
 }
 
 type readFromOnly struct {

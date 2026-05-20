@@ -1,8 +1,7 @@
 package yaml
 
 import (
-	"io"
-
+	"github.com/alexfalkowski/go-service/v2/io"
 	yaml "go.yaml.in/yaml/v3"
 )
 

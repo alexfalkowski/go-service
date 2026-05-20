@@ -33,6 +33,25 @@ func TestNewRequestHandlerPrefersContentType(t *testing.T) {
 	require.JSONEq(t, `{"Greeting":"Hello Bob","Meta":null}`, res.Body.String())
 }
 
+func TestNewRequestHandlerUsesMsgPack(t *testing.T) {
+	handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *test.Request) (*test.Response, error) {
+		return &test.Response{Greeting: "Hello " + req.Name}, nil
+	})
+	body := bytes.NewBuffer(nil)
+	require.NoError(t, test.Encoder.Get("msgpack").Encode(body, &test.Request{Name: "Bob"}))
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", body)
+	req.Header.Set(content.TypeKey, media.MessagePack)
+	res := httptest.NewRecorder()
+
+	handler.ServeHTTP(res, req)
+
+	var response test.Response
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, media.MessagePack, res.Header().Get(content.TypeKey))
+	require.NoError(t, test.Encoder.Get("msgpack").Decode(res.Body, &response))
+	require.Equal(t, "Hello Bob", response.Greeting)
+}
+
 func TestNewRequestHandlerTreatsInternalErrorContentTypeAsText(t *testing.T) {
 	handler := content.NewRequestHandler(test.Content, func(_ context.Context, req *bytes.Buffer) (*bytes.Buffer, error) {
 		return bytes.NewBufferString("Hello " + req.String()), nil

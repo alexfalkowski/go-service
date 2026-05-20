@@ -54,12 +54,14 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	switch mediaType {
 	case media.JSON:
 		return jsonMedia(enc), true
-	case media.HJSON:
-		return Media{Type: media.HJSON, Subtype: "hjson", Encoder: enc.Get("hjson")}, true
+	case media.HumanJSON:
+		return Media{Type: media.HumanJSON, Subtype: "hjson", Encoder: enc.Get("hjson")}, true
 	case media.YAML:
 		return Media{Type: media.YAML, Subtype: "yaml", Encoder: enc.Get("yaml")}, true
 	case media.TOML:
 		return Media{Type: media.TOML, Subtype: "toml", Encoder: enc.Get("toml")}, true
+	case media.MessagePack:
+		return newMedia(media.MessagePack, "msgpack", enc), true
 	case media.Protobuf:
 		return Media{Type: media.Protobuf, Subtype: "protobuf", Encoder: enc.Get("protobuf")}, true
 	case media.ProtobufJSON:

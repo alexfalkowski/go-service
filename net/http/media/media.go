@@ -27,13 +27,16 @@ const JPEG = "image/jpeg"
 // This is commonly used as the Content-Type for JSON request/response bodies.
 const JSON = "application/json"
 
-// HJSON is the media type for HJSON documents.
+// HumanJSON is the media type for HumanJSON documents.
 //
-// This is commonly used as the Content-Type for HJSON request/response bodies.
-const HJSON = "application/hjson"
+// This is commonly used as the Content-Type for HumanJSON request/response bodies.
+const HumanJSON = "application/hjson"
 
 // Markdown is the media type for Markdown documents.
 const Markdown = "text/markdown"
+
+// MessagePack is the vendor media type for MessagePack payloads.
+const MessagePack = "application/vnd.msgpack"
 
 // Protobuf is the media type for protobuf binary payloads.
 //

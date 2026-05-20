@@ -1,9 +1,8 @@
 package proto
 
 import (
-	"io"
-
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
@@ -57,7 +56,7 @@ func (e *Text) Decode(r io.Reader, v any) error {
 		return errors.ErrInvalidType
 	}
 
-	bytes, err := io.ReadAll(r)
+	bytes, _, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}

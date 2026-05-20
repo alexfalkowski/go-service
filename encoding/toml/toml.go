@@ -1,9 +1,8 @@
 package toml
 
 import (
-	"io"
-
 	"github.com/BurntSushi/toml"
+	"github.com/alexfalkowski/go-service/v2/io"
 )
 
 // NewEncoder constructs a TOML encoder.

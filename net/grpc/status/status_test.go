@@ -1,10 +1,10 @@
 package status_test
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
 	"github.com/stretchr/testify/require"

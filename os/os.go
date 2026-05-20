@@ -2,9 +2,9 @@ package os
 
 import (
 	"os"
-	"slices"
 
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 

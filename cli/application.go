@@ -2,7 +2,6 @@ package cli
 
 import (
 	"maps"
-	"slices"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
@@ -11,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	cmd "github.com/cristalhq/acmd"
 )

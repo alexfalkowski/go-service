@@ -1,11 +1,11 @@
 package rand_test
 
 import (
-	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/stretchr/testify/require"
 )
 

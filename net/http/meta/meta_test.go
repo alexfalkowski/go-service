@@ -1,11 +1,11 @@
 package meta_test
 
 import (
-	"io"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/stretchr/testify/require"

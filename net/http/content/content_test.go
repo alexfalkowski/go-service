@@ -115,10 +115,11 @@ type mediaTest struct {
 func mediaTests() []mediaTest {
 	return []mediaTest{
 		{name: "json", mediaType: media.JSON, subtype: "json", kind: "json"},
-		{name: "hjson", mediaType: media.HJSON, subtype: "hjson", kind: "hjson"},
+		{name: "hjson", mediaType: media.HumanJSON, subtype: "hjson", kind: "hjson"},
 		{name: "yaml", mediaType: media.YAML, subtype: "yaml", kind: "yaml"},
 		{name: "yml", mediaType: "application/yml", subtype: "yml", kind: "yml"},
 		{name: "toml", mediaType: media.TOML, subtype: "toml", kind: "toml"},
+		{name: "msgpack", mediaType: media.MessagePack, subtype: "msgpack", kind: "msgpack"},
 		{name: "protobuf", mediaType: media.Protobuf, subtype: "protobuf", kind: "protobuf"},
 		{name: "proto", mediaType: "application/proto", subtype: "proto", kind: "proto"},
 		{name: "pb", mediaType: "application/pb", subtype: "pb", kind: "pb"},
