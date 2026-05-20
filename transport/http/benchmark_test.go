@@ -2,13 +2,13 @@ package http_test
 
 import (
 	"fmt"
-	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
@@ -292,15 +292,15 @@ func BenchmarkRPC(b *testing.B) {
 
 		b.ResetTimer()
 
-		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
+		for _, mt := range test.MessageMediaTypes() {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
 			client := rpc.NewClient(world.ServerURL("http"),
-				rpc.WithClientContentType("application/"+mt),
+				rpc.WithClientContentType(mt.ContentType),
 				rpc.WithClientRoundTripper(cl.Transport),
 			)
 
-			b.Run(mt, func(b *testing.B) {
+			b.Run(mt.Name, func(b *testing.B) {
 				for b.Loop() {
 					req := &test.Request{Name: "Bob"}
 					res := &test.Response{}
@@ -365,18 +365,18 @@ func BenchmarkRest(b *testing.B) {
 
 		b.ResetTimer()
 
-		for _, mt := range []string{"json", "hjson", "yaml", "yml", "toml", "gob"} {
+		for _, mt := range test.MessageMediaTypes() {
 			cl, err := world.NewHTTP()
 			require.NoError(b, err)
 			url := world.NamedServerURL("http", "hello")
 			client := rest.NewClient(rest.WithClientRoundTripper(cl.Transport))
 
-			b.Run(mt, func(b *testing.B) {
+			b.Run(mt.Name, func(b *testing.B) {
 				for b.Loop() {
 					req := &test.Request{Name: "Bob"}
 					res := &test.Response{}
 					opts := rest.Options{
-						ContentType: "application/" + mt,
+						ContentType: mt.ContentType,
 						Request:     req,
 						Response:    res,
 					}

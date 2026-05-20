@@ -6,6 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
+	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
@@ -33,6 +34,8 @@ import (
 //
 //   - *yaml.Encoder (via yaml.NewEncoder)
 //
+//   - *msgpack.Encoder (via msgpack.NewEncoder)
+//
 //   - Other encoders:
 //
 //   - *gob.Encoder (via gob.NewEncoder)
@@ -49,6 +52,7 @@ var Module = di.Module(
 	di.Constructor(hjson.NewEncoder),
 	di.Constructor(toml.NewEncoder),
 	di.Constructor(yaml.NewEncoder),
+	di.Constructor(msgpack.NewEncoder),
 	di.Constructor(gob.NewEncoder),
 	di.Constructor(bytes.NewEncoder),
 	di.Constructor(NewMap),

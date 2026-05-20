@@ -1,6 +1,6 @@
 package encoding
 
-import "io"
+import "github.com/alexfalkowski/go-service/v2/io"
 
 // Encoder encodes values to a writer and decodes values from a reader.
 //

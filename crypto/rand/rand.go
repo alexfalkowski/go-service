@@ -2,10 +2,10 @@ package rand
 
 import (
 	"crypto/rand"
-	"io"
 	"math/big"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 

@@ -2,12 +2,12 @@ package retry_test
 
 import (
 	"fmt"
-	"io"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -109,7 +109,7 @@ func TestRoundTripperReturnsFirstRetryableResponseWhenExhausted(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
 
-	body, readErr := io.ReadAll(res.Body)
+	body, _, readErr := io.ReadAll(res.Body)
 	require.NoError(t, readErr)
 	require.Equal(t, "first failure", string(body))
 	require.NoError(t, res.Body.Close())
@@ -318,7 +318,7 @@ type requestRoundTripper struct {
 }
 
 func (r *requestRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	body, err := io.ReadAll(req.Body)
+	body, _, err := io.ReadAll(req.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +345,7 @@ func (r *originalBodyRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 		r.firstUsedOriginal = req.Body == r.original
 	}
 
-	body, err := io.ReadAll(req.Body)
+	body, _, err := io.ReadAll(req.Body)
 	if err != nil {
 		return nil, err
 	}

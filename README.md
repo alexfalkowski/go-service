@@ -223,6 +223,7 @@ Encoding kinds used by subsystems that support encoding:
 - `toml`
 - `yaml`
 - `yml`
+- `msgpack`
 - `proto`
 - `pb`
 - `protobuf`
@@ -703,6 +704,7 @@ Built-in text/object payload media types include:
 - `application/yaml`
 - `application/yml`
 - `application/toml`
+- `application/vnd.msgpack`
 - `application/gob`
 - `application/octet-stream`
 - `text/plain`

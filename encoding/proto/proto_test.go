@@ -1,12 +1,12 @@
 package proto_test
 
 import (
-	"io"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/encoding/errors"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/health"
 	"github.com/stretchr/testify/require"
 )

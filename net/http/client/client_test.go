@@ -118,6 +118,28 @@ func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 	require.Equal(t, 4*bytes.MB, client.DefaultMaxResponseSize)
 }
 
+func TestDoUsesMsgPack(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		var request test.Request
+		require.Equal(t, media.MessagePack, req.Header.Get(content.TypeKey))
+		require.NoError(t, test.Encoder.Get("msgpack").Decode(req.Body, &request))
+		res.Header().Set(content.TypeKey, media.MessagePack)
+		require.NoError(t, test.Encoder.Get("msgpack").Encode(res, &test.Response{Greeting: "Hello " + request.Name}))
+	}))
+	defer server.Close()
+
+	var response test.Response
+	c := client.NewClient(test.Content, test.Pool)
+
+	err := c.Post(t.Context(), server.URL, client.Options{
+		ContentType: media.MessagePack,
+		Request:     &test.Request{Name: "Bob"},
+		Response:    &response,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "Hello Bob", response.Greeting)
+}
+
 func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	var body io.ReadCloser
 	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(roundTripperFunc(func(req *http.Request) (*http.Response, error) {

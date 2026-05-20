@@ -1,8 +1,6 @@
 package test
 
 import (
-	"errors"
-	"io"
 	"net/url"
 	"testing"
 
@@ -12,7 +10,9 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/database/sql"
 	"github.com/alexfalkowski/go-service/v2/database/sql/pg"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/id/uuid"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/http/rest"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -310,6 +310,6 @@ func (w *World) request(ctx context.Context, url, method string, header http.Hea
 }
 
 func (w *World) readBody(res *http.Response) ([]byte, error) {
-	data, err := io.ReadAll(res.Body)
+	data, _, err := io.ReadAll(res.Body)
 	return data, errors.Join(err, res.Body.Close())
 }

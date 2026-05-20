@@ -1,13 +1,18 @@
 package io
 
 import (
+	"bytes"
 	"io"
-
-	"github.com/alexfalkowski/go-service/v2/bytes"
 )
 
 // EOF aliases io.EOF.
 var EOF = io.EOF
+
+// ErrUnexpectedEOF aliases io.ErrUnexpectedEOF.
+var ErrUnexpectedEOF = io.ErrUnexpectedEOF
+
+// Discard aliases io.Discard.
+var Discard = io.Discard
 
 // WriterTo is an alias for io.WriterTo.
 //
@@ -59,6 +64,20 @@ func NopCloser(r Reader) ReadCloser {
 // This is a thin wrapper around io.LimitReader.
 func LimitReader(r Reader, n int64) Reader {
 	return io.LimitReader(r, n)
+}
+
+// Copy copies from src to dst until either EOF is reached on src or an error occurs.
+//
+// This is a thin wrapper around io.Copy.
+func Copy(dst Writer, src Reader) (int64, error) {
+	return io.Copy(dst, src)
+}
+
+// ReadFull reads exactly len(buf) bytes from r into buf.
+//
+// This is a thin wrapper around io.ReadFull.
+func ReadFull(r Reader, buf []byte) (int, error) {
+	return io.ReadFull(r, buf)
 }
 
 // WriteString writes the contents of s to w.

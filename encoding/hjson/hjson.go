@@ -1,8 +1,7 @@
 package hjson
 
 import (
-	"io"
-
+	"github.com/alexfalkowski/go-service/v2/io"
 	hjson "github.com/hjson/hjson-go/v4"
 )
 
@@ -32,7 +31,7 @@ func (e *Encoder) Encode(w io.Writer, v any) error {
 //
 // In most cases v should be a pointer to the destination value (for example *MyStruct).
 func (e *Encoder) Decode(r io.Reader, v any) error {
-	data, err := io.ReadAll(r)
+	data, _, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}

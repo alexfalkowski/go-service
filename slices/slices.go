@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"iter"
 	"slices"
 
 	"github.com/alexfalkowski/go-service/v2/structs"
@@ -77,4 +78,39 @@ func ElemFunc[T any](slice []*T, f func(*T) bool) (*T, bool) {
 // appends should allocate instead of modifying that shared backing array.
 func Clip[T any](slice []T) []T {
 	return slices.Clip(slice)
+}
+
+// Clone returns a copy of slice.
+//
+// It is a thin wrapper around the standard library slices.Clone.
+func Clone[S ~[]E, E any](slice S) S {
+	return slices.Clone(slice)
+}
+
+// Collect collects values from seq into a new slice.
+//
+// It is a thin wrapper around the standard library slices.Collect.
+func Collect[E any](seq iter.Seq[E]) []E {
+	return slices.Collect(seq)
+}
+
+// Contains reports whether v is present in slice.
+//
+// It is a thin wrapper around the standard library slices.Contains.
+func Contains[S ~[]E, E comparable](slice S, v E) bool {
+	return slices.Contains(slice, v)
+}
+
+// ContainsFunc reports whether at least one element of slice satisfies f.
+//
+// It is a thin wrapper around the standard library slices.ContainsFunc.
+func ContainsFunc[S ~[]E, E any](slice S, f func(E) bool) bool {
+	return slices.ContainsFunc(slice, f)
+}
+
+// DeleteFunc removes any elements from slice for which del returns true.
+//
+// It is a thin wrapper around the standard library slices.DeleteFunc.
+func DeleteFunc[S ~[]E, E any](slice S, del func(E) bool) S {
+	return slices.DeleteFunc(slice, del)
 }

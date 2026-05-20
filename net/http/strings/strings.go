@@ -1,9 +1,8 @@
 package strings
 
 import (
-	"slices"
-
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 

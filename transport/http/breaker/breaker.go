@@ -10,6 +10,16 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
+// Counts is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Counts`.
+//
+// Counts is used by Settings.ReadyToTrip to decide whether the breaker should open.
+type Counts = breaker.Counts
+
+// ErrOpenState is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.ErrOpenState`.
+//
+// It is returned by CircuitBreaker.Execute when the breaker is open.
+var ErrOpenState = breaker.ErrOpenState
+
 // Settings is an alias for `github.com/alexfalkowski/go-service/v2/transport/breaker.Settings`.
 //
 // It is re-exported from this package so callers can configure circuit breaker behavior (trip thresholds,

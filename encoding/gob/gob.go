@@ -2,7 +2,8 @@ package gob
 
 import (
 	"encoding/gob"
-	"io"
+
+	"github.com/alexfalkowski/go-service/v2/io"
 )
 
 // NewEncoder constructs a gob encoder.

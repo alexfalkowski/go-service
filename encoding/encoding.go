@@ -2,16 +2,17 @@ package encoding
 
 import (
 	"maps"
-	"slices"
 
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/encoding/bytes"
 	"github.com/alexfalkowski/go-service/v2/encoding/gob"
 	"github.com/alexfalkowski/go-service/v2/encoding/hjson"
 	"github.com/alexfalkowski/go-service/v2/encoding/json"
+	"github.com/alexfalkowski/go-service/v2/encoding/msgpack"
 	"github.com/alexfalkowski/go-service/v2/encoding/proto"
 	"github.com/alexfalkowski/go-service/v2/encoding/toml"
 	"github.com/alexfalkowski/go-service/v2/encoding/yaml"
+	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
 // MapParams defines the dependencies used to construct an encoding Map.
@@ -20,31 +21,34 @@ import (
 type MapParams struct {
 	di.In
 
-	// JSON is the JSON encoder implementation registered under kind "json".
+	// JSON is the encoder implementation registered under kind "json".
 	JSON *json.Encoder
 
-	// HJSON is the HJSON encoder implementation registered under kind "hjson".
-	HJSON *hjson.Encoder
+	// HumanJSON is the encoder implementation registered under kind "hjson".
+	HumanJSON *hjson.Encoder
 
-	// YAML is the YAML encoder implementation registered under kinds "yaml" and "yml".
+	// YAML is the encoder implementation registered under kinds "yaml" and "yml".
 	YAML *yaml.Encoder
 
-	// TOML is the TOML encoder implementation registered under kind "toml".
+	// TOML is the encoder implementation registered under kind "toml".
 	TOML *toml.Encoder
 
-	// ProtoBinary is the protobuf binary encoder implementation registered under common binary kinds
+	// MessagePack is the encoder implementation registered under kind "msgpack".
+	MessagePack *msgpack.Encoder `optional:"true"`
+
+	// ProtoBinary is the encoder implementation registered under common binary kinds
 	// (e.g. "proto", "protobuf", "pb", etc.).
 	ProtoBinary *proto.Binary
 
-	// ProtoText is the protobuf text encoder implementation registered under common text kinds
+	// ProtoText is the encoder implementation registered under common text kinds
 	// (e.g. "prototext", "prototxt", "pbtxt").
 	ProtoText *proto.Text
 
-	// ProtoJSON is the protobuf JSON encoder implementation registered under common JSON kinds
+	// ProtoJSON is the encoder implementation registered under common JSON kinds
 	// (e.g. "protojson", "pbjson").
 	ProtoJSON *proto.JSON
 
-	// GOB is the gob encoder implementation registered under kind "gob".
+	// GOB is the encoder implementation registered under kind "gob".
 	GOB *gob.Encoder
 
 	// Bytes is the passthrough encoder for io.ReaderFrom/io.WriterTo payloads, registered under kinds
@@ -56,7 +60,7 @@ type MapParams struct {
 //
 // The returned registry includes common kinds used throughout go-service, including:
 //
-//   - Structured config formats: "json", "hjson", "yaml", "yml", "toml"
+//   - Structured config formats: "json", "hjson", "yaml", "yml", "toml", "msgpack"
 //
 //   - Protobuf formats:
 //
@@ -75,10 +79,11 @@ func NewMap(params MapParams) *Map {
 	return &Map{
 		encoders: map[string]Encoder{
 			"json":         params.JSON,
-			"hjson":        params.HJSON,
+			"hjson":        params.HumanJSON,
 			"yaml":         params.YAML,
 			"yml":          params.YAML,
 			"toml":         params.TOML,
+			"msgpack":      params.MessagePack,
 			"pb":           params.ProtoBinary,
 			"pbbin":        params.ProtoBinary,
 			"proto":        params.ProtoBinary,

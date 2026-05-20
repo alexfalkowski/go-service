@@ -1,11 +1,10 @@
 package hooks
 
 import (
-	"errors"
-
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	hooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )

@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0
+	github.com/Basekick-Labs/msgpack/v6 v6.1.0
 	github.com/BurntSushi/toml v1.6.0
 	github.com/KimMachineGun/automemlimit v0.7.5
 	github.com/XSAM/otelsql v0.42.0
@@ -123,6 +124,7 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0
