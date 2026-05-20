@@ -10,5 +10,13 @@
 // transport helpers become pass-through no-ops instead of failing or panicking. This allows higher-level
 // wiring such as CloudEvents integrations to keep webhook support optional.
 //
+// Body limits:
+// The webhook helpers buffer request bodies so signatures can be computed and
+// verified while leaving req.Body readable for downstream handlers. Under the
+// supported transport wiring, inbound webhook requests are already capped by the
+// HTTP server request-body limiter configured from MaxReceiveSize before mux
+// handlers run. Outbound requests are created by callers and are expected to be
+// bounded at the request construction boundary.
+//
 // Start with `NewWebhook` to adapt a Standard Webhooks instance into transport middleware helpers.
 package hooks

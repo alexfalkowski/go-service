@@ -6,7 +6,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/id"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/events"
-	hh "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
+	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/client"
 )
@@ -18,9 +18,9 @@ func NewEvents(mux *http.ServeMux, rt http.RoundTripper, generator id.Generator)
 		return nil, nil, err
 	}
 
-	receiver := events.NewReceiver(mux, hh.NewWebhook(h, generator))
+	receiver := events.NewReceiver(mux, httphooks.NewWebhook(h, generator))
 
-	sender, err := events.NewSender(hh.NewWebhook(h, generator), events.WithSenderRoundTripper(rt))
+	sender, err := events.NewSender(httphooks.NewWebhook(h, generator), events.WithSenderRoundTripper(rt))
 	if err != nil {
 		return nil, nil, err
 	}

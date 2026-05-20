@@ -59,6 +59,12 @@ matching skill for the task.
 - Health registration helpers require `*net/http.ServeMux`.
 - Shared metadata, header, and string helpers live under `net/...`, not `transport/...`.
 - `vendor/` is gitignored and regenerated via `make dep`.
+- HTTP webhook verification buffers `req.Body` intentionally for signature checks.
+  Under supported server wiring, `transport/http.NewServer` installs the body
+  limiter before mux handlers, so inbound webhook bodies are capped by
+  `Config.MaxReceiveSize` before verification. Do not flag this as an
+  unbounded-read issue unless the code path bypasses the transport server chain
+  without an equivalent request-size cap.
 
 ## Testing, Style, And Docs
 

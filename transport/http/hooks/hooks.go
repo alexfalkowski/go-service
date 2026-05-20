@@ -51,7 +51,9 @@ type Webhook struct {
 //   - `Webhook-Timestamp`
 //
 // The signature is computed over the request payload and includes a generated webhook id and timestamp.
-// Callers should ensure the request body is readable (and reasonably bounded) since it is buffered in memory.
+// The request body is buffered in memory. Under supported server wiring, inbound request size is already
+// capped by the HTTP transport's MaxReceiveSize body limiter before handlers run; outbound requests are
+// expected to be bounded by the request construction path.
 //
 // Disabled behavior:
 // If the receiver or underlying Standard Webhooks hook is nil, Sign is a no-op and returns nil.
@@ -85,7 +87,11 @@ func (h *Webhook) Sign(req *http.Request) error {
 // It reads and buffers the request body, restores `req.Body`, and then verifies the signature headers
 // using the underlying Standard Webhooks verifier.
 //
-// Callers should ensure the request body is readable (and reasonably bounded) since it is buffered in memory.
+// Security note:
+// This method intentionally does not add a second local size cap. Supported inbound use goes through
+// `transport/http.NewServer`, whose body middleware enforces Config.MaxReceiveSize before mux handlers and
+// webhook verification run. Callers that bypass the transport server are responsible for applying the same
+// request-level cap before invoking Verify.
 //
 // Disabled behavior:
 // If the receiver or underlying Standard Webhooks hook is nil, Verify is a no-op and returns nil.
@@ -133,6 +139,11 @@ func NewHandler(hook *Webhook) *Handler {
 // ServeHTTP verifies the webhook signature before calling next.
 //
 // If verification fails, it writes an HTTP 400 error response and does not call next.
+//
+// Body limits:
+// With the standard HTTP transport server, this handler runs after the request-body limiter, so verification
+// never sees a body larger than Config.MaxReceiveSize. Direct use outside that server chain must preserve the
+// same request-size invariant.
 //
 // Disabled behavior:
 // If the handler or its hook is nil, ServeHTTP behaves as a pass-through and immediately calls next.
