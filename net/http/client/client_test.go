@@ -12,6 +12,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
+	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/stretchr/testify/require"
 )
 
@@ -115,4 +116,33 @@ func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.NoError(t, err)
 	require.Equal(t, 4*bytes.MB, client.DefaultMaxResponseSize)
+}
+
+func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
+	var body io.ReadCloser
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		body = req.Body
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     http.Header{content.TypeKey: []string{media.Text}},
+			Body:       io.NopCloser(strings.NewReader("response")),
+		}, nil
+	})))
+
+	err := c.Post(t.Context(), "http://example.com", client.Options{
+		ContentType: media.JSON,
+		Request:     &test.Request{Name: "Bob"},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, body)
+
+	data, _, err := io.ReadAll(body)
+	require.NoError(t, err)
+	require.JSONEq(t, `{"Name":"Bob"}`, string(data))
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
 }

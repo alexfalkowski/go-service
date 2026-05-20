@@ -204,18 +204,21 @@ func (c *Client) Patch(ctx context.Context, url string, opts Options) error {
 //
 //nolint:cyclop
 func (c *Client) Do(ctx context.Context, method, url string, opts Options) error {
-	buffer := c.pool.Get()
-	defer c.pool.Put(buffer)
-
 	mediaType := c.content.NewFromMedia(opts.ContentType)
 
+	body := io.Reader(http.NoBody)
 	if opts.HasRequest() {
-		if err := mediaType.Encoder.Encode(buffer, opts.Request); err != nil {
+		var requestBody bytes.Buffer
+		if err := mediaType.Encoder.Encode(&requestBody, opts.Request); err != nil {
 			return errors.Prefix("http: encode", err)
 		}
+
+		// Do not use a pooled buffer for the request body: net/http may keep
+		// reading it from a transport goroutine after Do returns.
+		body = bytes.NewReader(requestBody.Bytes())
 	}
 
-	request, err := http.NewRequestWithContext(ctx, method, url, buffer)
+	request, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return errors.Prefix("http: new request", err)
 	}
@@ -229,9 +232,10 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 
 	defer response.Body.Close()
 
-	buffer.Reset()
+	responseBody := c.pool.Get()
+	defer c.pool.Put(responseBody)
 
-	if err := c.readResponse(buffer, response.Body); err != nil {
+	if err := c.readResponse(responseBody, response.Body); err != nil {
 		return err
 	}
 
@@ -246,7 +250,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 			code = http.StatusInternalServerError
 		}
 
-		return status.Error(code, strings.TrimSpace(buffer.String()))
+		return status.Error(code, strings.TrimSpace(responseBody.String()))
 	}
 
 	if isErrorStatus(response.StatusCode) {
@@ -254,7 +258,7 @@ func (c *Client) Do(ctx context.Context, method, url string, opts Options) error
 	}
 
 	if opts.HasResponse() {
-		if err := media.Encoder.Decode(buffer, opts.Response); err != nil {
+		if err := media.Encoder.Decode(responseBody, opts.Response); err != nil {
 			return errors.Prefix("http: decode", err)
 		}
 	}
