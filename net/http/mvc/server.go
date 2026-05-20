@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/fs"
 	"path"
+	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/context"
@@ -65,6 +66,8 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 //
 // If controller returns an error, the handler renders the returned view using the error value as the template
 // model and writes the corresponding status code (see net/http/status.Code) only after rendering succeeds.
+// Since the error model and `mvcModelError` metadata are available to templates, controller errors should already
+// be safe for client-visible rendering.
 // If rendering itself fails, the handler writes the render error status instead.
 func Route[Model any](pattern string, controller Controller[Model]) bool {
 	if !IsDefined() {
@@ -152,6 +155,7 @@ func serveFile(res http.ResponseWriter, name string) {
 	}
 
 	setStaticContentType(res, name)
+	setStaticContentLength(res, info.Size())
 	res.WriteHeader(http.StatusOK)
 	_, _ = io.Copy(res, f)
 }
@@ -167,6 +171,12 @@ func setStaticContentType(res http.ResponseWriter, name string) {
 	mediaType := media.TypeByExtension(path.Ext(name))
 	if !strings.IsEmpty(mediaType) {
 		res.Header().Set(content.TypeKey, media.WithUTF8(mediaType))
+	}
+}
+
+func setStaticContentLength(res http.ResponseWriter, size int64) {
+	if size >= 0 {
+		res.Header().Set("Content-Length", strconv.FormatInt(size, 10))
 	}
 }
 
