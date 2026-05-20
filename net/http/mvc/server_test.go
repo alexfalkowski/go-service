@@ -465,7 +465,7 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 	require.NotContains(t, res.Body.String(), "custom")
 }
 
-func TestStaticFileStreamsBody(t *testing.T) {
+func TestStaticFileSetsContentLength(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
 		Mux:         mux,
@@ -483,6 +483,7 @@ func TestStaticFileStreamsBody(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, "6", res.Header().Get("Content-Length"))
 	require.Equal(t, "hello", res.Body.String())
 }
 
@@ -526,7 +527,7 @@ func (errFileInfo) Name() string {
 }
 
 func (errFileInfo) Size() int64 {
-	return 5
+	return 6
 }
 
 func (errFileInfo) Mode() fs.FileMode {
