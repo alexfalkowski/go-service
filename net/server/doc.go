@@ -9,8 +9,9 @@
 //
 //   - Server: a minimal interface describing a runnable server that can be gracefully shut down.
 //
-//   - Service: a small lifecycle manager that starts a Server asynchronously, logs start/stop events,
-//     and triggers application shutdown when the underlying Server.Serve returns an error.
+//   - Service: a small lifecycle manager that starts a Server asynchronously,
+//     logs start/stop events, and triggers application shutdown with
+//     os.ExitCodeServeFailure when the underlying Server.Serve returns an error.
 //
 // # Typical usage
 //

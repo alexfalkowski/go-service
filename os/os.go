@@ -8,20 +8,27 @@ import (
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
 
-var (
-	// Args is the process argument vector.
-	//
-	// It is an alias of os.Args and is provided so go-service code can depend on
-	// go-service packages consistently while still using the underlying OS
-	// implementation.
-	Args = os.Args
+// ExitCodeSuccess indicates successful process completion.
+const ExitCodeSuccess = 0
 
-	// Stdout is the standard output file descriptor.
-	//
-	// It is an alias of os.Stdout and is typically used for writing user-facing
-	// output from CLIs.
-	Stdout = os.Stdout
-)
+// ExitCodeFailure indicates a command or application error.
+const ExitCodeFailure = 1
+
+// ExitCodeServeFailure indicates an asynchronous server Serve failure.
+const ExitCodeServeFailure = 2
+
+// Args is the process argument vector.
+//
+// It is an alias of os.Args and is provided so go-service code can depend on
+// go-service packages consistently while still using the underlying OS
+// implementation.
+var Args = os.Args
+
+// Stdout is the standard output file descriptor.
+//
+// It is an alias of os.Stdout and is typically used for writing user-facing
+// output from CLIs.
+var Stdout = os.Stdout
 
 // Getenv returns the value of the environment variable named by key.
 func Getenv(key string) string {

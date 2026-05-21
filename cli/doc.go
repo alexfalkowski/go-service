@@ -14,7 +14,9 @@
 //   - `(*Application).Run` to execute the CLI and return any error, or
 //   - `(*Application).RunCode` to execute the CLI and return a process exit code.
 //
-// Use `WithExitCodeFunc` when an application needs to map specific errors to specific process exit codes.
+// `RunCode` returns [os.ExitCodeSuccess] on success, returns the requested
+// non-zero shutdown exit code when the DI application shuts down with one, and
+// returns [os.ExitCodeFailure] for other errors.
 //
 // # Subcommands and DI wiring
 //

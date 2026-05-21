@@ -55,8 +55,11 @@ func main() {
 }
 ```
 
-Use `app.RunCode(context.Background())` from `main` when exiting the process. Use
-`app.Run(context.Background())` in tests or embedding code that needs to inspect the returned error.
+Use `app.RunCode(context.Background())` from `main` when exiting the process. It
+returns `os.ExitCodeSuccess` on success, returns a requested non-zero shutdown
+exit code such as `os.ExitCodeServeFailure`, and returns `os.ExitCodeFailure`
+for other errors. Use `app.Run(context.Background())` in tests or embedding code
+that needs to inspect the returned error.
 
 ---
 
