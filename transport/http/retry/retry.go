@@ -88,12 +88,18 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // pass IdempotentRequests, SafeMethods, or another explicit policy.
 //
 // Exhaustion behavior:
-//   - If retries are exhausted after retryable HTTP responses, the first retryable response is returned.
+//   - If retries are exhausted after retryable HTTP responses, the final retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
 	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(cfg.Backoff.Duration()))
 
-	return &RoundTripper{RoundTripper: hrt, timeout: cfg.Timeout, backoff: backoff, policy: composePolicy(policies)}
+	return &RoundTripper{
+		RoundTripper: hrt,
+		backoff:      backoff,
+		policy:       composePolicy(policies),
+		timeout:      cfg.Timeout,
+		maxRetries:   cfg.MaxRetries(),
+	}
 }
 
 // RoundTripper wraps an underlying `http.RoundTripper` and retries requests according to its configuration.
@@ -110,9 +116,10 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // If no policy is configured, all requests are eligible for retry for backward compatibility.
 type RoundTripper struct {
 	http.RoundTripper
-	backoff retry.Backoff
-	policy  Policy
-	timeout time.Duration
+	backoff    retry.Backoff
+	policy     Policy
+	timeout    time.Duration
+	maxRetries uint64
 }
 
 // RoundTrip executes the request and retries according to the configured backoff policy.
@@ -128,7 +135,7 @@ type RoundTripper struct {
 // underlying transport.
 //
 // When retries are exhausted:
-//   - the first retryable response is returned for response-based failures, preserving the original status/body,
+//   - the final retryable response is returned for response-based failures,
 //   - the original transport error is returned for transport-level failures.
 //
 // Callers should ensure that request bodies are replayable when retries are enabled. For subsequent attempts
@@ -146,7 +153,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	res, err := retry.DoValue(req.Context(), r.backoff, operation)
-	return attempt.finalize(res, err)
+	return res, err
 }
 
 func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *roundTripAttempt) (*http.Response, error) {
@@ -159,7 +166,7 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 	}
 
 	res, err := r.RoundTripper.RoundTrip(attemptReq)
-	if retryErr := attempt.retry(ctx, req, res, err); retryErr != nil {
+	if retryErr := attempt.retry(ctx, req, res, err, r.maxRetries); retryErr != nil {
 		return nil, retryErr
 	}
 
@@ -174,7 +181,7 @@ func (r *RoundTripper) withAttemptTimeout(ctx context.Context) (context.Context,
 	return context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
 }
 
-func request(req *http.Request, ctx context.Context, attempt int) (*http.Request, error) {
+func request(req *http.Request, ctx context.Context, attempt uint64) (*http.Request, error) {
 	if attempt == 0 {
 		return req.WithContext(ctx), nil
 	}
@@ -194,8 +201,7 @@ func request(req *http.Request, ctx context.Context, attempt int) (*http.Request
 }
 
 type roundTripAttempt struct {
-	first   *http.Response
-	attempt int
+	attempt uint64
 }
 
 func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*http.Request, error) {
@@ -207,7 +213,7 @@ func (a *roundTripAttempt) request(req *http.Request, ctx context.Context) (*htt
 	return attemptReq, nil
 }
 
-func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error) error {
+func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *http.Response, err error, maxRetries uint64) error {
 	ok, retryErr := shouldRetryAttempt(ctx, res, err)
 	if !ok {
 		return nil
@@ -216,14 +222,18 @@ func (a *roundTripAttempt) retry(ctx context.Context, req *http.Request, res *ht
 		return nil
 	}
 
-	a.attempt++
 	retryErr = statusError(retryErr, err)
 	if res == nil {
+		a.attempt++
 		return retry.RetryableError(retryErr)
 	}
+	if a.attempt >= maxRetries {
+		return nil
+	}
 
-	a.keepFirst(res)
-	return retry.RetryableError(responseError{resp: a.first, err: retryErr})
+	closeResponse(res)
+	a.attempt++
+	return retry.RetryableError(retryErr)
 }
 
 func shouldRetryAttempt(ctx context.Context, res *http.Response, err error) (bool, error) {
@@ -256,37 +266,6 @@ func isTransportError(res *http.Response, err error) bool {
 
 func canRetry(req *http.Request) bool {
 	return req.Body == nil || req.Body == http.NoBody || req.GetBody != nil
-}
-
-func (a *roundTripAttempt) finalize(res *http.Response, err error) (*http.Response, error) {
-	if err == nil {
-		a.closeFirst(res)
-		return res, nil
-	}
-
-	if re, ok := errors.AsType[responseError](err); ok {
-		return re.resp, nil
-	}
-
-	closeResponse(a.first)
-	return res, err
-}
-
-func (a *roundTripAttempt) keepFirst(res *http.Response) {
-	if a.first == nil {
-		a.first = res
-		return
-	}
-
-	closeResponse(res)
-}
-
-func (a *roundTripAttempt) closeFirst(res *http.Response) {
-	if a.first == nil || a.first == res {
-		return
-	}
-
-	closeResponse(a.first)
 }
 
 func statusError(retryErr, err error) error {
