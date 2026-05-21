@@ -14,10 +14,9 @@ import "github.com/alexfalkowski/go-service/v2/context"
 //
 // Error behavior in server wiring:
 // When a controller returns a non-nil err, the handler produced by Route writes a status code derived from the
-// error (via net/http/status.Code) and renders the returned view using the error value as the template model.
-// That error is client-visible when the template renders it directly or through the `mvcModelError` metadata value;
-// controllers should therefore return errors that are safe for their views to expose, or map internal failures to a
-// separate safe presentation model.
+// error (via net/http/status.Code) and renders the returned view using a client-safe Error model.
+// The `mvcModelError` metadata value contains the raw error string for compatibility; templates that render it
+// can expose diagnostic details.
 // Implementations should therefore ensure view is non-nil even in error cases, or accept that rendering may panic.
 type Controller[Model any] func(ctx context.Context) (*View, *Model, error)
 

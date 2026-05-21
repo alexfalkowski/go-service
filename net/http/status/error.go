@@ -39,7 +39,7 @@ func WriteError(res http.ResponseWriter, err error) error {
 	code := Code(err)
 	res.WriteHeader(code)
 
-	_, writeErr := fmt.Fprintln(res, errors.SafeMessage(err, defaultSafeMessage(code)))
+	_, writeErr := fmt.Fprintln(res, errors.SafeMessage(err, DefaultMessage(code)))
 	return writeErr
 }
 

@@ -65,6 +65,11 @@ func TestWriteErrorUsesSafeMessage(t *testing.T) {
 	require.Equal(t, "http: unauthorized", strings.TrimSpace(res.Body.String()))
 }
 
+func TestDefaultMessage(t *testing.T) {
+	require.Equal(t, "http: bad request", httpstatus.DefaultMessage(http.StatusBadRequest))
+	require.Equal(t, "http: internal server error", httpstatus.DefaultMessage(999))
+}
+
 func TestSafeErrorAllowsNilCause(t *testing.T) {
 	err := httpstatus.SafeError(http.StatusUnauthorized, nil)
 
