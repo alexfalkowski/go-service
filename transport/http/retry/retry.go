@@ -91,11 +91,9 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //   - If retries are exhausted after retryable HTTP responses, the final retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
-	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(cfg.Backoff.Duration()))
-
 	return &RoundTripper{
 		RoundTripper: hrt,
-		backoff:      backoff,
+		backoff:      cfg.Backoff,
 		policy:       composePolicy(policies),
 		timeout:      cfg.Timeout,
 		maxRetries:   cfg.MaxRetries(),
@@ -116,8 +114,8 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // If no policy is configured, all requests are eligible for retry for backward compatibility.
 type RoundTripper struct {
 	http.RoundTripper
-	backoff    retry.Backoff
 	policy     Policy
+	backoff    time.Duration
 	timeout    time.Duration
 	maxRetries uint64
 }
@@ -152,7 +150,8 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		return r.attempt(ctx, req, attempt)
 	}
 
-	res, err := retry.DoValue(req.Context(), r.backoff, operation)
+	backoff := retry.WithMaxRetries(r.maxRetries, retry.NewConstant(r.backoff.Duration()))
+	res, err := retry.DoValue(req.Context(), backoff, operation)
 	return res, err
 }
 
