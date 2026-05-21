@@ -22,12 +22,12 @@
 //
 // The Token facade is intentionally conservative when Config.Kind is unknown:
 //
-//   - Generate returns (nil, nil).
-//   - Verify returns (strings.Empty, nil).
+//   - Generate returns (nil, token/errors.ErrInvalidConfig).
+//   - Verify returns (strings.Empty, token/errors.ErrInvalidConfig).
 //
-// This makes “unknown token kind” behave like “feature disabled” in some wiring
-// scenarios, but it also means callers should treat a nil/empty successful result
-// as a signal to check configuration.
+// This makes “unknown token kind” fail closed instead of behaving like “feature
+// disabled” in wiring scenarios. Callers should treat ErrInvalidConfig as a
+// startup or deployment configuration issue.
 //
 // # Configuration and enablement
 //
