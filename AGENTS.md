@@ -67,6 +67,14 @@ matching skill for the task.
   `Config.MaxReceiveSize` before verification. Do not flag this as an
   unbounded-read issue unless the code path bypasses the transport server chain
   without an equivalent request-size cap.
+- HTTP webhook signing intentionally ignores the Standard Webhooks `Sign` error
+  because the current vendored implementation always returns nil. Do not flag
+  this unless the dependency behavior changes.
+- HTTP CloudEvents receiver registration intentionally ignores the current
+  CloudEvents constructor errors because supported wiring passes no protocol
+  options and uses the typed `ReceiverFunc`, which matches the SDK receive
+  handler shape. Do not flag this unless dependency behavior or call arguments
+  change.
 
 ## Testing, Style, And Docs
 
