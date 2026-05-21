@@ -88,6 +88,7 @@ type RoundTripper struct {
 //   - service/method: derived from the request (see `http.ParseServiceMethod`)
 //   - duration: wall-clock elapsed time
 //   - code: HTTP response status code (when available)
+//   - error: transport error (when present)
 //
 // Log level is derived from the status code:
 //   - 4xx → warn
@@ -115,7 +116,7 @@ func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 		attrs = append(attrs, logger.Int(meta.CodeKey, resp.StatusCode))
 	}
 
-	message := logger.NewText(message(strings.Join(strings.Space, method, service)))
+	message := logger.NewMessage(message(strings.Join(strings.Space, method, service)), err)
 
 	r.logger.LogAttrs(ctx, respToLevel(resp), message, attrs...)
 	return resp, err
