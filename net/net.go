@@ -111,7 +111,8 @@ func JoinHostPort(host, port string) string {
 
 // DefaultAddress returns a go-service server address in the form "tcp://:<port>".
 //
-// This is commonly used as a default bind address when only a port is configured.
+// This binds all interfaces by default so containerized workloads remain reachable through
+// their pod/container IPs by Kubernetes Services, probes, ingress controllers, and sidecars.
 func DefaultAddress(port string) string {
 	return NetworkAddress("tcp", ":"+port)
 }

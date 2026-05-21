@@ -31,9 +31,11 @@ type KeyMap map[string]KeyFunc
 //   - "ip": rate limit per client IP address (meta.IPAddr)
 //   - "token": rate limit per authorization token/header (meta.Authorization)
 //
-// These are simple defaults and may not be appropriate for all deployments. For example,
-// User-Agent can be spoofed, and IP-based keys behave differently behind NATs/proxies unless
-// meta.IPAddr is populated correctly by upstream middleware.
+// These defaults are intended for controlled service-to-service traffic where user agents,
+// forwarded IP headers, and authorization metadata are supplied by trusted clients or platform
+// infrastructure. They are not sufficient as public-edge anti-abuse controls when clients can
+// freely spoof headers; use trusted ingress, gateway, service-mesh, or post-auth identity limits
+// for those boundaries.
 func NewKeyMap() KeyMap {
 	return KeyMap{
 		"user-agent": meta.UserAgent,

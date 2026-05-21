@@ -34,6 +34,7 @@ type clientOpts struct {
 	roundTripper   http.RoundTripper
 	limiter        *limiter.Client
 	retry          *retry.Config
+	retryPolicies  []retry.Policy
 	tls            *tls.Config
 	logger         *logger.Logger
 	userAgent      env.UserAgent
@@ -103,11 +104,13 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 //
 // When configured, the composed RoundTripper will apply per-attempt timeouts and retry failed requests
 // according to cfg (attempt count, backoff, and which status codes are considered retryable).
+// Optional policies decide whether a logical request is eligible for retry.
 //
 // If cfg is nil, retries are not enabled.
-func WithClientRetry(cfg *retry.Config) ClientOption {
+func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
+		o.retryPolicies = policies
 	})
 }
 
@@ -224,7 +227,7 @@ func NewRoundTripper(opts ...ClientOption) (http.RoundTripper, error) {
 	}
 
 	if os.retry != nil {
-		hrt = retry.NewRoundTripper(os.retry, hrt)
+		hrt = retry.NewRoundTripper(os.retry, hrt, os.retryPolicies...)
 	}
 
 	if os.breaker {

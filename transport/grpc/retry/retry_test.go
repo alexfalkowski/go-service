@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/status"
@@ -39,6 +40,66 @@ func TestUnaryClientInterceptorRetriesWhenAttemptsIsTwo(t *testing.T) {
 
 	calls := 0
 	err := interceptor(t.Context(), "/test.Service/SayHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		if calls == 1 {
+			return status.Error(codes.Unavailable, "unavailable")
+		}
+
+		return nil
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, 2, calls)
+}
+
+func TestUnaryClientInterceptorDoesNotRetryWhenPolicyDeniesMethod(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, retry.StandardReadMethods)
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorRetriesWhenPolicyAllowsReadMethod(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, retry.StandardReadMethods)
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		if calls == 1 {
+			return status.Error(codes.Unavailable, "unavailable")
+		}
+
+		return nil
+	})
+
+	require.NoError(t, err)
+	require.Equal(t, 2, calls)
+}
+
+func TestUnaryClientInterceptorRetriesWhenPolicyAllowsRequestID(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, retry.IdempotentMethods)
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	calls := 0
+	err := interceptor(ctx, "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		calls++
 		if calls == 1 {
 			return status.Error(codes.Unavailable, "unavailable")

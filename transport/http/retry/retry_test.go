@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/io"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -77,6 +78,39 @@ func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	require.Equal(t, 1, rt.calls)
+}
+
+func TestRoundTripperDoesNotRetryWhenPolicyDeniesRequest(t *testing.T) {
+	rt := &roundTripper{codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt, retry.SafeMethods)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
+	require.Equal(t, 1, rt.calls)
+}
+
+func TestRoundTripperRetriesWhenPolicyAllowsRequestID(t *testing.T) {
+	rt := &roundTripper{codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt, retry.IdempotentRequests)
+
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req := httptest.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, rt.calls)
 }
 
 func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
