@@ -64,6 +64,29 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, rt.calls)
 }
 
+func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
+	rt := &roundTripper{codes: []int{
+		http.StatusTooManyRequests, http.StatusOK,
+		http.StatusTooManyRequests, http.StatusOK,
+	}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+
+	res, err = retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 4, rt.calls)
+}
+
 func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
 	rt := &roundTripper{codes: []int{http.StatusInternalServerError, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
