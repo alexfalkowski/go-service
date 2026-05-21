@@ -28,9 +28,8 @@ type RegisterFunc = func(commander Commander)
 //
 // The returned Application is pre-populated with module-level Name and Version derived from the environment
 // (see cli.Name and cli.Version).
-func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Application {
-	options := newApplicationOpts(opts...)
-	app := &Application{name: Name, version: Version, exitCode: options.exitCode}
+func NewApplication(register RegisterFunc) *Application {
+	app := &Application{name: Name, version: Version}
 	register(app)
 
 	return app
@@ -41,10 +40,9 @@ func NewApplication(register RegisterFunc, opts ...ApplicationOption) *Applicati
 // An Application maintains a set of commands and delegates parsing/execution to the underlying command
 // framework (github.com/cristalhq/acmd).
 type Application struct {
-	cmds     map[string]cmd.Command
-	exitCode ExitCodeFunc
-	name     env.Name
-	version  env.Version
+	cmds    map[string]cmd.Command
+	name    env.Name
+	version env.Version
 }
 
 // AddServer adds a long-running server subcommand with DI lifecycle wiring.
@@ -58,10 +56,10 @@ type Application struct {
 //   - build a DI application with panic recovery, a fresh copy of the provided options, plus the
 //     command's module and runtime.Module
 //   - start the DI application
-//   - block until the DI application's Done channel is closed or ctx is canceled
+//   - block until the DI application shuts down or ctx is canceled
 //   - stop the DI application
 //
-// Any start/stop error is wrapped with the subcommand name for easier attribution.
+// Any start/stop error or non-zero shutdown request is wrapped with the subcommand name for easier attribution.
 func (a *Application) AddServer(name, description string, opts ...Option) *Command {
 	opts = slices.Clone(opts)
 	server := NewCommand(name)
@@ -80,12 +78,21 @@ func (a *Application) AddServer(name, description string, opts ...Option) *Comma
 				return a.prefix(name, err)
 			}
 
+			var code int
 			select {
-			case <-app.Done():
+			case signal := <-app.Wait():
+				code = signal.ExitCode
 			case <-ctx.Done():
 			}
 
-			return a.prefix(name, app.Stop(a.stopContext(ctx)))
+			if err := app.Stop(a.stopContext(ctx)); err != nil {
+				return a.prefix(name, err)
+			}
+			if code > 0 {
+				return a.prefix(name, shutdownError(code))
+			}
+
+			return nil
 		},
 	}
 	runtime.Must(a.register(cmd))
@@ -156,8 +163,9 @@ func (a *Application) Run(ctx context.Context) error {
 
 // RunCode executes the application and returns the process exit code that represents the result.
 //
-// RunCode returns 0 when Run succeeds. When Run returns an error, RunCode logs the error using the
-// telemetry logger and returns the configured exit code for that error.
+// RunCode returns [os.ExitCodeSuccess] when Run succeeds. When Run returns an
+// error, RunCode logs the error and returns either the non-zero shutdown exit
+// code carried by the error or [os.ExitCodeFailure].
 func (a *Application) RunCode(ctx context.Context) int {
 	if err := a.Run(ctx); err != nil {
 		code := a.code(err)
@@ -166,7 +174,7 @@ func (a *Application) RunCode(ctx context.Context) int {
 		return code
 	}
 
-	return 0
+	return os.ExitCodeSuccess
 }
 
 func (a *Application) register(command cmd.Command) error {
@@ -188,17 +196,11 @@ func (a *Application) prefix(prefix string, err error) error {
 }
 
 func (a *Application) code(err error) int {
-	exitCode := a.exitCode
-	if exitCode == nil {
-		exitCode = defaultExitCode
+	if codeErr, ok := errors.AsType[shutdownError](err); ok && codeErr.code() > 0 {
+		return codeErr.code()
 	}
 
-	code := exitCode(err)
-	if code <= 0 {
-		return defaultExitCode(err)
-	}
-
-	return code
+	return os.ExitCodeFailure
 }
 
 func (a *Application) stopContext(ctx context.Context) context.Context {

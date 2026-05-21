@@ -40,6 +40,13 @@ type ShutdownOption = fx.ShutdownOption
 // It can be included as an option to disable Fx's internal logging.
 var NoLogger = fx.NopLogger
 
+// ExitCode configures the process exit code reported by an application shutdown.
+//
+// This is a thin wrapper around fx.ExitCode for use with Shutdowner.Shutdown.
+func ExitCode(code int) ShutdownOption {
+	return fx.ExitCode(code)
+}
+
 // Constructor registers one or more constructors with Fx.
 //
 // This is a thin wrapper around fx.Provide. Each provided constructor is called by Fx/Dig when its

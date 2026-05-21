@@ -5,6 +5,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/meta"
+	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 )
 
@@ -34,7 +35,8 @@ func NewService(name string, server Server, logger *logger.Logger, sh di.Shutdow
 //
 // Concurrency and lifecycle semantics:
 //   - [Service.Start] launches [Server.Serve] in a new goroutine and returns immediately.
-//   - [Service.Start] does not report Serve errors to its caller. A non-nil Serve error is logged and triggers `di.Shutdowner`.
+//   - [Service.Start] does not report Serve errors to its caller. A non-nil Serve error is
+//     logged and triggers `di.Shutdowner` with [os.ExitCodeServeFailure].
 //   - A nil Serve return is treated as normal termination and does not trigger shutdown.
 //   - [Service.Stop] calls [Server.Shutdown] synchronously with the provided context.
 //   - Service does not guard against repeated or concurrent Start/Stop calls; callers should coordinate lifecycle transitions.
@@ -66,8 +68,8 @@ func (s *Service) start() {
 	s.logger.Info("starting server", addr, logger.String(meta.SystemKey, s.name))
 
 	if err := s.server.Serve(); err != nil {
-		// Trigger application shutdown when serving terminates with an error.
-		_ = s.sh.Shutdown()
+		// ExitCodeServeFailure distinguishes serve-loop failures from external shutdown requests.
+		_ = s.sh.Shutdown(di.ExitCode(os.ExitCodeServeFailure))
 		s.logger.Error("could not start server", logger.String(meta.SystemKey, s.name), addr, logger.Error(err))
 	}
 }

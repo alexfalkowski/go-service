@@ -49,6 +49,12 @@ matching skill for the task.
 
 - Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
+- `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
+  shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
+  returns `os.ExitCodeFailure`.
+- `net/server.Service` intentionally logs asynchronous `Server.Serve` errors
+  and requests shutdown with `di.ExitCode(os.ExitCodeServeFailure)`; it does not
+  return the raw serve error from `Stop`.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.

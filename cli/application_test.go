@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -31,25 +32,7 @@ func TestApplicationRun(t *testing.T) {
 	require.NoError(t, app.Run(t.Context()))
 }
 
-func TestApplicationRunCode(t *testing.T) {
-	config := test.FilePath("configs/invalid_http.config.yml")
-
-	os.Args = []string{test.Name.String(), "server", "-i", config}
-
-	app := cli.NewApplication(
-		func(c cli.Commander) {
-			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
-		},
-		cli.WithExitCodeFunc(func(error) int {
-			return 4
-		}),
-	)
-
-	require.Equal(t, 4, app.RunCode(t.Context()))
-}
-
-func TestApplicationRunCodeWithDefaultExitCode(t *testing.T) {
+func TestApplicationRunCodeWithError(t *testing.T) {
 	config := test.FilePath("configs/invalid_http.config.yml")
 
 	os.Args = []string{test.Name.String(), "server", "-i", config}
@@ -61,25 +44,7 @@ func TestApplicationRunCodeWithDefaultExitCode(t *testing.T) {
 		},
 	)
 
-	require.Equal(t, 1, app.RunCode(t.Context()))
-}
-
-func TestApplicationRunCodeWithInvalidExitCode(t *testing.T) {
-	config := test.FilePath("configs/invalid_http.config.yml")
-
-	os.Args = []string{test.Name.String(), "server", "-i", config}
-
-	app := cli.NewApplication(
-		func(c cli.Commander) {
-			cmd := c.AddServer("server", "Start the server.", test.Options()...)
-			cmd.AddInput(strings.Empty)
-		},
-		cli.WithExitCodeFunc(func(error) int {
-			return 0
-		}),
-	)
-
-	require.Equal(t, 1, app.RunCode(t.Context()))
+	require.Equal(t, os.ExitCodeFailure, app.RunCode(t.Context()))
 }
 
 func TestApplicationRunCodeOnSuccess(t *testing.T) {
@@ -93,7 +58,7 @@ func TestApplicationRunCodeOnSuccess(t *testing.T) {
 		},
 	)
 
-	require.Equal(t, 0, app.RunCode(t.Context()))
+	require.Equal(t, os.ExitCodeSuccess, app.RunCode(t.Context()))
 }
 
 func TestApplicationRunWithInvalidFlag(t *testing.T) {
@@ -296,6 +261,34 @@ func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 	}
 }
 
+func TestApplicationServerShutdownExitCodeIsReturned(t *testing.T) {
+	os.Args = []string{test.Name.String(), "server"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddServer("server", "Start the server.", shutdownExitCodeOption(3))
+		},
+	)
+
+	require.Equal(t, 3, app.RunCode(t.Context()))
+}
+
+func TestApplicationServerServeFailureReturnsServeFailureExitCode(t *testing.T) {
+	os.Args = []string{test.Name.String(), "server"}
+	cli.Name = test.Name
+	cli.Version = test.Version
+
+	app := cli.NewApplication(
+		func(c cli.Commander) {
+			c.AddServer("server", "Start the server.", serverFailureOption())
+		},
+	)
+
+	require.Equal(t, os.ExitCodeServeFailure, app.RunCode(t.Context()))
+}
+
 func TestApplicationInvalidClient(t *testing.T) {
 	configs := []string{
 		test.FilePath("configs/invalid_http.config.yml"),
@@ -343,4 +336,50 @@ func lifecycleOption(started chan<- struct{}, stopped chan<- error) di.Option {
 			})
 		}),
 	)
+}
+
+func shutdownExitCodeOption(code int) di.Option {
+	return di.Module(
+		di.NoLogger,
+		di.Constructor(slog.Default),
+		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
+			lc.Append(di.Hook{
+				OnStart: func(context.Context) error {
+					go func() {
+						time.Sleep(10 * time.Millisecond)
+						_ = sh.Shutdown(di.ExitCode(code))
+					}()
+					return nil
+				},
+			})
+		}),
+	)
+}
+
+func serverFailureOption() di.Option {
+	return di.Module(
+		di.NoLogger,
+		di.Constructor(slog.Default),
+		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
+			server.Register(lc, []*server.Service{
+				server.NewService("test", failingServer{}, nil, sh),
+			})
+		}),
+	)
+}
+
+type failingServer struct{}
+
+func (failingServer) Serve() error {
+	time.Sleep(10 * time.Millisecond)
+
+	return test.ErrFailed
+}
+
+func (failingServer) Shutdown(context.Context) error {
+	return nil
+}
+
+func (failingServer) String() string {
+	return "test"
 }
