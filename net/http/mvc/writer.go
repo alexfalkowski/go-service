@@ -30,6 +30,10 @@ func (w *bufferedWriter) Write(p []byte) (int, error) {
 }
 
 func (w *bufferedWriter) WriteHeader(code int) {
+	if w.code != 0 {
+		return
+	}
+
 	w.code = code
 }
 

@@ -51,20 +51,16 @@ func NewService(name string, grpc *grpc.Server, cfg *config.Config, logger *logg
 // via net.ListenNetworkAddress and then bound using net.Listen. Raw listen
 // addresses such as ":9090" default to the "tcp" network.
 //
-// On listen error, the returned *Server is still non-nil (and contains the
-// underlying *grpc.Server) to preserve existing behavior, but it will not have a
-// listener configured.
+// On listen error, NewServer returns nil and the listener error.
 func NewServer(server *grpc.Server, cfg *config.Config) (*Server, error) {
-	srv := &Server{server: server}
 	n, a := net.ListenNetworkAddress(cfg.Address)
 
 	l, err := net.Listen(context.Background(), n, a)
 	if err != nil {
-		return srv, err
+		return nil, err
 	}
 
-	srv.listener = l
-	return srv, nil
+	return &Server{server: server, listener: l}, nil
 }
 
 // Server wraps a *grpc.Server together with the net.Listener it serves on.

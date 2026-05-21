@@ -44,7 +44,7 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 //
 // Listener lifecycle:
 // NewServer creates and stores the listener immediately. The listener is used by Serve/ServeTLS. If listener
-// creation fails, the returned Server is still non-nil (with nil listener) alongside the error.
+// creation fails, NewServer returns nil and the listener error.
 //
 // TLS behavior:
 // If cfg.TLS is non-nil, Serve will set the underlying http.Server.TLSConfig and call ServeTLS with empty
@@ -55,16 +55,14 @@ func NewService(name string, http *http.Server, cfg *config.Config, logger *logg
 // cfg.Address may use either the go-service "<network>://<address>" convention or a raw listen address such as
 // ":8080". Raw addresses default to the "tcp" network.
 func NewServer(server *http.Server, cfg *config.Config) (*Server, error) {
-	srv := &Server{server: server, tls: cfg.TLS}
 	n, a := net.ListenNetworkAddress(cfg.Address)
 
 	l, err := net.Listen(context.Background(), n, a)
 	if err != nil {
-		return srv, err
+		return nil, err
 	}
 
-	srv.listener = l
-	return srv, nil
+	return &Server{server: server, tls: cfg.TLS, listener: l}, nil
 }
 
 // Server adapts a *http.Server to the net/server.Server interface used by go-service.
