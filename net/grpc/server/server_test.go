@@ -29,3 +29,9 @@ func TestNewServerWithRawAddress(t *testing.T) {
 	require.NoError(t, srv.Shutdown(context.Background()))
 	require.NoError(t, <-errCh)
 }
+
+func TestNewServerWithInvalidNetwork(t *testing.T) {
+	srv, err := server.NewServer(grpc.NewServer(test.ConfigOptions, time.Second), &config.Config{Address: "invalid://:0"})
+	require.Error(t, err)
+	require.Nil(t, srv)
+}

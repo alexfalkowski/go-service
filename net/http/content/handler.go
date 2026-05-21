@@ -30,6 +30,11 @@ type RequestHandler[Req any, Res any] func(ctx context.Context, req *Req) (*Res,
 //
 // Successful responses are encoded into a pooled in-memory buffer before being written to the live
 // response writer, so encode failures do not leak partial success bodies.
+//
+// Size limits:
+// NewRequestHandler does not enforce request body size caps itself. In supported wiring, inbound request bodies
+// are capped by the transport HTTP server before content handlers run. Direct users should wrap the handler with
+// an equivalent request-size limit.
 func NewRequestHandler[Req any, Res any](cont *Content, handler RequestHandler[Req, Res]) http.HandlerFunc {
 	return newHandler(cont, func(ctx context.Context) (*Res, error) {
 		req := ptr.Zero[Req]()
