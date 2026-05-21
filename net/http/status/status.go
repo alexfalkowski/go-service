@@ -23,7 +23,7 @@ func Error(code int, msg string) error {
 // instead of err.Error(). If err already carries a status code, it is returned unchanged.
 func SafeError(code int, err error) error {
 	code = normalizeCode(code, err)
-	msg := defaultSafeMessage(code)
+	msg := DefaultMessage(code)
 
 	if err == nil {
 		return &statusError{code: code, error: msg, msg: msg}
@@ -93,6 +93,17 @@ func Errorf(code int, format string, a ...any) error {
 func IsError(err error) bool {
 	_, ok := coderFromError(err)
 	return ok
+}
+
+// DefaultMessage returns the default safe message for code.
+//
+// Unknown codes fall back to StatusInternalServerError.
+func DefaultMessage(code int) string {
+	if msg := http.StatusText(code); msg != "" {
+		return "http: " + strings.ToLower(msg)
+	}
+
+	return "http: " + strings.ToLower(http.StatusText(http.StatusInternalServerError))
 }
 
 // Code extracts the HTTP status code from err.
@@ -170,12 +181,4 @@ func (s *statusError) SafeMessage() string {
 // Unwrap returns the wrapped cause, if any.
 func (s *statusError) Unwrap() error {
 	return s.err
-}
-
-func defaultSafeMessage(code int) string {
-	if msg := http.StatusText(code); msg != "" {
-		return "http: " + strings.ToLower(msg)
-	}
-
-	return "http: " + strings.ToLower(http.StatusText(http.StatusInternalServerError))
 }

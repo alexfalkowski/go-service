@@ -117,6 +117,11 @@ type View struct {
 // Render renders into an internal buffer before writing to the response so template execution failures do not
 // commit a partial response. If ctx is already canceled, Render returns the context error without executing the
 // template. Otherwise, Render returns any template execution error or final response write error.
+//
+// Size limits:
+// MVC does not enforce body size caps itself. In supported wiring, inbound request bodies are capped by the
+// transport HTTP server before MVC handlers run, and outbound response bodies are capped by go-service HTTP
+// clients when responses are read.
 func (v *View) Render(ctx context.Context, model any) error {
 	buffer := pool.Get()
 	defer pool.Put(buffer)

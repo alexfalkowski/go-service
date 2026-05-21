@@ -340,7 +340,9 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 //   - max_send_msg_size
 //
 // This function always registers server reflection via reflection.Register so
-// tools such as grpcurl can discover services when reflection is permitted.
+// tools such as grpcurl can discover services. Deployments that should not expose
+// reflection publicly should restrict access with bind addresses, TLS/client
+// authentication, ingress policy, firewall rules, or service-mesh authorization.
 //
 // Any additional opts are appended after the keepalive options and may further
 // customize server behavior (for example interceptors, credentials, or stats handlers).
@@ -381,7 +383,8 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 
 	server := grpc.NewServer(os...)
 	// security: reflection is intentionally always enabled for go-service
-	// servers so internal tooling can discover registered services.
+	// servers so internal tooling can discover registered services. Restrict
+	// public exposure at the network/auth boundary when needed.
 	reflection.Register(server)
 
 	return server

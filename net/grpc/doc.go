@@ -40,6 +40,14 @@
 //
 // NewServer always enables server reflection via reflection.Register.
 //
+// # Server reflection exposure
+//
+// gRPC server reflection is intentionally always registered by NewServer so internal tooling such as grpcurl can
+// discover services. This package does not provide a runtime switch to disable reflection or decide which callers
+// may use it. Services that should not expose reflection publicly should enforce that at the deployment boundary,
+// for example with bind addresses, TLS/client authentication, ingress policy, firewall rules, or service-mesh
+// authorization.
+//
 // # Telemetry and higher-level wiring
 //
 // This package is not responsible for full transport wiring (listeners, dial

@@ -54,6 +54,8 @@ matching skill for the task.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- gRPC server reflection is intentionally always registered by `net/grpc.NewServer`; restrict public exposure at the bind address, TLS/auth, ingress, firewall, or service-mesh boundary.
+- MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
 - JWT verification requires both the expected algorithm and a `kid` header.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
 - Health registration helpers require `*net/http.ServeMux`.

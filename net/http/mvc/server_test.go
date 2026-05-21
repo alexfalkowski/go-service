@@ -163,7 +163,7 @@ func TestViewRenderReturnsWriteError(t *testing.T) {
 	require.ErrorIs(t, err, test.ErrFailed)
 }
 
-func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
+func TestRouteErrorIncludesSafeModelAndRawMetaInTemplate(t *testing.T) {
 	mux := http.NewServeMux()
 	mvc.Register(mvc.RegisterParams{
 		Mux:         mux,
@@ -171,7 +171,7 @@ func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
 			"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
-			"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ index .Meta "mvcModelError" }}{{ end }}`)},
+			"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Message }} {{ index .Meta "mvcModelError" }}{{ end }}`)},
 		},
 		Pool:   test.Pool,
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
@@ -188,7 +188,7 @@ func TestRouteErrorIncludesMetaInTemplate(t *testing.T) {
 	mux.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusBadRequest, res.Code)
-	require.Contains(t, res.Body.String(), fs.ErrInvalid.Error())
+	require.Contains(t, res.Body.String(), "400 http: bad request invalid argument")
 }
 
 func TestRouteWritesStatusWhenRenderFails(t *testing.T) {
@@ -288,16 +288,16 @@ func TestNotFoundHandlesNotFound(t *testing.T) {
 		FileSystem: fstest.MapFS{
 			"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
 			"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
-			"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Err }}{{ end }}`)},
+			"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Message }}{{ end }}`)},
 		},
 		Pool:   test.Pool,
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *errorModel) {
-		return mvc.NewFullView("views/error.tmpl"), &errorModel{
-			Code: http.StatusNotFound,
-			Err:  status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound)),
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{
+			Code:    http.StatusNotFound,
+			Message: http.StatusText(http.StatusNotFound),
 		}
 	}))
 
@@ -381,16 +381,16 @@ func TestFallback(t *testing.T) {
 				FileSystem: fstest.MapFS{
 					"views/full.tmpl":    &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
 					"views/partial.tmpl": &fstest.MapFile{Data: []byte(`{{ block "content" . }}{{ end }}`)},
-					"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Err }}{{ end }}`)},
+					"views/error.tmpl":   &fstest.MapFile{Data: []byte(`{{ define "content" }}{{ .Model.Code }} {{ .Model.Message }}{{ end }}`)},
 				},
 				Pool:   test.Pool,
 				Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 			})
 
-			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *errorModel) {
-				return mvc.NewPartialView("views/error.tmpl"), &errorModel{
-					Code: http.StatusNotFound,
-					Err:  status.Error(http.StatusNotFound, http.StatusText(http.StatusNotFound)),
+			require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+				return mvc.NewPartialView("views/error.tmpl"), &mvc.Error{
+					Code:    http.StatusNotFound,
+					Message: http.StatusText(http.StatusNotFound),
 				}
 			}))
 
@@ -449,8 +449,8 @@ func TestNotFoundDoesNotReplaceMethodNotAllowed(t *testing.T) {
 		Layout: mvc.NewLayout("views/full.tmpl", "views/partial.tmpl"),
 	})
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *errorModel) {
-		return mvc.NewFullView("views/error.tmpl"), &errorModel{Code: http.StatusNotFound}
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound}
 	}))
 	require.True(t, mvc.Get("/hello", func(_ context.Context) (*mvc.View, *test.Page, error) {
 		return mvc.NewFullView("views/hello.tmpl"), &test.Model, nil
@@ -544,11 +544,6 @@ func (errFileInfo) IsDir() bool {
 
 func (errFileInfo) Sys() any {
 	return nil
-}
-
-type errorModel struct {
-	Err  error
-	Code int
 }
 
 type requestModel struct {

@@ -17,6 +17,9 @@ const BearerAuthorization = "Bearer"
 var (
 	// ForwardedIPs lists the forwarding headers used to derive a client IP address.
 	//
+	// Metadata extraction accepts these as trusted inputs, so callers should only rely on derived IPs behind
+	// trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
+	//
 	// The order reflects the preferred source when multiple headers are present.
 	ForwardedIPs = [...]ForwardedIP{
 		{HTTP: "X-Real-Ip", GRPC: "x-real-ip"},

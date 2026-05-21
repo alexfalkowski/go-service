@@ -64,10 +64,9 @@ func Patch[Model any](pattern string, controller Controller[Model]) bool {
 // The handler sets the response Content-Type to HTML and stores the request and response writer in the
 // request context (via net/http/meta) before invoking the controller.
 //
-// If controller returns an error, the handler renders the returned view using the error value as the template
-// model and writes the corresponding status code (see net/http/status.Code) only after rendering succeeds.
-// Since the error model and `mvcModelError` metadata are available to templates, controller errors should already
-// be safe for client-visible rendering.
+// If controller returns an error, the handler renders the returned view using a safe Error model and writes the
+// corresponding status code (see net/http/status.Code) only after rendering succeeds. The raw error remains
+// available as `mvcModelError` metadata for compatibility; templates that render it can expose diagnostic details.
 // If rendering itself fails, the handler writes the render error status instead.
 func Route[Model any](pattern string, controller Controller[Model]) bool {
 	if !IsDefined() {
@@ -82,8 +81,12 @@ func Route[Model any](pattern string, controller Controller[Model]) bool {
 
 		view, model, err := controller(ctx)
 		if err != nil {
+			code := status.Code(err)
+			message := errors.SafeMessage(err, status.DefaultMessage(code))
+			model := &Error{Code: code, Message: message}
+
 			ctx = meta.WithAttributes(ctx, meta.NewPair("mvcModelError", meta.Error(err)))
-			writeView(ctx, res, view, err, status.Code(err))
+			writeView(ctx, res, view, model, model.Code)
 			return
 		}
 

@@ -737,6 +737,12 @@ The HTTP transport wraps the mux with `net/http.NewNotFoundHandler` so generated
 - MVC missing routes can use `net/http/mvc.NotFoundHandler` to render the registered MVC not-found view when the request accepts HTML (`Accept: text/html`) or is an HTMX request (`Hx-Request: true`).
 - Routes that match and write their own status are not replaced by this mux-level not-found handler.
 
+### HTTP MVC errors
+
+When an MVC controller returns an error, `net/http/mvc.Route` renders the returned view with a client-safe `mvc.Error` model. The model contains the HTTP status `Code` and safe client-visible `Message`.
+
+The raw error string remains available to templates as `mvcModelError` metadata for compatibility. Rendering that metadata can expose diagnostic details, so prefer `.Model.Message` for client-visible error pages.
+
 ### Transport configuration (servers)
 
 Transport config root is `transport.Config`:
@@ -762,6 +768,7 @@ Notes:
 - If address is omitted, defaults are `tcp://:8080` (HTTP) and `tcp://:9090` (gRPC).
 - `max_receive_size` limits inbound payload size. A zero value uses the default `4MB`.
 - For HTTP, `max_receive_size` applies per request body. For gRPC, it applies per inbound unary request and per inbound stream message.
+- MVC does not enforce its own body-size caps; supported HTTP server wiring applies `max_receive_size` before MVC handlers run, and go-service HTTP clients apply their configured response-size cap when reading responses.
 
 Receive-limit example:
 
@@ -823,6 +830,12 @@ Important note:
 - If you are using `go-service-template` or composing the standard bundles such as `module.Server`, `module.Client`, or `transport.Module`, the required transport registration is handled for you by DI.
 - You only need to call transport-level `Register(...)` functions yourself when you intentionally wire transports manually or compose lower-level packages outside the standard module graph.
 - If you are wiring server lifecycle manually, use `net/server.Register(...)`.
+
+### Forwarded IPs and reflection
+
+HTTP and gRPC metadata extraction intentionally trusts common forwarded IP headers/metadata such as `X-Forwarded-For`, `X-Real-IP`, `CF-Connecting-IP`, and `True-Client-IP`. Services that rely on extracted IPs for logging, policy, or rate limiting should only receive traffic through trusted edge infrastructure that strips or overwrites client-supplied forwarding headers.
+
+gRPC server reflection is intentionally always registered by `net/grpc.NewServer` so internal tooling can discover services. Services that should not expose reflection publicly should restrict access with bind addresses, TLS/client authentication, ingress policy, firewall rules, or service-mesh authorization.
 
 ### Transport Dependencies
 

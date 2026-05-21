@@ -95,8 +95,8 @@ func TestRouteError(t *testing.T) {
 func TestNotFound(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
-		return mvc.NewFullView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -118,8 +118,8 @@ func TestNotFound(t *testing.T) {
 func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
-		return mvc.NewFullView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return mvc.NewFullView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -137,8 +137,8 @@ func TestNotFoundUsesContentFallbackWithoutHTMLAccept(t *testing.T) {
 func TestNotFoundHandlesHTMXRequest(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldHTTP())
 
-	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *notFoundModel) {
-		return mvc.NewPartialView("views/error.tmpl"), &notFoundModel{Error: http.StatusText(http.StatusNotFound)}
+	require.True(t, mvc.NotFound(func(_ context.Context) (*mvc.View, *mvc.Error) {
+		return mvc.NewPartialView("views/error.tmpl"), &mvc.Error{Code: http.StatusNotFound, Message: http.StatusText(http.StatusNotFound)}
 	}))
 
 	header := http.Header{}
@@ -250,8 +250,4 @@ func TestMissingViews(t *testing.T) {
 	}))
 	require.False(t, mvc.StaticFile("/robots.txt", "static/robots.txt"))
 	require.False(t, mvc.StaticPathValue("/{file}", "file", "static"))
-}
-
-type notFoundModel struct {
-	Error string
 }
