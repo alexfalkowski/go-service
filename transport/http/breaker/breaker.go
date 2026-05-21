@@ -115,6 +115,20 @@ func (r *RoundTripper) get(req *http.Request) *breaker.CircuitBreaker {
 
 	s := r.opts.settings
 	s.Name = key
+	isSuccessful := s.IsSuccessful
+	s.IsSuccessful = func(err error) bool {
+		if err == nil {
+			return true
+		}
+		if _, ok := errors.AsType[responseError](err); ok {
+			return false
+		}
+		if isSuccessful != nil {
+			return isSuccessful(err)
+		}
+
+		return false
+	}
 
 	cb := breaker.NewCircuitBreaker(s)
 	actual, _ := r.breakers.LoadOrStore(key, cb)
