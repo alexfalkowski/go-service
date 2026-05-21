@@ -31,10 +31,69 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	require.ErrorIs(t, err, breaker.ErrOpenState)
 }
 
+func TestRoundTripperOpensOnFailureStatus(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		statusRoundTripper{status: http.StatusInternalServerError},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+		breaker.WithFailureStatuses(http.StatusInternalServerError),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+}
+
+func TestRoundTripperCountsFailureStatusWithCustomIsSuccessful(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		statusRoundTripper{status: http.StatusInternalServerError},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+			IsSuccessful: func(error) bool {
+				return true
+			},
+		}),
+		breaker.WithFailureStatuses(http.StatusInternalServerError),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+}
+
 type errorRoundTripper struct {
 	err error
 }
 
 func (r errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
 	return nil, r.err
+}
+
+type statusRoundTripper struct {
+	status int
+}
+
+func (r statusRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
+	return &http.Response{
+		StatusCode: r.status,
+		Body:       http.NoBody,
+		Header:     make(http.Header),
+	}, nil
 }
