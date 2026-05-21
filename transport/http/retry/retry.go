@@ -82,6 +82,11 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // `sethvargo/go-retry` expects a retry count, NewRoundTripper converts it via `cfg.MaxRetries()`
 // before wrapping the constant backoff in `WithMaxRetries`.
 //
+// Policy behavior:
+// When no policy is provided, all requests are eligible for retry when they hit a retryable transport error
+// or status. This preserves historical behavior. New callers that only want side-effect-safe retries should
+// pass IdempotentRequests, SafeMethods, or another explicit policy.
+//
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the first retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
@@ -102,6 +107,7 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 // Important:
 // Many HTTP requests are not safe to retry unless they are idempotent or the server supports safe retries.
 // This transport does not attempt to determine idempotency; it only applies the configured retry policy.
+// If no policy is configured, all requests are eligible for retry for backward compatibility.
 type RoundTripper struct {
 	http.RoundTripper
 	backoff retry.Backoff

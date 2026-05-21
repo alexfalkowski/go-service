@@ -191,5 +191,5 @@ func CodeToLevel(code codes.Code) logger.Level {
 }
 
 func message(msg string) string {
-	return "grpc: get " + msg
+	return "grpc: " + msg
 }

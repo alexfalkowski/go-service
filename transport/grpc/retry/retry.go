@@ -65,6 +65,11 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 // Retries are only attempted for selected gRPC status codes. This implementation currently retries on
 // `codes.Unavailable` and `codes.DataLoss` (see `retry.WithCodes` in the implementation).
 //
+// Policy behavior:
+// When no policy is provided, all unary RPCs are eligible for retry when they hit a retryable gRPC status.
+// This preserves historical behavior. New callers that only want side-effect-safe retries should pass
+// IdempotentMethods, StandardReadMethods, or another explicit policy.
+//
 // Notes:
 // This interceptor does not automatically retry on every error; application-level errors that map to other
 // status codes will not be retried by default.
