@@ -54,6 +54,13 @@ matching skill for the task.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- HTTP telemetry logger service/method derivation may include request URL path
+  segments for non-canonical HTTP routes. This is intentional for client and
+  server debugging because HTTP clients can call arbitrary paths and route
+  patterns are not always available at the logging layer. Do not flag this as a
+  query/header/body leakage issue unless the logger starts recording
+  `RawQuery`, `RequestURI`, headers, cookies, or bodies, or a specific route
+  places secrets in path segments contrary to service policy.
 - gRPC server reflection is intentionally always registered by `net/grpc.NewServer`; restrict public exposure at the bind address, TLS/auth, ingress, firewall, or service-mesh boundary.
 - MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
 - JWT verification requires both the expected algorithm and a `kid` header.
