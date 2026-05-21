@@ -46,8 +46,10 @@ func SafeMethods(req *http.Request) bool {
 
 // HasRequestID allows retries when request metadata contains a request id.
 //
-// A request id only makes write retries safe when the server treats it as an idempotency key and deduplicates
-// repeated attempts for the same logical operation.
+// In go-service, Request-Id identifies the logical request, not an individual wire attempt. The client metadata
+// middleware installs it outside the retry middleware, so all retry attempts for one logical request share the same
+// value. Services that retry writes should treat Request-Id as the idempotency key and deduplicate repeated attempts
+// by it.
 func HasRequestID(req *http.Request) bool {
 	return !meta.RequestID(req.Context()).IsEmpty()
 }
