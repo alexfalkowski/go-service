@@ -36,6 +36,7 @@ type clientOpts struct {
 	security          *tls.Config
 	logger            *logger.Logger
 	retry             *retry.Config
+	retryPolicies     []retry.Policy
 	limiter           *limiter.Client
 	userAgent         env.UserAgent
 	id                env.UserID
@@ -107,11 +108,13 @@ func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 //
 // Retries are applied via a unary client interceptor. The retry policy is derived from cfg and
 // typically includes a maximum attempt count, per-retry timeout, and a backoff strategy.
+// Optional policies decide whether a logical unary RPC is eligible for retry.
 //
 // If cfg is nil, retries are not enabled.
-func WithClientRetry(cfg *retry.Config) ClientOption {
+func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.retry = cfg
+		o.retryPolicies = policies
 	})
 }
 
@@ -146,20 +149,22 @@ func WithClientDialOption(opts ...grpc.DialOption) ClientOption {
 	})
 }
 
-// WithClientUnaryInterceptors prepends custom unary client interceptors.
+// WithClientUnaryInterceptors adds custom unary client interceptors after metadata propagation.
 //
-// Interceptors provided here are executed before the standard interceptors added by this package
-// (timeout, retry, breaker, logging, token injection, metadata propagation, etc.).
+// Metadata propagation runs first so custom interceptors see the resolved user-agent and request-id.
+// Interceptors provided here then run before the remaining standard interceptors added by this package
+// (timeout, retry, breaker, logging, token injection, etc.).
 func WithClientUnaryInterceptors(unary ...grpc.UnaryClientInterceptor) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.unary = unary
 	})
 }
 
-// WithClientStreamInterceptors prepends custom stream client interceptors.
+// WithClientStreamInterceptors adds custom stream client interceptors after metadata propagation.
 //
-// Interceptors provided here are executed before the standard interceptors added by this package
-// (logging, token injection, metadata propagation, etc.).
+// Metadata propagation runs first so custom interceptors see the resolved user-agent and request-id.
+// Interceptors provided here then run before the remaining standard interceptors added by this package
+// (logging, token injection, limiter, etc.).
 func WithClientStreamInterceptors(stream ...grpc.StreamClientInterceptor) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.stream = stream
@@ -219,6 +224,8 @@ func WithClientLimiter(limiter *limiter.Client) ClientOption {
 //   - if TLS is enabled, TLS config is constructed using the package-registered filesystem (see `Register`)
 //     to resolve TLS source strings.
 //   - otherwise, insecure transport credentials are used.
+//     This default is intended for local and in-cluster/container traffic where transport security is provided
+//     at the platform boundary; use WithClientTLS for calls outside that trusted boundary.
 func NewDialOptions(opts ...ClientOption) ([]grpc.DialOption, error) {
 	os := options(opts...)
 
@@ -287,23 +294,24 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 // UnaryClientInterceptors builds the unary client interceptor chain derived from opts.
 //
 // Order matters. Interceptors are appended in the following sequence:
+//   - metadata propagation interceptor (user-agent and request-id)
 //   - any custom interceptors provided via `WithClientUnaryInterceptors`
 //   - a timeout interceptor
 //   - optional retry interceptor (when configured)
 //   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
 //   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)
-//   - metadata propagation interceptor (user-agent and request-id)
 //   - optional limiter interceptor (when configured)
 func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor {
 	os := options(opts...)
 	unary := []grpc.UnaryClientInterceptor{}
 
+	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
 	unary = append(unary, os.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
 
 	if os.retry != nil {
-		unary = append(unary, retry.UnaryClientInterceptor(os.retry))
+		unary = append(unary, retry.UnaryClientInterceptor(os.retry, os.retryPolicies...))
 	}
 
 	if os.breaker {
@@ -318,7 +326,6 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 		unary = append(unary, token.UnaryClientInterceptor(os.id, os.gen))
 	}
 
-	unary = append(unary, meta.UnaryClientInterceptor(os.userAgent, os.generator))
 	if os.limiter != nil {
 		unary = append(unary, limiter.UnaryClientInterceptor(os.limiter))
 	}
@@ -328,6 +335,7 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 
 func streamDialOption(opts *clientOpts) grpc.DialOption {
 	stream := []grpc.StreamClientInterceptor{}
+	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
 	stream = append(stream, opts.stream...)
 
 	if opts.logger != nil {
@@ -338,7 +346,6 @@ func streamDialOption(opts *clientOpts) grpc.DialOption {
 		stream = append(stream, token.StreamClientInterceptor(opts.id, opts.gen))
 	}
 
-	stream = append(stream, meta.StreamClientInterceptor(opts.userAgent, opts.generator))
 	if opts.limiter != nil {
 		stream = append(stream, limiter.StreamClientInterceptor(opts.limiter))
 	}

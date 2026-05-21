@@ -13,7 +13,7 @@ import (
 )
 
 func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
-	ctx := meta.WithAttributes(context.Background(),
+	ctx := meta.WithAttributes(t.Context(),
 		meta.WithUserAgent(meta.String("current-agent")),
 		meta.WithRequestID(meta.String("current-id")),
 	)
@@ -35,7 +35,7 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 }
 
 func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
-	ctx := meta.WithAttributes(context.Background(),
+	ctx := meta.WithAttributes(t.Context(),
 		meta.WithUserAgent(meta.String("current-agent")),
 		meta.WithRequestID(meta.String("current-id")),
 	)
@@ -62,7 +62,7 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 
 func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
-	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
 		require.Equal(t, meta.String("peer"), meta.Attribute(ctx, meta.IPAddrKindKey))
@@ -76,7 +76,7 @@ func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 
 func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
-	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -91,7 +91,7 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 
 func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
-	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -106,7 +106,7 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 
 func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
-	ctx := meta.NewIncomingContext(context.Background(), meta.Map{})
+	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 	stream := &serverStream{ctx: ctx}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(any, grpc.ServerStream) error {
@@ -119,7 +119,7 @@ func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
 
 func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
 	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
-	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs(
+	ctx := meta.NewIncomingContext(t.Context(), meta.Pairs(
 		"authorization", "invalid",
 		"user-agent", "watch-agent",
 	))
@@ -134,7 +134,7 @@ func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
 }
 
 func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
-	ctx := meta.NewIncomingContext(context.Background(), meta.Pairs("request-id", "original"))
+	ctx := meta.NewIncomingContext(t.Context(), meta.Pairs("request-id", "original"))
 
 	md := meta.ExtractIncoming(ctx)
 	md.Set("request-id", "changed")
@@ -144,8 +144,15 @@ func TestExtractIncomingReturnsMutableCopy(t *testing.T) {
 	require.Equal(t, []string{"original"}, original.Get("request-id"))
 }
 
+func TestExtractIncomingReturnsEmptyMapWithoutMetadata(t *testing.T) {
+	md := meta.ExtractIncoming(t.Context())
+
+	require.NotNil(t, md)
+	require.Empty(t, md)
+}
+
 func TestExtractOutgoingReturnsMutableCopy(t *testing.T) {
-	ctx := meta.NewOutgoingContext(context.Background(), meta.Pairs("request-id", "original"))
+	ctx := meta.NewOutgoingContext(t.Context(), meta.Pairs("request-id", "original"))
 
 	md := meta.ExtractOutgoing(ctx)
 	md.Set("request-id", "changed")
@@ -153,6 +160,13 @@ func TestExtractOutgoingReturnsMutableCopy(t *testing.T) {
 	original, ok := meta.FromOutgoingContext(ctx)
 	require.True(t, ok)
 	require.Equal(t, []string{"original"}, original.Get("request-id"))
+}
+
+func TestExtractOutgoingReturnsEmptyMapWithoutMetadata(t *testing.T) {
+	md := meta.ExtractOutgoing(t.Context())
+
+	require.NotNil(t, md)
+	require.Empty(t, md)
 }
 
 type staticGenerator string

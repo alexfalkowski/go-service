@@ -20,6 +20,11 @@ func Contains(s, substr string) bool {
 	return strings.Contains(s, substr)
 }
 
+// HasPrefix is an alias for strings.HasPrefix.
+func HasPrefix(s, prefix string) bool {
+	return strings.HasPrefix(s, prefix)
+}
+
 // Concat is an alias for strings.Concat.
 func Concat(ss ...string) string {
 	return strings.Concat(ss...)

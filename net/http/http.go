@@ -26,6 +26,12 @@ const MethodDelete = http.MethodDelete
 // MethodGet is an alias of http.MethodGet.
 const MethodGet = http.MethodGet
 
+// MethodHead is an alias of http.MethodHead.
+const MethodHead = http.MethodHead
+
+// MethodOptions is an alias of http.MethodOptions.
+const MethodOptions = http.MethodOptions
+
 // MethodPatch is an alias of http.MethodPatch.
 const MethodPatch = http.MethodPatch
 

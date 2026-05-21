@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -22,6 +23,40 @@ import (
 //   - `Backoff`: constant delay between retries.
 type Config = config.Config
 
+// Policy decides whether req is eligible for retry.
+//
+// Policies describe operation safety, not transient failure classification. The retry transport still only retries
+// retryable responses/errors after the policy allows the logical request.
+type Policy func(req *http.Request) bool
+
+// AllowAll allows retries for every request.
+func AllowAll(*http.Request) bool {
+	return true
+}
+
+// SafeMethods allows retries for HTTP methods that should not have request side effects.
+func SafeMethods(req *http.Request) bool {
+	switch req.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return true
+	default:
+		return false
+	}
+}
+
+// HasRequestID allows retries when request metadata contains a request id.
+//
+// A request id only makes write retries safe when the server treats it as an idempotency key and deduplicates
+// repeated attempts for the same logical operation.
+func HasRequestID(req *http.Request) bool {
+	return !meta.RequestID(req.Context()).IsEmpty()
+}
+
+// IdempotentRequests allows safe methods, or requests with a request-id idempotency contract.
+func IdempotentRequests(req *http.Request) bool {
+	return SafeMethods(req) || HasRequestID(req)
+}
+
 // ErrInvalidStatusCode indicates an HTTP response status code that is considered invalid in the context
 // of a retry decision.
 //
@@ -36,6 +71,7 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // NewRoundTripper constructs a RoundTripper that applies per-attempt timeouts and retries.
 //
 // The constructed RoundTripper wraps hrt and, for each request:
+//   - checks whether the request is eligible for retry using policies, and
 //   - applies a per-attempt timeout derived from `cfg.Timeout`, and
 //   - retries responses and status errors with retryable HTTP status codes, and
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
@@ -49,10 +85,10 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the first retryable response is returned.
 //   - If retries are exhausted after retryable transport errors, the original transport error is returned.
-func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
+func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
 	backoff := retry.WithMaxRetries(cfg.MaxRetries(), retry.NewConstant(cfg.Backoff.Duration()))
 
-	return &RoundTripper{RoundTripper: hrt, timeout: cfg.Timeout, backoff: backoff}
+	return &RoundTripper{RoundTripper: hrt, timeout: cfg.Timeout, backoff: backoff, policy: composePolicy(policies)}
 }
 
 // RoundTripper wraps an underlying `http.RoundTripper` and retries requests according to its configuration.
@@ -69,6 +105,7 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper) *RoundTripper {
 type RoundTripper struct {
 	http.RoundTripper
 	backoff retry.Backoff
+	policy  Policy
 	timeout time.Duration
 }
 
@@ -92,6 +129,10 @@ type RoundTripper struct {
 // this implementation relies on `req.GetBody`; when it is nil for a request with a body, the first attempt
 // is still executed but any retryable result is treated as non-retryable to avoid reusing a consumed body.
 func (r *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if r.policy != nil && !r.policy(req) {
+		return r.RoundTripper.RoundTrip(req)
+	}
+
 	attempt := &roundTripAttempt{}
 
 	operation := func(ctx context.Context) (*http.Response, error) {
@@ -257,5 +298,28 @@ func statusError(retryErr, err error) error {
 func closeResponse(res *http.Response) {
 	if res != nil && res.Body != nil {
 		_ = res.Body.Close()
+	}
+}
+
+func composePolicy(policies []Policy) Policy {
+	filtered := make([]Policy, 0, len(policies))
+	for _, policy := range policies {
+		if policy != nil {
+			filtered = append(filtered, policy)
+		}
+	}
+
+	if len(filtered) == 0 {
+		return AllowAll
+	}
+
+	return func(req *http.Request) bool {
+		for _, policy := range filtered {
+			if !policy(req) {
+				return false
+			}
+		}
+
+		return true
 	}
 }
