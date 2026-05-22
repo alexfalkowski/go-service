@@ -5,7 +5,6 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/crypto/rand"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +21,7 @@ func TestValidRand(t *testing.T) {
 }
 
 func TestGenerateBytesUsesRawBytes(t *testing.T) {
-	gen := rand.NewGenerator(staticReader{data: []byte{0x00, 0x01, 0x7f, 0x80, 0xff}})
+	gen := rand.NewGenerator(test.StaticReader{Data: []byte{0x00, 0x01, 0x7f, 0x80, 0xff}})
 
 	data, err := gen.GenerateBytes(5)
 	require.NoError(t, err)
@@ -38,17 +37,4 @@ func TestInvalidRand(t *testing.T) {
 	gen = rand.NewGenerator(&test.ErrReaderCloser{})
 	_, err = gen.GenerateText(5)
 	require.Error(t, err)
-}
-
-type staticReader struct {
-	data []byte
-}
-
-func (s staticReader) Read(p []byte) (int, error) {
-	n := copy(p, s.data)
-	if n < len(p) {
-		return n, io.EOF
-	}
-
-	return n, nil
 }

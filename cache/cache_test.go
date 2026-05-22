@@ -12,7 +12,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -23,7 +22,7 @@ import (
 func TestValidCache(t *testing.T) {
 	for _, tt := range cacheRoundTripCases() {
 		t.Run(tt.name, func(t *testing.T) {
-			testValidCacheCase(t, tt.config, tt.persist(), tt.get())
+			test.RequireCacheRoundTrip(t, tt.config, tt.persist(), tt.get())
 		})
 	}
 }
@@ -156,7 +155,7 @@ func TestErroneousSave(t *testing.T) {
 	t.Run("read from only falls back to configured encoder", func(t *testing.T) {
 		config := test.NewCacheConfig("sync", "none", "json", "redis")
 		world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
-		require.NoError(t, world.Persist(t.Context(), "test", &readFromOnly{Name: "hello?"}, time.Minute))
+		require.NoError(t, world.Persist(t.Context(), "test", &test.ReadFromOnly{Name: "hello?"}, time.Minute))
 
 		var get test.Request
 		require.NoError(t, world.Get(t.Context(), "test", &get))
@@ -193,7 +192,7 @@ func TestWriteToOnlyUsesConfiguredEncoderOnGet(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(config))
 	require.NoError(t, world.Persist(t.Context(), "test", &test.Request{Name: "hello?"}, time.Minute))
 
-	get := &writeToOnly{}
+	get := &test.WriteToOnly{}
 	require.NoError(t, world.Get(t.Context(), "test", get))
 	require.Equal(t, "hello?", get.Name)
 }
@@ -271,53 +270,9 @@ func cacheRoundTripCases() []cacheRoundTripCase {
 	return tests
 }
 
-func testValidCacheCase(t *testing.T, cfg *config.Config, persist, get any) {
-	t.Helper()
-
-	world := test.NewStartedWorld(t, test.WithWorldCacheConfig(cfg))
-
-	require.NoError(t, world.Persist(t.Context(), "test", persist, time.Minute))
-	require.NoError(t, world.Get(t.Context(), "test", get))
-	assertValidCacheValue(t, get)
-	require.NoError(t, world.Remove(t.Context(), "test"))
-}
-
-func assertValidCacheValue(t *testing.T, get any) {
-	t.Helper()
-
-	switch kind := get.(type) {
-	case *string:
-		require.Equal(t, "hello?", *kind)
-	case *bytes.Buffer:
-		require.Equal(t, strings.Bytes("hello?"), kind.Bytes())
-	case *v1.SayHelloRequest:
-		require.Equal(t, "hello?", kind.GetName())
-	case *test.Request:
-		require.Equal(t, "hello?", kind.Name)
-	default:
-		require.Fail(t, "invalid kind")
-	}
-}
-
 type cacheRoundTripCase struct {
 	persist func() any
 	get     func() any
 	config  *config.Config
 	name    string
-}
-
-type readFromOnly struct {
-	Name string `json:"name"`
-}
-
-func (*readFromOnly) ReadFrom(io.Reader) (int64, error) {
-	return 0, nil
-}
-
-type writeToOnly struct {
-	Name string `json:"name"`
-}
-
-func (*writeToOnly) WriteTo(io.Writer) (int64, error) {
-	return 0, nil
 }

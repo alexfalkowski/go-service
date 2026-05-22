@@ -48,12 +48,12 @@ func TestInvalidBinaryDecode(t *testing.T) {
 
 func TestInvalidBinaryDecodeDoesNotRead(t *testing.T) {
 	encoder := proto.NewBinary()
-	reader := &trackingReader{err: io.EOF}
+	reader := &test.TrackingReader{Err: io.EOF}
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
 	require.ErrorIs(t, err, errors.ErrInvalidType)
-	require.Zero(t, reader.reads)
+	require.Zero(t, reader.Reads)
 }
 
 func TestValidTextEncoder(t *testing.T) {
@@ -93,12 +93,12 @@ func TestInvalidTextDecode(t *testing.T) {
 
 func TestInvalidTextDecodeDoesNotRead(t *testing.T) {
 	encoder := proto.NewText()
-	reader := &trackingReader{err: io.EOF}
+	reader := &test.TrackingReader{Err: io.EOF}
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
 	require.ErrorIs(t, err, errors.ErrInvalidType)
-	require.Zero(t, reader.reads)
+	require.Zero(t, reader.Reads)
 }
 
 func TestValidJSONEncoder(t *testing.T) {
@@ -138,12 +138,12 @@ func TestInvalidJSONDecode(t *testing.T) {
 
 func TestInvalidJSONDecodeDoesNotRead(t *testing.T) {
 	encoder := proto.NewJSON()
-	reader := &trackingReader{err: io.EOF}
+	reader := &test.TrackingReader{Err: io.EOF}
 
 	var msg string
 	err := encoder.Decode(reader, &msg)
 	require.ErrorIs(t, err, errors.ErrInvalidType)
-	require.Zero(t, reader.reads)
+	require.Zero(t, reader.Reads)
 }
 
 func TestErrBinaryDecode(t *testing.T) {
@@ -162,14 +162,4 @@ func TestErrJSONDecode(t *testing.T) {
 	encoder := proto.NewJSON()
 	var msg health.Response
 	require.Error(t, encoder.Decode(&test.ErrReaderCloser{}, &msg))
-}
-
-type trackingReader struct {
-	err   error
-	reads int
-}
-
-func (r *trackingReader) Read(_ []byte) (int, error) {
-	r.reads++
-	return 0, r.err
 }

@@ -29,7 +29,7 @@ func TestSignOverwritesHeaders(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)
 
-	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1", "id-2"}})
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1", "id-2"}})
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
 
 	require.NoError(t, hook.Sign(req))
@@ -44,7 +44,7 @@ func TestSignAndVerifyNilBody(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)
 
-	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	req := &http.Request{Header: make(http.Header)}
 
 	require.NoError(t, hook.Sign(req))
@@ -59,7 +59,7 @@ func TestSignHandlesNilRequestHeader(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)
 
-	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
 	req := &http.Request{Body: http.NoBody}
 
 	require.NoError(t, hook.Sign(req))
@@ -71,7 +71,7 @@ func TestSignHandlesNilRequestHeader(t *testing.T) {
 
 func TestRoundTripper(t *testing.T) {
 	hook := hooks.NewWebhook(nil, nil)
-	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: make(http.Header)}, nil
 	}))
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &test.ErrReaderCloser{})
@@ -85,8 +85,8 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)
 
-	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
-	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
@@ -107,8 +107,8 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	webhook, err := webhooks.NewWebhook("whsec_dGVzdA==")
 	require.NoError(t, err)
 
-	hook := hooks.NewWebhook(webhook, &generator{ids: []string{"id-1"}})
-	rt := hooks.NewRoundTripper(hook, roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	hook := hooks.NewWebhook(webhook, &test.IDSequenceGenerator{IDs: []string{"id-1"}})
+	rt := hooks.NewRoundTripper(hook, test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookID))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookSignature))
 		require.NotEmpty(t, req.Header.Get(webhooks.HeaderWebhookTimestamp))
@@ -136,21 +136,4 @@ func TestHandler(t *testing.T) {
 
 	require.True(t, called)
 	require.Equal(t, http.StatusOK, res.Code)
-}
-
-type roundTripperFunc func(req *http.Request) (*http.Response, error)
-
-func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
-}
-
-type generator struct {
-	ids []string
-}
-
-func (g *generator) Generate() string {
-	id := g.ids[0]
-	g.ids = g.ids[1:]
-
-	return id
 }

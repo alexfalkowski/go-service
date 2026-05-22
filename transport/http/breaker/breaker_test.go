@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/breaker"
 	"github.com/stretchr/testify/require"
@@ -12,7 +13,7 @@ import (
 func TestRoundTripperOpensOnTransportError(t *testing.T) {
 	transportErr := errors.New("transport unavailable")
 	rt := breaker.NewRoundTripper(
-		errorRoundTripper{err: transportErr},
+		&test.ErrorRoundTripper{Err: transportErr},
 		breaker.WithSettings(breaker.Settings{
 			ReadyToTrip: func(counts breaker.Counts) bool {
 				return counts.ConsecutiveFailures >= 1
@@ -33,7 +34,7 @@ func TestRoundTripperOpensOnTransportError(t *testing.T) {
 
 func TestRoundTripperOpensOnFailureStatus(t *testing.T) {
 	rt := breaker.NewRoundTripper(
-		statusRoundTripper{status: http.StatusInternalServerError},
+		&test.StatusRoundTripper{Status: http.StatusInternalServerError},
 		breaker.WithSettings(breaker.Settings{
 			ReadyToTrip: func(counts breaker.Counts) bool {
 				return counts.ConsecutiveFailures >= 1
@@ -55,7 +56,7 @@ func TestRoundTripperOpensOnFailureStatus(t *testing.T) {
 
 func TestRoundTripperCountsFailureStatusWithCustomIsSuccessful(t *testing.T) {
 	rt := breaker.NewRoundTripper(
-		statusRoundTripper{status: http.StatusInternalServerError},
+		&test.StatusRoundTripper{Status: http.StatusInternalServerError},
 		breaker.WithSettings(breaker.Settings{
 			ReadyToTrip: func(counts breaker.Counts) bool {
 				return counts.ConsecutiveFailures >= 1
@@ -76,24 +77,4 @@ func TestRoundTripperCountsFailureStatusWithCustomIsSuccessful(t *testing.T) {
 	res, err = rt.RoundTrip(req)
 	require.Nil(t, res)
 	require.ErrorIs(t, err, breaker.ErrOpenState)
-}
-
-type errorRoundTripper struct {
-	err error
-}
-
-func (r errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	return nil, r.err
-}
-
-type statusRoundTripper struct {
-	status int
-}
-
-func (r statusRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	return &http.Response{
-		StatusCode: r.status,
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
 }

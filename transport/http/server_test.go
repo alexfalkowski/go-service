@@ -73,13 +73,9 @@ func TestServerMaxReceiveSizeWithUnknownLength(t *testing.T) {
 		t.Context(),
 		world.PathServerURL("http", "hello"),
 		header,
-		&unknownLengthReader{Reader: strings.NewReader(`{"name":"` + strings.Repeat("a", 256) + `"}`)},
+		&test.UnknownLengthReader{Reader: strings.NewReader(`{"name":"` + strings.Repeat("a", 256) + `"}`)},
 	)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Equal(t, "http: request entity too large", body)
-}
-
-type unknownLengthReader struct {
-	*strings.Reader
 }

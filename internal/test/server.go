@@ -154,3 +154,35 @@ func (s *NoopServer) Shutdown(_ context.Context) error {
 func (s *NoopServer) String() string {
 	return "test"
 }
+
+// NewObservableServer returns an ObservableServer with an initialized Done channel.
+func NewObservableServer(err, shutdownErr error) *ObservableServer {
+	return &ObservableServer{Err: err, ShutdownErr: shutdownErr, Done: make(chan struct{})}
+}
+
+// ObservableServer is a server.Server test double that records serve and shutdown activity.
+type ObservableServer struct {
+	Err         error
+	ShutdownErr error
+	Done        chan struct{}
+	Shutdowns   int
+}
+
+// Serve closes Done and returns Err.
+func (s *ObservableServer) Serve() error {
+	close(s.Done)
+
+	return s.Err
+}
+
+// Shutdown increments Shutdowns and returns ShutdownErr.
+func (s *ObservableServer) Shutdown(_ context.Context) error {
+	s.Shutdowns++
+
+	return s.ShutdownErr
+}
+
+// String returns a stable identifier for logs and assertions.
+func (*ObservableServer) String() string {
+	return "test"
+}

@@ -49,3 +49,17 @@ func (e *enc) Encode(_ io.Writer, _ any) error {
 func (e *enc) Decode(_ io.Reader, _ any) error {
 	return e.err
 }
+
+// PartialEncoder writes a partial payload and then fails encoding.
+type PartialEncoder struct{}
+
+// Encode writes a partial payload and returns ErrFailed.
+func (PartialEncoder) Encode(w io.Writer, _ any) error {
+	_, _ = io.WriteString(w, "partial")
+	return ErrFailed
+}
+
+// Decode implements encoding.Encoder and always succeeds.
+func (PartialEncoder) Decode(io.Reader, any) error {
+	return nil
+}

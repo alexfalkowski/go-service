@@ -18,3 +18,24 @@ var Generators = id.NewMap(id.MapParams{
 	UUID:   uuid.NewGenerator(),
 	XID:    xid.NewGenerator(),
 })
+
+// IDSequenceGenerator is an id.Generator test double that returns configured IDs in order.
+type IDSequenceGenerator struct {
+	IDs []string
+}
+
+// Generate returns the next configured ID.
+func (g *IDSequenceGenerator) Generate() string {
+	id := g.IDs[0]
+	g.IDs = g.IDs[1:]
+
+	return id
+}
+
+// StaticIDGenerator is an id.Generator test double that always returns the same ID.
+type StaticIDGenerator string
+
+// Generate returns the configured ID.
+func (g StaticIDGenerator) Generate() string {
+	return string(g)
+}

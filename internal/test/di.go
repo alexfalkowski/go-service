@@ -32,6 +32,12 @@ import (
 	webhooks "github.com/standard-webhooks/standard-webhooks/libraries/go"
 )
 
+// NoopLifecycle is a di.Lifecycle test double that ignores appended hooks.
+type NoopLifecycle struct{}
+
+// Append implements di.Lifecycle.
+func (NoopLifecycle) Append(di.Hook) {}
+
 // Options returns the DI options used by tests that exercise the full server module wiring.
 //
 // The option set decorates config, registers health checks and observers, and

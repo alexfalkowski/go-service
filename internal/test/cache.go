@@ -3,10 +3,14 @@ package test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/cache"
+	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
+	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/strings"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
@@ -60,6 +64,56 @@ func (*ErrCache) Flush(context.Context) error {
 // Save stores the value in the cache for the given TTL.
 func (*ErrCache) Save(context.Context, string, string, time.Duration) error {
 	return ErrFailed
+}
+
+// RequireCacheRoundTrip persists a value, reads it back, and asserts the shared hello payload.
+func RequireCacheRoundTrip(tb testing.TB, cfg *config.Config, persist, get any) {
+	tb.Helper()
+
+	world := NewStartedWorld(tb, WithWorldCacheConfig(cfg))
+
+	require.NoError(tb, world.Persist(tb.Context(), "test", persist, time.Minute))
+	require.NoError(tb, world.Get(tb.Context(), "test", get))
+	RequireCacheValue(tb, get)
+	require.NoError(tb, world.Remove(tb.Context(), "test"))
+}
+
+// RequireCacheValue asserts that get contains the shared hello payload.
+func RequireCacheValue(tb testing.TB, get any) {
+	tb.Helper()
+
+	switch kind := get.(type) {
+	case *string:
+		require.Equal(tb, "hello?", *kind)
+	case *bytes.Buffer:
+		require.Equal(tb, strings.Bytes("hello?"), kind.Bytes())
+	case *v1.SayHelloRequest:
+		require.Equal(tb, "hello?", kind.GetName())
+	case *Request:
+		require.Equal(tb, "hello?", kind.Name)
+	default:
+		require.Fail(tb, "invalid kind")
+	}
+}
+
+// ReadFromOnly is a cache payload that implements io.ReaderFrom but relies on normal encoding.
+type ReadFromOnly struct {
+	Name string `json:"name"`
+}
+
+// ReadFrom implements io.ReaderFrom without consuming input.
+func (*ReadFromOnly) ReadFrom(io.Reader) (int64, error) {
+	return 0, nil
+}
+
+// WriteToOnly is a cache payload that implements io.WriterTo but relies on normal decoding.
+type WriteToOnly struct {
+	Name string `json:"name"`
+}
+
+// WriteTo implements io.WriterTo without writing output.
+func (*WriteToOnly) WriteTo(io.Writer) (int64, error) {
+	return 0, nil
 }
 
 func redisCache(lc di.Lifecycle) (*cache.Cache, error) {

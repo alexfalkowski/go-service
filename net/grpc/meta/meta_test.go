@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
@@ -21,7 +22,7 @@ func TestUnaryClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		"user-agent", "stale-agent",
 		"request-id", "stale-id",
 	))
-	interceptor := meta.UnaryClientInterceptor(env.UserAgent("fallback-agent"), staticGenerator("generated-id"))
+	interceptor := meta.UnaryClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
 
 	err := interceptor(ctx, "/greet.v1.Greeter/SayHello", nil, nil, nil, func(ctx context.Context, _ string, _, _ any, _ *grpc.ClientConn, _ ...grpc.CallOption) error {
 		md, ok := meta.FromOutgoingContext(ctx)
@@ -43,7 +44,7 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 		"user-agent", "stale-agent",
 		"request-id", "stale-id",
 	))
-	interceptor := meta.StreamClientInterceptor(env.UserAgent("fallback-agent"), staticGenerator("generated-id"))
+	interceptor := meta.StreamClientInterceptor(env.UserAgent("fallback-agent"), test.StaticIDGenerator("generated-id"))
 	streamer := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		md, ok := meta.FromOutgoingContext(ctx)
 		require.True(t, ok)
@@ -61,7 +62,7 @@ func TestStreamClientInterceptorReplacesOutgoingMetadata(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
-	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 
 	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/greet.v1.Greeter/SayHello"}, func(ctx context.Context, _ any) (any, error) {
@@ -75,7 +76,7 @@ func TestUnaryServerInterceptorHandlesMissingPeer(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
-	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{})
 
@@ -90,7 +91,7 @@ func TestUnaryServerInterceptorHandlesPeerWithoutAddr(t *testing.T) {
 }
 
 func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
-	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	interceptor := meta.UnaryServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
 	ctx = peer.NewContext(ctx, &peer.Peer{Addr: &net.TCPAddr{IP: net.IP{127, 0, 0, 1}, Port: 8080}})
 
@@ -105,25 +106,25 @@ func TestUnaryServerInterceptorStoresPeerIPAddr(t *testing.T) {
 }
 
 func TestStreamServerInterceptorAppendDoesNotOverwriteRequestID(t *testing.T) {
-	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := meta.NewIncomingContext(t.Context(), meta.Map{})
-	stream := &serverStream{ctx: ctx}
+	stream := &test.MetaServerStream{Ctx: ctx}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/greet.v1.Greeter/SayStreamHello"}, func(any, grpc.ServerStream) error {
 		return nil
 	})
 	require.NoError(t, err)
-	require.Equal(t, []string{"1", "v2"}, stream.header.Get("service-version"))
-	require.Equal(t, []string{"generated-id"}, stream.header.Get("request-id"))
+	require.Equal(t, []string{"1", "v2"}, stream.Header.Get("service-version"))
+	require.Equal(t, []string{"generated-id"}, stream.Header.Get("request-id"))
 }
 
 func TestStreamServerInterceptorExtractsOperationMetadata(t *testing.T) {
-	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), staticGenerator("generated-id"))
+	interceptor := meta.StreamServerInterceptor(env.UserAgent("fallback-agent"), env.Version("v1"), test.StaticIDGenerator("generated-id"))
 	ctx := meta.NewIncomingContext(t.Context(), meta.Pairs(
 		"authorization", "invalid",
 		"user-agent", "watch-agent",
 	))
-	stream := &serverStream{ctx: ctx}
+	stream := &test.MetaServerStream{Ctx: ctx}
 
 	err := interceptor(nil, stream, &grpc.StreamServerInfo{FullMethod: "/grpc.health.v1.Health/Watch"}, func(_ any, stream grpc.ServerStream) error {
 		require.Equal(t, meta.String("watch-agent"), meta.UserAgent(stream.Context()))
@@ -167,27 +168,4 @@ func TestExtractOutgoingReturnsEmptyMapWithoutMetadata(t *testing.T) {
 
 	require.NotNil(t, md)
 	require.Empty(t, md)
-}
-
-type staticGenerator string
-
-func (g staticGenerator) Generate() string {
-	return string(g)
-}
-
-type serverStream struct {
-	grpc.ServerStream
-	header meta.Map
-	ctx    context.Context
-}
-
-func (s *serverStream) SetHeader(md meta.Map) error {
-	md.Append("service-version", "v2")
-	s.header = md
-
-	return nil
-}
-
-func (s *serverStream) Context() context.Context {
-	return s.ctx
 }
