@@ -1,14 +1,12 @@
 package cli_test
 
 import (
-	"log/slog"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/cli"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/strings"
@@ -226,7 +224,7 @@ func TestApplicationServerHonorsContextCancellation(t *testing.T) {
 	stopped := make(chan error, 1)
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			c.AddServer("server", "Start the server.", lifecycleOption(started, stopped))
+			c.AddServer("server", "Start the server.", test.LifecycleOption(started, stopped))
 		},
 	)
 
@@ -268,7 +266,7 @@ func TestApplicationServerShutdownExitCodeIsReturned(t *testing.T) {
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			c.AddServer("server", "Start the server.", shutdownExitCodeOption(3))
+			c.AddServer("server", "Start the server.", test.ShutdownExitCodeOption(3))
 		},
 	)
 
@@ -282,7 +280,7 @@ func TestApplicationServerServeFailureReturnsServeFailureExitCode(t *testing.T) 
 
 	app := cli.NewApplication(
 		func(c cli.Commander) {
-			c.AddServer("server", "Start the server.", serverFailureOption())
+			c.AddServer("server", "Start the server.", test.ServerFailureOption())
 		},
 	)
 
@@ -313,73 +311,4 @@ func TestApplicationInvalidClient(t *testing.T) {
 			require.Contains(t, err.Error(), "unknown port")
 		})
 	}
-}
-
-func lifecycleOption(started chan<- struct{}, stopped chan<- error) di.Option {
-	return di.Module(
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle) {
-			lc.Append(di.Hook{
-				OnStart: func(context.Context) error {
-					// Signal readiness after Start has had a chance to return so cancellation
-					// exercises the post-start shutdown path instead of racing startup.
-					go func() {
-						time.Sleep(10 * time.Millisecond)
-						close(started)
-					}()
-					return nil
-				},
-				OnStop: func(ctx context.Context) error {
-					stopped <- ctx.Err()
-					return nil
-				},
-			})
-		}),
-	)
-}
-
-func shutdownExitCodeOption(code int) di.Option {
-	return di.Module(
-		di.NoLogger,
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-			lc.Append(di.Hook{
-				OnStart: func(context.Context) error {
-					go func() {
-						time.Sleep(10 * time.Millisecond)
-						_ = sh.Shutdown(di.ExitCode(code))
-					}()
-					return nil
-				},
-			})
-		}),
-	)
-}
-
-func serverFailureOption() di.Option {
-	return di.Module(
-		di.NoLogger,
-		di.Constructor(slog.Default),
-		di.Register(func(lc di.Lifecycle, sh di.Shutdowner) {
-			server.Register(lc, []*server.Service{
-				server.NewService("test", failingServer{}, nil, sh),
-			})
-		}),
-	)
-}
-
-type failingServer struct{}
-
-func (failingServer) Serve() error {
-	time.Sleep(10 * time.Millisecond)
-
-	return test.ErrFailed
-}
-
-func (failingServer) Shutdown(context.Context) error {
-	return nil
-}
-
-func (failingServer) String() string {
-	return "test"
 }

@@ -4,52 +4,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
 
-type testServer struct {
-	err         error
-	shutdownErr error
-	done        chan struct{}
-	shutdowns   int
-}
-
-func newTestServer(err, shutdownErr error) *testServer {
-	return &testServer{err: err, shutdownErr: shutdownErr, done: make(chan struct{})}
-}
-
-func (s *testServer) Serve() error {
-	close(s.done)
-
-	return s.err
-}
-
-func (s *testServer) Shutdown(_ context.Context) error {
-	s.shutdowns++
-
-	return s.shutdownErr
-}
-
-func (*testServer) String() string {
-	return "test"
-}
-
 func TestInvalidServer(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
 	l, err := test.NewLogger(lc, test.NewJSONLoggerConfig())
 	require.NoError(t, err)
 	sh := test.NewShutdowner()
-	srv := newTestServer(test.ErrFailed, nil)
+	srv := test.NewObservableServer(test.ErrFailed, nil)
 	svc := server.NewService("test", srv, l, sh)
 
 	svc.Start()
 
 	select {
-	case <-srv.done:
+	case <-srv.Done:
 	case <-time.After(2 * time.Second):
 		require.FailNow(t, "timeout waiting for server to serve")
 	}
@@ -65,13 +37,13 @@ func TestInvalidServer(t *testing.T) {
 
 func TestValidServer(t *testing.T) {
 	sh := test.NewShutdowner()
-	srv := newTestServer(nil, nil)
+	srv := test.NewObservableServer(nil, nil)
 	svc := server.NewService("test", srv, nil, sh)
 
 	svc.Start()
 
 	select {
-	case <-srv.done:
+	case <-srv.Done:
 	case <-time.After(2 * time.Second):
 		require.FailNow(t, "timeout waiting for server to serve")
 	}
@@ -83,7 +55,7 @@ func TestValidServer(t *testing.T) {
 
 func TestInvalidStop(t *testing.T) {
 	sh := test.NewShutdowner()
-	srv := newTestServer(nil, test.ErrFailed)
+	srv := test.NewObservableServer(nil, test.ErrFailed)
 	svc := server.NewService("test", srv, nil, sh)
 
 	err := svc.Stop(t.Context())

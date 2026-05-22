@@ -142,7 +142,7 @@ func TestDoUsesMsgPack(t *testing.T) {
 
 func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	var body io.ReadCloser
-	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+	c := client.NewClient(test.Content, test.Pool, client.WithRoundTripper(test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		body = req.Body
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -161,10 +161,4 @@ func TestDoDetachesRequestBodyFromResponseBuffer(t *testing.T) {
 	data, _, err := io.ReadAll(body)
 	require.NoError(t, err)
 	require.JSONEq(t, `{"Name":"Bob"}`, string(data))
-}
-
-type roundTripperFunc func(*http.Request) (*http.Response, error)
-
-func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
 }

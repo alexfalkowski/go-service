@@ -15,17 +15,17 @@ import (
 )
 
 func TestIsErrorRecognizesWrappedCoder(t *testing.T) {
-	err := fmt.Errorf("wrapped: %w", &customCoderError{code: http.StatusConflict})
+	err := fmt.Errorf("wrapped: %w", &test.CoderError{StatusCode: http.StatusConflict})
 	require.True(t, httpstatus.IsError(err))
 }
 
 func TestCodeRecognizesWrappedCoder(t *testing.T) {
-	err := fmt.Errorf("wrapped: %w", &customCoderError{code: http.StatusConflict})
+	err := fmt.Errorf("wrapped: %w", &test.CoderError{StatusCode: http.StatusConflict})
 	require.Equal(t, http.StatusConflict, httpstatus.Code(err))
 }
 
 func TestFromErrorKeepsWrappedCoder(t *testing.T) {
-	err := fmt.Errorf("wrapped: %w", &customCoderError{code: http.StatusConflict})
+	err := fmt.Errorf("wrapped: %w", &test.CoderError{StatusCode: http.StatusConflict})
 	require.Same(t, err, httpstatus.FromError(http.StatusBadRequest, err))
 }
 
@@ -78,7 +78,7 @@ func TestSafeErrorAllowsNilCause(t *testing.T) {
 }
 
 func TestSafeErrorKeepsWrappedCoder(t *testing.T) {
-	err := fmt.Errorf("wrapped: %w", &customCoderError{code: http.StatusConflict})
+	err := fmt.Errorf("wrapped: %w", &test.CoderError{StatusCode: http.StatusConflict})
 
 	require.Same(t, err, httpstatus.SafeError(http.StatusBadRequest, err))
 }
@@ -93,7 +93,7 @@ func TestSafeErrorUsesRequestEntityTooLargeForMaxBytesError(t *testing.T) {
 func TestWriteErrorUsesDefaultSafeMessageForUnknownStatusCode(t *testing.T) {
 	res := httptest.NewRecorder()
 
-	err := httpstatus.WriteError(res, &customCoderError{code: 999})
+	err := httpstatus.WriteError(res, &test.CoderError{StatusCode: 999})
 
 	require.NoError(t, err)
 	require.Equal(t, 999, res.Code)
@@ -174,16 +174,4 @@ func TestWriteTextReturnsWriteFailure(t *testing.T) {
 
 	require.ErrorIs(t, err, test.ErrFailed)
 	require.Equal(t, http.StatusOK, res.Code)
-}
-
-type customCoderError struct {
-	code int
-}
-
-func (c *customCoderError) Error() string {
-	return "custom"
-}
-
-func (c *customCoderError) Code() int {
-	return c.code
 }

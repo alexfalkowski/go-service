@@ -12,9 +12,9 @@ import (
 
 func TestRegisterStopErrors(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)
-	first := newTestServer(nil, test.ErrFailed)
+	first := test.NewObservableServer(nil, test.ErrFailed)
 	secondErr := errors.New("other failed")
-	second := newTestServer(nil, secondErr)
+	second := test.NewObservableServer(nil, secondErr)
 	sh := test.NewShutdowner()
 
 	server.Register(lc, []*server.Service{
@@ -30,6 +30,6 @@ func TestRegisterStopErrors(t *testing.T) {
 	require.ErrorIs(t, err, secondErr)
 	require.ErrorContains(t, err, "first: failed")
 	require.ErrorContains(t, err, "second: other failed")
-	require.Equal(t, 1, first.shutdowns)
-	require.Equal(t, 1, second.shutdowns)
+	require.Equal(t, 1, first.Shutdowns)
+	require.Equal(t, 1, second.Shutdowns)
 }

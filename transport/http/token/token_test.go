@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/transport/http/token"
 	"github.com/stretchr/testify/require"
@@ -12,8 +13,8 @@ import (
 func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 	roundTripper := token.NewRoundTripper(
 		env.UserID("service-user"),
-		staticGenerator("fresh-token"),
-		roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		test.NewGenerator("fresh-token", nil),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
 
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
@@ -31,8 +32,8 @@ func TestRoundTripperDoesNotMutateRequest(t *testing.T) {
 func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	roundTripper := token.NewRoundTripper(
 		env.UserID("service-user"),
-		staticGenerator("fresh-token"),
-		roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		test.NewGenerator("fresh-token", nil),
+		test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
 			require.Equal(t, "Bearer fresh-token", req.Header.Get("Authorization"))
 
 			return &http.Response{StatusCode: http.StatusOK, Body: http.NoBody, Header: http.Header{}}, nil
@@ -46,16 +47,4 @@ func TestRoundTripperHandlesNilRequestHeader(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, res.Body.Close())
 	require.Nil(t, req.Header)
-}
-
-type roundTripperFunc func(*http.Request) (*http.Response, error)
-
-func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return f(req)
-}
-
-type staticGenerator string
-
-func (g staticGenerator) Generate(_, _ string) ([]byte, error) {
-	return []byte(g), nil
 }

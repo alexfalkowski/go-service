@@ -1,6 +1,8 @@
 package test
 
 import (
+	"strconv"
+
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	"github.com/alexfalkowski/go-service/v2/strings"
 )
@@ -37,5 +39,25 @@ func (v *Verifier) Verify(token []byte, aud string) (string, error) {
 		return strings.Empty, ErrInvalid
 	}
 
+	return UserID.String(), nil
+}
+
+// SequenceGenerator is a token.Generator test double that returns token-N values.
+type SequenceGenerator struct {
+	next int
+}
+
+// Generate implements token.Generator and returns the next token value.
+func (g *SequenceGenerator) Generate(_, _ string) ([]byte, error) {
+	g.next++
+
+	return []byte("token-" + strconv.Itoa(g.next)), nil
+}
+
+// AcceptingVerifier is a token.Verifier test double that accepts any token.
+type AcceptingVerifier struct{}
+
+// Verify implements token.Verifier and returns the shared test user ID.
+func (AcceptingVerifier) Verify([]byte, string) (string, error) {
 	return UserID.String(), nil
 }

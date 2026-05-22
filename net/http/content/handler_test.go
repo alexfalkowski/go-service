@@ -8,7 +8,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -86,7 +85,7 @@ func TestNewHandlerTreatsInternalErrorAcceptAsText(t *testing.T) {
 
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	enc := encoding.NewMap(encoding.MapParams{})
-	enc.Register("json", partialEncoder{})
+	enc.Register("json", test.PartialEncoder{})
 	cont := content.NewContent(enc, test.Pool)
 
 	handler := content.NewHandler(cont, func(_ context.Context) (*test.Response, error) {
@@ -113,15 +112,4 @@ func TestNotFoundHandlerWritesStatusError(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, res.Code)
 	require.Equal(t, media.WithUTF8(media.Error), res.Header().Get(content.TypeKey))
 	require.Equal(t, "http: not found", strings.TrimSpace(res.Body.String()))
-}
-
-type partialEncoder struct{}
-
-func (partialEncoder) Encode(w io.Writer, _ any) error {
-	_, _ = io.WriteString(w, "partial")
-	return test.ErrFailed
-}
-
-func (partialEncoder) Decode(io.Reader, any) error {
-	return nil
 }

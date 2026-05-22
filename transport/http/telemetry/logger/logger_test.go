@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
 	httplogger "github.com/alexfalkowski/go-service/v2/transport/http/telemetry/logger"
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ import (
 func TestRoundTripperLogsTransportError(t *testing.T) {
 	var logs bytes.Buffer
 	transportErr := errors.New("dial failed")
-	base := errorRoundTripper{err: transportErr}
+	base := &test.ErrorRoundTripper{Err: transportErr}
 	slogLogger := slog.New(slog.NewJSONHandler(&logs, &slog.HandlerOptions{}))
 	rt := httplogger.NewRoundTripper(&logger.Logger{Logger: slogLogger}, base)
 
@@ -27,12 +28,4 @@ func TestRoundTripperLogsTransportError(t *testing.T) {
 	require.Nil(t, res)
 	require.Contains(t, logs.String(), `"level":"ERROR"`)
 	require.Contains(t, logs.String(), `"error":"dial failed"`)
-}
-
-type errorRoundTripper struct {
-	err error
-}
-
-func (r errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	return nil, r.err
 }

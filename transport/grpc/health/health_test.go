@@ -274,20 +274,20 @@ func TestWatchStatusChanges(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
-	stream := newWatchStream(ctx)
+	stream := test.NewWatchStream(ctx)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- watcher.Watch(&health.Request{Service: test.Name.String()}, stream)
 	}()
 
-	resp := requireWatchResponse(t, stream.responses)
+	resp := requireWatchResponse(t, stream.Responses)
 	require.Equal(t, health.Serving, resp.GetStatus())
 
 	unhealthy.Store(true)
 
 	require.Eventually(t, func() bool {
 		select {
-		case resp = <-stream.responses:
+		case resp = <-stream.Responses:
 			return resp.GetStatus() == health.NotServing
 		default:
 			return false
@@ -381,45 +381,4 @@ func requireWatchResponse(t *testing.T, responses <-chan *health.Response) *heal
 		require.FailNow(t, "timed out waiting for watch response")
 		return nil
 	}
-}
-
-func newWatchStream(ctx context.Context) *watchStream {
-	return &watchStream{ctx: ctx, responses: make(chan *health.Response, 4)}
-}
-
-type watchStream struct {
-	grpc.ServerStream
-	ctx       context.Context
-	responses chan *health.Response
-}
-
-func (w *watchStream) Context() context.Context {
-	return w.ctx
-}
-
-func (w *watchStream) Send(resp *health.Response) error {
-	select {
-	case <-w.ctx.Done():
-		return w.ctx.Err()
-	case w.responses <- resp:
-		return nil
-	}
-}
-
-func (*watchStream) SetHeader(meta.Map) error {
-	return nil
-}
-
-func (*watchStream) SendHeader(meta.Map) error {
-	return nil
-}
-
-func (*watchStream) SetTrailer(meta.Map) {}
-
-func (*watchStream) SendMsg(any) error {
-	return nil
-}
-
-func (*watchStream) RecvMsg(any) error {
-	return nil
 }

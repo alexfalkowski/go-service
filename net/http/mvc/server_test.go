@@ -9,14 +9,12 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
-	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 	"github.com/alexfalkowski/go-service/v2/net/http/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http/mvc"
 	"github.com/alexfalkowski/go-service/v2/net/http/status"
-	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 )
 
@@ -470,7 +468,7 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 	mvc.Register(mvc.RegisterParams{
 		Mux:         mux,
 		FunctionMap: mvc.NewFunctionMap(mvc.FunctionMapParams{Logger: slog.Default()}),
-		FileSystem:  errFileSystem{},
+		FileSystem:  test.ErrFileSystem{},
 		Pool:        test.Pool,
 		Layout:      test.Layout,
 	})
@@ -485,65 +483,6 @@ func TestStaticFileSetsContentLength(t *testing.T) {
 	require.Equal(t, http.StatusOK, res.Code)
 	require.Equal(t, "6", res.Header().Get("Content-Length"))
 	require.Equal(t, "hello", res.Body.String())
-}
-
-type errFileSystem struct{}
-
-func (errFileSystem) Open(name string) (fs.File, error) {
-	if name != "asset.txt" {
-		return nil, fs.ErrNotExist
-	}
-
-	return &errFile{}, nil
-}
-
-type errFile struct {
-	read bool
-}
-
-func (f *errFile) Stat() (fs.FileInfo, error) {
-	return errFileInfo{}, nil
-}
-
-func (f *errFile) Read(p []byte) (int, error) {
-	if f.read {
-		return 0, io.EOF
-	}
-
-	f.read = true
-	copy(p, "hello")
-
-	return len("hello"), test.ErrFailed
-}
-
-func (f *errFile) Close() error {
-	return nil
-}
-
-type errFileInfo struct{}
-
-func (errFileInfo) Name() string {
-	return "asset.txt"
-}
-
-func (errFileInfo) Size() int64 {
-	return 6
-}
-
-func (errFileInfo) Mode() fs.FileMode {
-	return 0
-}
-
-func (errFileInfo) ModTime() time.Time {
-	return time.Time{}
-}
-
-func (errFileInfo) IsDir() bool {
-	return false
-}
-
-func (errFileInfo) Sys() any {
-	return nil
 }
 
 type requestModel struct {

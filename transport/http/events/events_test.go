@@ -53,7 +53,14 @@ func TestSendReceiveWithoutRoundTripper(t *testing.T) {
 }
 
 func TestSendNotReceive(t *testing.T) {
-	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldRoundTripper(&delRoundTripper{rt: http.DefaultTransport}), test.WithWorldHTTP())
+	world := test.NewStartedWorld(t,
+		test.WithWorldTelemetry("otlp"),
+		test.WithWorldRoundTripper(&test.HeaderDeletingRoundTripper{
+			RoundTripper: http.DefaultTransport,
+			Header:       webhooks.HeaderWebhookID,
+		}),
+		test.WithWorldHTTP(),
+	)
 
 	world.RegisterEvents(t.Context())
 
@@ -92,14 +99,4 @@ func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) 
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, res.StatusCode)
 	require.Nil(t, world.Event)
-}
-
-type delRoundTripper struct {
-	rt http.RoundTripper
-}
-
-func (r *delRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Del(webhooks.HeaderWebhookID)
-
-	return r.rt.RoundTrip(req)
 }

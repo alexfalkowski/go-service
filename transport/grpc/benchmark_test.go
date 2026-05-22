@@ -11,8 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/server"
 	"github.com/alexfalkowski/go-service/v2/telemetry/errors"
 	"github.com/alexfalkowski/go-service/v2/telemetry/logger"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	transportgrpc "github.com/alexfalkowski/go-service/v2/transport/grpc"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
@@ -59,8 +57,8 @@ func BenchmarkGRPC(b *testing.B) {
 
 	b.Run("none", func(b *testing.B) {
 		b.ReportAllocs()
-		disableTelemetry(b)
-		defer disableTelemetry(b)
+		test.ResetTelemetry(b)
+		defer test.ResetTelemetry(b)
 
 		lc := fxtest.NewLifecycle(b)
 		cfg := test.NewInsecureTransportConfig()
@@ -192,11 +190,4 @@ func BenchmarkGRPC(b *testing.B) {
 		require.NoError(b, conn.Close())
 		lc.RequireStop()
 	})
-}
-
-func disableTelemetry(b *testing.B) {
-	b.Helper()
-
-	require.NoError(b, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(b)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(b)})
 }

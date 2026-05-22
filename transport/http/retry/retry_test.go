@@ -1,12 +1,12 @@
 package retry_test
 
 import (
-	"fmt"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/env"
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/net/http"
@@ -31,7 +31,7 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rt := &roundTripper{codes: tt.codes}
+			rt := &test.StatusSequenceRoundTripper{Codes: tt.codes}
 			retrying := retry.NewRoundTripper(&retry.Config{
 				Attempts: 2,
 				Timeout:  time.Second,
@@ -43,13 +43,13 @@ func TestRoundTripperRetriesRetryableResponses(t *testing.T) {
 			res, err := retrying.RoundTrip(req)
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.StatusCode)
-			require.Equal(t, tt.calls, rt.calls)
+			require.Equal(t, tt.calls, rt.Calls)
 		})
 	}
 }
 
 func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
-	rt := &roundTripper{codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
 		Timeout:  time.Second,
@@ -61,11 +61,11 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-	require.Equal(t, 1, rt.calls)
+	require.Equal(t, 1, rt.Calls)
 }
 
 func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
-	rt := &roundTripper{codes: []int{
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{
 		http.StatusTooManyRequests, http.StatusOK,
 		http.StatusTooManyRequests, http.StatusOK,
 	}}
@@ -84,11 +84,11 @@ func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
 	res, err = retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 4, rt.calls)
+	require.Equal(t, 4, rt.Calls)
 }
 
 func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
-	rt := &roundTripper{codes: []int{http.StatusInternalServerError, http.StatusOK}}
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusInternalServerError, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -100,11 +100,11 @@ func TestRoundTripperDoesNotRetryUnhandledStatusCode(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	require.Equal(t, 1, rt.calls)
+	require.Equal(t, 1, rt.Calls)
 }
 
 func TestRoundTripperDoesNotRetryWhenPolicyDeniesRequest(t *testing.T) {
-	rt := &roundTripper{codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -116,11 +116,11 @@ func TestRoundTripperDoesNotRetryWhenPolicyDeniesRequest(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-	require.Equal(t, 1, rt.calls)
+	require.Equal(t, 1, rt.Calls)
 }
 
 func TestRoundTripperRetriesWhenPolicyAllowsRequestID(t *testing.T) {
-	rt := &roundTripper{codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -133,11 +133,11 @@ func TestRoundTripperRetriesWhenPolicyAllowsRequestID(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, 2, rt.calls)
+	require.Equal(t, 2, rt.Calls)
 }
 
 func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
-	rt := &roundTripper{codes: []int{http.StatusTooManyRequests, http.StatusTooManyRequests}}
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusTooManyRequests}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -149,11 +149,11 @@ func TestRoundTripperReturnsLastRetryableResponseWhenExhausted(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
-	require.Equal(t, 2, rt.calls)
+	require.Equal(t, 2, rt.Calls)
 }
 
 func TestRoundTripperReturnsFinalRetryableResponseWhenExhausted(t *testing.T) {
-	rt := &bodyRoundTripper{responses: []string{"first failure", "second failure"}}
+	rt := &test.BodySequenceRoundTripper{Responses: []string{"first failure", "second failure"}}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -170,7 +170,7 @@ func TestRoundTripperReturnsFinalRetryableResponseWhenExhausted(t *testing.T) {
 	require.NoError(t, readErr)
 	require.Equal(t, "second failure", string(body))
 	require.NoError(t, res.Body.Close())
-	require.Equal(t, 2, rt.calls)
+	require.Equal(t, 2, rt.Calls)
 }
 
 func TestRoundTripperClosesRetryableResponseBeforeNextAttempt(t *testing.T) {
@@ -208,7 +208,7 @@ func TestRoundTripperClosesRetryableResponseBeforeNextAttempt(t *testing.T) {
 }
 
 func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
-	rt := &requestRoundTripper{}
+	rt := &test.RequestBodyRecorderRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -221,11 +221,11 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
+	require.Equal(t, []string{"hello", "hello"}, rt.Bodies)
 }
 
 func TestRoundTripperReplaysRequestBodyAfterTransportError(t *testing.T) {
-	rt := &transportErrorThenSuccessRoundTripper{}
+	rt := &test.TransportErrorThenSuccessRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -238,12 +238,12 @@ func TestRoundTripperReplaysRequestBodyAfterTransportError(t *testing.T) {
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
+	require.Equal(t, []string{"hello", "hello"}, rt.Bodies)
 }
 
 func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
-	body := &trackedBody{Reader: strings.NewReader("hello")}
-	rt := &originalBodyRoundTripper{original: body}
+	body := &test.TrackedBody{Reader: strings.NewReader("hello")}
+	rt := &test.OriginalBodyRoundTripper{Original: body}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -260,31 +260,31 @@ func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-	require.True(t, rt.firstUsedOriginal)
-	require.True(t, body.closed)
-	require.Equal(t, []string{"hello", "hello"}, rt.bodies)
+	require.True(t, rt.FirstUsedOriginal)
+	require.True(t, body.Closed)
+	require.Equal(t, []string{"hello", "hello"}, rt.Bodies)
 }
 
 func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
-	rt := &requestRoundTripper{}
+	rt := &test.RequestBodyRecorderRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
 		Backoff:  time.Millisecond,
 	}, rt)
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &nonReplayableReader{value: "hello"})
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &test.NonReplayableReader{Value: "hello"})
 	require.NoError(t, err)
 	require.Nil(t, req.GetBody)
 
 	res, roundTripErr := retrying.RoundTrip(req)
 	require.NoError(t, roundTripErr)
 	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
-	require.Equal(t, []string{"hello"}, rt.bodies)
+	require.Equal(t, []string{"hello"}, rt.Bodies)
 }
 
 func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
-	rt := &errorRoundTripper{err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
+	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusTooManyRequests, "limiter: too many requests")}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -297,12 +297,12 @@ func TestRoundTripperPreservesRetryableStatusError(t *testing.T) {
 	require.Nil(t, res)
 	require.Error(t, err)
 	require.Equal(t, http.StatusTooManyRequests, status.Code(err))
-	require.Equal(t, 2, rt.calls)
+	require.Equal(t, 2, rt.Calls)
 }
 
 func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	wantErr := io.ErrUnexpectedEOF
-	rt := &errorRoundTripper{err: wantErr}
+	rt := &test.ErrorRoundTripper{Err: wantErr}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -314,11 +314,11 @@ func TestRoundTripperPreservesRecoverableTransportError(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.Nil(t, res)
 	require.ErrorIs(t, err, wantErr)
-	require.Equal(t, 2, rt.calls)
+	require.Equal(t, 2, rt.Calls)
 }
 
 func TestRoundTripperDoesNotRetryUnhandledTransportError(t *testing.T) {
-	rt := &errorRoundTripper{err: status.Errorf(http.StatusInternalServerError, "internal")}
+	rt := &test.ErrorRoundTripper{Err: status.Errorf(http.StatusInternalServerError, "internal")}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -331,12 +331,12 @@ func TestRoundTripperDoesNotRetryUnhandledTransportError(t *testing.T) {
 	require.Nil(t, res)
 	require.Error(t, err)
 	require.Equal(t, http.StatusInternalServerError, status.Code(err))
-	require.Equal(t, 1, rt.calls)
+	require.Equal(t, 1, rt.Calls)
 }
 
 func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testing.T) {
-	rt := &authRoundTripper{codes: []int{http.StatusTooManyRequests, http.StatusOK}}
-	generator := &tokenGenerator{}
+	rt := &test.AuthRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	generator := &test.SequenceGenerator{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -348,12 +348,12 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, rt.authValues)
-	require.Equal(t, []int{1, 1}, rt.authCounts)
+	require.Equal(t, []string{"Bearer token-1", "Bearer token-2"}, rt.AuthValues)
+	require.Equal(t, []int{1, 1}, rt.AuthCounts)
 }
 
 func TestRoundTripperDoesNotSetAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
-	transport := &causeRoundTripper{}
+	transport := &test.CauseRoundTripper{}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
 		Timeout:  0,
@@ -365,12 +365,12 @@ func TestRoundTripperDoesNotSetAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	require.NoError(t, transport.err)
-	require.NoError(t, transport.cause)
+	require.NoError(t, transport.Err)
+	require.NoError(t, transport.Cause)
 }
 
 func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
-	transport := &causeRoundTripper{wait: true}
+	transport := &test.CauseRoundTripper{Wait: true}
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
 		Timeout:  time.Nanosecond,
@@ -382,204 +382,7 @@ func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	require.ErrorIs(t, transport.err, context.DeadlineExceeded)
-	require.ErrorIs(t, transport.cause, retry.ErrAttemptTimeout)
-	require.ErrorIs(t, transport.cause, sync.ErrTimeout)
-}
-
-type roundTripper struct {
-	codes []int
-	calls int
-}
-
-func (r *roundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	code := r.codes[r.calls]
-	r.calls++
-
-	return &http.Response{
-		StatusCode: code,
-		Status:     fmt.Sprintf("%d %s", code, http.StatusText(code)),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type bodyRoundTripper struct {
-	responses []string
-	calls     int
-}
-
-func (r *bodyRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	body := r.responses[r.calls]
-	r.calls++
-
-	return &http.Response{
-		StatusCode: http.StatusServiceUnavailable,
-		Status:     fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable)),
-		Body:       io.NopCloser(strings.NewReader(body)),
-		Header:     make(http.Header),
-	}, nil
-}
-
-type requestRoundTripper struct {
-	bodies []string
-}
-
-func (r *requestRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	body, _, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	r.bodies = append(r.bodies, string(body))
-
-	return &http.Response{
-		StatusCode: http.StatusServiceUnavailable,
-		Status:     fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable)),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type transportErrorThenSuccessRoundTripper struct {
-	bodies []string
-	calls  int
-}
-
-func (r *transportErrorThenSuccessRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	body, _, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	r.calls++
-	r.bodies = append(r.bodies, string(body))
-	if r.calls == 1 {
-		return nil, io.ErrUnexpectedEOF
-	}
-
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Status:     fmt.Sprintf("%d %s", http.StatusOK, http.StatusText(http.StatusOK)),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type originalBodyRoundTripper struct {
-	original          io.ReadCloser
-	bodies            []string
-	calls             int
-	firstUsedOriginal bool
-}
-
-func (r *originalBodyRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if r.calls == 0 {
-		r.firstUsedOriginal = req.Body == r.original
-	}
-
-	body, _, err := io.ReadAll(req.Body)
-	if err != nil {
-		return nil, err
-	}
-	if err := req.Body.Close(); err != nil {
-		return nil, err
-	}
-
-	r.calls++
-	r.bodies = append(r.bodies, string(body))
-
-	return &http.Response{
-		StatusCode: http.StatusServiceUnavailable,
-		Status:     fmt.Sprintf("%d %s", http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable)),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type errorRoundTripper struct {
-	err   error
-	calls int
-}
-
-func (r *errorRoundTripper) RoundTrip(*http.Request) (*http.Response, error) {
-	r.calls++
-	return nil, r.err
-}
-
-type authRoundTripper struct {
-	authValues []string
-	authCounts []int
-	codes      []int
-	calls      int
-}
-
-func (r *authRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	r.authValues = append(r.authValues, req.Header.Get("Authorization"))
-	r.authCounts = append(r.authCounts, len(req.Header.Values("Authorization")))
-	code := r.codes[r.calls]
-	r.calls++
-
-	return &http.Response{
-		StatusCode: code,
-		Status:     fmt.Sprintf("%d %s", code, http.StatusText(code)),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type causeRoundTripper struct {
-	cause error
-	err   error
-	wait  bool
-}
-
-func (r *causeRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if r.wait {
-		<-req.Context().Done()
-	}
-
-	r.cause = context.Cause(req.Context())
-	r.err = req.Context().Err()
-
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Status:     http.StatusText(http.StatusOK),
-		Body:       http.NoBody,
-		Header:     make(http.Header),
-	}, nil
-}
-
-type tokenGenerator struct {
-	calls int
-}
-
-func (g *tokenGenerator) Generate(_, _ string) ([]byte, error) {
-	g.calls++
-	return fmt.Appendf(nil, "token-%d", g.calls), nil
-}
-
-type nonReplayableReader struct {
-	value string
-	read  bool
-}
-
-func (r *nonReplayableReader) Read(p []byte) (int, error) {
-	if r.read {
-		return 0, io.EOF
-	}
-
-	r.read = true
-	copy(p, r.value)
-	return len(r.value), io.EOF
-}
-
-type trackedBody struct {
-	*strings.Reader
-	closed bool
-}
-
-func (b *trackedBody) Close() error {
-	b.closed = true
-	return nil
+	require.ErrorIs(t, transport.Err, context.DeadlineExceeded)
+	require.ErrorIs(t, transport.Cause, retry.ErrAttemptTimeout)
+	require.ErrorIs(t, transport.Cause, sync.ErrTimeout)
 }

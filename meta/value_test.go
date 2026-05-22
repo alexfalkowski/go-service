@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/stretchr/testify/require"
 )
@@ -13,7 +14,7 @@ func TestErrorWithNil(t *testing.T) {
 }
 
 func TestErrorWithTypedNil(t *testing.T) {
-	var err error = (*panicError)(nil)
+	var err error = (*test.MessageError)(nil)
 
 	require.Equal(t, meta.Blank(), meta.Error(err))
 }
@@ -23,19 +24,19 @@ func TestToStringWithNil(t *testing.T) {
 }
 
 func TestToStringWithTypedNil(t *testing.T) {
-	var stringer fmt.Stringer = (*panicStringer)(nil)
+	var stringer fmt.Stringer = (*test.Stringer)(nil)
 
 	require.Equal(t, meta.Blank(), meta.ToString(stringer))
 }
 
 func TestToRedactedWithTypedNil(t *testing.T) {
-	var stringer fmt.Stringer = (*panicStringer)(nil)
+	var stringer fmt.Stringer = (*test.Stringer)(nil)
 
 	require.Equal(t, meta.Blank(), meta.ToRedacted(stringer))
 }
 
 func TestToIgnoredWithTypedNil(t *testing.T) {
-	var stringer fmt.Stringer = (*panicStringer)(nil)
+	var stringer fmt.Stringer = (*test.Stringer)(nil)
 
 	require.Equal(t, meta.Blank(), meta.ToIgnored(stringer))
 }
@@ -43,20 +44,4 @@ func TestToIgnoredWithTypedNil(t *testing.T) {
 func TestRedactedWithMultiByteValue(t *testing.T) {
 	require.Equal(t, "*", meta.Redacted("é").String())
 	require.Equal(t, "**", meta.Redacted("éa").String())
-}
-
-type panicError struct {
-	message string
-}
-
-func (e *panicError) Error() string {
-	return e.message
-}
-
-type panicStringer struct {
-	value string
-}
-
-func (s *panicStringer) String() string {
-	return s.value
 }

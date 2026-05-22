@@ -73,7 +73,7 @@ func TestClientLimiterUsesGeneratedTokenUnary(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
-		test.WithWorldToken(&sequenceGenerator{}, acceptingVerifier{}),
+		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldGRPC(),
 	)
 
@@ -94,7 +94,7 @@ func TestClientLimiterUsesGeneratedTokenStream(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
 		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
-		test.WithWorldToken(&sequenceGenerator{}, acceptingVerifier{}),
+		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldGRPC(),
 	)
 
@@ -195,20 +195,4 @@ func sayStreamHello(t *testing.T, client v1.GreeterServiceClient) error {
 
 	_, err = stream.Recv()
 	return err
-}
-
-type sequenceGenerator struct {
-	next int
-}
-
-func (g *sequenceGenerator) Generate(_, _ string) ([]byte, error) {
-	g.next++
-
-	return []byte("token-" + strconv.Itoa(g.next)), nil
-}
-
-type acceptingVerifier struct{}
-
-func (acceptingVerifier) Verify([]byte, string) (string, error) {
-	return test.UserID.String(), nil
 }

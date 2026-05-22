@@ -6,11 +6,8 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
-	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
-	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/fx/fxtest"
 )
 
 func BenchmarkClientTelemetry(b *testing.B) {
@@ -19,9 +16,9 @@ func BenchmarkClientTelemetry(b *testing.B) {
 
 	bench := func(name string, setup func(testing.TB)) {
 		b.Run(name, func(b *testing.B) {
-			resetTelemetry(b)
+			test.ResetTelemetry(b)
 			setup(b)
-			defer resetTelemetry(b)
+			defer test.ResetTelemetry(b)
 
 			b.ReportAllocs()
 
@@ -43,40 +40,6 @@ func BenchmarkClientTelemetry(b *testing.B) {
 	}
 
 	bench("disabled", func(testing.TB) {})
-	bench("metrics", enableMetrics)
-	bench("tracer", enableTracer)
-}
-
-func resetTelemetry(tb testing.TB) {
-	tb.Helper()
-
-	require.NoError(tb, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(tb)}))
-	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(tb)})
-}
-
-func enableMetrics(tb testing.TB) {
-	tb.Helper()
-
-	metrics.NewMeterProvider(metrics.MeterProviderParams{
-		Lifecycle:   fxtest.NewLifecycle(tb),
-		Config:      &metrics.Config{},
-		Reader:      metrics.NewManualReader(),
-		ID:          test.ID,
-		Name:        test.Name,
-		Version:     test.Version,
-		Environment: test.Environment,
-	})
-}
-
-func enableTracer(tb testing.TB) {
-	tb.Helper()
-
-	require.NoError(tb, tracer.Register(tracer.TracerParams{
-		Lifecycle:   fxtest.NewLifecycle(tb),
-		Config:      &tracer.Config{Kind: "otlp"},
-		ID:          test.ID,
-		Name:        test.Name,
-		Version:     test.Version,
-		Environment: test.Environment,
-	}))
+	bench("metrics", test.EnableMetrics)
+	bench("tracer", test.EnableTracer)
 }
