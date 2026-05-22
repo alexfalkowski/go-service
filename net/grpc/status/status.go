@@ -76,12 +76,39 @@ func Errorf(c codes.Code, format string, a ...any) error {
 //
 // The wrapped error remains available through Unwrap for internal inspection, while gRPC sends the safe message instead
 // of err.Error(). If c is codes.OK, SafeError returns nil to preserve upstream gRPC status invariants.
+//
+// Return the SafeError result directly from gRPC handlers. If the result is later wrapped with fmt.Errorf("%w"),
+// upstream status.FromError may include that outer wrapping text in the client-visible status message. Put internal
+// context in err before passing it to SafeError instead.
 func SafeError(c codes.Code, err error) error {
 	if c == codes.OK {
 		return nil
 	}
 
 	return &statusError{code: c, msg: defaultSafeMessage(c), err: err}
+}
+
+// SafeErrorf formats internal context around err and wraps it with a safe gRPC-prefixed status message.
+//
+// The formatted context and err remain available through Unwrap for internal inspection, while gRPC sends the
+// safe message instead of the formatted cause. If c is codes.OK, SafeErrorf returns nil to preserve upstream
+// gRPC status invariants.
+//
+// SafeErrorf is the preferred helper when adding internal context to a safe status error. It keeps that
+// context inside the cause passed to SafeError, avoiding the client-visible wrapping behavior described by
+// SafeError.
+func SafeErrorf(c codes.Code, err error, format string, a ...any) error {
+	if c == codes.OK {
+		return nil
+	}
+	if err == nil {
+		return SafeError(c, fmt.Errorf(format, a...))
+	}
+	if strings.IsEmpty(format) {
+		return SafeError(c, err)
+	}
+
+	return SafeError(c, fmt.Errorf(format+": %w", append(a, err)...))
 }
 
 type statusError struct {

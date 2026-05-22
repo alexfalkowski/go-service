@@ -83,6 +83,23 @@ func TestNewHandlerTreatsInternalErrorAcceptAsText(t *testing.T) {
 	require.Equal(t, "Hello Bob", res.Body.String())
 }
 
+func TestNewHandlerReplacesExistingContentType(t *testing.T) {
+	handler := content.NewHandler(test.Content, func(_ context.Context) (*bytes.Buffer, error) {
+		return bytes.NewBufferString("Hello Bob"), nil
+	})
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/hello", http.NoBody)
+	req.Header.Set(content.AcceptKey, media.Text)
+	res := httptest.NewRecorder()
+	res.Header().Set(content.TypeKey, media.HTML)
+
+	handler.ServeHTTP(res, req)
+
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, []string{media.WithUTF8(media.Text)}, res.Header().Values(content.TypeKey))
+	require.Equal(t, "Hello Bob", res.Body.String())
+}
+
 func TestNewHandlerDoesNotLeakPartialBodyWhenEncodeFails(t *testing.T) {
 	enc := encoding.NewMap(encoding.MapParams{})
 	enc.Register("json", test.PartialEncoder{})

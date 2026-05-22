@@ -49,6 +49,21 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 	}
 }
 
+func TestNewServerRejectsNegativeTimeoutFallback(t *testing.T) {
+	opts := options.Map{
+		"keepalive_enforcement_policy_ping_min_time": "1s",
+		"keepalive_max_connection_idle":              "1s",
+		"keepalive_max_connection_age":               "1s",
+		"keepalive_max_connection_age_grace":         "1s",
+		"keepalive_ping_time":                        "1s",
+		"connection_timeout":                         "1s",
+	}
+
+	require.Panics(t, func() {
+		grpc.NewServer(opts, -time.Second)
+	})
+}
+
 func TestNewServerWithOverflowingAdvancedOptions(t *testing.T) {
 	require.Panics(t, func() {
 		grpc.NewServer(options.Map{"initial_window_size": "3GB"}, time.Second)
