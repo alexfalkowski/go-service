@@ -10,6 +10,11 @@
 // `id/ksuid`, `id/ulid`, `id/nanoid`, and `id/xid`). The `id.Module` wiring constructs these
 // generators and registers them into a `*Map`.
 //
+// Generator kinds are selected for different operational properties. The "uuid" generator is the
+// default and is optimized for the request metadata hot path. The "xid" generator is intentionally
+// available for compact, roughly sortable identifiers, but callers should not treat XIDs as opaque
+// or unpredictable values.
+//
 // # Configuration and enablement
 //
 // ID generation configuration is optional. A nil `*id.Config` selects the default "uuid" generator.
