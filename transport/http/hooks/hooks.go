@@ -93,6 +93,10 @@ func (h *Webhook) Sign(req *http.Request) error {
 // webhook verification run. Callers that bypass the transport server are responsible for applying the same
 // request-level cap before invoking Verify.
 //
+// Replay protection:
+// Verify does not persist or reject previously seen Webhook-Id values. Receivers that perform non-idempotent
+// work must deduplicate or process idempotently using the Webhook-Id or event identifier.
+//
 // Disabled behavior:
 // If the receiver or underlying Standard Webhooks hook is nil, Verify is a no-op and returns nil.
 func (h *Webhook) Verify(req *http.Request) error {
@@ -144,6 +148,10 @@ func NewHandler(hook *Webhook) *Handler {
 // With the standard HTTP transport server, this handler runs after the request-body limiter, so verification
 // never sees a body larger than Config.MaxReceiveSize. Direct use outside that server chain must preserve the
 // same request-size invariant.
+//
+// Replay protection:
+// Signature verification does not maintain replay state. The wrapped handler is responsible for idempotency
+// or deduplication when duplicate valid deliveries would be unsafe.
 //
 // Disabled behavior:
 // If the handler or its hook is nil, ServeHTTP behaves as a pass-through and immediately calls next.

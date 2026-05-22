@@ -110,9 +110,9 @@ func WithClientKeepalive(ping, timeout time.Duration) ClientOption {
 // typically includes a maximum attempt count, per-retry timeout, and a backoff strategy.
 // Optional policies decide whether a logical unary RPC is eligible for retry.
 //
-// Backward compatibility: when no policy is provided, all unary RPCs are eligible for retry when they hit a
-// retryable gRPC status. New callers that only want side-effect-safe retries should pass
-// `transport/grpc/retry.IdempotentMethods` or another explicit policy.
+// When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
+// or calls carrying a request-id idempotency contract. Callers that need different behavior can pass an
+// explicit policy.
 //
 // If cfg is nil, retries are not enabled.
 func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {

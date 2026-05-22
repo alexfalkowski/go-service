@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
 	"github.com/alexfalkowski/go-service/v2/context"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http/content"
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
@@ -30,6 +31,24 @@ func TestInvalidServer(t *testing.T) {
 
 	_, err := http.NewServer(params)
 	require.Error(t, err)
+}
+
+func TestServerRejectsCAOnlyTLS(t *testing.T) {
+	http.Register(test.FS)
+
+	cfg := &http.Config{
+		Config: &server.Config{
+			Timeout: 5 * time.Second,
+			TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
+		},
+	}
+	params := http.ServerParams{
+		Shutdowner: test.NewShutdowner(),
+		Config:     cfg,
+	}
+
+	_, err := http.NewServer(params)
+	require.ErrorIs(t, err, server.ErrMissingKeyPair)
 }
 
 func TestServerMaxReceiveSize(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/config/server"
+	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -46,4 +47,20 @@ func TestInvalidServer(t *testing.T) {
 
 	_, err := grpc.NewServer(params)
 	require.Error(t, err)
+}
+
+func TestServerRejectsCAOnlyTLS(t *testing.T) {
+	cfg := &grpc.Config{
+		Config: &server.Config{
+			Timeout: 5 * time.Second,
+			TLS:     &tls.Config{CA: test.FilePath("certs/rootCA.pem")},
+		},
+	}
+	params := grpc.ServerParams{
+		Shutdowner: test.NewShutdowner(),
+		Config:     cfg,
+	}
+
+	_, err := grpc.NewServer(params)
+	require.ErrorIs(t, err, server.ErrMissingKeyPair)
 }

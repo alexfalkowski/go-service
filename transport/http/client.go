@@ -106,9 +106,9 @@ func WithClientRoundTripper(rt http.RoundTripper) ClientOption {
 // according to cfg (attempt count, backoff, and which status codes are considered retryable).
 // Optional policies decide whether a logical request is eligible for retry.
 //
-// Backward compatibility: when no policy is provided, all requests are eligible for retry when they hit a
-// retryable transport error or status. New callers that only want side-effect-safe retries should pass
-// `transport/http/retry.IdempotentRequests` or another explicit policy.
+// When no policy is provided, only side-effect-safe requests are eligible for retry: safe HTTP methods, or
+// requests carrying a request-id idempotency contract. Callers that need different behavior can pass an
+// explicit policy.
 //
 // If cfg is nil, retries are not enabled.
 func WithClientRetry(cfg *retry.Config, policies ...retry.Policy) ClientOption {

@@ -4,9 +4,9 @@
 // client-side interceptors) and centralizes retry-related defaults used by the
 // transport stack.
 //
-// Backward compatibility: if no policy is passed to UnaryClientInterceptor, all unary RPCs are eligible for
-// retry when they hit a retryable gRPC status. New callers that only want side-effect-safe retries should pass
-// IdempotentMethods, StandardReadMethods, or another explicit policy.
+// Default policy: if no policy is passed to UnaryClientInterceptor, only side-effect-safe unary RPCs are
+// eligible for retry. This includes AIP-style read methods and requests carrying a request-id idempotency
+// contract. Callers that need broader retry behavior can pass an explicit policy.
 //
 // Start with `Config` and `UnaryClientInterceptor`.
 package retry

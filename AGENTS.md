@@ -82,6 +82,11 @@ matching skill for the task.
   `Config.MaxReceiveSize` before verification. Do not flag this as an
   unbounded-read issue unless the code path bypasses the transport server chain
   without an equivalent request-size cap.
+- HTTP webhook verification intentionally does not maintain replay state.
+  Receivers must deduplicate or process idempotently using `Webhook-Id` or the
+  event id, preferably with durable shared storage when duplicate valid
+  deliveries would be unsafe. Do not flag missing transport-level replay
+  storage unless the code starts promising replay protection.
 - HTTP webhook signing intentionally ignores the Standard Webhooks `Sign` error
   because the current vendored implementation always returns nil. Do not flag
   this unless the dependency behavior changes.

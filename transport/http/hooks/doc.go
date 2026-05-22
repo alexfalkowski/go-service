@@ -18,5 +18,12 @@
 // handlers run. Outbound requests are created by callers and are expected to be
 // bounded at the request construction boundary.
 //
+// Replay protection:
+// Verification covers the Standard Webhooks signature and timestamp checks, but
+// this package does not keep replay state or reject a previously seen
+// Webhook-Id. Receivers that perform non-idempotent work must deduplicate or
+// process idempotently using the Webhook-Id or event identifier, preferably with
+// durable storage shared by all receiver instances.
+//
 // Start with `NewWebhook` to adapt a Standard Webhooks instance into transport middleware helpers.
 package hooks

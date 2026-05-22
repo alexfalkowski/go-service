@@ -24,11 +24,6 @@ type Config = config.Config
 // configured gRPC status codes after the policy allows the logical RPC.
 type Policy func(ctx context.Context, fullMethod string, req any) bool
 
-// AllowAll allows retries for every unary RPC.
-func AllowAll(context.Context, string, any) bool {
-	return true
-}
-
 // StandardReadMethods allows retries for AIP-style read methods named Get* or List*.
 func StandardReadMethods(_ context.Context, fullMethod string, _ any) bool {
 	_, method, _ := strings.SplitServiceMethod(fullMethod)
@@ -65,12 +60,12 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //
 // Failure classification:
 // Retries are only attempted for selected gRPC status codes. This implementation currently retries on
-// `codes.Unavailable` and `codes.DataLoss` (see `retry.WithCodes` in the implementation).
+// `codes.Unavailable` (see `retry.WithCodes` in the implementation).
 //
 // Policy behavior:
-// When no policy is provided, all unary RPCs are eligible for retry when they hit a retryable gRPC status.
-// This preserves historical behavior. New callers that only want side-effect-safe retries should pass
-// IdempotentMethods, StandardReadMethods, or another explicit policy.
+// When no policy is provided, only side-effect-safe unary RPCs are eligible for retry: AIP-style read methods,
+// or calls carrying a request-id idempotency contract. Callers that need different behavior can pass an
+// explicit policy.
 //
 // Notes:
 // This interceptor does not automatically retry on every error; application-level errors that map to other
@@ -78,7 +73,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInterceptor {
 	policy := composePolicy(policies)
 	interceptor := retry.UnaryClientInterceptor(
-		retry.WithCodes(codes.Unavailable, codes.DataLoss),
+		retry.WithCodes(codes.Unavailable),
 		retry.WithMax(uint(cfg.MaxAttempts())),
 		retry.WithBackoff(retry.BackoffLinear(cfg.Backoff.Duration())),
 		retry.WithPerRetryTimeout(cfg.GetTimeout().Duration()),
@@ -102,7 +97,7 @@ func composePolicy(policies []Policy) Policy {
 	}
 
 	if len(filtered) == 0 {
-		return AllowAll
+		return IdempotentMethods
 	}
 
 	return func(ctx context.Context, fullMethod string, req any) bool {

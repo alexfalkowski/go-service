@@ -16,6 +16,9 @@ type Webhook = hooks.Webhook
 // The returned handler wraps handler and applies the webhook verification middleware first. If signature
 // verification fails, the request is rejected and handler is not invoked.
 //
+// Replay protection is intentionally left to the wrapped handler; use the Webhook-Id or CloudEvent id to
+// deduplicate or process idempotently when duplicate valid deliveries would be unsafe.
+//
 // If hook is nil, the returned handler behaves as a pass-through wrapper.
 func NewHandler(hook *Webhook, handler http.Handler) *Handler {
 	return &Handler{handler: hooks.NewHandler(hook), Handler: handler}
@@ -33,6 +36,10 @@ type Handler struct {
 //
 // If verification fails, the underlying middleware writes an HTTP error response and does not call the wrapped
 // handler.
+//
+// Replay protection:
+// The underlying middleware verifies the signature and timestamp but does not persist seen webhook ids. The
+// wrapped handler is responsible for idempotency or deduplication.
 //
 // Disabled behavior:
 // If the inner webhook handler is nil, ServeHTTP delegates directly to the wrapped handler.

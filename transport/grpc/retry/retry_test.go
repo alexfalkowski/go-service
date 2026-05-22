@@ -31,7 +31,7 @@ func TestUnaryClientInterceptorDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, calls)
 }
 
-func TestUnaryClientInterceptorRetriesWhenAttemptsIsTwo(t *testing.T) {
+func TestUnaryClientInterceptorRetriesSafeMethodWhenAttemptsIsTwo(t *testing.T) {
 	interceptor := retry.UnaryClientInterceptor(&config.Config{
 		Attempts: 2,
 		Timeout:  time.Second,
@@ -39,7 +39,7 @@ func TestUnaryClientInterceptorRetriesWhenAttemptsIsTwo(t *testing.T) {
 	})
 
 	calls := 0
-	err := interceptor(t.Context(), "/test.Service/SayHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+	err := interceptor(t.Context(), "/test.Service/GetHello", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
 		calls++
 		if calls == 1 {
 			return status.Error(codes.Unavailable, "unavailable")
@@ -50,6 +50,40 @@ func TestUnaryClientInterceptorRetriesWhenAttemptsIsTwo(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 2, calls)
+}
+
+func TestUnaryClientInterceptorDoesNotRetryUnsafeMethodByDefault(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	})
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/CreateBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.Unavailable, "unavailable")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, 1, calls)
+}
+
+func TestUnaryClientInterceptorDoesNotRetryDataLossByDefault(t *testing.T) {
+	interceptor := retry.UnaryClientInterceptor(&config.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	})
+
+	calls := 0
+	err := interceptor(t.Context(), "/test.Service/GetBook", nil, nil, nil, func(context.Context, string, any, any, *grpc.ClientConn, ...grpc.CallOption) error {
+		calls++
+		return status.Error(codes.DataLoss, "data loss")
+	})
+
+	require.Error(t, err)
+	require.Equal(t, 1, calls)
 }
 
 func TestUnaryClientInterceptorDoesNotRetryWhenPolicyDeniesMethod(t *testing.T) {
