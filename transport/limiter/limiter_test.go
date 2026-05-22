@@ -34,7 +34,16 @@ func TestMissingLimiter(t *testing.T) {
 	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
 
 	_, err := limiter.NewLimiter(lc, m, config)
-	require.Error(t, err)
+	require.ErrorIs(t, err, limiter.ErrMissingKey)
+}
+
+func TestNilKeyFuncLimiter(t *testing.T) {
+	lc := fxtest.NewLifecycle(t)
+	m := limiter.KeyMap{"user-agent": nil}
+	config := &limiter.Config{Kind: "user-agent", Tokens: 0, Interval: time.Second}
+
+	_, err := limiter.NewLimiter(lc, m, config)
+	require.ErrorIs(t, err, limiter.ErrMissingKey)
 }
 
 func TestDisabledLimiter(t *testing.T) {

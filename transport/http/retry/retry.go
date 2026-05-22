@@ -72,7 +72,7 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //   - applies a per-attempt timeout derived from `cfg.GetTimeout()`, and
 //   - retries responses and status errors with retryable HTTP status codes, and
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
-//   - waits a constant backoff derived from `cfg.Backoff` between attempts.
+//   - waits a constant backoff derived from `cfg.GetBackoff()` between attempts.
 //
 // Attempts/backoff:
 // `cfg.Attempts` is interpreted as the total attempt count (initial attempt + retries). Since
@@ -90,7 +90,7 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *RoundTripper {
 	return &RoundTripper{
 		RoundTripper: hrt,
-		backoff:      cfg.Backoff,
+		backoff:      cfg.GetBackoff(),
 		policy:       composePolicy(policies),
 		timeout:      cfg.GetTimeout(),
 		maxRetries:   cfg.MaxRetries(),

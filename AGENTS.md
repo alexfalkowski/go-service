@@ -27,6 +27,17 @@ matching skill for the task.
 - TLS fixtures: `mkcert -install` then `make create-certs`.
 - `encode-config` expects GNU `base64 -w 0`; on macOS/BSD use `base64 | tr -d '\n'`.
 
+## Review Workflows
+
+- When the user asks "Do a deep dive secure code review of <package>",
+  interpret it as:
+  - For each package and subpackage under `<package>`, launch multiple agents.
+  - Each agent should perform a thorough and accurate `$code-review` and
+    `$security-audit`.
+  - After all agents finish, aggregate findings into `FINDINGS.md`.
+  - As findings are fixed, remove them from `FINDINGS.md`.
+  - Once all findings are resolved, delete `FINDINGS.md`.
+
 ## Layout And Wiring
 
 - Feature packages usually use `config.go`, `module.go`, plus implementation files.
@@ -60,6 +71,20 @@ matching skill for the task.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- `Request-Id`/`request-id` is intentionally a logical request identifier, not
+  a per-wire-attempt identifier. Client metadata runs before retry middleware,
+  so all retry attempts for one logical HTTP/gRPC request share the same value.
+  Retry policies intentionally treat a present request id as the idempotency
+  key/contract for retryable writes; services that accept retried writes should
+  deduplicate by request id when duplicate processing would be unsafe. Do not
+  flag the default HTTP/gRPC retry policy merely because metadata injects
+  request ids before retry.
+- gRPC client constructor options use the package's last-wins functional option
+  convention. `WithClientDialOption`, `WithClientUnaryInterceptors`, and
+  `WithClientStreamInterceptors` expect all custom values for one client
+  construction to be passed in a single call; repeated calls intentionally
+  replace earlier values. Do not flag this as dropped configuration unless a
+  public API starts promising accumulation across repeated option helpers.
 - Transport limiter keys are `"user-agent"`, `"ip"`, and `"user-id"`; `"token"` is intentionally not a limiter key. Server limiters run after metadata extraction and token verification, so `"user-id"` is the verified principal (JWT/PASETO subject or SSH key name), and missing, malformed, or invalid auth is rejected before the limiter by design. Do not flag that bypass; use an external edge/gateway/ingress/load-balancer/service-mesh limiter when those attempts need quota enforcement.
 - The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
 - HTTP telemetry logger service/method derivation may include request URL path
@@ -69,6 +94,22 @@ matching skill for the task.
   query/header/body leakage issue unless the logger starts recording
   `RawQuery`, `RequestURI`, headers, cookies, or bodies, or a specific route
   places secrets in path segments contrary to service policy.
+- gRPC telemetry logging intentionally records raw error values for operator
+  diagnostics. Client-facing safety is handled by gRPC status/error rendering;
+  logs are backend observability data and should be protected by deployment log
+  access controls. Do not flag raw gRPC error logging as a data leak unless a
+  concrete code path places secrets, credentials, request bodies, or other
+  prohibited sensitive values into those errors contrary to service policy.
+- gRPC client telemetry intentionally includes the raw `conn.Target()` in client
+  log messages to identify the configured downstream endpoint. Targets are
+  expected to be configuration-controlled service addresses and must not contain
+  credentials, tokens, request data, or other secrets. Do not flag raw target
+  logging unless a concrete configuration or call path allows sensitive data in
+  the target string.
+- Before flagging a nil-pointer panic on embedded pointer configuration types,
+  inspect the called method. Go permits calling pointer-receiver methods on nil
+  pointers, and methods such as `(*config/server.Config).IsEnabled` are
+  intentionally nil-safe.
 - gRPC server reflection is intentionally always registered by `net/grpc.NewServer`; restrict public exposure at the bind address, TLS/auth, ingress, firewall, or service-mesh boundary.
 - MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
 - JWT verification requires both the expected algorithm and a `kid` header.

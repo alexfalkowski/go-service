@@ -34,14 +34,14 @@
 //
 // # Defaults and disabling
 //
-// This package does not define defaults. Callers should consult the transport packages
-// to understand default values and how zero values are handled.
+// This package defines shared defaults for common knobs. Callers should consult the
+// transport packages to understand any transport-specific behavior.
 //
 // A common convention is:
 //   - Attempts == 0: retries disabled using the transport's zero-value behavior.
 //   - Attempts == 1: retries disabled.
-//   - Timeout == 0 or Backoff == 0: treated as "unspecified" and replaced with
-//     transport defaults.
+//   - Timeout == 0: treated as "unspecified" and replaced with time.DefaultTimeout.
+//   - Backoff == 0: treated as "unspecified" and replaced with DefaultBackoff.
 //
 // # Usage
 //

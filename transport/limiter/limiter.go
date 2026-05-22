@@ -56,7 +56,7 @@ var ErrMissingKey = errors.New("limiter: missing key")
 //   - OnStop: closes the underlying store via (*Limiter).Close.
 //
 // Errors:
-//   - Returns ErrMissingKey when cfg.Kind is not present in keys.
+//   - Returns ErrMissingKey when cfg.Kind is not present in keys or maps to a nil KeyFunc.
 //
 // Notes:
 //   - cfg.Interval is used directly as a typed duration decoded from config.
@@ -67,7 +67,7 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	}
 
 	k, ok := keys[cfg.Kind]
-	if !ok {
+	if !ok || k == nil {
 		return nil, ErrMissingKey
 	}
 

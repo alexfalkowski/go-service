@@ -19,11 +19,18 @@ func (r *registry) get(fullMethod string) *breaker.CircuitBreaker {
 	s := r.opts.settings
 	s.Name = fullMethod
 
+	isSuccessful := s.IsSuccessful
 	failureCodes := r.opts.failureCodes
 	s.IsSuccessful = func(err error) bool {
-		if err != nil {
-			_, isFailure := failureCodes[status.Code(err)]
-			return !isFailure
+		if err == nil {
+			return true
+		}
+
+		if _, isFailure := failureCodes[status.Code(err)]; isFailure {
+			return false
+		}
+		if isSuccessful != nil {
+			return isSuccessful(err)
 		}
 
 		return true

@@ -21,6 +21,18 @@
 // Server interceptors also emit response header metadata such as
 // "service-version" and "request-id".
 //
+// # Request-Id semantics
+//
+// "request-id" identifies one logical gRPC request. Client metadata
+// interceptors create it before retry interceptors run, so all retry attempts
+// for the same logical request keep the same value. Server metadata
+// interceptors preserve an incoming "request-id" when present, otherwise they
+// generate one for the RPC before passing control to downstream handlers.
+//
+// Because "request-id" is stable across attempts, transports and services may
+// use it as the idempotency key for retryable write operations. It is not a
+// per-wire attempt id.
+//
 // # Forwarded IP trust boundary
 //
 // Server metadata extraction intentionally treats common forwarding metadata,

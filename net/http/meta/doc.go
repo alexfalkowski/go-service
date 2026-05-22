@@ -41,5 +41,17 @@
 // strips or overwrites client-supplied forwarding headers before traffic reaches
 // the service.
 //
+// # Request-Id semantics
+//
+// Request-Id identifies one logical HTTP request. Client metadata middleware
+// creates it before retry middleware runs, so all retry attempts for the same
+// logical request keep the same value. Server metadata middleware preserves an
+// incoming Request-Id when present, otherwise it generates one for the request
+// before passing control to downstream handlers.
+//
+// Because Request-Id is stable across attempts, transports and services may use
+// it as the idempotency key for retryable write operations. It is not a per-wire
+// attempt id.
+//
 // This package also provides HTTP metadata middleware via `NewHandler` and `NewRoundTripper`.
 package meta
