@@ -37,7 +37,9 @@ func (c *Cache) Save(context.Context, string, string, time.Duration) error {
 	return nil
 }
 
-// ErrCache is a cache.Cache test double that fails lookup and mutation operations with ErrFailed.
+// ErrCache is a cache.Cache test double that fails fetch, delete, and save operations with ErrFailed.
+//
+// Flush succeeds so tests can use ErrCache in started worlds without turning cleanup into the failure under test.
 type ErrCache struct{}
 
 // Delete removes the given key from the cache.
