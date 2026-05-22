@@ -11,18 +11,20 @@ import (
 	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
-	"github.com/faabiosr/cachego"
-	"github.com/faabiosr/cachego/redis"
-	"github.com/faabiosr/cachego/sync"
+	"github.com/alexfalkowski/go-service/v2/time"
 	client "github.com/redis/go-redis/v9"
 	notifications "github.com/redis/go-redis/v9/maintnotifications"
 )
 
-// ErrExpired is an alias for cachego.ErrCacheExpired.
+// ErrExpired is returned when a cache entry exists but is expired.
 //
-// Drivers may return this error (or wrap it) to indicate that a cache entry exists but is expired.
-// Use IsExpiredError to classify this condition.
-const ErrExpired = cachego.ErrCacheExpired
+// Drivers may wrap this error; use IsExpiredError to classify this condition.
+var ErrExpired = errors.New("cache: expired")
+
+// ErrMissing is returned when a cache entry does not exist.
+//
+// Drivers may wrap this error; use IsMissingError to classify this condition.
+var ErrMissing = errors.New("cache: missing")
 
 // ErrNotFound is returned when the configured cache driver kind is unknown.
 var ErrNotFound = errors.New("cache: driver not found")
@@ -62,10 +64,9 @@ type DriverParams struct {
 //
 // Supported kinds include:
 //   - "redis": Redis backend using github.com/redis/go-redis
-//   - "sync": in-memory backend using github.com/faabiosr/cachego/sync
+//   - "sync": in-memory backend using github.com/alexfalkowski/go-sync Map
 //
-// The built-in `sync` backend currently inherits whole-second TTL resolution from the upstream cachego
-// dependency, so callers should not rely on sub-second expiration with that backend.
+// The built-in `sync` backend stores values in process memory and expires entries lazily on access.
 //
 // If cfg.Kind is unknown, NewDriver returns ErrNotFound.
 func NewDriver(params DriverParams) (Driver, error) {
@@ -104,12 +105,29 @@ func NewDriver(params DriverParams) (Driver, error) {
 			},
 		})
 
-		return redis.New(redisClient), nil
+		return &redisDriver{client: redisClient}, nil
 	case "sync":
-		return sync.New(), nil
+		return &syncDriver{}, nil
 	default:
 		return nil, ErrNotFound
 	}
+}
+
+// Driver is the minimal cache backend interface used by the cache facade.
+//
+// Implementations must honor the provided context for blocking operations.
+type Driver interface {
+	// Delete removes the cached key.
+	Delete(ctx context.Context, key string) error
+
+	// Fetch retrieves the cached value for key.
+	Fetch(ctx context.Context, key string) (string, error)
+
+	// Flush removes all cached keys managed by the driver.
+	Flush(ctx context.Context) error
+
+	// Save stores value under key for the provided lifetime.
+	Save(ctx context.Context, key, value string, lifetime time.Duration) error
 }
 
 // IsExpiredError reports whether err represents an expired cache entry.
@@ -123,19 +141,11 @@ func IsExpiredError(err error) bool {
 // IsMissingError reports whether err represents a missing cache entry.
 //
 // This helper normalizes the miss semantics of the backends currently supported by this package,
-// including Redis nil replies and the in-memory sync driver's plain "key not found" error.
+// including Redis nil replies.
 func IsMissingError(err error) bool {
 	if errors.Is(err, client.Nil) {
 		return true
 	}
 
-	return err != nil && err.Error() == "key not found"
+	return errors.Is(err, ErrMissing)
 }
-
-// Driver is an alias for cachego.Cache.
-//
-// It is the minimal interface used by the cache facade (`cache.Cache`) for persistence operations:
-// fetch/save/delete/flush.
-//
-// The alias preserves the upstream cachego interface shape exactly.
-type Driver = cachego.Cache

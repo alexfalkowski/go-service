@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	redis "github.com/redis/go-redis/v9"
@@ -18,7 +19,7 @@ func TestIsMissingError(t *testing.T) {
 	d, err := driver.NewDriver(driver.DriverParams{Config: cfg})
 	require.NoError(t, err)
 
-	_, err = d.Fetch("missing")
+	_, err = d.Fetch(t.Context(), "missing")
 	require.True(t, driver.IsMissingError(err))
 	require.True(t, driver.IsMissingError(redis.Nil))
 	require.True(t, driver.IsMissingError(errors.Prefix("wrapped", redis.Nil)))
@@ -45,6 +46,19 @@ func TestRedisClientClosesOnStop(t *testing.T) {
 	lc.RequireStart()
 	lc.RequireStop()
 
-	_, err = d.Fetch("missing")
+	_, err = d.Fetch(t.Context(), "missing")
 	require.ErrorIs(t, err, redis.ErrClosed)
+}
+
+func TestSyncDriverHonorsCanceledContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+
+	d, err := driver.NewDriver(driver.DriverParams{Config: &config.Config{Kind: "sync"}})
+	require.NoError(t, err)
+	require.ErrorIs(t, d.Save(ctx, "key", "value", 0), context.Canceled)
+	_, err = d.Fetch(ctx, "key")
+	require.ErrorIs(t, err, context.Canceled)
+	require.ErrorIs(t, d.Delete(ctx, "key"), context.Canceled)
+	require.ErrorIs(t, d.Flush(ctx), context.Canceled)
 }

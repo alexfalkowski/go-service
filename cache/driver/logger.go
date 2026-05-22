@@ -1,8 +1,7 @@
 package driver
 
 import (
-	"context"
-
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/redis/go-redis/v9"
 )
 

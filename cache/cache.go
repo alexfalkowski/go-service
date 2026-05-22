@@ -71,15 +71,15 @@ type Cache struct {
 //
 // For persistent backends such as Redis this can be a destructive operation for the selected database.
 // It is intentionally not called during lifecycle shutdown.
-func (c *Cache) Flush(_ context.Context) error {
-	return c.driver.Flush()
+func (c *Cache) Flush(ctx context.Context) error {
+	return c.driver.Flush(ctx)
 }
 
 // Remove deletes a cached key.
 //
 // If the key does not exist, driver behavior is implementation-specific.
-func (c *Cache) Remove(_ context.Context, key string) error {
-	return c.driver.Delete(key)
+func (c *Cache) Remove(ctx context.Context, key string) error {
+	return c.driver.Delete(ctx, key)
 }
 
 // Get loads a cached value for key into value.
@@ -88,8 +88,8 @@ func (c *Cache) Remove(_ context.Context, key string) error {
 // leaves value unchanged.
 //
 // The value parameter should be a pointer to the destination value (for example *MyStruct).
-func (c *Cache) Get(_ context.Context, key string, value any) error {
-	val, err := c.driver.Fetch(key)
+func (c *Cache) Get(ctx context.Context, key string, value any) error {
+	val, err := c.driver.Fetch(ctx, key)
 	if err != nil {
 		if driver.IsMissingError(err) || driver.IsExpiredError(err) {
 			return nil
@@ -107,16 +107,14 @@ func (c *Cache) Get(_ context.Context, key string, value any) error {
 // A TTL <= 0 is passed through to the driver; semantics are driver-specific (for example, it may mean
 // "no expiration" or "immediate expiration").
 //
-// TTL resolution is also driver-specific. The built-in in-memory `sync` driver provided by the vendored
-// cachego dependency uses whole-second expiry tracking, so sub-second TTLs should not be relied on with
-// that backend.
-func (c *Cache) Persist(_ context.Context, key string, value any, ttl time.Duration) error {
+// TTL resolution is driver-specific.
+func (c *Cache) Persist(ctx context.Context, key string, value any, ttl time.Duration) error {
 	enc, err := c.encode(value)
 	if err != nil {
 		return err
 	}
 
-	return c.driver.Save(key, enc, ttl.Duration())
+	return c.driver.Save(ctx, key, enc, ttl)
 }
 
 func (c *Cache) encode(value any) (string, error) {
