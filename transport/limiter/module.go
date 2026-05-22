@@ -5,7 +5,7 @@ import "github.com/alexfalkowski/go-service/v2/di"
 // Module wires limiter key derivation helpers into Fx/Dig.
 //
 // It provides a constructor for the default `KeyMap` via `NewKeyMap`. The returned map contains the
-// built-in key kinds supported by this package (e.g. "user-agent", "ip", and "token").
+// built-in key kinds supported by this package (e.g. "user-agent", "ip", and "user-id").
 //
 // # Extending key kinds
 //

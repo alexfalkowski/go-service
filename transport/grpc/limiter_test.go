@@ -69,10 +69,10 @@ func TestClientLimiterStream(t *testing.T) {
 	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func TestClientLimiterUsesGeneratedTokenUnary(t *testing.T) {
+func TestServerLimiterUsesVerifiedUserIDUnary(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
-		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-id", "1s", 0)),
 		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldGRPC(),
 	)
@@ -87,13 +87,14 @@ func TestClientLimiterUsesGeneratedTokenUnary(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = client.SayHello(t.Context(), req)
-	require.NoError(t, err)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
-func TestClientLimiterUsesGeneratedTokenStream(t *testing.T) {
+func TestServerLimiterUsesVerifiedUserIDStream(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
-		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-id", "1s", 0)),
 		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldGRPC(),
 	)
@@ -104,7 +105,9 @@ func TestClientLimiterUsesGeneratedTokenStream(t *testing.T) {
 	client := v1.NewGreeterServiceClient(conn)
 
 	require.NoError(t, sayStreamHello(t, client))
-	require.NoError(t, sayStreamHello(t, client))
+	err := sayStreamHello(t, client)
+	require.Error(t, err)
+	require.Equal(t, codes.ResourceExhausted, status.Code(err))
 }
 
 func TestLimiterUnlimitedUnary(t *testing.T) {

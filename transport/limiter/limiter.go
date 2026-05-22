@@ -16,7 +16,7 @@ import (
 // KeyFunc derives the metadata value used to key rate limits for ctx.
 //
 // The returned meta.Value is expected to yield a stable string via Value() that can be used as a
-// per-request/per-actor limiter key (for example a user-agent, an IP address, or an authorization token).
+// per-request/per-actor limiter key (for example a user-agent, an IP address, or a verified principal).
 type KeyFunc func(context.Context) meta.Value
 
 // KeyMap maps a configured kind string to the KeyFunc used to derive the limiter key.
@@ -29,7 +29,7 @@ type KeyMap map[string]KeyFunc
 // Supported default kinds are:
 //   - "user-agent": rate limit per User-Agent header (meta.UserAgent)
 //   - "ip": rate limit per client IP address (meta.IPAddr)
-//   - "token": rate limit per authorization token/header (meta.Authorization)
+//   - "user-id": rate limit per verified user/principal identifier (meta.UserID)
 //
 // These defaults are intended for controlled service-to-service traffic where user agents,
 // forwarded IP headers, and authorization metadata are supplied by trusted clients or platform
@@ -40,7 +40,7 @@ func NewKeyMap() KeyMap {
 	return KeyMap{
 		"user-agent": meta.UserAgent,
 		"ip":         meta.IPAddr,
-		"token":      meta.Authorization,
+		"user-id":    meta.UserID,
 	}
 }
 
@@ -72,9 +72,11 @@ func NewLimiter(lc di.Lifecycle, keys KeyMap, cfg *Config) (*Limiter, error) {
 	}
 
 	config := &memorystore.Config{
-		Tokens:        cfg.Tokens,
-		Interval:      cfg.Interval.Duration(),
-		SweepMinTTL:   time.Hour.Duration(),
+		Tokens:   cfg.Tokens,
+		Interval: cfg.Interval.Duration(),
+		// Keep buckets at least as long as the configured limiter window so long
+		// intervals are not purged and reset before the window completes.
+		SweepMinTTL:   max(time.Hour.Duration(), cfg.Interval.Duration()),
 		SweepInterval: time.Hour.Duration(),
 	}
 	store, _ := memorystore.New(config)

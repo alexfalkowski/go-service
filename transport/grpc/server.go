@@ -78,9 +78,9 @@ type ServerParams struct {
 // The constructed server includes:
 //   - OpenTelemetry stats handling when tracing or metrics are enabled.
 //   - A unary interceptor chain that performs metadata extraction/injection, and optionally logging,
-//     rate limiting, and token verification, followed by any user-provided interceptors.
+//     token verification, and rate limiting, followed by any user-provided interceptors.
 //   - A stream interceptor chain that performs metadata extraction/injection, and optionally logging
-//     rate limiting, and token verification, followed by any user-provided interceptors.
+//     token verification, and rate limiting, followed by any user-provided interceptors.
 //
 // TLS:
 // If TLS is enabled in config, server credentials are built from `params.Config.TLS`. Certificate/key
@@ -163,15 +163,12 @@ func unaryServerOption(params ServerParams, interceptors ...grpc.UnaryServerInte
 		uis = append(uis, logger.UnaryServerInterceptor(params.Logger))
 	}
 
-	// security: rate limiting runs before token verification so missing tokens
-	// and syntactically valid tokens that fail verification still consume quota
-	// instead of bypassing auth-cost protection.
-	if params.Limiter != nil {
-		uis = append(uis, limiter.UnaryServerInterceptor(params.Limiter))
-	}
-
 	if params.Verifier != nil {
 		uis = append(uis, token.UnaryServerInterceptor(params.UserID, params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		uis = append(uis, limiter.UnaryServerInterceptor(params.Limiter))
 	}
 
 	uis = append(uis, interceptors...)
@@ -186,15 +183,12 @@ func streamServerOption(params ServerParams, interceptors ...grpc.StreamServerIn
 		sis = append(sis, logger.StreamServerInterceptor(params.Logger))
 	}
 
-	// security: rate limiting runs before token verification so missing tokens
-	// and syntactically valid tokens that fail verification still consume quota
-	// instead of bypassing auth-cost protection.
-	if params.Limiter != nil {
-		sis = append(sis, limiter.StreamServerInterceptor(params.Limiter))
-	}
-
 	if params.Verifier != nil {
 		sis = append(sis, token.StreamServerInterceptor(params.UserID, params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		sis = append(sis, limiter.StreamServerInterceptor(params.Limiter))
 	}
 
 	sis = append(sis, interceptors...)
