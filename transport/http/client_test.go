@@ -4,24 +4,41 @@ import (
 	"testing"
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/env"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/time"
-	"github.com/alexfalkowski/go-service/v2/transport/http"
+	transporthttp "github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClient(t *testing.T) {
-	http.Register(test.FS)
+	transporthttp.Register(test.FS)
 
-	_, err := http.NewClient(http.WithClientTLS(&tls.Config{Cert: "bob", Key: "bob"}))
+	_, err := transporthttp.NewClient(transporthttp.WithClientTLS(&tls.Config{Cert: "bob", Key: "bob"}))
 	require.Error(t, err)
 
-	_, err = http.NewClient(http.WithClientTLS(&tls.Config{}))
+	_, err = transporthttp.NewClient(transporthttp.WithClientTLS(&tls.Config{}))
 	require.NoError(t, err)
 }
 
 func TestClientNegativeTimeoutUsesDefault(t *testing.T) {
-	client, err := http.NewClient(http.WithClientTimeout(-time.Second))
+	client, err := transporthttp.NewClient(transporthttp.WithClientTimeout(-time.Second))
 	require.NoError(t, err)
 	require.Equal(t, time.DefaultTimeout.Duration(), client.Timeout)
+}
+
+func TestClientWithTokenDoesNotFollowCrossOriginRedirect(t *testing.T) {
+	client, err := transporthttp.NewClient(
+		transporthttp.WithClientTokenGenerator(env.UserID("service-user"), test.NewGenerator("secret", nil)),
+	)
+	require.NoError(t, err)
+
+	prev, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/start", http.NoBody)
+	require.NoError(t, err)
+
+	next, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://other.example.com/target", http.NoBody)
+	require.NoError(t, err)
+
+	require.ErrorIs(t, client.CheckRedirect(next, []*http.Request{prev}), http.ErrUseLastResponse)
 }

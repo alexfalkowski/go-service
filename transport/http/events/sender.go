@@ -48,7 +48,9 @@ func WithSenderRoundTripper(rt http.RoundTripper) SenderOption {
 func NewSender(hook *hooks.Webhook, opts ...SenderOption) (client.Client, error) {
 	os := options(opts...)
 	rt := hooks.NewRoundTripper(hook, os.roundTripper)
-	return events.NewClientHTTP(transport.WithRoundTripper(rt))
+	client := http.Client{Transport: rt, CheckRedirect: http.SameOriginRedirect}
+
+	return events.NewClientHTTP(transport.WithClient(client))
 }
 
 func options(opts ...SenderOption) *senderOptions {

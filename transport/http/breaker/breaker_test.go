@@ -78,3 +78,25 @@ func TestRoundTripperCountsFailureStatusWithCustomIsSuccessful(t *testing.T) {
 	require.Nil(t, res)
 	require.ErrorIs(t, err, breaker.ErrOpenState)
 }
+
+func TestRoundTripperNilFailureStatusFuncUsesDefault(t *testing.T) {
+	rt := breaker.NewRoundTripper(
+		&test.StatusRoundTripper{Status: http.StatusInternalServerError},
+		breaker.WithSettings(breaker.Settings{
+			ReadyToTrip: func(counts breaker.Counts) bool {
+				return counts.ConsecutiveFailures >= 1
+			},
+		}),
+		breaker.WithFailureStatusFunc(nil),
+	)
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+	require.NoError(t, err)
+
+	res, err := rt.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusInternalServerError, res.StatusCode)
+
+	res, err = rt.RoundTrip(req)
+	require.Nil(t, res)
+	require.ErrorIs(t, err, breaker.ErrOpenState)
+}

@@ -1,16 +1,12 @@
 package grpc
 
 import (
-	"fmt"
-	"math"
-
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	"github.com/alexfalkowski/go-service/v2/net"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/codes"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/meta"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/timeout"
 	"google.golang.org/grpc"
@@ -367,19 +363,19 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 	}
 
 	if _, ok := options["max_header_list_size"]; ok {
-		os = append(os, grpc.MaxHeaderListSize(mustUint32Size(options, "max_header_list_size")))
+		os = append(os, grpc.MaxHeaderListSize(options.Uint32Size("max_header_list_size", 0)))
 	}
 
 	if _, ok := options["initial_window_size"]; ok {
-		os = append(os, grpc.InitialWindowSize(mustInt32Size(options, "initial_window_size")))
+		os = append(os, grpc.InitialWindowSize(options.Int32Size("initial_window_size", 0)))
 	}
 
 	if _, ok := options["initial_conn_window_size"]; ok {
-		os = append(os, grpc.InitialConnWindowSize(mustInt32Size(options, "initial_conn_window_size")))
+		os = append(os, grpc.InitialConnWindowSize(options.Int32Size("initial_conn_window_size", 0)))
 	}
 
 	if _, ok := options["max_send_msg_size"]; ok {
-		os = append(os, grpc.MaxSendMsgSize(mustIntSize(options, "max_send_msg_size")))
+		os = append(os, grpc.MaxSendMsgSize(options.IntSize("max_send_msg_size", 0)))
 	}
 	os = append(os, opts...)
 
@@ -390,33 +386,4 @@ func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption)
 	reflection.Register(server)
 
 	return server
-}
-
-func mustInt32Size(options options.Map, key string) int32 {
-	size := options.Size(key, 0)
-	if size.Bytes() > math.MaxInt32 {
-		runtime.Must(fmt.Errorf("grpc: %s exceeds max int32: %s", key, size))
-	}
-
-	//nolint:gosec // Size is range-checked against MaxInt32 above.
-	return int32(size.Bytes())
-}
-
-func mustIntSize(options options.Map, key string) int {
-	size := options.Size(key, 0)
-	if size.Bytes() > math.MaxInt {
-		runtime.Must(fmt.Errorf("grpc: %s exceeds max int: %s", key, size))
-	}
-
-	return int(size.Bytes())
-}
-
-func mustUint32Size(options options.Map, key string) uint32 {
-	size := options.Size(key, 0)
-	if size.Bytes() > math.MaxUint32 {
-		runtime.Must(fmt.Errorf("grpc: %s exceeds max uint32: %s", key, size))
-	}
-
-	//nolint:gosec // Size is range-checked against MaxUint32 above.
-	return uint32(size.Bytes())
 }

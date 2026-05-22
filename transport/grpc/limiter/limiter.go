@@ -81,6 +81,10 @@ func UnaryServerInterceptor(limiter *Server) grpc.UnaryServerInterceptor {
 // Unlike unary RPCs, operation streams are limited. This keeps long-lived streams, such as health Watch, from
 // bypassing the resource controls that protect regular service streams.
 //
+// The limiter is admission-only for streams: it takes one token when the stream is opened and does not meter
+// individual messages or stream lifetime. Use gRPC server options such as max_concurrent_streams, plus edge,
+// gateway, ingress, load-balancer, or service-mesh limits when long-lived stream occupancy needs a hard cap.
+//
 // On every stream, the interceptor calls `limiter.Take(ctx)` to determine whether the stream is allowed:
 //
 //   - If `Take` returns an error, the interceptor returns `codes.Internal`.

@@ -263,7 +263,12 @@ func NewClient(opts ...ClientOption) (*http.Client, error) {
 		return nil, err
 	}
 
-	return http.NewClient(transport, os.timeout), nil
+	client := http.NewClient(transport, os.timeout)
+	if os.gen != nil {
+		client.CheckRedirect = http.SameOriginRedirect
+	}
+
+	return client, nil
 }
 
 func roundTripper(os *clientOpts) (http.RoundTripper, error) {
