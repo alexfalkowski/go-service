@@ -91,11 +91,26 @@ func TestNewFromContentTypeFallsBackFromInternalErrorMedia(t *testing.T) {
 }
 
 func TestNewFromMediaWithParameters(t *testing.T) {
-	media := test.Content.NewFromMedia("application/json; profile=test")
+	tests := []struct {
+		name      string
+		mediaType string
+		expected  string
+		subtype   string
+		kind      string
+	}{
+		{name: "json", mediaType: "application/json; profile=test", expected: media.JSON, subtype: "json", kind: "json"},
+		{name: "msgpack", mediaType: "application/vnd.msgpack; profile=test", expected: media.MessagePack, subtype: "msgpack", kind: "msgpack"},
+	}
 
-	require.Equal(t, "application/json", media.Type)
-	require.Equal(t, "json", media.Subtype)
-	require.Same(t, test.Encoder.Get("json"), media.Encoder)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			media := test.Content.NewFromMedia(tt.mediaType)
+
+			require.Equal(t, tt.expected, media.Type)
+			require.Equal(t, tt.subtype, media.Subtype)
+			require.Same(t, test.Encoder.Get(tt.kind), media.Encoder)
+		})
+	}
 }
 
 func TestNewFromMediaPreservesInternalErrorMedia(t *testing.T) {

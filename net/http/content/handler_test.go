@@ -39,7 +39,7 @@ func TestNewRequestHandlerUsesMsgPack(t *testing.T) {
 	body := bytes.NewBuffer(nil)
 	require.NoError(t, test.Encoder.Get("msgpack").Encode(body, &test.Request{Name: "Bob"}))
 	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/hello", body)
-	req.Header.Set(content.TypeKey, media.MessagePack)
+	req.Header.Set(content.TypeKey, media.MessagePack+"; profile=test")
 	res := httptest.NewRecorder()
 
 	handler.ServeHTTP(res, req)

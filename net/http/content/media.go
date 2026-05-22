@@ -5,9 +5,12 @@ import (
 	"github.com/alexfalkowski/go-service/v2/net/http/media"
 )
 
-const jsonKind = "json"
-
-const errorSubtype = "error"
+const (
+	jsonKind                 = "json"
+	errorSubtype             = "error"
+	messagePackSubtype       = "msgpack"
+	vendorMessagePackSubtype = "vnd.msgpack"
+)
 
 // NewMedia builds a Media from a media type string and encoder map.
 //
@@ -61,7 +64,7 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 	case media.TOML:
 		return Media{Type: media.TOML, Subtype: "toml", Encoder: enc.Get("toml")}, true
 	case media.MessagePack:
-		return newMedia(media.MessagePack, "msgpack", enc), true
+		return newMedia(media.MessagePack, messagePackSubtype, enc), true
 	case media.Protobuf:
 		return Media{Type: media.Protobuf, Subtype: "protobuf", Encoder: enc.Get("protobuf")}, true
 	case media.ProtobufJSON:
@@ -74,6 +77,7 @@ func knownMedia(mediaType string, enc *encoding.Map) (Media, bool) {
 }
 
 func newMedia(value, subtype string, enc *encoding.Map) Media {
+	subtype = normalizeSubtype(subtype)
 	if subtype == errorSubtype {
 		return Media{Type: value, Subtype: subtype}
 	}
@@ -88,4 +92,11 @@ func newMedia(value, subtype string, enc *encoding.Map) Media {
 
 func jsonMedia(enc *encoding.Map) Media {
 	return Media{Type: media.JSON, Subtype: jsonKind, Encoder: enc.Get(jsonKind)}
+}
+
+func normalizeSubtype(subtype string) string {
+	if subtype == vendorMessagePackSubtype {
+		return messagePackSubtype
+	}
+	return subtype
 }
