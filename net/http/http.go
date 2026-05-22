@@ -1,8 +1,6 @@
 package http
 
 import (
-	"fmt"
-	"math"
 	"net/http"
 	"net/http/httptrace"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/grpc/strings"
 	"github.com/alexfalkowski/go-service/v2/net/http/telemetry"
-	"github.com/alexfalkowski/go-service/v2/runtime"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -74,6 +71,9 @@ const StatusNotImplemented = http.StatusNotImplemented
 // StatusServiceUnavailable is an alias of http.StatusServiceUnavailable.
 const StatusServiceUnavailable = http.StatusServiceUnavailable
 
+// StatusTemporaryRedirect is an alias of http.StatusTemporaryRedirect.
+const StatusTemporaryRedirect = http.StatusTemporaryRedirect
+
 // StatusTooManyRequests is an alias of http.StatusTooManyRequests.
 const StatusTooManyRequests = http.StatusTooManyRequests
 
@@ -83,92 +83,89 @@ const StatusUnauthorized = http.StatusUnauthorized
 // DefaultMaxHeaderBytes is an alias of http.DefaultMaxHeaderBytes.
 const DefaultMaxHeaderBytes = http.DefaultMaxHeaderBytes
 
-type (
-	// Client is an alias for net/http.Client.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Client = http.Client
+// Client is an alias for net/http.Client.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Client = http.Client
 
-	// MaxBytesError is an alias for net/http.MaxBytesError.
-	//
-	// It is returned when MaxBytesReader or MaxBytesHandler observes an inbound request body exceeding
-	// the configured byte limit.
-	MaxBytesError = http.MaxBytesError
-	// Handler is an alias for net/http.Handler.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Handler = http.Handler
+// MaxBytesError is an alias for net/http.MaxBytesError.
+//
+// It is returned when MaxBytesReader or MaxBytesHandler observes an inbound request body exceeding
+// the configured byte limit.
+type MaxBytesError = http.MaxBytesError
 
-	// ChainedHandler is an alias for negroni.Handler.
-	ChainedHandler = negroni.Handler
+// Handler is an alias for net/http.Handler.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Handler = http.Handler
 
-	// ChainedHandlers is an alias for negroni.Negroni.
-	ChainedHandlers = negroni.Negroni
+// ChainedHandler is an alias for negroni.Handler.
+type ChainedHandler = negroni.Handler
 
-	// HandlerFunc is an alias for net/http.HandlerFunc.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	HandlerFunc = http.HandlerFunc
+// ChainedHandlers is an alias for negroni.Negroni.
+type ChainedHandlers = negroni.Negroni
 
-	// Header is an alias for net/http.Header.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Header = http.Header
+// HandlerFunc is an alias for net/http.HandlerFunc.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type HandlerFunc = http.HandlerFunc
 
-	// Request is an alias for net/http.Request.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Request = http.Request
+// Header is an alias for net/http.Header.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Header = http.Header
 
-	// Response is an alias for net/http.Response.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Response = http.Response
+// Request is an alias for net/http.Request.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Request = http.Request
 
-	// ServeMux is an alias for net/http.ServeMux.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	ServeMux = http.ServeMux
+// Response is an alias for net/http.Response.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Response = http.Response
 
-	// Server is an alias for net/http.Server.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	Server = http.Server
+// ServeMux is an alias for net/http.ServeMux.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type ServeMux = http.ServeMux
 
-	// ResponseWriter is an alias for net/http.ResponseWriter.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	ResponseWriter = http.ResponseWriter
+// Server is an alias for net/http.Server.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type Server = http.Server
 
-	// RoundTripper is an alias for net/http.RoundTripper.
-	//
-	// It is provided so go-service code can depend on a consistent import path while preserving
-	// standard library semantics.
-	RoundTripper = http.RoundTripper
-)
+// ResponseWriter is an alias for net/http.ResponseWriter.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type ResponseWriter = http.ResponseWriter
 
-var (
-	// DefaultTransport is an alias for http.DefaultTransport.
-	DefaultTransport = http.DefaultTransport
+// RoundTripper is an alias for net/http.RoundTripper.
+//
+// It is provided so go-service code can depend on a consistent import path while preserving
+// standard library semantics.
+type RoundTripper = http.RoundTripper
 
-	// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
-	ErrUseLastResponse = http.ErrUseLastResponse
+// DefaultTransport is an alias for http.DefaultTransport.
+var DefaultTransport = http.DefaultTransport
 
-	// ErrServerClosed is an alias for http.ErrServerClosed.
-	ErrServerClosed = http.ErrServerClosed
+// ErrUseLastResponse is an alias for http.ErrUseLastResponse.
+var ErrUseLastResponse = http.ErrUseLastResponse
 
-	// NoBody is an alias for http.NoBody.
-	NoBody = http.NoBody
-)
+// ErrServerClosed is an alias for http.ErrServerClosed.
+var ErrServerClosed = http.ErrServerClosed
+
+// NoBody is an alias for http.NoBody.
+var NoBody = http.NoBody
 
 // NewClient constructs an HTTP client with a request timeout.
 //
@@ -198,6 +195,25 @@ func NewClient(rt http.RoundTripper, timeout time.Duration) *http.Client {
 		Transport: transport,
 		Timeout:   timeout.Duration(),
 	}
+}
+
+// SameOriginRedirect allows redirects only when the next request stays on the same scheme and host.
+//
+// It is intended for clients that add credentials or signatures in RoundTripper middleware, where Go's
+// default cross-origin sensitive-header stripping is not enough because middleware may mint fresh credentials
+// for each redirected request.
+func SameOriginRedirect(req *Request, via []*Request) error {
+	if len(via) == 0 {
+		return nil
+	}
+
+	prev := via[len(via)-1].URL
+	next := req.URL
+	if prev.Scheme == next.Scheme && prev.Host == next.Host {
+		return nil
+	}
+
+	return ErrUseLastResponse
 }
 
 // NewRequestWithContext constructs a new outgoing HTTP request with ctx.
@@ -277,18 +293,9 @@ func NewServer(options options.Map, timeout time.Duration, handler Handler) *Ser
 		WriteTimeout:      options.NonNegativeDuration("write_timeout", timeout).Duration(),
 		IdleTimeout:       options.NonNegativeDuration("idle_timeout", timeout).Duration(),
 		ReadHeaderTimeout: options.NonNegativeDuration("read_header_timeout", timeout).Duration(),
-		MaxHeaderBytes:    mustIntSize(options, "max_header_bytes", bytes.Size(DefaultMaxHeaderBytes)),
+		MaxHeaderBytes:    options.IntSize("max_header_bytes", bytes.Size(DefaultMaxHeaderBytes)),
 		Protocols:         Protocols(),
 	}
-}
-
-func mustIntSize(options options.Map, key string, fallback bytes.Size) int {
-	size := options.Size(key, fallback)
-	if size.Bytes() > math.MaxInt {
-		runtime.Must(fmt.Errorf("http: %s exceeds max int: %s", key, size))
-	}
-
-	return int(size.Bytes())
 }
 
 // ParseServiceMethod derives a logical "service" and "method" name from an HTTP request.

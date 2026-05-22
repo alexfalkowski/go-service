@@ -44,6 +44,35 @@ func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
 	}
 }
 
+func TestSameOriginRedirect(t *testing.T) {
+	tests := []struct {
+		want error
+		name string
+		next string
+	}{
+		{name: "same origin", next: "https://example.com/next", want: nil},
+		{name: "different host", next: "https://other.example.com/next", want: http.ErrUseLastResponse},
+		{name: "different scheme", next: "http://example.com/next", want: http.ErrUseLastResponse},
+	}
+
+	prev, err := http.NewRequestWithContext(t.Context(), http.MethodGet, "https://example.com/start", http.NoBody)
+	require.NoError(t, err)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			next, err := http.NewRequestWithContext(t.Context(), http.MethodGet, tt.next, http.NoBody)
+			require.NoError(t, err)
+			err = http.SameOriginRedirect(next, []*http.Request{prev})
+			if tt.want == nil {
+				require.NoError(t, err)
+				return
+			}
+
+			require.ErrorIs(t, err, tt.want)
+		})
+	}
+}
+
 func TestHandleWhenTelemetryDisabled(t *testing.T) {
 	require.NoError(t, tracer.Register(tracer.TracerParams{Lifecycle: fxtest.NewLifecycle(t)}))
 	metrics.NewMeterProvider(metrics.MeterProviderParams{Lifecycle: fxtest.NewLifecycle(t)})

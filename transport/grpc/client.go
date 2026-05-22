@@ -311,8 +311,8 @@ func NewClient(target string, opts ...ClientOption) (*ClientConn, error) {
 //   - metadata propagation interceptor (user-agent and request-id)
 //   - any custom interceptors provided via `WithClientUnaryInterceptors`
 //   - a timeout interceptor
-//   - optional retry interceptor (when configured)
 //   - optional circuit breaker interceptor (when enabled via `WithClientBreaker`)
+//   - optional retry interceptor (when configured)
 //   - optional logging interceptor (when configured)
 //   - optional token injection interceptor (when configured)
 //   - optional limiter interceptor (when configured)
@@ -324,12 +324,12 @@ func UnaryClientInterceptors(opts ...ClientOption) []grpc.UnaryClientInterceptor
 	unary = append(unary, os.unary...)
 	unary = append(unary, grpc.TimeoutUnaryClientInterceptor(os.timeout))
 
-	if os.retry != nil {
-		unary = append(unary, retry.UnaryClientInterceptor(os.retry, os.retryPolicies...))
-	}
-
 	if os.breaker {
 		unary = append(unary, breaker.UnaryClientInterceptor(os.breakerOptions...))
+	}
+
+	if os.retry != nil {
+		unary = append(unary, retry.UnaryClientInterceptor(os.retry, os.retryPolicies...))
 	}
 
 	if os.logger != nil {

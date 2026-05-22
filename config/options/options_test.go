@@ -42,3 +42,26 @@ func TestSize(t *testing.T) {
 	require.Equal(t, bytes.MB, opts.Size("missing", bytes.MB))
 	require.Panics(t, func() { options.Map{"invalid": "abc"}.Size("invalid", bytes.MB) })
 }
+
+func TestIntSize(t *testing.T) {
+	opts := options.Map{"limit": "16MB"}
+
+	require.Equal(t, int(16*bytes.MB), opts.IntSize("limit", bytes.MB))
+	require.Equal(t, int(bytes.MB), opts.IntSize("missing", bytes.MB))
+}
+
+func TestInt32Size(t *testing.T) {
+	opts := options.Map{"limit": "16MB"}
+
+	require.EqualValues(t, 16*bytes.MB, opts.Int32Size("limit", bytes.MB))
+	require.EqualValues(t, bytes.MB, opts.Int32Size("missing", bytes.MB))
+	require.Panics(t, func() { options.Map{"overflow": "3GB"}.Int32Size("overflow", 0) })
+}
+
+func TestUint32Size(t *testing.T) {
+	opts := options.Map{"limit": "16MB"}
+
+	require.EqualValues(t, 16*bytes.MB, opts.Uint32Size("limit", bytes.MB))
+	require.EqualValues(t, bytes.MB, opts.Uint32Size("missing", bytes.MB))
+	require.Panics(t, func() { options.Map{"overflow": "5GB"}.Uint32Size("overflow", 0) })
+}

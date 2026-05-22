@@ -60,6 +60,10 @@ matching skill for the task.
 
 - Manual transport TLS setup must call the HTTP and gRPC transport register functions; `transport.Module` does this on the normal path.
 - Manual server lifecycle wiring should use `net/server.Register(...)`.
+- `transport.Module` is normally consumed through `module.Server`, which also
+  wires `debug.Module`; do not flag `transport.NewServers` requiring
+  `*debug.Server` unless a public API starts promising standalone
+  `transport.Module` composition without the standard `module.Server` bundle.
 - `cli.RunCode` returns `os.ExitCodeSuccess` on success, preserves non-zero
   shutdown exit codes requested through `di.ExitCode(...)`, and otherwise
   returns `os.ExitCodeFailure`.

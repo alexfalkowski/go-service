@@ -152,9 +152,13 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	}
 }
 
-// StreamClientInterceptor returns a gRPC stream client interceptor that logs the RPC outcome.
+// StreamClientInterceptor returns a gRPC stream client interceptor that logs stream creation.
 //
 // Operation RPC methods (health/metrics/etc.) bypass logging (see `net/grpc/strings.IsOperationMethod`).
+//
+// It logs whether the client stream was opened successfully. Terminal stream
+// status may surface later through RecvMsg, SendMsg, or generated helpers such
+// as CloseAndRecv and is not observed by this interceptor.
 //
 // Logged attributes include:
 //   - system: "grpc"

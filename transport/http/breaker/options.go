@@ -15,12 +15,15 @@ type Option interface {
 
 type opts struct {
 	settings      Settings
-	failureStatus func(code int) bool
+	failureStatus FailureFunc
 }
 
 type optionFunc func(*opts)
 
 func (f optionFunc) apply(o *opts) { f(o) }
+
+// FailureFunc classifies an HTTP response status code as a breaker failure.
+type FailureFunc func(code int) bool
 
 // WithSettings configures the circuit breaker settings used for each per-upstream breaker instance.
 //
@@ -42,8 +45,17 @@ func WithSettings(s Settings) Option {
 // When the predicate returns true for a response status code, the breaker counts the call as a failure,
 // but the `RoundTripper` still returns the original `*http.Response` to the caller with a nil error.
 // This decouples breaker health tracking from application-level HTTP response handling.
-func WithFailureStatusFunc(f func(code int) bool) Option {
-	return optionFunc(func(o *opts) { o.failureStatus = f })
+func WithFailureStatusFunc(f FailureFunc) Option {
+	return optionFunc(func(o *opts) {
+		var failureStatus FailureFunc
+		if f == nil {
+			failureStatus = defaultFailureStatus
+		} else {
+			failureStatus = f
+		}
+
+		o.failureStatus = failureStatus
+	})
 }
 
 // WithFailureStatuses configures a fixed set of HTTP status codes that are treated as failures
@@ -69,9 +81,11 @@ func WithFailureStatuses(statuses ...int) Option {
 
 func defaultOpts() *opts {
 	return &opts{
-		failureStatus: func(code int) bool {
-			return code >= http.StatusInternalServerError || code == http.StatusTooManyRequests
-		},
-		settings: breaker.DefaultSettings,
+		failureStatus: defaultFailureStatus,
+		settings:      breaker.DefaultSettings,
 	}
+}
+
+func defaultFailureStatus(code int) bool {
+	return code >= http.StatusInternalServerError || code == http.StatusTooManyRequests
 }

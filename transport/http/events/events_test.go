@@ -1,6 +1,7 @@
 package events_test
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -9,6 +10,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/strings"
+	transportevents "github.com/alexfalkowski/go-service/v2/transport/http/events"
 	httphooks "github.com/alexfalkowski/go-service/v2/transport/http/hooks"
 	events "github.com/cloudevents/sdk-go/v2"
 	"github.com/cloudevents/sdk-go/v2/protocol"
@@ -74,6 +76,38 @@ func TestSendNotReceive(t *testing.T) {
 	result := world.Sender.Send(ctx, e)
 	require.True(t, protocol.IsNACK(result))
 	require.Nil(t, world.Event)
+}
+
+func TestSenderWithWebhookDoesNotFollowCrossOriginRedirect(t *testing.T) {
+	var attackerSignature string
+	attacker := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
+		attackerSignature = req.Header.Get(webhooks.HeaderWebhookSignature)
+	}))
+	t.Cleanup(attacker.Close)
+
+	var trustedSignature string
+	trusted := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		trustedSignature = req.Header.Get(webhooks.HeaderWebhookSignature)
+		res.Header().Set("Location", attacker.URL+"/events")
+		res.WriteHeader(http.StatusTemporaryRedirect)
+	}))
+	t.Cleanup(trusted.Close)
+
+	hook, err := hooks.NewHook(test.FS, test.NewHook())
+	require.NoError(t, err)
+
+	sender, err := transportevents.NewSender(httphooks.NewWebhook(hook, uuid.NewGenerator()))
+	require.NoError(t, err)
+
+	e := events.NewEvent()
+	e.SetSource("example/uri")
+	e.SetType("example.type")
+	require.NoError(t, e.SetData(events.TextPlain, "test"))
+
+	result := sender.Send(events.ContextWithTarget(t.Context(), trusted.URL+"/events"), e)
+	require.True(t, protocol.IsNACK(result))
+	require.NotEmpty(t, trustedSignature)
+	require.Empty(t, attackerSignature)
 }
 
 func TestReceiveUsesServerMaxReceiveSizeBeforeWebhookVerification(t *testing.T) {
