@@ -119,6 +119,22 @@ func TestRoundTripperDoesNotRetryWhenPolicyDeniesRequest(t *testing.T) {
 	require.Equal(t, 1, rt.Calls)
 }
 
+func TestRoundTripperDoesNotRetryUnsafeRequestByDefault(t *testing.T) {
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+		Backoff:  time.Millisecond,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusServiceUnavailable, res.StatusCode)
+	require.Equal(t, 1, rt.Calls)
+}
+
 func TestRoundTripperRetriesWhenPolicyAllowsRequestID(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusServiceUnavailable, http.StatusOK}}
 	retrying := retry.NewRoundTripper(&retry.Config{
@@ -215,7 +231,8 @@ func TestRoundTripperReplaysRequestBodyAcrossRetries(t *testing.T) {
 		Backoff:  time.Millisecond,
 	}, rt)
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", strings.NewReader("hello"))
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", strings.NewReader("hello"))
 	require.NoError(t, err)
 
 	res, roundTripErr := retrying.RoundTrip(req)
@@ -232,7 +249,8 @@ func TestRoundTripperReplaysRequestBodyAfterTransportError(t *testing.T) {
 		Backoff:  time.Millisecond,
 	}, rt)
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", strings.NewReader("hello"))
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", strings.NewReader("hello"))
 	require.NoError(t, err)
 
 	res, roundTripErr := retrying.RoundTrip(req)
@@ -250,7 +268,8 @@ func TestRoundTripperUsesOriginalBodyOnFirstAttempt(t *testing.T) {
 		Backoff:  time.Millisecond,
 	}, rt)
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", body)
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", body)
 	require.NoError(t, err)
 	req.Body = body
 	req.GetBody = func() (io.ReadCloser, error) {
@@ -273,7 +292,8 @@ func TestRoundTripperDoesNotRetryNonReplayableRequestBody(t *testing.T) {
 		Backoff:  time.Millisecond,
 	}, rt)
 
-	req, err := http.NewRequestWithContext(t.Context(), http.MethodPost, "http://example.com", &test.NonReplayableReader{Value: "hello"})
+	ctx := meta.WithAttributes(t.Context(), meta.WithRequestID(meta.String("request-id")))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://example.com", &test.NonReplayableReader{Value: "hello"})
 	require.NoError(t, err)
 	require.Nil(t, req.GetBody)
 

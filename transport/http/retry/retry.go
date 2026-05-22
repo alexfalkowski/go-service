@@ -29,11 +29,6 @@ type Config = config.Config
 // retryable responses/errors after the policy allows the logical request.
 type Policy func(req *http.Request) bool
 
-// AllowAll allows retries for every request.
-func AllowAll(*http.Request) bool {
-	return true
-}
-
 // SafeMethods allows retries for HTTP methods that should not have request side effects.
 func SafeMethods(req *http.Request) bool {
 	switch req.Method {
@@ -85,9 +80,9 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 // before wrapping the constant backoff in `WithMaxRetries`.
 //
 // Policy behavior:
-// When no policy is provided, all requests are eligible for retry when they hit a retryable transport error
-// or status. This preserves historical behavior. New callers that only want side-effect-safe retries should
-// pass IdempotentRequests, SafeMethods, or another explicit policy.
+// When no policy is provided, only side-effect-safe requests are eligible for retry: safe HTTP methods, or
+// requests carrying a request-id idempotency contract. Callers that need different behavior can pass an
+// explicit policy.
 //
 // Exhaustion behavior:
 //   - If retries are exhausted after retryable HTTP responses, the final retryable response is returned.
@@ -112,8 +107,8 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 //
 // Important:
 // Many HTTP requests are not safe to retry unless they are idempotent or the server supports safe retries.
-// This transport does not attempt to determine idempotency; it only applies the configured retry policy.
-// If no policy is configured, all requests are eligible for retry for backward compatibility.
+// This transport defaults to IdempotentRequests and only applies broader retry behavior when callers provide
+// an explicit policy.
 type RoundTripper struct {
 	http.RoundTripper
 	policy     Policy
@@ -292,7 +287,7 @@ func composePolicy(policies []Policy) Policy {
 	}
 
 	if len(filtered) == 0 {
-		return AllowAll
+		return IdempotentRequests
 	}
 
 	return func(req *http.Request) bool {

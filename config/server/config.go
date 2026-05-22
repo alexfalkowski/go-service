@@ -5,11 +5,15 @@ import (
 	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/crypto/tls"
 	tlsconfig "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
+	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/os"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/token"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
+
+// ErrMissingKeyPair is returned when server TLS is configured without a complete certificate/key pair.
+var ErrMissingKeyPair = errors.New("server: missing tls key pair")
 
 // Config configures server-side behavior shared across transports.
 type Config struct {
@@ -84,14 +88,16 @@ func NewConfig(fs *os.FS, cfg *tlsconfig.Config) (*tls.Config, error) {
 		return config, nil
 	}
 
-	if cfg.HasKeyMaterial() {
-		pair, err := tlsconfig.NewKeyPair(fs, cfg)
-		if err != nil {
-			return config, err
-		}
-
-		config.Certificates = []tls.Certificate{pair}
+	if !cfg.HasKeyPair() {
+		return config, ErrMissingKeyPair
 	}
+
+	pair, err := tlsconfig.NewKeyPair(fs, cfg)
+	if err != nil {
+		return config, err
+	}
+
+	config.Certificates = []tls.Certificate{pair}
 
 	if cfg.HasCA() {
 		pool, err := tlsconfig.NewCertPool(fs, cfg)

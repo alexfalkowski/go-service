@@ -11,7 +11,7 @@
 // intermediate retryable responses before scheduling the next attempt and returns the final retryable response if
 // all attempts fail. When retries are triggered by transport errors, the original error is preserved.
 //
-// Backward compatibility: if no policy is passed to NewRoundTripper, all requests are eligible for retry when
-// they hit a retryable transport error or status. New callers that only want side-effect-safe retries should pass
-// IdempotentRequests, SafeMethods, or another explicit policy.
+// Default policy: if no policy is passed to NewRoundTripper, only side-effect-safe requests are eligible for
+// retry. This includes safe HTTP methods and requests carrying a request-id idempotency contract. Callers that
+// need broader retry behavior can pass an explicit policy.
 package retry

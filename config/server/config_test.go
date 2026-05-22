@@ -125,10 +125,10 @@ func TestNewConfigWithKeyPairOnly(t *testing.T) {
 
 func TestNewConfigWithCAOnly(t *testing.T) {
 	tlsConfig, err := server.NewConfig(test.FS, &config.Config{CA: test.FilePath("certs/rootCA.pem")})
-	require.NoError(t, err)
+	require.ErrorIs(t, err, server.ErrMissingKeyPair)
 	require.Empty(t, tlsConfig.Certificates)
-	require.NotNil(t, tlsConfig.ClientCAs)
-	require.Equal(t, tls.RequireAndVerifyClientCert, tlsConfig.ClientAuth)
+	require.Nil(t, tlsConfig.ClientCAs)
+	require.Equal(t, tls.NoClientCert, tlsConfig.ClientAuth)
 }
 
 func TestNewConfigInvalidKeyPair(t *testing.T) {

@@ -318,6 +318,12 @@ hooks:
 
 `secret` is a source string.
 
+Inbound verification checks Standard Webhooks signatures and timestamps, but
+does not store or reject previously seen webhook ids. Receivers that perform
+non-idempotent work should deduplicate or process idempotently using
+`Webhook-Id` or the event id, backed by durable shared storage when running more
+than one receiver instance.
+
 ---
 
 ## ID generation
