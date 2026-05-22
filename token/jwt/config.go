@@ -47,7 +47,7 @@ type Config struct {
 	// Expiration is the duration used to set and validate the `exp` claim.
 	//
 	// In config files it is encoded as a Go duration string, for example "15m" or "24h".
-	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty"`
+	Expiration time.Duration `yaml:"exp,omitempty" json:"exp,omitempty" toml:"exp,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether JWT configuration is present.

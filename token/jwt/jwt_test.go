@@ -13,6 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestConfigRejectsNegativeExpiration(t *testing.T) {
+	cfg := &jwt.Config{Expiration: -time.Second}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
 func TestValid(t *testing.T) {
 	ec := test.NewEd25519()
 	signer, _ := ed25519.NewSigner(test.PEM, ec)

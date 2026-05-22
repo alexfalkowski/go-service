@@ -58,7 +58,7 @@ func IdempotentMethods(ctx context.Context, fullMethod string, req any) bool {
 //
 // Behavior:
 //   - It checks whether the logical RPC is eligible for retry using policies.
-//   - It uses the typed per-attempt timeout and backoff durations from cfg.
+//   - It uses the typed per-attempt timeout from cfg.GetTimeout() and the backoff duration from cfg.
 //   - It retries up to `cfg.MaxAttempts()` total attempts (including the initial attempt).
 //   - It applies a per-attempt timeout (`retry.WithPerRetryTimeout`) so each attempt is bounded.
 //   - It uses a linear backoff strategy with a step duration derived from `cfg.Backoff`.
@@ -81,7 +81,7 @@ func UnaryClientInterceptor(cfg *Config, policies ...Policy) grpc.UnaryClientInt
 		retry.WithCodes(codes.Unavailable, codes.DataLoss),
 		retry.WithMax(uint(cfg.MaxAttempts())),
 		retry.WithBackoff(retry.BackoffLinear(cfg.Backoff.Duration())),
-		retry.WithPerRetryTimeout(cfg.Timeout.Duration()),
+		retry.WithPerRetryTimeout(cfg.GetTimeout().Duration()),
 	)
 
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {

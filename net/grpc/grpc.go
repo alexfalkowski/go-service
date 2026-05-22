@@ -349,17 +349,17 @@ func WithKeepaliveParams(ping, timeout time.Duration) DialOption {
 func NewServer(options options.Map, timeout time.Duration, opts ...ServerOption) *Server {
 	os := make([]ServerOption, 0, 8+len(opts))
 	os = append(os, grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
-		MinTime:             options.Duration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
+		MinTime:             options.NonNegativeDuration("keepalive_enforcement_policy_ping_min_time", timeout).Duration(),
 		PermitWithoutStream: true,
 	}))
 	os = append(os, grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle:     options.Duration("keepalive_max_connection_idle", timeout).Duration(),
-		MaxConnectionAge:      options.Duration("keepalive_max_connection_age", timeout).Duration(),
-		MaxConnectionAgeGrace: options.Duration("keepalive_max_connection_age_grace", timeout).Duration(),
-		Time:                  options.Duration("keepalive_ping_time", timeout).Duration(),
+		MaxConnectionIdle:     options.NonNegativeDuration("keepalive_max_connection_idle", timeout).Duration(),
+		MaxConnectionAge:      options.NonNegativeDuration("keepalive_max_connection_age", timeout).Duration(),
+		MaxConnectionAgeGrace: options.NonNegativeDuration("keepalive_max_connection_age_grace", timeout).Duration(),
+		Time:                  options.NonNegativeDuration("keepalive_ping_time", timeout).Duration(),
 		Timeout:               timeout.Duration(),
 	}))
-	os = append(os, grpc.ConnectionTimeout(options.Duration("connection_timeout", timeout).Duration()))
+	os = append(os, grpc.ConnectionTimeout(options.NonNegativeDuration("connection_timeout", timeout).Duration()))
 	if _, ok := options["max_concurrent_streams"]; ok {
 		os = append(os, grpc.MaxConcurrentStreams(options.Uint32("max_concurrent_streams", 0)))
 	}

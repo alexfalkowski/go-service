@@ -74,7 +74,7 @@ var ErrAttemptTimeout = fmt.Errorf("retry: attempt timeout: %w", sync.ErrTimeout
 //
 // The constructed RoundTripper wraps hrt and, for each request:
 //   - checks whether the request is eligible for retry using policies, and
-//   - applies a per-attempt timeout derived from `cfg.Timeout`, and
+//   - applies a per-attempt timeout derived from `cfg.GetTimeout()`, and
 //   - retries responses and status errors with retryable HTTP status codes, and
 //   - retries recoverable transport errors using `retryablehttp.DefaultRetryPolicy`, and
 //   - waits a constant backoff derived from `cfg.Backoff` between attempts.
@@ -97,7 +97,7 @@ func NewRoundTripper(cfg *Config, hrt http.RoundTripper, policies ...Policy) *Ro
 		RoundTripper: hrt,
 		backoff:      cfg.Backoff,
 		policy:       composePolicy(policies),
-		timeout:      cfg.Timeout,
+		timeout:      cfg.GetTimeout(),
 		maxRetries:   cfg.MaxRetries(),
 	}
 }
@@ -175,10 +175,6 @@ func (r *RoundTripper) attempt(ctx context.Context, req *http.Request, attempt *
 }
 
 func (r *RoundTripper) withAttemptTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
-	if r.timeout <= 0 {
-		return ctx, func() {}
-	}
-
 	return context.WithTimeoutCause(ctx, r.timeout, ErrAttemptTimeout)
 }
 

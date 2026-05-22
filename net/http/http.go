@@ -268,15 +268,15 @@ func StatusText(code int) string {
 //
 // Protocols are configured via Protocols().
 //
-// Note: options.Duration uses MustParseDuration under the hood; invalid option values will panic at
-// server construction time.
+// Note: options.NonNegativeDuration uses MustParseDuration under the hood; invalid or negative option
+// values will panic at server construction time.
 func NewServer(options options.Map, timeout time.Duration, handler Handler) *Server {
 	return &http.Server{
 		Handler:           handler,
-		ReadTimeout:       options.Duration("read_timeout", timeout).Duration(),
-		WriteTimeout:      options.Duration("write_timeout", timeout).Duration(),
-		IdleTimeout:       options.Duration("idle_timeout", timeout).Duration(),
-		ReadHeaderTimeout: options.Duration("read_header_timeout", timeout).Duration(),
+		ReadTimeout:       options.NonNegativeDuration("read_timeout", timeout).Duration(),
+		WriteTimeout:      options.NonNegativeDuration("write_timeout", timeout).Duration(),
+		IdleTimeout:       options.NonNegativeDuration("idle_timeout", timeout).Duration(),
+		ReadHeaderTimeout: options.NonNegativeDuration("read_header_timeout", timeout).Duration(),
 		MaxHeaderBytes:    mustIntSize(options, "max_header_bytes", bytes.Size(DefaultMaxHeaderBytes)),
 		Protocols:         Protocols(),
 	}

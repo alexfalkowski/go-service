@@ -19,7 +19,8 @@ type Config struct {
 	// independently (for example by deriving a per-attempt context deadline).
 	//
 	// Value encoding: Go duration string (for example "250ms", "5s").
-	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	// A zero value applies time.DefaultTimeout. Negative values are invalid.
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
 
 	// Backoff is the delay between attempts after a failed attempt.
 	//
@@ -28,7 +29,7 @@ type Config struct {
 	// implementation.
 	//
 	// Value encoding: Go duration string (for example "100ms", "1s").
-	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty"`
+	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty" validate:"gte=0"`
 
 	// Attempts is the maximum number of attempts, including the initial attempt.
 	//
@@ -49,6 +50,17 @@ func (c *Config) MaxAttempts() uint64 {
 	}
 
 	return c.Attempts
+}
+
+// GetTimeout returns the configured per-attempt retry timeout.
+//
+// A nil receiver or a non-positive value falls back to time.DefaultTimeout.
+func (c *Config) GetTimeout() time.Duration {
+	if c == nil || c.Timeout <= 0 {
+		return time.DefaultTimeout
+	}
+
+	return c.Timeout
 }
 
 // MaxRetries returns the maximum number of retries after the initial attempt.

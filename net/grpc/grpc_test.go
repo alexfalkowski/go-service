@@ -30,6 +30,25 @@ func TestNewServerWithAdvancedOptions(t *testing.T) {
 	})
 }
 
+func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
+	keys := []string{
+		"keepalive_enforcement_policy_ping_min_time",
+		"keepalive_max_connection_idle",
+		"keepalive_max_connection_age",
+		"keepalive_max_connection_age_grace",
+		"keepalive_ping_time",
+		"connection_timeout",
+	}
+
+	for _, key := range keys {
+		t.Run(key, func(t *testing.T) {
+			require.Panics(t, func() {
+				grpc.NewServer(options.Map{key: "-1s"}, time.Second)
+			})
+		})
+	}
+}
+
 func TestNewServerWithOverflowingAdvancedOptions(t *testing.T) {
 	require.Panics(t, func() {
 		grpc.NewServer(options.Map{"initial_window_size": "3GB"}, time.Second)

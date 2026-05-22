@@ -12,6 +12,11 @@ const KB Size = Size(units.KB)
 // MB is the decimal megabyte size constant: 1,000,000 bytes.
 const MB Size = Size(units.MB)
 
+// DefaultSize is the shared default size used by config surfaces that need a conservative byte limit.
+//
+// Its value is 4 megabytes.
+const DefaultSize Size = 4 * MB
+
 // GB is the decimal gigabyte size constant: 1,000,000,000 bytes.
 const GB Size = Size(units.GB)
 

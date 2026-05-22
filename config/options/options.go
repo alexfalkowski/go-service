@@ -1,6 +1,7 @@
 package options
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -30,6 +31,20 @@ func (m Map) Duration(key string, fallback time.Duration) time.Duration {
 		return time.MustParseDuration(val)
 	}
 	return fallback
+}
+
+// NonNegativeDuration returns a duration option for key and panics if the resolved value is negative.
+//
+// It behaves like Duration for parsing and fallback resolution, then enforces
+// that startup configuration cannot disable timeout-like protections with a
+// negative duration.
+func (m Map) NonNegativeDuration(key string, fallback time.Duration) time.Duration {
+	duration := m.Duration(key, fallback)
+	if duration < 0 {
+		runtime.Must(fmt.Errorf("options: %s must be non-negative: %s", key, duration))
+	}
+
+	return duration
 }
 
 // Uint32 returns an unsigned integer option for key if present; otherwise it returns fallback.

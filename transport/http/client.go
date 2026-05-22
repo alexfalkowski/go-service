@@ -80,7 +80,7 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 // This is the overall time limit for requests made by the constructed client (including connection time,
 // redirects, and reading the response body), as enforced by Go's `http.Client.Timeout` semantics.
 //
-// If unset, a default timeout is applied (see `options()` defaults).
+// If unset or negative, a default timeout is applied (see `options()` defaults).
 func WithClientTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
@@ -290,8 +290,8 @@ func options(opts ...ClientOption) *clientOpts {
 		o.apply(os)
 	}
 
-	if os.timeout == 0 {
-		os.timeout = 30 * time.Second
+	if os.timeout <= 0 {
+		os.timeout = time.DefaultTimeout
 	}
 
 	if os.generator == nil {

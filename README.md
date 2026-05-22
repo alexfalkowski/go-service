@@ -661,7 +661,7 @@ Note:
 - `interval` is parsed as a Go duration string. Invalid values can fail fast.
 - The built-in limiter is an in-memory, per-process safeguard. Use it as a last resort and prefer an external edge, gateway, ingress, load balancer, or service-mesh limiter for production abuse protection.
 - The `user-id` key uses the verified principal stored in metadata. For JWT/PASETO tokens this is the subject claim; for SSH tokens this is the verified key name.
-- Server-side HTTP and gRPC limiters run after token verification, so missing or invalid authorization is rejected before it reaches the limiter.
+- Server-side HTTP and gRPC limiters run after metadata extraction and token verification, so missing, malformed, or invalid authorization is rejected before it reaches the limiter. This is intentional; enforce quotas for those attempts with an external edge, gateway, ingress, load balancer, or service-mesh limiter.
 
 ---
 

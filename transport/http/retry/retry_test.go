@@ -352,8 +352,12 @@ func TestRoundTripperDoesNotAccumulateAuthorizationHeadersAcrossRetries(t *testi
 	require.Equal(t, []int{1, 1}, rt.AuthCounts)
 }
 
-func TestRoundTripperDoesNotSetAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
-	transport := &test.CauseRoundTripper{}
+func TestRoundTripperUsesDefaultAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
+	var deadlineSet bool
+	transport := test.RoundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		_, deadlineSet = req.Context().Deadline()
+		return test.ResponseWithStatus(http.StatusOK), nil
+	})
 	retrying := retry.NewRoundTripper(&retry.Config{
 		Attempts: 1,
 		Timeout:  0,
@@ -365,8 +369,7 @@ func TestRoundTripperDoesNotSetAttemptTimeoutWhenTimeoutIsZero(t *testing.T) {
 	res, err := retrying.RoundTrip(req)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	require.NoError(t, transport.Err)
-	require.NoError(t, transport.Cause)
+	require.True(t, deadlineSet)
 }
 
 func TestRoundTripperSetsAttemptTimeoutCause(t *testing.T) {

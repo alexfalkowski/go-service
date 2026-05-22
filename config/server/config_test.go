@@ -21,8 +21,8 @@ func TestGetMaxReceiveSize(t *testing.T) {
 		name string
 		want bytes.Size
 	}{
-		{name: "nil", want: server.DefaultMaxReceiveSize},
-		{name: "zero", cfg: &server.Config{}, want: server.DefaultMaxReceiveSize},
+		{name: "nil", want: bytes.DefaultSize},
+		{name: "zero", cfg: &server.Config{}, want: bytes.DefaultSize},
 		{name: "explicit", cfg: &server.Config{MaxReceiveSize: 64}, want: 64},
 	}
 
@@ -39,8 +39,9 @@ func TestGetTimeout(t *testing.T) {
 		name string
 		want time.Duration
 	}{
-		{name: "nil", want: server.DefaultTimeout},
-		{name: "zero", cfg: &server.Config{}, want: server.DefaultTimeout},
+		{name: "nil", want: time.DefaultTimeout},
+		{name: "zero", cfg: &server.Config{}, want: time.DefaultTimeout},
+		{name: "negative", cfg: &server.Config{Timeout: -time.Second}, want: time.DefaultTimeout},
 		{name: "explicit", cfg: &server.Config{Timeout: 5 * time.Second}, want: 5 * time.Second},
 	}
 
@@ -53,6 +54,11 @@ func TestGetTimeout(t *testing.T) {
 
 func TestConfigRejectsNegativeMaxReceiveSize(t *testing.T) {
 	cfg := &server.Config{MaxReceiveSize: -1}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
+func TestConfigRejectsNegativeTimeout(t *testing.T) {
+	cfg := &server.Config{Timeout: -time.Second}
 	require.Error(t, test.Validator.Struct(cfg))
 }
 

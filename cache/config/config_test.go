@@ -11,12 +11,12 @@ import (
 func TestGetMaxSize(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
 		var cfg *config.Config
-		require.Equal(t, config.DefaultMaxSize, cfg.GetMaxSize())
+		require.Equal(t, bytes.DefaultSize, cfg.GetMaxSize())
 	})
 
 	t.Run("zero", func(t *testing.T) {
 		cfg := &config.Config{}
-		require.Equal(t, config.DefaultMaxSize, cfg.GetMaxSize())
+		require.Equal(t, bytes.DefaultSize, cfg.GetMaxSize())
 	})
 
 	t.Run("explicit", func(t *testing.T) {

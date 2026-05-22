@@ -12,6 +12,10 @@ func TestMustParseSize(t *testing.T) {
 	require.Panics(t, func() { bytes.MustParseSize("test") })
 }
 
+func TestDefaultSize(t *testing.T) {
+	require.Equal(t, 4*bytes.MB, bytes.DefaultSize)
+}
+
 func TestSizeTextRoundTrip(t *testing.T) {
 	size := bytes.MustParseSize("4MB")
 
