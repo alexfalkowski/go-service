@@ -5,6 +5,7 @@ import (
 
 	"github.com/alexfalkowski/go-service/v2/di"
 	"github.com/alexfalkowski/go-service/v2/errors"
+	"github.com/alexfalkowski/go-service/v2/slices"
 )
 
 // Register wires server services into the application lifecycle.
@@ -15,6 +16,8 @@ import (
 //
 // Callers should ensure the slice does not contain nil entries.
 func Register(lc di.Lifecycle, services []*Service) {
+	services = slices.Clone(services)
+
 	lc.Append(di.Hook{
 		OnStart: func(context.Context) error {
 			for _, s := range services {

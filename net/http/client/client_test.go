@@ -123,7 +123,7 @@ func TestDoUsesMsgPack(t *testing.T) {
 		var request test.Request
 		require.Equal(t, media.MessagePack, req.Header.Get(content.TypeKey))
 		require.NoError(t, test.Encoder.Get("msgpack").Decode(req.Body, &request))
-		res.Header().Set(content.TypeKey, media.MessagePack)
+		res.Header().Set(content.TypeKey, media.MessagePack+"; profile=test")
 		require.NoError(t, test.Encoder.Get("msgpack").Encode(res, &test.Response{Greeting: "Hello " + request.Name}))
 	}))
 	defer server.Close()

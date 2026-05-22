@@ -71,6 +71,11 @@ matching skill for the task.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- `net/header.ForwardedIPs` is intentionally an exported mutable list, similar
+  to standard-library package variables such as `os.Args`. Do not flag this
+  solely because importing packages could mutate it; only report concrete bugs
+  with evidence of accidental mutation, concurrent mutation, or an API promise
+  of immutability.
 - `Request-Id`/`request-id` is intentionally a logical request identifier, not
   a per-wire-attempt identifier. Client metadata runs before retry middleware,
   so all retry attempts for one logical HTTP/gRPC request share the same value.
@@ -112,6 +117,11 @@ matching skill for the task.
   intentionally nil-safe.
 - gRPC server reflection is intentionally always registered by `net/grpc.NewServer`; restrict public exposure at the bind address, TLS/auth, ingress, firewall, or service-mesh boundary.
 - MVC controller errors render a client-safe `mvc.Error` model; `mvcModelError` metadata intentionally remains the raw error string for compatibility and must not be rendered unless diagnostic detail exposure is acceptable.
+- MVC not-found handling intentionally uses a simple `Accept` header check for
+  `text/html` and does not fully evaluate quality weights such as
+  `text/html;q=0`. Do not flag this unless there is concrete evidence of a
+  real client, route, or deployment contract that depends on strict weighted
+  `Accept` negotiation for MVC 404 responses.
 - JWT verification requires both the expected algorithm and a `kid` header.
 - `telemetry/header.Map.MustSecrets` can panic if secret resolution fails during config projection.
 - Health registration helpers require `*net/http.ServeMux`.
