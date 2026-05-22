@@ -40,7 +40,18 @@
 //
 // Use SafeError when the internal cause should remain available through
 // unwrapping but the client should receive a lowercase "grpc: " prefixed
-// status message.
+// status message. Use SafeErrorf when adding formatted internal context around
+// that cause:
+//
+//	return status.SafeErrorf(codes.Internal, err, "load tenant %s", tenantID)
+//
+// Return SafeError and SafeErrorf directly from gRPC handlers. Do not wrap the
+// returned error with fmt.Errorf("%w") before returning it to gRPC: upstream
+// status.FromError preserves wrapping context in the client-visible status
+// message for wrapped status errors. Put internal context in the cause passed
+// to SafeError or in the SafeErrorf format instead:
+//
+//	return status.SafeError(codes.Internal, fmt.Errorf("load tenant: %w", err))
 //
 // # Inspecting errors
 //
@@ -66,15 +77,15 @@
 // # Client-visible messages
 //
 // gRPC status messages are sent to clients. Error and Errorf treat their
-// messages as client-visible. SafeError sends a lowercase "grpc: " prefixed
-// status message while preserving an internal cause through Unwrap for
-// inspection with errors.Is and errors.As.
+// messages as client-visible. SafeError and SafeErrorf send a lowercase
+// "grpc: " prefixed status message while preserving an internal cause through
+// Unwrap for inspection with errors.Is and errors.As.
 //
 // # Non-goals
 //
 // This package intentionally exposes only the small subset of the upstream
 // status API that go-service uses broadly: Code, FromError, Error, Errorf,
-// SafeError, and the Status type alias. Higher-level code that needs additional
-// constructors or richer structured-detail helpers should use the upstream
-// status package directly.
+// SafeError, SafeErrorf, and the Status type alias. Higher-level code that
+// needs additional constructors or richer structured-detail helpers should use
+// the upstream status package directly.
 package status

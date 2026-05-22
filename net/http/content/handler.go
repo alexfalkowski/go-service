@@ -80,7 +80,7 @@ func newHandler[Res any](cont *Content, handler func(ctx context.Context) (*Res,
 
 		mediaType := cont.NewFromRequest(req)
 		ctx = meta.WithContent(ctx, req, res, mediaType.Encoder)
-		res.Header().Add(TypeKey, media.WithUTF8(mediaType.Type))
+		res.Header().Set(TypeKey, media.WithUTF8(mediaType.Type))
 
 		data, err := handler(ctx)
 		if err != nil {
