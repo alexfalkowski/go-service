@@ -64,6 +64,38 @@ func TestRoundTripperDoesNotRetryWhenAttemptsIsOne(t *testing.T) {
 	require.Equal(t, 1, rt.Calls)
 }
 
+func TestRoundTripperDoesNotPanicWithOmittedBackoff(t *testing.T) {
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 1,
+		Timeout:  time.Second,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	require.NotPanics(t, func() {
+		res, err := retrying.RoundTrip(req)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	})
+	require.Equal(t, 1, rt.Calls)
+}
+
+func TestRoundTripperRetriesWithDefaultBackoff(t *testing.T) {
+	rt := &test.StatusSequenceRoundTripper{Codes: []int{http.StatusTooManyRequests, http.StatusOK}}
+	retrying := retry.NewRoundTripper(&retry.Config{
+		Attempts: 2,
+		Timeout:  time.Second,
+	}, rt)
+
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://example.com", http.NoBody)
+
+	res, err := retrying.RoundTrip(req)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Equal(t, 2, rt.Calls)
+}
+
 func TestRoundTripperUsesIndependentRetryBudgetPerRequest(t *testing.T) {
 	rt := &test.StatusSequenceRoundTripper{Codes: []int{
 		http.StatusTooManyRequests, http.StatusOK,

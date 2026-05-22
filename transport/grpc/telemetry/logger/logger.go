@@ -32,6 +32,11 @@ type Logger = logger.Logger
 //
 // Log level is derived from the status code (see `CodeToLevel`). The log message includes the full
 // method name and, when present, error details.
+//
+// Operator diagnostics:
+// The raw error is intentionally attached to the log record for backend observability. Client-facing
+// responses remain controlled by the gRPC status/error path; logs are expected to be protected operator
+// telemetry.
 func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if strings.IsOperationMethod(info.FullMethod) {
@@ -69,6 +74,11 @@ func UnaryServerInterceptor(log *Logger) grpc.UnaryServerInterceptor {
 //
 // Log level is derived from the status code (see `CodeToLevel`). The log message includes the full
 // method name and, when present, error details.
+//
+// Operator diagnostics:
+// The raw error is intentionally attached to the log record for backend observability. Client-facing
+// responses remain controlled by the gRPC status/error path; logs are expected to be protected operator
+// telemetry.
 func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if strings.IsOperationMethod(info.FullMethod) {
@@ -108,6 +118,15 @@ func StreamServerInterceptor(log *Logger) grpc.StreamServerInterceptor {
 // Log level is derived from the status code (see `CodeToLevel`).
 //
 // The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
+//
+// Operator diagnostics:
+// The raw error is intentionally attached to the log record for backend observability. Logs are expected
+// to be protected operator telemetry.
+//
+// Target logging:
+// The raw gRPC client target is intentionally included to identify the configured downstream endpoint in
+// operator logs. Client targets are expected to be configuration-controlled service addresses and must not
+// contain credentials, tokens, request data, or other secrets.
 func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, fullMethod string, req, resp any, conn *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		if strings.IsOperationMethod(fullMethod) {
@@ -146,6 +165,15 @@ func UnaryClientInterceptor(log *Logger) grpc.UnaryClientInterceptor {
 // Log level is derived from the status code (see `CodeToLevel`).
 //
 // The log message prefixes the target address and full method (for example, `conn.Target()+fullMethod`).
+//
+// Operator diagnostics:
+// The raw error is intentionally attached to the log record for backend observability. Logs are expected
+// to be protected operator telemetry.
+//
+// Target logging:
+// The raw gRPC client target is intentionally included to identify the configured downstream endpoint in
+// operator logs. Client targets are expected to be configuration-controlled service addresses and must not
+// contain credentials, tokens, request data, or other secrets.
 func StreamClientInterceptor(log *Logger) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, conn *grpc.ClientConn, fullMethod string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		if strings.IsOperationMethod(fullMethod) {

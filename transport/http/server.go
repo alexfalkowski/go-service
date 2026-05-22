@@ -108,8 +108,9 @@ type ServerParams struct {
 // params.Config.GetMaxReceiveSize() is enforced in this transport stack before downstream handlers read
 // from the request body.
 //
-// If the configured address uses an ephemeral port such as `localhost:0`, params.Config.Address is updated
-// to the actual bound listener address after construction.
+// If the configured address uses an ephemeral port such as `localhost:0`, the actual bound listener address
+// is available from the returned server's service (`server.GetService().String()`) after construction.
+// params.Config.Address remains the configured value.
 func NewServer(params ServerParams) (*Server, error) {
 	if !params.Config.IsEnabled() {
 		return nil, nil

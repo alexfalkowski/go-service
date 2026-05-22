@@ -2,6 +2,9 @@ package retry
 
 import "github.com/alexfalkowski/go-service/v2/time"
 
+// DefaultBackoff is the shared retry backoff used when Config.Backoff is unset.
+const DefaultBackoff time.Duration = 100 * time.Millisecond
+
 // Config configures retry behavior for an operation.
 //
 // This package defines configuration only; concrete retry behavior is implemented
@@ -29,6 +32,7 @@ type Config struct {
 	// implementation.
 	//
 	// Value encoding: Go duration string (for example "100ms", "1s").
+	// A zero value applies DefaultBackoff. Negative values are invalid.
 	Backoff time.Duration `yaml:"backoff,omitempty" json:"backoff,omitempty" toml:"backoff,omitempty" validate:"gte=0"`
 
 	// Attempts is the maximum number of attempts, including the initial attempt.
@@ -61,6 +65,17 @@ func (c *Config) GetTimeout() time.Duration {
 	}
 
 	return c.Timeout
+}
+
+// GetBackoff returns the configured retry backoff.
+//
+// A nil receiver or a non-positive value falls back to DefaultBackoff.
+func (c *Config) GetBackoff() time.Duration {
+	if c == nil || c.Backoff <= 0 {
+		return DefaultBackoff
+	}
+
+	return c.Backoff
 }
 
 // MaxRetries returns the maximum number of retries after the initial attempt.

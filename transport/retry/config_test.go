@@ -44,6 +44,25 @@ func TestConfigGetTimeout(t *testing.T) {
 	}
 }
 
+func TestConfigGetBackoff(t *testing.T) {
+	tests := []struct {
+		cfg  *retry.Config
+		name string
+		want time.Duration
+	}{
+		{name: "nil", want: retry.DefaultBackoff},
+		{name: "zero", cfg: &retry.Config{}, want: retry.DefaultBackoff},
+		{name: "negative", cfg: &retry.Config{Backoff: -time.Second}, want: retry.DefaultBackoff},
+		{name: "explicit", cfg: &retry.Config{Backoff: time.Second}, want: time.Second},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, tt.cfg.GetBackoff())
+		})
+	}
+}
+
 func TestConfigMaxAttempts(t *testing.T) {
 	tests := []struct {
 		name      string
