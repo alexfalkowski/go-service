@@ -13,6 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestConfigRejectsNegativeExpiration(t *testing.T) {
+	cfg := &ssh.Config{Expiration: -time.Second}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
 func TestValid(t *testing.T) {
 	token := ssh.NewToken(test.NewToken("ssh").SSH, test.FS)
 

@@ -12,6 +12,10 @@ func TestMustParseDuration(t *testing.T) {
 	require.Panics(t, func() { time.MustParseDuration("test") })
 }
 
+func TestDefaultTimeout(t *testing.T) {
+	require.Equal(t, 30*time.Second, time.DefaultTimeout)
+}
+
 func TestDurationTextRoundTrip(t *testing.T) {
 	duration := 5*time.Second + 250*time.Millisecond
 

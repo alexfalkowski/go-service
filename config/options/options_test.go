@@ -16,6 +16,15 @@ func TestDuration(t *testing.T) {
 	require.Equal(t, 5*time.Second, test.ConfigOptions.Duration("bob", 5*time.Second))
 }
 
+func TestNonNegativeDuration(t *testing.T) {
+	opts := options.Map{"timeout": "10s"}
+
+	require.Equal(t, 10*time.Second, opts.NonNegativeDuration("timeout", time.Second))
+	require.Equal(t, time.Second, opts.NonNegativeDuration("missing", time.Second))
+	require.Panics(t, func() { options.Map{"timeout": "-1s"}.NonNegativeDuration("timeout", time.Second) })
+	require.Panics(t, func() { options.Map{"timeout": "invalid"}.NonNegativeDuration("timeout", time.Second) })
+}
+
 func TestUint32(t *testing.T) {
 	opts := options.Map{"count": "12"}
 

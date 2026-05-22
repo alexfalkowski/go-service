@@ -27,7 +27,7 @@ type Config struct {
 	// Interval is a typed duration that defines the refill window.
 	//
 	// In config files it is encoded as a Go duration string, for example "1s" or "1m".
-	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty"`
+	Interval time.Duration `yaml:"interval,omitempty" json:"interval,omitempty" toml:"interval,omitempty" validate:"gte=0"`
 
 	// Tokens is the maximum number of tokens available per interval, per derived key.
 	//

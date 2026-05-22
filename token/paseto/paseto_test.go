@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestConfigRejectsNegativeExpiration(t *testing.T) {
+	cfg := &paseto.Config{Expiration: -time.Second}
+	require.Error(t, test.Validator.Struct(cfg))
+}
+
 func TestValid(t *testing.T) {
 	cfg := test.NewToken("paseto")
 	ec := test.NewEd25519()

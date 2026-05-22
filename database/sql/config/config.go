@@ -29,7 +29,7 @@ type Config struct {
 	// ConnMaxLifetime is the maximum amount of time a connection may be reused.
 	//
 	// In config files it is encoded as a Go duration string (for example "30s", "5m", "1h").
-	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty"`
+	ConnMaxLifetime time.Duration `yaml:"conn_max_lifetime,omitempty" json:"conn_max_lifetime,omitempty" toml:"conn_max_lifetime,omitempty" validate:"gte=0"`
 
 	// MaxOpenConns is the maximum number of open connections to the database.
 	MaxOpenConns int `yaml:"max_open_conns,omitempty" json:"max_open_conns,omitempty" toml:"max_open_conns,omitempty"`

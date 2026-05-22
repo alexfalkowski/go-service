@@ -43,6 +43,11 @@ const Nanosecond Duration = Duration(time.Nanosecond)
 // Its value is one second.
 const Second Duration = Duration(time.Second)
 
+// DefaultTimeout is the shared default timeout used by client, server, and retry configuration.
+//
+// Its value is 30 seconds.
+const DefaultTimeout Duration = 30 * Second
+
 // Duration is the go-service duration type used across the repository.
 //
 // It is a named type over the standard library `time.Duration` so it can expose

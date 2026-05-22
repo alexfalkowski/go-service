@@ -5,10 +5,12 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
+	"github.com/alexfalkowski/go-service/v2/config/options"
 	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/net/http"
 	"github.com/alexfalkowski/go-service/v2/telemetry/metrics"
 	"github.com/alexfalkowski/go-service/v2/telemetry/tracer"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
@@ -28,6 +30,18 @@ func TestMaxBytesHandler(t *testing.T) {
 	handler.ServeHTTP(res, req)
 
 	require.Equal(t, http.StatusOK, res.Code)
+}
+
+func TestNewServerRejectsNegativeTimeoutOption(t *testing.T) {
+	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
+
+	for _, key := range []string{"read_timeout", "write_timeout", "idle_timeout", "read_header_timeout"} {
+		t.Run(key, func(t *testing.T) {
+			require.Panics(t, func() {
+				http.NewServer(options.Map{key: "-1s"}, time.Second, handler)
+			})
+		})
+	}
 }
 
 func TestHandleWhenTelemetryDisabled(t *testing.T) {

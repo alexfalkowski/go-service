@@ -3,12 +3,18 @@ package limiter_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/meta"
 	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx/fxtest"
 )
+
+func TestConfigRejectsNegativeInterval(t *testing.T) {
+	cfg := &limiter.Config{Interval: -time.Second}
+	require.Error(t, test.Validator.Struct(cfg))
+}
 
 func TestValidLimiter(t *testing.T) {
 	lc := fxtest.NewLifecycle(t)

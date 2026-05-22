@@ -15,9 +15,6 @@ import (
 	"github.com/alexfalkowski/go-sync"
 )
 
-// DefaultMaxResponseSize is the default outbound response body limit.
-const DefaultMaxResponseSize bytes.Size = 4 * bytes.MB
-
 // ClientOption configures the HTTP client wrapper constructed by NewClient.
 //
 // Options are applied in the order provided to NewClient. If multiple options configure the same
@@ -56,7 +53,7 @@ func WithRoundTripper(rt http.RoundTripper) ClientOption {
 // The timeout value is assigned to http.Client.Timeout (total time limit for a request, including
 // connection time, redirects, and reading the response body).
 //
-// If not provided, NewClient defaults to 30 seconds.
+// If not provided, NewClient defaults to time.DefaultTimeout.
 func WithTimeout(timeout time.Duration) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.timeout = timeout
@@ -65,7 +62,7 @@ func WithTimeout(timeout time.Duration) ClientOption {
 
 // WithMaxResponseSize sets the maximum response body size buffered by Client.Do.
 //
-// If not provided, NewClient defaults to DefaultMaxResponseSize.
+// If not provided, NewClient defaults to bytes.DefaultSize.
 func WithMaxResponseSize(size bytes.Size) ClientOption {
 	return clientOptionFunc(func(o *clientOpts) {
 		o.maxResponseSize = size
@@ -289,12 +286,12 @@ func options(opts ...ClientOption) *clientOpts {
 		o.apply(os)
 	}
 
-	if os.timeout == 0 {
-		os.timeout = 30 * time.Second
+	if os.timeout <= 0 {
+		os.timeout = time.DefaultTimeout
 	}
 
 	if os.maxResponseSize <= 0 {
-		os.maxResponseSize = DefaultMaxResponseSize
+		os.maxResponseSize = bytes.DefaultSize
 	}
 
 	if os.roundTripper == nil {

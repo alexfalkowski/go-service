@@ -11,12 +11,6 @@ import (
 	"github.com/alexfalkowski/go-service/v2/transport/limiter"
 )
 
-// DefaultMaxReceiveSize is the default inbound payload limit applied when MaxReceiveSize is omitted or zero.
-const DefaultMaxReceiveSize bytes.Size = 4 * bytes.MB
-
-// DefaultTimeout is the default server timeout applied when Timeout is omitted or zero.
-const DefaultTimeout time.Duration = 30 * time.Second
-
 // Config configures server-side behavior shared across transports.
 type Config struct {
 	// Limiter configures server-side request limiting.
@@ -38,14 +32,14 @@ type Config struct {
 	//
 	// In config files it is encoded as a Go duration string (for example "30s", "5m").
 	//
-	// A zero value applies DefaultTimeout.
-	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	// A zero value applies time.DefaultTimeout. Negative values are invalid.
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
 
 	// MaxReceiveSize limits inbound request payload size.
 	//
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//
-	// A zero value applies DefaultMaxReceiveSize. Negative values are invalid.
+	// A zero value applies bytes.DefaultSize. Negative values are invalid.
 	MaxReceiveSize bytes.Size `yaml:"max_receive_size,omitempty" json:"max_receive_size,omitempty" toml:"max_receive_size,omitempty" validate:"gte=0"`
 }
 
@@ -56,10 +50,10 @@ func (c *Config) IsEnabled() bool {
 
 // GetMaxReceiveSize returns the configured inbound payload limit.
 //
-// A nil receiver or a zero value falls back to DefaultMaxReceiveSize.
+// A nil receiver or a zero value falls back to bytes.DefaultSize.
 func (c *Config) GetMaxReceiveSize() bytes.Size {
 	if c == nil || c.MaxReceiveSize == 0 {
-		return DefaultMaxReceiveSize
+		return bytes.DefaultSize
 	}
 
 	return c.MaxReceiveSize
@@ -67,10 +61,10 @@ func (c *Config) GetMaxReceiveSize() bytes.Size {
 
 // GetTimeout returns the configured server timeout.
 //
-// A nil receiver or a zero value falls back to DefaultTimeout.
+// A nil receiver or a non-positive value falls back to time.DefaultTimeout.
 func (c *Config) GetTimeout() time.Duration {
-	if c == nil || c.Timeout == 0 {
-		return DefaultTimeout
+	if c == nil || c.Timeout <= 0 {
+		return time.DefaultTimeout
 	}
 
 	return c.Timeout

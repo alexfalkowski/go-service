@@ -81,7 +81,7 @@ func WithClientTokenGenerator(id env.UserID, gen token.Generator) ClientOption {
 
 // WithClientTimeout sets the default per-RPC timeout applied by the timeout interceptor.
 //
-// If unset, a default timeout is applied (see `NewDialOptions` defaults).
+// If unset or negative, a default timeout is applied (see `NewDialOptions` defaults).
 //
 // Note: this timeout is enforced via an interceptor and is independent from any deadlines already set
 // on the incoming context; the interceptor will typically only apply a timeout when a deadline is not
@@ -362,8 +362,8 @@ func options(opts ...ClientOption) *clientOpts {
 	for _, o := range opts {
 		o.apply(os)
 	}
-	if os.timeout == 0 {
-		os.timeout = 30 * time.Second
+	if os.timeout <= 0 {
+		os.timeout = time.DefaultTimeout
 	}
 	if os.generator == nil {
 		os.generator = uuid.NewGenerator()

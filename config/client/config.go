@@ -34,7 +34,9 @@ type Config struct {
 	// Timeout is the client request timeout duration.
 	//
 	// In config files it is encoded as a Go duration string (for example "30s", "5m").
-	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty"`
+	//
+	// Negative values are invalid.
+	Timeout time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" toml:"timeout,omitempty" validate:"gte=0"`
 }
 
 // IsEnabled reports whether client configuration is present.

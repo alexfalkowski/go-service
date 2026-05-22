@@ -5,6 +5,7 @@ import (
 
 	tls "github.com/alexfalkowski/go-service/v2/crypto/tls/config"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/time"
 	"github.com/alexfalkowski/go-service/v2/transport/http"
 	"github.com/stretchr/testify/require"
 )
@@ -17,4 +18,10 @@ func TestClient(t *testing.T) {
 
 	_, err = http.NewClient(http.WithClientTLS(&tls.Config{}))
 	require.NoError(t, err)
+}
+
+func TestClientNegativeTimeoutUsesDefault(t *testing.T) {
+	client, err := http.NewClient(http.WithClientTimeout(-time.Second))
+	require.NoError(t, err)
+	require.Equal(t, time.DefaultTimeout.Duration(), client.Timeout)
 }

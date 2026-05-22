@@ -115,7 +115,7 @@ func TestDoUsesDefaultMaxResponseSize(t *testing.T) {
 
 	err := c.Get(t.Context(), server.URL, client.Options{})
 	require.NoError(t, err)
-	require.Equal(t, 4*bytes.MB, client.DefaultMaxResponseSize)
+	require.Equal(t, 4*bytes.MB, bytes.DefaultSize)
 }
 
 func TestDoUsesMsgPack(t *testing.T) {

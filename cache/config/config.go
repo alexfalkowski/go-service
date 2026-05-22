@@ -2,9 +2,6 @@ package config
 
 import "github.com/alexfalkowski/go-service/v2/bytes"
 
-// DefaultMaxSize is the default cache value limit applied when MaxSize is omitted or zero.
-const DefaultMaxSize bytes.Size = 4 * bytes.MB
-
 // Config configures the cache subsystem.
 type Config struct {
 	// Options contains implementation-specific configuration for the selected Kind.
@@ -27,7 +24,7 @@ type Config struct {
 	//
 	// In config files it is encoded as a human-readable SI size string (for example "64B", "2MB", "4GB").
 	//
-	// A zero value applies DefaultMaxSize. Negative values are invalid.
+	// A zero value applies bytes.DefaultSize. Negative values are invalid.
 	MaxSize bytes.Size `yaml:"max_size,omitempty" json:"max_size,omitempty" toml:"max_size,omitempty" validate:"gte=0"`
 }
 
@@ -38,10 +35,10 @@ func (c *Config) IsEnabled() bool {
 
 // GetMaxSize returns the configured cache value limit.
 //
-// A nil receiver or a zero value falls back to DefaultMaxSize.
+// A nil receiver or a zero value falls back to bytes.DefaultSize.
 func (c *Config) GetMaxSize() bytes.Size {
 	if c == nil || c.MaxSize == 0 {
-		return DefaultMaxSize
+		return bytes.DefaultSize
 	}
 
 	return c.MaxSize
