@@ -8,6 +8,8 @@ import (
 func init() {
 	// UUIDv7 generation is on the request metadata hot path. The google/uuid
 	// random pool cuts it from 2 allocs/op to 1 alloc/op in BenchmarkGenerators.
+	// This intentionally accepts the library's process-wide heap-backed pool
+	// tradeoff because these IDs are operational identifiers, not secrets.
 	uuid.EnableRandPool()
 }
 
