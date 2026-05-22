@@ -15,19 +15,18 @@
 //
 // The built-in Redis backend resolves its URL from a go-service "source
 // string", constructs a go-redis client, and instruments that client via
-// `cache/telemetry` before exposing it through the cachego Redis adapter.
+// `cache/telemetry` before exposing it through a context-aware driver.
 // Redis configuration is strict by design: `Config.Options["url"]` must exist
 // and be a string. The standard config fixtures provide that shape; callers that
 // build config manually should validate it before calling `NewDriver`.
 //
-// The built-in `sync` driver comes from the upstream cachego dependency and currently has whole-second TTL
-// resolution. Callers should not rely on sub-second expiration with that backend.
+// The built-in `sync` driver uses an in-process go-sync Map and lazily expires
+// entries when they are read.
 //
 // If the configured kind is unknown, `NewDriver` returns `ErrNotFound`.
 //
 // # Errors
 //
-// This package re-exports `cachego.ErrCacheExpired` as `ErrExpired` and provides
-// `IsExpiredError` / `IsMissingError` helpers to classify backend-specific miss conditions in a
-// backend-agnostic way.
+// This package provides `ErrExpired`, `ErrMissing`, and helper functions to
+// classify backend-specific miss conditions in a backend-agnostic way.
 package driver

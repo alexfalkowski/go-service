@@ -8,6 +8,7 @@ import (
 	"github.com/alexfalkowski/go-service/v2/cache/config"
 	"github.com/alexfalkowski/go-service/v2/cache/driver"
 	"github.com/alexfalkowski/go-service/v2/compress/errors"
+	"github.com/alexfalkowski/go-service/v2/context"
 	"github.com/alexfalkowski/go-service/v2/encoding/base64"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	v1 "github.com/alexfalkowski/go-service/v2/internal/test/greet/v1"
@@ -217,7 +218,7 @@ func TestMissingCache(t *testing.T) {
 
 	kind := cache.NewCache(params)
 	t.Cleanup(func() {
-		require.NoError(t, kind.Flush(t.Context()))
+		require.NoError(t, kind.Flush(context.Background()))
 	})
 	value := "existing"
 

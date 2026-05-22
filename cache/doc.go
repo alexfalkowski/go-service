@@ -19,7 +19,7 @@
 //
 // # TTL resolution
 //
-// TTL handling depends on the selected driver. In particular, the built-in in-memory `sync` driver comes
-// from an upstream dependency and currently tracks expiry at whole-second resolution. Sub-second TTLs may
-// therefore be rounded in driver-specific ways and should not be relied on with that backend.
+// TTL handling depends on the selected driver. The built-in in-memory `sync`
+// driver stores values in process memory and expires entries lazily when they
+// are read.
 package cache
