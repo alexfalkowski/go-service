@@ -89,8 +89,8 @@ type ServerParams struct {
 // The server is built using Negroni and composes middleware in this order (first listed runs first):
 //   - metadata extraction/injection and response headers (`net/http/meta`)
 //   - optional logging (`transport/http/telemetry/logger`) when `params.Logger` is non-nil
-//   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
 //   - optional token verification (`transport/http/token`) when `params.Verifier` is non-nil
+//   - optional rate limiting (`transport/http/limiter`) when `params.Limiter` is non-nil
 //   - inbound request body size limiting (`transport/http/body`)
 //   - optional user-provided handlers (`params.Handlers`, in the order supplied)
 //   - gzip compression wrapping the mux not-found handler (`gzhttp.GzipHandler(http.NewNotFoundHandler(...))`)
@@ -122,15 +122,12 @@ func NewServer(params ServerParams) (*Server, error) {
 		neg.Use(logger.NewHandler(params.Name, params.Logger))
 	}
 
-	// security: rate limiting runs before token verification so missing tokens
-	// and syntactically valid tokens that fail verification still consume quota
-	// instead of bypassing auth-cost protection.
-	if params.Limiter != nil {
-		neg.Use(limiter.NewHandler(params.Name, params.Limiter))
-	}
-
 	if params.Verifier != nil {
 		neg.Use(token.NewHandler(params.Name, params.UserID, params.Verifier))
+	}
+
+	if params.Limiter != nil {
+		neg.Use(limiter.NewHandler(params.Name, params.Limiter))
 	}
 
 	neg.Use(body.NewHandler(params.Config.GetMaxReceiveSize().Bytes()))

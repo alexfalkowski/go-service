@@ -60,6 +60,8 @@ matching skill for the task.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
+- Transport limiter keys are `"user-agent"`, `"ip"`, and `"user-id"`; `"token"` is intentionally not a limiter key. Server limiters run after token verification, so `"user-id"` is the verified principal (JWT/PASETO subject or SSH key name), and invalid or missing auth is rejected before the limiter.
+- The built-in transport limiter is intentionally in-memory and per-process. Treat it as a last-resort local safeguard; prefer external edge/gateway/ingress/load-balancer/service-mesh limiting for production abuse protection.
 - HTTP telemetry logger service/method derivation may include request URL path
   segments for non-canonical HTTP routes. This is intentional for client and
   server debugging because HTTP clients can call arbitrary paths and route

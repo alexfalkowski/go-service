@@ -12,7 +12,7 @@
 //
 //   - "user-agent": meta.UserAgent
 //   - "ip": meta.IPAddr
-//   - "token": meta.Authorization
+//   - "user-id": meta.UserID
 //
 // The configured kind is typically provided via `Config.Kind`. If the kind is not present in the KeyMap,
 // limiter construction fails with ErrMissingKey.
@@ -25,15 +25,24 @@
 //
 // Use the "ip" key when the service is only reachable through trusted edge
 // infrastructure that strips or overwrites client-supplied forwarding headers.
-// If direct origin access is possible, prefer a different key such as "token" or
-// add application-specific trusted proxy validation before relying on IP-based
-// limits.
+// If direct origin access is possible, prefer a verified identity key such as
+// "user-id" or add application-specific trusted proxy validation before relying
+// on IP-based limits.
+//
+// The "user-id" key uses the verified principal stored in metadata. For
+// JWT/PASETO tokens this is the subject claim; for SSH tokens this is the
+// verified key name returned by the token verifier.
 //
 // # In-memory behavior and lifecycle
 //
 // The limiter uses an in-memory store. Limits are enforced per process and are not shared across replicas.
-// This makes it suitable for single-instance deployments, development environments, or as a local
-// protection mechanism, but not as a global distributed rate limit.
+// This makes it suitable for single-instance deployments, development environments, or as a last-resort
+// local safeguard, but not as a global distributed rate limit.
+//
+// For primary production abuse protection, prefer an external rate limiter at
+// the edge, gateway, ingress, load balancer, or service-mesh boundary. Those
+// layers can enforce limits consistently across replicas and before requests
+// spend application CPU.
 //
 // When constructed via `NewLimiter`, the underlying store is closed on application shutdown via an Fx/Dig
 // lifecycle hook.

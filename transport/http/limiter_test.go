@@ -96,10 +96,10 @@ func TestClientLimiter(t *testing.T) {
 	}
 }
 
-func TestClientLimiterUsesGeneratedToken(t *testing.T) {
+func TestServerLimiterUsesVerifiedUserID(t *testing.T) {
 	world := test.NewStartedWorld(t,
 		test.WithWorldTelemetry("otlp"),
-		test.WithWorldClientLimiter(test.NewLimiterConfig("token", "1s", 0)),
+		test.WithWorldServerLimiter(test.NewLimiterConfig("user-id", "1s", 0)),
 		test.WithWorldToken(&test.SequenceGenerator{}, test.AcceptingVerifier{}),
 		test.WithWorldHTTP(),
 		test.WithWorldHello(),
@@ -114,8 +114,8 @@ func TestClientLimiterUsesGeneratedToken(t *testing.T) {
 
 	res, body, err = world.ResponseWithBody(t.Context(), url, http.MethodGet, http.Header{}, http.NoBody)
 	require.NoError(t, err)
-	require.Equal(t, http.StatusOK, res.StatusCode)
-	require.Equal(t, "hello!", body)
+	require.Equal(t, http.StatusTooManyRequests, res.StatusCode)
+	require.Equal(t, http.StatusText(http.StatusTooManyRequests), body)
 }
 
 func TestServerClosedLimiter(t *testing.T) {
