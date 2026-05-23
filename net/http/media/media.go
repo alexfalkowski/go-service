@@ -80,7 +80,7 @@ func TypeByExtension(ext string) string {
 // Parameters are ignored because content negotiation only uses the base media type.
 func Parse(value string) (string, string, error) {
 	mediaType, _, _ := strings.Cut(value, ";")
-	mediaType = strings.TrimSpace(mediaType)
+	mediaType = strings.ToLower(strings.TrimSpace(mediaType))
 
 	_, subtype, ok := strings.Cut(mediaType, "/")
 	if !ok || strings.IsEmpty(subtype) {
