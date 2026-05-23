@@ -17,9 +17,9 @@
 // master/slave pool abstraction used by the repository, applies pool settings
 // (max lifetime/open/idle), and registers OpenTelemetry DB stats metrics.
 //
-// Although the package-level SQL wrapper aliases this pool type as
-// `database/sql.DBs`, this package returns the underlying upstream type
-// directly to avoid an import cycle with the root `database/sql` package.
+// The package returns `database/sql/driver.DBs`, which embeds the upstream pool
+// collection and is aliased by the root `database/sql` package as
+// `database/sql.DBs`.
 //
 // Start with `Config`, `Register`, and `Open`.
 package pg

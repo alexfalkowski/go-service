@@ -58,12 +58,12 @@ var ErrEmptyDSN = errors.New("driver: empty database DSN")
 //
 // Telemetry:
 //   - The driver is wrapped using database/sql/telemetry.WrapDriver when tracing or metrics are enabled.
-//   - The DB system name attribute is set to the provided name (attributes.DBSystemNameKey).
+//   - If opts is empty, the DB system name attribute is set to the provided name (attributes.DBSystemNameKey).
 //
 // Errors:
 //   - If the underlying `sql.Register` panics (for example, due to registering the same name more than once),
 //     Register converts that panic into an error and returns it.
-func Register(name string, driver Driver) (err error) {
+func Register(name string, driver Driver, opts ...telemetry.Option) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = runtime.ConvertRecover(r)
@@ -71,7 +71,7 @@ func Register(name string, driver Driver) (err error) {
 	}()
 
 	if metrics.IsEnabled() || tracer.IsEnabled() {
-		driver = telemetry.WrapDriver(driver, telemetry.WithAttributes(attributes.DBSystemNameKey.String(name)))
+		driver = telemetry.WrapDriver(driver, telemetryOptions(name, opts)...)
 	}
 
 	sql.Register(name, driver)
@@ -95,11 +95,49 @@ func Register(name string, driver Driver) (err error) {
 //   - returns errors encountered while resolving DSNs or connecting, and
 //   - returns ErrNoDSNs when neither masters nor slaves are configured.
 //
-// The returned type is the upstream master/slave pool collection used
-// internally by the SQL driver layer. Higher-level repository code can usually
-// treat it interchangeably with `database/sql.DBs`, which aliases the same
-// upstream type.
-func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
+// The returned DBs embeds the upstream master/slave pool collection and owns
+// repository lifecycle cleanup such as DB stats metric unregistration.
+func Connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
+	return connect(name, fs, cfg, opts...)
+}
+
+// Open opens master/slave `database/sql` connection pools for a previously
+// registered driver name.
+//
+// Open delegates the connection work to Connect and then appends an OnStop hook
+// to the provided lifecycle that closes all returned pools by calling Destroy.
+//
+// The returned type is the same go-service DBs wrapper returned by Connect.
+func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
+	db, err := Connect(name, fs, cfg, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	lc.Append(di.Hook{
+		OnStop: func(_ context.Context) error {
+			return db.Destroy()
+		},
+	})
+
+	return db, nil
+}
+
+// ConnectMasterSlaves opens master/slave `database/sql` connection pools for a
+// previously registered driver name.
+//
+// It is a low-level wrapper around mssqlx.ConnectMasterSlaves for callers that
+// already have resolved literal DSNs.
+func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []error) {
+	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
+	if errors.Join(errs...) != nil {
+		return nil, errs
+	}
+
+	return &DBs{DBs: db}, nil
+}
+
+func connect(name string, fs *os.FS, cfg *config.Config, opts ...telemetry.Option) (*DBs, error) {
 	masters := make([]string, len(cfg.Masters))
 
 	for i, m := range cfg.Masters {
@@ -128,7 +166,7 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 		slaves[i] = bytes.String(u)
 	}
 
-	db, err := connectDBs(name, masters, slaves)
+	db, err := connectDBs(name, masters, slaves, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -140,30 +178,7 @@ func Connect(name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
 	return db, nil
 }
 
-// Open opens master/slave `database/sql` connection pools for a previously
-// registered driver name.
-//
-// Open delegates the connection work to Connect and then appends an OnStop hook
-// to the provided lifecycle that closes all returned pools by calling Destroy.
-//
-// The returned type is the same upstream master/slave pool collection returned
-// by Connect.
-func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config) (*mssqlx.DBs, error) {
-	db, err := Connect(name, fs, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	lc.Append(di.Hook{
-		OnStop: func(_ context.Context) error {
-			return errors.Join(db.Destroy()...)
-		},
-	})
-
-	return db, nil
-}
-
-func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error) {
+func connectDBs(name string, masterDSNs, slaveDSNs []string, opts ...telemetry.Option) (*DBs, error) {
 	if len(masterDSNs)+len(slaveDSNs) == 0 {
 		return nil, ErrNoDSNs
 	}
@@ -173,22 +188,45 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string) (*mssqlx.DBs, error
 		return nil, err
 	}
 
+	var regs []metrics.Registration
 	if metrics.IsEnabled() {
-		attrs := telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))
+		opts := telemetryOptions(name, opts)
 
 		masters, _ := db.GetAllMasters()
-		register(masters, attrs)
+		regs = append(regs, register(masters, opts...)...)
 
 		slaves, _ := db.GetAllSlaves()
-		register(slaves, attrs)
+		regs = append(regs, register(slaves, opts...)...)
 	}
 
-	return db, nil
+	return &DBs{DBs: db, registrations: regs}, nil
 }
 
-func register(dbs []*sqlx.DB, opts ...telemetry.Option) {
+func register(dbs []*sqlx.DB, opts ...telemetry.Option) []metrics.Registration {
+	regs := make([]metrics.Registration, 0, len(dbs))
+
 	for _, db := range dbs {
-		_, err := telemetry.RegisterDBStatsMetrics(db.DB, opts...)
+		reg, err := telemetry.RegisterDBStatsMetrics(db.DB, opts...)
 		runtime.Must(err)
+		regs = append(regs, reg)
 	}
+
+	return regs
+}
+
+func unregister(regs []metrics.Registration) []error {
+	errs := make([]error, 0, len(regs))
+	for _, reg := range regs {
+		errs = append(errs, reg.Unregister())
+	}
+
+	return errs
+}
+
+func telemetryOptions(name string, opts []telemetry.Option) []telemetry.Option {
+	if len(opts) > 0 {
+		return opts
+	}
+
+	return []telemetry.Option{telemetry.WithAttributes(attributes.DBSystemNameKey.String(name))}
 }

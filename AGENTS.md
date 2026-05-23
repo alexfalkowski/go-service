@@ -79,6 +79,13 @@ matching skill for the task.
 - `telemetry.Register()` installs the global OpenTelemetry propagator.
 - `cache.Register(...)` sets the package-level cache used by generic cache helpers.
 - Redis cache config intentionally expects `cache.options.url` to exist and be a string.
+- PostgreSQL DSN security options, including TLS/`sslmode`, are intentionally
+  part of the DSN supplied by the service configuration. `database/sql/pg`
+  passes resolved DSNs through to pgx and does not impose repository-level DSN
+  construction policy. Do not flag pass-through DSN handling merely because an
+  insecure DSN could be supplied; only report concrete bugs such as accidental
+  DSN rewriting, secret leakage, or a public API promise to enforce secure DSN
+  policy.
 - Access model and policy config are resolved through `os.FS.ReadSource`; use `file:` for files or `env:` for content from the environment.
 - IP metadata intentionally trusts forwarding headers; deploy behind trusted proxies that strip spoofed headers before using the `"ip"` limiter key.
 - `net/header.ForwardedIPs` is intentionally an exported mutable list, similar

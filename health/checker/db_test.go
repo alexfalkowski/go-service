@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/database/sql"
-	"github.com/alexfalkowski/go-service/v2/errors"
 	"github.com/alexfalkowski/go-service/v2/health/checker"
 	"github.com/alexfalkowski/go-service/v2/internal/test"
 	"github.com/alexfalkowski/go-service/v2/time"
@@ -30,6 +29,6 @@ func TestDBCheckerReturnsPingError(t *testing.T) {
 	world := test.NewStartedWorld(t, test.WithWorldTelemetry("otlp"), test.WithWorldPGConfig(nil))
 
 	check := checker.NewDBChecker(world.DB, time.Second)
-	require.NoError(t, errors.Join(world.DB.Destroy()...))
+	require.NoError(t, world.DB.Destroy())
 	require.Error(t, check.Check(t.Context()))
 }
