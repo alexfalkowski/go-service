@@ -1,6 +1,7 @@
 package compress_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
@@ -100,4 +101,25 @@ func TestZstdDecompressPreservesDecoderSizeError(t *testing.T) {
 	_, err = cmp.Decompress(encoded, zstd.MinWindowSize)
 	require.ErrorIs(t, err, errors.ErrTooLarge)
 	require.ErrorIs(t, err, zstd.ErrDecoderSizeExceeded)
+}
+
+func TestZstdDecompressRejectsInvalidLimits(t *testing.T) {
+	cmp := zstd.NewCompressor()
+	data := strings.Bytes("hello")
+	encoded, err := cmp.Compress(data, bytes.KB)
+	require.NoError(t, err)
+
+	for _, tt := range []struct {
+		name string
+		size bytes.Size
+	}{
+		{name: "negative", size: -1},
+		{name: "max int64", size: math.MaxInt64},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			decoded, err := cmp.Decompress(encoded, tt.size)
+			require.ErrorIs(t, err, errors.ErrTooLarge)
+			require.Nil(t, decoded)
+		})
+	}
 }

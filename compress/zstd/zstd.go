@@ -2,6 +2,7 @@ package zstd
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/alexfalkowski/go-service/v2/bytes"
 	compress "github.com/alexfalkowski/go-service/v2/compress/errors"
@@ -52,6 +53,10 @@ func (c *Compressor) Compress(data []byte, size bytes.Size) ([]byte, error) {
 // An error is returned if data is not valid zstd-encoded content or the decompressed data exceeds size.
 func (c *Compressor) Decompress(data []byte, size bytes.Size) ([]byte, error) {
 	limit := size.Bytes()
+	if limit < 0 || limit == math.MaxInt64 {
+		return nil, compress.ErrTooLarge
+	}
+
 	maxMemory := uint64(max(limit, int64(MinWindowSize)))
 	d, err := zstd.NewReader(
 		bytes.NewReader(data),
