@@ -3,12 +3,14 @@ package slices_test
 import (
 	"testing"
 
+	"github.com/alexfalkowski/go-service/v2/internal/test"
+	"github.com/alexfalkowski/go-service/v2/io"
 	"github.com/alexfalkowski/go-service/v2/ptr"
 	"github.com/alexfalkowski/go-service/v2/slices"
 	"github.com/stretchr/testify/require"
 )
 
-func TestEmptyAppendZero(t *testing.T) {
+func TestAppendEmpty(t *testing.T) {
 	for _, elem := range []*int{nil} {
 		t.Run("nil pointer", func(t *testing.T) {
 			require.Empty(t, slices.AppendNotZero([]*int{}, elem))
@@ -20,17 +22,26 @@ func TestEmptyAppendZero(t *testing.T) {
 			require.Empty(t, slices.AppendNotZero([]int{}, elem))
 		})
 	}
+
+	t.Run("typed nil interface", func(t *testing.T) {
+		var writer *test.ErrWriter
+		var elem io.Writer = writer
+
+		require.Empty(t, slices.AppendNotZero([]io.Writer{}, elem))
+	})
+
+	t.Run("nil slice", func(t *testing.T) {
+		var elem []string
+
+		require.Empty(t, slices.AppendNotZero([][]string{}, elem))
+	})
+
+	t.Run("zero non-comparable struct", func(t *testing.T) {
+		require.Empty(t, slices.AppendNotZero([]test.Page{}, test.Page{}))
+	})
 }
 
-func TestEmptyAppendNil(t *testing.T) {
-	for _, elem := range []*int{nil} {
-		t.Run("nil pointer", func(t *testing.T) {
-			require.Empty(t, slices.AppendNotNil([]*int{}, elem))
-		})
-	}
-}
-
-func TestAppendZero(t *testing.T) {
+func TestAppendNotZero(t *testing.T) {
 	integer := 2
 
 	for _, elem := range []*int{&integer} {
@@ -38,16 +49,22 @@ func TestAppendZero(t *testing.T) {
 			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
 		})
 	}
-}
-
-func TestAppendNil(t *testing.T) {
-	integer := 2
 
 	for _, elem := range []*int{&integer} {
 		t.Run("non-nil pointer", func(t *testing.T) {
-			require.NotEmpty(t, slices.AppendNotNil([]*int{}, elem))
+			require.NotEmpty(t, slices.AppendNotZero([]*int{}, elem))
 		})
 	}
+
+	t.Run("empty slice", func(t *testing.T) {
+		require.NotEmpty(t, slices.AppendNotZero([][]string{}, []string{}))
+	})
+
+	t.Run("non-zero non-comparable struct", func(t *testing.T) {
+		value := test.Page{Title: "test"}
+
+		require.NotEmpty(t, slices.AppendNotZero([]test.Page{}, value))
+	})
 }
 
 func TestElemFunc(t *testing.T) {

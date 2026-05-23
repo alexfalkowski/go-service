@@ -23,3 +23,15 @@ func IsNil(value any) bool {
 		return false
 	}
 }
+
+// IsZero reports whether value is the zero value for its type.
+//
+// It returns true for nil interfaces and typed nil values, and it supports
+// non-comparable values such as slices, maps, funcs, and structs containing them.
+func IsZero(value any) bool {
+	if value == nil {
+		return true
+	}
+
+	return reflect.ValueOf(value).IsZero()
+}
