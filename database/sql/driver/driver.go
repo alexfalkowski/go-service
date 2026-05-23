@@ -131,6 +131,10 @@ func Open(lc di.Lifecycle, name string, fs *os.FS, cfg *config.Config, opts ...t
 func ConnectMasterSlaves(name string, masterDSNs, slaveDSNs []string) (*DBs, []error) {
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 	if errors.Join(errs...) != nil {
+		if db != nil {
+			errs = append(errs, db.Destroy()...)
+		}
+
 		return nil, errs
 	}
 
@@ -185,6 +189,10 @@ func connectDBs(name string, masterDSNs, slaveDSNs []string, opts ...telemetry.O
 
 	db, errs := mssqlx.ConnectMasterSlaves(name, masterDSNs, slaveDSNs)
 	if err := errors.Join(errs...); err != nil {
+		if db != nil {
+			err = errors.Join(err, errors.Join(db.Destroy()...))
+		}
+
 		return nil, err
 	}
 
